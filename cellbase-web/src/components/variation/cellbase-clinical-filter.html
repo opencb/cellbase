@@ -1,0 +1,250 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="../common/cellbase-options-list.html">
+<link rel="import" href="../common/cellbase-filter-toolbar.html">
+
+<dom-module id="cellbase-clinical-filter">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .menu-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
+            }
+            .clinical-display {
+                max-height: 800px;
+                overflow: auto;
+            }
+        </style>
+
+        <div>
+            <!--Clinical Filter Tabs-->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#clinicalFilter" role="tab" data-toggle="tab">Filter</a></li>
+                <li role="presentation"><a href="#clinicalResult" role="tab" data-toggle="tab">Result</a></li>
+            </ul>
+
+            <!--Clinical Filter Tab Content-->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="clinicalFilter">
+                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <br>
+
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+                        <!--Clinical ID filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h4 class="panel-title">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#clinicalIdSearch"
+                                       aria-expanded="true" aria-controls="clinicalIdSearch">
+                                        IDs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="clinicalIdSearch" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                                <div class="panel-body">
+                                    <textarea id="clinicalIdTextarea" class="form-control" rows="3" placeholder="rs, rcv or cosm IDs"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Region filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingTwo">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#clinicalRegion" aria-expanded="false" aria-controls="clinicalRegion">
+                                        Region
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="clinicalRegion" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                <div class="panel-body">
+                                    <textarea id="clinicalRegionList" class="form-control clearable" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Consequence Types filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#clinicalConsequenceTypes" aria-expanded="false" aria-controls="clinicalConsequenceTypes">
+                                        Select Consequence Types
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="clinicalConsequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                <div class="panel-body menu-scroll">
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Trait filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFive">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#clinicalTrait" aria-expanded="false" aria-controls="clinicalTrait">
+                                        Trait
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="clinicalTrait" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+                                <div class="panel-body">
+                                    <textarea id="clinicalTraitTextArea" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Clinical Significance filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingSix">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#clinicalSignificance" aria-expanded="false" aria-controls="clinicalSignificance">
+                                        Clinical Significance
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="clinicalSignificance" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
+                                <div class="panel-body">
+                                    <!--<cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result tab content -->
+                <div role="tabpanel" class="tab-pane" id="clinicalResult">
+                    <div class="clinical-display">
+                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <br>
+                        <template is="dom-repeat" items="{{result}}">
+                            <template is="dom-if" if="{{checkCosmic(item)}}">
+                                <div>
+                                    <b on-click="_updateClinicalView" style="cursor: pointer">{{item.mutationID}}</b><br>
+                                    {{item.chromosome}}:{{item.start}}-{{item.end}}<br>
+                                    Phenotypes:
+                                    <template is="dom-repeat" items="{{item._phenotypes}}" as="phenotype">
+                                        {{phenotype}},
+                                    </template>
+                                    <hr>
+                                </div>
+                            </template>
+                            <template is="dom-if" if="{{checkClinvar(item)}}">
+                                <div>
+                                    <b on-click="_updateClinicalView" style="cursor: pointer">{{item.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc}}</b><br>
+                                    {{item.chromosome}}:{{item.start}}-{{item.end}}
+                                    <hr>
+                                </div>
+                            </template>
+
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-clinical-filter',
+            properties: {
+                cellbaseClient: {
+                    type: Object
+                },
+                result: {
+                    type: Array
+                },
+                clinicalId: {
+                    type: String,
+                    notify: true
+                }
+            },
+            clear: function (e) {
+                // we empty the textareas
+                this.$.clinicalIdTextarea.value = "";
+                this.$.clinicalRegionList.value = "";
+                this.$.clinicalTraitTextArea.value= "";
+            },
+            loadExample: function (e) {
+                this.$.clinicalIdTextarea.value = "RCV000033215";
+//                this.$.clinicalRegionList.value = "1:6635137-6635325";
+//                this.$.clinicalRegionList.value = "13:32889611-32890000";
+            },
+            executeQuery: function (e) {
+                // activate the GIF
+                $('#spinImg').show();
+
+                // We first build the query params object
+//                let queryParams = {include: "chromosome,start,end"};
+                let queryParams = {};
+//                if (this.consequenceTypes.length > 0) {
+//                    queryParams.consequenceType = this.consequenceTypes.join(",");
+//                }
+//                if (this.$.geneFilterDrugsTextarea.value != "") {
+//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
+//                }
+
+                //
+                this.result= [];
+                let _this = this;
+                let success = function (response) {
+                    for(let i in response.response) {
+                        for(let j in response.response[i].result) {
+                            _this.push('result',response.response[i].result[j]);
+                        }
+                    }
+                    // remove the GIF
+                    $('#spinImg').hide();
+                };
+
+                // Now we execute the query. Note that ID are preferred
+                if (this.$.clinicalIdTextarea.value !== "") {
+                    queryParams.rcv = this.$.clinicalIdTextarea.value;
+                    this.cellbaseClient.get('feature','clinical', null, 'search', queryParams, {success: success, async: true});
+                } else {
+                    if (this.$.clinicalRegionList.value !== "") {
+                        queryParams.region = this.$.clinicalRegionList.value;
+                        this.cellbaseClient.get('feature','clinical', null, 'search', queryParams, {success: success, async: true});
+                    }
+                }
+
+                $('.nav-tabs a[href="#clinicalResult"]').tab('show');
+            },
+            checkCosmic: function(item) {
+                return item.source === "cosmic";
+            },
+            checkClinvar: function(item) {
+                return item.source === "clinvar";
+            },
+            ready: function() {
+//                this.cellBaseClient = CELLBASE_CLIENT;
+            },
+            _updateClinicalView: function(e) {
+                this.clinicalId = e.target.innerText;
+            }
+        });
+    </script>
+</dom-module>

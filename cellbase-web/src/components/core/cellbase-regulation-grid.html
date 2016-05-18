@@ -20,67 +20,98 @@
                 data: {
                     type: Array,
                     value: [],
-                    observer: 'render'
+                    observer: 'renderFromLocal'
                 },
-//                data: {
-//                    type: Object,
-//                    observer: 'render'
-//                },
+                url: {
+                    type: String,
+                    observer: 'renderFromServer'
+                },
                 prefix: {
                     type: String
+                },
+                count: {
+                    type: Number,
+                    notify: true
                 }
             },
-            render: function () {
-                console.log(this.data)
+            ready: function () {
+                this.cols = [
+                    [
+                        {
+                            title: 'Location',
+                            formatter: this.locationFormatter
+                        },
+                        {
+                            title: 'Strand',
+                            field: 'strand'
+                        },
+                        {
+                            title: 'Source',
+                            field: 'source'
+                        },
+                        {
+                            title: 'Feature Type',
+                            field: 'featureType'
+                        },
+                        {
+                            title: 'Feature Class',
+                            field: 'featureClass'
+                        },
+                        {
+                            title: 'Name',
+                            field: 'name'
+                        },
+
+                        {
+                            title: 'Alias',
+                            field: 'alias'
+                        },
+                        {
+                            title: 'Cell Types',
+                            field: 'cellTypes'
+                        },
+                        {
+                            title: 'Frame',
+                            field: 'frame'
+                        },
+                        {
+                            title: 'Score',
+                            field: 'score'
+                        }
+                    ]
+                ]
+            },
+            renderFromServer: function () {
+                let _this = this;
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
+                let _numTotal = -1;
+
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable({
+                    url: this.url,
+                    method: 'get',
+                    sidePagination: 'server',
+                    queryParams: function (params) {
+                        return {
+                            limit: params.limit,
+                            skip: params.offset
+                        };
+                    },
+                    responseHandler: function (res) {
+                        if (_numTotal == -1) {
+                            _numTotal = res.response[0].numTotalResults;
+                            _this.count = _numTotal;
+                        }
+                        return {total: _numTotal, rows: res.response[0].result}
+                    },
+                    columns: this.cols
+                });
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('showLoading');
+            },
+            renderFromLocal: function () {
                 $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
                 $('#' + this.prefix + 'RegulationTable').bootstrapTable({
                     data: this.data,
-//                    url: "http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/v4/hsapiens/genomic/region/10:555-66666/regulatory",
-//                    url: this.data,
-                    columns: [
-                        [
-                            {
-                                title: 'Location',
-                                formatter: this.locationFormatter
-                            },
-                            {
-                                title: 'Source',
-                                field: 'source'
-                            },
-                            {
-                                title: 'Feature Type',
-                                field: 'featureType'
-                            },
-                            {
-                                title: 'Score',
-                                field: 'score'
-                            },
-                            {
-                                title: 'Strand',
-                                field: 'strand'
-                            },
-                            {
-                                title: 'Frame',
-                                field: 'frame'
-                            },
-                            {
-                                title: 'Name',
-                                field: 'name'
-                            },
-                            {
-                                title: 'Feature Class',
-                                field: 'featureClass'
-                            },
-                            {
-                                title: 'Alias',
-                                field: 'alias'
-                            },
-                            {
-                                title: 'Cell Types',
-                                field: 'cellTypes'
-                            }
-                        ]
-                    ]
+                    columns: this.cols
                 });
             },
 

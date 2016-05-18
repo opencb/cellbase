@@ -15,8 +15,8 @@
   -->
 
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-
 <link rel="import" href="../shared/cellbase-shared-styles.html">
+
 <link rel="import" href="cellbase-transcripts-view.html">
 <link rel="import" href="cellbase-expression-grid.html">
 <link rel="import" href="cellbase-phenotype-grid.html">
@@ -31,7 +31,11 @@
 
 <dom-module id="cellbase-genomic-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .highlight {
+                background-color: darkgray;
+            }
+        </style>
 
         <div>
             <!--List of Tabs-->
@@ -44,13 +48,14 @@
                 <li role="presentation"><a href="#genomicViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
             </ul>
 
-            <div class="tab-content">
+            <div class="tab-content" style="width: 90%">
                 <div id="genomicViewInfo" role="tabpanel" class="tab-pane active">
                     <h4>{{region}}</h4> <br>
                     Number of Genes: {{geneCount}}<br>
                     Number of Variants: {{variationCount}}<br>
                     Number of Regulatory Elements: {{regulationCount}}<br>
-                    Number of Clinical Variants: {{clinicalCount}}<br>
+                    Number of Clinical Variants by source - Clinvar : {{clinvarCount}}<br>
+                    Number of Clinical Variants by source - Cosmic: {{cosmicCount}}<br>
                 </div>
                 <div id="genomicViewGene" role="tabpanel" class="tab-pane">
                     <br>
@@ -86,36 +91,36 @@
                     </div>
                 </div>
                 <div id="genomicViewRegulation" role="tabpanel" class="tab-pane">
-                    <cellbase-regulation-grid data="{{regulatory}}" prefix="genomicRegion"></cellbase-regulation-grid>
+                    <cellbase-regulation-grid url="{{regUrl}}" prefix="genomicRegion" count="{{regulationCount}}"></cellbase-regulation-grid>
                 </div>
                 <div id="genomicViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" data="{{variations}}" on-selected="onVariantSelected" prefix="genomicView"></cellbase-variation-grid>
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{variationUrl}}"
+                                             on-selected="onVariantSelected" prefix="genomicView" count="{{variationCount}}"></cellbase-variation-grid>
                     <h4>Annotation of {{variant}}</h4>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="genomicView"></cellbase-variantannotation-view>
                 </div>
                 <div id="genomicViewIClinical" role="tabpanel" class="tab-pane">
-                        <br>
-                        <p>
-                            <a class="btn btn-primary" data-toggle="collapse" href="#genomicClinvarDiv" aria-expanded="false" aria-controls="genomicClinvarDiv">
-                                Show/Hide Clinvar
-                            </a>
-                            <a class="btn btn-primary" data-toggle="collapse" href="#genomicCosmicDiv" aria-expanded="false" aria-controls="genomicCosmicDiv">
-                                Show/Hide Cosmic
-                            </a>
-                        </p>
-                        <div class="collapse in" id="genomicClinvarDiv">
-                            <h4>Clinvar</h4>
-                            <cellbase-clinvar-grid data="{{clinvar}}" prefix="genomicView"></cellbase-clinvar-grid>
-                        </div>
-                        <div class="collapse in" id="genomicCosmicDiv">
-                            <h4>Cosmic</h4>
-                            <cellbase-cosmic-grid data="{{cosmic}}" prefix="genomicView"></cellbase-cosmic-grid>
-                        </div>
-
+                    <br>
+                    <div>
+                        Clinvar <a data-toggle="collapse" href="#genomicClinvarDiv" aria-expanded="false" aria-controls="genomicClinvarDiv">
+                        <i id="clinvarToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeClinvar"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="genomicClinvarDiv">
+                        <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="genomicView" count="{{clinvarCount}}"></cellbase-clinvar-grid>
+                    </div>
+                    <div>
+                        Cosmic <a data-toggle="collapse" href="#genomicCosmicDiv" aria-expanded="false" aria-controls="genomicCosmicDiv">
+                        <i id="cosmicToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeCosmic"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="genomicCosmicDiv">
+                        <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="genomicView" count="{{cosmicCount}}"></cellbase-cosmic-grid>
+                    </div>
                 </div>
                 <div id="genomicViewGenomeContext" role="tabpanel" class="tab-pane">
                     <br>
-                    <div id="genomeviewer"></div>
+                    <div id="genomicGenomeViewer"></div>
                 </div>
             </div>
         </div>
@@ -136,31 +141,26 @@
                 genes : {
                     type: Array
                 },
-                regulatory: {
-                    type: Array
-                },
-                variations: {
-                    type: Array,
-                    value: []
-                },
                 variant: {
                     type: String
-                },
-                clinvar: {
-                    type: Array,
-                    value: []
-                },
-                cosmic: {
-                    type: Array,
-                    value: []
                 }
             },
             attached: function() {
                 this.genomeViewer;
                 this.renderGenomeViewer();
             },
+            iconChangeClinvar: function () {
+                $('#clinvarToggle').toggleClass('fa-minus-circle fa-plus-circle');
+            },
+            iconChangeCosmic: function () {
+                $('#cosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
+            },
             _regionChanged: function (newValue, oldValue) {
                 this.genomeViewer.setRegion(this.region);
+                this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/variation';
+                this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=clinvar';
+                this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=cosmic';
+                this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/regulatory';
                 let _this = this;
                 let geneSuccess = function (response) {
                     _this.genes = response.response[0].result;
@@ -201,6 +201,8 @@
                             ]
                         ],
                         onClickRow: function (row, $element) {
+                            $('#geneTable tr').removeClass("highlight");
+                            $element.addClass("highlight");
                             _this.selectedGene = row.name;
                             _this.transcripts = row.transcripts;
                             _this.expression = row.annotation.expression;
@@ -209,44 +211,39 @@
                         }
                     });
                 };
-                let regSuccess = function (response) {
-                    let reg = [];
-                    for (let i in response.response) {
-                        for (let j in response.response[i].result) {
-                            reg.push(response.response[i].result[j]);
-                        }
-                    }
-                    _this.regulatory = reg;
-                    _this.regulationCount = reg.length;
-                };
-                let varSuccess = function (response) {
-                    _this.variations = response.response[0].result;
-                    _this.variationCount = _this.variations.length;
-                };
-                let clinicalSuccess = function (response) {
-                    let clinical = response.response[0].result;
-                    _this.clinicalCount = clinical.length;
-                    let clinivarArray = [];
-                    let cosmicArray = [];
-                    for (let i in clinical) {
-                        if (clinical[i].source == "clinvar") {
-                            clinivarArray.push(clinical[i]);
-                        }
-                        if (clinical[i].source == "cosmic") {
-                            cosmicArray.push(clinical[i]);
-                        }
-                    }
-                    _this.clinvar = clinivarArray;
-                    _this.cosmic = cosmicArray;
-                };
+//                let regSuccess = function (response) {
+//                    let reg = [];
+//                    for (let i in response.response) {
+//                        for (let j in response.response[i].result) {
+//                            reg.push(response.response[i].result[j]);
+//                        }
+//                    }
+//                    _this.regulatory = reg;
+//                    _this.regulationCount = reg.length;
+//                };
+//                let clinicalSuccess = function (response) {
+//                    let clinical = response.response[0].result;
+//                    _this.clinicalCount = clinical.length;
+//                    let clinivarArray = [];
+//                    let cosmicArray = [];
+//                    for (let i in clinical) {
+//                        if (clinical[i].source == "clinvar") {
+//                            clinivarArray.push(clinical[i]);
+//                        }
+//                        if (clinical[i].source == "cosmic") {
+//                            cosmicArray.push(clinical[i]);
+//                        }
+//                    }
+//                    _this.clinvar = clinivarArray;
+//                    _this.cosmic = cosmicArray;
+//                };
                 let error = function (response) {
                     alert("Genomic Region not valid: " + _this.region)
                 };
 
                 this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {success: geneSuccess, error: error, async: true});
-                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: regSuccess, error: error, async: true});
-                this.cellbaseClient.get('genomic', 'region', this.region, 'variation', {}, {success: varSuccess, error: error, async: true});
-                this.cellbaseClient.get('genomic', 'region', this.region, 'clinical', {}, {success: clinicalSuccess, error: error, async: true});
+//                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: regSuccess, error: error, async: true});
+//                this.cellbaseClient.get('genomic', 'region', this.region, 'clinical', {}, {success: clinicalSuccess, error: error, async: true});
             },
             onVariantSelected: function(e) {
                 this.variant = e.detail.variant;
@@ -263,8 +260,8 @@
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
                     cellBaseVersion: 'v3',
-                    target: this.$$('#genomeviewer'),
-//                    width: this.$$('#genomeviewer').getBoundingClientRect().width,
+                    target: this.$$('#genomicGenomeViewer'),
+//                    width: this.$$('#genomicGenomeViewer').getBoundingClientRect().width,
                     width: 1200,
                     region: region,
                     availableSpecies: DEFAULT_SPECIES.vertebrates,

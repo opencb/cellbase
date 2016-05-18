@@ -62,4 +62,7 @@ local.properties
 
 # Python
 *.pyc
+<<<<<<< HEAD
 .Rproj.user
+=======
+

@@ -279,7 +279,7 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/all")
+    @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Retrieves all gene objects", response = Gene.class,
             responseContainer = "QueryResponse")
@@ -657,6 +657,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getSNPByGeneId(@PathParam("geneId") String geneId) {
+//    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
         try {
             parseQueryParams();
             QueryResult queryResult = null;
@@ -679,6 +680,18 @@ public class GeneWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+
+
+        // FIXME: replace the above try/catch by this block below as soon as annotation is ready at variation collection.
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//            query.put("gene", geneId);
+//            QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+//            return createOkResponse(queryResult);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
     }
 
 
@@ -881,6 +894,10 @@ public class GeneWSServer extends GenericRestWSServer {
             value = "Resource to get clinical variants from a list of gene HGNC symbols", response = Document.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "source",
+                    value = "Comma separated list of database sources of the documents to be returned. Possible values "
+                            + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
+                    required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "so",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
                             + "matches will be returned.",
@@ -905,7 +922,9 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "list of strings", paramType = "query"),
 >>>>>>> 7e8754758b7d438888bb404714aabfc994205976
     })
-    public Response getAllClinvarByGene(@PathParam("geneId") String geneId) {
+    public Response getAllClinvarByGene(@PathParam("geneId")
+                                        @ApiParam(name = "geneId", value = "String containing one gene symbol, e.g:"
+                                                + " BRCA2", required = true) String geneId) {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);

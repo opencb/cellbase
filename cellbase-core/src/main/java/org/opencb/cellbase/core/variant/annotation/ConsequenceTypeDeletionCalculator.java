@@ -430,14 +430,20 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             referenceCodon1Array[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon1Array[0]);
             referenceCodon1Array[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon1Array[1]);
             referenceCodon1Array[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon1Array[2]);
+            String referenceCodon1 = String.valueOf(referenceCodon1Array);
             char[] referenceCodon2Array = reverseCodon2.toCharArray();
             referenceCodon2Array[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon2Array[0]);
             referenceCodon2Array[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon2Array[1]);
             referenceCodon2Array[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon2Array[2]);
+            String referenceCodon2 = String.valueOf(referenceCodon2Array);
             char[] modifiedCodonArray = referenceCodon1Array.clone();
 
             int i = 0;
             int codonPosition;
+
+            // Char array to contain the upper/lower-case formatted string for the codon change, e.g. aGT/ATG
+            char[] formattedReferenceCodon1Array = String.valueOf(referenceCodon1Array).toLowerCase().toCharArray();
+
             // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd
             // are within coding sequence (both of them within an exon).
             for (codonPosition = variantPhaseShift1; codonPosition < 3; codonPosition++) {
@@ -456,13 +462,29 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                     // Paste reference nts after deletion in the corresponding codon position
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseTranscriptSequence.charAt(i));
                 }
+
+                // Edit modified nt to make it upper-case in the formatted strings
+                formattedReferenceCodon1Array[codonPosition] = Character.toUpperCase(formattedReferenceCodon1Array[codonPosition]);
+
                 i++;
             }
 
+            // Only the exact codon where the deletion starts is set
+            consequenceType.setCodon(String.valueOf(formattedReferenceCodon1Array) + "/"
+                    + String.valueOf(modifiedCodonArray).toUpperCase());
+            String modifiedCodon = String.valueOf(modifiedCodonArray);
+            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
+            // Assumes proteinVariantAnnotation attribute is already initialized
+            consequenceType
+                    .getProteinVariantAnnotation()
+                    .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon1));
+            consequenceType
+                    .getProteinVariantAnnotation()
+                    .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, modifiedCodon));
+
             decideStopCodonModificationAnnotation(SoNames,
-                    VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), String.valueOf(referenceCodon2Array))
-                    ? String.valueOf(referenceCodon2Array) : String.valueOf(referenceCodon1Array), modifiedCodonArray,
-                                                                                variant.getChromosome().equals("MT"));
+                    VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon2)
+                    ? referenceCodon2 : referenceCodon1, modifiedCodon, useMitochondrialCode);
         }
     }
 
@@ -728,6 +750,10 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             char[] modifiedCodonArray = referenceCodon1.toCharArray();
             int i = cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
             int codonPosition;
+
+            // Char array to contain the upper/lower-case formatted strings for the codon change, e.g. aGT/ATG
+            char[] formattedReferenceCodon1Array = referenceCodon1.toLowerCase().toCharArray();
+
             // BE CAREFUL: this method is assumed to be called after checking that cdnaVariantStart and cdnaVariantEnd
             // are within coding sequence (both of them within an exon).
             for (codonPosition = variantPhaseShift1; codonPosition < 3; codonPosition++) {
@@ -745,11 +771,29 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                     // Paste reference nts after deletion in the corresponding codon position
                     modifiedCodonArray[codonPosition] = transcriptSequence.charAt(i);
                 }
+
+                // Edit modified nt to make it upper-case in the formatted strings
+                formattedReferenceCodon1Array[codonPosition] = Character.toUpperCase(formattedReferenceCodon1Array[codonPosition]);
+
                 i++;
             }
+
+            // Only the exact codon where the deletion starts is set
+            consequenceType.setCodon(String.valueOf(formattedReferenceCodon1Array) + "/"
+                    + String.valueOf(modifiedCodonArray).toUpperCase());
+            String modifiedCodon = String.valueOf(modifiedCodonArray);
+            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
+            // Assumes proteinVariantAnnotation attribute is already initialized
+            consequenceType
+                    .getProteinVariantAnnotation()
+                    .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon1));
+            consequenceType
+                    .getProteinVariantAnnotation()
+                    .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, modifiedCodon));
+
             decideStopCodonModificationAnnotation(SoNames,
-                    VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon2)
-                    ? referenceCodon2 : referenceCodon1, modifiedCodonArray, variant.getChromosome().equals("MT"));
+                    VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon2)
+                    ? referenceCodon2 : referenceCodon1, modifiedCodon, useMitochondrialCode);
         }
     }
 

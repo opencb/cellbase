@@ -216,12 +216,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                             .setDisplayConsequenceType(getMostSevereConsequenceType(normalizedVariantList.get(i)
                                     .getAnnotation().getConsequenceTypes()));
                 } catch (UnsupportedURLVariantFormat e) {
-                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
-                            normalizedVariantList.get(i).toString());
+                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
+                            + " Leaving an empty consequence type list.", normalizedVariantList.get(i).toString());
                 } catch (Exception e) {
-                    logger.error("Unhandled error when calculating consequence type for variant {}",
-                            normalizedVariantList.get(i).toString());
-                    throw e;
+                    logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
+                            + " consequence type list.", normalizedVariantList.get(i).toString());
+//                    throw e;
                 }
             }
 
@@ -732,9 +732,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
-        for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
-                consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+        if (variant.getType() == VariantType.SNV
+                || Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()) == VariantType.SNV) {
+            for (ConsequenceType consequenceType : consequenceTypeList) {
+                if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
+                    consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
+                }
             }
         }
         return consequenceTypeList;
