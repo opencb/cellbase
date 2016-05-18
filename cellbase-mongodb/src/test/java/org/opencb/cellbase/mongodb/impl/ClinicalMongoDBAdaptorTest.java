@@ -88,5 +88,13 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(queryResult8.getNumTotalResults(), 47);
         assertEquals(((Document) queryResult8.getResult().get(0)).get("geneName"), "APOE");
 
+        Query query7 = new Query();
+        query7.put("cosmicId","COSM306824");
+        query7.put("source", "cosmic");
+        QueryOptions options = new QueryOptions();
+        QueryResult queryResult9 = clinicalDBAdaptor.nativeGet(query7, options);
+        assertNotNull("Should return the queryResult of id=COSM306824", queryResult9.getResult());
+        assertEquals(((Document)queryResult9.getResult().get(0)).get("geneName"), "FMN2");
+
     }
 }

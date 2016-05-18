@@ -41,7 +41,8 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         CLINVARCLINSIG("significance", TEXT_ARRAY, ""),
         CLINVARREVIEW("review", TEXT_ARRAY, ""),
         CLINVARTYPE("type", TEXT_ARRAY, ""),
-        CLINVARRS("rs", TEXT_ARRAY, "");
+        CLINVARRS("rs", TEXT_ARRAY, ""),
+        COSMICID("cosmicId", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
