@@ -13,136 +13,195 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
-<link rel="import" href="../../bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html">
-<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
-<!--cellbase-elements-->
 <link rel="import" href="shared/cellbase-species-menu.html">
+<link rel="import" href="core/cellbase-genomic-panel.html">
 <link rel="import" href="core/cellbase-gene-panel.html">
+<link rel="import" href="core/cellbase-regulation-panel.html">
+<link rel="import" href="variation/cellbase-variation-panel.html">
+<link rel="import" href="variation/cellbase-clinical-panel.html">
+<link rel="import" href="variation/cellbase-variantannotation-panel.html">
+
+<link rel="import" href="shared/cellbase-shared-styles.html">
 
 <dom-module id="cellbase-web">
 
     <template>
-        <style>
-            paper-item {
-                --paper-item: {
-                    cursor: pointer;
-                };
-            }
-            .paper-header {
-                float: left;
-                width: 50%;
-                text-align: left;
-            }
-            .about {
-                float: right;
-                width: 50%;
-                text-align: right;
+        <style is="custom-style" include="cellbase-shared-styles"></style>
 
-            }
-        </style>
-
-        <cellbase-species-menu></cellbase-species-menu>
-
-
-        <paper-drawer-panel id="paperDrawerPanel" force-narrow>
-
-            <paper-scroll-header-panel drawer>
-
-                <paper-toolbar><span>Menu</span></paper-toolbar>
-
-                <paper-dropdown-menu label="Version">
-                    <paper-menu class="dropdown-content" selected={{selectedVersion}}>
-                        <template is="dom-repeat" items="{{versions}}">
-                            <paper-item>{{item}}</paper-item>
-                        </template>
-                    </paper-menu>
-                </paper-dropdown-menu>
-
-                <cellbase-species-menu></cellbase-species-menu>
-
-                <!--<cellbase-species-menu title="Select a species" cellBaseClientObj=""></cellbase-species-menu>-->
-
-
-                <hr>
-                <paper-menu attr-for-selected="selectedMenu" selected="{{selectedMenu}}">
-                    <paper-item selectedMenu="gene">Gene</paper-item>
-                    <paper-item selectedMenu="transcript">Transcript</paper-item>
-                    <paper-item selectedMenu="protein">Protein</paper-item>
-                    <paper-item selectedMenu="SNP">SNP</paper-item>
-                    <paper-item selectedMenu="clinical-variant">Clinical Variants</paper-item>
-                    <paper-item selectedMenu="TFBS">TFBS</paper-item>
-                    <paper-item selectedMenu="miRNA-targets">miRNA Targets</paper-item>
-                </paper-menu>
-                <hr>
-
-                <paper-icon-item>
-                    <paper-icon-button icon="info"></paper-icon-button>
-                    About <br>
-                    <paper-icon-button icon="code"></paper-icon-button>
-                    Github <br>
-                    <paper-icon-button icon="description"></paper-icon-button>
-                    Documentation
-                </paper-icon-item>
-
-
-            </paper-scroll-header-panel>
-            <paper-scroll-header-panel main>
-                <paper-toolbar>
-                    <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
-                    <h4 class="paper-header">CELLBASE</h4>
-                    <div class="about">
-                        <paper-icon-button id="setting" icon="settings" on-click="clickHandler"></paper-icon-button>
-                        <paper-tooltip for="setting">Settings</paper-tooltip>
-                    </div>
-                    <paper-dialog id="modal" modal>
-                        <div>
-                            CellBase Host: <br>
-                            <input type="text" value="{{host::input}}" size="35">
-                            <!--<paper-dropdown-menu label="Host">-->
-                            <!--<paper-menu class="dropdown-content" selected={{selectedHost}}>-->
-                            <!--<template is="dom-repeat" items="{{hosts}}">-->
-                            <!--<paper-item>{{item}}</paper-item>-->
-                            <!--</template>-->
-                            <!--</paper-menu>-->
-                            <!--</paper-dropdown-menu>-->
+        <div>
+            <div style="height: 60px;">
+                <nav class="navbar navbar-inverse navbar-fixed-top">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand" href="#">CellBase Data Portal</a>
                         </div>
-                        <div>
-                            <input type="checkbox" checked>Cache
-                        </div>
-                        <paper-button dialog-confirm autofocus>OK</paper-button>
-                    </paper-dialog>
-                </paper-toolbar>
-                <div class="content">
-                    <iron-pages attr-for-selected="selectedMenu" selected="{{selectedMenu}}">
-                        <div selectedMenu="gene">
-                            <cellbase-gene-panel cellbase={{host}}></cellbase-gene-panel>
-                        </div>
-                        <div selectedMenu="transcript">
-                            <p>second page for transcript</p>
-                        </div>
-                        <div selectedMenu="protein">
-                            Protein
-                        </div>
-                    </iron-pages>
 
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <ul class="nav navbar-nav">
+                                <li class="dropdown">
+                                    <a href="#home1"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Core <span class="caret"></span></a>
+
+                                    <ul class="dropdown-menu cellbase-menu">
+                                        <li><a href="#genomicPanel">Genomic Region</a></li>
+                                        <li><a href="#genePanel">Gene/Transcript</a></li>
+                                        <!--<li><a href="#transcriptPanel">Transcript</a></li>-->
+                                        <li><a href="#">Protein</a></li>
+                                        <li><a href="#regulationPanel">Regulation</a></li>
+                                        <li><a href="#">XRefs</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Variation <span class="caret"></span></a>
+                                    <ul class="dropdown-menu cellbase-menu">
+                                        <li><a href="#variationPanel">Variation (SNV)</a></li>
+                                        <li><a href="#clinicalPanel">Clinical</a></li>
+                                        <li role="separator" class="divider"></li>
+                                        <li><a href="#variationAnnotationPanel">Variant Annotation</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Networks <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">Protein Protein Interaction</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualization <span class="caret"></span></a>
+                                    <ul class="dropdown-menu cellbase-menu">
+                                        <li><a href="#">Genome Browser (Genome Maps)</a></li>
+                                        <li><a href="#">Network viewer (Cell Maps)</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <!-- Controls aligned to the right: version, species, search, settings and about-->
+                            <ul class="nav navbar-nav navbar-right">
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Version <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#">v3</a></li>
+                                        <li><a href="#">v4</a></li>
+                                    </ul>
+                                </li>
+
+                                <div class="navbar-form navbar-left" style="padding-top: 7px">
+                                    <cellbase-species-menu cellbase-client={{cellbaseClient}}></cellbase-species-menu>
+                                </div>
+
+                                <form class="navbar-form navbar-left" role="search">
+                                    <div class="form-group">
+                                        <input type="text" class="form-control" placeholder="BRCA2,rs666,3:4444-6666">
+                                        <a href="#">
+                                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        </a>
+                                    </div>
+                                    <!--<button type="submit" class="btn btn-default">Submit</button>-->
+                                </form>
+
+                                <li>
+                                    <a href="#" data-toggle="modal" role="button" data-placement="bottom" data-target="#myModal" title="Settings ...">
+                                        <i class="fa fa-cog"></i>
+                                        <!--<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>-->
+                                    </a>
+                                </li>
+
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="https://github.com/opencb/cellbase/wiki/About" target="_blank">About</a></li>
+                                        <li><a href="https://github.com/opencb/cellbase" target="_blank">GitHub</a></li>
+                                        <li><a href="https://github.com/opencb/cellbase/wiki" target="_blank">Documentation</a></li>
+                                        <li><a href="#">Contact</a></li>
+                                        <li><a href="#">FAQ</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div><!-- /.navbar-collapse -->
+                    </div><!-- /.container-fluid -->
+                </nav>
+            </div>
+
+            <!-- This is where main application is rendered -->
+            <div class="center">
+                <div class="collapse content" id="home1">
+                    <h2>Welcome to CellBase data portal tool!</h2>
                 </div>
-            </paper-scroll-header-panel>
+                <div class="collapse content" id="genomicPanel">
+                    <h2>Genomic Region</h2>
+                    <cellbase-genomic-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-genomic-panel>
+                </div>
+                <div class="collapse content" id="genePanel">
+                    <h2>Gene/Transcript</h2>
+                    <cellbase-gene-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-gene-panel>
+                </div>
+                <!--<div class="collapse content" id="transcriptPanel">-->
+                    <!--Transcript-->
+                <!--</div>-->
+                <div class="collapse content" id="regulationPanel">
+                    <h2>Regulation</h2>
+                    <cellbase-regulation-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-regulation-panel>
+                </div>
+                <div class="collapse content" id="variationPanel">
+                    <h2>Variation</h2>
+                    <cellbase-variation-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variation-panel>
+                </div>
+                <div class="collapse content" id="clinicalPanel">
+                    <h2>Clinical Data</h2>
+                    <cellbase-clinical-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-clinical-panel>
+                </div>
+                <div class="collapse content" id="variationAnnotationPanel">
+                    <h2>Variant Annotation</h2>
+                    <cellbase-variantannotation-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variantannotation-panel>
+                </div>
+            </div>
 
-        </paper-drawer-panel>
+        </div>
 
+
+
+        <!-- Modal dialog for Settings -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Settings</h4>
+                    </div>
+                    <div class="modal-body">
+                        <!--<div class="input-group">-->
+                        <!--<span class="input-group-addon" id="basic-addon">Select Species</span>-->
+                        <!--<cellbase-species-menu class="btn btn-default"></cellbase-species-menu>-->
+                        <!--</div>-->
+                        <p></p>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="basic-addon1">Hosts</span>
+                            <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1" value="bioinfo.hpc.cam.ac.uk/cellbase, www.ebi.ac.uk/cellbase">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </template>
 
@@ -150,23 +209,37 @@
         Polymer({
             is: 'cellbase-web',
             properties: {
-                host: {
+                cellbaseClient: {
+                    type: Object
+                },
+                hosts: {
                     type: String,
                     value: "http://bioinfo.hpc.cam.ac.uk/cellbase"
                 },
                 versions: {
                     type: String
-//                    computed: 'computeVersion'
-                },
-                selectedMenu: {
-                    type: String,
-                    observer: 'selectedMenuChanged'
                 }
             },
-//            computeVersion: function () {
-//                var client = new CellBaseClient();
-//
-//            },
+            ready: function () {
+                console.log("Initializing cellbase-web component...")
+//                    this.cellbaseClient = new CellBaseClient();
+                this.cellbaseClient = new CellBaseClient();
+
+                this.cellbaseClient.setHosts(CELLBASE_HOSTS);
+                this.cellbaseClient.setVersion(CELLBASE_VERSION);
+                if (typeof this.cellbaseClient === "undefined" || this.cellbaseClient == null) {
+                    console.log("Creating CellBaseClient")
+                }
+
+
+                $(".cellbase-menu a").on('click', function(e) {
+                    e.preventDefault(); // stops link form loading
+                    $('.content').hide(); // hides all content divs
+                    $( $(this).attr('href') ).show(); //get the href and use it find which div to show
+                });
+                $('#home1').show();
+
+            },
             clickHandler: function (e) {
                 var dialog = document.getElementById("modal");
                 if (dialog) {

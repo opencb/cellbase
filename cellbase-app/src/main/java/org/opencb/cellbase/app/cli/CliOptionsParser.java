@@ -351,6 +351,15 @@ public class CliOptionsParser {
                 "should be tested",
                 required = false, arity = 0)
         public boolean benchmark;
+
+        @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of input variants. Normalization"
+                + " includes splitting multi-allele positions read from a VCF, allele trimming and decomposing MNVs. Has"
+                + " no effect if reading variants from a CellBase variation collection "
+                + "(\"--input-variation-collection\") or running a variant annotation benchmark (\"--benchmark\"): in"
+                + " these two cases variant normalization is never carried out.",
+                required = false, arity = 0)
+        public boolean skipNormalize;
+
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")

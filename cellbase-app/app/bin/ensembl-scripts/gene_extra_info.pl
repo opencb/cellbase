@@ -126,7 +126,7 @@ sub createCoreTables {
 	foreach my $gene_id(@{$gene_adaptor->list_stable_ids()}) {   #fetch_all_by_biotype('miRNA')
 		$ngene++;
 		$gene = $gene_adaptor->fetch_by_stable_id($gene_id);
-		
+
 		print $ngene."\t".$gene->stable_id."\t".$gene->description."\n" if $verbose;
 
 		##### Gene Info and sequence ######################
@@ -148,7 +148,14 @@ sub createCoreTables {
 			
 			# Referencia al ensembl gene id
 			print XREFS $trans->stable_id()."\t".$gene->stable_id()."\t".&get_dbname_short("Ensembl gene")."\t"."Ensembl gene"."\t".$gene->description()."\n";
-			
+
+			# Additional synonyms
+			my ($display_xref_entry);
+			$display_xref_entry = $gene->display_xref();
+            foreach my $synonym_str(@{ $display_xref_entry->get_all_synonyms }) {
+                print XREFS $trans->stable_id()."\t".$synonym_str."\t".&get_dbname_short("Ensembl gene")."\t"."Ensembl gene"."\t".$gene->description()."\n";
+            }
+
 #			print XREF $ntrans."\t".$gene->external_name."\t".&get_dbname($gene->get_all_DBEntries->[0]->{'db_display_name'})."\t".$gene->get_all_DBEntries->[0]->{'description'}."\n";
 #			print XREFS $trans->stable_id()."\t".$gene->external_name()."\t".&get_dbname_short($gene->get_all_DBEntries->[0]->{'db_display_name'})."\t".$gene->get_all_DBEntries->[0]->{'db_display_name'}."\t".$gene->get_all_DBEntries->[0]->{'description'}."\n";
 			foreach my $dbentry(@{$gene->get_all_DBEntries}){

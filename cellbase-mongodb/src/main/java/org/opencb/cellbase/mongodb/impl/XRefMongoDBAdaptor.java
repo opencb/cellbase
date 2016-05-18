@@ -57,7 +57,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
     @Override
     public QueryResult contains(String id, QueryOptions options) {
-        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("\\w" + id + "\\w"));
+        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("\\w*" + id + "\\w*"));
         Bson include = Projections.include("id", "name", "chromosome", "start", "end");
         return mongoDBCollection.find(regex, include, options);
     }

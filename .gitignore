@@ -1,6 +1,6 @@
 
 build
-
+bower_components
 node_modules
 bower_components
 private
@@ -57,3 +57,5 @@ local.properties
 
 # Python
 *.pyc
+os
+sys

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import org.bson.Document;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,6 +24,8 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.mongodb.GenericMongoDBAdaptorTest;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
@@ -32,26 +35,30 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 /**
  * Created by imedina on 12/02/16.
  */
-public class VariantMongoDBAdaptorTest {
+public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
-    private static DBAdaptorFactory dbAdaptorFactory;
+//    private static DBAdaptorFactory dbAdaptorFactory;
 
-    public VariantMongoDBAdaptorTest() {
-        try {
-            Path inputPath = Paths.get(getClass().getResource("/configuration.json").toURI());
-            CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(new FileInputStream(inputPath.toFile()));
-            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }
-
-    }
+//    @Ignore
+//    @Test
+//    public VariantMongoDBAdaptorTest() {
+//        try {
+//            Path inputPath = Paths.get(getClass().getResource("/configuration.json").toURI());
+//            CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(new FileInputStream(inputPath.toFile()));
+//            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+//        } catch (URISyntaxException | IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -64,5 +71,17 @@ public class VariantMongoDBAdaptorTest {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryResult functionalScoreVariant = variationDBAdaptor.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
                 new QueryOptions());
+    }
+
+    @Test
+    public void testNativeGet() {
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        QueryResult variantQueryResult = variationDBAdaptor.nativeGet(new Query(VariantDBAdaptor.QueryParams.ID.key(), "rs666"),
+                new QueryOptions());
+        assertEquals(variantQueryResult.getNumResults(), 1);
+        assertEquals(((Document) variantQueryResult.getResult().get(0)).get("chromosome"), "17");
+        assertEquals(((Document) variantQueryResult.getResult().get(0)).get("start"), new Integer(64224271));
+        assertEquals(((Document) variantQueryResult.getResult().get(0)).get("reference"), "C");
+        assertEquals(((Document) variantQueryResult.getResult().get(0)).get("alternate"), "T");
     }
 }

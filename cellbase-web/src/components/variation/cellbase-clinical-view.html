@@ -1,0 +1,449 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="cellbase-annotation-consequencetype-grid.html">
+
+<dom-module id="cellbase-clinical-view">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div style="width: 90%">
+            <ul id="myTabs" class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#clinicalViewInfo" role="tab" data-toggle="tab">Summary</a></li>
+                <li role="presentation"><a href="#clinicalViewGenomeContext" role="tab" data-toggle="tab">Genome
+                    Context</a></li>
+            </ul>
+
+            <div class="tab-content" style="width: 90%">
+                <div id="clinicalViewInfo" role="tabpanel" class="tab-pane active">
+                    <h3>{{clinicalId}}</h3><br>
+                    <b>Chromosome:</b> {{clinicalObj.chromosome}} <br>
+                    <b>Position:</b> {{clinicalObj.start}} <br>
+                    <b>Reference:</b> {{clinicalObj.reference}} <br>
+                    <b>Alternate:</b> {{clinicalObj.alternate}} <br>
+                    <template is="dom-if" if="{{checkClinvar(clinicalObj)}}">
+                        <b>Review status:</b> {{clinicalObj.clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus}} <br>
+                        <b>Last Evaluated:</b> {{updatedDate}} <br>
+                        <b>HGVS(s):</b><br>
+                        <template is="dom-repeat" items="{{clinicalObj.annot.hgvs}}">
+                            {{item}} <br>
+                        </template>
+                        <b>SO Terms(s):</b><br>
+                        <template is="dom-repeat" items="{{soterms}}">
+                            {{item.name}} ({{item.total}}) <br>
+                        </template>
+                        <b>Submitted Gene:</b> {{submittedGene}} <br>
+                        <b>Publications:</b> <br>
+                        <template is="dom-repeat" items="{{publication}}">
+                            {{item}} (PubMed) <br>
+                        </template>
+                    </template>
+
+                    <h3>Annotation</h3>
+                    <ul id="annotationTabs" class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#clinicalConsequenceType" role="tab" data-toggle="tab">Consequence Types</a></li>
+                        <li role="presentation"><a href="#clinicalAssertion" role="tab" data-toggle="tab">Clinical Assertion</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div id="clinicalConsequenceType" role="tabpanel" class="tab-pane active">
+                            <cellbase-annotation-consequencetype-grid data="{{variantAnnotation.consequenceTypes}}" prefix="clinicalView"></cellbase-annotation-consequencetype-grid>
+                        </div>
+                        <div id="clinicalAssertion" role="tabpanel" class="tab-pane">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Submission Accession</th>
+                                    <th>Clinical Significance</th>
+                                    <th>Review status</th>
+                                    <th>Date of Submission</th>
+                                    <th>Submitter</th>
+                                    <th>Method Type</th>
+                                    <th>Allele origin</th>
+                                    <th>Assertion Method</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <template is="dom-repeat" items="{{clinicalAssertion}}">
+                                    <tr>
+                                        <td>{{item.SubAccession}}</td>
+                                        <td>{{item.clinicalSignificance}}</td>
+                                        <td>{{item.reviewStatus}}</td>
+                                        <td>{{item.submittedDate}}</td>
+                                        <td>{{item.submitter}}</td>
+                                        <td>{{item.methodType}}</td>
+                                        <td>{{item.alleleOrigin}}</td>
+                                        <td>{{item.type}}</td>
+                                    </tr>
+                                </template>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <div role="tabpanel" class="tab-pane" id="clinicalViewGenomeContext">
+                    <br>
+                    <div id="clinicalGenomeViewer"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-clinical-view',
+
+            properties: {
+                cellbaseClient: {
+                    type: Object
+                },
+                clinicalId: {
+                    type: String,
+                    observer: '_clinicalIdChanged'
+                },
+                variant: {
+                    type: String,
+                    observer: '_variantChanged'
+                },
+                clinicalObj: {
+                    type: Object
+                }
+            },
+            _clinicalIdChanged: function (newValue, oldValue) {
+                let _this = this;
+                let soterms = [];
+                let clinicalAssertion = [];
+                if (this.clinicalId.startsWith('RCV')) {
+                    if (typeof this.genomeViewer !== "undefined") {
+                        let success = function (response) {
+                            let clinicalResult = response.response[0].result[0];
+                            debugger
+                            if (typeof clinicalResult !== "undefined") {
+                                // Setting the region for genome viewer
+                                let region = new Region({
+                                    chromosome: clinicalResult.chromosome,
+                                    start: clinicalResult.start,
+                                    end: clinicalResult.end
+                                });
+                                _this.genomeViewer.setRegion(region);
+                                _this.clinicalObj = clinicalResult;
+                                _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
+                                // Converting the timestamp to UTC format
+                                _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
+
+                                // Getting the SOTerms and counting how many times each SOterm occurs
+//                                let names = [];
+//                                for (let i in clinicalResult.annot.consequenceTypes) {
+//                                    let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
+//                                    for(let j in terms) {
+//                                        names.push(terms[j].name);
+//                                    }
+//                                }
+//                                var count = {};
+//                                for (let i in names) {
+//                                    let x = names[i];
+//                                    count[x] = count[x]? count[x]+1 : 1;
+//                                }
+//                                for(let x in count) {
+//                                    soterms.push({name: x, total: count[x]});
+//                                }
+//                                _this.soterms = soterms;
+
+                                //Getting the submitted Gene which is enclosed in array of arrays
+                                let geneName = [];
+                                let measures = clinicalResult.clinvarSet.referenceClinVarAssertion.measureSet.measure;
+                                for (let measure in measures) {
+                                    let measureRelationships = measures[measure].measureRelationship;
+                                    for (let i in measureRelationships) {
+                                        let symbols = measureRelationships[i].symbol;
+                                        for (let j in symbols) {
+                                            geneName.push(symbols[j].elementValue.value);
+                                        }
+                                    }
+                                }
+                                _this.submittedGene = geneName;
+
+                                // Getting the Publication IDs that are from source PubMed
+                                let pubIds = [];
+                                let traits = clinicalResult.clinvarSet.referenceClinVarAssertion.traitSet.trait;
+                                for (let i in traits) {
+                                    let citations = traits[i].citation;
+                                    for (let j in citations) {
+                                        let ids = citations[j].id;
+                                        for(let k in ids) {
+                                            if (ids[k].source == "PubMed") {
+                                                pubIds.push(ids[k].value);
+                                            }
+                                        }
+                                    }
+                                }
+                                let observedIns = clinicalResult.clinvarSet.referenceClinVarAssertion.observedIn;
+                                for (let i in observedIns) {
+                                    let observedData = observedIns[i].observedData;
+                                    for (let j in observedData) {
+                                        let citations = observedData[j].citation;
+                                        for(let k in citations) {
+                                            let ids = citations[k].id;
+                                            for ( let l in ids) {
+                                                if (ids[l].source == "PubMed") {
+                                                    pubIds.push(ids[l].value);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                _this.publication = pubIds;
+
+                                //Clinical Assertion
+                                let clinVarAssertion = clinicalResult.clinvarSet.clinVarAssertion;
+                                for (let i in clinVarAssertion) {
+                                    let assertionObj = {};
+                                    assertionObj.SubAccession = clinVarAssertion[i].clinVarAccession.acc;
+                                    let significance = clinVarAssertion[i].clinicalSignificance.description;
+                                    let description = [];
+                                    for (let j in significance) {
+                                        description.push(significance[j]);
+                                    }
+                                    assertionObj.clinicalSignificance = description.join();
+                                    assertionObj.reviewStatus = clinVarAssertion[i].clinicalSignificance.reviewStatus;
+                                    assertionObj.submittedDate = (new Date(clinVarAssertion[i].submitterDate)).toUTCString();
+                                    assertionObj.submitter = clinVarAssertion[i].clinVarSubmissionID.submitter;
+                                    let observedIns = clinVarAssertion[i].observedIn;
+                                    let methodTypes = [];
+                                    let origins = [];
+                                    for (let k in observedIns) {
+                                        let methods = observedIns[k].method;
+                                        for (let l in methods) {
+                                            methodTypes.push(methods[l].methodType);
+                                        }
+                                        origins.push(observedIns[k].sample.origin)
+                                    }
+                                    assertionObj.methodType = methodTypes.join();
+                                    assertionObj.alleleOrigin = origins.join();
+                                    assertionObj.type = clinVarAssertion[i].assertion.type;
+                                    clinicalAssertion.push(assertionObj);
+                                }
+                                _this.clinicalAssertion = clinicalAssertion;
+
+                            } else {
+                                alert("Clinical ID not valid: " + _this.clinicalId);
+                            }
+                        };
+                        let error = function (response) {
+                            alert("Clinical ID not valid: " + _this.clinicalId)
+                        };
+                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {rcv: _this.clinicalId}, {
+                            success: success,
+                            error: error,
+                            async: true
+                        });
+                    }
+                }
+            },
+            _variantChanged: function (newValue, oldValue) {
+                let _this = this;
+                let variationSuccess = function (response) {
+                    _this.variantAnnotation = response.response[0].result[0];
+                };
+                this.cellbaseClient.get('genomic', 'variant', this.variant, 'annotation', {}, {
+                    success: variationSuccess,
+                    async: true
+                });
+            },
+            checkClinvar: function (clinicalObj) {
+                return clinicalObj.source === 'clinvar';
+            },
+            attached: function () {
+                this.genomeViewer;
+                this.renderGenomeViewer();
+            },
+            renderGenomeViewer: function () {
+                var region = new Region({chromosome: "13", start: 32889611, end: 32889611});
+                this.genomeViewer = new GenomeViewer({
+                    cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
+                    cellBaseVersion: 'v3',
+                    target: this.$$('#clinicalGenomeViewer'),
+//                    width: this.$$('#clinicalGenomeViewer').getBoundingClientRect().width,
+                    width: 1200,
+                    region: region,
+                    availableSpecies: DEFAULT_SPECIES.vertebrates,
+                    species: DEFAULT_SPECIES.vertebrates[0],
+                    sidePanel: false,
+                    autoRender: true,
+                    resizable: true,
+//        quickSearchResultFn:quickSearchResultFn,
+//        quickSearchDisplayKey:,
+                    karyotypePanelConfig: {
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    chromosomePanelConfig: {
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    navigationBarConfig: {
+                        componentsConfig: {
+//                restoreDefaultRegionButton:false,
+//                regionHistoryButton:false,
+//                speciesButton:false,
+//                chromosomesButton:false,
+//                karyotypeButton:false,
+//                chromosomeButton:false,
+//                regionButton:false,
+//                zoomControl:false,
+//                windowSizeControl:false,
+//                positionControl:false,
+//                moveControl:false,
+//                autoheightButton:false,
+//                compactButton:false,
+//                searchControl:false
+                        }
+                    },
+                    handlers: {
+                        'region:change': function (e) {
+                            console.log(e)
+                        }
+                    }
+//        chromosomeList:[]
+//            trackListTitle: ''
+//            drawNavigationBar = true;
+//            drawKaryotypePanel: false,
+//            drawChromosomePanel: false,
+//            drawOverviewTrackListPanel: false
+                });
+                var tracks = [];
+                this.sequence = new FeatureTrack({
+                    title: 'Sequence',
+                    height: 25,
+                    visibleRegionSize: 200,
+                    renderer: new SequenceRenderer(),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "sequence",
+                        params: {},
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 100
+                        }
+                    })
+                });
+                tracks.push(this.sequence);
+                this.gene = new GeneTrack({
+                    title: 'Gene',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    minTranscriptRegionSize: 200000,
+                    height: 100,
+                    renderer: new GeneRenderer({
+                        handlers: {
+                            'feature:click': function (e) {
+                                console.log(e)
+                            }
+                        }
+                    }),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        species: this.genomeViewer.species,
+                        params: {
+                            exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
+                        },
+                        cacheConfig: {
+                            chunkSize: 100000
+                        }
+                    })
+                });
+                tracks.push(this.gene);
+                var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
+                renderer.on({
+                    'feature:click': function (event) {
+                        // feature click event example
+                        console.log(event)
+                    }
+                });
+                var gene = new FeatureTrack({
+//        title: 'Gene overview',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    height: 100,
+                    renderer: renderer,
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        params: {
+                            exclude: 'transcripts,chunkIds'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 100000
+                        }
+                    })
+                });
+                this.genomeViewer.addOverviewTrack(gene);
+                this.snp = new FeatureTrack({
+                    title: 'SNP',
+                    featureType: 'SNP',
+                    minHistogramRegionSize: 12000,
+                    maxLabelRegionSize: 3000,
+                    height: 120,
+                    renderer: new FeatureRenderer(FEATURE_TYPES.snp),
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "snp",
+                        params: {
+                            exclude: 'transcriptVariations,xrefs,samples'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            chunkSize: 10000
+                        }
+                    })
+                });
+                tracks.push(this.snp);
+                /*************************/
+//                var customTrack = new FeatureTrack({
+//                    title: 'custom track',
+//                    minHistogramRegionSize: 12000,
+//                    maxLabelRegionSize: 3000,
+//                    height: 120,
+//                    renderer: new FeatureRenderer(),
+//                    dataAdapter: new FeatureTemplateAdapter({
+//                        multiRegions: true,
+//                        histogramMultiRegions: false,
+//                        uriTemplate: 'https://dcc.icgc.org/api/browser/gene?segment={region}&resource=gene',
+//                        cacheConfig: {
+//                            chunkSize: 100000
+//                        }
+//                    })
+//                });
+//                tracks.push(customTrack);
+                /*************************/
+                this.genomeViewer.addTrack(tracks);
+                this.genomeViewer.draw();
+
+            }
+        });
+    </script>
+</dom-module>

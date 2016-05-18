@@ -25,10 +25,10 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-gene-filter gene-id={{geneId}}></cellbase-gene-filter>
+                <cellbase-gene-filter gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-gene-view gene-id={{geneId}} cellbase="{{cellbaseClient}}"></cellbase-gene-view>
+                <cellbase-gene-view gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-view>
             </div>
         </div>
     </template>
@@ -36,15 +36,12 @@
         Polymer({
             is: 'cellbase-gene-panel',
             properties: {
+                cellbaseClient: {
+                    type: Object
+                },
                 geneId: {
                     type: String
-                },
-                cellBaseClient: {
-                    type: Object
                 }
-            },
-            ready: function() {
-                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>

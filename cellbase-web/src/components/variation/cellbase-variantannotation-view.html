@@ -17,10 +17,12 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="cellbase-annotation-consequencetype-grid.html">
 
 <dom-module id="cellbase-variantannotation-view">
     <template>
         <style is="custom-style" include="cellbase-shared-styles"></style>
+
         <div>
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#{{prefix}}VariantAnnotationConsequenceTypes" role="tab"
@@ -40,47 +42,18 @@
             <div class="tab-content">
                 <!--Consequence types Tab-->
                 <div role="tabpanel" class="tab-pane active" id="{{prefix}}VariantAnnotationConsequenceTypes">
-                    <!--<table id="{{prefix}}ConsequenceTypeTable" data-search="true" data-show-columns="true" data-pagination="true"-->
-                           <!--data-page-list="[10, 25, 50]"-->
-                           <!--data-show-pagination-switch="true" data-show-export="true">-->
-
-                    <!--</table>-->
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>Gene</th>
-                            <th>Ensembl Gene</th>
-                            <th>Ensembl Transcript</th>
-                            <th>Biotype</th>
-                            <th>SO term</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <template is="dom-repeat" items="{{variantAnnotation.consequenceTypes}}" as="ct">
-                            <tr>
-                                <td>{{ct.geneName}}</td>
-                                <td>{{ct.ensemblGeneId}}</td>
-                                <td>{{ct.ensemblTranscriptId}}</td>
-                                <td>{{ct.biotype}}</td>
-                                <td>
-                                    <template is="dom-repeat" items="{{ct.sequenceOntologyTerms}}">
-                                        {{item.name}} ({{item.accession}})<br>
-                                    </template>
-                                </td>
-                            </tr>
-                        </template>
-                        </tbody>
-                    </table>
+                    <cellbase-annotation-consequencetype-grid data="{{variantAnnotation.consequenceTypes}}" prefix="{{prefix}}annotationView"></cellbase-annotation-consequencetype-grid>
                 </div>
 
                 <!--Population frequency Tab-->
                 <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationPopulationFrequencies">
-                    <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true" data-pagination="true"
-                           data-page-list="[10, 25, 50]"
+                    <table id="{{prefix}}populationFreqTable" data-search="true" data-show-columns="true"
+                           data-pagination="true"
+                           data-page-list="[5, 15, 30]"
                            data-show-pagination-switch="true" data-show-export="true">
 
                     </table>
-                    <div id="container"></div>
+                    <div id="{{prefix}}Container"></div>
                 </div>
 
                 <!--Gene Trait Association Tab-->
@@ -94,6 +67,7 @@
 
                 <!--Variant Trait Association-->
                 <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationVTA">
+                    <template is="dom-if" if="{{check(variantAnnotation)}}">
                     <h4>Clinvar</h4>
                     <table class="table table-hover">
                         <thead>
@@ -111,10 +85,12 @@
                                 <td>{{item.accession}}</td>
                                 <td>{{item.clinicalSignificance}}</td>
                                 <td>
-                                    <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}} <br></template>
+                                    <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}} <br>
+                                    </template>
                                 </td>
                                 <td>
-                                    <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br> </template>
+                                    <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br>
+                                    </template>
                                 </td>
                                 <td>{{item.reviewStatus}}</td>
                             </tr>
@@ -152,6 +128,11 @@
                         </template>
                         </tbody>
                     </table>
+                    </template>
+
+                    <template is="dom-if" if="{{checkEmpty(variantAnnotation)}}">
+                        No ClinVar and Cosmic data available
+                    </template>
                 </div>
 
                 <!--Conservation Tab-->
@@ -202,6 +183,9 @@
             is: 'cellbase-variantannotation-view',
 
             properties: {
+                cellbaseClient: {
+                    type: Object
+                },
                 data: {
                     type: String,
                     observer: '_variantChanged'
@@ -214,12 +198,21 @@
                 }
             },
             ready: function () {
-                this.cellBaseClient = CELLBASE_CLIENT;
+//                this.cellbaseClient = CELLBASE_CLIENT;
+            },
+            check: function (data) {
+                if (data.variantTraitAssociation != null) {
+                    return true;
+                }
+            },
+            checkEmpty: function (data) {
+                if (data.variantTraitAssociation == null) {
+                    return true;
+                }
             },
             _variantChanged: function () {
                 let _this = this;
                 var success = function (response) {
-                    console.log(response)
                     _this.variantAnnotation = response.response[0].result[0];
 
                     let popArray = [];
@@ -228,9 +221,8 @@
                         popArray.push(_this.variantAnnotation.populationFrequencies[i].study + "-" + _this.variantAnnotation.populationFrequencies[i].population);
                         mafArray.push(Math.min(_this.variantAnnotation.populationFrequencies[i].refAlleleFreq, _this.variantAnnotation.populationFrequencies[i].altAlleleFreq))
                     }
-                    console.log(mafArray)
 
-                    $('#container').highcharts({
+                    $('#' + _this.prefix + 'Container').highcharts({
                         chart: {
                             type: 'bar'
                         },
@@ -284,16 +276,11 @@
                         }]
                     });
 
-                    // Consequence Type grid definition
-                    $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable('destroy');
-                    $('#' + _this.prefix + 'ConsequenceTypeTable').bootstrapTable({
-                        data: _this.variantAnnotation.consequenceTypes
-                    });
-
                     // Population grid definition
                     $('#' + _this.prefix + 'populationFreqTable').bootstrapTable('destroy');
                     $('#' + _this.prefix + 'populationFreqTable').bootstrapTable({
                         data: _this.variantAnnotation.populationFrequencies,
+                        pageSize: 5,
                         columns: [
                             [
                                 {
@@ -346,11 +333,12 @@
                         ]
                     });
                 };
-                this.cellBaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {
+                this.cellbaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {
                     success: success,
                     async: true
                 });
             },
+
             alleleFormatter: function (value, row, index) {
                 return row.refAllele + "/" + row.altAllele;
             }

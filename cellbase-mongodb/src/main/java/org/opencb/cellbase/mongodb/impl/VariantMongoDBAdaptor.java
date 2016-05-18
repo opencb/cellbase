@@ -118,7 +118,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     @Override
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options.put(MongoDBCollection.SKIP_COUNT, true);
+//        options.put(MongoDBCollection.SKIP_COUNT, true);
         options = addPrivateExcludeOptions(options);
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
@@ -126,7 +126,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options.put(MongoDBCollection.SKIP_COUNT, true);
+//        options.put(MongoDBCollection.SKIP_COUNT, true);
         return mongoDBCollection.find(bson, options);
     }
 
@@ -175,12 +175,14 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "ids", andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "transcriptVariations.transcriptId", andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
+                andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
         createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
         createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(), "consequenceTypes", andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
+                "consequenceTypes.sequenceOntologyTerms.name", andBsonList);
+//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

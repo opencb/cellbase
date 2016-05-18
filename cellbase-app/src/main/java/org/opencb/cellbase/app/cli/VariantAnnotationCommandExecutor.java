@@ -82,6 +82,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private boolean local;
     private boolean cellBaseAnnotation;
     private boolean benchmark;
+    private boolean normalize;
     private List<String> chromosomeList;
     private int port;
     private String species;
@@ -166,7 +167,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             // Benchmark variants are read from a VEP file, must not normalize
-            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator(false)));
+            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator()));
         }
         return benchmarkTaskList;
     }
@@ -207,7 +208,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // parallel parsing of these lines
         if (input != null) {
             DataReader dataReader = new StringDataReader(input);
-            List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList(false);
+            List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList();
             DataWriter dataWriter = getDataWriter(output.toString());
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
@@ -222,7 +223,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
 //                    Query query = new Query();
                 QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
-                List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList(false);
+                List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList();
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
 
                 for (String chromosome : chromosomeList) {
@@ -284,10 +285,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList(boolean normalize) throws IOException {
+    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList() throws IOException {
         List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
-            List<VariantAnnotator> variantAnnotatorList = createAnnotators(normalize);
+            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             switch (inputFormat) {
                 case VCF:
                     logger.info("Using HTSJDK to read variants.");
@@ -298,10 +299,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
-                        variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion, variantAnnotatorList));
+                        variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
+                                variantAnnotatorList, normalize));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
+                    break;
+                case JSON:
+                    logger.info("Using a JSON parser to read variants...");
+                    variantAnnotatorTaskList.add(new JsonStringAnnotatorTask(variantAnnotatorList, normalize));
                     break;
                 default:
                     break;
@@ -310,10 +316,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorTaskList;
     }
 
-    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList(boolean normalize) throws IOException {
+    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList() throws IOException {
         List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
-            List<VariantAnnotator> variantAnnotatorList = createAnnotators(normalize);
+            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
         }
 
@@ -328,15 +334,11 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private List<VariantAnnotator> createAnnotators() {
-        return this.createAnnotators(true);
-    }
-
-    private List<VariantAnnotator> createAnnotators(boolean normalize) {
         List<VariantAnnotator> variantAnnotatorList;
         variantAnnotatorList = new ArrayList<>();
 
         // CellBase annotator is always called
-        variantAnnotatorList.add(createCellBaseAnnotator(normalize));
+        variantAnnotatorList.add(createCellBaseAnnotator());
 
         // Include custom annotators if required
         if (customFiles != null) {
@@ -351,23 +353,26 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorList;
     }
 
-    private VariantAnnotator createCellBaseAnnotator(boolean normalize) {
+    private VariantAnnotator createCellBaseAnnotator() {
         // Assume annotation of CellBase variation collection will always be carried out from a local installation
         if (local || cellBaseAnnotation) {
             // dbAdaptorFactory may have been already initialized at execute if annotating CellBase variation collection
             if (dbAdaptorFactory == null) {
                 dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
             }
-//            return new CellBaseLocalVariantAnnotator(dbAdaptorFactory.getVariantAnnotationDBAdaptor(species, null), queryOptions);
+            // Normalization should just be performed in one place: before calling the annotation calculator - within the
+            // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
+            // equals the number of returned annotations
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    dbAdaptorFactory, normalize), queryOptions);
+                    dbAdaptorFactory, false), queryOptions);
         } else {
             try {
                 CellBaseClient cellBaseClient;
                 cellBaseClient = new CellBaseClient(url, configuration.getVersion(), species);
                 logger.debug("URL set to: {}", url + ":" + port);
 
-                // TODO: enable normalize flag for the WS annotator
+                // TODO: normalization must be carried out in the client - phase set must be sent together with the
+                // TODO: variant string to the server for proper phase annotation by REST
                 return new CellBaseWSVariantAnnotator(cellBaseClient, queryOptions);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
@@ -530,16 +535,25 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             input = Paths.get(variantAnnotationCommandOptions.input);
             if (benchmark) {
                 FileUtils.checkDirectory(input);
+                normalize = false;
             } else {
+                normalize =  !variantAnnotationCommandOptions.skipNormalize;
                 FileUtils.checkFile(input);
                 String fileName = input.toFile().getName();
-                if (!(fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz"))) {
-                    throw new ParameterException("Only VCF format is currently accepted. Please provide a valid .vcf or .vcf.gz file");
-                } else {
+                if (fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz")) {
                     inputFormat = FileFormat.VCF;
+                } else if (fileName.endsWith(".json") || fileName.endsWith(".json.gz")) {
+                    inputFormat = FileFormat.JSON;
+                } else {
+                    throw new ParameterException("Only VCF and JSON formats are currently accepted. Please provide a "
+                            + "valid .vcf, .vcf.gz, json or .json.gz file");
                 }
             }
+        // Expected to read from variation collection - normalization must be avoided
+        } else {
+            normalize = false;
         }
+
         // output file
         if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);

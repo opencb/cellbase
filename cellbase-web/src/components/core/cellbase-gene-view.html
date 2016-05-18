@@ -24,6 +24,8 @@
 <link rel="import" href="cellbase-drugs-view.html">
 <link rel="import" href="cellbase-phenotype-grid.html">
 <link rel="import" href="cellbase-expression-grid.html">
+<link rel="import" href="cellbase-clinvar-grid.html">
+<link rel="import" href="cellbase-cosmic-grid.html">
 <link rel="import" href="../variation/cellbase-variantannotation-view.html">
 
 
@@ -49,19 +51,19 @@
 
             <div class="tab-content" style="width: 90%">
                 <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
-                    <h4><a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a></h4>
+                    <h4>{{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)</a></h4>
                     <!--Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>-->
                     <b>Biotype:</b> {{geneObj.biotype}}<br>
                     <b>Location:</b> {{geneObj.chromosome}}:{{geneObj.start}}-{{geneObj.end}}   <b>Strand:</b> {{geneObj.strand}}<br>
                     <b>Source:</b> {{geneObj.source}} - <b>Status:</b> {{geneObj.status}}<br>
                     <b>Description:</b> {{geneObj.description}}<br>
                     <h4>Transcripts ({{geneObj.transcripts.length}})</h4>
-                    <cellbase-transcripts-view data="{{geneObj.transcripts}}" prefix="geneViewInfo"></cellbase-transcripts-view>
+                    <cellbase-transcripts-view data="{{geneObj.transcripts}}" prefix="geneView"></cellbase-transcripts-view>
                 </div>
 
                 <div id="geneViewGenomeContext" role="tabpanel" class="tab-pane">
                     <br>
-                    <div id="genomeviewer"></div>
+                    <div id="geneGenomeViewer"></div>
                 </div>
 
                 <!--<div id="geneViewTranscripts" role="tabpanel" class="tab-pane">-->
@@ -70,37 +72,54 @@
                 <!--</div>-->
 
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
-                    <cellbase-variation-grid cellbase-client="{{cellBase}}" data="{{variations}}" on-selected="onVariantSelected"></cellbase-variation-grid>
+                    <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{variationUrl}}"
+                                             on-selected="onVariantSelected" prefix="geneView"></cellbase-variation-grid>
                     <h4>Annotation of {{variant}}</h4>
-                    <cellbase-variantannotation-view data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
+                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
                     <br>
-                    <cellbase-transcritps-tfbs-view cellbase="{{cellbase}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
+                    <cellbase-transcritps-tfbs-view cellbase="{{cellbaseClient}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
                 </div>
 
                 <div id="geneViewExpression" role="tabpanel" class="tab-pane">
                     <br>
-                    <cellbase-expression-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.expression}}"></cellbase-expression-grid>
+                    <cellbase-expression-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.expression}}" prefix="geneView"></cellbase-expression-grid>
                 </div>
 
                 <div id="geneViewPhenotype" role="tabpanel" class="tab-pane">
-                    <cellbase-phenotype-grid cellbase="{{cellbase}}" data="{{geneObj.annotation.diseases}}"></cellbase-phenotype-grid>
+                    <cellbase-phenotype-grid cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.diseases}}" prefix="geneView"></cellbase-phenotype-grid>
                 </div>
 
                 <div id="geneViewClinicalVariants" role="tabpanel" class="tab-pane">
-                    Clinical Variants
+                    <br>
+                    <div>
+                        Clinvar <a data-toggle="collapse" href="#geneClinvarDiv" aria-expanded="false" aria-controls="geneClinvarDiv">
+                        <i id="geneClinvarToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeClinvar"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="geneClinvarDiv">
+                        <cellbase-clinvar-grid url="{{clinvarUrl}}" prefix="geneView"></cellbase-clinvar-grid>
+                    </div>
+                    <div>
+                        Cosmic <a data-toggle="collapse" href="#geneCosmicDiv" aria-expanded="false" aria-controls="geneCosmicDiv">
+                        <i id="geneCosmicToggle" class="fa fa-minus-circle" aria-hidden="true" on-click="iconChangeCosmic"></i>
+                    </a>
+                    </div>
+                    <div class="collapse in" id="geneCosmicDiv">
+                        <cellbase-cosmic-grid url="{{cosmicUrl}}" prefix="geneView"></cellbase-cosmic-grid>
+                    </div>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="geneViewDrugs">
                     <br>
-                    <cellbase-drugs-view cellbase="{{cellbase}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
+                    <cellbase-drugs-view cellbase="{{cellbaseClient}}" data="{{geneObj.annotation.drugs}}"></cellbase-drugs-view>
                 </div>
 
 
                 <div id="geneViewPpi" role="tabpanel" class="tab-pane">
-                    PPI
+                    NOT YET READY FOR BETA VERSION
                     <!--<cell-maps-element></cell-maps-element>-->
                 </div>
 
@@ -119,7 +138,7 @@
             is: 'cellbase-gene-view',
 
             properties: {
-                cellbase: {
+                cellbaseClient: {
                     type: Object
                 },
                 geneId: {
@@ -130,14 +149,21 @@
                 geneObj: {
                     type: Object
                 },
-                variations: {
-                    type: Array
-                },
                 variant: {
                     type: String
                 }
             },
+            iconChangeClinvar: function () {
+                $('#geneClinvarToggle').toggleClass('fa-minus-circle fa-plus-circle');
+            },
+            iconChangeCosmic: function () {
+                $('#geneCosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
+            },
             _geneIdChanged: function(newValue, oldValue) {
+                this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/'
+                        + this.geneId + '/snp?exclude=annotation.additionalAttributes,annotation.populationFrequencies';
+                this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=clinvar';
+                this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=cosmic';
                 let _this = this;
                 if (typeof this.genomeViewer !== "undefined") {
                     let success = function (response) {
@@ -156,36 +182,43 @@
                     let error = function (response) {
                         alert("Gene ID not valid: " + _this.geneId)
                     };
-                    CELLBASE_CLIENT.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                    this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
                 }
+//
+//                // Variation
+//                let success = function (response) {
+//                    let variations = response.response[0].result;
+//                    _this.variations = variations;
+//                };
+//                let error = function (response) {
+//                    alert("Gene ID not valid: " + _this.geneId)
+//                };
+//                this.cellbaseClient.getGeneClient(this.geneId, 'snp', {exclude: 'annotation.additionalAttributes,annotation.populationFrequencies'}, {success: success, error: error, async: true});
 
-                // Variation
-                let success = function (response) {
-                    let variations = response.response[0].result;
-                    console.log(variations)
-                    _this.variations = variations;
-                };
-                let error = function (response) {
-                    alert("Gene ID not valid: " + _this.geneId)
-                };
-                CELLBASE_CLIENT.getGeneClient(this.geneId, 'snp', {}, {success: success, error: error, async: true});
-
+//                // Clinvar
+//                let successClinvar = function (response) {
+//                    let clinvar = response.response[0].result;
+//                    _this.clinvar = clinvar;
+//                };
+//                let errorClinvar = function (response) {
+//                    alert("Gene ID not valid: " + _this.geneId)
+//                };
+//                // Cosmic
+//                let successCosmic = function (response) {
+//                    let cosmic = response.response[0].result;
+//                    _this.cosmic = cosmic;
+//                };
+//                let errorCosmic = function (response) {
+//                    alert("Gene ID not valid: " + _this.geneId)
+//                };
+//                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
+//                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
             },
-            ready: function() {
-                this.cellbase = CELLBASE_CLIENT._config.version;
-                var success = function (response) {
-                    console.log("Success from user:")
-                    console.log(response)
-                };
-                CELLBASE_CLIENT.getGeneClient('BRCA2', 'info', {}, {success: success, async: true});
-
-                this.cellBaseClient = CELLBASE_CLIENT;
+            attached: function() {
                 this.genomeViewer;
                 this.renderGenomeViewer();
             },
             onVariantSelected: function(e) {
-                console.log("onVariantSelected!")
-                console.log(e)
                 this.variant = e.detail.variant;
             },
             renderGenomeViewer: function() {
@@ -193,8 +226,8 @@
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: "http://bioinfo.hpc.cam.ac.uk/cellbase",
                     cellBaseVersion: 'v3',
-                    target: this.$$('#genomeviewer'),
-//                    width: this.$$('#genomeviewer').getBoundingClientRect().width,
+                    target: this.$$('#geneGenomeViewer'),
+//                    width: this.$$('#geneGenomeViewer').getBoundingClientRect().width,
                     width: 1200,
                     region: region,
                     availableSpecies: DEFAULT_SPECIES.vertebrates,

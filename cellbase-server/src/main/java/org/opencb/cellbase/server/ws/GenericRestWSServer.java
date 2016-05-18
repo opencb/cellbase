@@ -161,6 +161,7 @@ public class GenericRestWSServer implements IWSServer {
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//        jsonObjectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
@@ -254,7 +255,7 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
-        queryOptions.put("skip", (skip > 0) ? skip : -1);
+        queryOptions.put("skip", (skip >= 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) && Boolean.parseBoolean(count));
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
@@ -378,6 +379,8 @@ public class GenericRestWSServer implements IWSServer {
         return responseBuilder
                 .header("Access-Control-Allow-Origin", "*")
                 .header("Access-Control-Allow-Headers", "x-requested-with, content-type")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                 .build();
     }
 

@@ -32,7 +32,6 @@ import org.opencb.biodata.models.variation.*;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -246,22 +245,22 @@ public class CellBaseClient {
     // Common getters:
     //          all, list, info, help
     /////////////////////////
-    public <T> QueryResponse<QueryResult<T>> getAll(Category category, SubCategory subCategory,
+    public <T> QueryResponse<T> getAll(Category category, SubCategory subCategory,
                                                     QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, "", Resource.all, queryOptions, (Class<T>) SUB_CATEGORY_BEAN_MAP.get(subCategory));
     }
 
-    public <T> QueryResponse<QueryResult<T>> getList(Category category, SubCategory subCategory,
+    public <T> QueryResponse<T> getList(Category category, SubCategory subCategory,
                                                      QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, "", Resource.list, queryOptions, (Class<T>) SUB_CATEGORY_BEAN_MAP.get(subCategory));
     }
 
-    public <T> QueryResponse<QueryResult<T>> getInfo(Category category, SubCategory subCategory, String id,
+    public <T> QueryResponse<T> getInfo(Category category, SubCategory subCategory, String id,
                                                      QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, id, Resource.info, queryOptions, (Class<T>) SUB_CATEGORY_BEAN_MAP.get(subCategory));
     }
 
-    public QueryResponse<QueryResult<String>> getHelp(Category category, SubCategory subCategory,
+    public QueryResponse<String> getHelp(Category category, SubCategory subCategory,
                                                       QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, "", Resource.help, queryOptions, String.class);
     }
@@ -270,25 +269,25 @@ public class CellBaseClient {
     // Generic getters
     //
     /////////////////////////
-    public <T> QueryResponse<QueryResult<T>> get(
+    public <T> QueryResponse<T> get(
             Category category, SubCategory subCategory, List<?> ids, Resource resource, QueryOptions queryOptions)
             throws IOException {
         return get(category, subCategory, ids, resource, queryOptions, (Class<T>) RESOURCE_BEAN_MAP.get(resource));
     }
 
-    public QueryResponse<QueryResult<ObjectMap>> getObjectMap(
+    public QueryResponse<ObjectMap> getObjectMap(
             Category category, SubCategory subCategory, List<?> ids, Resource resource, QueryOptions queryOptions)
             throws IOException {
         return get(category, subCategory, ids, resource, queryOptions, ObjectMap.class);
     }
 
-    public QueryResponse<QueryResult<ObjectMap>> nativeGet(
+    public QueryResponse<ObjectMap> nativeGet(
             String category, String subCategory, String ids, String resource, QueryOptions queryOptions)
             throws IOException {
         return nativeGet(category, subCategory, ids, resource, queryOptions, ObjectMap.class);
     }
 
-    public <T> QueryResponse<QueryResult<T>> nativeGet(
+    public <T> QueryResponse<T> nativeGet(
             String category, String subCategory, String ids, String resource, QueryOptions queryOptions, Class<T> c)
             throws IOException {
         return restGetter(category, subCategory, ids, resource, false, queryOptions, getJsonReader(c));
@@ -298,27 +297,27 @@ public class CellBaseClient {
     // Some specific getters by JavaBean
     //
     /////////////////////////
-    public QueryResponse<QueryResult<Gene>> getGene(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<Gene> getGene(Category category, SubCategory subCategory, List<Region> ids,
                                                     QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.gene, queryOptions, Gene.class);
     }
 
-    public QueryResponse<QueryResult<Transcript>> getTranscript(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<Transcript> getTranscript(Category category, SubCategory subCategory, List<Region> ids,
                                                                 QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.transcript, queryOptions, Transcript.class);
     }
 
-    public QueryResponse<QueryResult<Exon>> getExon(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<Exon> getExon(Category category, SubCategory subCategory, List<Region> ids,
                                                     QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.exon, queryOptions, (Exon.class));
     }
 
-    public QueryResponse<QueryResult<Variation>> getSnp(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<Variation> getSnp(Category category, SubCategory subCategory, List<Region> ids,
                                                         QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.snp, queryOptions, (Variation.class));
     }
 
-    public QueryResponse<QueryResult<Mutation>> getMutation(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<Mutation> getMutation(Category category, SubCategory subCategory, List<Region> ids,
                                                             QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.mutation, queryOptions, (Mutation.class));
     }
@@ -328,49 +327,49 @@ public class CellBaseClient {
 //        return get(category, subCategory, ids, "clinvar", queryOptions, (Mutation.class));
 //    }
 
-    public QueryResponse<QueryResult<Phenotype>> getPhenotype(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<Phenotype> getPhenotype(Category category, SubCategory subCategory, List<Region> ids,
                                                               QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.phenotype, queryOptions, (Phenotype.class));
     }
 
-    public QueryResponse<QueryResult<StructuralVariation>> getStructuralVariation(Category category, SubCategory subCategory,
+    public QueryResponse<StructuralVariation> getStructuralVariation(Category category, SubCategory subCategory,
                                                                                   List<Region> ids, QueryOptions queryOptions)
             throws IOException {
         return get(category, subCategory, ids, Resource.structuralVariation, queryOptions, (StructuralVariation.class));
     }
 
-    public QueryResponse<QueryResult<Cytoband>> getCytoband(Category category, SubCategory subCategory, List<String> ids,
+    public QueryResponse<Cytoband> getCytoband(Category category, SubCategory subCategory, List<String> ids,
                                                             QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.cytoband, queryOptions, (Cytoband.class));
     }
 
-    public QueryResponse<QueryResult<GenomeSequenceFeature>> getSequence(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<GenomeSequenceFeature> getSequence(Category category, SubCategory subCategory, List<Region> ids,
                                                                          QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.sequence, queryOptions, (GenomeSequenceFeature.class));
     }
 
-    public QueryResponse<QueryResult<GenomeSequenceFeature>> getReverseSequence(Category category, SubCategory subCategory,
+    public QueryResponse<GenomeSequenceFeature> getReverseSequence(Category category, SubCategory subCategory,
                                                                                 List<Region> ids,
                                                                                 QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.reverse, queryOptions, (GenomeSequenceFeature.class));
     }
 
-    public QueryResponse<QueryResult<TranscriptTfbs>> getTfbs(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<TranscriptTfbs> getTfbs(Category category, SubCategory subCategory, List<Region> ids,
                                                     QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.tfbs, queryOptions, (TranscriptTfbs.class));
     }
 
-    public QueryResponse<QueryResult<RegulatoryFeature>> getRegulatoryRegion(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<RegulatoryFeature> getRegulatoryRegion(Category category, SubCategory subCategory, List<Region> ids,
                                                                             QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.regulatory, queryOptions, (RegulatoryFeature.class));
     }
 
-    public QueryResponse<QueryResult<CpGIsland>> getCpgIsland(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<CpGIsland> getCpgIsland(Category category, SubCategory subCategory, List<Region> ids,
                                                               QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.cpgIsland, queryOptions, (CpGIsland.class));
     }
 
-    public QueryResponse<QueryResult<GenomicScoreRegion>> getConservedRegion(Category category, SubCategory subCategory, List<Region> ids,
+    public QueryResponse<GenomicScoreRegion> getConservedRegion(Category category, SubCategory subCategory, List<Region> ids,
                                                                           QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.conserved_region, queryOptions, (GenomicScoreRegion.class));
     }
@@ -380,27 +379,27 @@ public class CellBaseClient {
 //        return get(category, subCategory, ids, "peptide", queryOptions, (.class));
 //    }
 
-    public QueryResponse<QueryResult<GenomicVariantEffect>> getEffect(Category category, SubCategory subCategory, List<Variant> ids,
+    public QueryResponse<GenomicVariantEffect> getEffect(Category category, SubCategory subCategory, List<Variant> ids,
                                                                       QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.effect, queryOptions, (GenomicVariantEffect.class));
     }
 
-    public QueryResponse<QueryResult<ConsequenceType>> getConsequenceType(Category category, SubCategory subCategory, List<Variant> ids,
+    public QueryResponse<ConsequenceType> getConsequenceType(Category category, SubCategory subCategory, List<Variant> ids,
                                                                           QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.consequenceType, queryOptions, (ConsequenceType.class));
     }
 
-    public QueryResponse<QueryResult<VariantAnnotation>> getAnnotation(Category category, SubCategory subCategory, List<Variant> ids,
+    public QueryResponse<VariantAnnotation> getAnnotation(Category category, SubCategory subCategory, List<Variant> ids,
                                                                        QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.annotation, queryOptions, (VariantAnnotation.class));
     }
 
-    public QueryResponse<QueryResult<Phenotype>> getPhenotype(Category category, SubCategory subCategory, String phenotype,
+    public QueryResponse<Phenotype> getPhenotype(Category category, SubCategory subCategory, String phenotype,
                                                               QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, phenotype, Resource.phenotype, queryOptions, (Phenotype.class));
     }
 
-    public QueryResponse<QueryResult<Xref>> getXref(Category category, SubCategory subCategory, List<String> ids,
+    public QueryResponse<Xref> getXref(Category category, SubCategory subCategory, List<String> ids,
                                                     QueryOptions queryOptions) throws IOException {
         return get(category, subCategory, ids, Resource.xref, queryOptions, (Xref.class));
     }
@@ -411,7 +410,7 @@ public class CellBaseClient {
     //
     /////////////////////////
 
-    private <T> QueryResponse<QueryResult<T>> get(
+    private <T> QueryResponse<T> get(
             Category category, SubCategory subCategory, List<?> ids, Resource resource, QueryOptions queryOptions, Class<T> c)
             throws IOException {
         String idsCvs = null;
@@ -425,7 +424,7 @@ public class CellBaseClient {
         return get(category, subCategory, idsCvs, resource, queryOptions, c);
     }
 
-    private <T> QueryResponse<QueryResult<T>> get(Category category, SubCategory subCategory, String idsCvs, Resource resource,
+    private <T> QueryResponse<T> get(Category category, SubCategory subCategory, String idsCvs, Resource resource,
                                                   QueryOptions queryOptions, Class<T> c)
             throws IOException {
 
@@ -453,7 +452,7 @@ public class CellBaseClient {
         return restGetter(categoryStr, subCategoryStr, idsCvs, resourceStr, post, queryOptions, responseReader);
     }
 
-    private <T> QueryResponse<QueryResult<T>> restGetter(
+    private <T> QueryResponse<T> restGetter(
             String categoryStr, String subCategoryStr, String idsCvs, String resourceStr, boolean post, QueryOptions queryOptions,
             ObjectReader responseReader) throws IOException {
 
@@ -495,8 +494,8 @@ public class CellBaseClient {
             c = ObjectMap.class;
         }
         if (!readers.containsKey(c.getName())) {
-            readers.put(c.getName(), mapper.reader(mapper.getTypeFactory().constructParametricType(
-                    QueryResponse.class, mapper.getTypeFactory().constructParametricType(QueryResult.class, c))));
+            readers.put(c.getName(), mapper.readerFor(mapper.getTypeFactory()
+                    .constructParametrizedType(QueryResponse.class, QueryResponse.class, c)));
         }
         return readers.get(c.getName());
     }
