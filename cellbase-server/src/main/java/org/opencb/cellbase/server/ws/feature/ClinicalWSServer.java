@@ -183,6 +183,21 @@ public class ClinicalWSServer extends GenericRestWSServer {
         }
     }
 
+    @GET
+    @Path("/clinical-significance")
+    @ApiOperation(httpMethod = "GET", value = "Get the list of clinical significances")
+    public Response getAllClinicalSignificances() {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            query.put("source", "clinvar");
+            return createOkResponse(clinicalDBAdaptor.distinct(query,
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description"));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
 //    @GET
 //    @Path("/listAcc")
 //    @ApiOperation(httpMethod = "GET", value = "Resource to list all accession IDs")
