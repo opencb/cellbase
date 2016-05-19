@@ -175,8 +175,9 @@ public class LoadRunner {
     public void index(String data) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException, LoaderException {
         CellBaseLoader cellBaseLoader = (CellBaseLoader) Class.forName(loader)
-                .getConstructor(BlockingQueue.class, String.class, String.class, String.class, CellBaseConfiguration.class)
-                .newInstance(blockingQueue, data, database, "", cellBaseConfiguration);
+                .getConstructor(BlockingQueue.class, String.class, String.class, String.class,
+                        String[].class, CellBaseConfiguration.class)
+                .newInstance(blockingQueue, data, database, "", new String[]{""}, cellBaseConfiguration);
         cellBaseLoader.createIndex(data);
     }
 
