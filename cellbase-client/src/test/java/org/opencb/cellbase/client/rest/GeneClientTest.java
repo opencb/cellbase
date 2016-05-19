@@ -69,6 +69,7 @@ public class GeneClientTest {
     @Test
     public void first() throws Exception {
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().first();
+        System.out.println(gene);
         assertNotNull("First gene in the collection must be returned", gene);
     }
 
@@ -134,6 +135,7 @@ public class GeneClientTest {
     @Test
     public void getTranscript() throws Exception {
         QueryResponse<Transcript> transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", null);
+        System.out.println(transcript);
         assertNotNull("Transcripts of the given gene must be returned", transcript.firstResult());
 
         Map<String, Object> params = new HashMap<>();

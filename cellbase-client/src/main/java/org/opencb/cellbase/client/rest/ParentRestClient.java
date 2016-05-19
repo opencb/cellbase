@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * Created by imedina on 12/05/16.
  */
-public class ParentRestClient {
+public class ParentRestClient<T> {
 
     protected Client client;
 
@@ -47,6 +47,9 @@ public class ParentRestClient {
     protected static ObjectMapper jsonObjectMapper;
 
     protected static Logger logger;
+
+
+    protected Class<T> clazz;
 
     public ParentRestClient(ClientConfiguration configuration) {
         this.configuration = configuration;
@@ -60,6 +63,19 @@ public class ParentRestClient {
     protected QueryResponse<Long> count(Query query) throws IOException {
         return execute("count", query, Long.class);
     }
+
+    public QueryResponse<T> first() throws IOException {
+        return execute("first", null, clazz);
+    }
+
+    public QueryResponse<T> get(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "info", params, clazz);
+    }
+
+    public QueryResponse<T> search(Query query) throws IOException {
+        return execute("search", query, clazz);
+    }
+
 
     protected <T> QueryResponse<T> execute(String action, Map<String, Object> params, Class<T> clazz)
             throws IOException {
@@ -103,7 +119,7 @@ public class ParentRestClient {
 
     public static <T> QueryResponse<T> parseResult(String json, Class<T> clazz) throws IOException {
         ObjectReader reader = jsonObjectMapper
-                .reader(jsonObjectMapper.getTypeFactory().constructParametrizedType(QueryResponse.class, QueryResult.class, clazz));
+                .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(QueryResponse.class, QueryResult.class, clazz));
         return reader.readValue(json);
     }
 

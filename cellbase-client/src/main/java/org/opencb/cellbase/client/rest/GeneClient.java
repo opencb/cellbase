@@ -32,11 +32,13 @@ import java.util.Map;
 /**
  * Created by imedina on 12/05/16.
  */
-public class GeneClient extends ParentRestClient {
+public class GeneClient extends ParentRestClient<Gene> {
 
 
     public GeneClient(ClientConfiguration clientConfiguration) {
         super(clientConfiguration);
+
+        this.clazz = Gene.class;
 
         this.category = "feature";
         this.subcategory = "gene";
@@ -46,21 +48,27 @@ public class GeneClient extends ParentRestClient {
         return execute("biotype", query, String.class);
     }
 
-    public QueryResponse<Gene> first() throws IOException {
-        return execute("first", null, Gene.class);
-    }
+//    public QueryResponse<Gene> first() throws IOException {
+//        return execute("first", null, Gene.class);
+//    }
 
+    @Deprecated
     public QueryResponse<Gene> list(Query query) throws IOException {
         return execute("list", query, Gene.class);
     }
 
-    public QueryResponse<Gene> group(Query query) throws IOException {
-        return execute("group", query, Gene.class);
-    }
+    // FIXME this should return a Map<String, List>
+//    public QueryResponse<Map<String, List<String>>> group(Query query) throws IOException {
+//        return execute("group", query, );
+//    }
 
-    public QueryResponse<Gene> get(String id, Map<String, Object> params) throws IOException {
-        return execute(id, "info", params, Gene.class);
-    }
+//    public QueryResponse<Map<String, Integer>> group(Query query, boolean count) throws IOException {
+//        return execute("group", query, );
+//    }
+
+//    public QueryResponse<Gene> get(String id, Map<String, Object> params) throws IOException {
+//        return execute(id, "info", params, Gene.class);
+//    }
 
     public QueryResponse<Transcript> getTranscript(String id, Map<String, Object> params) throws IOException {
         return execute(id, "transcript", params, Transcript.class);
@@ -70,9 +78,9 @@ public class GeneClient extends ParentRestClient {
         return execute(id, "tfbs", params, TranscriptTfbs.class);
     }
 
-    public QueryResponse<Gene> search(Query query) throws IOException {
-        return execute("search", query, Gene.class);
-    }
+//    public QueryResponse<Gene> search(Query query) throws IOException {
+//        return execute("search", query, Gene.class);
+//    }
 
     public QueryResponse<Variant> getSnp(String id, Map<String, Object> params) throws IOException {
         return execute(id, "snp", params, Variant.class);
