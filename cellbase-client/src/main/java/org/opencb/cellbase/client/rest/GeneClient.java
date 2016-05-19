@@ -71,7 +71,7 @@ public class GeneClient extends ParentRestClient {
     }
 
     public QueryResponse<Gene> search(Query query) throws IOException {
-        return execute("all", query, Gene.class);
+        return execute("search", query, Gene.class);
     }
 
     public QueryResponse<Variant> getSnp(String id, Map<String, Object> params) throws IOException {

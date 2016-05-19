@@ -57,7 +57,6 @@ public class GeneClientTest {
         }
     }
 
-    @Ignore
     @Test
     public void count() throws Exception {
         QueryResponse<Long> count = cellBaseClient.getGeneClient().count(null);
@@ -67,14 +66,12 @@ public class GeneClientTest {
         assertEquals("Number of returned protein-coding genes do not match", 20356, count.firstResult().longValue());
     }
 
-    @Ignore
     @Test
     public void first() throws Exception {
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().first();
         assertNotNull("First gene in the collection must be returned", gene);
     }
 
-    @Ignore
     @Test
     public void getBiotypes() throws Exception {
         QueryResponse<String> biotypes = cellBaseClient.getGeneClient().getBiotypes(null);
@@ -87,7 +84,6 @@ public class GeneClientTest {
         assertNotNull("List of biotypes in the given region", biotypes.firstResult());
     }
 
-    @Ignore
     @Test
     public void get() throws Exception {
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().get("BRCA2", null);
@@ -102,38 +98,33 @@ public class GeneClientTest {
         assertNull("This gene should not exist", gene.firstResult());
     }
 
-    @Ignore
     @Test
     public void list() throws Exception {
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().list(new Query("limit", 10));
         assertNotNull("List of gene Ids", gene);
     }
 
-    @Ignore
     @Test
     public void search() throws Exception {
         Map<String, Object> params = new HashMap<>();
         params.put(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "miRNA");
         params.put("limit", 1);
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(params));
-//        System.out.println(gene.firstResult());
+        assertNotNull(gene.firstResult());
     }
 
-    @Ignore
     @Test
     public void getProtein() throws Exception {
         QueryResponse<Entry> protein = cellBaseClient.getGeneClient().getProtein("BRCA2", null);
-        assertNotNull(protein.firstResult());
+        assertNotNull("Protein of the given gene must be returned", protein.firstResult());
     }
 
-    @Ignore
     @Test
     public void getSnp() throws Exception {
         QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getSnp("BRCA2", null);
-        assertNotNull(variantQueryResponse.firstResult());
+        assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
     }
 
-    @Ignore
     @Test
     public void getTfbs() throws Exception {
         QueryResponse<TranscriptTfbs> tfbs = cellBaseClient.getGeneClient().getTfbs("BRCA2", null);
@@ -155,10 +146,8 @@ public class GeneClientTest {
     @Ignore
     @Test
     public void getClinical() throws Exception {
-
         QueryResponse<Document> clinical = cellBaseClient.getGeneClient().getClinical("BRCA2", null);
         assertNotNull(clinical.firstResult());
-
 
         Map<String, Object> params = new HashMap<>();
         params.put("source", "cosmic");
