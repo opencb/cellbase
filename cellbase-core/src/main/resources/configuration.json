@@ -60,11 +60,17 @@
 		"uniprot": {
 			"host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz"
 		},
+		"uniprotRelNotes": {
+			"host": "ftp://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt"
+		},
 		"intact": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt"
 		},
 		"interpro": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/Current/protein2ipr.dat.gz"
+		},
+		"interproRelNotes": {
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/Current/release_notes.txt"
 		},
 		"conservation": {
 			"host": "ftp://hgdownload.cse.ucsc.edu/goldenPath/"

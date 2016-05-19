@@ -76,17 +76,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String HPO_NAME = "HPO";
     private static final String DISGENET_NAME = "DisGeNET";
     private static final String DGIDB_NAME = "DGIdb";
-    private static final String UNIPROT_NAME = "DGIdb";
+    private static final String UNIPROT_NAME = "UniProt";
     private static final String CADD_NAME = "CADD";
     private static final String MIRBASE_NAME = "miRBase";
     private static final String MIRTARBASE_NAME = "miRTarBase";
     private static final String TARGETSCAN_NAME = "TargetScan";
+    private static final String INTACT_NAME = "IntAct";
+    private static final String INTERPRO_NAME = "InterPro";
     private static final String GENOME_DATA = "genome";
     private static final String GENE_DATA = "gene";
     private static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
     private static final String VARIATION_DATA = "variation";
     private static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
     private static final String REGULATION_DATA = "regulation";
+    private static final String PROTEIN_DATA = "protein";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -226,7 +229,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         }
                         break;
-                    case "protein":
+                    case PROTEIN_DATA:
                         if (speciesHasInfoToDownload(sp, "protein")) {
                             downloadProtein();
                         }
@@ -595,7 +598,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
             downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
             saveVersionData(REGULATION_DATA, MIRBASE_NAME,
-                    getMirbaseVersion(mirbaseFolder.resolve("mirbaseReadme.txt")), getTimeStamp(),
+                    getLine(mirbaseFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
                     Collections.singletonList(url), mirbaseFolder.resolve("disgenetVersion.json"));
         }
 
@@ -632,12 +635,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private String getMirbaseVersion(Path readmePath) {
+    private String getLine(Path readmePath, int lineNumber) {
         Files.exists(readmePath);
         try {
             BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset());
-            // First line shall be something like: The miRBase Sequence Database -- Release 21
-            String line = reader.readLine();
+            String line = null;
+            for (int i = 0; i < lineNumber; i++) {
+                line = reader.readLine();
+            }
             reader.close();
             return line;
         } catch (IOException e) {
@@ -660,15 +665,24 @@ public class DownloadCommandExecutor extends CommandExecutor {
             makeDir(proteinFolder);
             String url = configuration.getDownload().getUniprot().getHost();
             downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+            String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
+            downloadFile(relNotesUrl, proteinFolder.resolve("relnotes.txt").toString());
+            saveVersionData(PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
+                    getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
 
             makeDir(proteinFolder.resolve("uniprot_chunks"));
             splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
 
             url = configuration.getDownload().getIntact().getHost();
             downloadFile(url, proteinFolder.resolve("intact.txt").toString());
+            saveVersionData(PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    proteinFolder.resolve("intactVersion.json"));
 
             url = configuration.getDownload().getInterpro().getHost();
             downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
+            saveVersionData(PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
+                    getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
+
         } else {
             logger.info("Protein: skipping this since it is already downloaded. Delete 'protein' folder to force download");
         }

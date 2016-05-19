@@ -170,6 +170,7 @@ public class CellBaseConfiguration {
         private URLProperties targetScan;
         private URLProperties miRTarBase;
         private URLProperties uniprot;
+        private URLProperties uniprotRelNotes;
         private URLProperties intact;
         private URLProperties interpro;
         private URLProperties conservation;
@@ -208,6 +209,14 @@ public class CellBaseConfiguration {
 
         public void setUniprot(URLProperties uniprot) {
             this.uniprot = uniprot;
+        }
+
+        public URLProperties getUniprotRelNotes() {
+            return uniprotRelNotes;
+        }
+
+        public void setUniprotRelNotes(URLProperties uniprotRelNotes) {
+            this.uniprotRelNotes = uniprotRelNotes;
         }
 
         public URLProperties getClinvar() {
@@ -338,9 +347,13 @@ public class CellBaseConfiguration {
             this.mirbase = mirbase;
         }
 
-        public URLProperties getMirbaseReadme() { return mirbaseReadme; }
+        public URLProperties getMirbaseReadme() {
+            return mirbaseReadme;
+        }
 
-        public void setMirbaseReadme(URLProperties mirbaseReadme) { this.mirbaseReadme = mirbaseReadme; }
+        public void setMirbaseReadme(URLProperties mirbaseReadme) {
+            this.mirbaseReadme = mirbaseReadme;
+        }
 
         public URLProperties getTargetScan() {
             return targetScan;
