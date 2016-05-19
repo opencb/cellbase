@@ -25,7 +25,8 @@
 
         <div style="width: 90%">
             <ul id="myTabs" class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#clinicalViewInfo" role="tab" data-toggle="tab">Summary</a></li>
+                <li role="presentation" class="active"><a href="#clinicalViewInfo" role="tab"
+                                                          data-toggle="tab">Summary</a></li>
                 <li role="presentation"><a href="#clinicalViewGenomeContext" role="tab" data-toggle="tab">Genome
                     Context</a></li>
             </ul>
@@ -34,11 +35,13 @@
                 <div id="clinicalViewInfo" role="tabpanel" class="tab-pane active">
                     <h3>{{clinicalId}}</h3><br>
                     <b>Chromosome:</b> {{clinicalObj.chromosome}} <br>
-                    <b>Position:</b> {{clinicalObj.start}} <br>
+                    <b>Start:</b> {{clinicalObj.start}} <br>
+                    <b>End:</b> {{clinicalObj.end}} <br>
                     <b>Reference:</b> {{clinicalObj.reference}} <br>
                     <b>Alternate:</b> {{clinicalObj.alternate}} <br>
                     <template is="dom-if" if="{{checkClinvar(clinicalObj)}}">
-                        <b>Review status:</b> {{clinicalObj.clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus}} <br>
+                        <b>Review status:</b>
+                        {{clinicalObj.clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus}} <br>
                         <b>Last Evaluated:</b> {{updatedDate}} <br>
                         <b>HGVS(s):</b><br>
                         <template is="dom-repeat" items="{{clinicalObj.annot.hgvs}}">
@@ -55,48 +58,65 @@
                         </template>
                     </template>
 
+                    <template is="dom-if" if="{{checkCosmic(clinicalObj)}}">
+                        <b>Mutation Id:</b> {{clinicalObj.mutationID}} <br>
+                        <b>Primary Site:</b> {{clinicalObj.primarySite}} <br>
+                        <b>Site Subtype:</b> {{clinicalObj.siteSubtype}} <br>
+                        <b>Primary Histology:</b> {{clinicalObj.primaryHistology}} <br>
+                        <b>Histology Subtype:</b> {{clinicalObj.histologySubtype}} <br>
+                        <b>Sample Source:</b> {{clinicalObj.sampleSource}} <br>
+                        <b>Tumour Origin:</b> {{clinicalObj.tumourOrigin}} <br>
+                        <b>Gene Name:</b> {{clinicalObj.geneName}} <br>
+                        <b>Mutation Somatic Status:</b> {{clinicalObj.mutationSomaticStatus}} <br>
+                    </template>
+
                     <h3>Annotation</h3>
                     <ul id="annotationTabs" class="nav nav-tabs" role="tablist">
-                        <li role="presentation" class="active"><a href="#clinicalConsequenceType" role="tab" data-toggle="tab">Consequence Types</a></li>
-                        <li role="presentation"><a href="#clinicalAssertion" role="tab" data-toggle="tab">Clinical Assertion</a></li>
+                        <li role="presentation" class="active"><a href="#clinicalConsequenceType" role="tab"
+                                                                  data-toggle="tab">Consequence Types</a></li>
+                        <template is="dom-if" if="{{checkClinvar(clinicalObj)}}">
+                            <li role="presentation"><a href="#clinicalAssertion" role="tab" data-toggle="tab">Clinical
+                                Assertion</a></li>
+                        </template>
                     </ul>
 
                     <div class="tab-content">
                         <div id="clinicalConsequenceType" role="tabpanel" class="tab-pane active">
-                            <cellbase-annotation-consequencetype-grid data="{{variantAnnotation.consequenceTypes}}" prefix="clinicalView"></cellbase-annotation-consequencetype-grid>
+                            <cellbase-annotation-consequencetype-grid data="{{variantAnnotation.consequenceTypes}}"
+                                                                      prefix="clinicalView"></cellbase-annotation-consequencetype-grid>
                         </div>
-                        <div id="clinicalAssertion" role="tabpanel" class="tab-pane">
-                            <table class="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Submission Accession</th>
-                                    <th>Clinical Significance</th>
-                                    <th>Review status</th>
-                                    <th>Date of Submission</th>
-                                    <th>Submitter</th>
-                                    <th>Method Type</th>
-                                    <th>Allele origin</th>
-                                    <th>Assertion Method</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <template is="dom-repeat" items="{{clinicalAssertion}}">
+                        <template is="dom-if" if="{{checkClinvar(clinicalObj)}}">
+                            <div id="clinicalAssertion" role="tabpanel" class="tab-pane">
+                                <table class="table table-hover">
+                                    <thead>
                                     <tr>
-                                        <td>{{item.SubAccession}}</td>
-                                        <td>{{item.clinicalSignificance}}</td>
-                                        <td>{{item.reviewStatus}}</td>
-                                        <td>{{item.submittedDate}}</td>
-                                        <td>{{item.submitter}}</td>
-                                        <td>{{item.methodType}}</td>
-                                        <td>{{item.alleleOrigin}}</td>
-                                        <td>{{item.type}}</td>
+                                        <th>Submission Accession</th>
+                                        <th>Clinical Significance</th>
+                                        <th>Review status</th>
+                                        <th>Date of Submission</th>
+                                        <th>Submitter</th>
+                                        <th>Method Type</th>
+                                        <th>Allele origin</th>
+                                        <th>Assertion Method</th>
                                     </tr>
-                                </template>
-                                </tbody>
-                            </table>
-
-                        </div>
-
+                                    </thead>
+                                    <tbody>
+                                    <template is="dom-repeat" items="{{clinicalAssertion}}">
+                                        <tr>
+                                            <td>{{item.SubAccession}}</td>
+                                            <td>{{item.clinicalSignificance}}</td>
+                                            <td>{{item.reviewStatus}}</td>
+                                            <td>{{item.submittedDate}}</td>
+                                            <td>{{item.submitter}}</td>
+                                            <td>{{item.methodType}}</td>
+                                            <td>{{item.alleleOrigin}}</td>
+                                            <td>{{item.type}}</td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -135,7 +155,6 @@
                     if (typeof this.genomeViewer !== "undefined") {
                         let success = function (response) {
                             let clinicalResult = response.response[0].result[0];
-                            debugger
                             if (typeof clinicalResult !== "undefined") {
                                 // Setting the region for genome viewer
                                 let region = new Region({
@@ -150,22 +169,22 @@
                                 _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
 
                                 // Getting the SOTerms and counting how many times each SOterm occurs
-//                                let names = [];
-//                                for (let i in clinicalResult.annot.consequenceTypes) {
-//                                    let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
-//                                    for(let j in terms) {
-//                                        names.push(terms[j].name);
-//                                    }
-//                                }
-//                                var count = {};
-//                                for (let i in names) {
-//                                    let x = names[i];
-//                                    count[x] = count[x]? count[x]+1 : 1;
-//                                }
-//                                for(let x in count) {
-//                                    soterms.push({name: x, total: count[x]});
-//                                }
-//                                _this.soterms = soterms;
+                                let names = [];
+                                for (let i in clinicalResult.annot.consequenceTypes) {
+                                    let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
+                                    for (let j in terms) {
+                                        names.push(terms[j].name);
+                                    }
+                                }
+                                var count = {};
+                                for (let i in names) {
+                                    let x = names[i];
+                                    count[x] = count[x] ? count[x] + 1 : 1;
+                                }
+                                for (let x in count) {
+                                    soterms.push({name: x, total: count[x]});
+                                }
+                                _this.soterms = soterms;
 
                                 //Getting the submitted Gene which is enclosed in array of arrays
                                 let geneName = [];
@@ -188,7 +207,7 @@
                                     let citations = traits[i].citation;
                                     for (let j in citations) {
                                         let ids = citations[j].id;
-                                        for(let k in ids) {
+                                        for (let k in ids) {
                                             if (ids[k].source == "PubMed") {
                                                 pubIds.push(ids[k].value);
                                             }
@@ -200,9 +219,9 @@
                                     let observedData = observedIns[i].observedData;
                                     for (let j in observedData) {
                                         let citations = observedData[j].citation;
-                                        for(let k in citations) {
+                                        for (let k in citations) {
                                             let ids = citations[k].id;
-                                            for ( let l in ids) {
+                                            for (let l in ids) {
                                                 if (ids[l].source == "PubMed") {
                                                     pubIds.push(ids[l].value);
                                                 }
@@ -248,12 +267,48 @@
                             }
                         };
                         let error = function (response) {
-                            alert("Clinical ID not valid: " + _this.clinicalId)
+                            alert("Clinical ID not valid: " + _this.clinicalId);
                         };
-                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {rcv: _this.clinicalId}, {
+//                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {rcv: _this.clinicalId}, {
+//                            success: success,
+//                            error: error,
+//                            async: true
+//                        });
+                        this.cellbaseClient.get('feature', 'clinical', null, 'all', {rcv: _this.clinicalId}, {
                             success: success,
                             error: error,
                             async: true
+                        });
+                    }
+                }
+                if (this.clinicalId.startsWith('COSM')) {
+                    if (typeof this.genomeViewer !== "undefined") {
+                        let success = function (response) {
+                            // TODO check number of results per cosmicId
+                            let clinicalResult = response.response[0].result[0];
+                            if (typeof clinicalResult !== "undefined") {
+                                let region = new Region({
+                                    chromosome: clinicalResult.chromosome,
+                                    start: clinicalResult.start,
+                                    end: clinicalResult.end
+                                });
+                                _this.genomeViewer.setRegion(region);
+                                _this.clinicalObj = clinicalResult;
+                                _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
+                            }
+                        };
+                        let error = function (response) {
+                            alert("Clinical ID not valid: " + _this.clinicalId);
+                        };
+//                        this.cellbaseClient.get('feature', 'clincial', null, 'search', {cosmicId: _this.clinicalId}, {
+//                            success: success,
+//                            error: error,
+//                            asyc: true
+//                        });
+                        this.cellbaseClient.get('feature', 'clincial', null, 'all', {cosmicId: _this.clinicalId}, {
+                            success: success,
+                            error: error,
+                            asyc: true
                         });
                     }
                 }
@@ -270,6 +325,9 @@
             },
             checkClinvar: function (clinicalObj) {
                 return clinicalObj.source === 'clinvar';
+            },
+            checkCosmic: function (clinicalObj) {
+                return clinicalObj.source === 'cosmic';
             },
             attached: function () {
                 this.genomeViewer;

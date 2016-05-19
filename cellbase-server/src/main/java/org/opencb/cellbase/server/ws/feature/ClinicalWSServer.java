@@ -84,6 +84,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "rs",
                     value = "Comma separated list of rs ids, e.g.: rs6025",
                             required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cosmicId",
+                    value = "Comma separated list of cosmic ids, e.g.: COSM306824",
+                    required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "type",
                     value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
                         + "variants, e.g. \"single nucleotide variant\" ",
@@ -179,6 +182,21 @@ public class ClinicalWSServer extends GenericRestWSServer {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/clinical-significance")
+    @ApiOperation(httpMethod = "GET", value = "Get the list of clinical significances")
+    public Response getAllClinicalSignificances() {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            query.put("source", "clinvar");
+            return createOkResponse(clinicalDBAdaptor.distinct(query,
+                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description"));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

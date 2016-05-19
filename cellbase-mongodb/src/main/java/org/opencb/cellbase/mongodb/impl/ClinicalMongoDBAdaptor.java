@@ -195,12 +195,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private void getCosmicFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
         // If only clinvar-specific filters are provided it must be avoided to include the source=cosmic condition since
         // sourceBson is going to be an OR list
+        List<Bson> andBson = new ArrayList<>();
         if (!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
                 || query.containsKey(QueryParams.CLINVARREVIEW.key())
                 || query.containsKey(QueryParams.CLINVARTYPE.key())
                 || query.containsKey(QueryParams.CLINVARRS.key()))) {
             if (sourceContent != null && sourceContent.contains("cosmic")) {
-                sourceBson.add(Filters.eq("source", "cosmic"));
+                andBson.add(Filters.eq("source", "cosmic"));
+            }
+
+            createOrQuery(query, QueryParams.COSMICID.key(), "mutationID", andBson);
+            if (andBson.size() == 1) {
+                sourceBson.add(andBson.get(0));
+            } else if (andBson.size() > 0) {
+                sourceBson.add(Filters.and(andBson));
             }
         }
     }
