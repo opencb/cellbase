@@ -78,7 +78,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "phenotype",
                     value = "String to indicate the phenotypes to query. A text search will be run.",
                             required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "rcv",
+            @ApiImplicitParam(name = "clinvarId",
                     value = "Comma separated list of rcv ids, e.g.: RCV000033215",
                             required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "rs",
@@ -95,7 +95,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     value = "Comma separated list of review lables (only enabled for ClinVar variants), "
                         + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
                             required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "significance",
+            @ApiImplicitParam(name = "clinvar-significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                         + "for ClinVar variants), e.g.: Benign",
                             required = false, dataType = "list of strings", paramType = "query")
@@ -157,12 +157,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query")
     })
-    public Response groupBy(@DefaultValue("")
-                            @QueryParam("fields")
-                            @ApiParam(name = "fields",
-                                      value = "Comma separated list of fields to group by. For example: alternate,"
-                                              + "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus",
-                                      required = true) String fields) {
+    public Response groupBy(@DefaultValue("") @QueryParam("fields") @ApiParam(name = "fields",
+            value = "Comma separated list of fields to group by. For example: alternate, "
+                    + "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus", required = true) String fields) {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
@@ -174,10 +171,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/phenotype-gene")
-    @ApiOperation(httpMethod = "GET", value = "To be reimplemented soon. Resource to get all phenotype-gene relations",
-            hidden = true)
+    @ApiOperation(httpMethod = "GET", value = "To be reimplemented soon. Resource to get all phenotype-gene relations", hidden = true)
     public Response getPhenotypeGeneRelations() {
-
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
@@ -188,8 +183,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/clinical-significance")
-    @ApiOperation(httpMethod = "GET", value = "Get the list of clinical significances")
+    @Path("/clinvar-significance")
+    @ApiOperation(httpMethod = "GET", value = "Get the list of clinical significances for ClinVar")
     public Response getAllClinicalSignificances() {
         try {
             parseQueryParams();

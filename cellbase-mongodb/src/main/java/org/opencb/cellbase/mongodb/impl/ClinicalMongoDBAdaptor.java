@@ -147,7 +147,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private Bson parseQuery(Query query) {
-        logger.info("Parsing query...");
+        logger.debug("Parsing query...");
         Bson filtersBson = null;
 
         // No filtering parameters mean all records
