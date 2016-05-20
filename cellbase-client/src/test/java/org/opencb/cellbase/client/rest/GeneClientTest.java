@@ -16,18 +16,15 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.bson.Document;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.Timeout;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.client.rest.models.GroupByFields;
+import org.opencb.cellbase.client.rest.models.GroupCount;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -145,16 +142,43 @@ public class GeneClientTest {
         assertEquals("Number of transcripts with biotype protein_coding", 3, transcript.getResponse().get(0).getNumTotalResults());
     }
 
-    @Ignore
-    @Test
-    public void getClinical() throws Exception {
-        QueryResponse<Document> clinical = cellBaseClient.getGeneClient().getClinical("BRCA2", null);
-        assertNotNull(clinical.firstResult());
+//    @Test
+//    public void getClinical() throws Exception {
+//        QueryResponse<Document> clinical = cellBaseClient.getGeneClient().getClinical("BRCA2", null);
+//        assertNotNull(clinical.firstResult());
+//
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("source", "cosmic");
+//        params.put("limit", 2);
+//        clinical = cellBaseClient.getGeneClient().getClinical("BRCA2", params);
+//        assertNotNull(clinical.firstResult());
+//    }
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("source", "cosmic");
-        params.put("limit", 2);
-        clinical = cellBaseClient.getGeneClient().getClinical("BRCA2", params);
-        assertNotNull(clinical.firstResult());
+    @Test
+    public void group() throws Exception {
+        Query query = new Query();
+        query.put("fields", "chromosome");
+        query.put("region", "1:6635137-6835325");
+        QueryResponse<GroupByFields> group = cellBaseClient.getGeneClient().group(query);
+        for (int i=0; i < group.getResponse().get(0).getNumResults(); i++) {
+            System.out.println(group.getResponse().get(0).getResult().get(i).get_id());
+            System.out.println(group.getResponse().get(0).getResult().get(i).getFeatures());
+
+        }
+        assertNotNull("chromosomes present in the given region should be returned", group.firstResult());
+    }
+
+    @Test
+    public void groupCount() throws Exception {
+        Query query = new Query();
+        query.put("fields", "chromosome");
+        query.put("count", true);
+        QueryResponse<GroupCount> result = cellBaseClient.getGeneClient().groupCount(query);
+        assertNotNull("chromosomes are grouped and counted", result.firstResult());
+        for (int i=0; i < result.getResponse().get(0).getNumResults(); i++) {
+            System.out.println(result.getResponse().get(0).getResult().get(i).get_id());
+            System.out.println(result.getResponse().get(0).getResult().get(i).getCount());
+
+        }
     }
 }

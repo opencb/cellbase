@@ -41,5 +41,9 @@ public class CellBaseClient {
         return (GeneClient) clients.get("GENE");
     }
 
+    public TranscriptClient getTranscriptClient() {
+        clients.putIfAbsent("TRANSCRIPT", new TranscriptClient(clientConfiguration));
+        return (TranscriptClient) clients.get("TRANSCRIPT");
+    }
 
 }

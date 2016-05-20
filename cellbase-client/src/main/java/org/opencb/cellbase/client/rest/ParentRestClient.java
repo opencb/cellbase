@@ -64,18 +64,13 @@ public class ParentRestClient<T> {
         return execute("count", query, Long.class);
     }
 
-    public QueryResponse<T> first() throws IOException {
+    protected QueryResponse<T> first() throws IOException {
         return execute("first", null, clazz);
     }
 
-    public QueryResponse<T> get(String id, Map<String, Object> params) throws IOException {
+    protected QueryResponse<T> get(String id, Map<String, Object> params) throws IOException {
         return execute(id, "info", params, clazz);
     }
-
-    public QueryResponse<T> search(Query query) throws IOException {
-        return execute("search", query, clazz);
-    }
-
 
     protected <T> QueryResponse<T> execute(String action, Map<String, Object> params, Class<T> clazz)
             throws IOException {
@@ -109,7 +104,7 @@ public class ParentRestClient<T> {
             }
         }
 
-        logger.debug("REST URL: " + path.getUri().toURL());
+        System.out.println("REST URL: " + path.getUri().toURL());
         String jsonString = path.request().get(String.class);
         logger.debug("jsonString = " + jsonString);
         QueryResponse<T> queryResponse = parseResult(jsonString, clazz);

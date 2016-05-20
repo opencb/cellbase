@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.bson.Document;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -32,7 +31,7 @@ import java.util.Map;
 /**
  * Created by imedina on 12/05/16.
  */
-public class GeneClient extends ParentRestClient<Gene> {
+public class GeneClient extends FeatureClient<Gene> {
 
 
     public GeneClient(ClientConfiguration clientConfiguration) {
@@ -48,27 +47,10 @@ public class GeneClient extends ParentRestClient<Gene> {
         return execute("biotype", query, String.class);
     }
 
-//    public QueryResponse<Gene> first() throws IOException {
-//        return execute("first", null, Gene.class);
-//    }
-
     @Deprecated
     public QueryResponse<Gene> list(Query query) throws IOException {
         return execute("list", query, Gene.class);
     }
-
-    // FIXME this should return a Map<String, List>
-//    public QueryResponse<Map<String, List<String>>> group(Query query) throws IOException {
-//        return execute("group", query, );
-//    }
-
-//    public QueryResponse<Map<String, Integer>> group(Query query, boolean count) throws IOException {
-//        return execute("group", query, );
-//    }
-
-//    public QueryResponse<Gene> get(String id, Map<String, Object> params) throws IOException {
-//        return execute(id, "info", params, Gene.class);
-//    }
 
     public QueryResponse<Transcript> getTranscript(String id, Map<String, Object> params) throws IOException {
         return execute(id, "transcript", params, Transcript.class);
@@ -78,10 +60,6 @@ public class GeneClient extends ParentRestClient<Gene> {
         return execute(id, "tfbs", params, TranscriptTfbs.class);
     }
 
-//    public QueryResponse<Gene> search(Query query) throws IOException {
-//        return execute("search", query, Gene.class);
-//    }
-
     public QueryResponse<Variant> getSnp(String id, Map<String, Object> params) throws IOException {
         return execute(id, "snp", params, Variant.class);
     }
@@ -90,8 +68,8 @@ public class GeneClient extends ParentRestClient<Gene> {
         return execute(id, "protein", params, Entry.class);
     }
 
-    public QueryResponse<Document> getClinical(String id, Map<String, Object> params) throws IOException {
-        return execute(id, "clinical", params, Document.class);
-    }
+//    public QueryResponse<> getClinical(String id, Map<String, Object> params) throws IOException {
+//        return execute(id, "clinical", params, );
+//    }
 
 }

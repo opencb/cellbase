@@ -195,6 +195,8 @@ public class MongoDBAdaptor {
             return groupBy(query, Arrays.asList(groupByField.split(",")), featureIdField, options);
         } else {
             Bson match = Aggregates.match(query);
+            // TODO add the limit in GenericRestWSServer
+            Bson limit = Aggregates.limit(50);
             Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
             Bson group;
             if (options.getBoolean("count", false)) {
@@ -202,7 +204,8 @@ public class MongoDBAdaptor {
             } else {
                 group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
             }
-            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+            // TODO change the default "_id" returned by mongodb to id
+            return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
         }
     }
 
@@ -216,7 +219,8 @@ public class MongoDBAdaptor {
             return groupBy(query, groupByField.get(0), featureIdField, options);
         } else {
             Bson match = Aggregates.match(query);
-
+            // TODO add the limit in GenericRestWSServer
+            Bson limit = Aggregates.limit(50);
             // add all group-by fields to the projection together with the aggregation field name
             List<String> groupByFields = new ArrayList<>(groupByField);
             groupByFields.add(featureIdField);
@@ -233,7 +237,7 @@ public class MongoDBAdaptor {
             } else {
                 group = Aggregates.group(id, Accumulators.addToSet("features", "$" + featureIdField));
             }
-            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
+            return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
         }
     }
 
