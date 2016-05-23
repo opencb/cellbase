@@ -46,4 +46,8 @@ public class CellBaseClient {
         return (TranscriptClient) clients.get("TRANSCRIPT");
     }
 
+    public VariationClient getVariationClient() {
+        clients.putIfAbsent("VARIATION", new VariationClient(clientConfiguration));
+        return (VariationClient) clients.get("VARIATION");
+    }
 }

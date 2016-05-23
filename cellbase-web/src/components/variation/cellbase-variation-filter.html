@@ -138,7 +138,7 @@
                 <!-- Result tab content -->
                 <div role="tabpanel" class="tab-pane" id="variationResult">
                     <div class="variation-display">
-                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <i id="variationSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
                             <div>
@@ -190,7 +190,7 @@
             },
             executeQuery: function (e) {
                 // activate the GIF
-                $('#spinImg').show();
+                $('#variationSpinImg').show();
 
                 // We first build the query params object
                 let queryParams = {include: "ids,chromosome,start,end,annotation.displayConsequenceType"};
@@ -211,7 +211,7 @@
                         }
                     }
                     // remove the GIF
-                    $('#spinImg').hide();
+                    $('#variationSpinImg').hide();
                 };
 
                 // Now we execute the query. Note that ID are preferred

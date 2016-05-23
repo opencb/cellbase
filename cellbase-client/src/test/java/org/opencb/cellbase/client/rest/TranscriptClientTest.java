@@ -1,8 +1,6 @@
 package org.opencb.cellbase.client.rest;
 
 import org.junit.Test;
-import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
-import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
@@ -10,13 +8,10 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * Created by swaathi on 20/05/16.
@@ -34,11 +29,11 @@ public class TranscriptClientTest {
         }
     }
 
-//    @Test
-//    public void count() throws Exception {
-//        QueryResponse<Long> count = cellBaseClient.getTranscriptClient().count(null);
-//        assertEquals("Number of returned transcripts do not match", 196501, count.firstResult().longValue());
-//    }
+    @Test
+    public void count() throws Exception {
+        QueryResponse<Long> count = cellBaseClient.getTranscriptClient().count(null);
+        assertEquals("Number of returned transcripts do not match", 196501, count.firstResult().longValue());
+    }
 
     @Test
     public void first() throws Exception {
@@ -87,4 +82,9 @@ public class TranscriptClientTest {
 //        assertNotNull("It should the respective gene", response.firstResult());
 //    }
 
+    @Test
+    public void getFunctionPrediction() throws Exception {
+        QueryResponse<List> response = cellBaseClient.getTranscriptClient().getProteinFunctionPrediction("ENST00000530893", null);
+        assertNotNull("The function prediction for the given trnascript must be returned", response.firstResult());
+    }
 }

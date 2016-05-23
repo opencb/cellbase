@@ -195,17 +195,18 @@ public class MongoDBAdaptor {
             return groupBy(query, Arrays.asList(groupByField.split(",")), featureIdField, options);
         } else {
             Bson match = Aggregates.match(query);
-            // TODO add the limit in GenericRestWSServer
-            Bson limit = Aggregates.limit(50);
             Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
             Bson group;
             if (options.getBoolean("count", false)) {
                 group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
+                return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
             } else {
+                // Limit the documents passed if count is false
+                Bson limit = Aggregates.limit(options.getInt("limit", 10));
                 group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
+                // TODO change the default "_id" returned by mongodb to id
+                return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
             }
-            // TODO change the default "_id" returned by mongodb to id
-            return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
         }
     }
 
@@ -219,13 +220,10 @@ public class MongoDBAdaptor {
             return groupBy(query, groupByField.get(0), featureIdField, options);
         } else {
             Bson match = Aggregates.match(query);
-            // TODO add the limit in GenericRestWSServer
-            Bson limit = Aggregates.limit(50);
             // add all group-by fields to the projection together with the aggregation field name
             List<String> groupByFields = new ArrayList<>(groupByField);
             groupByFields.add(featureIdField);
             Bson project = Aggregates.project(Projections.include(groupByFields));
-
             // _id document creation to have the multiple id
             Document id = new Document();
             for (String s : groupByField) {
@@ -234,10 +232,14 @@ public class MongoDBAdaptor {
             Bson group;
             if (options.getBoolean("count", false)) {
                 group = Aggregates.group(id, Accumulators.sum("count", 1));
+                return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
             } else {
+                // Limit the documents passed if count is false
+                Bson limit = Aggregates.limit(options.getInt("limit", 10));
                 group = Aggregates.group(id, Accumulators.addToSet("features", "$" + featureIdField));
+                // TODO change the default "_id" returned by mongodb to id
+                return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
             }
-            return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
         }
     }
 

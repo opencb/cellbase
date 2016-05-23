@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 @Path("/{version}/{species}/feature/snp")
 @Produces("application/json")
 @Api(value = "SNP", description = "SNP RESTful Web Services API")
+@Deprecated
 public class SnpWSServer extends GenericRestWSServer {
 
 

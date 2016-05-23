@@ -39,7 +39,7 @@ public class TranscriptClient extends ParentRestClient<Transcript> {
         return execute(id, "protein", query, Entry.class);
     }
 
-    public QueryResponse<List> getfunctionPrediction(String id, Query query) throws IOException {
+    public QueryResponse<List> getProteinFunctionPrediction(String id, Query query) throws IOException {
         return execute(id, "function_prediction", query, List.class);
     }
 }

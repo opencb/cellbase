@@ -77,11 +77,15 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         Bson unwind = Aggregates.unwind("$transcripts");
         Bson match2 = Aggregates.match(document);
         Bson project = Aggregates.project(new Document("transcripts", "$transcripts.id"));
-
         Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
 
-        QueryResult queryResult = mongoDBCollection.aggregate(Arrays.asList(match, include, unwind, match2, project, group), null);
-        return queryResult;
+        QueryResult<Document> queryResult =
+                mongoDBCollection.aggregate(Arrays.asList(match, include, unwind, match2, project, group), null);
+        Number number = (Number) queryResult.first().get("count");
+        Long count = number.longValue();
+        return new QueryResult<>(null, queryResult.getDbTime(), queryResult.getNumResults(),
+                queryResult.getNumTotalResults(), queryResult.getWarningMsg(), queryResult.getErrorMsg(),
+                Collections.singletonList(count));
     }
 
     @Override
