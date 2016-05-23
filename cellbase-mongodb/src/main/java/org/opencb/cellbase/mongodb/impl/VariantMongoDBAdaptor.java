@@ -220,7 +220,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             queries.add(new Document("_chunkIds", chunkId)
                     .append("chromosome", variantDBObject.get("chromosome"))
                     .append("start", variantDBObject.get("start"))
-                    .append("end", variantDBObject.get("end"))
+//                    .append("end", variantDBObject.get("end"))
                     .append("reference", variantDBObject.get("reference"))
                     .append("alternate", variantDBObject.get("alternate")));
         }
@@ -235,7 +235,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             } catch (BulkWriteException e) {
                 throw e;
             }
-            logger.info("{} object updated", bulkWriteResult.first().getUpserts().size() + bulkWriteResult.first().getModifiedCount());
+            logger.info("{} object updated", bulkWriteResult.first().getModifiedCount());
 
             QueryResult<Long> longQueryResult = new QueryResult<>(bulkWriteResult.getId(), bulkWriteResult.getDbTime(), bulkWriteResult
                     .getNumResults(),

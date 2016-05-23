@@ -364,7 +364,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    dbAdaptorFactory, false), queryOptions);
+                    dbAdaptorFactory), queryOptions);
         } else {
             try {
                 CellBaseClient cellBaseClient;
@@ -529,6 +529,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         // Run benchmark
         benchmark = variantAnnotationCommandOptions.benchmark;
+
+        // Use cache
+        queryOptions.put("useCache", variantAnnotationCommandOptions.noCache ? "false" : "true");
 
         // input file
         if (variantAnnotationCommandOptions.input != null) {

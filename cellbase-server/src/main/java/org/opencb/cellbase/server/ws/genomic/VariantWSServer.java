@@ -157,12 +157,19 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "POST",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies}", response = VariantAnnotation.class,
-            responseContainer = "QueryResponse")
+            + " expression, geneDisease, drugInteraction, populationFrequencies}. In addition, annotation was already "
+            + "pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of variants "
+            + "will be included in that collection, meaning that the use of this cache may significantly improve "
+            + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
+            response = VariantAnnotation.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "normalize",
                     value = "Boolean to indicate whether input variants shall be normalized or not. Normalization"
                             + " process includes decomposing MNVs", allowableValues = "false,true", defaultValue = "false",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "useCache",
+                    value = "Boolean to indicate whether "
+                            + " cached annotation should be used or not", allowableValues = "false,true", defaultValue = "false",
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
@@ -175,21 +182,11 @@ public class VariantWSServer extends GenericRestWSServer {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
-//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
-//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
-
-//            VariantAnnotationCalculator variantAnnotationCalculator =
-//                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
-
-            VariantAnnotationCalculator variantAnnotationCalculator = null;
-            if (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true")) {
-                variantAnnotationCalculator =
-                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, true);
-            } else {
-                variantAnnotationCalculator =
-                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
-            }
+//            boolean normalize = (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true"));
+//            // Use cache by default
+//            boolean useCache = (queryOptions.get("useCache") != null ? queryOptions.get("useCache").equals("true") : true);
+            VariantAnnotationCalculator variantAnnotationCalculator =
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
@@ -204,12 +201,19 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies", response = VariantAnnotation.class,
-            responseContainer = "QueryResponse")
+            + " expression, geneDisease, drugInteraction, populationFrequencies}. In addition, annotation was already "
+            + "pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of variants "
+            + "will be included in that collection, meaning that the use of this cache may significantly improve "
+            + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
+            response = VariantAnnotation.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "normalize",
                     value = "Boolean to indicate whether input variants shall be normalized or not. Normalization"
                             + " process includes decomposing MNVs", allowableValues = "false,true", defaultValue = "false",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "useCache",
+                    value = "Boolean to indicate whether "
+                            + " cached annotation should be used or not", allowableValues = "false,true", defaultValue = "false",
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAnnotationByVariantsGET(@PathParam("variants")
@@ -221,24 +225,8 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
-            logger.debug("queryOptions: " + queryOptions);
-
-//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
-// dbAdaptorFactory.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
-
-//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
-//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
-
-            VariantAnnotationCalculator variantAnnotationCalculator = null;
-            if (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true")) {
-                variantAnnotationCalculator =
-                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, true);
-            } else {
-                variantAnnotationCalculator =
-                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
-            }
+            VariantAnnotationCalculator variantAnnotationCalculator =
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 

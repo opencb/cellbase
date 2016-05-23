@@ -367,6 +367,13 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean skipNormalize;
 
+        @Parameter(names = {"--no-server-cache"}, description = "Annotation was already pre-calculated and cached in "
+                + "our servers for the whole ENSEMBL variation collection. Most of variants will be included in that "
+                + "collection, meaning that the use of this cache may significantly improve performance. Use this flag "
+                + "if you want to avoid the use of this server cache.",
+                required = false, arity = 0)
+        public boolean noCache;
+
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
