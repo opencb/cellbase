@@ -150,8 +150,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         // Object to be returned
         List<QueryResult<VariantAnnotation>> variantAnnotationResultList;
         if (useCache) {
-            variantAnnotationResultList = getCachedAnnotation(normalizedVariantList);
-            fillUncachedAnnotations(variantAnnotationResultList, normalizedVariantList);
+            variantAnnotationResultList = getCachedPreferredAnnotation(normalizedVariantList);
         } else {
             variantAnnotationResultList = runAnnotationProcess(normalizedVariantList);
         }
@@ -159,58 +158,69 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         return variantAnnotationResultList;
     }
 
-    private void fillUncachedAnnotations(List<QueryResult<VariantAnnotation>> variantAnnotationResultList,
-                                    List<Variant> variantList) {
-        List<Variant> uncachedVariantList = new ArrayList<>();
+    private List<QueryResult<VariantAnnotation>> getCachedPreferredAnnotation(List<Variant> variantList) {
 
-        for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-            if (variantAnnotationResultList.get(i).getNumResults() == 0) {
-                uncachedVariantList.add(variantList.get(i));
+        // Expected to be very few within a batch, no capacity initialized for the array
+        List<Integer> mustRunAnnotationPositions = new ArrayList<>();
+        List<Variant> mustRunAnnotation = new ArrayList<>();
+
+        // Expected to be most of them, array capacity set to variantList size
+        List<Integer> mustSearchVariationPositions = new ArrayList<>(variantList.size());
+        List<Variant> mustSearchVariation = new ArrayList<>();
+
+        // Phased variants cannot be annotated using the variation collection
+        for (int i = 0; i < variantList.size(); i++) {
+            if (isPhased(variantList.get(i))) {
+                mustRunAnnotationPositions.add(i);
+                mustRunAnnotation.add(variantList.get(i));
+            } else {
+                mustSearchVariationPositions.add(i);
+                mustSearchVariation.add(variantList.get(i));
             }
         }
 
-        List<QueryResult<VariantAnnotation>> uncachedAnnotations = runAnnotationProcess(uncachedVariantList);
-
-        int uncachedAnnotationPos = 0;
-        for (QueryResult<VariantAnnotation> queryResult : variantAnnotationResultList) {
-            if (queryResult.getNumResults() == 0) {
-                queryResult.setNumResults(1);
-                queryResult.setNumTotalResults(1);
-                QueryResult<VariantAnnotation> annotationQueryResult = uncachedAnnotations.get(uncachedAnnotationPos);
-                queryResult.setDbTime(queryResult.getDbTime() + annotationQueryResult.getDbTime());
-                queryResult.setResult(annotationQueryResult.getResult());
-                uncachedAnnotationPos++;
-            }
-        }
-    }
-
-    private List<QueryResult<VariantAnnotation>> getCachedAnnotation(List<Variant> variantList) {
-        // Object to be returned
-        List<QueryResult<VariantAnnotation>> variantAnnotationResultList = new ArrayList<>(variantList.size());
-
+        // Search unphased variants within variation collection
         QueryOptions queryOptions = new QueryOptions("include", getCachedVariationIncludeFields());
-        List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(variantList, queryOptions);
+        List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(mustSearchVariation,
+                queryOptions);
 
-        for (QueryResult<Variant> queryResult : variationQueryResultList) {
-            int i = 0;
-            if (queryResult.getNumResults() > 0) {
-                VariantAnnotation variantAnnotation = queryResult.getResult().get(0).getAnnotation();
+        // Object to be returned
+        List<QueryResult<VariantAnnotation>> variantAnnotationResultList =
+                Arrays.asList(new QueryResult[variantList.size()]);
+
+        // mustSearchVariation and variationQueryResultList do have same size, same order
+        for (int i = 0; i < mustSearchVariation.size(); i++) {
+            // Variant not found in variation collection, must be annotated by running the whole process
+            if (variationQueryResultList.get(i).getNumResults() == 0) {
+                mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
+                mustRunAnnotation.add(mustSearchVariation.get(i));
+            } else {
+                VariantAnnotation variantAnnotation = variationQueryResultList.get(i).getResult().get(0).getAnnotation();
                 variantAnnotation.setChromosome(variantList.get(i).getChromosome());
                 variantAnnotation.setStart(variantList.get(i).getStart());
                 variantAnnotation.setReference(variantList.get(i).getReference());
                 variantAnnotation.setAlternate(variantList.get(i).getAlternate());
-                variantAnnotationResultList.add(new QueryResult<>(queryResult.getId(), queryResult.getDbTime(),
-                        queryResult.getNumResults(), queryResult.getNumTotalResults(), null, null,
-                        Collections.singletonList(queryResult.getResult().get(0).getAnnotation())));
-            } else {
-                variantAnnotationResultList.add(new QueryResult<>(queryResult.getId(), queryResult.getDbTime(),
-                        queryResult.getNumResults(), queryResult.getNumTotalResults(), null, null,
-                        Collections.emptyList()));
+                variantAnnotationResultList.set(mustSearchVariationPositions.get(i),
+                        new QueryResult<>(variationQueryResultList.get(i).getId(),
+                        variationQueryResultList.get(i).getDbTime(), variationQueryResultList.get(i).getNumResults(),
+                        variationQueryResultList.get(i).getNumTotalResults(), null, null,
+                        Collections.singletonList(variantAnnotation)));
             }
-            i++;
+        }
+
+        List<QueryResult<VariantAnnotation>> uncachedAnnotations = runAnnotationProcess(mustRunAnnotation);
+
+        for (int i = 0; i < mustRunAnnotation.size(); i++) {
+            variantAnnotationResultList.set(mustRunAnnotationPositions.get(i), uncachedAnnotations.get(i));
         }
 
         return variantAnnotationResultList;
+
+    }
+
+    private boolean isPhased(Variant variant) {
+        return (variant.getStudies() != null && !variant.getStudies().isEmpty())
+            && variant.getStudies().get(0).getFormat().contains("PS");
     }
 
     private String getCachedVariationIncludeFields() {
