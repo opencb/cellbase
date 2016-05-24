@@ -18,6 +18,7 @@ package org.opencb.cellbase.client.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -45,6 +46,7 @@ public class ParentRestClient<T> {
     protected ClientConfiguration configuration;
 
     protected static ObjectMapper jsonObjectMapper;
+    protected final static int LIMIT = 1000;
 
     protected static Logger logger;
 
@@ -90,10 +92,7 @@ public class ParentRestClient<T> {
         // TODO we still have to check if there are multiple IDs, the lmit is 200 pero query, this can be parallelized
         // Some WS do not have IDs such as 'create'
         if (id != null && !id.isEmpty()) {
-            String ids = "";
-            for (String s: id) {
-                ids += s + ',';
-            }
+            String ids = StringUtils.join(id, ',');
             path = path.path(ids);
         }
 
@@ -120,21 +119,29 @@ public class ParentRestClient<T> {
 
         for (int i = 0; i < queryResponse.getResponse().size(); i++) {
             numTotal = queryResponse.getResponse().get(i).getNumResults();
-            if (numTotal == 1000) {
-                newIdsList.add(queryResponse.getResponse().get(i).getId());
-                idMap.put(i, newIdsList.indexOf(i));
+            if (numTotal == LIMIT) {
+                idMap.put(newIdsList.size(), i);
+                newIdsList.add(id.get(i));
             }
         }
 
         if (!newIdsList.isEmpty() && newIdsList.size() > 0) {
-            params.put("skip", skip + 1000);
-            params.put("limit", 1000);
-            QueryResponse<T> queryResponse1 = execute(newIdsList, resource, params, clazz);
+            String newIds = StringUtils.join(newIdsList, ',');
+            path = path
+                    .path(newIds)
+                    .queryParam("skip", skip + LIMIT)
+                    .queryParam("limit", LIMIT);
+            QueryResponse<T> queryResponse1 = (QueryResponse<T>) callRest(path);
             queryResponse.getResponse().addAll((Collection<? extends QueryResult<T>>) queryResponse1.allResults());
         }
 
         logger.debug("queryResponse = " + queryResponse);
         return queryResponse;
+    }
+
+    private QueryResponse<T> callRest(WebTarget url) throws IOException {
+        String jsonString1 = url.request().get(String.class);
+        return parseResult(jsonString1, clazz);
     }
 
     public static <T> QueryResponse<T> parseResult(String json, Class<T> clazz) throws IOException {
@@ -144,7 +151,7 @@ public class ParentRestClient<T> {
     }
 
     protected Map<String, Object> createParamsMap(String key, Object value) {
-        Map<String, Object> params= new HashMap<>(10);
+        Map<String, Object> params = new HashMap<>(10);
         params.put(key, value);
         return params;
     }
