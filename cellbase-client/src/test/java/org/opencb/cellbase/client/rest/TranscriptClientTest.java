@@ -41,40 +41,40 @@ public class TranscriptClientTest {
         assertNotNull("First transcript in the collection must be returned", transcript);
     }
 
-    @Test
-    public void get() throws Exception {
-        QueryResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get("ENST00000456328", null);
-        assertNotNull("This transcript should exist", transcript.firstResult());
-
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("exclude", "xrefs");
-//        transcript = cellBaseClient.getTranscriptClient().get("ENST00000456328", params);
-//        assertNull("This transcript should not have xrefs", transcript.firstResult().getXrefs());
-    }
-
-    @Test
-    public void getGene() throws Exception {
-        QueryResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", null);
-        assertNotNull("It should the respective gene", response.firstResult());
-    }
-
-    @Test
-    public void getVariation() throws Exception {
-        QueryResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328", null);
-        assertNotNull("It should return the respective gene", response.firstResult());
-    }
-
-    @Test
-    public void getSequence() throws Exception {
-        QueryResponse<String> seq = cellBaseClient.getTranscriptClient().getSequence("ENST00000528762", null);
-        assertEquals("The sequence returned is wrong", "TCATCTGGATTATACATATTTCGCAATGAAAGAGAGGAAGAAAAGGAAGCAGCAAAATATGTG" +
-                "GAGGCCCAACAAAAGAGACTAGAAGCCTTATTCACTAAAATTCAGGAGGAATTTGAAGAACATGAAGTTACTTCCTCCACTGAAGTCTTGAACCCCCCAA" +
-                "AGTCATCCATGAGGGTTGGAATCAACTTCTGAAAACACAACAAAACCATATTTACCATCACGTGCACTAACAAGACAGCAAGTTCGTGCTTTGCAAGATGG" +
-                "TGCAGAGCTTTATGAAGCAGTGAAGAATGCAGCAGACCCAGCTTACCTTGAGGGTTATTTCAGTGAAGAGCAGTTAAGAGCCTTGAATAATCACAGGCAAATG" +
-                "TTGAATGATAAGAAACAAGCTCAGATCCAGTTGGAAATTAGGAAGGCCATGGAATCTGCTGAACAAAAGGAACAAGGTTTATCAAGGGATGTCACAACCGTGT" +
-                "GGAAGTTGCGTATTGTAAGCTATTC", seq.firstResult());
-
-    }
+//    @Test
+//    public void get() throws Exception {
+//        QueryResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get("ENST00000456328", null);
+//        assertNotNull("This transcript should exist", transcript.firstResult());
+//
+////        Map<String, Object> params = new HashMap<>();
+////        params.put("exclude", "xrefs");
+////        transcript = cellBaseClient.getTranscriptClient().get("ENST00000456328", params);
+////        assertNull("This transcript should not have xrefs", transcript.firstResult().getXrefs());
+//    }
+//
+//    @Test
+//    public void getGene() throws Exception {
+//        QueryResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", null);
+//        assertNotNull("It should the respective gene", response.firstResult());
+//    }
+//
+//    @Test
+//    public void getVariation() throws Exception {
+//        QueryResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328", null);
+//        assertNotNull("It should return the respective gene", response.firstResult());
+//    }
+//
+//    @Test
+//    public void getSequence() throws Exception {
+//        QueryResponse<String> seq = cellBaseClient.getTranscriptClient().getSequence("ENST00000528762", null);
+//        assertEquals("The sequence returned is wrong", "TCATCTGGATTATACATATTTCGCAATGAAAGAGAGGAAGAAAAGGAAGCAGCAAAATATGTG" +
+//                "GAGGCCCAACAAAAGAGACTAGAAGCCTTATTCACTAAAATTCAGGAGGAATTTGAAGAACATGAAGTTACTTCCTCCACTGAAGTCTTGAACCCCCCAA" +
+//                "AGTCATCCATGAGGGTTGGAATCAACTTCTGAAAACACAACAAAACCATATTTACCATCACGTGCACTAACAAGACAGCAAGTTCGTGCTTTGCAAGATGG" +
+//                "TGCAGAGCTTTATGAAGCAGTGAAGAATGCAGCAGACCCAGCTTACCTTGAGGGTTATTTCAGTGAAGAGCAGTTAAGAGCCTTGAATAATCACAGGCAAATG" +
+//                "TTGAATGATAAGAAACAAGCTCAGATCCAGTTGGAAATTAGGAAGGCCATGGAATCTGCTGAACAAAAGGAACAAGGTTTATCAAGGGATGTCACAACCGTGT" +
+//                "GGAAGTTGCGTATTGTAAGCTATTC", seq.firstResult());
+//
+//    }
 
 //    @Test
 //    public void getProtein() throws Exception {
@@ -82,9 +82,9 @@ public class TranscriptClientTest {
 //        assertNotNull("It should the respective gene", response.firstResult());
 //    }
 
-    @Test
-    public void getFunctionPrediction() throws Exception {
-        QueryResponse<List> response = cellBaseClient.getTranscriptClient().getProteinFunctionPrediction("ENST00000530893", null);
-        assertNotNull("The function prediction for the given trnascript must be returned", response.firstResult());
-    }
+//    @Test
+//    public void getFunctionPrediction() throws Exception {
+//        QueryResponse<List> response = cellBaseClient.getTranscriptClient().getProteinFunctionPrediction("ENST00000530893", null);
+//        assertNotNull("The function prediction for the given trnascript must be returned", response.firstResult());
+//    }
 }
