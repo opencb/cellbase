@@ -72,8 +72,7 @@ public class ParentRestClient<T> {
         return execute(id, "info", params, clazz);
     }
 
-    protected <T> QueryResponse<T> execute(String action, Map<String, Object> params, Class<T> clazz)
-            throws IOException {
+    protected <T> QueryResponse<T> execute(String action, Map<String, Object> params, Class<T> clazz) throws IOException {
         return execute(null, action, params, clazz);
     }
 

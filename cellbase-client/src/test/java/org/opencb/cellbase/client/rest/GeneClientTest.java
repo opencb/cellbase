@@ -45,10 +45,8 @@ public class GeneClientTest {
 //    public TestRule globalTimeout = new Timeout(2000);
 
     public GeneClientTest() {
-        ClientConfiguration clientConfiguration;
         try {
-            clientConfiguration = ClientConfiguration.load(getClass().getResource("/client-configuration-test.yml").openStream());
-            cellBaseClient = new CellBaseClient(clientConfiguration);
+            cellBaseClient = new CellBaseClient(ClientConfiguration.load(getClass().getResourceAsStream("/client-configuration-test.yml")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -163,7 +161,6 @@ public class GeneClientTest {
         for (int i=0; i < group.getResponse().get(0).getNumResults(); i++) {
             System.out.println(group.getResponse().get(0).getResult().get(i).get_id());
             System.out.println(group.getResponse().get(0).getResult().get(i).getFeatures());
-
         }
         assertNotNull("chromosomes present in the given region should be returned", group.firstResult());
     }
@@ -178,7 +175,6 @@ public class GeneClientTest {
         for (int i=0; i < result.getResponse().get(0).getNumResults(); i++) {
             System.out.println(result.getResponse().get(0).getResult().get(i).get_id());
             System.out.println(result.getResponse().get(0).getResult().get(i).getCount());
-
         }
     }
 }
