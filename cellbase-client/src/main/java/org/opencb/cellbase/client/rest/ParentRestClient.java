@@ -29,8 +29,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 12/05/16.
@@ -68,7 +68,7 @@ public class ParentRestClient<T> {
         return execute("first", null, clazz);
     }
 
-    protected QueryResponse<T> get(String id, Map<String, Object> params) throws IOException {
+    protected QueryResponse<T> get(List<String> id, Map<String, Object> params) throws IOException {
         return execute(id, "info", params, clazz);
     }
 
@@ -77,7 +77,7 @@ public class ParentRestClient<T> {
         return execute(null, action, params, clazz);
     }
 
-    protected <T> QueryResponse<T> execute(String id, String resource, Map<String, Object> params, Class<T> clazz)
+    protected <T> QueryResponse<T> execute(List<String> id, String resource, Map<String, Object> params, Class<T> clazz)
             throws IOException {
 
         // Build the basic URL
@@ -91,7 +91,11 @@ public class ParentRestClient<T> {
         // TODO we still have to check if there are multiple IDs, the lmit is 200 pero query, this can be parallelized
         // Some WS do not have IDs such as 'create'
         if (id != null && !id.isEmpty()) {
-            path = path.path(id);
+            String ids = "";
+            for (String s: id) {
+                ids += s + ',';
+            }
+            path = path.path(ids);
         }
 
         // Add the last URL part, the 'action'
@@ -108,6 +112,28 @@ public class ParentRestClient<T> {
         String jsonString = path.request().get(String.class);
         logger.debug("jsonString = " + jsonString);
         QueryResponse<T> queryResponse = parseResult(jsonString, clazz);
+
+        int numTotal;
+        int skip = 0;
+
+        List<String> newIdsList = new ArrayList<>();
+        Map<Integer, Integer> idMap = new HashMap<>();
+
+        for (int i = 0; i < queryResponse.getResponse().size(); i++) {
+            numTotal = queryResponse.getResponse().get(i).getNumResults();
+            if (numTotal == 1000) {
+                newIdsList.add(queryResponse.getResponse().get(i).getId());
+                idMap.put(i, newIdsList.indexOf(i));
+            }
+        }
+
+        if (!newIdsList.isEmpty() && newIdsList.size() > 0) {
+            params.put("skip", skip + 1000);
+            params.put("limit", 1000);
+            QueryResponse<T> queryResponse1 = execute(newIdsList, resource, params, clazz);
+            queryResponse.getResponse().addAll((Collection<? extends QueryResult<T>>) queryResponse1.allResults());
+        }
+
         logger.debug("queryResponse = " + queryResponse);
         return queryResponse;
     }
