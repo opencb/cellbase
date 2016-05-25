@@ -6,6 +6,7 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 
@@ -37,15 +38,15 @@ public class VariationClientTest {
         assertNotNull("First Variation in the collection must be returned", first);
     }
 
-//    @Test
-//    public void get() throws Exception {
-//        QueryResponse<Variant> variation = cellBaseClient.getVariationClient().get("rs666", null);
-//        assertNotNull("This variation should exist", variation.firstResult());
-//    }
-//
-//    @Test
-//    public void getAllConsequenceTypes() throws Exception {
-//        QueryResponse<String> response = cellBaseClient.getVariationClient().getAllConsequenceTypes(null);
-//        assertNotNull("List of all the consequence types present should be returned", response.firstResult());
-//    }
+    @Test
+    public void get() throws Exception {
+        QueryResponse<Variant> variation = cellBaseClient.getVariationClient().get(Collections.singletonList("rs666"), null);
+        assertNotNull("This variation should exist", variation.firstResult());
+    }
+
+    @Test
+    public void getAllConsequenceTypes() throws Exception {
+        QueryResponse<String> response = cellBaseClient.getVariationClient().getAllConsequenceTypes(null);
+        assertNotNull("List of all the consequence types present should be returned", response.firstResult());
+    }
 }

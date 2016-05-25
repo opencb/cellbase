@@ -81,19 +81,16 @@ public class GeneClientTest {
 
     @Test
     public void get() throws Exception {
-        List<String> ids = new ArrayList<>();
-        ids.add("BRCA1");
-        ids.add("TFF1");
-        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().get(ids, null);
+        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().get(Collections.singletonList("BRCA2"), null);
         assertNotNull("This gene should exist", gene.firstResult());
 
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("exclude", "transcripts");
-//        gene = cellBaseClient.getGeneClient().get("BRCA2", params);
-//        assertNull("This gene should not have transcritps", gene.firstResult().getTranscripts());
-//
-//        gene = cellBaseClient.getGeneClient().get("NotExistingGene", null);
-//        assertNull("This gene should not exist", gene.firstResult());
+        Map<String, Object> params = new HashMap<>();
+        params.put("exclude", "transcripts");
+        gene = cellBaseClient.getGeneClient().get(Collections.singletonList("BRCA2"), params);
+        assertNull("This gene should not have transcritps", gene.firstResult().getTranscripts());
+
+        gene = cellBaseClient.getGeneClient().get(Collections.singletonList("NotExistingGene"), null);
+        assertNull("This gene should not exist", gene.firstResult());
     }
 
     @Test
@@ -108,14 +105,14 @@ public class GeneClientTest {
         params.put(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "miRNA");
         params.put("limit", 1);
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(params));
-        assertNotNull(gene.firstResult());
+        assertNotNull("The genes with the given biotype must be returned", gene.firstResult());
     }
 
-//    @Test
-//    public void getProtein() throws Exception {
-//        QueryResponse<Entry> protein = cellBaseClient.getGeneClient().getProtein("BRCA2", null);
-//        assertNotNull("Protein of the given gene must be returned", protein.firstResult());
-//    }
+    @Test
+    public void getProtein() throws Exception {
+        QueryResponse<Entry> protein = cellBaseClient.getGeneClient().getProtein("BRCA2", null);
+        assertNotNull("Protein of the given gene must be returned", protein.firstResult());
+    }
 //
     @Test
     public void getSnp() throws Exception {
@@ -123,24 +120,23 @@ public class GeneClientTest {
         assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
     }
 //
-//    @Test
-//    public void getTfbs() throws Exception {
-//        QueryResponse<TranscriptTfbs> tfbs = cellBaseClient.getGeneClient().getTfbs("BRCA2", null);
-//        assertNotNull("Tfbs of the given gene must be returned", tfbs.firstResult());
-//    }
-//
-//    @Test
-//    public void getTranscript() throws Exception {
-//        QueryResponse<Transcript> transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", null);
-//        System.out.println(transcript);
-//        assertNotNull("Transcripts of the given gene must be returned", transcript.firstResult());
-//
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("transcripts.biotype", "protein_coding");
-//        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", params);
-//        assertNotNull(transcript.firstResult());
-//        assertEquals("Number of transcripts with biotype protein_coding", 3, transcript.getResponse().get(0).getNumTotalResults());
-//    }
+    @Test
+    public void getTfbs() throws Exception {
+        QueryResponse<TranscriptTfbs> tfbs = cellBaseClient.getGeneClient().getTfbs("BRCA2", null);
+        assertNotNull("Tfbs of the given gene must be returned", tfbs.firstResult());
+    }
+
+    @Test
+    public void getTranscript() throws Exception {
+        QueryResponse<Transcript> transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", null);
+        assertNotNull("Transcripts of the given gene must be returned", transcript.firstResult());
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("transcripts.biotype", "protein_coding");
+        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", params);
+        assertNotNull(transcript.firstResult());
+        assertEquals("Number of transcripts with biotype protein_coding", 3, transcript.getResponse().get(0).getNumTotalResults());
+    }
 
 //    @Test
 //    public void getClinical() throws Exception {
@@ -160,10 +156,6 @@ public class GeneClientTest {
         query.put("fields", "chromosome");
         query.put("region", "1:6635137-6835325");
         QueryResponse<GroupByFields> group = cellBaseClient.getGeneClient().group(query);
-        for (int i=0; i < group.getResponse().get(0).getNumResults(); i++) {
-            System.out.println(group.getResponse().get(0).getResult().get(i).get_id());
-            System.out.println(group.getResponse().get(0).getResult().get(i).getFeatures());
-        }
         assertNotNull("chromosomes present in the given region should be returned", group.firstResult());
     }
 
@@ -174,9 +166,5 @@ public class GeneClientTest {
         query.put("count", true);
         QueryResponse<GroupCount> result = cellBaseClient.getGeneClient().groupCount(query);
         assertNotNull("chromosomes are grouped and counted", result.firstResult());
-        for (int i=0; i < result.getResponse().get(0).getNumResults(); i++) {
-            System.out.println(result.getResponse().get(0).getResult().get(i).get_id());
-            System.out.println(result.getResponse().get(0).getResult().get(i).getCount());
-        }
     }
 }
