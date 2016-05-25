@@ -59,3 +59,9 @@ local.properties
 *.pyc
 os
 sys
+
+# R
+.Rproj.user
+.Rhistory
+.RData
+clients/R/vignettes/*.html
