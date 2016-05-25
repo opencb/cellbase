@@ -191,7 +191,10 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         // mustSearchVariation and variationQueryResultList do have same size, same order
         for (int i = 0; i < mustSearchVariation.size(); i++) {
             // Variant not found in variation collection, must be annotated by running the whole process
-            if (variationQueryResultList.get(i).getNumResults() == 0) {
+            if (variationQueryResultList.get(i).getNumResults() == 0
+                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation() == null
+                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes() == null
+                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes().isEmpty()) {
                 mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
                 mustRunAnnotation.add(mustSearchVariation.get(i));
             } else {
@@ -201,7 +204,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 variantAnnotation.setReference(variantList.get(i).getReference());
                 variantAnnotation.setAlternate(variantList.get(i).getAlternate());
                 variantAnnotationResultList.set(mustSearchVariationPositions.get(i),
-                        new QueryResult<>(variationQueryResultList.get(i).getId(),
+                        new QueryResult<>(mustSearchVariation.get(i).toString(),
                         variationQueryResultList.get(i).getDbTime(), variationQueryResultList.get(i).getNumResults(),
                         variationQueryResultList.get(i).getNumTotalResults(), null, null,
                         Collections.singletonList(variantAnnotation)));
@@ -214,6 +217,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             variantAnnotationResultList.set(mustRunAnnotationPositions.get(i), uncachedAnnotations.get(i));
         }
 
+        logger.debug("{}/{} ({}%) variants required running the annotation process", mustRunAnnotation.size(),
+                variantList.size(), (mustRunAnnotation.size() * (100.0 / variantList.size())));
         return variantAnnotationResultList;
 
     }
@@ -239,7 +244,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             stringBuilder.append(",annotation.functionalScore");
         }
         if (annotatorSet.contains("consequenceType")) {
-            stringBuilder.append(",annotation.consequenceType");
+            stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
         }
         if (annotatorSet.contains("expression")) {
             stringBuilder.append(",annotation.geneExpression");
