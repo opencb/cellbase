@@ -25,7 +25,7 @@ library(cellbaseR)
 
 Defining the CellbaseQuery object holding the config to connect to cellbase data
 
-```{r , eval=TRUE, message=FALSE}
+```{r , eval=FALSE, message=FALSE}
 # to get the default CellbaseQuery object (human data, from genome GRCh37)
 library(cellbaseR)
 cb <- CellbaseQuery()
@@ -37,7 +37,7 @@ mm <-CellbaseQuery(species = "mmsculus")
 You can see the avaiable species and corresonding data for each species by
 running the cbSpecies method passing  the CellbaseQuery object you just created 
 
-```{r, eval=TRUE, message=FALSE, warning=FALSE}
+```{r, eval=FALSE, message=FALSE, warning=FALSE}
 library(cellbaseR)
 cb <- CellbaseQuery()
 sp <- cbSpecies(object = cb)
