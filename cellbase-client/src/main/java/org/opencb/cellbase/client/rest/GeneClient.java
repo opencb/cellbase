@@ -27,6 +27,7 @@ import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Created by imedina on 12/05/16.
@@ -52,21 +53,21 @@ public class GeneClient extends FeatureClient<Gene> {
         return execute("list", query, Gene.class);
     }
 
-//    public QueryResponse<Transcript> getTranscript(String id, Map<String, Object> params) throws IOException {
-//        return execute(id, "transcript", params, Transcript.class);
-//    }
-//
-//    public QueryResponse<TranscriptTfbs> getTfbs(String id, Map<String, Object> params) throws IOException {
-//        return execute(id, "tfbs", params, TranscriptTfbs.class);
-//    }
-//
-//    public QueryResponse<Variant> getSnp(String id, Map<String, Object> params) throws IOException {
-//        return execute(id, "snp", params, Variant.class);
-//    }
-//
-//    public QueryResponse<Entry> getProtein(String id, Map<String, Object> params) throws IOException {
-//        return execute(id, "protein", params, Entry.class);
-//    }
+    public QueryResponse<Transcript> getTranscript(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "transcript", params, Transcript.class);
+    }
+
+    public QueryResponse<TranscriptTfbs> getTfbs(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "tfbs", params, TranscriptTfbs.class);
+    }
+
+    public QueryResponse<Variant> getSnp(List<String> id, Map<String, Object> params) throws IOException {
+        return execute(id, "snp", params, Variant.class);
+    }
+
+    public QueryResponse<Entry> getProtein(String id, Map<String, Object> params) throws IOException {
+        return execute(id, "protein", params, Entry.class);
+    }
 
 //    public QueryResponse<> getClinical(String id, Map<String, Object> params) throws IOException {
 //        return execute(id, "clinical", params, );

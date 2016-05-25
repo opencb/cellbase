@@ -399,7 +399,8 @@ public class RegionWSServer extends GenericRestWSServer {
             } else {
                 logger.debug("query = " + query.toJson());
                 logger.debug("queryOptions = " + queryOptions.toJson());
-                return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
+                List<Query> queries = createQueries(chrRegionId, VariantDBAdaptor.QueryParams.REGION.key());
+                return createOkResponse(variationDBAdaptor.nativeGet(queries, queryOptions));
             }
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -23,23 +23,23 @@ public class TranscriptClient extends ParentRestClient<Transcript> {
         this.subcategory = "transcript";
     }
 
-//    public QueryResponse<Gene> getGene(String id, Query query) throws IOException {
-//        return execute(id, "gene", query, Gene.class);
-//    }
-//
-//    public QueryResponse<Variant> getVariation(String id, Query query) throws IOException {
-//        return execute(id, "variation", query, Variant.class);
-//    }
-//
-//    public QueryResponse<String> getSequence(String id, Query query) throws IOException {
-//        return execute(id, "sequence", query, String.class);
-//    }
-//
-//    public QueryResponse<Entry> getProtein(String id, Query query) throws IOException {
-//        return execute(id, "protein", query, Entry.class);
-//    }
-//
-//    public QueryResponse<List> getProteinFunctionPrediction(String id, Query query) throws IOException {
-//        return execute(id, "function_prediction", query, List.class);
-//    }
+    public QueryResponse<Gene> getGene(String id, Query query) throws IOException {
+        return execute(id, "gene", query, Gene.class);
+    }
+
+    public QueryResponse<Variant> getVariation(String id, Query query) throws IOException {
+        return execute(id, "variation", query, Variant.class);
+    }
+
+    public QueryResponse<String> getSequence(String id, Query query) throws IOException {
+        return execute(id, "sequence", query, String.class);
+    }
+
+    public QueryResponse<Entry> getProtein(String id, Query query) throws IOException {
+        return execute(id, "protein", query, Entry.class);
+    }
+
+    public QueryResponse<List> getProteinFunctionPrediction(String id, Query query) throws IOException {
+        return execute(id, "function_prediction", query, List.class);
+    }
 }

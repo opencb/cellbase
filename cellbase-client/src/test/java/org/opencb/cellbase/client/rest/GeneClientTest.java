@@ -30,10 +30,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 /**
@@ -120,11 +117,11 @@ public class GeneClientTest {
 //        assertNotNull("Protein of the given gene must be returned", protein.firstResult());
 //    }
 //
-//    @Test
-//    public void getSnp() throws Exception {
-//        QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getSnp("BRCA2", null);
-//        assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
-//    }
+    @Test
+    public void getSnp() throws Exception {
+        QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getSnp(Arrays.asList("BRCA1", "TFF1"), new HashMap<>());
+        assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
+    }
 //
 //    @Test
 //    public void getTfbs() throws Exception {
