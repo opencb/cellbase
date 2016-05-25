@@ -479,7 +479,6 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
             List<Query> queries = createQueries(geneId, GeneDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
@@ -533,8 +532,9 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
-            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+//            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
+            List<Query> queries = createQueries(geneId, TranscriptDBAdaptor.QueryParams.XREFS.key());
+            return createOkResponse(transcriptDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

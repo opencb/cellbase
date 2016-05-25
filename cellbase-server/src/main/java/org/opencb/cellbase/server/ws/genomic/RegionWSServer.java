@@ -291,7 +291,8 @@ public class RegionWSServer extends GenericRestWSServer {
                 QueryResult res = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
                 return createOkResponse(res);
             } else {
-                return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
+                List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
+                return createOkResponse(geneDBAdaptor.nativeGet(queries, queryOptions));
             }
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -301,7 +302,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects", response = Transcript.class,
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "transcripts.biotype",
@@ -329,8 +330,8 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            query.put(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+            List<Query> queries = createQueries(region, TranscriptDBAdaptor.QueryParams.REGION.key());
+            return createOkResponse(transcriptDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -501,7 +502,7 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "phenotype",
                     value = "String to indicate the phenotypes to query. A text search will be run.",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "rcv",
+            @ApiImplicitParam(name = "clinvarId",
                     value = "Comma separated list of rcv ids, e.g.: RCV000033215",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "rs",
@@ -515,7 +516,7 @@ public class RegionWSServer extends GenericRestWSServer {
                     value = "Comma separated list of review lables (only enabled for ClinVar variants), "
                             + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "significance",
+            @ApiImplicitParam(name = "clinvar-significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query"),
