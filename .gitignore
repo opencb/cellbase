@@ -59,3 +59,11 @@ local.properties
 *.pyc
 os
 sys
+
+# R
+R.Rproj
+.Rproj.user
+.Rhistory
+.RData
+clients/R/vignettes/*.html
+clients/cellbaseR*.tar.gz
