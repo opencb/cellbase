@@ -5,13 +5,17 @@ require(methods)
 #' 
 #' @details This S4 class holds the default configuration required by
 #' CellBaseR methods to connect to the cellbase web services.
-#' By defult it is configured to query human
+#' By default it is configured to query human. Please, visit
+#' https://github.com/opencb/cellbase/wiki and
+#' bioinfodev.hpc.cam.ac.uk/cellbase/webservices/ for more details on
+#' following parameters.
 #' data based on the GRCh37 genome assembly
-#' @slot host a charcter specifing the host url
-#' @slot version a charcter specifing the API version
-#' @slot species a character specifing the species to be queried
-#' @slot batch_size numeric a parameter for 
-#' @slot num_threads the number of threads
+#' @slot host a character specifying the host url. Default "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/"
+#' @slot version a character specifying the API version. Default "v4"
+#' @slot species a character specifying the species to be queried. Default "hsapiens"
+#' @slot batch_size if multiple queries are raised by a single method call, e.g. getting annotation info for several genes,
+#' queries will be sent to the server in batches. This slot indicates the size of these batches. Default 200
+#' @slot num_threads the number of threads. Default 8
     setClass("CellBaseR",
     slots = c(host="character", version="character", species="character",
     batch_size="numeric", num_threads="numeric"), prototype = prototype(
@@ -26,14 +30,19 @@ require(methods)
 #' This class defines the CellBaseR object. It holds the default
 #' configuration required by CellBaseR methods to connect to the
 #' cellbase web services. By defult it is configured to query human
-#' data based on the GRCh37 genome assembly
-#' @param species A charcter should be     a species supported by cellbase
+#' data based on the GRCh37 genome assembly. Please, visit
+#' https://github.com/opencb/cellbase/wiki and
+#' bioinfodev.hpc.cam.ac.uk/cellbase/webservices/ for more details on
+#' following parameters.
+#' @param species A character should be     a species supported by cellbase
 #' run cbSpeciesClient to see avaiable species and their corresponding data
 #' @import methods 
-#' @param  host A character the default host url for cellllbase webservices
-#' @param  version A character the cellbae API version
-#' @param  species A charcter should be     a species supported by cellbase
-#' @param  batch_size numeric a parameter for 
+#' @param  host A character the default host url for cellbase webservices,
+#' e.g. "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/"
+#' @param  version A character the cellbae API version, e.g. "V4"
+#' @param  species a character specifying the species to be queried, e.g. "hsapiens"
+#' @param  batch_size if multiple queries are raised by a single method call, e.g. getting annotation info for several genes,
+#' queries will be sent to the server in batches. This slot indicates the size of these batches, e.g. 200
 #' @return An object of class CellBaseR
 #' @examples 
 #' library(cellbaseR)
@@ -67,15 +76,13 @@ setGeneric("getCellbase", function(object, file=NULL,categ, subcateg,ids,
 #' @aliases getCellbase
 #' This method allows the user to query the cellbase web services without
 #' any predefined categories, subcategries, or resources
-#' This method allows the user to query the cellbase web services without
-#' any predefined categories, subcategries, or resources
 #' @param object an object of class CellBaseR
 #' @param file a path to a bgzipped and tabix indexed vcf file,
-#' @param categ charcter to specify the category to be queried
+#' @param category character to specify the category to be queried
 #' this could be "feature", "genomic", "regulatory", or "network"
-#' @param subcateg charcter to specify the subcategory to be queried
-#' @param ids a charcter vector of the ids to be queried
-#' @param resource a charcter to specify the resource to be queried
+#' @param subcategory character to specify the subcategory to be queried
+#' @param ids a character vector of the ids to be queried
+#' @param resource a character to specify the resource to be queried
 #' @param filters an object of class CellBaseParam specifying additional 
 #' filterss for the CellBaseR
 #' @param ... any extra arguments
@@ -91,7 +98,7 @@ setGeneric("getCellbase", function(object, file=NULL,categ, subcateg,ids,
 #' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setMethod("getCellbase", "CellBaseR", definition = function(object, 
-    file=NULL, categ, subcateg, ids, resource, filters=NULL,...) {
+    file=NULL, category, subcategory, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species
     version <- object@version
@@ -162,8 +169,8 @@ setGeneric("cbGeneClient", function(object,ids,resource,filter, ...)
 #' 
 #' @aliases cbGeneClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried
-#' @param resource a charcter vector to specify the ids to be queried
+#' @param ids a character vector of the ids to be queried
+#' @param resource a character vector to specify the ids to be queried
 
 #' @param filters a object of class CellBaseParam specifying additional filters
 #'    for the CellBaseR
@@ -204,9 +211,9 @@ setGeneric("cbRegionClient", function(object,ids,resource,filters, ...)
 #' 
 #' @aliases cbRegionClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried, for example, 
+#' @param ids a character vector of the ids to be queried, for example, 
 #' "1:1000000-1200000' should always be in the form 'chr:start-end'
-#' @param resource a charcter vector to specify the ids to be queried
+#' @param resource a character vector to specify the ids to be queried
 #' @param filters a object of class CellBaseParam specifying additional filters
 #'    for the CellBaseR
 #' @param ... any extra arguments
@@ -240,9 +247,9 @@ setGeneric("cbSnpClient", function(object,ids,resource,filters, ...)
 #' A method to query snp data from Cellbase web services
 #' @aliases cbSnpClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried, must be a valid rsid,
+#' @param ids a character vector of the ids to be queried, must be a valid rsid,
 #' for example 'rs6025'
-#' @param resource a charcter vector to specify the ids to be queried
+#' @param resource a character vector to specify the ids to be queried
 #' @param filters a object of class CellBaseParam specifying additional filters
 #'    for the CellBaseR
 #' @param ... any extra arguments
@@ -278,9 +285,9 @@ setGeneric("cbVariantClient", function(object,ids,resource,filters=NULL, ...)
 #' 
 #' @aliases cbVariantClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried, must be in the 
+#' @param ids a character vector of the ids to be queried, must be in the 
 #' following format 'chr:start:ref:alt', for example, '1:128546:A:T'
-#' @param resource a charcter vector to specify the ids to be queried
+#' @param resource a character vector to specify the ids to be queried
 #' @param filters a object of class CellBaseParam specifying additional filters
 #'    for the CellBaseR
 #' @param ... any extra arguments
@@ -316,9 +323,9 @@ setGeneric("cbTfbsClient", function(object,ids,resource,filters=NULL, ...)
 #' 
 #' @aliases cbTfbsClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried, must be a valid 
+#' @param ids a character vector of the ids to be queried, must be a valid 
 #' transcription factor name, for example, Pdr1, and Oaf1
-#' @param resource a charcter vector to specify the ids to be queried
+#' @param resource a character vector to specify the ids to be queried
 
 #' @param filters a object of class CellBaseParam specifying additional filters
 #' for the CellBaseR
@@ -353,9 +360,9 @@ setGeneric("cbTranscriptClient", function(object,ids,resource,filters=NULL, ...)
 #' A method to query transcript data from Cellbase web services
 #' @aliases cbTranscriptClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried, for example,
+#' @param ids a character vector of the ids to be queried, for example,
 #' ensemble transccript ID, like ENST00000380152
-#' @param resource a charcter vector to specify the resource to be queried can
+#' @param resource a character vector to specify the resource to be queried can
 #'    be any of "info", "function_prediction", "gene", "sequence", "variation"
 #'    , or "protein"
 #' @param filters a object of class CellBaseParam specifying additional filters
@@ -393,9 +400,9 @@ setGeneric("cbXrefClient", function(object,ids,resource,filters=NULL, ...)
 #' 
 #' @aliases cbXrefClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried, any crossrefereable 
+#' @param ids a character vector of the ids to be queried, any crossrefereable 
 #' ID, gene names, transcript ids, uniprot ids,etc.
-#' @param resource a charcter vector to specify the ids to be queried can 
+#' @param resource a character vector to specify the ids to be queried can 
 #' be any of "xref", "gene", "starts"with", or "contains"
 #' @param filters a object of class CellBaseParam specifying additional filters
 #' for the CellBaseR
@@ -430,9 +437,9 @@ setGeneric("cbProteinClient", function(object,ids,resource,filters=NULL, ...)
 #' 
 #' @aliases cbProteinClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of uniprot ids to be queried, should be one
+#' @param ids a character vector of uniprot ids to be queried, should be one
 #' or more of uniprot ids, for example O15350.
-#' @param resource a charcter vector to specify the ids to be queried
+#' @param resource a character vector to specify the ids to be queried
 #' @param filters a object of class CellBaseParam specifying additional filters
 #'    for the CellBaseR
 #' @return an object of class CellBaseResponse which holds a dataframe
@@ -467,8 +474,8 @@ setGeneric("cbChromosomeInfoClient", function(object,ids,resource,filters=NULL, 
 #' 
 #' @aliases cbChromosomeInfoClient
 #' @param object an object of class CellBaseR
-#' @param ids a charcter vector of the ids to be queried
-#' @param resource a charcter vector to specify the ids to be queried
+#' @param ids a character vector of the ids to be queried
+#' @param resource a character vector to specify the ids to be queried
 #' @param filters a object of class CellBaseParam specifying additional filters
 #' for the CellBaseR
 #' @param ... any extra arguments
@@ -622,14 +629,14 @@ setMethod("[","CellBaseResponse",definition = function(x,i,j,drop="missing")
 #'
 #' @slot genome A character denoting the genome build to query,eg, GRCh37
 #' (default),or GRCh38
-#' @slot gene A charcter vector denoting the gene/s to be queried
-#' @slot  region A charcter vector denoting the region/s to be queried must be 
+#' @slot gene A character vector denoting the gene/s to be queried
+#' @slot  region A character vector denoting the region/s to be queried must be 
 #' in the form 1:100000-1500000 not chr1:100000-1500000
-#' @slot rs A charcter vector denoting the rs ids to be queried
-#' @slot  so A charcter vector denoting sequence ontology to be queried
-#' @slot  phenotype A charcter vector denoting the phenotype to be queried
-#' @slot  include A charcter vector denoting the fields to be returned
-#' @slot  exclude A charcter vector denoting the fields to be excluded
+#' @slot rs A character vector denoting the rs ids to be queried
+#' @slot  so A character vector denoting sequence ontology to be queried
+#' @slot  phenotype A character vector denoting the phenotype to be queried
+#' @slot  include A character vector denoting the fields to be returned
+#' @slot  exclude A character vector denoting the fields to be excluded
 #' @slot  limit A number limiting the number of results to be returned
     setClass("CellBaseParam",slots = c(genome="character", gene="character", 
     region="character", rs="character", so="character", phenotype="character", 
@@ -648,14 +655,14 @@ setMethod("[","CellBaseResponse",definition = function(x,i,j,drop="missing")
 #'CellBaseR methods
 #' @param genome A character denoting the genome build to query,eg, GRCh37
 #' (default),or GRCh38
-#' @param gene A charcter vector denoting the gene/s to be queried
-#' @param region A charcter vector denoting the region/s to be queried must be 
+#' @param gene A character vector denoting the gene/s to be queried
+#' @param region A character vector denoting the region/s to be queried must be 
 #' in the form 1:100000-1500000 not chr1:100000-1500000
-#' @param rs A charcter vector denoting the rs ids to be queried
-#' @param so A charcter vector denoting sequence ontology to be queried
-#' @param phenotype A charcter vector denoting the phenotype to be queried
-#' @param include A charcter vector denoting the fields to be returned
-#' @param exclude A charcter vector denoting the fields to be excluded
+#' @param rs A character vector denoting the rs ids to be queried
+#' @param so A character vector denoting sequence ontology to be queried
+#' @param phenotype A character vector denoting the phenotype to be queried
+#' @param include A character vector denoting the fields to be returned
+#' @param exclude A character vector denoting the fields to be excluded
 #' @param limit A number limiting the number of results to be returned
 #' @examples 
 #' library(cellbaseR)
