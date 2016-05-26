@@ -145,11 +145,7 @@ public class VariationWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(VariantDBAdaptor.QueryParams.ID.key(), s));
-            }
+            List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
             return createOkResponse(variationDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);

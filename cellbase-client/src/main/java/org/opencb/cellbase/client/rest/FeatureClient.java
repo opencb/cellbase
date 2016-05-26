@@ -17,7 +17,11 @@ public class FeatureClient<T> extends ParentRestClient<T> {
         super(configuration);
     }
 
-    protected QueryResponse<T> search(Query query) throws IOException {
+    public  QueryResponse<T> next(String id) throws IOException {
+        return execute(id, "next", null, clazz);
+    }
+
+    public QueryResponse<T> search(Query query) throws IOException {
         return execute("search", query, clazz);
     }
 

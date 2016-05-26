@@ -61,17 +61,19 @@ public class ParentRestClient<T> {
         logger = LoggerFactory.getLogger(this.getClass().toString());
     }
 
-    protected QueryResponse<Long> count(Query query) throws IOException {
+
+    public QueryResponse<Long> count(Query query) throws IOException {
         return execute("count", query, Long.class);
     }
 
-    protected QueryResponse<T> first() throws IOException {
+    public QueryResponse<T> first() throws IOException {
         return execute("first", null, clazz);
     }
 
-    protected QueryResponse<T> get(List<String> id, Map<String, Object> params) throws IOException {
+    public QueryResponse<T> get(List<String> id, Map<String, Object> params) throws IOException {
         return execute(id, "info", params, clazz);
     }
+
 
     protected <T> QueryResponse<T> execute(String action, Map<String, Object> params, Class<T> clazz) throws IOException {
         return execute("", action, params, clazz);
@@ -92,24 +94,10 @@ public class ParentRestClient<T> {
                 .path(category)
                 .path(subcategory);
 
-//        // TODO we still have to check if there are multiple IDs, the lmit is 200 pero query, this can be parallelized
-//        // Some WS do not have IDs such as 'create'
-//        if (idList != null && !idList.isEmpty()) {
-//            String ids = StringUtils.join(idList, ',');
-//            path = path.path(ids);
-//        }
-//
-//        // Add the last URL part, the 'action'
-//        path = path.path(resource);
-//
-//        // TODO we still have to check the limit of the query, and keep querying while there are more results
-//        if (params != null) {
-//            for (String s : params.keySet()) {
-//                path = path.queryParam(s, params.get(s));
-//            }
-//        }
-
-        params.put("limit", LIMIT);
+        if (params == null) {
+            params = new HashMap<>();
+        }
+        params.putIfAbsent("limit", LIMIT);
 
         String ids = "";
         if (idList != null && !idList.isEmpty()) {
@@ -117,62 +105,47 @@ public class ParentRestClient<T> {
         }
 
         Map<Integer, Integer> idMap = new HashMap<>();
+        List<String> prevIdList = idList;
         List<String> newIdsList = null;
         boolean call = true;
         int skip = 0;
         QueryResponse<T> queryResponse = null;
-        QueryResponse<T> finalQueryResponse = null; // = (QueryResponse<T>) callRest(path, ids, resource, params, clazz);
+        QueryResponse<T> finalQueryResponse = null;
         while (call) {
-
-//            System.out.println("REST URL: " + path.getUri().toURL());
-//            String jsonString = path.request().get(String.class);
-//            logger.debug("jsonString = " + jsonString);
-//            queryResponse = parseResult(jsonString, clazz);
             queryResponse = (QueryResponse<T>) callRest(path, ids, resource, params, clazz);
+
+            // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
                 finalQueryResponse = queryResponse;
-            } else {
-                // merge query responses
+            } else {    // merge query responses
                 if (newIdsList != null && newIdsList.size() > 0) {
                     for (int i = 0; i < newIdsList.size(); i++) {
                         finalQueryResponse.getResponse().get(idMap.get(i)).getResult()
                                 .addAll(queryResponse.getResponse().get(i).getResult());
                     }
-                } else {
-                    System.out.println("really???");
                 }
             }
 
             // check if we need to call again
+            if (newIdsList != null) {
+                prevIdList = newIdsList;
+            }
             newIdsList = new ArrayList<>();
             idMap = new HashMap<>();
-
-            int numTotal;
             for (int i = 0; i < queryResponse.getResponse().size(); i++) {
-                System.out.println("aaaaaaaaaaaa");
-                numTotal = queryResponse.getResponse().get(i).getNumResults();
-                if (numTotal == LIMIT) {
+                if (queryResponse.getResponse().get(i).getNumResults() == LIMIT) {
                     idMap.put(newIdsList.size(), i);
-                    newIdsList.add(idList.get(i));
+                    newIdsList.add(prevIdList.get(i));
                 }
             }
 
             if (newIdsList.isEmpty()) {
                 // this breaks the while condition
                 call = false;
-                break;
             } else {
-//                int skip = 0;
                 ids = StringUtils.join(newIdsList, ',');
                 skip += LIMIT;
                 params.put("skip", skip);
-//                params.put("limit", LIMIT);
-//                QueryResponse<T> queryResponse1 = (QueryResponse<T>) callRest(path, ids, resource, params, clazz);
-//                for (Map.Entry<Integer, Integer> entry : idMap.entrySet()) {
-//                    finalQueryResponse.getResponse().get(entry.getValue())
-// .addAllResults(queryResponse1.getResponse().get(entry.getKey()).getResult());
-//                }
-                break;
             }
         }
 
@@ -190,7 +163,6 @@ public class ParentRestClient<T> {
         // Add the last URL part, the 'action'
         callUrl = callUrl.path(resource);
 
-        // TODO we still have to check the limit of the query, and keep querying while there are more results
         if (params != null) {
             for (String s : params.keySet()) {
                 callUrl = callUrl.queryParam(s, params.get(s));
