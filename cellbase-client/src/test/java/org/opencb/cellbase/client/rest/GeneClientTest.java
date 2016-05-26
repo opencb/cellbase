@@ -27,10 +27,14 @@ import org.opencb.cellbase.client.rest.models.GroupByFields;
 import org.opencb.cellbase.client.rest.models.GroupCount;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 /**
@@ -53,7 +57,7 @@ public class GeneClientTest {
 
     @Test
     public void count() throws Exception {
-        QueryResponse<Long> count = cellBaseClient.getGeneClient().count(null);
+        QueryResponse<Long> count = cellBaseClient.getGeneClient().count(new Query());
         assertEquals("Number of returned genes do not match", 57905, count.firstResult().longValue());
 
         count = cellBaseClient.getGeneClient().count(new Query(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "protein_coding"));
@@ -83,9 +87,7 @@ public class GeneClientTest {
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().get(Collections.singletonList("BRCA2"), null);
         assertNotNull("This gene should exist", gene.firstResult());
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("exclude", "transcripts");
-        gene = cellBaseClient.getGeneClient().get(Collections.singletonList("BRCA2"), params);
+        gene = cellBaseClient.getGeneClient().get(Collections.singletonList("BRCA2"), new QueryOptions(QueryOptions.EXCLUDE, "transcripts"));
         assertNull("This gene should not have transcritps", gene.firstResult().getTranscripts());
 
         gene = cellBaseClient.getGeneClient().get(Collections.singletonList("NotExistingGene"), null);
@@ -101,9 +103,8 @@ public class GeneClientTest {
     @Test
     public void search() throws Exception {
         Map<String, Object> params = new HashMap<>();
-        params.put(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "miRNA");
-        params.put("limit", 1);
-        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(params));
+        QueryResponse<Gene> gene = cellBaseClient.getGeneClient().search(new Query(GeneDBAdaptor.QueryParams.BIOTYPE.key(), "miRNA"),
+                new QueryOptions("limit", 1));
         assertNotNull("The genes with the given biotype must be returned", gene.firstResult());
     }
 
@@ -115,7 +116,7 @@ public class GeneClientTest {
 //
     @Test
     public void getSnp() throws Exception {
-        QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getSnp(Arrays.asList("BRCA1", "TFF1"), new HashMap<>());
+        QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getSnp(Arrays.asList("BRCA1", "TFF1"), new QueryOptions());
         assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
     }
 //
@@ -130,9 +131,7 @@ public class GeneClientTest {
         QueryResponse<Transcript> transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", null);
         assertNotNull("Transcripts of the given gene must be returned", transcript.firstResult());
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("transcripts.biotype", "protein_coding");
-        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", params);
+        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", new QueryOptions("transcripts.biotype", "protein_coding"));
         assertNotNull(transcript.firstResult());
         assertEquals("Number of transcripts with biotype protein_coding", 3, transcript.getResponse().get(0).getNumTotalResults());
     }
@@ -154,7 +153,7 @@ public class GeneClientTest {
         Query query = new Query();
         query.put("fields", "chromosome");
         query.put("region", "1:6635137-6835325");
-        QueryResponse<GroupByFields> group = cellBaseClient.getGeneClient().group(query);
+        QueryResponse<GroupByFields> group = cellBaseClient.getGeneClient().group(query, new QueryOptions());
         assertNotNull("chromosomes present in the given region should be returned", group.firstResult());
     }
 
@@ -163,7 +162,7 @@ public class GeneClientTest {
         Query query = new Query();
         query.put("fields", "chromosome");
         query.put("count", true);
-        QueryResponse<GroupCount> result = cellBaseClient.getGeneClient().groupCount(query);
+        QueryResponse<GroupCount> result = cellBaseClient.getGeneClient().groupCount(query, new QueryOptions());
         assertNotNull("chromosomes are grouped and counted", result.firstResult());
     }
 }

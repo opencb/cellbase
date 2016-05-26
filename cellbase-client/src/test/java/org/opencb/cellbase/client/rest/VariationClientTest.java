@@ -3,12 +3,14 @@ package org.opencb.cellbase.client.rest;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by swaathi on 23/05/16.
@@ -28,7 +30,7 @@ public class VariationClientTest {
 
     @Test
     public void count() throws Exception {
-        QueryResponse<Long> count = cellBaseClient.getVariationClient().count(null);
+        QueryResponse<Long> count = cellBaseClient.getVariationClient().count(new Query());
         assertEquals("Number of returned variants do not match", 154913735, count.firstResult().longValue());
     }
 
@@ -46,7 +48,7 @@ public class VariationClientTest {
 
     @Test
     public void getAllConsequenceTypes() throws Exception {
-        QueryResponse<String> response = cellBaseClient.getVariationClient().getAllConsequenceTypes(null);
+        QueryResponse<String> response = cellBaseClient.getVariationClient().getAllConsequenceTypes(new Query());
         assertNotNull("List of all the consequence types present should be returned", response.firstResult());
     }
 }

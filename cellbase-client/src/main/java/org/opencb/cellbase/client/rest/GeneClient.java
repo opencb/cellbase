@@ -23,10 +23,10 @@ import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.List;
 
 /**
@@ -44,32 +44,32 @@ public class GeneClient extends FeatureClient<Gene> {
     }
 
     public QueryResponse<String> getBiotypes(Query query) throws IOException {
-        return execute("biotype", query, String.class);
+        return execute("biotype", query, new QueryOptions(), String.class);
     }
 
     @Deprecated
     public QueryResponse<Gene> list(Query query) throws IOException {
-        return execute("list", query, Gene.class);
+        return execute("list", query, new QueryOptions(), Gene.class);
     }
 
-    public QueryResponse<Transcript> getTranscript(String id, Map<String, Object> params) throws IOException {
-        return execute(id, "transcript", params, Transcript.class);
+    public QueryResponse<Transcript> getTranscript(String id, QueryOptions queryOptions) throws IOException {
+        return execute(id, "transcript", queryOptions, Transcript.class);
     }
 
-    public QueryResponse<TranscriptTfbs> getTfbs(String id, Map<String, Object> params) throws IOException {
-        return execute(id, "tfbs", params, TranscriptTfbs.class);
+    public QueryResponse<TranscriptTfbs> getTfbs(String id, QueryOptions queryOptions) throws IOException {
+        return execute(id, "tfbs", queryOptions, TranscriptTfbs.class);
     }
 
-    public QueryResponse<Variant> getSnp(List<String> id, Map<String, Object> params) throws IOException {
-        return execute(id, "snp", params, Variant.class);
+    public QueryResponse<Variant> getSnp(List<String> id, QueryOptions queryOptions) throws IOException {
+        return execute(id, "snp", queryOptions, Variant.class);
     }
 
-    public QueryResponse<Entry> getProtein(String id, Map<String, Object> params) throws IOException {
-        return execute(id, "protein", params, Entry.class);
+    public QueryResponse<Entry> getProtein(String id, QueryOptions queryOptions) throws IOException {
+        return execute(id, "protein", queryOptions, Entry.class);
     }
 
-//    public QueryResponse<> getClinical(String id, Map<String, Object> params) throws IOException {
-//        return execute(id, "clinical", params, );
+//    public QueryResponse<> getClinical(String id, QueryOptions queryOptions) throws IOException {
+//        return execute(id, "clinical", queryOptions, );
 //    }
 
 }
