@@ -688,7 +688,7 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. "
             + "If query param "
             + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
-            + "histogram=false TranscriptTfbs objects will be returned "
+            + "histogram=false RegulatoryFeature objects will be returned "
             + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
             + "An independent database query will be issued for each region in regionStr, meaning that results for each "
             + "region will be returned in independent QueryResult objects within the QueryResponse object."
