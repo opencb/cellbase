@@ -60,7 +60,7 @@ public class GeneClient extends FeatureClient<Gene> {
         return execute(id, "tfbs", queryOptions, TranscriptTfbs.class);
     }
 
-    public QueryResponse<Variant> getSnp(List<String> id, QueryOptions queryOptions) throws IOException {
+    public QueryResponse<Variant> getVariation(List<String> id, QueryOptions queryOptions) throws IOException {
         return execute(id, "snp", queryOptions, Variant.class);
     }
 
