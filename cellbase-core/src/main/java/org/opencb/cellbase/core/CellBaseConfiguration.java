@@ -173,6 +173,7 @@ public class CellBaseConfiguration {
         private URLProperties uniprotRelNotes;
         private URLProperties intact;
         private URLProperties interpro;
+        private URLProperties interproRelNotes;
         private URLProperties conservation;
         private URLProperties gerp;
         private URLProperties clinvar;
@@ -305,6 +306,14 @@ public class CellBaseConfiguration {
 
         public void setInterpro(URLProperties interpro) {
             this.interpro = interpro;
+        }
+
+        public URLProperties getInterproRelNotes() {
+            return interproRelNotes;
+        }
+
+        public void setInterproRelNotes(URLProperties interproRelNotes) {
+            this.interproRelNotes = interproRelNotes;
         }
 
         public URLProperties getGeneExpressionAtlas() {
