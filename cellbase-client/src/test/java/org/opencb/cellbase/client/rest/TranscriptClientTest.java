@@ -61,7 +61,7 @@ public class TranscriptClientTest {
         assertNotNull("It should return the respective gene", response.firstResult());
     }
 
-    @Test
+//    @Test
     public void getVariation() throws Exception {
         QueryResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328,ENST00000528762", new Query("exclude", "annotation"));
         assertNotNull("It should return the variations for the given transcript(s)", response.firstResult());

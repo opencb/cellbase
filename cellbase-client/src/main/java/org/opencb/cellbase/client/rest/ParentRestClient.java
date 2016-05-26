@@ -61,21 +61,19 @@ public class ParentRestClient<T> {
         logger = LoggerFactory.getLogger(this.getClass().toString());
     }
 
-    protected QueryResponse<Long> count(Query query) throws IOException {
+
+    public QueryResponse<Long> count(Query query) throws IOException {
         return execute("count", query, Long.class);
     }
 
-    protected QueryResponse<T> first() throws IOException {
+    public QueryResponse<T> first() throws IOException {
         return execute("first", null, clazz);
     }
 
-    protected  QueryResponse<T> next(String id) throws IOException {
-        return execute(id, "next", null, clazz);
-    }
-
-    protected QueryResponse<T> get(List<String> id, Map<String, Object> params) throws IOException {
+    public QueryResponse<T> get(List<String> id, Map<String, Object> params) throws IOException {
         return execute(id, "info", params, clazz);
     }
+
 
     protected <T> QueryResponse<T> execute(String action, Map<String, Object> params, Class<T> clazz) throws IOException {
         return execute("", action, params, clazz);
@@ -107,6 +105,7 @@ public class ParentRestClient<T> {
         }
 
         Map<Integer, Integer> idMap = new HashMap<>();
+        List<String> prevIdList = idList;
         List<String> newIdsList = null;
         boolean call = true;
         int skip = 0;
@@ -114,10 +113,11 @@ public class ParentRestClient<T> {
         QueryResponse<T> finalQueryResponse = null;
         while (call) {
             queryResponse = (QueryResponse<T>) callRest(path, ids, resource, params, clazz);
+
+            // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
                 finalQueryResponse = queryResponse;
-            } else {
-                // merge query responses
+            } else {    // merge query responses
                 if (newIdsList != null && newIdsList.size() > 0) {
                     for (int i = 0; i < newIdsList.size(); i++) {
                         finalQueryResponse.getResponse().get(idMap.get(i)).getResult()
@@ -127,15 +127,15 @@ public class ParentRestClient<T> {
             }
 
             // check if we need to call again
+            if (newIdsList != null) {
+                prevIdList = newIdsList;
+            }
             newIdsList = new ArrayList<>();
             idMap = new HashMap<>();
-
-            int numTotal;
             for (int i = 0; i < queryResponse.getResponse().size(); i++) {
-                numTotal = queryResponse.getResponse().get(i).getNumResults();
-                if (numTotal == LIMIT) {
+                if (queryResponse.getResponse().get(i).getNumResults() == LIMIT) {
                     idMap.put(newIdsList.size(), i);
-                    newIdsList.add(idList.get(i));
+                    newIdsList.add(prevIdList.get(i));
                 }
             }
 

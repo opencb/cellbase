@@ -55,4 +55,10 @@ public class CellBaseClient {
         clients.putIfAbsent("PROTEIN", new ProteinClient(clientConfiguration));
         return (ProteinClient) clients.get("PROTEIN");
     }
+
+    public GenomicRegionClient getGenomicRegionClient() {
+        clients.putIfAbsent("GENOME_REGION", new GenomicRegionClient(clientConfiguration));
+        return (GenomicRegionClient) clients.get("GENOME_REGION");
+    }
+
 }
