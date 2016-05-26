@@ -50,4 +50,9 @@ public class CellBaseClient {
         clients.putIfAbsent("VARIATION", new VariationClient(clientConfiguration));
         return (VariationClient) clients.get("VARIATION");
     }
+
+    public ProteinClient getProteinClient() {
+        clients.putIfAbsent("PROTEIN", new ProteinClient(clientConfiguration));
+        return (ProteinClient) clients.get("PROTEIN");
+    }
 }

@@ -69,6 +69,10 @@ public class ParentRestClient<T> {
         return execute("first", null, clazz);
     }
 
+    protected  QueryResponse<T> next(String id) throws IOException {
+        return execute(id, "next", null, clazz);
+    }
+
     protected QueryResponse<T> get(List<String> id, Map<String, Object> params) throws IOException {
         return execute(id, "info", params, clazz);
     }
@@ -119,8 +123,6 @@ public class ParentRestClient<T> {
                         finalQueryResponse.getResponse().get(idMap.get(i)).getResult()
                                 .addAll(queryResponse.getResponse().get(i).getResult());
                     }
-                } else {
-                    System.out.println("really???");
                 }
             }
 

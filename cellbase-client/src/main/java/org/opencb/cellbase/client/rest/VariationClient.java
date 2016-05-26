@@ -22,10 +22,6 @@ public class VariationClient extends FeatureClient<Variant> {
         this.subcategory = "variation";
     }
 
-    public QueryResponse<Variant> getNext(String id) throws IOException {
-        return execute(id, "next", null, Variant.class);
-    }
-
     public QueryResponse<String> getAllConsequenceTypes(Query query) throws IOException {
         return execute("consequence_types", query, String.class);
     }

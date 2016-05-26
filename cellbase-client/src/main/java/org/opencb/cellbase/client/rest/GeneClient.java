@@ -34,7 +34,6 @@ import java.util.List;
  */
 public class GeneClient extends FeatureClient<Gene> {
 
-
     public GeneClient(ClientConfiguration clientConfiguration) {
         super(clientConfiguration);
 

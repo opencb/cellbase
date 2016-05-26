@@ -15,6 +15,7 @@ import java.util.List;
  * Created by swaathi on 20/05/16.
  */
 public class TranscriptClient extends ParentRestClient<Transcript> {
+
     public TranscriptClient(ClientConfiguration configuration) {
         super(configuration);
         this.clazz = Transcript.class;

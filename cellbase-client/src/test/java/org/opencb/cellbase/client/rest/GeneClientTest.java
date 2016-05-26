@@ -63,7 +63,6 @@ public class GeneClientTest {
     @Test
     public void first() throws Exception {
         QueryResponse<Gene> gene = cellBaseClient.getGeneClient().first();
-        System.out.println(gene);
         assertNotNull("First gene in the collection must be returned", gene);
     }
 
