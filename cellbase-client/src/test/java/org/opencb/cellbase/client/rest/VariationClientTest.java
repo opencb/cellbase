@@ -51,4 +51,10 @@ public class VariationClientTest {
         QueryResponse<String> response = cellBaseClient.getVariationClient().getAllConsequenceTypes(new Query());
         assertNotNull("List of all the consequence types present should be returned", response.firstResult());
     }
+
+    @Test
+    public void getConsequenceTypeById() throws Exception {
+        QueryResponse<String> stringQueryResponse = cellBaseClient.getVariationClient().getConsequenceTypeById("rs6661", null);
+        assertEquals("Consequence Type of rs6661 is wrong", "3_prime_UTR_variant", stringQueryResponse.firstResult());
+    }
 }

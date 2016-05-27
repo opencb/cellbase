@@ -78,7 +78,11 @@ public class MongoDBAdaptor {
                 options.put("exclude", "_id,_chunkIds");
             } else {
                 String exclude = options.getString("exclude");
-                options.put("exclude", exclude + ",_id,_chunkIds");
+                if (exclude.contains("_id,_chunkIds")) {
+                    return options;
+                } else {
+                    options.put("exclude", exclude + ",_id,_chunkIds");
+                }
             }
         } else {
             options = new QueryOptions("exclude", "_id,_chunkIds");
