@@ -12,10 +12,10 @@ web services}
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a charcter vector of the ids to be queried, must be a valid 
+\item{ids}{a character vector of the ids to be queried, must be a valid 
 transcription factor name, for example, Pdr1, and Oaf1}
 
-\item{resource}{a charcter vector to specify the ids to be queried}
+\item{resource}{a character vector to specify the ids to be queried}
 
 \item{filters}{a object of class CellBaseParam specifying additional filters
 for the CellBaseR}

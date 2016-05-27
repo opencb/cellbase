@@ -25,7 +25,7 @@ A method to query Clinical data from Cellbase web services
 \examples{
 library(cellbaseR)
 cb <- CellBaseR()
-cbparam <- CellBaseParam(gene=c("TP73","TET1"))
+cbParam <- CellBaseParam(gene=c("TP73","TET1"))
 res <- cbClinicalClient(object=cb,filters=cbParam)
 
 }

@@ -134,7 +134,7 @@ setGeneric("cbClinicalClient", function(object, filters,...)
 #' @examples 
 #' library(cellbaseR)
 #' cb <- CellBaseR()
-#' cbparam <- CellBaseParam(gene=c("TP73","TET1"))
+#' cbParam <- CellBaseParam(gene=c("TP73","TET1"))
 #' res <- cbClinicalClient(object=cb,filters=cbParam)
 #' 
 #' @seealso for more information about the cellbase webservices see 

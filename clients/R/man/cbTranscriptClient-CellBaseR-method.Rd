@@ -12,10 +12,10 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a charcter vector of the ids to be queried, for example,
+\item{ids}{a character vector of the ids to be queried, for example,
 ensemble transccript ID, like ENST00000380152}
 
-\item{resource}{a charcter vector to specify the resource to be queried can
+\item{resource}{a character vector to specify the resource to be queried can
 be any of "info", "function_prediction", "gene", "sequence", "variation"
 , or "protein"}
 
