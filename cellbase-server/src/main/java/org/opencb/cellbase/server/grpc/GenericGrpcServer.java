@@ -45,7 +45,7 @@ public class GenericGrpcServer {
     protected static Logger logger; // = Logger.getLogger(GeneServer.class.getName());
 
     static {
-        logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
+        logger = LoggerFactory.getLogger("org.opencb.cellbase.server.grpc.GenericGrpcServer");
         logger.info("Static block, creating MongoDBAdapatorFactory");
         try {
             if (System.getenv("CELLBASE_HOME") != null) {
