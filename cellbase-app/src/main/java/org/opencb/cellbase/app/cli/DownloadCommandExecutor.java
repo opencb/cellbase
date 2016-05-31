@@ -310,9 +310,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
-        logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("version.json"));
+        logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("genomeVersion.json"));
         saveVersionData(GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
-                Collections.singletonList(url), sequenceFolder.resolve("version.json"));
+                Collections.singletonList(url), sequenceFolder.resolve("genomeVersion.json"));
     }
 
     private String getTimeStamp() {
@@ -422,7 +422,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             saveVersionData(GENE_DATA, UNIPROT_NAME,
                     getUniProtRelease(geneFolder.resolve("uniprotRelnotes.txt").toString()), getTimeStamp(),
-                    Collections.singletonList(geneGtfUrl), geneFolder.resolve("uniprotVersion.json"));
+                    Collections.singletonList(geneGtfUrl), geneFolder.resolve("uniprotXrefVersion.json"));
         }
     }
 
@@ -608,7 +608,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
             saveVersionData(REGULATION_DATA, MIRBASE_NAME,
                     getLine(mirbaseFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
-                    Collections.singletonList(url), mirbaseFolder.resolve("disgenetVersion.json"));
+                    Collections.singletonList(url), mirbaseFolder.resolve("mirbaseVersion.json"));
         }
 
         if (species.getScientificName().equals("Homo sapiens")) {
@@ -639,7 +639,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(url, regulationFolder.resolve("mmu_MTI.xls").toString());
             saveVersionData(REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
                     Collections.singletonList(url),
-                    regulationFolder.resolve("ensemblRegulationVersion.json"));
+                    regulationFolder.resolve("miRTarBaseVersion.json"));
         }
     }
 
