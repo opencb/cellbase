@@ -185,10 +185,6 @@ setMethod("cbGeneClient", "CellBaseR", definition = function(object,ids,resource
     subcateg<- "gene"
     ids <- ids
     resource <- resource
-    filters <- c(genome=genome, gene=gene,region=region,rs=rs,so=so, 
-                 phenotype=phenotype,limit=limit, include=include, 
-                 exclude=exclude, limit=limit)
-    filters <- paste(filters, collapse = "&")
     result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, 
     species=species, categ=categ, subcateg=subcateg,ids=ids,resource=resource, 
     filters=NULL,...)
@@ -261,7 +257,7 @@ setMethod("cbSnpClient", "CellBaseR",    definition = function(object, ids,
     species <- object@species
     version <- object@version
     categ <- "feature"
-    subcateg<- "snp"
+    subcateg<- "variation"
     ids <- ids
     resource <- resource
     result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, 

@@ -258,3 +258,35 @@ Annovcf <- function(object, file, batch_size, num_threads){
   return(final)
   
 }
+
+#' A function to plot gene modells from gene data returned by cbGeneClient
+#' 
+#' 
+#' @param object an object of class CellBaseResponse
+#' @return A Gviz plot
+#' @export
+plotGenes <- function(object){
+  require(data.table)
+  require(tidyr)
+  require(Gviz)
+  data <- object@cbData
+  rt4 <- as.data.table(data)[,.(id, name, transcripts)]
+  setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+  hope <- rt4 %>% unnest(transcripts) 
+  setnames(hope, c("id", "biotype"), c("transcript","feature"))
+  hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+  hope <- hope %>% unnest(exons)
+  hope <- subset(hope, feature=="protein_coding")
+  setnames(hope, c("id"), c("exon"))
+  
+  hope <- as.data.frame(hope)
+  hope <- hope[!duplicated(hope),]
+  # Plot with Gviz
+  chr <- paste0(unique(hope$chromosome))
+  ideoTrack <- IdeogramTrack(genome = "hg19", chromosome = chr)
+  testTrack <- GeneRegionTrack(hope, genome="hg19", chromosome=chr)
+  from <- min(hope$start)-1000
+  to <- max(hope$end)+1000
+  plotTracks(list(ideoTrack, testTrack),from = from, to=to, testTrack, transcriptAnnotation="transcript")
+  
+}
