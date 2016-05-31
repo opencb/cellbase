@@ -270,7 +270,9 @@ plotGenes <- function(object){
   require(tidyr)
   require(Gviz)
   data <- object@cbData
-  rt4 <- as.data.table(data)[,.(id, name, transcripts)]
+  rt4 <- as.data.table(data)
+  rt4 <- rt4[,c("id", "name", "transcripts")]
+  rt4 <- as.data.table(rt4)
   setnames(rt4,  c("id", "name"), c("gene", "symbol"))
   hope <- rt4 %>% unnest(transcripts) 
   setnames(hope, c("id", "biotype"), c("transcript","feature"))
