@@ -90,6 +90,8 @@ public class VariantAnnotationUtils {
     public static final String FRAMESHIFT_VARIANT = "frameshift_variant";
     public static final String CODING_SEQUENCE_VARIANT = "coding_sequence_variant";
     public static final String TRANSCRIPT_ABLATION = "transcript_ablation";
+    public static final String COPY_NUMBER_CHANGE = "copy_number_change";
+    public static final String TERMINATOR_CODON_VARIANT = "terminator_codon_variant";
     public static final String FEATURE_TRUNCATION = "feature_truncation";
     public static final String INFRAME_DELETION = "inframe_deletion";
 
