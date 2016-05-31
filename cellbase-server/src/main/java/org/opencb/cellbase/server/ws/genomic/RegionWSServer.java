@@ -470,7 +470,8 @@ public class RegionWSServer extends GenericRestWSServer {
                     q.put("strand", strand);
                     queries.add(q);
                 }
-                return createOkResponse(genomeDBAdaptor.getGenomicSequence(queries, queryOptions));
+//                return createOkResponse(genomeDBAdaptor.getGenomicSequence(queries, queryOptions));
+                return createOkResponse(genomeDBAdaptor.getSequence(Region.parseRegions(region), queryOptions));
             } else {
                 query.put(GenomeDBAdaptor.QueryParams.REGION.key(), region);
                 query.put("strand", strand);
