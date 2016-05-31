@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -63,27 +64,28 @@ public class ParentRestClient<T> {
 
 
     public QueryResponse<Long> count(Query query) throws IOException {
-        return execute("count", query, Long.class);
+        return execute("count", query, new QueryOptions(), Long.class);
     }
 
     public QueryResponse<T> first() throws IOException {
-        return execute("first", null, clazz);
+        return execute("first", new Query(), new QueryOptions(), clazz);
     }
 
-    public QueryResponse<T> get(List<String> id, Map<String, Object> params) throws IOException {
-        return execute(id, "info", params, clazz);
+    public QueryResponse<T> get(List<String> id, QueryOptions queryOptions) throws IOException {
+        return execute(id, "info", queryOptions, clazz);
     }
 
 
-    protected <T> QueryResponse<T> execute(String action, Map<String, Object> params, Class<T> clazz) throws IOException {
-        return execute("", action, params, clazz);
+    protected <T> QueryResponse<T> execute(String action, Query query, QueryOptions queryOptions, Class<T> clazz) throws IOException {
+        queryOptions.putAll(query);
+        return execute("", action, queryOptions, clazz);
     }
 
-    protected <T> QueryResponse<T> execute(String ids, String resource, Map<String, Object> params, Class<T> clazz) throws IOException {
-        return execute(Arrays.asList(ids.split(",")), resource, params, clazz);
+    protected <T> QueryResponse<T> execute(String ids, String resource, QueryOptions queryOptions, Class<T> clazz) throws IOException {
+        return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz);
     }
 
-    protected <T> QueryResponse<T> execute(List<String> idList, String resource, Map<String, Object> params, Class<T> clazz)
+    protected <T> QueryResponse<T> execute(List<String> idList, String resource, QueryOptions queryOptions, Class<T> clazz)
             throws IOException {
 
         // Build the basic URL
@@ -94,10 +96,10 @@ public class ParentRestClient<T> {
                 .path(category)
                 .path(subcategory);
 
-        if (params == null) {
-            params = new HashMap<>();
+        if (queryOptions == null) {
+            queryOptions = new QueryOptions();
         }
-        params.putIfAbsent("limit", LIMIT);
+        queryOptions.putIfAbsent("limit", LIMIT);
 
         String ids = "";
         if (idList != null && !idList.isEmpty()) {
@@ -112,7 +114,7 @@ public class ParentRestClient<T> {
         QueryResponse<T> queryResponse = null;
         QueryResponse<T> finalQueryResponse = null;
         while (call) {
-            queryResponse = (QueryResponse<T>) callRest(path, ids, resource, params, clazz);
+            queryResponse = (QueryResponse<T>) callRest(path, ids, resource, queryOptions, clazz);
 
             // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
@@ -145,7 +147,7 @@ public class ParentRestClient<T> {
             } else {
                 ids = StringUtils.join(newIdsList, ',');
                 skip += LIMIT;
-                params.put("skip", skip);
+                queryOptions.put("skip", skip);
             }
         }
 
@@ -153,7 +155,7 @@ public class ParentRestClient<T> {
         return finalQueryResponse;
     }
 
-    private QueryResponse<T> callRest(WebTarget path, String ids, String resource, Map<String, Object> params, Class clazz)
+    private QueryResponse<T> callRest(WebTarget path, String ids, String resource, QueryOptions options, Class clazz)
             throws IOException {
         WebTarget callUrl = path;
         if (ids != null && !ids.isEmpty()) {
@@ -163,9 +165,9 @@ public class ParentRestClient<T> {
         // Add the last URL part, the 'action'
         callUrl = callUrl.path(resource);
 
-        if (params != null) {
-            for (String s : params.keySet()) {
-                callUrl = callUrl.queryParam(s, params.get(s));
+        if (options != null) {
+            for (String s : options.keySet()) {
+                callUrl = callUrl.queryParam(s, options.get(s));
             }
         }
 

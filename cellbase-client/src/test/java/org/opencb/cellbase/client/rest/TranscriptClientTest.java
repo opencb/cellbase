@@ -7,14 +7,14 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by swaathi on 20/05/16.
@@ -34,7 +34,7 @@ public class TranscriptClientTest {
 
     @Test
     public void count() throws Exception {
-        QueryResponse<Long> count = cellBaseClient.getTranscriptClient().count(null);
+        QueryResponse<Long> count = cellBaseClient.getTranscriptClient().count(new Query());
         assertEquals("Number of returned transcripts do not match", 196501, count.firstResult().longValue());
     }
 
@@ -57,13 +57,14 @@ public class TranscriptClientTest {
 
     @Test
     public void getGene() throws Exception {
-        QueryResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", new Query());
+        QueryResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", new QueryOptions());
         assertNotNull("It should return the respective gene", response.firstResult());
     }
 
 //    @Test
     public void getVariation() throws Exception {
-        QueryResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328,ENST00000528762", new Query("exclude", "annotation"));
+        QueryResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328,ENST00000528762",
+                new QueryOptions(QueryOptions.EXCLUDE, "annotation"));
         assertNotNull("It should return the variations for the given transcript(s)", response.firstResult());
     }
 
