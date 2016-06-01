@@ -388,7 +388,7 @@ public class VariationParser extends CellBaseParser {
 
         ProteinVariantAnnotation proteinVariantAnnotation = null;
         if (peptideAlternate != null || peptideReference != null || substitionScores != null) {
-            proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, null,
+            proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, 0,
                     peptideReference, peptideAlternate, null, null, substitionScores, null, null);
         }
         return proteinVariantAnnotation;
