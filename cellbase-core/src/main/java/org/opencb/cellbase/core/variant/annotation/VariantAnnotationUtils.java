@@ -344,12 +344,14 @@ public class VariantAnnotationUtils {
         SIFT_DESCRIPTIONS.put(0, "tolerated");
         SIFT_DESCRIPTIONS.put(1, "deleterious");
 
-        SO_SEVERITY.put("transcript_ablation", 36);
-        SO_SEVERITY.put("splice_acceptor_variant", 35);
-        SO_SEVERITY.put("splice_donor_variant", 34);
-        SO_SEVERITY.put("stop_gained", 33);
-        SO_SEVERITY.put("frameshift_variant", 32);
-        SO_SEVERITY.put("stop_lost", 31);
+        SO_SEVERITY.put("copy_number_change", 38);
+        SO_SEVERITY.put("transcript_ablation", 37);
+        SO_SEVERITY.put("splice_acceptor_variant", 36);
+        SO_SEVERITY.put("splice_donor_variant", 35);
+        SO_SEVERITY.put("stop_gained", 34);
+        SO_SEVERITY.put("frameshift_variant", 33);
+        SO_SEVERITY.put("stop_lost", 32);
+        SO_SEVERITY.put("terminator_codon_variant", 31);
         SO_SEVERITY.put("initiator_codon_variant", 30);
         SO_SEVERITY.put("transcript_amplification", 29);
         SO_SEVERITY.put("inframe_insertion", 28);

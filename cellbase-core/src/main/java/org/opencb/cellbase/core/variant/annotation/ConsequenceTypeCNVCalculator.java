@@ -7,7 +7,6 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
-import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,19 +20,20 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
     private int variantStart;
     private int variantEnd;
 //    private boolean isBigDeletion;
-    private GenomeDBAdaptor genomeDBAdaptor;
+//    private GenomeDBAdaptor genomeDBAdaptor;
 
     private static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
 
-    public ConsequenceTypeCNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
-        this.genomeDBAdaptor = genomeDBAdaptor;
-    }
+    public ConsequenceTypeCNVCalculator() { }
+//    public ConsequenceTypeCNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
+//        this.genomeDBAdaptor = genomeDBAdaptor;
+//    }
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = variant.getStart() + variant.getReference().length() - 1;
+        variantEnd = variant.getEnd();
         variantStart = variant.getStart();
 //        isBigDeletion = ((variantEnd - variantStart) > BIG_VARIANT_SIZE_THRESHOLD);
         boolean isIntergenic = true;

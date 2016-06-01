@@ -681,7 +681,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             case SNV:
                 return new ConsequenceTypeSNVCalculator();
             case CNV:
-                return new ConsequenceTypeCNVCalculator(genomeDBAdaptor);
+                return new ConsequenceTypeCNVCalculator();
             default:
                 throw new UnsupportedURLVariantFormat();
         }
@@ -717,13 +717,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //    }
 
     private List<RegulatoryFeature> getAffectedRegulatoryRegions(Variant variant) {
-        int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
+        int variantStart = variant.getReference() != null && variant.getReference().isEmpty()
+                ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add("include", "chromosome,start,end");
 //        QueryResult queryResult = regulationDBAdaptor.nativeGet(new Query("region", variant.getChromosome()
 //                + ":" + variantStart + ":" + (variant.getStart() + variant.getReference().length() - 1)), queryOptions);
         QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor.getByRegion(new Region(variant.getChromosome(),
-                variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
+                variantStart, variant.getEnd()), queryOptions);
+//                variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
 
         List<RegulatoryFeature> regionList = new ArrayList<>(queryResult.getNumResults());
         for (RegulatoryFeature object : queryResult.getResult()) {
