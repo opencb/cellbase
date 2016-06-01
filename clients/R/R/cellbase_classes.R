@@ -148,7 +148,7 @@ setMethod("cbClinicalClient", "CellBaseR",    definition = function(object,
     categ <- "feature"
     subcateg<- "clinical"
     ids <- NULL
-    resource <- "all"
+    resource <- "search"
     
     filters <- c(genome=filters@genome, gene=filters@gene,
     region=filters@region,rs=filters@rs,so=filters@so, 
