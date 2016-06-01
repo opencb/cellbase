@@ -59,6 +59,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
         species=species, categ=categ, subcateg=subcateg, ids=ids, 
         resource=resource,filters=filters,skip = skip)
         skip=skip+1000
+        print(grls)
         content <- callREST(grls = grls)
         res_list <- parseResponse(content=content)
         num_results <- res_list$num_results
@@ -292,3 +293,5 @@ plotGenes <- function(object){
   plotTracks(list(ideoTrack, testTrack),from = from, to=to, testTrack, transcriptAnnotation="transcript")
   
 }
+
+# create GeneModel
