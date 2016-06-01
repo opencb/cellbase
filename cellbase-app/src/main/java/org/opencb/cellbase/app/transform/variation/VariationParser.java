@@ -331,7 +331,7 @@ public class VariationParser extends CellBaseParser {
     }
 
     private List<String> getHgvs(List<TranscriptVariation> transcriptVariations) {
-        List<String> hgvs = new ArrayList<>();
+        Set<String> hgvs = new HashSet<>();
         for (TranscriptVariation transcriptVariation : transcriptVariations) {
             if (transcriptVariation.getHgvsGenomic() != null) {
                 hgvs.add(transcriptVariation.getHgvsGenomic());
@@ -343,7 +343,7 @@ public class VariationParser extends CellBaseParser {
                 hgvs.add(transcriptVariation.getHgvsProtein());
             }
         }
-        return hgvs;
+        return new ArrayList<>(hgvs);
     }
 
     private List<ConsequenceType> getConsequenceTypes(List<TranscriptVariation> transcriptVariations) {
@@ -362,7 +362,8 @@ public class VariationParser extends CellBaseParser {
                 consequenceTypes = new ArrayList<>();
             }
             consequenceTypes.add(new ConsequenceType(null, null, transcriptVariation.getTranscriptId(), null, null,
-                    null, transcriptVariation.getCdnaStart(), transcriptVariation.getCdsStart(),
+                    null, transcriptVariation.getCdnaStart() != 0 ? transcriptVariation.getCdnaStart() : null,
+                    transcriptVariation.getCdsStart() != 0 ? transcriptVariation.getCdsStart() : null,
                     transcriptVariation.getCodonAlleleString(), proteinVariantAnnotation, soTerms));
 
         }
@@ -387,7 +388,7 @@ public class VariationParser extends CellBaseParser {
 
         ProteinVariantAnnotation proteinVariantAnnotation = null;
         if (peptideAlternate != null || peptideReference != null || substitionScores != null) {
-            proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, 0,
+            proteinVariantAnnotation = new ProteinVariantAnnotation(null, null, null,
                     peptideReference, peptideAlternate, null, null, substitionScores, null, null);
         }
         return proteinVariantAnnotation;
@@ -397,13 +398,13 @@ public class VariationParser extends CellBaseParser {
         List<Score> substitionScores = null;
         if (transcriptVariation.getPolyphenScore() != null) {
             substitionScores = new ArrayList<>();
-            substitionScores.add(new Score((double) transcriptVariation.getPolyphenScore(), "Polyphen", ""));
+            substitionScores.add(new Score((double) transcriptVariation.getPolyphenScore(), "Polyphen", null));
         }
         if (transcriptVariation.getSiftScore() != null) {
             if (substitionScores == null) {
                 substitionScores = new ArrayList<>();
             }
-            substitionScores.add(new Score((double) transcriptVariation.getSiftScore(), "Sift", ""));
+            substitionScores.add(new Score((double) transcriptVariation.getSiftScore(), "Sift", null));
         }
         return substitionScores;
     }
