@@ -169,7 +169,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     registerDoMC(num_cores)
     # 
     # ## Extracting the content in parallel
-    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
+    js <- mclapply(content, function(x)fromJSON(x, flatten=TRUE), mc.cores=num_cores)
     res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
