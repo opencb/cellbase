@@ -7,16 +7,18 @@
 CellBaseR(species = character())
 }
 \arguments{
-\item{species}{A charcter should be     a species supported by cellbase
+\item{species}{A character should be     a species supported by cellbase
 run cbSpeciesClient to see avaiable species and their corresponding data}
 
-\item{host}{A character the default host url for cellllbase webservices}
+\item{host}{A character the default host url for cellbase webservices,
+e.g. "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/"}
 
-\item{version}{A character the cellbae API version}
+\item{version}{A character the cellbae API version, e.g. "V4"}
 
-\item{species}{A charcter should be     a species supported by cellbase}
+\item{species}{a character specifying the species to be queried, e.g. "hsapiens"}
 
-\item{batch_size}{numeric a parameter for}
+\item{batch_size}{if multiple queries are raised by a single method call, e.g. getting annotation info for several genes,
+queries will be sent to the server in batches. This slot indicates the size of these batches, e.g. 200}
 }
 \value{
 An object of class CellBaseR
@@ -25,7 +27,10 @@ An object of class CellBaseR
 This class defines the CellBaseR object. It holds the default
 configuration required by CellBaseR methods to connect to the
 cellbase web services. By defult it is configured to query human
-data based on the GRCh37 genome assembly
+data based on the GRCh37 genome assembly. Please, visit
+https://github.com/opencb/cellbase/wiki and
+bioinfodev.hpc.cam.ac.uk/cellbase/webservices/ for more details on
+following parameters.
 }
 \examples{
 library(cellbaseR)

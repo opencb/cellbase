@@ -12,10 +12,10 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a charcter vector of uniprot ids to be queried, should be one
+\item{ids}{a character vector of uniprot ids to be queried, should be one
 or more of uniprot ids, for example O15350.}
 
-\item{resource}{a charcter vector to specify the ids to be queried}
+\item{resource}{a character vector to specify the ids to be queried}
 
 \item{filters}{a object of class CellBaseParam specifying additional filters
 for the CellBaseR}

@@ -3,7 +3,8 @@ title: "cellbaseR"
 author: "Mohammed Omar Elsiddieg Abdallah"
 date: "19 April 2016"
 output: 
-  BiocStyle::html_document
+   rmarkdown::html_vignette
+#  BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{"cellbaseR"}
   %\VignetteEngine{knitr::rmarkdown}

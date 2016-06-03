@@ -23,22 +23,22 @@
 \alias{without}
 \title{The generic method for getCellbase}
 \usage{
-\S4method{getCellbase}{CellBaseR}(object, file = NULL, categ, subcateg, ids,
-  resource, filters = NULL, ...)
+\S4method{getCellbase}{CellBaseR}(object, file = NULL, category, subcategory,
+  ids, resource, filters = NULL, ...)
 }
 \arguments{
 \item{object}{an object of class CellBaseR}
 
 \item{file}{a path to a bgzipped and tabix indexed vcf file,}
 
-\item{categ}{charcter to specify the category to be queried
+\item{category}{character to specify the category to be queried
 this could be "feature", "genomic", "regulatory", or "network"}
 
-\item{subcateg}{charcter to specify the subcategory to be queried}
+\item{subcategory}{character to specify the subcategory to be queried}
 
-\item{ids}{a charcter vector of the ids to be queried}
+\item{ids}{a character vector of the ids to be queried}
 
-\item{resource}{a charcter to specify the resource to be queried}
+\item{resource}{a character to specify the resource to be queried}
 
 \item{filters}{an object of class CellBaseParam specifying additional 
 filterss for the CellBaseR}

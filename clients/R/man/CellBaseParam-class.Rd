@@ -15,20 +15,20 @@ CellBaseParam
 \item{\code{genome}}{A character denoting the genome build to query,eg, GRCh37
 (default),or GRCh38}
 
-\item{\code{gene}}{A charcter vector denoting the gene/s to be queried}
+\item{\code{gene}}{A character vector denoting the gene/s to be queried}
 
-\item{\code{region}}{A charcter vector denoting the region/s to be queried must be 
+\item{\code{region}}{A character vector denoting the region/s to be queried must be 
 in the form 1:100000-1500000 not chr1:100000-1500000}
 
-\item{\code{rs}}{A charcter vector denoting the rs ids to be queried}
+\item{\code{rs}}{A character vector denoting the rs ids to be queried}
 
-\item{\code{so}}{A charcter vector denoting sequence ontology to be queried}
+\item{\code{so}}{A character vector denoting sequence ontology to be queried}
 
-\item{\code{phenotype}}{A charcter vector denoting the phenotype to be queried}
+\item{\code{phenotype}}{A character vector denoting the phenotype to be queried}
 
-\item{\code{include}}{A charcter vector denoting the fields to be returned}
+\item{\code{include}}{A character vector denoting the fields to be returned}
 
-\item{\code{exclude}}{A charcter vector denoting the fields to be excluded}
+\item{\code{exclude}}{A character vector denoting the fields to be excluded}
 
 \item{\code{limit}}{A number limiting the number of results to be returned}
 }}

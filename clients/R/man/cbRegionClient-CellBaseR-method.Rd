@@ -12,10 +12,10 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a charcter vector of the ids to be queried, for example, 
+\item{ids}{a character vector of the ids to be queried, for example, 
 "1:1000000-1200000' should always be in the form 'chr:start-end'}
 
-\item{resource}{a charcter vector to specify the ids to be queried}
+\item{resource}{a character vector to specify the ids to be queried}
 
 \item{filters}{a object of class CellBaseParam specifying additional filters
 for the CellBaseR}

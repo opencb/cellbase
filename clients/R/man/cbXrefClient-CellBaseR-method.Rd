@@ -11,10 +11,10 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a charcter vector of the ids to be queried, any crossrefereable 
+\item{ids}{a character vector of the ids to be queried, any crossrefereable 
 ID, gene names, transcript ids, uniprot ids,etc.}
 
-\item{resource}{a charcter vector to specify the ids to be queried can 
+\item{resource}{a character vector to specify the ids to be queried can 
 be any of "xref", "gene", "starts"with", or "contains"}
 
 \item{filters}{a object of class CellBaseParam specifying additional filters
