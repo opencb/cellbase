@@ -1,3 +1,4 @@
+########################################################################################################################
 #' This method is a convience method to annoatate a vcf files
 #' @aliases cbAnnotateVcf
 #' @details This methods is ideal for annotating small to medium sized vcf
