@@ -4,7 +4,9 @@
 \name{cbRegionClient,CellBaseR-method}
 \alias{cbRegionClient}
 \alias{cbRegionClient,CellBaseR-method}
-\title{A method to query region data from Cellbase web services}
+\title{A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
+for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
+RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
 \S4method{cbRegionClient}{CellBaseR}(object, ids, resource, filters = NULL,
   ...)
@@ -12,29 +14,26 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a character vector of the ids to be queried, for example,
-"1:1000000-1200000' should always be in the form 'chr:start-end'}
+\item{ids}{a character vector of the regions to be queried, for example, "1:1000000-1200000' should always be in the
+form 'chr:start-end'}
 
-\item{resource}{a character vector to specify the ids to be queried}
+\item{resource}{a character vector to specify the resource to be queried}
 
-\item{filters}{a object of class CellBaseParam specifying additional filters
-for the CellBaseR}
+\item{filters}{a object of class CellBaseParam specifying additional filters for the query}
 
 \item{...}{any extra arguments}
 }
 \value{
-an object of class CellBaseResponse which holds a dataframe
+an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query region data from Cellbase web services
+A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
+for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
+RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-library(cellbaseR)
+   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbRegionClient(object=cb, ids="17:1000000-1200000", resource="gene")
-}
-\seealso{
-for more information about the cellbase webservices see
-\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 }
 

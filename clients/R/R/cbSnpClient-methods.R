@@ -22,7 +22,7 @@ setMethod("cbSnpClient", "CellBaseR", definition = function(object, ids, resourc
     species <- object@species
     version <- object@version
     categ <- "feature"
-    subcateg<- "snp"
+    subcateg<- "variation"
     ids <- ids
     resource <- resource
     result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,

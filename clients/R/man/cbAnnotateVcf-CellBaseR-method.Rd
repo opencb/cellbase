@@ -4,25 +4,23 @@
 \name{cbAnnotateVcf,CellBaseR-method}
 \alias{cbAnnotateVcf}
 \alias{cbAnnotateVcf,CellBaseR-method}
-\title{This method is a convience method to annoatate a vcf files}
+\title{This method is a convience method to annotate a vcf files. This methods is ideal for annotating small to medium sized 
+vcf files.}
 \usage{
 \S4method{cbAnnotateVcf}{CellBaseR}(object, file, ...)
 }
 \arguments{
-\item{object}{An object of class CellBaseR}
+\item{object}{an object of class CellBaseR}
 
 \item{file}{Path to a bgzipped and tabix indexed vcf file}
 
 \item{...}{any extra arguments}
 }
 \value{
-an annotated dataframe
+an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-This method is a convience method to annoatate a vcf files
-}
-\details{
-This methods is ideal for annotating small to medium sized vcf
-   files
+This method is a convience method to annotate a vcf files. This methods is ideal for annotating small to medium sized 
+vcf files.
 }
 

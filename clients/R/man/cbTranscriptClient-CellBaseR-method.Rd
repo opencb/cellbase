@@ -4,7 +4,9 @@
 \name{cbTranscriptClient,CellBaseR-method}
 \alias{cbTranscriptClient}
 \alias{cbTranscriptClient,CellBaseR-method}
-\title{A method to query transcript data from Cellbase web services}
+\title{A method to query transcript data from Cellbase web services. Please, for details on possible values for the 
+parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
+http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
 \S4method{cbTranscriptClient}{CellBaseR}(object, ids, resource,
   filters = NULL, ...)
@@ -12,29 +14,26 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a character vector of the ids to be queried, for example,
-ensemble transccript ID, like ENST00000380152}
+\item{ids}{a character vector of the transcript ids to be queried, for example, ensemble transccript ID
+like ENST00000380152}
 
-\item{resource}{a character vector to specify the resource to be queried can
-be any of "info", "function_prediction", "gene", "sequence", "variation"
-, or "protein"}
+\item{resource}{a character vector to specify the resource to be queried}
 
-\item{filters}{a object of class CellBaseParam specifying additional filters
-for the CellBaseR}
+\item{filters}{a object of class CellBaseParam specifying additional filters for the query}
+
+\item{...}{any extra arguments}
 }
 \value{
-an object of class CellBaseResponse which holds a dataframe
+an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query transcript data from Cellbase web services
+A method to query transcript data from Cellbase web services. Please, for details on possible values for the 
+parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
+http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-library(cellbaseR)
+   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbTranscriptClient(object=cb, ids="ENST00000373644", resource="info")
-}
-\seealso{
-for more information about the cellbase webservices see
-\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 }
 

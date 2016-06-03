@@ -2,35 +2,33 @@
 % Please edit documentation in R/cbClinicalClient-methods.R
 \docType{methods}
 \name{cbClinicalClient,CellBaseR-method}
+\alias{cbClinicalClient}
 \alias{cbClinicalClient,CellBaseR-method}
-\alias{cbClinicalClientClient}
-\title{A method to query Clinical data from Cellbase web services}
+\title{A method to query Clinical data from Cellbase web services. Please, for details on possible values for the parameters 
+and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API 
+documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
 \S4method{cbClinicalClient}{CellBaseR}(object, filters = NULL, ...)
 }
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{filters}{a object of class CellBaseParam specifying the paramters
-limiting the CellBaseR}
+\item{filters}{a object of class CellBaseParam specifying the parameters limiting the CellBaseR}
 
 \item{...}{any extra arguments}
 }
 \value{
-an object of class CellBaseResponse which holds a dataframe
+an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query Clinical data from Cellbase web services
+A method to query Clinical data from Cellbase web services. Please, for details on possible values for the parameters 
+and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API 
+documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-library(cellbaseR)
-cb <- CellBaseR()
-cbParam <- CellBaseParam(gene=c("TP73","TET1"))
-res <- cbClinicalClient(object=cb,filters=cbParam)
-
-}
-\seealso{
-for more information about the cellbase webservices see
-\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+   library(cellbaseR)
+   cb <- CellBaseR()
+   cbParam <- CellBaseParam(gene=c("TP73","TET1"))
+   res <- cbClinicalClient(object=cb,filters=cbParam)
 }
 

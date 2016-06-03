@@ -14,4 +14,7 @@
 \value{
 a dataframe
 }
+\description{
+An accessor method to get CellBaseResponse cbData slot
+}
 

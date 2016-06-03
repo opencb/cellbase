@@ -4,27 +4,32 @@
 \name{cbSpeciesClient,CellBaseR-method}
 \alias{cbSpeciesClient}
 \alias{cbSpeciesClient,CellBaseR-method}
-\title{A method for getting the avaiable species from the cellbase web services}
+\title{A method for getting the avaiable species from the cellbase web services. Please, for details on possible values for the 
+parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
+http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
 \S4method{cbSpeciesClient}{CellBaseR}(object, ...)
 }
 \arguments{
-\item{object}{An object of class CellBaseR}
+\item{object}{an object of class CellBaseR}
+
+\item{...}{any extra arguments}
+
+\item{resource}{a character vector to specify the resource to be queried}
+
+\item{filters}{a object of class CellBaseParam specifying additional filters for the query}
+}
+\value{
+an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method for getting the avaiable species from the cellbase web services
-}
-\details{
-A method for getting the avaiable species from the cellbase
-web services
+A method for getting the avaiable species from the cellbase web services. Please, for details on possible values for the 
+parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
+http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-library(cellbaseR)
+   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbSpeciesClient(object=cb)
-}
-\seealso{
-for more information about the cellbase webservices see
-\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 }
 
