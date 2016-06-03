@@ -71,6 +71,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
         }
     };
+
     private static final String ENSEMBL_NAME = "ENSEMBL";
     private static final String GENE_EXPRESSION_ATLAS_NAME = "Gene Expression Atlas";
     private static final String HPO_NAME = "HPO";
@@ -89,15 +90,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String CLINVAR_NAME = "ClinVar";
     private static final String GWAS_NAME = "Gwas Catalog";
     private static final String DBSNP_NAME = "dbSNP";
-    private static final String GENOME_DATA = "genome";
-    private static final String GENE_DATA = "gene";
-    private static final String GENE_DISEASE_ASSOCIATION_DATA = "gene_disease_association";
-    private static final String VARIATION_DATA = "variation";
-    private static final String VARIATION_FUNCTIONAL_SCORE_DATA = "variation_functional_score";
-    private static final String REGULATION_DATA = "regulation";
-    private static final String PROTEIN_DATA = "protein";
-    private static final String CONSERVATION_DATA = "conservation";
-    private static final String CLINICAL_DATA = "clinical";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -211,43 +203,43 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             for (String data : dataList) {
                 switch (data) {
-                    case GENOME_DATA:
+                    case EtlCommons.GENOME_DATA:
                         downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         break;
-                    case GENE_DATA:
+                    case EtlCommons.GENE_DATA:
                         downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         break;
-                    case GENE_DISEASE_ASSOCIATION_DATA:
+                    case EtlCommons.GENE_DISEASE_ASSOCIATION_DATA:
                         if (speciesHasInfoToDownload(sp, "gene_disease_association")) {
                             downloadGeneDiseaseAssociation(sp, spFolder);
                         }
                         break;
-                    case VARIATION_DATA:
+                    case EtlCommons.VARIATION_DATA:
                         if (speciesHasInfoToDownload(sp, "variation")) {
                             downloadVariation(sp, spShortName, spFolder, ensemblHostUrl);
                         }
                         break;
-                    case VARIATION_FUNCTIONAL_SCORE_DATA:
+                    case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                         if (speciesHasInfoToDownload(sp, "variation_functional_score")) {
                             downloadCaddScores(sp, assembly.getName(), spFolder);
                         }
                         break;
-                    case REGULATION_DATA:
+                    case EtlCommons.REGULATION_DATA:
                         if (speciesHasInfoToDownload(sp, "regulation")) {
                             downloadRegulation(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         }
                         break;
-                    case PROTEIN_DATA:
+                    case EtlCommons.PROTEIN_DATA:
                         if (speciesHasInfoToDownload(sp, "protein")) {
                             downloadProtein();
                         }
                         break;
-                    case CONSERVATION_DATA:
+                    case EtlCommons.CONSERVATION_DATA:
                         if (speciesHasInfoToDownload(sp, "conservation")) {
                             downloadConservation(sp, assembly.getName(), spFolder);
                         }
                         break;
-                    case CLINICAL_DATA:
+                    case EtlCommons.CLINICAL_DATA:
                         if (speciesHasInfoToDownload(sp, "clinical")) {
                             downloadClinical(sp, spFolder);
                         }
@@ -311,7 +303,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         Path outputPath = sequenceFolder.resolve(outputFileName);
         downloadFile(url, outputPath.toString());
         logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("genomeVersion.json"));
-        saveVersionData(GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
+        saveVersionData(EtlCommons.GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
                 Collections.singletonList(url), sequenceFolder.resolve("genomeVersion.json"));
     }
 
@@ -322,11 +314,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void saveVersionData(String data, String source, String version, String date, List<String> url,
                                  Path outputFilePath) {
         Map versionData = new HashedMap();
-        versionData.put("Data", data);
-        versionData.put("Source", source);
-        versionData.put("Version", version);
-        versionData.put("Download date", date);
-        versionData.put("URL", url);
+        versionData.put("data", data);
+        versionData.put("source", source);
+        versionData.put("version", version);
+        versionData.put("downloadDate", date);
+        versionData.put("uRL", url);
         writeVersionDataFile(versionData, outputFilePath);
     }
 
@@ -368,7 +360,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String url = configuration.getDownload().getDgidb().getHost();
             downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
 
-            saveVersionData(GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
+            saveVersionData(EtlCommons.GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     geneDrugFolder.resolve("dgidbVersion.json"));
 
         }
@@ -407,7 +399,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadFile(url, outputFile.toString());
         downloadedUrls.add(url);
 
-        saveVersionData(GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+        saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 geneFolder.resolve("ensemblCoreVersion.json"));
     }
 
@@ -420,7 +412,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(geneGtfUrl, geneFolder.resolve("idmapping_selected.tab.gz").toString());
             downloadFile(getUniProtReleaseNotesUrl(), geneFolder.resolve("uniprotRelnotes.txt").toString());
 
-            saveVersionData(GENE_DATA, UNIPROT_NAME,
+            saveVersionData(EtlCommons.GENE_DATA, UNIPROT_NAME,
                     getUniProtRelease(geneFolder.resolve("uniprotRelnotes.txt").toString()), getTimeStamp(),
                     Collections.singletonList(geneGtfUrl), geneFolder.resolve("uniprotXrefVersion.json"));
         }
@@ -456,7 +448,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String geneGtfUrl = configuration.getDownload().getGeneExpressionAtlas().getHost();
             downloadFile(geneGtfUrl, expression.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
 
-            saveVersionData(GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, getGeneExpressionAtlasVersion(), getTimeStamp(),
+            saveVersionData(EtlCommons.GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, getGeneExpressionAtlasVersion(), getTimeStamp(),
                     Collections.singletonList(geneGtfUrl), expression.resolve("geneExpressionAtlasVersion.json"));
         }
     }
@@ -472,7 +464,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String host = configuration.getDownload().getHpo().getHost();
         String fileName = StringUtils.substringAfterLast(host, "/");
         downloadFile(host, geneFolder.resolve(fileName).toString());
-        saveVersionData(GENE_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(host),
+        saveVersionData(EtlCommons.GENE_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(host),
                 geneFolder.resolve("hpoVersion.json"));
 
         host = configuration.getDownload().getDisgenet().getHost();
@@ -480,7 +472,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         fileName = StringUtils.substringAfterLast(host, "/");
         downloadFile(host, geneFolder.resolve(fileName).toString());
         downloadFile(readme, geneFolder.resolve("disgenetReadme.txt").toString());
-        saveVersionData(GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
+        saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
                 getDisgenetVersion(geneFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
@@ -560,7 +552,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadedUrls.add(variationUrl + "/" + variationFile);
         }
 
-        saveVersionData(VARIATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+        saveVersionData(EtlCommons.VARIATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 variationFolder.resolve("ensemblVariationVersion.json"));
 
     }
@@ -586,7 +578,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(regulationUrl + "/" + regulationFile, outputFile.toString());
             downloadedUrls.add(regulationUrl + "/" + regulationFile);
         }
-        saveVersionData(REGULATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
+        saveVersionData(EtlCommons.REGULATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 regulationFolder.resolve("ensemblRegulationVersion.json"));
 
         // Downloading miRNA info
@@ -606,7 +598,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
             downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
-            saveVersionData(REGULATION_DATA, MIRBASE_NAME,
+            saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME,
                     getLine(mirbaseFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
                     Collections.singletonList(url), mirbaseFolder.resolve("mirbaseVersion.json"));
         }
@@ -617,12 +609,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
 
                 String readmeUrl = configuration.getDownload().getTargetScan().getHost() + "/hg19/database/README.txt";
-                saveVersionData(REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
+                saveVersionData(EtlCommons.REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
                         Collections.singletonList(url), regulationFolder.resolve("targetScanVersion.json"));
 
                 url = configuration.getDownload().getMiRTarBase().getHost() + "/hsa_MTI.xls";
                 downloadFile(url, regulationFolder.resolve("hsa_MTI.xls").toString());
-                saveVersionData(REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
+                saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
                         Collections.singletonList(url), regulationFolder.resolve("miRTarBaseVersion.json"));
             }
         }
@@ -632,12 +624,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             String readmeUrl = configuration.getDownload().getTargetScan().getHost() + "/mm9/database/README.txt";
             downloadFile(readmeUrl, regulationFolder.resolve("targetScanReadme.txt").toString());
-            saveVersionData(REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
+            saveVersionData(EtlCommons.REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
                     Collections.singletonList(url), regulationFolder.resolve("targetScanVersion.json"));
 
             url = configuration.getDownload().getMiRTarBase().getHost() + "/mmu_MTI.xls";
             downloadFile(url, regulationFolder.resolve("mmu_MTI.xls").toString());
-            saveVersionData(REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
+            saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
                     Collections.singletonList(url),
                     regulationFolder.resolve("miRTarBaseVersion.json"));
         }
@@ -675,7 +667,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
             String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
             downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString());
-            saveVersionData(PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
+            saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
                     getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
 
             makeDir(proteinFolder.resolve("uniprot_chunks"));
@@ -683,14 +675,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             url = configuration.getDownload().getIntact().getHost();
             downloadFile(url, proteinFolder.resolve("intact.txt").toString());
-            saveVersionData(PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
+            saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     proteinFolder.resolve("intactVersion.json"));
 
             url = configuration.getDownload().getInterpro().getHost();
             downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
             relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
             downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
-            saveVersionData(PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
+            saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
                     getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
 
         } else {
@@ -767,7 +759,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 logger.debug("Downloading GERP++ ...");
                 downloadFile(configuration.getDownload().getGerp().getHost(),
                         conservationFolder.resolve("gerp/hg19.GERP_scores.tar.gz").toAbsolutePath().toString());
-                saveVersionData(CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(),
+                saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(),
                         Collections.singletonList(configuration.getDownload().getGerp().getHost()),
                         conservationFolder.resolve("gerpVersion.json"));
 
@@ -785,9 +777,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             + ".phyloP46way.primate.wigFix.gz").toString());
                     phyloPUrls.add(phyloPUrl);
                 }
-                saveVersionData(CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
+                saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
                         conservationFolder.resolve("phastConsVersion.json"));
-                saveVersionData(CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
+                saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
                         conservationFolder.resolve("phyloPVersion.json"));
             }
 
@@ -807,9 +799,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             + ".phyloP100way.wigFix.gz").toString());
                     phyloPUrls.add(phyloPUrl);
                 }
-                saveVersionData(CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
+                saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
                         conservationFolder.resolve("phastConsVersion.json"));
-                saveVersionData(CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
+                saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
                         conservationFolder.resolve("phastConsVersion.json"));
 //                String phastConsUrl = url + "/phastCons7way/hg38.phastCons100way.wigFix.gz";
 //                Path outFile = conservationFolder.resolve("phastCons").resolve("hg38.phastCons100way.wigFix.gz");
@@ -841,9 +833,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         + ".phyloP60way.wigFix.gz").toString());
                 phyloPUrls.add(phyloPUrl);
             }
-            saveVersionData(CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
+            saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
                     conservationFolder.resolve("phastConsVersion.json"));
-            saveVersionData(CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
+            saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
                     conservationFolder.resolve("phastConsVersion.json"));
         }
     }
@@ -868,12 +860,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
             url = configuration.getDownload().getClinvarSummary().getHost();
             downloadFile(url, clinicalFolder.resolve("variant_summary.txt.gz").toString());
             clinvarUrls.add(url);
-            saveVersionData(CLINICAL_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
+            saveVersionData(EtlCommons.CLINICAL_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
 
             url = configuration.getDownload().getGwasCatalog().getHost();
             downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
-            saveVersionData(CLINICAL_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(), Collections.singletonList(url),
+            saveVersionData(EtlCommons.CLINICAL_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(), Collections.singletonList(url),
                     clinicalFolder.resolve("gwasVersion.json"));
 
             List<String> dbsnpUrls = new ArrayList<>(2);
@@ -884,7 +876,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             url = url + ".tbi";
             downloadFile(url, clinicalFolder.resolve("All.vcf.gz.tbi").toString());
             dbsnpUrls.add(url);
-            saveVersionData(CLINICAL_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
+            saveVersionData(EtlCommons.CLINICAL_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
                     clinicalFolder.resolve("dbsnpVersion.json"));
         }
     }
@@ -917,14 +909,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String readmeUrl = configuration.getDownload().getDisgenetReadme().getHost();
             downloadFile(url, gene2diseaseFolder.resolve("all_gene_disease_associations.txt.gz").toString());
             downloadFile(readmeUrl, gene2diseaseFolder.resolve("disgenetReadme.txt").toString());
-            saveVersionData(GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
+            saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
                     getDisgenetVersion(gene2diseaseFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
                     Collections.singletonList(url), gene2diseaseFolder.resolve("disgenetVersion.json"));
 
             // Downloads HPO
             url = configuration.getDownload().getHpo().getHost();
             downloadFile(url, gene2diseaseFolder.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").toString());
-            saveVersionData(GENE_DISEASE_ASSOCIATION_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(url),
+            saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     gene2diseaseFolder.resolve("hpoVersion.json"));
         }
     }
@@ -939,7 +931,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             // Downloads CADD scores
             String url = configuration.getDownload().getCadd().getHost();
             downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
-            saveVersionData(VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
+            saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
                     Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
         }
     }

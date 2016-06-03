@@ -184,6 +184,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "clinical":
                 dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
                 break;
+            case "metadata":
+                dbAdaptor = null;
+//                collectionName = "protein_functional_prediction";
+                break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
         }
@@ -239,6 +243,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "clinical":
                 collectionName = "clinical";
+                break;
+            case "metadata":
+                collectionName = "metadata";
                 break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");

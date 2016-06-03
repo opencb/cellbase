@@ -17,7 +17,6 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
-import org.apache.commons.collections.map.HashedMap;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.variation.VariationParser;
 import org.opencb.cellbase.core.CellBaseConfiguration;
@@ -30,7 +29,10 @@ import org.opencb.commons.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by imedina on 03/02/15.
@@ -43,22 +45,6 @@ public class BuildCommandExecutor extends CommandExecutor {
     public static final String DISGENET_INPUT_FILE_NAME = "all_gene_disease_associations.txt.gz";
     public static final String HPO_INPUT_FILE_NAME = "ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt";
     public static final String DBSNP_INPUT_FILE_NAME = "All.vcf.gz";
-
-    private static final String GENOME_INFO_DATA = "genome_info";
-    private static final String GENOME_DATA = "genome";
-    private static final String GENE_DATA = "gene";
-    private static final String DISGENET_DATA = "disgenet";
-    private static final String HPO_DATA = "hpo";
-    private static final String VARIATION_DATA = "variation";
-    private static final String CADD_DATA = "cadd";
-    private static final String REGULATION_DATA = "regulation";
-    private static final String PROTEIN_DATA = "protein";
-    private static final String PPI_DATA = "ppi";
-    private static final String CONSERVATION_DATA = "conservation";
-    private static final String DRUG_DATA = "drug";
-    private static final String CLINVAR_DATA = "clinvar";
-    private static final String COSMIC_DATA = "cosmic";
-    private static final String GWAS_DATA = "gwas";
 
     private CliOptionsParser.BuildCommandOptions buildCommandOptions;
 
@@ -125,8 +111,13 @@ public class BuildCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if (buildCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{"genome_info", "genome", "gene", "disgenet", "hpo", "variation", "cadd", "regulation",
-                            "protein", "ppi", "conservation", "clinvar", "cosmic", "gwas", };
+                    buildOptions = new String[]{EtlCommons.GENOME_INFO_DATA, EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA,
+                            EtlCommons.DISGENET_DATA, EtlCommons.HPO_DATA, EtlCommons.CONSERVATION_DATA,
+                            EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
+                            EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
+                            EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINVAR_DATA, EtlCommons.COSMIC_DATA,
+                            EtlCommons.GWAS_DATA, };
+
                 } else {
                     buildOptions = buildCommandOptions.data.split(",");
                 }
@@ -137,49 +128,49 @@ public class BuildCommandExecutor extends CommandExecutor {
                     logger.info("Building '{}' data", buildOption);
                     CellBaseParser parser = null;
                     switch (buildOption) {
-                        case GENOME_INFO_DATA:
+                        case EtlCommons.GENOME_INFO_DATA:
                             buildGenomeInfo();
                             break;
-                        case GENOME_DATA:
+                        case EtlCommons.GENOME_DATA:
                             parser = buildGenomeSequence();
                             break;
-                        case GENE_DATA:
+                        case EtlCommons.GENE_DATA:
                             parser = buildGene();
                             break;
-                        case DISGENET_DATA:
+                        case EtlCommons.DISGENET_DATA:
                             parser = buildDisgenet();
                             break;
-                        case HPO_DATA:
+                        case EtlCommons.HPO_DATA:
                             parser = buildHpo();
                             break;
-                        case VARIATION_DATA:
+                        case EtlCommons.VARIATION_DATA:
                             parser = buildVariation();
                             break;
-                        case CADD_DATA:
+                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             parser = buildCadd();
                             break;
-                        case REGULATION_DATA:
+                        case EtlCommons.REGULATION_DATA:
                             parser = buildRegulation();
                             break;
-                        case PROTEIN_DATA:
+                        case EtlCommons.PROTEIN_DATA:
                             parser = buildProtein();
                             break;
-                        case PPI_DATA:
+                        case EtlCommons.PPI_DATA:
                             parser = getInteractionParser();
                             break;
-                        case CONSERVATION_DATA:
+                        case EtlCommons.CONSERVATION_DATA:
                             parser = buildConservation();
                             break;
-                        case DRUG_DATA:
+                        case EtlCommons.DRUG_DATA:
                             parser = buildDrugParser();
                             break;
-                        case CLINVAR_DATA:
+                        case EtlCommons.CLINVAR_DATA:
                             parser = buildClinvar();
                             break;
-                        case COSMIC_DATA:
+                        case EtlCommons.COSMIC_DATA:
                             parser = buildCosmic();
                             break;
-                        case GWAS_DATA:
+                        case EtlCommons.GWAS_DATA:
                             parser = buildGwas();
                             break;
                         default:
@@ -391,7 +382,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseParser buildGwas() throws IOException {
-        Path inputDir = getInputDirFromCommandLine();
+        Path inputDir = getInputDirFromCommandLine().resolve("clinical");
         copyVersionFiles(Arrays.asList(inputDir.resolve("gwasVersion.json")));
         Path gwasFile = inputDir.resolve(GWAS_INPUT_FILE_NAME);
         FileUtils.checkPath(gwasFile);
