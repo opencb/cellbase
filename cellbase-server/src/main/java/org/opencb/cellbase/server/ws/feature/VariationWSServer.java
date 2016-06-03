@@ -9,6 +9,7 @@ import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -224,14 +225,16 @@ public class VariationWSServer extends GenericRestWSServer {
     // FIXME: 29/04/16 GET and POST web services to be fixed
     @GET
     @Path("/{snpId}/consequence_type")
-    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the SNP(s)", hidden = true)
+    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the SNP(s)", response = String.class,
+            responseContainer = "QueryResponse")
     public Response getConsequenceTypeByGetMethod(@PathParam("snpId") String snpId) {
         return getConsequenceType(snpId);
     }
 
     @POST
     @Path("/consequence_type")
-    @ApiOperation(httpMethod = "POST", value = "Get the biological impact of the SNP(s)", hidden = true)
+    @ApiOperation(httpMethod = "POST", value = "Get the biological impact of the SNP(s)", response = String.class,
+            responseContainer = "QueryResponse")
     public Response getConsequenceTypeByPostMethod(@QueryParam("id") String snpId) {
         return getConsequenceType(snpId);
     }
@@ -240,7 +243,13 @@ public class VariationWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            return generateResponse(snpId, "SNP_CONSEQUENCE_TYPE", Arrays.asList(""));
+            query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
+            queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
+            QueryResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
+            QueryResult queryResult1 = new QueryResult(queryResult.getId(), queryResult.getDbTime(), queryResult.getNumResults(),
+                    queryResult.getNumTotalResults(), queryResult.getWarningMsg(), queryResult.getErrorMsg(),
+                    Collections.singletonList(queryResult.getResult().get(0).getAnnotation().getDisplayConsequenceType()));
+            return createOkResponse(queryResult1);
         } catch (Exception e) {
             return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
         }

@@ -16,14 +16,14 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by imedina on 26/05/16.
@@ -39,7 +39,35 @@ public class GenomicRegionClient extends ParentRestClient<GenomeSequenceFeature>
         this.subcategory = "region";
     }
 
-    public QueryResponse<Variant> getVariation(List<String> id, Map<String, Object> params) throws IOException {
-        return execute(id, "variation", params, Variant.class);
+    public QueryResponse<Gene> getGene(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "gene", options, Gene.class);
     }
+
+    public QueryResponse<Transcript> getTranscript(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "transcript", options, Transcript.class);
+    }
+
+    public QueryResponse<Variant> getVariation(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "variation", options, Variant.class);
+    }
+
+    public QueryResponse<GenomeSequenceFeature> getSequence(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "sequence", options, GenomeSequenceFeature.class);
+    }
+
+    public QueryResponse<RegulatoryFeature> getRegulatory(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "regulatory", options, RegulatoryFeature.class);
+    }
+
+    public QueryResponse<RegulatoryFeature> getTfbs(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "tfbs", options, RegulatoryFeature.class);
+    }
+
+    public QueryResponse<GenomicScoreRegion> getConservation(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "conservation", options, GenomicScoreRegion.class);
+    }
+
+//    public QueryResponse<> getClinical(String id, QueryOptions options) throws IOException {
+//        return execute(id, "clinical", options, .class);
+//    }
 }

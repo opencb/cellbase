@@ -2,14 +2,12 @@ package org.opencb.cellbase.client.rest;
 
 import org.junit.Test;
 import org.opencb.cellbase.client.config.ClientConfiguration;
-import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by swaathi on 25/05/16.
@@ -33,7 +31,7 @@ public class ProteinClientTest {
 
     @Test
     public void getSequence() throws Exception {
-        QueryResponse<String> queryResponse = cellBaseClient.getProteinClient().getSequence("Q9UL59", new Query());
+        QueryResponse<String> queryResponse = cellBaseClient.getProteinClient().getSequence("Q9UL59", new QueryOptions());
         assertEquals("Sequence is not the same", "MAVTFEDVTIIFTWEEWKFLDSSQKRLYREVMWENYTNVMSVENWNESYKSQEEKFRYLEYENF" +
                 "SYWQGWWNAGAQMYENQNYGETVQGTDSKDLTQQDRSQCQEWLILSTQVPGYGNYELTFESKSLRNLKYKNFMPWQSLETKTTQDYGREIYMSGSHGFQG" +
                 "GRYRLGISRKNLSMEKEQKLIVQHSYIPVEEALPQYVGVICQEDLLRDSMEEKYCGCNKCKGIYYWNSRCVFHKRNQPGENLCQCSICKACFSQRSDLYR" +

@@ -5,7 +5,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
-import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
@@ -24,23 +24,23 @@ public class TranscriptClient extends ParentRestClient<Transcript> {
         this.subcategory = "transcript";
     }
 
-    public QueryResponse<Gene> getGene(String id, Query query) throws IOException {
-        return execute(id, "gene", query, Gene.class);
+    public QueryResponse<Gene> getGene(String id, QueryOptions options) throws IOException {
+        return execute(id, "gene", options, Gene.class);
     }
 
-    public QueryResponse<Variant> getVariation(String id, Query query) throws IOException {
-        return execute(id, "variation", query, Variant.class);
+    public QueryResponse<Variant> getVariation(String id, QueryOptions options) throws IOException {
+        return execute(id, "variation", options, Variant.class);
     }
 
-    public QueryResponse<String> getSequence(String id, Query query) throws IOException {
-        return execute(id, "sequence", query, String.class);
+    public QueryResponse<String> getSequence(String id, QueryOptions options) throws IOException {
+        return execute(id, "sequence", options, String.class);
     }
 
-    public QueryResponse<Entry> getProtein(String id, Query query) throws IOException {
-        return execute(id, "protein", query, Entry.class);
+    public QueryResponse<Entry> getProtein(String id, QueryOptions options) throws IOException {
+        return execute(id, "protein", options, Entry.class);
     }
 
-    public QueryResponse<List> getProteinFunctionPrediction(String id, Query query) throws IOException {
-        return execute(id, "function_prediction", query, List.class);
+    public QueryResponse<List> getProteinFunctionPrediction(String id, QueryOptions options) throws IOException {
+        return execute(id, "function_prediction", options, List.class);
     }
 }
