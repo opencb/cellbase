@@ -59,7 +59,6 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
         species=species, categ=categ, subcateg=subcateg, ids=ids, 
         resource=resource,filters=filters,skip = skip)
         skip=skip+1000
-        print(grls)
         content <- callREST(grls = grls)
         res_list <- parseResponse(content=content)
         num_results <- res_list$num_results
@@ -67,7 +66,13 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
         container[[i]] <- cell
         i=i+1
     }
-    ds <- rbind.pages(container)
+    if(class(container[[1]])=="data.frame"){
+      ds <- rbind.pages(container)
+    }else{
+      ds <- as.data.frame(container[[1]], stringsAsFactors=FALSE)
+      names(ds) <- "result"
+    }
+    
   }
 
 
@@ -196,11 +201,18 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     js <- lapply(content, function(x)fromJSON(x))
     ares <- lapply(js, function(x)x$response$result)
     nums <- lapply(js, function(x)x$response$numResults)
-    ds <- pblapply(ares,function(x)rbind.pages(x))
-    ### Important to get correct vertical binding of dataframes
-    names(ds) <- NULL
-    ds <- rbind.pages(ds)
+    
+    if (class(ares)=="data.frame"){
+      ds <- pblapply(ares,function(x)rbind.pages(x))
+      ### Important to get correct vertical binding of dataframes
+      names(ds) <- NULL
+      ds <- rbind.pages(ds)
+    }else{
+      ds <-ares
     }
+    
+    }
+  
     return(list(result=ds,num_results=nums))
     }
 Annovcf <- function(object, file, batch_size, num_threads){

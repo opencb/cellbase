@@ -3,7 +3,6 @@
 export(CellBaseParam)
 export(CellBaseR)
 export(plotGenes)
-exportClasses(CellBaseResponse)
 exportMethods(cbAnnotateVcf)
 exportMethods(cbChromosomeInfoClient)
 exportMethods(cbClinicalClient)
