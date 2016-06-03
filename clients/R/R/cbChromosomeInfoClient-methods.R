@@ -27,6 +27,8 @@ setMethod("cbChromosomeInfoClient", "CellBaseR",    definition = function(object
     result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,
     species=species, categ=categ, subcateg=subcateg, ids=ids, resource=resource
     , filters=NULL,...)
-    data <- CellBaseResponse(cbData=result)
+    data <- result$result[[1]]
+    data <- CellBaseResponse(cbData=data)
+    
     return(data)
 })
