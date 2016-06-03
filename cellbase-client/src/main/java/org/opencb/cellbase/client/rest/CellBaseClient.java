@@ -41,5 +41,24 @@ public class CellBaseClient {
         return (GeneClient) clients.get("GENE");
     }
 
+    public TranscriptClient getTranscriptClient() {
+        clients.putIfAbsent("TRANSCRIPT", new TranscriptClient(clientConfiguration));
+        return (TranscriptClient) clients.get("TRANSCRIPT");
+    }
+
+    public VariationClient getVariationClient() {
+        clients.putIfAbsent("VARIATION", new VariationClient(clientConfiguration));
+        return (VariationClient) clients.get("VARIATION");
+    }
+
+    public ProteinClient getProteinClient() {
+        clients.putIfAbsent("PROTEIN", new ProteinClient(clientConfiguration));
+        return (ProteinClient) clients.get("PROTEIN");
+    }
+
+    public GenomicRegionClient getGenomicRegionClient() {
+        clients.putIfAbsent("GENOME_REGION", new GenomicRegionClient(clientConfiguration));
+        return (GenomicRegionClient) clients.get("GENOME_REGION");
+    }
 
 }

@@ -82,11 +82,12 @@ public class IdWSServer extends GenericRestWSServer {
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
 
             List<String> list = Splitter.on(",").splitToList(id);
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(XRefDBAdaptor.QueryParams.ID.key(), s));
-            }
+//            String[] ids = id.split(",");
+//            List<Query> queries = new ArrayList<>(ids.length);
+//            for (String s : ids) {
+//                queries.add(new Query(XRefDBAdaptor.QueryParams.ID.key(), s));
+//            }
+            List<Query> queries = createQueries(id, XRefDBAdaptor.QueryParams.ID.key());
 
             List<QueryResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
@@ -125,10 +126,8 @@ public class IdWSServer extends GenericRestWSServer {
             if (dbname != null && !dbname.isEmpty()) {
                 queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
             }
-            Query query = new Query();
-            query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
-//            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
-            return createOkResponse(xRefDBAdaptor.nativeGet(query, queryOptions));
+            List<Query> queries = createQueries(ids, XRefDBAdaptor.QueryParams.ID.key());
+            return createOkResponse(xRefDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

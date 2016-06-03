@@ -33,7 +33,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +43,7 @@ import java.util.stream.Collectors;
 @Path("/{version}/{species}/feature/snp")
 @Produces("application/json")
 @Api(value = "SNP", description = "SNP RESTful Web Services API")
+@Deprecated
 public class SnpWSServer extends GenericRestWSServer {
 
 
@@ -91,11 +91,7 @@ public class SnpWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(VariantDBAdaptor.QueryParams.ID.key(), s));
-            }
+            List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
             return createOkResponse(variationDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);

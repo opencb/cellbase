@@ -269,12 +269,7 @@
                         let error = function (response) {
                             alert("Clinical ID not valid: " + _this.clinicalId);
                         };
-//                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {rcv: _this.clinicalId}, {
-//                            success: success,
-//                            error: error,
-//                            async: true
-//                        });
-                        this.cellbaseClient.get('feature', 'clinical', null, 'all', {rcv: _this.clinicalId}, {
+                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {clinvarId: _this.clinicalId}, {
                             success: success,
                             error: error,
                             async: true
@@ -284,7 +279,7 @@
                 if (this.clinicalId.startsWith('COSM')) {
                     if (typeof this.genomeViewer !== "undefined") {
                         let success = function (response) {
-                            // TODO check number of results per cosmicId
+                            // TODO check number of results per cosmicId (COSM1748562)
                             let clinicalResult = response.response[0].result[0];
                             if (typeof clinicalResult !== "undefined") {
                                 let region = new Region({
@@ -300,12 +295,7 @@
                         let error = function (response) {
                             alert("Clinical ID not valid: " + _this.clinicalId);
                         };
-//                        this.cellbaseClient.get('feature', 'clincial', null, 'search', {cosmicId: _this.clinicalId}, {
-//                            success: success,
-//                            error: error,
-//                            asyc: true
-//                        });
-                        this.cellbaseClient.get('feature', 'clincial', null, 'all', {cosmicId: _this.clinicalId}, {
+                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {cosmicId: _this.clinicalId}, {
                             success: success,
                             error: error,
                             asyc: true
