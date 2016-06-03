@@ -81,9 +81,9 @@
                             case "featureClass":
                                 this.cellbaseClient.get('regulatory', 'featureClass', null, "", {}, {success: success, async: true});
                                 break;
-                            case "clinical-significance":
-                            case "clinical_significance":
-                                this.cellbaseClient.get('feature', 'clinical', null, 'clinical-significance', {}, {success: success, async: true});
+                            case "clinvar-significance":
+                            case "clinvar_significance":
+                                this.cellbaseClient.get('feature', 'clinical', null, 'clinvar-significance', {}, {success: success, async: true});
                                 break;
                             default:
                                 console.error("No valid 'dataType'provided, select one of: biotype, consequence_type, ...")

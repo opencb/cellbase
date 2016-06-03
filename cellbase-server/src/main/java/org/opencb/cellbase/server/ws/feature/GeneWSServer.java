@@ -479,7 +479,6 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
             List<Query> queries = createQueries(geneId, GeneDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
@@ -533,8 +532,9 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
-            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+//            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
+            List<Query> queries = createQueries(geneId, TranscriptDBAdaptor.QueryParams.XREFS.key());
+            return createOkResponse(transcriptDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -634,22 +634,45 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             QueryResult queryResult = null;
+            List<QueryResult> list1 = null;
 
             // TODO Weare fectching the gene region before querying the variation collection until genes are loaded
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
-            QueryResult<Gene> geneQueryResult = geneDBAdaptor.get(query, new QueryOptions("include", "chromosome,start,end"));
-            if (geneQueryResult != null && geneQueryResult.getResult().size() > 0) {
-                Gene gene = geneQueryResult.first();
-                query.clear();
-                query.put(VariantDBAdaptor.QueryParams.REGION.key(),
-                        gene.getChromosome() + ":" + (gene.getStart() - 5000) + "-" + (gene.getEnd() + 5000));
+
+            String[] split = geneId.split(",");
+            List<Query> queries = new ArrayList<>(split.length);
+            List<Query> queries2 = new ArrayList<>(split.length);
+
+            for (String s : split) {
+                Query q = new Query(query);
+                q.put(GeneDBAdaptor.QueryParams.XREFS.key(), s);
+                queries.add(q);
+
+//                query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
+//                QueryResult<Gene> geneQueryResult = geneDBAdaptor.get(query, new QueryOptions("include", "chromosome,start,end"));
+                List<QueryResult<Gene>> geneQueryResult = geneDBAdaptor.get(queries, new QueryOptions("include", "chromosome,start,end"));
+                for (QueryResult<Gene> result : geneQueryResult) {
+                    if (result != null && result.getResult().size() > 0) {
+                        Gene gene = result.first();
+//                        query.clear();
+//                        query.put(VariantDBAdaptor.QueryParams.REGION.key(),
+//                                gene.getChromosome() + ":" + (gene.getStart() - 5000) + "-" + (gene.getEnd() + 5000));
+
+                        q = new Query(query);
+                        q.put(VariantDBAdaptor.QueryParams.REGION.key(),
+                                gene.getChromosome() + ":" + (gene.getStart() - 5000) + "-" + (gene.getEnd() + 5000));
+                        queries2.add(q);
+
+//                        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//                        queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+                    }
+                }
 
                 VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-                queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+                list1 = variationDBAdaptor.nativeGet(queries2, queryOptions);
             }
 
-            return createOkResponse(queryResult);
+            return createOkResponse(list1);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

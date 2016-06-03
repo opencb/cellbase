@@ -167,7 +167,7 @@
                 <!-- Result tab content -->
                 <div role="tabpanel" class="tab-pane" id="result1">
                     <div class="gene-names-display">
-                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <i id="geneSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
                             <div>
@@ -221,7 +221,7 @@
             },
             executeQuery: function (e) {
                 // activate the GIF
-                $('#spinImg').show();
+                $('#geneSpinImg').show();
 
                 // We first build the query params object
                 let queryParams = {include: "id,name,biotype,chromosome,start,end"};
@@ -242,7 +242,7 @@
                         }
                     }
                     // remove the GIF
-                    $('#spinImg').hide();
+                    $('#geneSpinImg').hide();
                 };
 
                 // Now we execute the query. Note that ID are preferred
