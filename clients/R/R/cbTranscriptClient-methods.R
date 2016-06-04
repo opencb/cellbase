@@ -15,7 +15,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbTranscriptClient(object=cb, ids="ENST00000373644", resource="info")
 #' @export
-#' ########################################################################################################################
 setMethod("cbTranscriptClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species

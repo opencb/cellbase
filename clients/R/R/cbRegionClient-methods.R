@@ -15,7 +15,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbRegionClient(object=cb, ids="17:1000000-1200000", resource="gene")
 #' @export
-#' ########################################################################################################################
 setMethod("cbRegionClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species

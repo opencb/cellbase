@@ -4,7 +4,6 @@
 #' @param object an object of class CellBaseResponse
 #' @return a dataframe
 #' @export
-########################################################################################################################
 setMethod("cbData", "CellBaseResponse", definition = function(object) object@cbData)
 
 ##

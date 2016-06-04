@@ -20,7 +20,6 @@
 #' @seealso for more information about the cellbase webservices see
 #' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
-########################################################################################################################
 setMethod("getCellbase", "CellBaseR", definition = function(object, category, subcategory, ids, resource, 
                                                             filters=NULL,...) {
     host <- object@host

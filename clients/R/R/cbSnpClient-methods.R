@@ -16,7 +16,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbSnpClient(object=cb, ids="rs6025", resource="info")
 #' @export
-#' ########################################################################################################################
 setMethod("cbSnpClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species

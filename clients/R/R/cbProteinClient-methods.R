@@ -14,7 +14,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbProteinClient(object=cb, ids="O15350", resource="sequence")
 #' @export
-########################################################################################################################
 setMethod("cbProteinClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species

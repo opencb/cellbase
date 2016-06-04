@@ -13,7 +13,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbSpeciesClient(object=cb)
 #' @export
-########################################################################################################################
 setMethod("cbSpeciesClient", "CellBaseR",    definition = function(object,...){
     host <- object@host
     species <- "species"

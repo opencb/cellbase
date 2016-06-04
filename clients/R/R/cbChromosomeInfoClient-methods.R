@@ -14,7 +14,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbChromosomeInfoClient(object=cb, ids="22", resource="info")
 #' @export
-########################################################################################################################
 setMethod("cbChromosomeInfoClient", "CellBaseR", definition = function(object , ids, filters=NULL,...) {
     host <- object@host
     species <- object@species

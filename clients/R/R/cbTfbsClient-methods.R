@@ -16,7 +16,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbTfbsClient(object=cb, ids="PAX1", resource="gene")
 #' @export
-#' ########################################################################################################################
 setMethod("cbTfbsClient", "CellBaseR",    definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species

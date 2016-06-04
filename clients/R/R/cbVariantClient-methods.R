@@ -16,7 +16,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbVariantClient(object=cb, ids="19:45411941:T:C", resource="annotation")
 #' @export
-#' ########################################################################################################################
 setMethod("cbVariantClient", "CellBaseR",    definition = function(object, ids,
 resource, filters=NULL,...) {
     host <- object@host

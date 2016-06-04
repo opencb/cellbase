@@ -69,8 +69,8 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
     if(class(container[[1]])=="data.frame"){
       ds <- rbind.pages(container)
     }else{
-      ds <- as.data.frame(container[[1]], stringsAsFactors=FALSE)
-      names(ds) <- "result"
+      ds <- as.data.frame(container[[1]], stringsAsFactors=FALSE, names="result")
+      
     }
     
   }
@@ -202,13 +202,15 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     ares <- lapply(js, function(x)x$response$result)
     nums <- lapply(js, function(x)x$response$numResults)
     
-    if (class(ares)=="data.frame"){
+    if (class(ares[[1]][[1]])=="data.frame"){
       ds <- pblapply(ares,function(x)rbind.pages(x))
       ### Important to get correct vertical binding of dataframes
       names(ds) <- NULL
       ds <- rbind.pages(ds)
     }else{
       ds <-ares
+      names(ds) <- NULL
+      
     }
     
     }
