@@ -4,10 +4,7 @@
 \name{cbVariantClient,CellBaseR-method}
 \alias{cbVariantClient}
 \alias{cbVariantClient,CellBaseR-method}
-\title{A method to query variant annotation data from Cellbase web services from Cellbase web services. Please, 
-for details on possible values for the parameters  and  additional filters of this function refer to
-https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+\title{A method to query variant annotation data from Cellbase web services from Cellbase web services.}
 \usage{
 \S4method{cbVariantClient}{CellBaseR}(object, ids, resource, filters = NULL,
   ...)
@@ -28,8 +25,10 @@ example, '1:128546:A:T'}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query variant annotation data from Cellbase web services from Cellbase web services. Please, 
-for details on possible values for the parameters  and  additional filters of this function refer to
+A method to query variant annotation data from Cellbase web services from Cellbase web services.
+}
+\details{
+Please, for details on possible values for the parameters  and  additional filters of this function refer to
 https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }

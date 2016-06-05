@@ -309,3 +309,30 @@ plotGenes <- function(object){
 }
 
 # create GeneModel
+#' A convience functon to construct a genemodel
+#' 
+#' @details  This function takes cbResponse object and returns a geneRegionTrack
+#' model to be plotted by Gviz
+#' @param object an object of class CellbaseResponse
+#' @return A geneRegionTRack 
+#' @export
+createGeneModel <- function(object){
+  require(data.table)
+  require(tidyr)
+  data <- object@cbData
+  rt4 <- as.data.table(data)
+  rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
+  #rt4 <- as.data.table(rt4)
+  setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+  hope <- rt4 %>% unnest(transcripts) 
+  setnames(hope, c("id", "biotype"), c("transcript","feature"))
+  hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+  hope <- hope %>% unnest(exons)
+  hope <- subset(hope, feature=="protein_coding")
+  setnames(hope, c("id"), c("exon"))
+  
+  hope <- as.data.frame(hope)
+  hope <- hope[!duplicated(hope),]
+  return(hope)
+}
+

@@ -4,10 +4,7 @@
 \name{cbTfbsClient,CellBaseR-method}
 \alias{cbTfbsClient}
 \alias{cbTfbsClient,CellBaseR-method}
-\title{A method to query transcription factors binding sites data from Cellbase web services. Please, 
-for details on possible values for the parameters  and  additional filters of this function refer to
-https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+\title{A method to query transcription factors binding sites data from Cellbase web services.}
 \usage{
 \S4method{cbTfbsClient}{CellBaseR}(object, ids, resource, filters = NULL, ...)
 }
@@ -27,8 +24,10 @@ Pdr1, and Oaf1}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query transcription factors binding sites data from Cellbase web services. Please, 
-for details on possible values for the parameters  and  additional filters of this function refer to
+A method to query transcription factors binding sites data from Cellbase web services.
+}
+\details{
+Please for details on possible values for the parameters  and  additional filters of this function refer to
 https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }

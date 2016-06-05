@@ -4,9 +4,7 @@
 \name{cbSpeciesClient,CellBaseR-method}
 \alias{cbSpeciesClient}
 \alias{cbSpeciesClient,CellBaseR-method}
-\title{A method for getting the avaiable species from the cellbase web services. Please, for details on possible values for the 
-parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+\title{A method for getting the avaiable species from the cellbase web services.}
 \usage{
 \S4method{cbSpeciesClient}{CellBaseR}(object, ...)
 }
@@ -23,7 +21,10 @@ http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method for getting the avaiable species from the cellbase web services. Please, for details on possible values for the 
+A method for getting the avaiable species from the cellbase web services.
+}
+\details{
+Please, for details on possible values for the 
 parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }

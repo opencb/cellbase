@@ -4,9 +4,7 @@
 \name{cbTranscriptClient,CellBaseR-method}
 \alias{cbTranscriptClient}
 \alias{cbTranscriptClient,CellBaseR-method}
-\title{A method to query transcript data from Cellbase web services. Please, for details on possible values for the 
-parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+\title{A method to query transcript data from Cellbase web services.}
 \usage{
 \S4method{cbTranscriptClient}{CellBaseR}(object, ids, resource,
   filters = NULL, ...)
@@ -27,7 +25,10 @@ like ENST00000380152}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query transcript data from Cellbase web services. Please, for details on possible values for the 
+A method to query transcript data from Cellbase web services.
+}
+\details{
+Please, for details on possible values for the 
 parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }

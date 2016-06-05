@@ -4,9 +4,7 @@
 \name{cbRegionClient,CellBaseR-method}
 \alias{cbRegionClient}
 \alias{cbRegionClient,CellBaseR-method}
-\title{A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
-for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
-RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+\title{A method to query features within a genomic region from Cellbase web services.}
 \usage{
 \S4method{cbRegionClient}{CellBaseR}(object, ids, resource, filters = NULL,
   ...)
@@ -27,7 +25,10 @@ form 'chr:start-end'}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
+A method to query features within a genomic region from Cellbase web services.
+}
+\details{
+Please, for details on possible values
 for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
 RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }

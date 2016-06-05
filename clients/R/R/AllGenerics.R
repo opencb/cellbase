@@ -101,7 +101,7 @@ standardGeneric("cbRegionClient"))
 #'    cb <- CellBaseR()
 #'    res <- cbSnpClient(object=cb, ids="rs6025", resource="info")
 ########################################################################################################################
-setGeneric("cbSnpClient", function(object,ids,resource,filters, ...)
+setGeneric("cbSnpClient", function(object,ids,resource,filters=NULL, ...)
 standardGeneric("cbSnpClient"))
 
 ########################################################################################################################

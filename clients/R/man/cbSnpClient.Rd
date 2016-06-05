@@ -7,7 +7,7 @@ for details on possible values for the parameters  and  additional filters of th
 https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
-cbSnpClient(object, ids, resource, filters, ...)
+cbSnpClient(object, ids, resource, filters = NULL, ...)
 }
 \arguments{
 \item{object}{an object of class CellBaseR}
