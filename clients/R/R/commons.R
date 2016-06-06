@@ -336,3 +336,26 @@ createGeneModel <- function(object){
   return(hope)
 }
 
+createGeneModel2 <- function(object, region=NULL, gene=NULL){
+  require(data.table)
+  require(tidyr)
+  if(!is.null(region)){
+    res <- cbRegionClient(object = object, ids = region, resource = "gene")
+    data <- cbData(res)
+    rt4 <- as.data.table(data)
+    rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
+    #rt4 <- as.data.table(rt4)
+    setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+    hope <- rt4 %>% unnest(transcripts) 
+    setnames(hope, c("id", "biotype"), c("transcript","feature"))
+    hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+    hope <- hope %>% unnest(exons)
+    hope <- subset(hope, feature=="protein_coding")
+    setnames(hope, c("id"), c("exon"))
+    
+    hope <- as.data.frame(hope)
+    hope <- hope[!duplicated(hope),]
+  }
+  return(hope)
+}
+
