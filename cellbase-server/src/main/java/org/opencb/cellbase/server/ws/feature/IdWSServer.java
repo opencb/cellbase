@@ -90,6 +90,7 @@ public class IdWSServer extends GenericRestWSServer {
 
             List<QueryResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
+                dbNameList.get(i).setId(ids[i]);
                 for (Document document : dbNameList.get(i).getResult()) {
                     if (document.get("id").equals(list.get(i))) {
                         List<Document> objectList = new ArrayList<>(1);
@@ -128,7 +129,9 @@ public class IdWSServer extends GenericRestWSServer {
             Query query = new Query();
             query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
 //            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
-            return createOkResponse(xRefDBAdaptor.nativeGet(query, queryOptions));
+            QueryResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
+            queryResult.setId(ids);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -144,7 +147,9 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             XRefDBAdaptor x = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
-            return createOkResponse(x.startsWith(id, queryOptions));
+            QueryResult queryResult = x.startsWith(id, queryOptions);
+            queryResult.setId(id);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -161,6 +166,7 @@ public class IdWSServer extends GenericRestWSServer {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
             QueryResult xrefs = xRefDBAdaptor.contains(id, queryOptions);
+            xrefs.setId(id);
             return createOkResponse(xrefs);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -186,8 +192,11 @@ public class IdWSServer extends GenericRestWSServer {
             for (String s : ids) {
                 queries.add(new Query(GeneDBAdaptor.QueryParams.XREFS.key(), s));
             }
-
-            return createOkResponse(geneDBAdaptor.nativeGet(queries, queryOptions));
+            List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < ids.length; i++) {
+                queryResults.get(i).setId(ids[i]);
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

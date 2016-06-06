@@ -23,6 +23,7 @@ import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -62,7 +63,9 @@ public class SpeciesWSServer extends GenericRestWSServer {
     public Response getSpeciesInfo() {
         try {
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(species, this.assembly);
-            return createOkResponse(genomeDBAdaptor.getGenomeInfo(queryOptions));
+            QueryResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
+            queryResult.setId(species);
+            return createOkResponse(queryResult);
         } catch (com.mongodb.MongoException e) {
             e.printStackTrace();
             return null;
