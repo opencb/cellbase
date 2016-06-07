@@ -24,6 +24,7 @@ import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -72,7 +73,11 @@ public class TfWSServer extends RegulatoryWSServer {
             List<Query> queries = createQueries(tfId, RegulationDBAdaptor.QueryParams.NAME.key(),
                     RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                             + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-            return createOkResponse(regulationDBAdaptor.nativeGet(queries, queryOptions));
+            List<QueryResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.NAME.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -120,9 +125,12 @@ public class TfWSServer extends RegulatoryWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            query.put(GeneDBAdaptor.QueryParams.NAME.key(), tfId);
             List<Query> queries = createQueries(tfId, GeneDBAdaptor.QueryParams.NAME.key());
-            return createOkResponse(geneDBAdaptor.nativeGet(queries, queryOptions));
+            List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

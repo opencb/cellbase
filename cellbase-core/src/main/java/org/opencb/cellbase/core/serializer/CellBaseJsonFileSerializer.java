@@ -39,6 +39,8 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
     private final HashMap<String, BufferedWriter> bufferedWriters;
 
     private boolean serializeEmptyValues;
+    private boolean excludeNullValues;
+    private boolean requireGettersForSetters;
     private ObjectWriter jsonObjectWriter;
     private ObjectWriter clinvarJsonObjectWriter;
 
@@ -51,9 +53,16 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
     }
 
     public CellBaseJsonFileSerializer(Path outdir, String baseFileName, boolean serializeEmptyValues) {
+        this(outdir, baseFileName, serializeEmptyValues, false, true);
+    }
+
+    public CellBaseJsonFileSerializer(Path outdir, String baseFileName, boolean serializeEmptyValues, boolean excludeNullValues,
+                                      boolean requireGettersForSetters) {
         this.outdir = outdir;
         this.fileName = baseFileName;
         this.serializeEmptyValues = serializeEmptyValues;
+        this.excludeNullValues = excludeNullValues;
+        this.requireGettersForSetters = requireGettersForSetters;
         this.bufferedWriters = new HashMap<>();
         init();
     }
@@ -72,11 +81,15 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
 
     private void init() {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
-        if (!serializeEmptyValues) {
+        if (serializeEmptyValues) {
+            if (excludeNullValues) {
+                jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            }
+        } else {
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         }
         clinvarJsonObjectWriter = jsonObjectMapper.writer();
-        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, requireGettersForSetters);
         jsonObjectWriter = jsonObjectMapper.writer();
     }
 

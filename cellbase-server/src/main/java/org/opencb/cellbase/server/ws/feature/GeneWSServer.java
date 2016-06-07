@@ -481,6 +481,9 @@ public class GeneWSServer extends GenericRestWSServer {
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(geneId, GeneDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
+            }
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -532,9 +535,12 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-//            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
             List<Query> queries = createQueries(geneId, TranscriptDBAdaptor.QueryParams.XREFS.key());
-            return createOkResponse(transcriptDBAdaptor.nativeGet(queries, queryOptions));
+            List<QueryResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -671,6 +677,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
                 list1 = variationDBAdaptor.nativeGet(queries2, queryOptions);
             }
+            queryResult.setId(geneId);
 
             return createOkResponse(list1);
         } catch (Exception e) {
@@ -815,6 +822,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 for (String gene : genes) {
                     query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
                     QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+                    queryResult.setId(gene);
                     queryResults.add(queryResult);
                 }
                 return createOkResponse(queryResults);
@@ -851,7 +859,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getProteinById(@PathParam("geneId")
-                                   @ApiParam(name = "xrefs",
+                                   @ApiParam(name = "geneId",
                                            value = "Comma separated list of gene ids, e.g.: ENSG00000268020,BRCA2"
                                                    + "Exact text matches will be returned",
                                            required = true) String geneId) {
@@ -859,7 +867,11 @@ public class GeneWSServer extends GenericRestWSServer {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(geneId, ProteinDBAdaptor.QueryParams.XREFS.key());
-            return createOkResponse(proteinDBAdaptor.nativeGet(queries, queryOptions));
+            List<QueryResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -921,7 +933,9 @@ public class GeneWSServer extends GenericRestWSServer {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
             query.put("gene", geneId);
-            return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
+            QueryResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
+            queryResult.setId(geneId);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
