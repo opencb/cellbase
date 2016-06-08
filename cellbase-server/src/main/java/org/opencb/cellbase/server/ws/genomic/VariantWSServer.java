@@ -190,10 +190,10 @@ public class VariantWSServer extends GenericRestWSServer {
                 variantAnnotationCalculator =
                         new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
             }
-            List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
+            List<QueryResult<VariantAnnotation>> queryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
-            return createOkResponse(clinicalQueryResultList);
+            return createOkResponse(queryResultList);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -216,7 +216,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @ApiParam(name = "variants", value = "Comma separated list of variants to"
                                                        + "annotate, e.g. "
                                                        + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
-                                                       + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
+                                                       + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>",
                                                        required = true) String variants) {
         try {
             parseQueryParams();

@@ -618,14 +618,17 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private List<Gene> getAffectedGenes(Variant variant, String includeFields) {
-        int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
+        // reference = "" if insertion, reference = null if CNV for example
+        int variantStart = variant.getReference() != null && variant.getReference().isEmpty()
+                ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions("include", includeFields);
 //        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
 //                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
 
         return geneDBAdaptor
                 .getByRegion(new Region(variant.getChromosome(), Math.max(1, variantStart - 5000),
-                        variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions).getResult();
+                        variant.getEnd() + 5000), queryOptions).getResult();
+//                        variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions).getResult();
 
 //        return geneDBAdaptor.get(new Query("region", variant.getChromosome()+":"+(variantStart - 5000)+":"
 //                +(variant.getStart() + variant.getReference().length() - 1 + 5000)), queryOptions)
@@ -677,35 +680,52 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
             case SNV:
                 return new ConsequenceTypeSNVCalculator();
+            case CNV:
+                return new ConsequenceTypeCNVCalculator();
             default:
                 throw new UnsupportedURLVariantFormat();
         }
     }
 
     private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
-        return getVariantType(variant.getReference(), variant.getAlternate());
+        if (variant.getType() == null) {
+            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()));
+        }
+        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
+        // FIXME: insertions and deletions
+        if (variant.getType().equals(VariantType.INDEL)) {
+            if (variant.getReference().isEmpty()) {
+                variant.setType(VariantType.INSERTION);
+            } else {
+                variant.setType(VariantType.DELETION);
+            }
+        }
+        return variant.getType();
+//        return getVariantType(variant.getReference(), variant.getAlternate());
     }
 
-    private VariantType getVariantType(String reference, String alternate) {
-        if (reference.isEmpty()) {
-            return VariantType.INSERTION;
-        } else if (alternate.isEmpty()) {
-            return VariantType.DELETION;
-        } else if (reference.length() == 1 && alternate.length() == 1) {
-            return VariantType.SNV;
-        } else {
-            throw new UnsupportedURLVariantFormat();
-        }
-    }
+//    private VariantType getVariantType(String reference, String alternate) {
+//        if (reference.isEmpty()) {
+//            return VariantType.INSERTION;
+//        } else if (alternate.isEmpty()) {
+//            return VariantType.DELETION;
+//        } else if (reference.length() == 1 && alternate.length() == 1) {
+//            return VariantType.SNV;
+//        } else {
+//            throw new UnsupportedURLVariantFormat();
+//        }
+//    }
 
     private List<RegulatoryFeature> getAffectedRegulatoryRegions(Variant variant) {
-        int variantStart = variant.getReference().isEmpty() ? variant.getStart() - 1 : variant.getStart();
+        int variantStart = variant.getReference() != null && variant.getReference().isEmpty()
+                ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add("include", "chromosome,start,end");
 //        QueryResult queryResult = regulationDBAdaptor.nativeGet(new Query("region", variant.getChromosome()
 //                + ":" + variantStart + ":" + (variant.getStart() + variant.getReference().length() - 1)), queryOptions);
         QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor.getByRegion(new Region(variant.getChromosome(),
-                variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
+                variantStart, variant.getEnd()), queryOptions);
+//                variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
 
         List<RegulatoryFeature> regionList = new ArrayList<>(queryResult.getNumResults());
         for (RegulatoryFeature object : queryResult.getResult()) {

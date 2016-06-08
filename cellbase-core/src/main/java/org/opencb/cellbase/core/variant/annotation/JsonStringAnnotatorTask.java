@@ -86,6 +86,7 @@ public class JsonStringAnnotatorTask implements ParallelTaskRunner.Task<String, 
             if (isValid(variant)) {
                 // Read variants may not have the variant type set and this might cause NPE
                 if (variant.getType() == null) {
+                    variant.resetLength();
                     variant.setType(variant.inferType(variant.getReference(), variant.getAlternate(),
                             variant.getLength()));
                 }
