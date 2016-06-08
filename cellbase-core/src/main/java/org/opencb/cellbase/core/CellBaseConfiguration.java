@@ -166,11 +166,14 @@ public class CellBaseConfiguration {
         private URLProperties geneUniprotXref;
         private URLProperties geneExpressionAtlas;
         private URLProperties mirbase;
+        private URLProperties mirbaseReadme;
         private URLProperties targetScan;
         private URLProperties miRTarBase;
         private URLProperties uniprot;
+        private URLProperties uniprotRelNotes;
         private URLProperties intact;
         private URLProperties interpro;
+        private URLProperties interproRelNotes;
         private URLProperties conservation;
         private URLProperties gerp;
         private URLProperties clinvar;
@@ -178,6 +181,7 @@ public class CellBaseConfiguration {
         private URLProperties clinvarEfoTerms;
         private URLProperties hpo;
         private URLProperties disgenet;
+        private URLProperties disgenetReadme;
         private URLProperties dgidb;
         private URLProperties gwasCatalog;
         private URLProperties dbsnp;
@@ -206,6 +210,14 @@ public class CellBaseConfiguration {
 
         public void setUniprot(URLProperties uniprot) {
             this.uniprot = uniprot;
+        }
+
+        public URLProperties getUniprotRelNotes() {
+            return uniprotRelNotes;
+        }
+
+        public void setUniprotRelNotes(URLProperties uniprotRelNotes) {
+            this.uniprotRelNotes = uniprotRelNotes;
         }
 
         public URLProperties getClinvar() {
@@ -248,6 +260,14 @@ public class CellBaseConfiguration {
             this.disgenet = disgenet;
         }
 
+        public URLProperties getDisgenetReadme() {
+            return disgenetReadme;
+        }
+
+        public void setDisgenetReadme(URLProperties disgenetReadme) {
+            this.disgenetReadme = disgenetReadme;
+        }
+
         public URLProperties getDgidb() {
             return dgidb;
         }
@@ -288,6 +308,14 @@ public class CellBaseConfiguration {
             this.interpro = interpro;
         }
 
+        public URLProperties getInterproRelNotes() {
+            return interproRelNotes;
+        }
+
+        public void setInterproRelNotes(URLProperties interproRelNotes) {
+            this.interproRelNotes = interproRelNotes;
+        }
+
         public URLProperties getGeneExpressionAtlas() {
             return geneExpressionAtlas;
         }
@@ -326,6 +354,14 @@ public class CellBaseConfiguration {
 
         public void setMirbase(URLProperties mirbase) {
             this.mirbase = mirbase;
+        }
+
+        public URLProperties getMirbaseReadme() {
+            return mirbaseReadme;
+        }
+
+        public void setMirbaseReadme(URLProperties mirbaseReadme) {
+            this.mirbaseReadme = mirbaseReadme;
         }
 
         public URLProperties getTargetScan() {
