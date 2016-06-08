@@ -69,47 +69,37 @@ public abstract class DBAdaptorFactory {
 
     public abstract void close();
 
-
-
     public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species);
 
     public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species, String assembly);
 
+    public abstract CellBaseDBAdaptor getMetaDBAdaptor(String species);
+
+    public abstract CellBaseDBAdaptor getMetaDBAdaptor(String species, String assembly);
 
     public abstract GeneDBAdaptor getGeneDBAdaptor(String species);
 
     public abstract GeneDBAdaptor getGeneDBAdaptor(String species, String assembly);
 
-
     public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species);
 
     public abstract TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly);
-
 
     public abstract VariantDBAdaptor getVariationDBAdaptor(String species);
 
     public abstract VariantDBAdaptor getVariationDBAdaptor(String species, String assembly);
 
-
     public abstract XRefDBAdaptor getXRefDBAdaptor(String species);
 
     public abstract XRefDBAdaptor getXRefDBAdaptor(String species, String assembly);
-
-
-//    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species);
-//
-//    public abstract VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly);
-
 
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species);
 
     public abstract ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly);
 
-
     public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species);
 
     public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species, String assembly);
-
 
     public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
 
@@ -124,7 +114,6 @@ public abstract class DBAdaptorFactory {
     public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
 
     public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
-
 
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species);
 

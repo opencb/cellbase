@@ -85,8 +85,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String INTACT_NAME = "IntAct";
     private static final String INTERPRO_NAME = "InterPro";
     private static final String GERP_NAME = "GERP++";
-    private static final String PHASTCONS_NAME = "PhyloP";
-    private static final String PHYLOP_NAME = "InterPro";
+    private static final String PHASTCONS_NAME = "PhastCons";
+    private static final String PHYLOP_NAME = "PhyloP";
     private static final String CLINVAR_NAME = "ClinVar";
     private static final String GWAS_NAME = "Gwas Catalog";
     private static final String DBSNP_NAME = "dbSNP";

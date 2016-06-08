@@ -190,10 +190,10 @@ public class VariantWSServer extends GenericRestWSServer {
                 variantAnnotationCalculator =
                         new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
             }
-            List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
+            List<QueryResult<VariantAnnotation>> queryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
-            return createOkResponse(clinicalQueryResultList);
+            return createOkResponse(queryResultList);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

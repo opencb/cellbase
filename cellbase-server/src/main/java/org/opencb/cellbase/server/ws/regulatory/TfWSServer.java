@@ -23,6 +23,7 @@ import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -70,7 +71,9 @@ public class TfWSServer extends RegulatoryWSServer {
             query.put(RegulationDBAdaptor.QueryParams.NAME.key(), tfId);
             query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                             + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-            return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
+            QueryResult queryResult = regulationDBAdaptor.nativeGet(query, queryOptions);
+            queryResult.setId(tfId);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -119,7 +122,9 @@ public class TfWSServer extends RegulatoryWSServer {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
             query.put(GeneDBAdaptor.QueryParams.NAME.key(), tfId);
-            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
+            QueryResult queryResult = geneDBAdaptor.nativeGet(query, queryOptions);
+            queryResult.setId(tfId);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
