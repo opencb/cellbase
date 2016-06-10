@@ -10,7 +10,7 @@
 #' @slot batch_size if multiple queries are raised by a single method call, e.g. getting annotation info for several genes,
 #' queries will be sent to the server in batches. This slot indicates the size of these batches. Default 200
 #' @slot num_threads the number of threads. Default 8
-########################################################################################################################
+#' @export
 setClass("CellBaseR", 
          slots = c(host="character", version="character", species="character", batch_size="numeric", num_threads="numeric"),
          prototype = prototype(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/", version = "v4/",
@@ -39,7 +39,7 @@ CellBaseResponse <-setClass("CellBaseResponse", slots=c(cbData="data.frame"))
 #' @slot include A character vector denoting the fields to be returned
 #' @slot exclude A character vector denoting the fields to be excluded
 #' @slot limit A number limiting the number of results to be returned
-########################################################################################################################
+#' @export
 setClass("CellBaseParam",slots = c(genome="character", gene="character", region="character", rs="character", 
                                    so="character", phenotype="character", include ="character", exclude = "character", 
                                    limit="character"), prototype = prototype(genome=character(0),gene=character(0),

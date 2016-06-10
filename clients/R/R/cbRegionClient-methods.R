@@ -1,5 +1,6 @@
 ########################################################################################################################
-#' A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
+#' A method to query features within a genomic region from Cellbase web services.
+#' @details  Please, for details on possible values
 #' for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
 #' RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbRegionClient
@@ -15,7 +16,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbRegionClient(object=cb, ids="17:1000000-1200000", resource="gene")
 #' @export
-#' ########################################################################################################################
 setMethod("cbRegionClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species

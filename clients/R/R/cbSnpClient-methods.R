@@ -1,6 +1,6 @@
 ########################################################################################################################
-#' A method to query genomic variation data from Cellbase web services from Cellbase web services. Please, 
-#' for details on possible values for the parameters  and  additional filters of this function refer to
+#' A method to query genomic variation data from Cellbase web services from Cellbase web services.
+#' @details Please for details on possible values for the parameters  and  additional filters of this function refer to
 #' https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbSnpClient
@@ -16,13 +16,12 @@
 #'    cb <- CellBaseR()
 #'    res <- cbSnpClient(object=cb, ids="rs6025", resource="info")
 #' @export
-#' ########################################################################################################################
 setMethod("cbSnpClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species
     version <- object@version
     categ <- "feature"
-    subcateg<- "snp"
+    subcateg<- "variation"
     ids <- ids
     resource <- resource
     result <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,

@@ -1,5 +1,6 @@
 ########################################################################################################################
-#' A method to query cross reference data from Cellbase web services. Please, for details on possible values for the 
+#' A method to query cross reference data from Cellbase web services.
+#' @details Please, for details on possible values for the 
 #' parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbXrefClient
@@ -15,7 +16,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbXrefClient(object=cb, ids="ENST00000373644", resource="xref")
 #' @export
-########################################################################################################################
 setMethod("cbXrefClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species

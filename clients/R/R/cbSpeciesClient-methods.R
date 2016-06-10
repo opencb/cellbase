@@ -1,5 +1,6 @@
 ########################################################################################################################
-#' A method for getting the avaiable species from the cellbase web services. Please, for details on possible values for the 
+#' A method for getting the avaiable species from the cellbase web services.
+#' @details Please, for details on possible values for the 
 #' parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbSpeciesClient
@@ -13,7 +14,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbSpeciesClient(object=cb)
 #' @export
-########################################################################################################################
 setMethod("cbSpeciesClient", "CellBaseR",    definition = function(object,...){
     host <- object@host
     species <- "species"

@@ -9,15 +9,15 @@ Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
 Description: Classes and methods for querying cellbase web services
 License: Apache Licence v2
 Depends:
-    R(>= 3.2.2),
+    R(>= 3.3),
     RCurl,
     jsonlite,methods,R.utils,BiocParallel,
     pbapply,
     doMC,
     parallel,
-    Rsamtools
+    Rsamtools, data.table, tidyr
 RoxygenNote: 5.0.1
-biocViews: Annotation Data
+biocViews: Annotation
 Lazy: TRUE
 Collate:
     'cellbase.R'

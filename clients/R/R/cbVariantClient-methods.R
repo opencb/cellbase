@@ -1,6 +1,6 @@
 ########################################################################################################################
-#' A method to query variant annotation data from Cellbase web services from Cellbase web services. Please, 
-#' for details on possible values for the parameters  and  additional filters of this function refer to
+#' A method to query variant annotation data from Cellbase web services from Cellbase web services.
+#' @details Please, for details on possible values for the parameters  and  additional filters of this function refer to
 #' https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbVariantClient
@@ -16,7 +16,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbVariantClient(object=cb, ids="19:45411941:T:C", resource="annotation")
 #' @export
-#' ########################################################################################################################
 setMethod("cbVariantClient", "CellBaseR",    definition = function(object, ids,
 resource, filters=NULL,...) {
     host <- object@host

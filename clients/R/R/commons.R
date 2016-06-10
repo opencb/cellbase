@@ -66,7 +66,13 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
         container[[i]] <- cell
         i=i+1
     }
-    ds <- rbind.pages(container)
+    if(class(container[[1]])=="data.frame"){
+      ds <- rbind.pages(container)
+    }else{
+      ds <- as.data.frame(container[[1]], stringsAsFactors=FALSE, names="result")
+      
+    }
+    
   }
 
 
@@ -168,7 +174,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     registerDoMC(num_cores)
     # 
     # ## Extracting the content in parallel
-    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
+    js <- mclapply(content, function(x)fromJSON(x, flatten=TRUE), mc.cores=num_cores)
     res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
@@ -195,11 +201,20 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     js <- lapply(content, function(x)fromJSON(x))
     ares <- lapply(js, function(x)x$response$result)
     nums <- lapply(js, function(x)x$response$numResults)
-    ds <- pblapply(ares,function(x)rbind.pages(x))
-    ### Important to get correct vertical binding of dataframes
-    names(ds) <- NULL
-    ds <- rbind.pages(ds)
+    
+    if (class(ares[[1]][[1]])=="data.frame"){
+      ds <- pblapply(ares,function(x)rbind.pages(x))
+      ### Important to get correct vertical binding of dataframes
+      names(ds) <- NULL
+      ds <- rbind.pages(ds)
+    }else{
+      ds <-ares
+      names(ds) <- NULL
+      
     }
+    
+    }
+  
     return(list(result=ds,num_results=nums))
     }
 Annovcf <- function(object, file, batch_size, num_threads){
@@ -258,3 +273,105 @@ Annovcf <- function(object, file, batch_size, num_threads){
   return(final)
   
 }
+
+#' A function to plot gene modells from gene data returned by cbGeneClient
+#' 
+#' 
+#' @param object an object of class CellBaseResponse
+#' @return A Gviz plot
+#' @export
+# plotGenes <- function(object){
+#   require(data.table)
+#   require(tidyr)
+#   require(Gviz)
+#   data <- object@cbData
+#   rt4 <- as.data.table(data)
+#   rt4 <- rt4[,c("id", "name", "transcripts")]
+#   rt4 <- as.data.table(rt4)
+#   setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+#   hope <- rt4 %>% unnest(transcripts) 
+#   setnames(hope, c("id", "biotype"), c("transcript","feature"))
+#   hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+#   hope <- hope %>% unnest(exons)
+#   hope <- subset(hope, feature=="protein_coding")
+#   setnames(hope, c("id"), c("exon"))
+#   
+#   hope <- as.data.frame(hope)
+#   hope <- hope[!duplicated(hope),]
+#   # Plot with Gviz
+#   chr <- paste0(unique(hope$chromosome))
+#   ideoTrack <- IdeogramTrack(genome = "hg19", chromosome = chr)
+#   testTrack <- GeneRegionTrack(hope, genome="hg19", chromosome=chr)
+#   from <- min(hope$start)-1000
+#   to <- max(hope$end)+1000
+#   plotTracks(list(ideoTrack, testTrack),from = from, to=to, testTrack, transcriptAnnotation="transcript")
+#   
+# }
+
+# create GeneModel
+#' A convience functon to construct a genemodel
+#' #' 
+#' #' @details  This function takes cbResponse object and returns a geneRegionTrack
+#' #' model to be plotted by Gviz
+#' #' @param object an object of class CellbaseResponse
+#' #' @return A geneModel
+#' #' @export
+#' createGeneModel <- function(object){
+#'   require(data.table)
+#'   require(tidyr)
+#'   data <- object@cbData
+#'   rt4 <- as.data.table(data)
+#'   rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
+#'   #rt4 <- as.data.table(rt4)
+#'   setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+#'   hope <- rt4 %>% unnest(transcripts) 
+#'   setnames(hope, c("id", "biotype"), c("transcript","feature"))
+#'   hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+#'   hope <- hope %>% unnest(exons)
+#'   hope <- subset(hope, feature=="protein_coding")
+#'   setnames(hope, c("id"), c("exon"))
+#'   
+#'   hope <- as.data.frame(hope)
+#'   hope <- hope[!duplicated(hope),]
+#'   return(hope)
+#' }
+# create GeneModel
+#' A convience functon to construct a genemodel
+#' 
+#' @details  This function takes cbResponse object and returns a geneRegionTrack
+#' model to be plotted by Gviz
+#' @param object an object of class CellbaseResponse
+#' @param region a character 
+#' @return A geneModel
+#' @export
+createGeneModel2 <- function(object, region=NULL){
+  require(data.table)
+  require(tidyr)
+  require(magrittr)
+  if(!is.null(region)){
+    host <- object@host
+    species <- object@species
+    version <- object@version
+    categ <- "genomic"
+    subcateg<- "region"
+    ids <- region
+    resource <- "gene"
+    data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
+                            ids=ids, resource=resource, filters=NULL)
+    rt4 <- as.data.table(data)
+    rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
+    #rt4 <- as.data.table(rt4)
+    setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+    hope <- unnest(rt4, transcripts) 
+    setnames(hope, c("id", "biotype"), c("transcript","feature"))
+    hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+    hope <- unnest(hope, exons)
+    hope <- subset(hope, feature=="protein_coding")
+    setnames(hope, c("id"), c("exon"))
+    
+    hope <- as.data.frame(hope)
+    hope <- hope[!duplicated(hope),]
+  }
+  return(hope)
+}
+

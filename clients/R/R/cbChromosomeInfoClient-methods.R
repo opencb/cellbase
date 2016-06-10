@@ -1,5 +1,6 @@
 ########################################################################################################################
-#' A method to query sequence data from Cellbase web services. Please, for details on possible values for the 
+#' A method to query sequence data from Cellbase web services.
+#' @details  Please, for details on possible values for the 
 #' parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbChromosomeInfoClient
@@ -14,7 +15,6 @@
 #'    cb <- CellBaseR()
 #'    res <- cbChromosomeInfoClient(object=cb, ids="22", resource="info")
 #' @export
-########################################################################################################################
 setMethod("cbChromosomeInfoClient", "CellBaseR", definition = function(object , ids, filters=NULL,...) {
     host <- object@host
     species <- object@species
@@ -23,8 +23,9 @@ setMethod("cbChromosomeInfoClient", "CellBaseR", definition = function(object , 
     subcateg<- "chromosome"
     ids <- ids
     resource <- "info"
-    result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL, species=species, categ=categ, 
-                            subcateg=subcateg, ids=ids, resource=resource, filters=NULL,...)
-    data <- CellBaseResponse(cbData=result)
+    result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,
+    species=species, categ=categ, subcateg=subcateg, ids=ids, resource=resource , filters=NULL,...)
+    data <- result$result[[1]]
+    data <- CellBaseResponse(cbData=data)
     return(data)
 })

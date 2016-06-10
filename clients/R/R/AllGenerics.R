@@ -101,7 +101,7 @@ standardGeneric("cbRegionClient"))
 #'    cb <- CellBaseR()
 #'    res <- cbSnpClient(object=cb, ids="rs6025", resource="info")
 ########################################################################################################################
-setGeneric("cbSnpClient", function(object,ids,resource,filters, ...)
+setGeneric("cbSnpClient", function(object,ids,resource,filters=NULL, ...)
 standardGeneric("cbSnpClient"))
 
 ########################################################################################################################
@@ -251,7 +251,6 @@ standardGeneric("cbSpeciesClient"))
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @export
-########################################################################################################################
 setGeneric("cbAnnotateVcf", function(object,file, ...)
 standardGeneric("cbAnnotateVcf"))
 
@@ -264,7 +263,6 @@ standardGeneric("cbAnnotateVcf"))
 #' @param object an object of class CellBaseResponse
 #' @return a dataframe
 #' @export
-########################################################################################################################
 setGeneric("cbData", function(object, ...)
 standardGeneric("cbData"))
 
