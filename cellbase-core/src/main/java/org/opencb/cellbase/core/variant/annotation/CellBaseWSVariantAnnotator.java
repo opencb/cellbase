@@ -72,13 +72,34 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         List<QueryResult<VariantAnnotation>> queryResultList = response.getResponse();
         for (int i = 0; i < queryResultList.size(); i++) {
             if (queryResultList.get(i).getResult().size() > 0) {
-                variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+                if (variantList.get(i).getAnnotation() == null) {
+                    variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+                } else {
+                    mergeAnnotation(variantList.get(i).getAnnotation(), queryResultList.get(i).getResult().get(0));
+                }
             } else {
                 logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
             }
         }
     }
 
+    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
+        if (origin != null) {
+            destination.setId(origin.getId());
+            destination.setChromosome(origin.getChromosome());
+            destination.setStart(origin.getStart());
+            destination.setReference(origin.getReference());
+            destination.setAlternate(origin.getAlternate());
+            destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
+            destination.setConsequenceTypes(origin.getConsequenceTypes());
+            destination.setConservation(origin.getConservation());
+            destination.setGeneExpression(origin.getGeneExpression());
+            destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
+            destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
+            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+            destination.setFunctionalScore(origin.getFunctionalScore());
+        }
+    }
 
     // TODO: use a external class for this (this method could be added to GenomicVariant class)
     private Variant getGenomicVariant(Variant variant) {
