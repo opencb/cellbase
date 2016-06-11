@@ -22,9 +22,8 @@
 #'    resource="info")
 #' @seealso for more information about the cellbase webservices see
 #' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
-########################################################################################################################
-setGeneric("getCellbase", function(object, categ, subcateg,ids, resource,filters=NULL, ...) 
-standardGeneric("getCellbase"))
+setGeneric("getCellbase", function(object, categ, subcateg,ids, resource,
+          filters=NULL, ...) standardGeneric("getCellbase"))
 
 ########################################################################################################################
 #' A method to query Clinical data from Cellbase web services. Please, for details on possible values for the parameters 

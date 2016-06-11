@@ -9,15 +9,11 @@ predefined categories, subcategries, or resources. Please, for details on possib
 additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
-\S4method{getCellbase}{CellBaseR}(object, category, subcategory, ids, resource,
+\S4method{getCellbase}{CellBaseR}(object, categ, subcateg, ids, resource,
   filters = NULL, ...)
 }
 \arguments{
 \item{object}{an object of class CellBaseR}
-
-\item{category}{character to specify the category to be queried.}
-
-\item{subcategory}{character to specify the subcategory to be queried}
 
 \item{ids}{a character vector of the ids to be queried}
 
@@ -26,6 +22,10 @@ http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \item{filters}{an object of class CellBaseParam specifying additional filters for the CellBaseR}
 
 \item{...}{any extra arguments}
+
+\item{category}{character to specify the category to be queried.}
+
+\item{subcategory}{character to specify the subcategory to be queried}
 }
 \value{
 an object of class CellBaseResponse which holds a dataframe
@@ -39,7 +39,7 @@ http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 \examples{
    library(cellbaseR)
    cb <- CellBaseR
-   res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",
+   res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1", 
    resource="info")
 }
 \seealso{

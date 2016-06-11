@@ -26,7 +26,7 @@ resource, filters=NULL,...) {
     ids <- ids
     resource <- resource
     result <- fetchCellbase(file=NULL, host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
-                            filters=NULL,...)
+                            ids=ids, resource=resource, filters=NULL,...)
     data <- CellBaseResponse(cbData=result)
     return(data)
 })

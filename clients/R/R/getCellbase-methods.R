@@ -15,12 +15,14 @@
 #' @examples
 #'    library(cellbaseR)
 #'    cb <- CellBaseR
-#'    res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",
+#'    res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1", 
 #'    resource="info")
 #' @seealso for more information about the cellbase webservices see
 #' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
-setMethod("getCellbase", "CellBaseR", definition = function(object, category, subcategory, ids, resource, 
+setMethod("getCellbase", "CellBaseR", definition = function(object, categ, 
+                                                            subcateg, ids, 
+                                                            resource, 
                                                             filters=NULL,...) {
     host <- object@host
     species <- object@species
@@ -29,10 +31,6 @@ setMethod("getCellbase", "CellBaseR", definition = function(object, category, su
     subcateg<- subcateg
     ids <- ids
     resource <- resource
-    filters <- c(genome=genome, gene=gene,region=region,rs=rs,so=so,
-    phenotype=phenotype,limit=limit, include=include,
-    exclude=exclude, limit=limit)
-    filters <- paste(filters, collapse = "&")
     result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL, species=species, categ=categ, 
                             subcateg=subcateg,ids=ids, resource=resource , filters=NULL,...)
     data <- CellBaseResponse(cbData=result)
