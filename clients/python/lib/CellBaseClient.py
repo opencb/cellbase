@@ -1,53 +1,42 @@
-__author__ = 'fjlopez'
-
-import os
-import json
-import string
-# import zlib
-# import urllib.request
 import requests
 
-class CellBaseClient:
+__author__ = 'fjlopez'
 
+
+class CellBaseClient:
     PATH = "/cellbase-dev-v4.0/webservices/rest/"
-    ENABLEDQUERYTYPES = {"clinical":"feature","exon":"feature","gene":"feature","chromosome":"genomic","meta":None,
-                         "protein":"feature","region":"genomic","snp":"feature","species":None,"tf":"regulatory",
-                         "id":"feature"}
+    ENABLEDQUERYTYPES = {"clinical": "feature", "exon": "feature", "gene": "feature", "chromosome": "genomic",
+                         "meta": None, "protein": "feature", "region": "genomic", "snp": "feature", "species": None,
+                         "tf": "regulatory", "id": "feature"}
 
     def __init__(self, configuration):
         self.__configuration = configuration
 
-    def get(self, species, subtype, method, id, options):
+    def get(self, species, subtype, method, query_id, options):
         # Prepare the call to the server
-        url = self.__createUrl(species, subtype, method, id, options)
-
-        # print(url)
+        url = self.__create_url(species, subtype, method, query_id, options)
 
         headers = {"Accept-Encoding": "gzip"}
         response = requests.get(url, headers=headers)
-        # response = requests.get(url)
-        # print(response.request.headers)
-        # print(response.headers)
+
         return response.json()
 
-    def __createUrl(self, species, subtype, method, id, options):
-        url = "http://" + self.__configuration.getHost() + ":" + str(self.__configuration.getPort()) + \
-              CellBaseClient.PATH + self.__configuration.getVersion() + "/" + species
-        if (CellBaseClient.ENABLEDQUERYTYPES[subtype] != None):
+    def __create_url(self, species, subtype, method, query_id, query_options):
+        url = "http://" + self.__configuration.get_host() + ":" + str(self.__configuration.get_port()) + \
+              CellBaseClient.PATH + self.__configuration.get_version() + "/" + species
+        if CellBaseClient.ENABLEDQUERYTYPES[subtype] is not None:
             url += "/" + CellBaseClient.ENABLEDQUERYTYPES[subtype]
         url += "/" + subtype
-        if (id != None):
-            url += "/" + str.join(",", id)
+        if query_id is not None:
+            url += "/" + str.join(",", query_id)
         url += "/" + method
-        filter = list()
-        if (options != None):
-            for k, v in options.items():
-                if (type(v)!=int):
-                    filter.append(k + "=" + str.join(",", v))
+        query_options_string = list()
+        if query_options is not None:
+            for k, v in query_options.items():
+                if type(v) != int:
+                    query_options_string.append(k + "=" + str.join(",", v))
                 else:
-                    #url += "?" + k + "=" + str(v) + "&"
-                    filter.append(k + "=" + str(v))
-            url += "?" + str.join("&", filter)
-
+                    query_options_string.append(k + "=" + str(v))
+            url += "?" + str.join("&", query_options_string)
 
         return url
