@@ -154,10 +154,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // parallel parsing of these lines
             if (input != null) {
                 DataReader dataReader = new StringDataReader(input);
-                List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList(false);
+                List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList
+                        = getStringTaskList(false);
                 DataWriter dataWriter = getDataWriter(output.toString());
 
-                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY,
+                        false);
                 ParallelTaskRunner<String, Variant> runner =
                         new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
                 runner.run();
@@ -169,7 +171,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
 //                    Query query = new Query();
                     QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
-                    List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList(false);
+                    List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList
+                            = getVariantTaskList(false);
                     ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
 
                     for (String chromosome : chromosomeList) {
@@ -230,8 +233,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList(boolean normalize) throws IOException {
-        List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+    private List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> getStringTaskList(boolean normalize) throws IOException {
+        List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators(normalize);
             switch (inputFormat) {
@@ -256,8 +259,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorTaskList;
     }
 
-    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList(boolean normalize) throws IOException {
-        List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+    private List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> getVariantTaskList(boolean normalize)
+            throws IOException {
+        List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList
+                = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators(normalize);
             variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));

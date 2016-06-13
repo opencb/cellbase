@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, Variant> {
+public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
@@ -51,7 +51,7 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, V
         }
     }
 
-    public List<Variant> apply(List<String> batch) {
+    public List<Variant> apply(List<String> batch) throws Exception {
         List<Variant> variantList = parseVariantList(batch);
         List<Variant> normalizedVariantList = normalizer.apply(variantList);
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {

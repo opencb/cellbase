@@ -123,11 +123,14 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     }
 
-    public QueryResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions) {
+    public QueryResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions)
+            throws InterruptedException, ExecutionException {
         return getAnnotationByVariantList(Collections.singletonList(variant), queryOptions).get(0);
     }
 
-    public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList, QueryOptions queryOptions) {
+    public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList,
+                                                                           QueryOptions queryOptions)
+            throws InterruptedException, ExecutionException {
 
         logger.info("Annotating  batch");
 
@@ -216,12 +219,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                             .setDisplayConsequenceType(getMostSevereConsequenceType(normalizedVariantList.get(i)
                                     .getAnnotation().getConsequenceTypes()));
                 } catch (UnsupportedURLVariantFormat e) {
-                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format.",
-                            normalizedVariantList.get(i).toString());
+                    logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
+                                + " Leaving an empty consequence type list.", normalizedVariantList.get(i).toString());
                 } catch (Exception e) {
-                    logger.error("Unhandled error when calculating consequence type for variant {}",
-                            normalizedVariantList.get(i).toString());
-                    throw e;
+                    logger.error("Unhandled error when calculating consequence type for variant {}"
+                                + " Leaving an empty consequence type list.", normalizedVariantList.get(i).toString());
+//                    throw e;
                 }
             }
 
@@ -772,24 +775,25 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         public void processResults(Future<List<QueryResult<Variant>>> conservationFuture,
-                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList, Set<String> annotatorSet) {
-            try {
-                while (!conservationFuture.isDone()) {
-                    Thread.sleep(1);
-                }
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList,
+                                   Set<String> annotatorSet) throws InterruptedException, ExecutionException {
+//            try {
+            while (!conservationFuture.isDone()) {
+                Thread.sleep(1);
+            }
 
-                List<QueryResult<Variant>> variationQueryResults = conservationFuture.get();
-                if (variationQueryResults != null) {
-                    for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                        if (variationQueryResults.get(i).first() != null && variationQueryResults.get(i).first().getIds().size() > 0) {
-                            variantAnnotationResultList.get(i).first().setId(variationQueryResults.get(i).first().getIds().get(0));
+            List<QueryResult<Variant>> variationQueryResults = conservationFuture.get();
+            if (variationQueryResults != null) {
+                for (int i = 0; i < variantAnnotationResultList.size(); i++) {
+                    if (variationQueryResults.get(i).first() != null && variationQueryResults.get(i).first().getIds().size() > 0) {
+                        variantAnnotationResultList.get(i).first().setId(variationQueryResults.get(i).first().getIds().get(0));
 
-                        }
+                    }
 
-                        if (annotatorSet.contains("populationFrequencies") && variationQueryResults.get(i).first() != null) {
-                            variantAnnotationResultList.get(i).first().setPopulationFrequencies(variationQueryResults.get(i)
-                                    .first().getAnnotation().getPopulationFrequencies());
-                        }
+                    if (annotatorSet.contains("populationFrequencies") && variationQueryResults.get(i).first() != null) {
+                        variantAnnotationResultList.get(i).first().setPopulationFrequencies(variationQueryResults.get(i)
+                                .first().getAnnotation().getPopulationFrequencies());
+                    }
 //                        List<Document> variationDBList = (List<Document>) variationQueryResults.get(i).getResult();
 //                        if (variationDBList != null && variationDBList.size() > 0) {
 //                            BasicDBList idsDBList = (BasicDBList) variationDBList.get(0).get("ids");
@@ -832,11 +836,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //                                }
 //                            }
 //                        }
-                    }
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
             }
+//            } catch (ExecutionException e) {
+//            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
@@ -861,22 +866,24 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         public void processResults(Future<List<QueryResult>> conservationFuture,
-                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList) {
-            try {
-                while (!conservationFuture.isDone()) {
-                    Thread.sleep(1);
-                }
-
-                List<QueryResult> conservationQueryResults = conservationFuture.get();
-                if (conservationQueryResults != null) {
-                    for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                        variantAnnotationResultList.get(i).getResult().get(0)
-                                .setConservation((List<Score>) conservationQueryResults.get(i).getResult());
-                    }
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList)
+                throws InterruptedException, ExecutionException {
+//            try {
+            while (!conservationFuture.isDone()) {
+                Thread.sleep(1);
             }
+
+            List<QueryResult> conservationQueryResults = conservationFuture.get();
+            if (conservationQueryResults != null) {
+                for (int i = 0; i < variantAnnotationResultList.size(); i++) {
+                    variantAnnotationResultList.get(i).getResult().get(0)
+                            .setConservation((List<Score>) conservationQueryResults.get(i).getResult());
+                }
+            }
+//            } catch (ExecutionException e) {
+//            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
         }
 
     }
@@ -904,23 +911,25 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         public void processResults(Future<List<QueryResult<Score>>> variantFunctionalScoreFuture,
-                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList) {
-            try {
-                while (!variantFunctionalScoreFuture.isDone()) {
-                    Thread.sleep(1);
-                }
-
-                List<QueryResult<Score>> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
-                if (variantFunctionalScoreQueryResults != null) {
-                    for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                        variantAnnotationResultList.get(i).getResult().get(0)
-                                .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
-                    }
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResultList)
+                throws InterruptedException, ExecutionException {
+//            try {
+            while (!variantFunctionalScoreFuture.isDone()) {
+                Thread.sleep(1);
             }
-        }
+
+            List<QueryResult<Score>> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
+            if (variantFunctionalScoreQueryResults != null) {
+                for (int i = 0; i < variantAnnotationResultList.size(); i++) {
+                    variantAnnotationResultList.get(i).getResult().get(0)
+                            .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
+                }
+            }
+//            } catch (ExecutionException e) {
+//            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+            }
+//        }
 
     }
 
@@ -942,25 +951,27 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         public void processResults(Future<List<QueryResult>> clinicalFuture,
-                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults) {
-            try {
-                while (!clinicalFuture.isDone()) {
-                    Thread.sleep(1);
-                }
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+                throws InterruptedException, ExecutionException {
+//            try {
+            while (!clinicalFuture.isDone()) {
+                Thread.sleep(1);
+            }
 
-                List<QueryResult> clinicalQueryResults = clinicalFuture.get();
-                if (clinicalQueryResults != null) {
-                    for (int i = 0; i < variantAnnotationResults.size(); i++) {
-                        QueryResult clinicalQueryResult = clinicalQueryResults.get(i);
-                        if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
-                            variantAnnotationResults.get(i).getResult().get(0)
-                                    .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
-                        }
+            List<QueryResult> clinicalQueryResults = clinicalFuture.get();
+            if (clinicalQueryResults != null) {
+                for (int i = 0; i < variantAnnotationResults.size(); i++) {
+                    QueryResult clinicalQueryResult = clinicalQueryResults.get(i);
+                    if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
+                        variantAnnotationResults.get(i).getResult().get(0)
+                                .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
                     }
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
             }
+//            } catch (ExecutionException e) {
+////            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 
