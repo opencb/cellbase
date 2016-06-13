@@ -1,6 +1,5 @@
 # we need to adjust the output for the protein and Genomesequence methods
 #
-require(BiocParallel)
 fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta, 
     species=species, categ, subcateg,ids, resource,filters=NULL, 
     batch_size=NULL,num_threads=NULL,...){
@@ -180,24 +179,12 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
     ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
-    # js <- pblapply(content, function(x)fromJSON(x))
-    # res <- pblapply(js, function(x)x$response$result)
-    # names(res) <- NULL
-    # ds <- foreach(k=1:length(res),.options.multicore=list(preschedule=TRUE),
-    #               .combine=function(...)rbind.pages(list(...)),
-    #               .packages='jsonlite',.multicombine=TRUE) %dopar% {
-    #                 rbind.pages(res[[k]])
-    #               }
-   
     ds <- pblapply(res, function(x)rbind.pages(x))
     ## Important to get correct merging of dataframe
     names(ds) <- NULL
     ds <- rbind.pages(ds)
     nums <- NULL
-    # js <- lapply(content, function(x)fromJSON(x))
-    # ares <- lapply(js, function(x)x$response$result)
-    # ds <- pblapply(ares,function(x)rbind.pages(x))
-    }else{
+     }else{
     js <- lapply(content, function(x)fromJSON(x))
     ares <- lapply(js, function(x)x$response$result)
     nums <- lapply(js, function(x)x$response$numResults)
@@ -216,16 +203,23 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     }
   
     return(list(result=ds,num_results=nums))
-    }
+}
+#' A convience fubction to directly annotate variants from a vcf file
+#' @importFrom RCurl getURIAsynchronous
+#' @importFrom foreach foreach
+#' @importFrom jsonlite fromJSON
+#' @importFrom doParallel registerDoParallel
+#' @importFrom  parallel detectCores
+#' @import BiocParallel
+#' @param object an object of class cellbaseR
+#' @param file  a path to bgzipped and tabix index vcf file
+#' @return an annotated dataframe
+#' 
+#'
 Annovcf <- function(object, file, batch_size, num_threads){
-  require(RCurl)
-  require(jsonlite)
-  require(parallel)
-  require(doParallel)
-  require(foreach)
-  num_cores <-detectCores()/2
-  registerDoMC(num_cores)
-  registerDoParallel()
+  num_cores <-detectCores()-2
+  registerDoParallel(num_cores) 
+  p <- DoparParam()
   host <- object@host
   species <- object@species
   version <- object@version
@@ -254,12 +248,12 @@ Annovcf <- function(object, file, batch_size, num_threads){
   container <- list()
   while(i<=num){
     content <- getURIAsynchronous(grp[[i]],perform = Inf)#  alist of responses
-    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
-    res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
+    js <- bplapply(content, function(x)fromJSON(x),BPPARAM = p)
+    res <- bplapply(js, function(x)x$response$result, BPPARAM = p)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
-    ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
+    ds <- bplapply(res, function(x)rbind.pages(x), BPPARAM = p)
     container[[i]] <- ds 
     i=i+1
   }
