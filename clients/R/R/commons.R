@@ -283,7 +283,7 @@ Annovcf <- function(object, file, batch_size, num_threads){
 #' @param region a character 
 #' @return A geneModel
 #' @export
-createGeneModel2 <- function(object, region=NULL){
+createGeneModel <- function(object, region=NULL){
   require(data.table)
   require(tidyr)
   if(!is.null(region)){
