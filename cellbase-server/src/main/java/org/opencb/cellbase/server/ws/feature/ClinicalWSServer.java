@@ -138,11 +138,14 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "phenotype",
                     value = "String to indicate the phenotypes to query. A text search will be run.",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "rcv",
+            @ApiImplicitParam(name = "clinvarId",
                     value = "Comma separated list of rcv ids, e.g.: RCV000033215",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "rs",
                     value = "Comma separated list of rs ids, e.g.: rs6025",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cosmicId",
+                    value = "Comma separated list of cosmic ids, e.g.: COSM306824",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "type",
                     value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
@@ -152,7 +155,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     value = "Comma separated list of review lables (only enabled for ClinVar variants), "
                             + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "significance",
+            @ApiImplicitParam(name = "clinvar-significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query")

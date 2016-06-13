@@ -23,10 +23,11 @@
 <dom-module id="cellbase-clinical-filter">
     <template>
         <style is="custom-style" include="cellbase-shared-styles">
-            .menu-scroll{
+            .menu-scroll {
                 max-height: 300px;
                 overflow-y: scroll;
             }
+
             .clinical-display {
                 max-height: 800px;
                 overflow: auto;
@@ -36,14 +37,16 @@
         <div>
             <!--Clinical Filter Tabs-->
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#clinicalFilter" role="tab" data-toggle="tab">Filter</a></li>
+                <li role="presentation" class="active"><a href="#clinicalFilter" role="tab" data-toggle="tab">Filter</a>
+                </li>
                 <li role="presentation"><a href="#clinicalResult" role="tab" data-toggle="tab">Result</a></li>
             </ul>
 
             <!--Clinical Filter Tab Content-->
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="clinicalFilter">
-                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample"
+                                             on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br>
 
                     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -52,15 +55,18 @@
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingOne">
                                 <h4 class="panel-title">
-                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#clinicalIdSearch"
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#clinicalIdSearch"
                                        aria-expanded="true" aria-controls="clinicalIdSearch">
                                         IDs
                                     </a>
                                 </h4>
                             </div>
-                            <div id="clinicalIdSearch" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                            <div id="clinicalIdSearch" class="panel-collapse collapse in" role="tabpanel"
+                                 aria-labelledby="headingOne">
                                 <div class="panel-body">
-                                    <textarea id="clinicalIdTextarea" class="form-control" rows="3" placeholder="rs, rcv or cosmic IDs"></textarea>
+                                    <textarea id="clinicalIdTextarea" class="form-control" rows="3"
+                                              placeholder="rs, rcv or cosmic IDs"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -75,9 +81,11 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="clinicalRegion" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                            <div id="clinicalRegion" class="panel-collapse collapse in" role="tabpanel"
+                                 aria-labelledby="headingTwo">
                                 <div class="panel-body">
-                                    <textarea id="clinicalRegionList" class="form-control clearable" rows="3"></textarea>
+                                    <textarea id="clinicalRegionList" class="form-control clearable"
+                                              rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -87,14 +95,18 @@
                             <div class="panel-heading" role="tab" id="headingThree">
                                 <h4 class="panel-title">
                                     <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
-                                       href="#clinicalConsequenceTypes" aria-expanded="false" aria-controls="clinicalConsequenceTypes">
+                                       href="#clinicalConsequenceTypes" aria-expanded="false"
+                                       aria-controls="clinicalConsequenceTypes">
                                         Select Consequence Types
                                     </a>
                                 </h4>
                             </div>
-                            <div id="clinicalConsequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                            <div id="clinicalConsequenceTypes" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingThree">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}}
+                                                           data-type="consequence_types"
+                                                           selected={{consequenceTypes}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -109,7 +121,8 @@
                                     </a>
                                 </h4>
                             </div>
-                            <div id="clinicalTrait" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+                            <div id="clinicalTrait" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingFive">
                                 <div class="panel-body">
                                     <textarea id="clinicalTraitTextArea" class="form-control" rows="3"></textarea>
                                 </div>
@@ -121,14 +134,18 @@
                             <div class="panel-heading" role="tab" id="headingSix">
                                 <h4 class="panel-title">
                                     <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
-                                       href="#filterClinicalSignificance" aria-expanded="false" aria-controls="filterClinicalSignificance">
+                                       href="#filterClinicalSignificance" aria-expanded="false"
+                                       aria-controls="filterClinicalSignificance">
                                         Clinical Significance
                                     </a>
                                 </h4>
                             </div>
-                            <div id="filterClinicalSignificance" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
-                                <div class="panel-body">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="clinical-significance" selected={{clinicalSignificance}}></cellbase-options-list>
+                            <div id="filterClinicalSignificance" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingSix">
+                                <div class="panel-body  menu-scroll">
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}}
+                                                           data-type="clinvar-significance"
+                                                           selected={{clinicalSignificance}}></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -138,12 +155,13 @@
                 <!-- Result tab content -->
                 <div role="tabpanel" class="tab-pane" id="clinicalResult">
                     <div class="clinical-display">
-                        <i id="spinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <i id="clinicalSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
                             <template is="dom-if" if="{{checkCosmic(item)}}">
                                 <div>
-                                    <b on-click="_updateClinicalView" style="cursor: pointer">{{item.mutationID}}</b><br>
+                                    <b on-click="_updateClinicalView"
+                                       style="cursor: pointer">{{item.mutationID}}</b><br>
                                     {{item.chromosome}}:{{item.start}}-{{item.end}}<br>
                                     Phenotypes:
                                     <template is="dom-repeat" items="{{item._phenotypes}}" as="phenotype">
@@ -194,17 +212,17 @@
                 // we empty the textareas
                 this.$.clinicalIdTextarea.value = "";
                 this.$.clinicalRegionList.value = "";
-                this.$.clinicalTraitTextArea.value= "";
+                this.$.clinicalTraitTextArea.value = "";
             },
             loadExample: function (e) {
-                this.$.clinicalIdTextarea.value = "RCV000033215";
+//                this.$.clinicalIdTextarea.value = "RCV000033215";
 //                this.$.clinicalIdTextarea.value = "COSM4732191";
-//                this.$.clinicalRegionList.value = "1:6635137-6635325";
+                this.$.clinicalRegionList.value = "1:6635137-6635325";
 //                this.$.clinicalRegionList.value = "13:32889611-32890000";
             },
             executeQuery: function (e) {
                 // activate the GIF
-                $('#spinImg').show();
+                $('#clinicalSpinImg').show();
 
                 // We first build the query params object
 //                let queryParams = {include: "chromosome,start,end"};
@@ -214,51 +232,57 @@
                     queryParams.type = this.consequenceTypes.join(",");
                 }
                 if (this.clinicalSignificance.length > 0) {
-                    queryParams.significance = this.clinicalSignificance.join(",");
+                    queryParams['clinvar-significance'] = this.clinicalSignificance.join(",");
                 }
 
                 //
-                this.result= [];
+                this.result = [];
                 let _this = this;
                 let success = function (response) {
-                    for(let i in response.response) {
-                        for(let j in response.response[i].result) {
-                            _this.push('result',response.response[i].result[j]);
+                    for (let i in response.response) {
+                        for (let j in response.response[i].result) {
+                            _this.push('result', response.response[i].result[j]);
                         }
                     }
                     // remove the GIF
-                    $('#spinImg').hide();
+                    $('#clinicalSpinImg').hide();
                 };
 
                 // Now we execute the query. Note that ID are preferred
                 if (this.$.clinicalIdTextarea.value !== "") {
                     if (_this.$.clinicalIdTextarea.value.startsWith('RCV')) {
-                        queryParams.rcv = _this.$.clinicalIdTextarea.value;
-//                    _this.cellbaseClient.get('feature','clinical', null, 'search', queryParams, {success: success, async: true});
-                        _this.cellbaseClient.get('feature','clinical', null, 'all', queryParams, {success: success, async: true});
+                        queryParams.clinvarId = _this.$.clinicalIdTextarea.value;
+                        _this.cellbaseClient.get('feature', 'clinical', null, 'search', queryParams, {
+                            success: success,
+                            async: true
+                        });
                     }
                     if (_this.$.clinicalIdTextarea.value.startsWith('COSM')) {
                         queryParams.cosmicId = _this.$.clinicalIdTextarea.value;
-//                    _this.cellbaseClient.get('feature','clinical', null, 'search', queryParams, {success: success, async: true});
-                        _this.cellbaseClient.get('feature','clinical', null, 'all', queryParams, {success: success, async: true});
+                        _this.cellbaseClient.get('feature', 'clinical', null, 'search', queryParams, {
+                            success: success,
+                            async: true
+                        });
                     }
                 } else {
                     if (_this.$.clinicalRegionList.value !== "") {
                         queryParams.region = _this.$.clinicalRegionList.value;
-//                        _this.cellbaseClient.get('feature','clinical', null, 'search', queryParams, {success: success, async: true});
-                        _this.cellbaseClient.get('feature','clinical', null, 'all', queryParams, {success: success, async: true});
+                        _this.cellbaseClient.get('feature', 'clinical', null, 'search', queryParams, {
+                            success: success,
+                            async: true
+                        });
                     }
                 }
 
                 $('.nav-tabs a[href="#clinicalResult"]').tab('show');
             },
-            checkCosmic: function(item) {
+            checkCosmic: function (item) {
                 return item.source === "cosmic";
             },
-            checkClinvar: function(item) {
+            checkClinvar: function (item) {
                 return item.source === "clinvar";
             },
-            _updateClinicalView: function(e) {
+            _updateClinicalView: function (e) {
                 this.clinicalId = e.target.innerText;
             }
         });

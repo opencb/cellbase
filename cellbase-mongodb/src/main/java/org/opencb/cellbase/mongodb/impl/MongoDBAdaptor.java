@@ -78,7 +78,11 @@ public class MongoDBAdaptor {
                 options.put("exclude", "_id,_chunkIds");
             } else {
                 String exclude = options.getString("exclude");
-                options.put("exclude", exclude + ",_id,_chunkIds");
+                if (exclude.contains("_id,_chunkIds")) {
+                    return options;
+                } else {
+                    options.put("exclude", exclude + ",_id,_chunkIds");
+                }
             }
         } else {
             options = new QueryOptions("exclude", "_id,_chunkIds");
@@ -199,10 +203,14 @@ public class MongoDBAdaptor {
             Bson group;
             if (options.getBoolean("count", false)) {
                 group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
+                return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
             } else {
+                // Limit the documents passed if count is false
+                Bson limit = Aggregates.limit(options.getInt("limit", 10));
                 group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
+                // TODO change the default "_id" returned by mongodb to id
+                return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
             }
-            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
         }
     }
 
@@ -216,12 +224,10 @@ public class MongoDBAdaptor {
             return groupBy(query, groupByField.get(0), featureIdField, options);
         } else {
             Bson match = Aggregates.match(query);
-
             // add all group-by fields to the projection together with the aggregation field name
             List<String> groupByFields = new ArrayList<>(groupByField);
             groupByFields.add(featureIdField);
             Bson project = Aggregates.project(Projections.include(groupByFields));
-
             // _id document creation to have the multiple id
             Document id = new Document();
             for (String s : groupByField) {
@@ -230,10 +236,14 @@ public class MongoDBAdaptor {
             Bson group;
             if (options.getBoolean("count", false)) {
                 group = Aggregates.group(id, Accumulators.sum("count", 1));
+                return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
             } else {
+                // Limit the documents passed if count is false
+                Bson limit = Aggregates.limit(options.getInt("limit", 10));
                 group = Aggregates.group(id, Accumulators.addToSet("features", "$" + featureIdField));
+                // TODO change the default "_id" returned by mongodb to id
+                return mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options);
             }
-            return mongoDBCollection.aggregate(Arrays.asList(match, project, group), options);
         }
     }
 

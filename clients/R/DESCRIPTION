@@ -1,0 +1,48 @@
+Package: cellbaseR
+Type: Package
+Date: 2016-04-17
+Title: Querying annotation data from the high performance Cellbase web
+    services
+Version: 0.6.0
+Author: Mohammed OE Abdallah
+Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
+Description: Classes and methods for querying cellbase web services
+License: Apache Licence v2
+Depends:
+    R(>= 3.3),
+    RCurl,
+    jsonlite,methods,R.utils,BiocParallel,
+    pbapply,
+    doMC,
+    parallel,
+    Rsamtools, data.table, tidyr
+RoxygenNote: 5.0.1
+biocViews: Annotation
+Lazy: TRUE
+Collate:
+    'cellbase.R'
+    'commons.R'
+    'AllClasses.R'
+    'AllGenerics.R'
+    'cbAnnotateVcf-methods.R'
+    'cbChromosomeInfoClient-methods.R'
+    'cbClinicalClient-methods.R'
+    'cbData-methods.R'
+    'cbGeneClient-methods.R'
+    'cbProteinClient-methods.R'
+    'cbRegionClient-methods.R'
+    'cbSnpClient-methods.R'
+    'cbSpeciesClient-methods.R'
+    'cbTfbsClient-methods.R'
+    'cbTranscriptClient-methods.R'
+    'cbVariantClient-methods.R'
+    'cbXrefClient-methods.R'
+    'CellBaseParam-methods.R'
+    'CellBaseR-methods.R'
+    'getCellbase-methods.R'
+    'show-methods.R'
+VignetteBuilder: knitr
+Suggests:
+    BiocStyle,
+    knitr,
+    rmarkdown

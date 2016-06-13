@@ -264,7 +264,7 @@ public class GenericRestWSServer implements IWSServer {
             if (!queryOptions.containsKey(entry.getKey())) {
 //                logger.info("Adding '{}' to queryOptions", entry);
                 // FIXME delete this!!
-                queryOptions.put(entry.getKey(), entry.getValue().get(0));
+//                queryOptions.put(entry.getKey(), entry.getValue().get(0));
                 query.put(entry.getKey(), entry.getValue().get(0));
             }
         }
@@ -423,14 +423,16 @@ public class GenericRestWSServer implements IWSServer {
     protected List<Query> createQueries(String csvField, String queryKey, String... args) {
         String[] ids = csvField.split(",");
         List<Query> queries = new ArrayList<>(ids.length);
-        for (String s : ids) {
-            Query query = new Query(queryKey, s);
+        for (String id : ids) {
+//            q = new Query(queryKey, id);
+            Query q = new Query(query);
+            q.put(queryKey, id);
             if (args != null && args.length > 0 && args.length % 2 == 0) {
                 for (int i = 0; i < args.length; i += 2) {
-                    query.put(args[i], args[i + 1]);
+                    q.put(args[i], args[i + 1]);
                 }
             }
-            queries.add(query);
+            queries.add(q);
         }
         return queries;
     }
