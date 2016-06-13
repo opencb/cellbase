@@ -186,10 +186,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            query.append(org.opencb.cellbase.core.api.GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key(), id);
-            QueryResult queryResult = geneDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(id);
-            return createOkResponse(queryResult);
+            List<Query> queries = createQueries(id, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
+            List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -260,7 +262,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcriptId}/protein")
-    @ApiOperation(httpMethod = "GET", value = "Get the protein info for this transcript", response = Entry.class,
+    @ApiOperation(httpMethod = "GET", value = "Get the protein info for the given transcript(s)", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyword",
@@ -276,10 +278,12 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), transcriptId);
-            QueryResult queryResult = proteinDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(transcriptId);
-            return createOkResponse(queryResult);
+            List<Query> queries = createQueries(transcriptId, ProteinDBAdaptor.QueryParams.XREFS.key());
+            List<QueryResult> queryResultList = proteinDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResultList.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
+            }
+            return createOkResponse(queryResultList);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

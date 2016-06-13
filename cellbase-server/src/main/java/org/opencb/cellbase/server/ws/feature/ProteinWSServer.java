@@ -38,7 +38,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -86,11 +85,7 @@ public class ProteinWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(ProteinDBAdaptor.QueryParams.XREFS.key(), s));
-            }
+            List<Query> queries = createQueries(id, ProteinDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));

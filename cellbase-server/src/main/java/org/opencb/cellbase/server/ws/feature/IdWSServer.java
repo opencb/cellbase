@@ -82,15 +82,16 @@ public class IdWSServer extends GenericRestWSServer {
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
 
             List<String> list = Splitter.on(",").splitToList(id);
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(XRefDBAdaptor.QueryParams.ID.key(), s));
-            }
+//            String[] ids = id.split(",");
+//            List<Query> queries = new ArrayList<>(ids.length);
+//            for (String s : ids) {
+//                queries.add(new Query(XRefDBAdaptor.QueryParams.ID.key(), s));
+//            }
+            List<Query> queries = createQueries(id, XRefDBAdaptor.QueryParams.ID.key());
 
             List<QueryResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
-                dbNameList.get(i).setId(ids[i]);
+                dbNameList.get(i).setId(list.get(i));
                 for (Document document : dbNameList.get(i).getResult()) {
                     if (document.get("id").equals(list.get(i))) {
                         List<Document> objectList = new ArrayList<>(1);
@@ -126,12 +127,12 @@ public class IdWSServer extends GenericRestWSServer {
             if (dbname != null && !dbname.isEmpty()) {
                 queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
             }
-            Query query = new Query();
-            query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
-//            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
-            QueryResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(ids);
-            return createOkResponse(queryResult);
+            List<Query> queries = createQueries(ids, XRefDBAdaptor.QueryParams.ID.key());
+            List<QueryResult> queryResultList = xRefDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResultList.get(i).setId((String) queries.get(i).get(XRefDBAdaptor.QueryParams.ID.key()));
+            }
+            return createOkResponse(queryResultList);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

@@ -148,6 +148,11 @@
                 <version>3.0.0-beta-2</version>
             </dependency>
             <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-all</artifactId>
+                <version>0.13.2</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>1.7.13</version>
@@ -268,7 +273,8 @@
                         <phase>validate</phase>
                         <configuration>
                             <configLocation>checkstyle.xml</configLocation>
-                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java</excludes>
+                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java,
+                                org/opencb/cellbase/client/rest/models/GroupByFields.java,org/opencb/cellbase/client/rest/models/GroupCount.java</excludes>
                         </configuration>
                         <goals>
                             <goal>check</goal>
