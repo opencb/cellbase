@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class JsonStringAnnotatorTask implements ParallelTaskRunner.Task<String, Variant> {
+public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
     private List<VariantAnnotator> variantAnnotatorList;
     private boolean normalize;
@@ -62,7 +62,7 @@ public class JsonStringAnnotatorTask implements ParallelTaskRunner.Task<String, 
         }
     }
 
-    public List<Variant> apply(List<String> batch) {
+    public List<Variant> apply(List<String> batch) throws Exception {
         List<Variant> variantList = parseVariantList(batch);
         List<Variant> normalizedVariantList;
         if (normalize) {
