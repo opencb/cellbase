@@ -276,6 +276,8 @@ Annovcf <- function(object, file, batch_size, num_threads){
 #' @param object an object of class CellbaseResponse
 #' @param region a character 
 #' @return A geneModel
+#' @examples 
+#' test <- createGeneModel2(object = cb, region = "17:1500000-1550000")
 #' @export
 createGeneModel <- function(object, region=NULL){
   require(data.table)

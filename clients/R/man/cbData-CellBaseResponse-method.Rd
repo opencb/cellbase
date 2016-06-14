@@ -17,4 +17,9 @@ a dataframe
 \description{
 An accessor method to get CellBaseResponse cbData slot
 }
+\examples{
+ cb <- CellBaseR()
+ res <- cbSnpClient(object=cb, ids="rs6025", resource="info")
+ res <- cbData(res)
+}
 

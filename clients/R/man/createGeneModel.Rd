@@ -21,4 +21,7 @@ A convience functon to construct a genemodel
 This function takes cbResponse object and returns a geneRegionTrack
 model to be plotted by Gviz
 }
+\examples{
+test <- createGeneModel2(object = cb, region = "17:1500000-1550000")
+}
 
