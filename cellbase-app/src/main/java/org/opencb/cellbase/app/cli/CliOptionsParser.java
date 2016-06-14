@@ -17,8 +17,10 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
+import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.commons.utils.CommandLineUtils;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -390,7 +392,7 @@ public class CliOptionsParser {
         if(getCommand().isEmpty()) {
             System.err.println("");
             System.err.println("Program:     " + ANSI_WHITE + "CellBase (OpenCB)" + ANSI_RESET);
-            System.err.println("Version:     3.2.0");
+            System.err.println("Version:     " + getAPIVersion());
             System.err.println("Description: High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
             System.err.println("");
             System.err.println("Usage:       cellbase.sh [-h|--help] [--version] <command> [options]");
@@ -407,6 +409,24 @@ public class CliOptionsParser {
             CommandLineUtils.printCommandUsage(jCommander.getCommands().get(parsedCommand));
             System.err.println("");
         }
+    }
+
+    public void printVersion() {
+        System.err.println("");
+        System.err.println("Program:     " + ANSI_WHITE + "CellBase (OpenCB)" + ANSI_RESET);
+        System.err.println("Version:     " + getAPIVersion());
+        System.err.println("");
+    }
+
+    private String getAPIVersion() {
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
+        try {
+            cellBaseConfiguration = CellBaseConfiguration
+                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return cellBaseConfiguration.getApiVersion();
     }
 
     private void printMainUsage() {

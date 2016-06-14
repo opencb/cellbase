@@ -194,6 +194,15 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/java/org/opencb/cellbase/app/cli</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>CliOptionsParser.java</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
     <repositories>
