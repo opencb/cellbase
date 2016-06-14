@@ -24,6 +24,7 @@ setClass("CellBaseR",
 #' @details This class stores a response of CellBaseR query methods. An object of class CellBaseResponse is automatically
 #' generated when you call any of CellbaseR methods.
 #' @slot cbData an R dataframe which contains the result field within the response object returned by CellBase web services.
+#' @export
 CellBaseResponse <-setClass("CellBaseResponse", slots=c(cbData="data.frame"))
 
 ########################################################################################################################

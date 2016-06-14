@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-import CellBaseCLIExecutor
+import cellbase_cli_executor
 
 # Adds cellbase-client root dir to the PYTHONPATH
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,9 +33,9 @@ def main():
                         help='Integer indicating the number of results to skip (if needed)', dest='skip')
     args = parser.parse_args()
 
-    cellbase_cli_executor = CellBaseCLIExecutor.CellBaseCLIExecutor(args)
-    if cellbase_cli_executor is not None:
-        cellbase_cli_executor.run()
+    executor = cellbase_cli_executor.CellBaseCLIExecutor(args)
+    if executor is not None:
+        executor.run()
 
 if __name__ == '__main__':
     main()

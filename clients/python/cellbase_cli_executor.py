@@ -2,8 +2,8 @@ import string
 import os
 import json
 from exceptions import InvalidQueryTypeException,InvalidQueryMethodException,InvalidQuerySpeciesException
-from lib import CellBaseClientConfig
-from lib import CellBaseClient
+from lib import cellbase_client_config
+from lib import cellbase_client
 
 __author__ = 'fjlopez'
 
@@ -53,7 +53,7 @@ class CellBaseCLIExecutor:
     def run(self):
         self.__check_parameters()
         self.load_cellbase_client_configuration()
-        cell_base_client = CellBaseClient.CellBaseClient(self.__configuration)
+        cell_base_client = cellbase_client.CellBaseClient(self.__configuration)
         query_response = cell_base_client.get(self.__species, self.__type, self.__method, self.__id, self.__options)
         if self.__file:
             fname = self.__file + ".json"
@@ -73,10 +73,10 @@ class CellBaseCLIExecutor:
 
     def load_cellbase_client_configuration(self):
         if self.__configFile is not None:
-            self.__configuration = CellBaseClientConfig.CellBaseClientConfig(self.__configFile)
+            self.__configuration = cellbase_client_config.CellBaseClientConfig(self.__configFile)
         else:
-            self.__configuration = CellBaseClientConfig.CellBaseClientConfig(
-                os.path.dirname(CellBaseClientConfig.__file__) + "/../configuration.json")
+            self.__configuration = cellbase_client_config.CellBaseClientConfig(
+                os.path.dirname(cellbase_client_config.__file__) + "/../configuration.json")
 
     def __check_parameters(self):
         if self.__queryCommandOptions.type is not None \

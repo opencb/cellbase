@@ -1,3 +1,4 @@
+########################################################################################################################
 # we need to adjust the output for the protein and Genomesequence methods
 #
 fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta, 
@@ -36,8 +37,8 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
 # in case a vcf file has been specified
   if(!is.null(file)){
     container=list()
-    grls <- createURL(file=file, host=host, version=version, species=species, 
-    categ=categ, subcateg=subcateg, ids=ids, resource=resource,...)
+    grls <- createURL(file=file, host=host, version=version, species=species, categ=categ, subcateg=subcateg, 
+                      ids=ids, resource=resource,...)
     cat("\ngetting the data....\n")
     content <- callREST(grls = grls,async=TRUE,num_threads)
     cat("\nparsing the data....\n")
@@ -55,7 +56,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
     container=list()
     while(is.null(file)&all(unlist(num_results)==server_limit)){
         grls <- createURL(file=NULL, host=host, version=version, meta=meta, 
-        species=species, categ=categ, subcateg=subcateg, ids=ids, 
+                          species=species, categ=categ, subcateg=subcateg, ids=ids, 
         resource=resource,filters=filters,skip = skip)
         skip=skip+1000
         content <- callREST(grls = grls)
