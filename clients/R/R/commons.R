@@ -212,11 +212,6 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
 #' @importFrom doParallel registerDoParallel
 #' @importFrom  parallel detectCores
 #' @import BiocParallel
-#' @param object an object of class cellbaseR
-#' @param file  a path to bgzipped and tabix index vcf file
-#' @return an annotated dataframe
-#' 
-#'
 Annovcf <- function(object, file, batch_size, num_threads){
   num_cores <-detectCores()-2
   registerDoParallel(num_cores) 
