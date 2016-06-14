@@ -2,7 +2,8 @@
 # CellBaseR methods
 
 ########################################################################################################################
-#' The generic method for getCellbase. This method allows the user to query the cellbase web services without any 
+#' The generic method for getCellbase. 
+#' @details This method allows the user to query the cellbase web services without any 
 #' predefined categories, subcategries, or resources. Please, for details on possible values for the parameters and 
 #' additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
@@ -17,7 +18,7 @@
 #' @return an object of class CellBaseResponse which holds a dataframe
 #' @examples
 #'    library(cellbaseR)
-#'    cb <- CellBaseR
+#'    cb <- CellBaseR()
 #'    res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",
 #'    resource="info")
 #' @seealso for more information about the cellbase webservices see

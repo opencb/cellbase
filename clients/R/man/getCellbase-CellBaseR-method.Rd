@@ -4,10 +4,7 @@
 \name{getCellbase,CellBaseR-method}
 \alias{getCellbase}
 \alias{getCellbase,CellBaseR-method}
-\title{The generic method for getCellbase. This method allows the user to query the cellbase web services without any 
-predefined categories, subcategries, or resources. Please, for details on possible values for the parameters and 
-additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+\title{The generic method for getCellbase.}
 \usage{
 \S4method{getCellbase}{CellBaseR}(object, categ, subcateg, ids, resource,
   filters = NULL, ...)
@@ -31,14 +28,17 @@ http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 an object of class CellBaseResponse which holds a dataframe
 }
 \description{
-The generic method for getCellbase. This method allows the user to query the cellbase web services without any 
+The generic method for getCellbase.
+}
+\details{
+This method allows the user to query the cellbase web services without any 
 predefined categories, subcategries, or resources. Please, for details on possible values for the parameters and 
 additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
    library(cellbaseR)
-   cb <- CellBaseR
+   cb <- CellBaseR()
    res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1", 
    resource="info")
 }

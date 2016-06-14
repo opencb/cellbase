@@ -4,7 +4,12 @@
 \name{CellBaseResponse-class}
 \alias{CellBaseResponse}
 \alias{CellBaseResponse-class}
-\title{The CellBaseResponse class defintion}
+\title{@title The CellBaseResponse class defintion
+This class holds the response data from CellBaseR Methods}
+\description{
+@title The CellBaseResponse class defintion
+This class holds the response data from CellBaseR Methods
+}
 \details{
 This class stores a response of CellBaseR query methods. An object of class CellBaseResponse is automatically
 generated when you call any of CellbaseR methods.

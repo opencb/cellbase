@@ -4,12 +4,10 @@
 \alias{CellBaseR}
 \title{A constructor function for CellBaseR object}
 \usage{
-CellBaseR(species = character())
+CellBaseR(host = NULL, version = NULL, species = NULL,
+  batch_size = NULL, num_threads = NULL)
 }
 \arguments{
-\item{species}{A character should be     a species supported by cellbase
-run cbSpeciesClient to see avaiable species and their corresponding data}
-
 \item{host}{A character the default host url for cellbase webservices,
 e.g. "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/"}
 
@@ -17,8 +15,10 @@ e.g. "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/"}
 
 \item{species}{a character specifying the species to be queried, e.g. "hsapiens"}
 
-\item{batch_size}{if multiple queries are raised by a single method call, e.g. getting annotation info for several genes,
-queries will be sent to the server in batches. This slot indicates the size of these batches, e.g. 200}
+\item{batch_size}{intger if multiple queries are raised by a single method call, e.g. getting annotation info for several genes,
+queries will be sent to the server in batches. This slot indicates the size of each batch, e.g. 200}
+
+\item{num_threads}{integer number of asynchronus batches to be sent to the server}
 }
 \value{
 An object of class CellBaseR
@@ -31,6 +31,7 @@ data based on the GRCh37 genome assembly. Please, visit
 https://github.com/opencb/cellbase/wiki and
 bioinfodev.hpc.cam.ac.uk/cellbase/webservices/ for more details on
 following parameters.
+run cbSpeciesClient to see avaiable species and their corresponding data
 }
 \examples{
 library(cellbaseR)

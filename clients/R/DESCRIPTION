@@ -15,7 +15,7 @@ Depends:
     pbapply,
     doMC,
     parallel,
-    Rsamtools, data.table, tidyr
+    Rsamtools, data.table, tidyr, doParallel, foreach
 RoxygenNote: 5.0.1
 biocViews: Annotation
 Lazy: TRUE
