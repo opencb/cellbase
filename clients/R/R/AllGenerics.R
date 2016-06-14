@@ -1,30 +1,8 @@
 
 # CellBaseR methods
 
-########################################################################################################################
-#' The generic method for getCellbase. 
-#' @details This method allows the user to query the cellbase web services without any 
-#' predefined categories, subcategries, or resources. Please, for details on possible values for the parameters and 
-#' additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
-#' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
-#' @aliases getCellbase
-#' @param object an object of class CellBaseR
-#' @param category character to specify the category to be queried.
-#' @param subcategory character to specify the subcategory to be queried
-#' @param ids a character vector of the ids to be queried
-#' @param resource a character to specify the resource to be queried
-#' @param filters an object of class CellBaseParam specifying additional filters for the CellBaseR
-#' @param ... any extra arguments
-#' @return an object of class CellBaseResponse which holds a dataframe
-#' @examples
-#'    library(cellbaseR)
-#'    cb <- CellBaseR()
-#'    res <- getCellbase(object=cb,categ="feature",subcateg="gene",ids="TET1",
-#'    resource="info")
-#' @seealso for more information about the cellbase webservices see
-#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
-setGeneric("getCellbase", function(object, categ, subcateg,ids, resource,
-          filters=NULL, ...) standardGeneric("getCellbase"))
+
+
 
 ########################################################################################################################
 #' A method to query Clinical data from Cellbase web services. Please, for details on possible values for the parameters 
@@ -64,7 +42,8 @@ setGeneric("cbGeneClient", function(object,ids,resource,filter, ...)
 standardGeneric("cbGeneClient"))
 
 ########################################################################################################################
-#' A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
+#' A method to query features within a genomic region from Cellbase web services.
+#'  Please, for details on possible values
 #' for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
 #' RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbRegionClient
@@ -126,10 +105,12 @@ setGeneric("cbVariantClient", function(object,ids,resource,filters=NULL, ...)
 standardGeneric("cbVariantClient"))
 
 ########################################################################################################################
-#' The generic method for cbGet This method allows the user to query the cellbase web services without any 
-#' predefined categories, subcategries, or resources. Please, for details on possible values for the parameters and 
-#' additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
-#' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
+#' The generic method for cbGet.
+#' This method allows the user to query the cellbase web services without any 
+#' predefined categories, subcategries, or resources. Please, for details on 
+#' possible values for the parameters and additional filters of this function
+#' refer to https://github.com/opencb/cellbase/wiki and the RESTful API
+#' documentation http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbGet
 #' @param object an object of class CellBaseR
 #' @param category character to specify the category to be queried.
@@ -143,7 +124,7 @@ standardGeneric("cbVariantClient"))
 #'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbGet(object=cb, category="feature", subcategory="gene", ids="TET1", resource="info")
-########################################################################################################################
+#' @export
 setGeneric("cbGet", function(object, category, subcategory, ids, resource, filters=NULL,...)
 standardGeneric("cbGet"))
 
@@ -169,7 +150,8 @@ setGeneric("cbTfbsClient", function(object,ids,resource,filters=NULL, ...)
 standardGeneric("cbTfbsClient"))
 
 ########################################################################################################################
-#' A method to query transcript data from Cellbase web services. Please, for details on possible values for the 
+#' A method to query transcript data from Cellbase web services.
+#'  Please, for details on possible values for the 
 #' parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbTranscriptClient
@@ -189,7 +171,8 @@ setGeneric("cbTranscriptClient", function(object,ids,resource,filters=NULL, ...)
 standardGeneric("cbTranscriptClient"))
 
 ########################################################################################################################
-#' A method to query cross reference data from Cellbase web services. Please, for details on possible values for the 
+#' A method to query cross reference data from Cellbase web services.
+#'  Please, for details on possible values for the 
 #' parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbXrefClient

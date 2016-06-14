@@ -2,10 +2,12 @@
 % Please edit documentation in R/AllGenerics.R
 \name{cbGet}
 \alias{cbGet}
-\title{The generic method for cbGet This method allows the user to query the cellbase web services without any 
-predefined categories, subcategries, or resources. Please, for details on possible values for the parameters and 
-additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+\title{The generic method for cbGet.
+This method allows the user to query the cellbase web services without any 
+predefined categories, subcategries, or resources. Please, for details on 
+possible values for the parameters and additional filters of this function
+refer to https://github.com/opencb/cellbase/wiki and the RESTful API
+documentation http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
 cbGet(object, category, subcategory, ids, resource, filters = NULL, ...)
 }
@@ -28,10 +30,12 @@ cbGet(object, category, subcategory, ids, resource, filters = NULL, ...)
 an object of class CellBaseResponse which holds a dataframe
 }
 \description{
-The generic method for cbGet This method allows the user to query the cellbase web services without any 
-predefined categories, subcategries, or resources. Please, for details on possible values for the parameters and 
-additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API documentation 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
+The generic method for cbGet.
+This method allows the user to query the cellbase web services without any 
+predefined categories, subcategries, or resources. Please, for details on 
+possible values for the parameters and additional filters of this function
+refer to https://github.com/opencb/cellbase/wiki and the RESTful API
+documentation http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
    library(cellbaseR)
