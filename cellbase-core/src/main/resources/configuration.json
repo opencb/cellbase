@@ -1,6 +1,6 @@
 {
 	"version": "v4",
-	"apiVersion": "v4.0",
+	"apiVersion": "${cellbase.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"database": {
 		"host": "${CELLBASE.DB.HOST}",
