@@ -18,12 +18,14 @@ package org.opencb.cellbase.core.api;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.INTEGER;
@@ -93,7 +95,11 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
     default List<QueryResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options) {
         List<QueryResult<Score>> queryResults = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            queryResults.add(getFunctionalScoreVariant(variant, options));
+            if (variant.getType() == VariantType.SNV) {
+                queryResults.add(getFunctionalScoreVariant(variant, options));
+            } else {
+                queryResults.add(new QueryResult<>(variant.toString(), 0, 0, 0, null, null, Collections.emptyList()));
+            }
         }
         return queryResults;
     }
