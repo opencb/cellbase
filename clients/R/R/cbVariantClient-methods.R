@@ -24,8 +24,10 @@ setMethod("cbVariantClient", "CellBaseR", definition = function(object, ids, res
     subcateg<- "variant"
     ids <- ids
     resource <- resource
-    result <- fetchCellbase(file=NULL, host=host, version=version, meta=NULL, species=species, categ=categ, 
-                            subcateg=subcateg, ids=ids, resource=resource, filters=NULL,...)
+    result <- fetchCellbase(file=NULL, host=host, version=version, meta=NULL, 
+                            species=species, categ=categ,  subcateg=subcateg,
+                            ids=ids, resource=resource, filters=NULL,...)
+
     data <- CellBaseResponse(cbData=result)
     return(data)
 })

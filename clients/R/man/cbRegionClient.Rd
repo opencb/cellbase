@@ -2,7 +2,8 @@
 % Please edit documentation in R/AllGenerics.R
 \name{cbRegionClient}
 \alias{cbRegionClient}
-\title{A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
+\title{A method to query features within a genomic region from Cellbase web services.
+ Please, for details on possible values
 for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
 RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
@@ -24,7 +25,8 @@ form 'chr:start-end'}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query features within a genomic region from Cellbase web services. Please, for details on possible values
+A method to query features within a genomic region from Cellbase web services.
+ Please, for details on possible values
 for the parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the 
 RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }

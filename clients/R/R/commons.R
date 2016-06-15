@@ -1,9 +1,9 @@
 ########################################################################################################################
 # we need to adjust the output for the protein and Genomesequence methods
 #
-require(BiocParallel)
-fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta, species=species, categ, subcateg, ids, 
-                          resource, filters=NULL, batch_size=NULL,num_threads=NULL,...){
+fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta, 
+    species=species, categ, subcateg,ids, resource,filters=NULL, 
+    batch_size=NULL,num_threads=NULL,...){
   # Get the parametrs
   if(species=="hsapiens/"){
     batch_size <- batch_size
@@ -180,24 +180,12 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
     ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
-    # js <- pblapply(content, function(x)fromJSON(x))
-    # res <- pblapply(js, function(x)x$response$result)
-    # names(res) <- NULL
-    # ds <- foreach(k=1:length(res),.options.multicore=list(preschedule=TRUE),
-    #               .combine=function(...)rbind.pages(list(...)),
-    #               .packages='jsonlite',.multicombine=TRUE) %dopar% {
-    #                 rbind.pages(res[[k]])
-    #               }
-   
     ds <- pblapply(res, function(x)rbind.pages(x))
     ## Important to get correct merging of dataframe
     names(ds) <- NULL
     ds <- rbind.pages(ds)
     nums <- NULL
-    # js <- lapply(content, function(x)fromJSON(x))
-    # ares <- lapply(js, function(x)x$response$result)
-    # ds <- pblapply(ares,function(x)rbind.pages(x))
-    }else{
+     }else{
     js <- lapply(content, function(x)fromJSON(x))
     ares <- lapply(js, function(x)x$response$result)
     nums <- lapply(js, function(x)x$response$numResults)
@@ -216,16 +204,18 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     }
   
     return(list(result=ds,num_results=nums))
-    }
+}
+#' A convience fubction to directly annotate variants from a vcf file
+#' @importFrom RCurl getURIAsynchronous
+#' @importFrom foreach foreach
+#' @importFrom jsonlite fromJSON
+#' @importFrom doParallel registerDoParallel
+#' @importFrom  parallel detectCores
+#' @import BiocParallel
 Annovcf <- function(object, file, batch_size, num_threads){
-  require(RCurl)
-  require(jsonlite)
-  require(parallel)
-  require(doParallel)
-  require(foreach)
-  num_cores <-detectCores()/2
-  registerDoMC(num_cores)
-  registerDoParallel()
+  num_cores <-detectCores()-2
+  registerDoParallel(num_cores) 
+  p <- DoparParam()
   host <- object@host
   species <- object@species
   version <- object@version
@@ -254,12 +244,12 @@ Annovcf <- function(object, file, batch_size, num_threads){
   container <- list()
   while(i<=num){
     content <- getURIAsynchronous(grp[[i]],perform = Inf)#  alist of responses
-    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
-    res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
+    js <- bplapply(content, function(x)fromJSON(x),BPPARAM = p)
+    res <- bplapply(js, function(x)x$response$result, BPPARAM = p)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
-    ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
+    ds <- bplapply(res, function(x)rbind.pages(x), BPPARAM = p)
     container[[i]] <- ds 
     i=i+1
   }
@@ -274,67 +264,6 @@ Annovcf <- function(object, file, batch_size, num_threads){
   
 }
 
-#' A function to plot gene modells from gene data returned by cbGeneClient
-#' 
-#' 
-#' @param object an object of class CellBaseResponse
-#' @return A Gviz plot
-#' @export
-# plotGenes <- function(object){
-#   require(data.table)
-#   require(tidyr)
-#   require(Gviz)
-#   data <- object@cbData
-#   rt4 <- as.data.table(data)
-#   rt4 <- rt4[,c("id", "name", "transcripts")]
-#   rt4 <- as.data.table(rt4)
-#   setnames(rt4,  c("id", "name"), c("gene", "symbol"))
-#   hope <- rt4 %>% unnest(transcripts) 
-#   setnames(hope, c("id", "biotype"), c("transcript","feature"))
-#   hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
-#   hope <- hope %>% unnest(exons)
-#   hope <- subset(hope, feature=="protein_coding")
-#   setnames(hope, c("id"), c("exon"))
-#   
-#   hope <- as.data.frame(hope)
-#   hope <- hope[!duplicated(hope),]
-#   # Plot with Gviz
-#   chr <- paste0(unique(hope$chromosome))
-#   ideoTrack <- IdeogramTrack(genome = "hg19", chromosome = chr)
-#   testTrack <- GeneRegionTrack(hope, genome="hg19", chromosome=chr)
-#   from <- min(hope$start)-1000
-#   to <- max(hope$end)+1000
-#   plotTracks(list(ideoTrack, testTrack),from = from, to=to, testTrack, transcriptAnnotation="transcript")
-#   
-# }
-
-# create GeneModel
-#' A convience functon to construct a genemodel
-#' #' 
-#' #' @details  This function takes cbResponse object and returns a geneRegionTrack
-#' #' model to be plotted by Gviz
-#' #' @param object an object of class CellbaseResponse
-#' #' @return A geneModel
-#' #' @export
-#' createGeneModel <- function(object){
-#'   require(data.table)
-#'   require(tidyr)
-#'   data <- object@cbData
-#'   rt4 <- as.data.table(data)
-#'   rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
-#'   #rt4 <- as.data.table(rt4)
-#'   setnames(rt4,  c("id", "name"), c("gene", "symbol"))
-#'   hope <- rt4 %>% unnest(transcripts) 
-#'   setnames(hope, c("id", "biotype"), c("transcript","feature"))
-#'   hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
-#'   hope <- hope %>% unnest(exons)
-#'   hope <- subset(hope, feature=="protein_coding")
-#'   setnames(hope, c("id"), c("exon"))
-#'   
-#'   hope <- as.data.frame(hope)
-#'   hope <- hope[!duplicated(hope),]
-#'   return(hope)
-#' }
 # create GeneModel
 #' A convience functon to construct a genemodel
 #' 
@@ -343,11 +272,14 @@ Annovcf <- function(object, file, batch_size, num_threads){
 #' @param object an object of class CellbaseResponse
 #' @param region a character 
 #' @return A geneModel
+#' @examples 
+#' library(cellbaseR)
+#' cb <- CellBaseR()
+#' test <- createGeneModel(object = cb, region = "17:1500000-1550000")
 #' @export
-createGeneModel2 <- function(object, region=NULL){
+createGeneModel <- function(object, region=NULL){
   require(data.table)
   require(tidyr)
-  require(magrittr)
   if(!is.null(region)){
     host <- object@host
     species <- object@species
@@ -370,7 +302,7 @@ createGeneModel2 <- function(object, region=NULL){
     setnames(hope, c("id"), c("exon"))
     
     hope <- as.data.frame(hope)
-    hope <- hope[!duplicated(hope),]
+    hope <- hope[!duplicated(hope),1:9]
   }
   return(hope)
 }

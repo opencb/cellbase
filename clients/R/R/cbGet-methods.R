@@ -17,8 +17,9 @@
 #'    cb <- CellBaseR()
 #'    res <- cbGet(object=cb, category="feature", subcategory="gene", ids="TET1", resource="info")
 #' @export
-setMethod("cbGet", "CellBaseR", definition = function(object, category, subcategory, ids, resource, 
-                                                               filters=NULL,...) {
+setMethod("cbGet", "CellBaseR", definition = function(object, category, 
+                                                      subcategory, ids, resource
+                                                      ,filters=NULL,...) {
   host <- object@host
   species <- object@species
   version <- object@version

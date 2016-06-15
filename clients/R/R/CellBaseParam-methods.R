@@ -1,6 +1,5 @@
 #' A constructor function for CellBaseParam
-#'
-#' @details
+#' 
 #'use the CellBaseParam object to control what results are returned from the
 #'CellBaseR methods
 #' @param genome A character denoting the genome build to query,eg, GRCh37

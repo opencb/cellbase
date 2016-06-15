@@ -15,7 +15,8 @@
 #'    cb <- CellBaseR()
 #'    res <- cbChromosomeInfoClient(object=cb, ids="22", resource="info")
 #' @export
-setMethod("cbChromosomeInfoClient", "CellBaseR", definition = function(object , ids, filters=NULL,...) {
+setMethod("cbChromosomeInfoClient", "CellBaseR", 
+          definition = function(object , ids, filters=NULL,...) {
     host <- object@host
     species <- object@species
     version <- object@version
@@ -23,9 +24,10 @@ setMethod("cbChromosomeInfoClient", "CellBaseR", definition = function(object , 
     subcateg<- "chromosome"
     ids <- ids
     resource <- "info"
-    result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL, 
-                            species=species, categ=categ, subcateg=subcateg, ids=ids, resource=resource , filters=NULL,...)
-    #data <- result$result[[1]]
-    data <- CellBaseResponse(cbData=result)
+    result <- fetchCellbase(file=NULL,host=host, version=version, meta = NULL,
+    species=species, categ=categ, subcateg=subcateg, ids=ids, resource=resource 
+    , filters=NULL,...)
+    data <- result[[1]][[1]]
+    data <- CellBaseResponse(cbData=data)
     return(data)
 })

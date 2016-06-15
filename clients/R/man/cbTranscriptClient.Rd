@@ -2,7 +2,8 @@
 % Please edit documentation in R/AllGenerics.R
 \name{cbTranscriptClient}
 \alias{cbTranscriptClient}
-\title{A method to query transcript data from Cellbase web services. Please, for details on possible values for the 
+\title{A method to query transcript data from Cellbase web services.
+ Please, for details on possible values for the 
 parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 \usage{
@@ -24,7 +25,8 @@ like ENST00000380152}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query transcript data from Cellbase web services. Please, for details on possible values for the 
+A method to query transcript data from Cellbase web services.
+ Please, for details on possible values for the 
 parameters  and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful 
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
