@@ -103,13 +103,13 @@ public class LoadCommandExecutor extends CommandExecutor {
                 try {
                     switch (loadOption) {
                         case EtlCommons.GENOME_DATA:
-//                            loadRunner.load(input.resolve("genome_info.json"), "genome_info");
-//                            loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
+                            loadRunner.load(input.resolve("genome_info.json"), "genome_info");
+                            loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
                             loadIfExists(input.resolve("genomeVersion.json"), "metadata");
                             loadRunner.index("genome_sequence");
                             break;
                         case EtlCommons.GENE_DATA:
-//                            loadRunner.load(input.resolve("gene.json.gz"), "gene");
+                            loadRunner.load(input.resolve("gene.json.gz"), "gene");
                             loadIfExists(input.resolve("dgidbVersion.json"), "metadata");
                             loadIfExists(input.resolve("ensemblCoreVersion.json"), "metadata");
                             loadIfExists(input.resolve("uniprotXrefVersion.json"), "metadata");
@@ -122,7 +122,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadVariationData();
                             break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-//                            loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
+                            loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
                             loadIfExists(input.resolve("caddVersion.json"), "metadata");
                             loadRunner.index("variation_functional_score");
                             break;
@@ -130,7 +130,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadConservation();
                             break;
                         case EtlCommons.REGULATION_DATA:
-//                            loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
+                            loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
                             loadIfExists(input.resolve("ensemblRegulationVersion.json"), "metadata");
                             loadIfExists(input.resolve("mirbaseVersion.json"), "metadata");
                             loadIfExists(input.resolve("targetScanVersion.json"), "metadata");
@@ -138,13 +138,13 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.index("regulatory_region");
                             break;
                         case EtlCommons.PROTEIN_DATA:
-//                            loadRunner.load(input.resolve("protein.json.gz"), "protein");
+                            loadRunner.load(input.resolve("protein.json.gz"), "protein");
                             loadIfExists(input.resolve("uniprotVersion.json"), "metadata");
                             loadIfExists(input.resolve("interproVersion.json"), "metadata");
                             loadRunner.index("protein");
                             break;
                         case EtlCommons.PPI_DATA:
-//                            loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
+                            loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
                             loadIfExists(input.resolve("intactVersion.json"), "metadata");
                             loadRunner.index("protein_protein_interaction");
                             break;
@@ -220,14 +220,14 @@ public class LoadCommandExecutor extends CommandExecutor {
 
             for (Path entry : stream) {
                 logger.info("Loading file '{}'", entry.toString());
-//                loadRunner.load(input.resolve(entry.getFileName()), "variation");
+                loadRunner.load(input.resolve(entry.getFileName()), "variation");
             }
             loadIfExists(input.resolve("ensemblVariationVersion.json"), "metadata");
             loadRunner.index("variation");
             // Custom update required e.g. population freqs loading
         } else {
             logger.info("Loading file '{}'", input.toString());
-//            loadRunner.load(input, "variation", field);
+            loadRunner.load(input, "variation", field);
         }
     }
 
@@ -241,7 +241,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-//            loadRunner.load(input.resolve(entry.getFileName()), "conservation");
+            loadRunner.load(input.resolve(entry.getFileName()), "conservation");
         }
         loadIfExists(input.resolve("gerpVersion.json"), "metadata");
         loadIfExists(input.resolve("phastConsVersion.json"), "metadata");
@@ -259,7 +259,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         for (Path entry : stream) {
             logger.info("Loading file '{}'", entry.toString());
-//            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
+            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
         }
         loadRunner.index("protein_functional_prediction");
     }
@@ -277,7 +277,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             if (Files.exists(path)) {
                 try {
                     logger.debug("Loading '{}' ...", entry);
-//                    loadRunner.load(path, entry);
+                    loadRunner.load(path, entry);
                     loadIfExists(input.resolve("clinvarVersion.json"), "metadata");
                     loadIfExists(input.resolve("gwasVersion.json"), "metadata");
                 } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
