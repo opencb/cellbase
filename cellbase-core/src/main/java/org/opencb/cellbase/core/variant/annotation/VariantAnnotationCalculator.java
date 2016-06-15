@@ -967,8 +967,10 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             List<QueryResult<Score>> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
             if (variantFunctionalScoreQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                    variantAnnotationResultList.get(i).getResult().get(0)
-                            .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
+                    if (variantFunctionalScoreQueryResults.get(i).getNumResults() > 0) {
+                        variantAnnotationResultList.get(i).getResult().get(0)
+                                .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
+                    }
                 }
             }
 //            } catch (ExecutionException e) {
