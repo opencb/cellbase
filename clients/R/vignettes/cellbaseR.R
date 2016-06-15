@@ -41,6 +41,8 @@ names(TET1_transcripts)
 ## ---- message=FALSE, warning=FALSE---------------------------------------
 # making a query through cbRegion to get all the clinically relevant variants 
 # in a specific region
+library(cellbaseR)
+cb <- CellBaseR()
 res <- cbRegionClient(object=cb,ids="17:1000000-1100000",
 resource="clinical")
 # to get all conservation data in this region
