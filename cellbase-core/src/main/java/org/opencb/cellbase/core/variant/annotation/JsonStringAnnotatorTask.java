@@ -42,10 +42,10 @@ public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcep
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        normalizer = new VariantNormalizer(false, false, true);
+        normalizer = new VariantNormalizer(true, false, true);
     }
 
-    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
+    private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)";
 
     public JsonStringAnnotatorTask(List<VariantAnnotator> variantAnnotatorList) {
         this(variantAnnotatorList, true);
