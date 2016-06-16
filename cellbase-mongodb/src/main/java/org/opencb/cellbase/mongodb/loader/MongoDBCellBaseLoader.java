@@ -19,6 +19,7 @@ package org.opencb.cellbase.mongodb.loader;
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
@@ -34,6 +35,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
+import org.opencb.commons.utils.CryptoUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -64,6 +66,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String CLINVARVARIANTSOURCE = "clinvar";
     private static final String COSMICVARIANTSOURCE = "cosmic";
     private static final String GWASVARIANTSOURCE = "gwas";
+
+    public static final char SEPARATOR_CHAR = ':';
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
         this(queue, data, database, null, null);
@@ -333,6 +337,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         Document document = Document.parse(jsonLine);
                         addChunkId(document);
                         addClinicalPrivateFields(document);
+//                        addVariationPrivateFields(document);
                         documentBatch.add(document);
                     }
                     numLoadedObjects += load(documentBatch);
@@ -347,6 +352,42 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
         logger.debug("'load' finished. " + numLoadedObjects + " records loaded");
         return numLoadedObjects;
+    }
+
+    private void addVariationPrivateFields(Document document) {
+        if (data.equals("variation")) {
+            document.put("_id", buildId((String) document.get("chromosome"), (int) document.get("start"),
+                    (String) document.get("reference"), (String) document.get("alternate")));
+        }
+    }
+
+    public String buildId(String chromosome, int start, String reference, String alternate) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        appendChromosome(chromosome, stringBuilder)
+                .append(SEPARATOR_CHAR)
+                .append(StringUtils.leftPad(Integer.toString(start), 10, " "))
+                .append(SEPARATOR_CHAR);
+
+        if (reference.length() > Variant.SV_THRESHOLD) {
+            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
+        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
+            stringBuilder.append(reference);
+        }
+        stringBuilder.append(SEPARATOR_CHAR);
+        if (alternate.length() > Variant.SV_THRESHOLD) {
+            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
+        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
+            stringBuilder.append(alternate);
+        }
+        return stringBuilder.toString();
+    }
+
+    protected static StringBuilder appendChromosome(String chromosome, StringBuilder stringBuilder) {
+        if (chromosome.length() == 1 && Character.isDigit(chromosome.charAt(0))) {
+            stringBuilder.append(' ');
+        }
+        return stringBuilder.append(chromosome);
     }
 
     private void addClinicalPrivateFields(Document document) {
