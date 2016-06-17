@@ -9,6 +9,7 @@ import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,7 +59,7 @@ public class VariationWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response first() {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-        return createOkResponse(variationDBAdaptor.first());
+        return createOkResponse(variationDBAdaptor.first(queryOptions));
     }
 
     @GET
@@ -145,12 +146,44 @@ public class VariationWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(VariantDBAdaptor.QueryParams.ID.key(), s));
+            List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
+            List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
             }
-            return createOkResponse(variationDBAdaptor.nativeGet(queries, queryOptions));
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Retrieves all variation objects", response = Variant.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "id",
+                    value = "Comma separated list of ENSEMBL gene ids, e.g.: ENST00000380152,ENSG00000155657."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "consequence_type",
+                    value = "Comma separated list of  consequence types."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.gene",
+                    value = "Comma separated list of gene names for which drug data is available, "
+                            + "e.g.: BRCA2,TTN."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
+    public Response search() {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -158,13 +191,18 @@ public class VariationWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/next")
-    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP")
-    public Response getNextById(@PathParam("id") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP", hidden = true)
+    public Response getNextById(@PathParam("id")
+                                @ApiParam(name = "id",
+                                        value = "Rs id, e.g.: rs6025",
+                                        required = true) String id) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
-            return createOkResponse(variationDBAdaptor.next(query, queryOptions));
+            QueryResult queryResult = variationDBAdaptor.next(query, queryOptions);
+            queryResult.setId(id);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -196,14 +234,16 @@ public class VariationWSServer extends GenericRestWSServer {
     // FIXME: 29/04/16 GET and POST web services to be fixed
     @GET
     @Path("/{snpId}/consequence_type")
-    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the SNP(s)", hidden = true)
+    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the SNP(s)", response = String.class,
+            responseContainer = "QueryResponse")
     public Response getConsequenceTypeByGetMethod(@PathParam("snpId") String snpId) {
         return getConsequenceType(snpId);
     }
 
     @POST
     @Path("/consequence_type")
-    @ApiOperation(httpMethod = "POST", value = "Get the biological impact of the SNP(s)", hidden = true)
+    @ApiOperation(httpMethod = "POST", value = "Get the biological impact of the SNP(s)", response = String.class,
+            responseContainer = "QueryResponse")
     public Response getConsequenceTypeByPostMethod(@QueryParam("id") String snpId) {
         return getConsequenceType(snpId);
     }
@@ -212,7 +252,13 @@ public class VariationWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            return generateResponse(snpId, "SNP_CONSEQUENCE_TYPE", Arrays.asList(""));
+            query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
+            queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
+            QueryResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
+            QueryResult queryResult1 = new QueryResult(queryResult.getId(), queryResult.getDbTime(), queryResult.getNumResults(),
+                    queryResult.getNumTotalResults(), queryResult.getWarningMsg(), queryResult.getErrorMsg(),
+                    Collections.singletonList(queryResult.getResult().get(0).getAnnotation().getDisplayConsequenceType()));
+            return createOkResponse(queryResult1);
         } catch (Exception e) {
             return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
         }

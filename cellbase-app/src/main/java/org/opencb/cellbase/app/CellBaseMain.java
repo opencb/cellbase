@@ -27,8 +27,6 @@ import java.net.URISyntaxException;
  */
 public class CellBaseMain {
 
-    public static final String VERSION = "4.0.0-beta";
-
     public static void main(String[] args) {
 
         CliOptionsParser cliOptionsParser = new CliOptionsParser();
@@ -47,7 +45,7 @@ public class CellBaseMain {
                 System.exit(0);
             } else {
                 if (cliOptionsParser.getGeneralOptions().version) {
-                    System.out.println("Version " + VERSION);
+                    cliOptionsParser.printVersion();
                     System.exit(0);
                 } else {
                     cliOptionsParser.printUsage();

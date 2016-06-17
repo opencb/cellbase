@@ -17,7 +17,8 @@ import java.util.Set;
 /**
  * Created by fjlopez on 07/04/16.
  */
-public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> {
+public class BenchmarkTask implements
+        ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception> {
 
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
     private VariantAnnotator variantAnnotator;
@@ -30,7 +31,8 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
         variantAnnotator.open();
     }
 
-    public List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> apply(List<VariantAnnotation> batch) {
+    public List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> apply(List<VariantAnnotation> batch)
+            throws Exception {
         removeInvalidVariants(batch);
         List<Variant> cellBaseBatch = createEmptyVariantList(batch);
         variantAnnotator.run(cellBaseBatch);

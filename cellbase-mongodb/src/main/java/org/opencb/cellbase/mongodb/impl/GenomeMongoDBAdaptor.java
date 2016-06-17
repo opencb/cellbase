@@ -113,7 +113,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         QueryResult<Document> queryResult = nativeGet(query, queryOptions);
         List<Document> queryResultList = queryResult.getResult();
 
-        QueryResult<GenomeSequenceFeature> result = new QueryResult<>();
+        QueryResult<GenomeSequenceFeature> result = new QueryResult<>(region.toString());
 
         if (queryResultList != null && !queryResultList.isEmpty()) {
 //            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));

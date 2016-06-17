@@ -18,10 +18,7 @@ package org.opencb.cellbase.server.ws.genomic;
 
 import io.swagger.annotations.*;
 import org.bson.Document;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.core.RegulatoryFeature;
-import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -33,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -289,9 +285,15 @@ public class RegionWSServer extends GenericRestWSServer {
             if (hasHistogramQueryParam()) {
 //                queryOptions.put("interval", getHistogramIntervalSize());
                 QueryResult res = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
+                res.setId(region);
                 return createOkResponse(res);
             } else {
-                return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
+                List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.REGION.key()));
+                }
+                return createOkResponse(queryResults);
             }
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -301,7 +303,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects", response = Transcript.class,
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "transcripts.biotype",
@@ -325,12 +327,19 @@ public class RegionWSServer extends GenericRestWSServer {
                             + " Exact text matches will be returned",
                     required = false, dataType = "list of strings", paramType = "query")
     })
-    public Response getTranscriptByRegion(@PathParam("chrRegionId") String region, @QueryParam("biotype") String biotype) {
+    public Response getTranscriptByRegion(@PathParam("chrRegionId")
+                                          @ApiParam(name = "chrRegionId",
+                                                  value = "comma-separated list of genomic regions to be queried, "
+                                                          + "e.g. 1:11869-14412", required = true) String region) {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            query.put(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+            List<Query> queries = createQueries(region, TranscriptDBAdaptor.QueryParams.REGION.key());
+            List<QueryResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.REGION.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -394,12 +403,19 @@ public class RegionWSServer extends GenericRestWSServer {
 
             if (hasHistogramQueryParam()) {
 //                queryOptions.put("interval", getHistogramIntervalSize());
-                return createOkResponse(variationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(),
-                        queryOptions));
+                QueryResult queryResult = variationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(),
+                        queryOptions);
+                queryResult.setId(chrRegionId);
+                return createOkResponse(queryResult);
             } else {
                 logger.debug("query = " + query.toJson());
                 logger.debug("queryOptions = " + queryOptions.toJson());
-                return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
+                List<Query> queries = createQueries(chrRegionId, VariantDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
+                }
+                return createOkResponse(queryResults);
             }
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -450,8 +466,8 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves genomic sequence", response = String.class,
             responseContainer = "QueryResponse")
     public Response getSequenceByRegion(@PathParam("chrRegionId")
-                                        @ApiParam(name = "region", value = "Comma separated list of genomic coordinates, "
-                                                + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String region,
+                                        @ApiParam(name = "chrRegionId", value = "Comma separated list of genomic coordinates, "
+                                                + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String chrRegionId,
                                         @DefaultValue("1")
                                         @QueryParam("strand")
                                         @ApiParam(name = "strand", value = "Strand to query, either 1 or -1",
@@ -460,19 +476,27 @@ public class RegionWSServer extends GenericRestWSServer {
             parseQueryParams();
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
 
-            if (region.contains(",")) {
-                String[] regions = region.split(",");
-                List<Query> queries = new ArrayList<>(regions.length);
-                for (String s : regions) {
-                    Query q = new Query("region", s);
-                    q.put("strand", strand);
-                    queries.add(q);
+            if (chrRegionId.contains(",")) {
+//                String[] regions = chrRegionId.split(",");
+//                List<Query> queries = new ArrayList<>(regions.length);
+//                for (String s : regions) {
+//                    Query q = new Query("region", s);
+//                    q.put("strand", strand);
+//                    queries.add(q);
+//                }
+                List<Region> regionList = Region.parseRegions(chrRegionId);
+                List<QueryResult<GenomeSequenceFeature>> queryResults =
+                        genomeDBAdaptor.getSequence(Region.parseRegions(chrRegionId), queryOptions);
+                for (int i = 0; i < regionList.size(); i++) {
+                    queryResults.get(i).setId(regionList.get(i).toString());
                 }
-                return createOkResponse(genomeDBAdaptor.getGenomicSequence(queries, queryOptions));
+                return createOkResponse(queryResults);
             } else {
-                query.put(GenomeDBAdaptor.QueryParams.REGION.key(), region);
+                query.put(GenomeDBAdaptor.QueryParams.REGION.key(), chrRegionId);
                 query.put("strand", strand);
-                return createOkResponse(genomeDBAdaptor.getGenomicSequence(query, queryOptions));
+                QueryResult queryResult = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
+                queryResult.setId(chrRegionId);
+                return createOkResponse(queryResult);
             }
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -500,7 +524,7 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "phenotype",
                     value = "String to indicate the phenotypes to query. A text search will be run.",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "rcv",
+            @ApiImplicitParam(name = "clinvarId",
                     value = "Comma separated list of rcv ids, e.g.: RCV000033215",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "rs",
@@ -514,12 +538,12 @@ public class RegionWSServer extends GenericRestWSServer {
                     value = "Comma separated list of review lables (only enabled for ClinVar variants), "
                             + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "significance",
+            @ApiImplicitParam(name = "clinvar-significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query"),
     })
-    public Response getClinicalByRegion(@PathParam("chrRegionId") String region) {
+    public Response getClinicalByRegion(@PathParam("chrRegionId") String chrRegionId) {
 //    public Response getClinicalByRegion(@PathParam("chrRegionId") String region,
 //                                        @DefaultValue("") @QueryParam("gene") String gene,
 //                                        @DefaultValue("") @QueryParam("id") String id,
@@ -527,7 +551,7 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
-            query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), region);
+            query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), chrRegionId);
 //            List<Region> regions = Region.parseRegions(query);
             if (hasHistogramQueryParam()) {
                 return null;
@@ -562,7 +586,9 @@ public class RegionWSServer extends GenericRestWSServer {
 //                    queryResultList.add(queryResult);
 //                }
 //                return createOkResponse(queryResultList);
-                return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
+                QueryResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
+                queryResult.setId(chrRegionId);
+                return createOkResponse(queryResult);
             }
 
         } catch (Exception e) {
@@ -645,7 +671,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
 
     @GET
-    @Path("/{regionStr}/regulatory")
+    @Path("/{chrRegionId}/regulatory")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all regulatory elements in a region", notes = "An independent"
             + " database query will be issued for each region in regionStr, meaning that results for each region will be"
             + " returned in independent QueryResult objects within the QueryResponse object.",
@@ -658,20 +684,23 @@ public class RegionWSServer extends GenericRestWSServer {
                             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
                     required = false, dataType = "list of strings", paramType = "query"),
     })
-    public Response getFeatureMap(@PathParam("regionStr")
-                                  @ApiParam(name = "region", value = "Comma separated list of genomic coordinates, "
-                                          + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String region) {
+    public Response getFeatureMap(@PathParam("chrRegionId")
+                                      @ApiParam(name = "chrRegionId", value = "Comma separated list of genomic coordinates, "
+                                          + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String chrRegionId) {
 //                                  @DefaultValue("") @QueryParam("type") String featureType,
 //                                  @DefaultValue("") @QueryParam("class") String featureClass,
 //                                  @DefaultValue("") @QueryParam("name") String name) {
         try {
             parseQueryParams();
             RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(region, RegulationDBAdaptor.QueryParams.REGION.key());
+            List<Query> queries = createQueries(chrRegionId, RegulationDBAdaptor.QueryParams.REGION.key());
 //                    RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType,
 //                    RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), featureClass,
 //                    RegulationDBAdaptor.QueryParams.NAME.key(), name);
             List<QueryResult> queryResults = regRegionDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
+            }
             return createOkResponse(queryResults);
 //            query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
 //            query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), featureType);
@@ -688,17 +717,17 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. "
             + "If query param "
             + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
-            + "histogram=false TranscriptTfbs objects will be returned "
+            + "histogram=false RegulatoryFeature objects will be returned "
             + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
             + "An independent database query will be issued for each region in regionStr, meaning that results for each "
             + "region will be returned in independent QueryResult objects within the QueryResponse object."
             + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
             responseContainer = "QueryResponse")
     public Response getTfByRegion(@PathParam("chrRegionId")
-                                  @ApiParam(name = "region",
+                                  @ApiParam(name = "chrRegionId",
                                           value = "Comma separated list of genomic regions to be queried, e.g.: "
                                                   + "1:6635137-6635325",
-                                          required = false) String regionId) {
+                                          required = false) String chrRegionId) {
 //                                  @DefaultValue("") @QueryParam("name") String name) {
         try {
             parseQueryParams();
@@ -708,14 +737,18 @@ public class RegionWSServer extends GenericRestWSServer {
                 Query query = new Query();
                 QueryResult intervalFrequencies =
                         regulationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
+                intervalFrequencies.setId(chrRegionId);
                 return createOkResponse(intervalFrequencies);
             } else {
-                List<Query> queries = createQueries(regionId, RegulationDBAdaptor.QueryParams.REGION.key(),
+                List<Query> queries = createQueries(chrRegionId, RegulationDBAdaptor.QueryParams.REGION.key(),
                         RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
                         RegulationDBAdaptor.FeatureType.TF_binding_site + ","
                                 + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
 //                        RegulationDBAdaptor.QueryParams.NAME.key(), name);
                 List<QueryResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
+                }
                 return createOkResponse(queryResults);
 //                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), regionId);
 //                query.put("featureType", "TF_binding_site_motif");
@@ -794,12 +827,17 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores", response = GenomicScoreRegion.class,
         responseContainer = "QueryResponse")
     public Response conservation(@PathParam("chrRegionId")
-                                 @ApiParam(name = "region", value = "Comma separated list of genomic coordinates, "
-                                         + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String region) {
+                                 @ApiParam(name = "chrRegionId", value = "Comma separated list of genomic coordinates, "
+                                         + "e.g. 9:3242335-3272335,13:3425245-3525245", required = true) String chrRegionId) {
         try {
             parseQueryParams();
             GenomeDBAdaptor conservationDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
-            return createOkResponse(conservationDBAdaptor.getConservation(Region.parseRegions(region), queryOptions));
+            List<Region> regionList = Region.parseRegions(chrRegionId);
+            List<QueryResult<GenomicScoreRegion<Float>>> queryResultList = conservationDBAdaptor.getConservation(regionList, queryOptions);
+            for (int i = 0; i < regionList.size(); i++) {
+                queryResultList.get(i).setId(chrRegionId);
+            }
+            return createOkResponse(queryResultList);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

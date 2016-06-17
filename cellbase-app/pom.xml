@@ -27,11 +27,17 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-grpc</artifactId>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.opencb.cellbase</groupId>-->
+            <!--<artifactId>cellbase-server</artifactId>-->
+            <!--<version>${cellbase.version}</version>-->
+            <!--<type>jar</type>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-server</artifactId>
             <version>${cellbase.version}</version>
-            <type>war</type>
+            <!--<type>war</type>-->
         </dependency>
 
         <dependency>
@@ -120,7 +126,7 @@
                         </program>
                         <program>
                             <name>cellbase-grpc.sh</name>
-                            <mainClass>org.opencb.cellbase.grpc.server.GeneGrpcServer</mainClass>
+                            <mainClass>org.opencb.cellbase.server.grpc.GeneGrpcServer</mainClass>
                         </program>
                     </programs>
                 </configuration>
@@ -169,9 +175,14 @@
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
                                     <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
-                                    <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${project.basedir}/../LICENSE"/>
+                                    <arg value="${build.dir}"/>
+                                </exec>
+
+                                <echo>Coping war file</echo>
+                                <exec executable="cp">
+                                    <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>
                                     <arg value="${build.dir}"/>
                                 </exec>
                             </target>
@@ -183,6 +194,15 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/java/org/opencb/cellbase/app/cli</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>CliOptionsParser.java</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
     <repositories>

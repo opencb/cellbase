@@ -147,7 +147,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
             DataWriter dataWriter = getDataWriter(output.toString());
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-            List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>>
+            List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                     variantAnnotatorTaskList = getBenchmarkTaskList();
             for (Path entry : stream) {
                 logger.info("Processing file '{}'", entry.toString());
@@ -161,10 +161,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>> getBenchmarkTaskList()
-            throws IOException {
-        List<ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>>> benchmarkTaskList
-                = new ArrayList<>(numThreads);
+    private List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
+    getBenchmarkTaskList() throws IOException {
+        List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
+                benchmarkTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             // Benchmark variants are read from a VEP file, must not normalize
             benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator()));
@@ -208,7 +208,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // parallel parsing of these lines
         if (input != null) {
             DataReader dataReader = new StringDataReader(input);
-            List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = getStringTaskList();
+            List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList
+                    = getStringTaskList();
             DataWriter dataWriter = getDataWriter(output.toString());
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
@@ -223,7 +224,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //                            new Document("annotation.consequenceTypes", new Document("$exists", 0)));
 //                    Query query = new Query();
                 QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
-                List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = getVariantTaskList();
+                List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList
+                        = getVariantTaskList();
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
 
                 for (String chromosome : chromosomeList) {
@@ -285,8 +287,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.Task<String, Variant>> getStringTaskList() throws IOException {
-        List<ParallelTaskRunner.Task<String, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+    private List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> getStringTaskList() throws IOException {
+        List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             switch (inputFormat) {
@@ -316,8 +318,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorTaskList;
     }
 
-    private List<ParallelTaskRunner.Task<Variant, Variant>> getVariantTaskList() throws IOException {
-        List<ParallelTaskRunner.Task<Variant, Variant>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+    private List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> getVariantTaskList()
+            throws IOException {
+        List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList
+                = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));

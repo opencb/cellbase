@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.mongodb.impl;
 
+import org.bson.Document;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
@@ -153,6 +154,16 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new GenomeMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
+    @Override
+    public CellBaseDBAdaptor<Document> getMetaDBAdaptor(String species) {
+        return getMetaDBAdaptor(species, null);
+    }
+
+    @Override
+    public CellBaseDBAdaptor<Document> getMetaDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new MetaMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
 
     @Override
     public GeneDBAdaptor getGeneDBAdaptor(String species) {

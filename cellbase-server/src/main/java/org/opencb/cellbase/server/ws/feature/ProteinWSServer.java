@@ -38,7 +38,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -86,12 +85,12 @@ public class ProteinWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(ProteinDBAdaptor.QueryParams.XREFS.key(), s));
+            List<Query> queries = createQueries(id, ProteinDBAdaptor.QueryParams.XREFS.key());
+            List<QueryResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
             }
-            return createOkResponse(proteinDBAdaptor.nativeGet(queries, queryOptions));
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -177,7 +176,9 @@ public class ProteinWSServer extends GenericRestWSServer {
                 logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
                 logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
                 ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-                return createOkResponse(proteinDBAdaptor.getSubstitutionScores(query, queryOptions));
+                QueryResult scoresQueryResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
+                scoresQueryResult.setId(id);
+                return createOkResponse(scoresQueryResult);
             } else {
                 return createOkResponse(queryResult);
             }
@@ -309,6 +310,7 @@ public class ProteinWSServer extends GenericRestWSServer {
         QueryResult queryResult1 = new QueryResult(queryResult.getId(), queryResult.getDbTime(), queryResult.getNumResults(),
                 queryResult.getNumTotalResults(), queryResult.getWarningMsg(), queryResult.getErrorMsg(), Collections.EMPTY_LIST);
         queryResult1.setResult(Collections.singletonList(queryResult.first().getSequence().getValue()));
+        queryResult1.setId(proteinId);
         return createOkResponse(queryResult1);
     }
 

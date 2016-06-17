@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by fjlopez on 22/09/15.
@@ -30,23 +31,26 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         return true;
     }
 
-    public void run(List<Variant> variantList) {
+    public void run(List<Variant> variantList) throws InterruptedException, ExecutionException {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
-//        List<QueryResult> queryResultList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+
+        // getAnnotationByVariantList will not create new Variant objects but modify the ones passed as parameters - no
+        // need to go through the queryResultList afterwards
         List<QueryResult<VariantAnnotation>> queryResultList =
                 variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
-        //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
-        for (int i = 0; i < queryResultList.size(); i++) {
-            if (queryResultList.get(i).getResult().size() > 0) {
-                try {
-                    variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
-                } catch (Exception e) {
-                    int a = 1;
-                }
-            } else {
-                logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
-            }
-        }
+
+//        //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
+//        for (int i = 0; i < queryResultList.size(); i++) {
+//            if (queryResultList.get(i).getResult().size() > 0) {
+//                if (variantList.get(i).getAnnotation() == null) {
+//                    variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+//                } else {
+//                    mergeAnnotation(variantList.get(i).getAnnotation(), queryResultList.get(i).getResult().get(0));
+//                }
+//            } else {
+//                logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
+//            }
+//        }
     }
 
     public boolean close() {

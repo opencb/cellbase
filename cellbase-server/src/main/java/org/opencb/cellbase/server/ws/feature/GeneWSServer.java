@@ -479,9 +479,11 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
             List<Query> queries = createQueries(geneId, GeneDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
+            }
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -533,8 +535,12 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
-            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+            List<Query> queries = createQueries(geneId, TranscriptDBAdaptor.QueryParams.XREFS.key());
+            List<QueryResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -634,22 +640,46 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             QueryResult queryResult = null;
+            List<QueryResult> list1 = null;
 
             // TODO Weare fectching the gene region before querying the variation collection until genes are loaded
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
-            QueryResult<Gene> geneQueryResult = geneDBAdaptor.get(query, new QueryOptions("include", "chromosome,start,end"));
-            if (geneQueryResult != null && geneQueryResult.getResult().size() > 0) {
-                Gene gene = geneQueryResult.first();
-                query.clear();
-                query.put(VariantDBAdaptor.QueryParams.REGION.key(),
-                        gene.getChromosome() + ":" + (gene.getStart() - 5000) + "-" + (gene.getEnd() + 5000));
+
+            String[] split = geneId.split(",");
+            List<Query> queries = new ArrayList<>(split.length);
+            List<Query> queries2 = new ArrayList<>(split.length);
+
+            for (String s : split) {
+                Query q = new Query(query);
+                q.put(GeneDBAdaptor.QueryParams.XREFS.key(), s);
+                queries.add(q);
+
+//                query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
+//                QueryResult<Gene> geneQueryResult = geneDBAdaptor.get(query, new QueryOptions("include", "chromosome,start,end"));
+                List<QueryResult<Gene>> geneQueryResult = geneDBAdaptor.get(queries, new QueryOptions("include", "chromosome,start,end"));
+                for (QueryResult<Gene> result : geneQueryResult) {
+                    if (result != null && result.getResult().size() > 0) {
+                        Gene gene = result.first();
+//                        query.clear();
+//                        query.put(VariantDBAdaptor.QueryParams.REGION.key(),
+//                                gene.getChromosome() + ":" + (gene.getStart() - 5000) + "-" + (gene.getEnd() + 5000));
+
+                        q = new Query(query);
+                        q.put(VariantDBAdaptor.QueryParams.REGION.key(),
+                                gene.getChromosome() + ":" + (gene.getStart() - 5000) + "-" + (gene.getEnd() + 5000));
+                        queries2.add(q);
+
+//                        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//                        queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+                    }
+                }
 
                 VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-                queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+                list1 = variationDBAdaptor.nativeGet(queries2, queryOptions);
             }
+            queryResult.setId(geneId);
 
-            return createOkResponse(queryResult);
+            return createOkResponse(list1);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -792,6 +822,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 for (String gene : genes) {
                     query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
                     QueryResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+                    queryResult.setId(gene);
                     queryResults.add(queryResult);
                 }
                 return createOkResponse(queryResults);
@@ -828,7 +859,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getProteinById(@PathParam("geneId")
-                                   @ApiParam(name = "xrefs",
+                                   @ApiParam(name = "geneId",
                                            value = "Comma separated list of gene ids, e.g.: ENSG00000268020,BRCA2"
                                                    + "Exact text matches will be returned",
                                            required = true) String geneId) {
@@ -836,7 +867,11 @@ public class GeneWSServer extends GenericRestWSServer {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(geneId, ProteinDBAdaptor.QueryParams.XREFS.key());
-            return createOkResponse(proteinDBAdaptor.nativeGet(queries, queryOptions));
+            List<QueryResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -898,7 +933,9 @@ public class GeneWSServer extends GenericRestWSServer {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
             query.put("gene", geneId);
-            return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
+            QueryResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
+            queryResult.setId(geneId);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
