@@ -316,6 +316,8 @@ createGeneModel <- function(object, region=NULL){
 #' @param subcategory a character the subcategory to be queried
 #' @param  resource A charcter when specified will get all the parametrs for
 #' that specific resource
+#' @examples 
+#' cbHelp(cb, category="feature", subcategory="gene")
 #' @export
 cbHelp <- function(object, category, subcategory, resource=NULL){
   host <- object@host
@@ -341,6 +343,7 @@ cbHelp <- function(object, category, subcategory, resource=NULL){
     index <- grep(patt2, names(parts))
     res <- parts[[index]]
     res <- res$parameters
+    res <- subset(res,!(name %in% c("version", "species")), select=c("name", "description","required", "type"))
   }
   res
 }

@@ -33,6 +33,6 @@ documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 \examples{
    library(cellbaseR)
    cb <- CellBaseR()
-   res <- cbGeneClient(object=cb, ids=c("TP73","TET1"), resource="clinical")
+   res <- cbGeneClient(object=cb, ids=c("TP73","TET1"), resource="info")
 }
 
