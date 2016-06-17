@@ -312,7 +312,7 @@ createGeneModel <- function(object, region=NULL){
 #' @param object a cellBase class object
 #' @param category a character the category to be queried
 #' @param subcategory a character the subcategory to be queried
-#' @resource A charcter when specified will get all the parametrs for
+#' @param  resource A charcter when specified will get all the parametrs for
 #' that specific resource
 #' @export
 cbHelp <- function(object, category, subcategory, resource=NULL){
