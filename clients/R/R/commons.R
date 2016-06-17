@@ -253,6 +253,7 @@ Annovcf <- function(object, file, batch_size, num_threads){
     container[[i]] <- ds 
     i=i+1
   }
+  
  
     final <- foreach(k=1:length(container),.options.multicore=list(preschedule=TRUE),
                      .combine=function(...)rbind.pages(list(...)),
