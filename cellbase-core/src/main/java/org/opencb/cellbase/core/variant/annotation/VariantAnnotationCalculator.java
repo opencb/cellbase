@@ -202,11 +202,18 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
                 mustRunAnnotation.add(mustSearchVariation.get(i));
             } else {
-                VariantAnnotation variantAnnotation = variationQueryResultList.get(i).getResult().get(0).getAnnotation();
-                variantAnnotation.setChromosome(variantList.get(i).getChromosome());
-                variantAnnotation.setStart(variantList.get(i).getStart());
-                variantAnnotation.setReference(variantList.get(i).getReference());
-                variantAnnotation.setAlternate(variantList.get(i).getAlternate());
+                // variantList is the passed by reference argument and reference to objects within variantList are
+                // copied within mustSearchVariation. Modifying reference objects within mustSearchVariation will
+                // modify user-provided Variant objects. If there's no annotation - just set it; if there's an annotation
+                // object already created, let's only overwrite those fields created by the annotator
+                VariantAnnotation variantAnnotation;
+                if (mustSearchVariation.get(i).getAnnotation() == null) {
+                    variantAnnotation =  variationQueryResultList.get(i).getResult().get(0).getAnnotation();
+                    mustSearchVariation.get(i).setAnnotation(variantAnnotation);
+                } else {
+                    variantAnnotation = mustSearchVariation.get(i).getAnnotation();
+                    mergeAnnotation(variantAnnotation, variationQueryResultList.get(i).getResult().get(0).getAnnotation());
+                }
                 variantAnnotationResultList.set(mustSearchVariationPositions.get(i),
                         new QueryResult<>(mustSearchVariation.get(i).toString(),
                         variationQueryResultList.get(i).getDbTime(), variationQueryResultList.get(i).getNumResults(),
@@ -442,25 +449,21 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
 
-    private void mergeAnnotation(Variant destinationVariant, VariantAnnotation origin) {
-        if (destinationVariant.getAnnotation() == null) {
-            destinationVariant.setAnnotation(origin);
-        } else {
-            destinationVariant.getAnnotation().setId(origin.getId());
-            destinationVariant.getAnnotation().setChromosome(origin.getChromosome());
-            destinationVariant.getAnnotation().setStart(origin.getStart());
-            destinationVariant.getAnnotation().setReference(origin.getReference());
-            destinationVariant.getAnnotation().setAlternate(origin.getAlternate());
-            destinationVariant.getAnnotation().setDisplayConsequenceType(origin.getDisplayConsequenceType());
-            destinationVariant.getAnnotation().setConsequenceTypes(origin.getConsequenceTypes());
-            destinationVariant.getAnnotation().setConservation(origin.getConservation());
-            destinationVariant.getAnnotation().setGeneExpression(origin.getGeneExpression());
-            destinationVariant.getAnnotation().setGeneTraitAssociation(origin.getGeneTraitAssociation());
-            destinationVariant.getAnnotation().setGeneDrugInteraction(origin.getGeneDrugInteraction());
-            destinationVariant.getAnnotation().setVariantTraitAssociation(origin.getVariantTraitAssociation());
-            destinationVariant.getAnnotation().setFunctionalScore(origin.getFunctionalScore());
-        }
-
+    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
+        destination.setId(origin.getId());
+        destination.setChromosome(origin.getChromosome());
+        destination.setStart(origin.getStart());
+        destination.setReference(origin.getReference());
+        destination.setAlternate(origin.getAlternate());
+        destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
+        destination.setConsequenceTypes(origin.getConsequenceTypes());
+        destination.setConservation(origin.getConservation());
+        destination.setGeneExpression(origin.getGeneExpression());
+        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
+        destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
+        destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+        destination.setFunctionalScore(origin.getFunctionalScore());
     }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer) {
