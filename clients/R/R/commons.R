@@ -308,6 +308,7 @@ createGeneModel <- function(object, region=NULL){
 }
 ### Docs
 #' A function to get help about cellbase queries
+#' 
 #' This is a convience function to get help on cellbase methods
 #' @param object a cellBase class object
 #' @param category a character the category to be queried
@@ -328,15 +329,15 @@ cbHelp <- function(object, category, subcategory, resource=NULL){
   catsub <- paste(category,subcategory, sep = "/")
   index <- grep(catsub, names(cbGetParams))
   narrowed <- names(parts)[index]
-  pattern <- paste0(catsub,"/", ".*?/","(.*)" )
-  resMatch <- regexec(pattern,narrowed)
+  patt1 <- paste0(catsub,"/", ".*?/","(.*)" )
+  resMatch <- regexec(patt1,narrowed)
   m <- regmatches(narrowed, resMatch)
   if(is.null(resource)){
     res <- sapply(m, function(x)x[2])
     res <- res[!is.na(res)]
   }else{
-    patt <- paste(catsub,"/", ".*?/", resource, sep="")
-    index <- grep(patt, names(parts))
+    patt2 <- paste(catsub,"/", ".*?/", resource, sep="")
+    index <- grep(patt2, names(parts))
     res <- parts[[index]]
     res <- res$parameters
   }
