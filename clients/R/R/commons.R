@@ -307,4 +307,40 @@ createGeneModel <- function(object, region=NULL){
   }
   return(hope)
 }
-
+### Docs
+#' A function to get help about cellbase queries
+#' 
+#' This is a convience function to get help on cellbase methods
+#' @param object a cellBase class object
+#' @param category a character the category to be queried
+#' @param subcategory a character the subcategory to be queried
+#' @param  resource A charcter when specified will get all the parametrs for
+#' that specific resource
+#' @export
+cbHelp <- function(object, category, subcategory, resource=NULL){
+  host <- object@host
+  cbDocsUrl <- paste0(host, "swagger.json")
+  Data <- fromJSON(cbDocsUrl)
+  tags <- Data$tags
+  paths <- Data$paths
+  getList <- lapply(paths, function(x)x$get)
+  ## filtered
+  parts <- Filter(Negate(function(x) is.null(unlist(x))), getList)
+  cbGetParams <- lapply(parts, function(x)x$parameters)
+  catsub <- paste(category,subcategory, sep = "/")
+  index <- grep(catsub, names(cbGetParams))
+  narrowed <- names(parts)[index]
+  patt1 <- paste0(catsub,"/", ".*?/","(.*)" )
+  resMatch <- regexec(patt1,narrowed)
+  m <- regmatches(narrowed, resMatch)
+  if(is.null(resource)){
+    res <- sapply(m, function(x)x[2])
+    res <- res[!is.na(res)]
+  }else{
+    patt2 <- paste(catsub,"/", ".*?/", resource, sep="")
+    index <- grep(patt2, names(parts))
+    res <- parts[[index]]
+    res <- res$parameters
+  }
+  res
+}
