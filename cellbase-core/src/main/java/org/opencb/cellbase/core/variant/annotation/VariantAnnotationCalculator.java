@@ -240,7 +240,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private String getCachedVariationIncludeFields() {
-        StringBuilder stringBuilder = new StringBuilder("annotation");
+        StringBuilder stringBuilder = new StringBuilder("annotation.chromosome,annotation.start,annotation.reference");
+        stringBuilder.append(",annotation.alternate,annotation.id");
 
         if (annotatorSet.contains("variation")) {
             stringBuilder.append(",annotation.id,annotation.populationFrequencies");
