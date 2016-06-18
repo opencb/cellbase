@@ -3,8 +3,7 @@
 \docType{methods}
 \name{[,CellBaseResponse,ANY,ANY-method}
 \alias{[,CellBaseResponse,ANY,ANY-method}
-\title{A substter method for CellBaseResponse class objects
-A substter method for CellBaseResponse class objects}
+\title{A substter method for CellBaseResponse class objects}
 \usage{
 \S4method{[}{CellBaseResponse,ANY,ANY}(x, i, j, drop = "missing")
 }
@@ -13,5 +12,8 @@ A substter method for CellBaseResponse class objects}
 or character vectors or empty (missing)}
 
 \item{object}{from which to extract element(s).}
+}
+\description{
+This method is a substter method for CellBaseResponse class objects
 }
 

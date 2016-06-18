@@ -4,8 +4,12 @@
 \name{CellBaseParam-class}
 \alias{CellBaseParam-class}
 \title{This Class defines a CellBaseParam object}
+\description{
+This class  defines a CellBaseParam object to hold filtering parameters
+}
 \details{
-This class stores filtering parameters to be used by CellBaseR query methods. Not all the slots will be
+This class stores filtering parameters to be used by CellBaseR query
+ methods. Not all the slots will be
 used by all query methods, please have a look at http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ and the 
 Reference Manual for more information.
 }
