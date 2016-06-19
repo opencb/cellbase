@@ -10,17 +10,19 @@ This class  defines a CellBaseParam object to hold filtering parameters
 \details{
 This class stores filtering parameters to be used by CellBaseR query
  methods. Not all the slots will be
-used by all query methods, please have a look at http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ and the 
+used by all query methods, please have a look at 
+http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ and the 
 Reference Manual for more information.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{genome}}{A character denoting the genome build to query, e.g. GRCh37 (default)}
+\item{\code{genome}}{A character the genome build to query, e.g.GRCh37(default)}
 
 \item{\code{gene}}{A character vector denoting the gene/s to be queried}
 
-\item{\code{region}}{A character vector denoting the region/s to be queried must be in the form 1:100000-1500000}
+\item{\code{region}}{A character vector denoting the region/s to be queried must be 
+in the form 1:100000-1500000}
 
 \item{\code{rs}}{A character vector denoting the rs ids to be queried}
 

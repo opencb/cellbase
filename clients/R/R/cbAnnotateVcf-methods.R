@@ -1,6 +1,7 @@
 ########################################################################################################################
 #' This method is a convience method to annotate a vcf files. This methods is ideal for annotating small to medium sized 
 #' vcf files.
+#' @include AllClasses.R AllGenerics.R
 #' @aliases cbAnnotateVcf
 #' @param object an object of class CellBaseR
 #' @param file Path to a bgzipped and tabix indexed vcf file

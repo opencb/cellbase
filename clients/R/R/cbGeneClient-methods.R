@@ -7,7 +7,7 @@
 #' @param object an object of class CellBaseR
 #' @param ids a character vector of gene ids to be queried
 #' @param resource a character vector to specify the resource to be queried
-#' @param filters a object of class CellBaseParam specifying additional filters for the CellBaseR
+#' @param filters an object of class CellBaseParam specifying additional filters for the CellBaseR
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples

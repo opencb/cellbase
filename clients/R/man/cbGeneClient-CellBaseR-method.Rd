@@ -15,7 +15,7 @@
 
 \item{resource}{a character vector to specify the resource to be queried}
 
-\item{filters}{a object of class CellBaseParam specifying additional filters for the CellBaseR}
+\item{filters}{an object of class CellBaseParam specifying additional filters for the CellBaseR}
 
 \item{...}{any extra arguments}
 }

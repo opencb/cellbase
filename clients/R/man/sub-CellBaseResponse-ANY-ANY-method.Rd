@@ -8,10 +8,12 @@
 \S4method{[}{CellBaseResponse,ANY,ANY}(x, i, j, drop = "missing")
 }
 \arguments{
-\item{i, j, }{indices specifying elements to extract or replace. Indices are numeric
-or character vectors or empty (missing)}
+\item{x}{object from which to extract element(s)}
 
-\item{object}{from which to extract element(s).}
+\item{i, j, }{indices specifying elements to extract or replace. Indices are 
+numeric or character vectors or empty (missing)}
+
+\item{drop}{if TRUE the result is coerced to the lowest possible dimension}
 }
 \description{
 This method is a substter method for CellBaseResponse class objects

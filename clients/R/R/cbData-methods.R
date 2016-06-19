@@ -14,9 +14,10 @@ setMethod("cbData", "CellBaseResponse", definition = function(object) object@cbD
 #' A substter method for CellBaseResponse class objects
 #' 
 #' This method is a substter method for CellBaseResponse class objects
-#' @param object from which to extract element(s).
-#' @param i,j, indices specifying elements to extract or replace. Indices are numeric
-#'  or character vectors or empty (missing) 
+#' @param x object from which to extract element(s)
+#' @param i,j, indices specifying elements to extract or replace. Indices are 
+#' numeric or character vectors or empty (missing)
+#' @param drop if TRUE the result is coerced to the lowest possible dimension
 setMethod("[","CellBaseResponse",definition = function(x,i,j,drop="missing")
 {
     .cbData <- x@cbData[i, j]

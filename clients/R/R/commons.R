@@ -212,6 +212,16 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
 #' @importFrom doParallel registerDoParallel
 #' @importFrom  parallel detectCores
 #' @import BiocParallel
+#' @param object an object of class CellBaseR
+#' @param file Path to a bgzipped and tabix indexed vcf file
+#' @param  batch_size intger if multiple queries are raised by a single method 
+#' call, e.g. getting annotation info for several genes,
+#' queries will be sent to the server in batches. This slot indicates the size
+#'  of each batch, e.g. 200
+#' @param num_threads integer number of asynchronus batches to be sent to the 
+#' server
+#' @param ... any extra arguments
+
 Annovcf <- function(object, file, batch_size, num_threads){
   num_cores <-detectCores()-2
   registerDoParallel(num_cores) 
