@@ -37,6 +37,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
+import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
 import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkDataWriter;
 import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkTask;
@@ -82,6 +83,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private boolean local;
     private boolean cellBaseAnnotation;
     private boolean benchmark;
+    private Path referenceFasta;
     private boolean normalize;
     private List<String> chromosomeList;
     private int port;
@@ -141,6 +143,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private void runBenchmark() {
         try {
 
+            FastaIndexManager fastaIndexManager = getFastaIndexManger();
             DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
                 return entry.getFileName().toString().endsWith(".vep");
             });
@@ -148,7 +151,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             DataWriter dataWriter = getDataWriter(output.toString());
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
             List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
-                    variantAnnotatorTaskList = getBenchmarkTaskList();
+                    variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndexManager);
             for (Path entry : stream) {
                 logger.info("Processing file '{}'", entry.toString());
                 DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
@@ -161,13 +164,28 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
+    private FastaIndexManager getFastaIndexManger() {
+        // Preparing the fasta file for fast accessing
+        FastaIndexManager fastaIndexManager = null;
+        try {
+            fastaIndexManager = new FastaIndexManager(referenceFasta, true);
+            if (!fastaIndexManager.isConnected()) {
+                fastaIndexManager.index();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return fastaIndexManager;
+    }
+
     private List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
-    getBenchmarkTaskList() throws IOException {
+    getBenchmarkTaskList(FastaIndexManager fastaIndexManager) throws IOException {
         List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                 benchmarkTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             // Benchmark variants are read from a VEP file, must not normalize
-            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator()));
+            benchmarkTaskList.add(new BenchmarkTask(createCellBaseAnnotator(), fastaIndexManager));
         }
         return benchmarkTaskList;
     }
@@ -533,6 +551,11 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         // Run benchmark
         benchmark = variantAnnotationCommandOptions.benchmark;
+        if (benchmark) {
+            referenceFasta = Paths.get(variantAnnotationCommandOptions.referenceFasta);
+            FileUtils.checkFile(referenceFasta);
+        }
+
 
         // Use cache
         queryOptions.put("useCache", variantAnnotationCommandOptions.noCache ? "false" : "true");

@@ -361,6 +361,11 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean benchmark;
 
+        @Parameter(names = {"--reference-fasta"}, description = "To use only with the --benchmark flag. Full path to a "
+                + " fasta file containing the reference genome.",
+                required = false, arity = 1)
+        public String referenceFasta;
+
         @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of input variants. Normalization"
                 + " includes splitting multi-allele positions read from a VCF, allele trimming and decomposing MNVs. Has"
                 + " no effect if reading variants from a CellBase variation collection "
