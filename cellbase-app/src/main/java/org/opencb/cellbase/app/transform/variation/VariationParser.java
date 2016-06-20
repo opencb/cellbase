@@ -238,7 +238,7 @@ public class VariationParser extends CellBaseParser {
             case CNV:
                 reference = String.valueOf(reference.toCharArray()[1]);
                 String copyNumberStr = alternate.split("\\)")[1];
-                alternate = "<CNV" + copyNumberStr + ">";
+                alternate = "<CN" + copyNumberStr + ">";
                 sv = new StructuralVariation(start, start, end, end, Integer.valueOf(copyNumberStr));
                 break;
             default:
