@@ -11,7 +11,10 @@ License: Apache License
 Depends:
     R(>= 3.3),
     RCurl,
-    jsonlite,methods,R.utils,BiocParallel,
+    jsonlite,methods
+imports:
+    R.utils,
+    BiocParallel,
     pbapply,
     doMC,
     parallel,
