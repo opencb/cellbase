@@ -28,9 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.commons.datastore.core.QueryParam.Type.INTEGER;
-import static org.opencb.commons.datastore.core.QueryParam.Type.STRING;
-import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
+import static org.opencb.commons.datastore.core.QueryParam.Type.*;
 
 /**
  * Created by imedina on 26/11/15.
@@ -42,6 +40,8 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         REGION("region", TEXT_ARRAY, ""),
         CHROMOSOME("chromosome", STRING, ""),
         START("start", INTEGER, ""),
+        END("end", INTEGER, ""),
+        IMPRECISE("imprecise", BOOLEAN, ""),
         REFERENCE("reference", STRING, ""),
         ALTERNATE("alternate", STRING, ""),
         GENE("gene", TEXT_ARRAY, ""),
@@ -78,10 +78,21 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
     QueryResult startsWith(String id, QueryOptions options);
 
     default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
-        Query query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                .append(QueryParams.START.key(), variant.getStart())
-                .append(QueryParams.REFERENCE.key(), variant.getReference())
-                .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
+        Query query;
+        if (VariantType.CNV.equals(variant.getType())) {
+            query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(QueryParams.START.key(), variant.getStart())
+                    .append(QueryParams.END.key(), variant.getEnd())
+                    .append(QueryParams.IMPRECISE.key(), "true")
+                    .append(QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
+        } else {
+            query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(QueryParams.START.key(), variant.getStart())
+                    .append(QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
+        }
+
         return get(query, options);
     }
 
