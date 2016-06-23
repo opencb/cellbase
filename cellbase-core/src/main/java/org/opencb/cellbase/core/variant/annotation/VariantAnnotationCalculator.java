@@ -194,11 +194,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         // mustSearchVariation and variationQueryResultList do have same size, same order
         for (int i = 0; i < mustSearchVariation.size(); i++) {
-            // Variant not found in variation collection, must be annotated by running the whole process
+            // Variant not found in variation collection or the variant was found but not annotated with CellBase - I can
+            // distinguish CellBase from ENSEMBL annotation because when CellBase annotates, it includes chromosome, start,
+            // reference and alternate fields - TODO: change this.
+            // Must be annotated by running the whole process
             if (variationQueryResultList.get(i).getNumResults() == 0
-                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation() == null
-                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes() == null
-                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes().isEmpty()) {
+                    || variationQueryResultList.get(i).getResult().get(0).getChromosome() == null) {
+//                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation() == null
+//                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes() == null
+//                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes().isEmpty()) {
                 mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
                 mustRunAnnotation.add(mustSearchVariation.get(i));
             } else {
