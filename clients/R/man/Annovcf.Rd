@@ -22,6 +22,6 @@ server}
 \item{...}{any extra arguments}
 }
 \description{
-A convience fubction to directly annotate variants from a vcf file
+This is a function to annotate variants from a vcf file
 }
 

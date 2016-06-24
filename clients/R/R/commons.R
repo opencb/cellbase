@@ -82,13 +82,11 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
 ## a function to read the varinats from a vcf file
 readIds <- function(file=file,batch_size,num_threads)
     {
-    require(Rsamtools)
-    #require(pbapply)
     ids<- list()
     num_iter<- ceiling(R.utils::countLines(file)[[1]]/(batch_size*num_threads))
     #batchSize * numThreads
-    demo <- TabixFile(file,yieldSize = batch_size*num_threads)
-    tbx <- open(demo)
+    demo <- Rsamtools::TabixFile(file,yieldSize = batch_size*num_threads)
+    tbx <- Rsamtools::open(demo)
     i <- 1
     while (i <=num_iter) {
     inter <- scanTabix(tbx)[[1]]
@@ -100,8 +98,7 @@ readIds <- function(file=file,batch_size,num_threads)
     ids[[i]] <- hope
     i <- i+1
     }
-    #ids <- pbsapply(ids, function(x)lapply(x, function(x)x))
-    require(foreach)
+    requireNamespace("foreach")
     ids <-foreach(k=1:length(ids))%do%{
         foreach(j=1:length(ids[[k]]))%do%{
         ids[[k]][[j]]
@@ -141,7 +138,7 @@ createURL <- function(file=NULL, host=host, version=version, meta=meta,
 callREST <- function(grls,async=FALSE,num_threads=num_threads)
     {
     content <- list()
-    require(RCurl)
+    requireNamespace("RCurl")
     if(is.null(file)){
     content <- getURI(grls)
     }else{
@@ -165,11 +162,11 @@ callREST <- function(grls,async=FALSE,num_threads=num_threads)
 }
 ## A function to parse the json data into R dataframes
 parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
-    require(BiocParallel)
-    require(jsonlite)
+    requireNamespace("BiocParallel")
+    requireNamespace("jsonlite")
     if(parallel==TRUE){
-    require(parallel)
-    require(doMC)
+    requireNamespace("parallel")
+    requireNamespace("doMC")
     num_cores <-detectCores()/2
     registerDoMC(num_cores)
     # 
@@ -206,12 +203,8 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     return(list(result=ds,num_results=nums))
 }
 #' A convience fubction to directly annotate variants from a vcf file
-#' @importFrom RCurl getURIAsynchronous
-#' @importFrom foreach foreach
-#' @importFrom jsonlite fromJSON
-#' @importFrom doParallel registerDoParallel
-#' @importFrom  parallel detectCores
-#' @import BiocParallel
+#' 
+#' This is a function to annotate variants from a vcf file
 #' @param object an object of class CellBaseR
 #' @param file Path to a bgzipped and tabix indexed vcf file
 #' @param  batch_size intger if multiple queries are raised by a single method 
@@ -289,8 +282,7 @@ Annovcf <- function(object, file, batch_size, num_threads){
 #' test <- createGeneModel(object = cb, region = "17:1500000-1550000")
 #' @export
 createGeneModel <- function(object, region=NULL){
-  require(data.table)
-  require(tidyr)
+  requireNamespace("tidyr")
   if(!is.null(region)){
     host <- object@host
     species <- object@species
@@ -300,22 +292,23 @@ createGeneModel <- function(object, region=NULL){
     ids <- region
     resource <- "gene"
     data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
-                            ids=ids, resource=resource, filters=NULL)
-    rt4 <- as.data.table(data)
-    rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
-    #rt4 <- as.data.table(rt4)
-    setnames(rt4,  c("id", "name"), c("gene", "symbol"))
-    hope <- unnest(rt4, transcripts) 
-    setnames(hope, c("id", "biotype"), c("transcript","feature"))
-    hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
-    hope <- unnest(hope, exons)
-    hope <- subset(hope, feature=="protein_coding")
-    setnames(hope, c("id"), c("exon"))
-    
-    hope <- as.data.frame(hope)
-    hope <- hope[!duplicated(hope),1:9]
+                          ids=ids, resource=resource, filters=NULL)
+    hope <- tidyr::unnest(data[,1:11], transcripts, .sep = "_") 
+    hope <- tidyr::unnest(hope, transcripts_exons, .sep = "_")
+    hope <- hope[!duplicated(hope),]
+    Hnames <- c("gene","symbol","feature","transcript",
+                "exon","chromosome", "start","end", "strand")
+    hope <- data.table::setnames(hope, old = c("id", "name","biotype", 
+                                               "transcripts_id", 
+                                               "transcripts_exons_id",
+                                               "transcripts_exons_chromosome",
+                                               "transcripts_exons_start",
+                                               "transcripts_exons_end",
+                                               "transcripts_exons_strand"),
+                                 new = Hnames)
+    hope <- hope[,Hnames]
   }
-  return(hope)
+  hope
 }
 ### Docs
 #' A function to get help about cellbase queries
@@ -327,6 +320,7 @@ createGeneModel <- function(object, region=NULL){
 #' @param  resource A charcter when specified will get all the parametrs for
 #' that specific resource
 #' @examples 
+#' cb <- CellBaseR()
 #' cbHelp(cb, category="feature", subcategory="gene")
 #' @export
 cbHelp <- function(object, category, subcategory, resource=NULL){
