@@ -41,7 +41,10 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         CHROMOSOME("chromosome", STRING, ""),
         START("start", INTEGER, ""),
         END("end", INTEGER, ""),
-        IMPRECISE("imprecise", BOOLEAN, ""),
+        CI_START_LEFT("ciStartLeft", INTEGER, ""),
+        CI_START_RIGHT("ciStartRight", INTEGER, ""),
+        CI_END_LEFT("ciEndLeft", INTEGER, ""),
+        CI_END_RIGHT("ciEndRight", INTEGER, ""),
         REFERENCE("reference", STRING, ""),
         ALTERNATE("alternate", STRING, ""),
         GENE("gene", TEXT_ARRAY, ""),
@@ -81,9 +84,10 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         Query query;
         if (VariantType.CNV.equals(variant.getType())) {
             query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(QueryParams.START.key(), variant.getStart())
-                    .append(QueryParams.END.key(), variant.getEnd())
-                    .append(QueryParams.IMPRECISE.key(), "true")
+                    .append(QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
+                    .append(QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())
+                    .append(QueryParams.CI_END_LEFT.key(), variant.getSv().getCiEndLeft())
+                    .append(QueryParams.CI_END_RIGHT.key(), variant.getSv().getCiEndRight())
                     .append(QueryParams.REFERENCE.key(), variant.getReference())
                     .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
         } else {

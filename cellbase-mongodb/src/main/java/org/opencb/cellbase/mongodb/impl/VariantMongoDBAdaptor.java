@@ -178,14 +178,11 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
                 andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
-        if ("true".equals(query.get(QueryParams.IMPRECISE.key()))) {
-            createImprecisePositionQuery(query, QueryParams.START.key(), "sv.ciStartLeft", "sv.ciStartRight",
-                    andBsonList);
-            createImprecisePositionQuery(query, QueryParams.END.key(), "sv.ciEndLeft", "sv.ciEndRight",
-                    andBsonList);
-        } else {
-            createOrQuery(query, QueryParams.START.key(), "start", andBsonList);
-        }
+        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
+                "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
+        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
+                "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
+        createOrQuery(query, QueryParams.START.key(), "start", andBsonList);
         createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
         createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
@@ -199,33 +196,26 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         }
     }
 
-    private void createImprecisePositionQuery(Query query, String queryParam, String leftLimitMongoField,
-                                              String righLimitMongoField, List<Bson> andBsonList) {
-        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            List<String> queryValues = query.getAsStringList(queryParam);
-            if (queryValues.size() == 1) {
-                andBsonList.addAll(getPositionWithinIntervalQuery(queryValues.get(0), leftLimitMongoField,
-                        righLimitMongoField));
-            } else {
-                List<Bson> orBsonList = new ArrayList<>(queryValues.size());
-                for (String queryItem : queryValues) {
-                    orBsonList.add(Filters.and(getPositionWithinIntervalQuery(queryItem, leftLimitMongoField,
-                            righLimitMongoField)));
-                }
-                andBsonList.add(Filters.or(orBsonList));
-            }
+    private void createImprecisePositionQuery(Query query, String leftQueryParam, String rightQueryParam,
+                                              String leftLimitMongoField, String righLimitMongoField,
+                                              List<Bson> andBsonList) {
+        if (query != null && query.getString(leftQueryParam) != null && !query.getString(leftQueryParam).isEmpty()
+                && query.getString(rightQueryParam) != null && !query.getString(rightQueryParam).isEmpty()) {
+            int leftQueryValue = query.getInt(leftQueryParam);
+            int rightQueryValue = query.getInt(rightQueryParam);
+            andBsonList.add(Filters.lte(leftLimitMongoField, rightQueryValue));
+            andBsonList.add(Filters.gte(righLimitMongoField, leftQueryValue));
         }
     }
 
-    private List<Bson> getPositionWithinIntervalQuery(String valueString, String leftLimitMongoField,
-                                                String righLimitMongoField) {
-        List<Bson> andBsonList = new ArrayList<>(2);
-        int value = Integer.parseInt(valueString);
-        andBsonList.add(Filters.lte(leftLimitMongoField, value));
-        andBsonList.add(Filters.gte(righLimitMongoField, value));
-
-        return andBsonList;
-    }
+//    private Bson getPositionWithinIntervalQuery(int value, String leftLimitMongoField,
+//                                                String righLimitMongoField) {
+//        List<Bson> andBsonList = new ArrayList<>(2);
+//        andBsonList.add(Filters.lte(leftLimitMongoField, value));
+//        andBsonList.add(Filters.gte(righLimitMongoField, value));
+//
+//        return Filters.and(andBsonList);
+//    }
 
     private QueryResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList) {
 
