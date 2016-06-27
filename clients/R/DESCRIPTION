@@ -9,7 +9,7 @@ Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
 Description: Classes and methods for querying cellbase web services
 License: Apache License
 Depends:
-    R(>= 3.3),
+    R(>= 3.2),
     RCurl,
     jsonlite,methods
 imports:

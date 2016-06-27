@@ -117,7 +117,7 @@ createURL <- function(file=NULL, host=host, version=version, meta=meta,
 
     if(is.null(file)){
     skip=paste0("?","skip=",skip)
-    filters <- paste(skip,filters,sep = "&")
+    filters <- paste(skip,filters, sep = "&")
     grls <- paste0(host,version, meta, species, categ, subcateg, ids, 
         resource,filters,collapse = "")
 
@@ -171,7 +171,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     registerDoMC(num_cores)
     # 
     # ## Extracting the content in parallel
-    js <- mclapply(content, function(x)fromJSON(x, flatten=TRUE), mc.cores=num_cores)
+    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
     res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
