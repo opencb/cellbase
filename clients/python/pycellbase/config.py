@@ -1,10 +1,10 @@
 class ConfigClient(object):
+    """Sets up the default configuration for the CellBase client"""
     def __init__(self):
-
-        # Initializing default parameters for the database
         self._host = 'bioinfo.hpc.cam.ac.uk'
         self._port = '80'
         self._version = 'latest'
+        self._species = 'hsapiens'
 
     def _check_host(self):
         # TODO Check host availability; Choose another if needed.
@@ -33,3 +33,11 @@ class ConfigClient(object):
     @port.setter
     def port(self, new_port):
             self._port = new_port
+
+    @property
+    def species(self):
+        return self._species
+
+    @species.setter
+    def species(self, new_species):
+            self._species = new_species

@@ -1,20 +1,29 @@
 import requests
 
-_CELLBASE_REST = 'cellbase/webservices/rest/'
+_CELLBASE_REST = 'cellbase/webservices/rest'
 
 
 class RestClient(object):
+    """Queries the REST service given the different query params"""
     def __init__(self, configuration, subcategory=None, category=None):
         self._configuration = configuration
         self._subcategory = subcategory
         self._category = category
 
-    def _create_url(self, species, category, subcategory, query_id, resource,
+    def _create_url(self, category, subcategory, query_id, resource,
                     options):
-        url = ('http://' + '/'.join([self._configuration.host, _CELLBASE_REST +
-                                     self._configuration.version, species,
-                                     category, subcategory, query_id,
+        """Creates the URL for querying the REST service"""
+        # Creating the basic URL
+        url = ('http://' + '/'.join([self._configuration.host,
+                                     _CELLBASE_REST,
+                                     self._configuration.version,
+                                     self._configuration.species,
+                                     category,
+                                     subcategory,
+                                     query_id,
                                      resource]))
+
+        # Checking optional params
         if options:
             opts = []
             if 'include' in options:
@@ -29,13 +38,13 @@ class RestClient(object):
                 opts.append('count=' + str(options['count']).lower())
             if opts:
                 url += '?' + '&'.join(opts)
+        print(url)
         return url
 
     def get(self, resource, query_id, options):
-        # TODO Species param should be customizable
-        species = 'hsapiens'
-        url = self._create_url(species, self._category, self._subcategory,
-                               query_id, resource, options)
+        """Queries the REST service and returns the result"""
+        url = self._create_url(self._category, self._subcategory, query_id,
+                               resource, options)
         response = requests.get(url, headers={"Accept-Encoding": "gzip"})
 
         return response.json()
