@@ -76,7 +76,8 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
     }
 
     default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
-        Query query = new Query(QueryParams.REGION.key(), variant.getChromosome() + ":" + variant.getStart() + "-" + variant.getStart())
+        Query query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                .append(QueryParams.START.key(), variant.getStart())
                 .append(QueryParams.REFERENCE.key(), variant.getReference())
                 .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
         return get(query, options);
