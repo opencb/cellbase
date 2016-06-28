@@ -1,5 +1,7 @@
+import requests
 import pycellbase.features as fts
 import pycellbase.config as config
+from pycellbase.commons import create_rest_url
 
 
 class CellBaseClient(object):
@@ -20,6 +22,32 @@ class CellBaseClient(object):
         if port is not None:
             self._configuration.port = port
 
+    def get(self, category, subcategory, query_id, resource, species=None,
+            host=None, port=None, version=None, **options):
+        """Creates the URL for querying the REST service"""
+
+        if species is None:
+            species = self._configuration.species
+        if host is None:
+            host = self._configuration.host
+        if port is None:
+            port = self._configuration.port
+        if version is None:
+            version = self._configuration.version
+
+        url = create_rest_url(host,
+                              port,
+                              version,
+                              species,
+                              category,
+                              subcategory,
+                              query_id,
+                              resource,
+                              options)
+
+        response = requests.get(url, headers={"Accept-Encoding": "gzip"})
+        return response.json()
+
     def get_gene_client(self):
         """Creates the gene client"""
         if 'GENE' not in self._clients:
@@ -35,7 +63,8 @@ class CellBaseClient(object):
     def get_variation_client(self):
         """Creates the variation client"""
         if 'VARIATION' not in self._clients:
-            self._clients['VARIATION'] = fts.VariationClient(self._configuration)
+            self._clients['VARIATION'] =\
+                fts.VariationClient(self._configuration)
         return self._clients['VARIATION']
 
     def get_genomic_client(self):
