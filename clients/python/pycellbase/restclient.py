@@ -1,5 +1,4 @@
-import requests
-from pycellbase.commons import create_rest_url
+from pycellbase.commons import get
 
 
 class RestClient(object):
@@ -11,18 +10,16 @@ class RestClient(object):
 
     def _get(self, resource, query_id=None, options=None):
         """Queries the REST service and returns the result"""
+        response = get(host=self._configuration.host,
+                       port=self._configuration.port,
+                       version=self._configuration.version,
+                       species=self._configuration.species,
+                       category=self._category,
+                       subcategory=self._subcategory,
+                       query_id=query_id,
+                       resource=resource,
+                       options=options)
 
-        url = create_rest_url(self._configuration.host,
-                              self._configuration.port,
-                              self._configuration.version,
-                              self._configuration.species,
-                              self._category,
-                              self._subcategory,
-                              query_id,
-                              resource,
-                              options)
-
-        response = requests.get(url, headers={"Accept-Encoding": "gzip"})
         return response.json()
 
     def get_methods(self):

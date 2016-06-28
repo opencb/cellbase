@@ -1,5 +1,8 @@
-def create_rest_url(host, port, version, species, category, subcategory,
-                     query_id, resource, options):
+import requests
+
+
+def _create_rest_url(host, port, version, species, category, subcategory,
+                    resource, query_id, options):
     """Creates the URL for querying the REST service"""
 
     cellbase_rest = 'cellbase/webservices/rest'
@@ -15,7 +18,7 @@ def create_rest_url(host, port, version, species, category, subcategory,
 
     # If subcategory is queried, query_id can be absent
     if query_id is not None:
-        url += '/' + '/'.join([query_id,  resource])
+        url += '/' + '/'.join([query_id, resource])
     else:
         url += '/' + resource
 
@@ -36,3 +39,21 @@ def create_rest_url(host, port, version, species, category, subcategory,
             url += '?' + '&'.join(opts)
 
     return url
+
+
+def get(host, port, version, species, category, subcategory, resource,
+        query_id=None, options=None):
+    """Creates the URL for querying the REST service"""
+    url = _create_rest_url(host=host,
+                           port=port,
+                           version=version,
+                           species=species,
+                           category=category,
+                           subcategory=subcategory,
+                           query_id=query_id,
+                           resource=resource,
+                           options=options)
+
+    response = requests.get(url, headers={"Accept-Encoding": "gzip"})
+
+    return response
