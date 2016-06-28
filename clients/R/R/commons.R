@@ -1,6 +1,6 @@
+########################################################################################################################
 # we need to adjust the output for the protein and Genomesequence methods
 #
-require(BiocParallel)
 fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta, 
     species=species, categ, subcateg,ids, resource,filters=NULL, 
     batch_size=NULL,num_threads=NULL,...){
@@ -37,8 +37,8 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
 # in case a vcf file has been specified
   if(!is.null(file)){
     container=list()
-    grls <- createURL(file=file, host=host, version=version, species=species, 
-    categ=categ, subcateg=subcateg, ids=ids, resource=resource,...)
+    grls <- createURL(file=file, host=host, version=version, species=species, categ=categ, subcateg=subcateg, 
+                      ids=ids, resource=resource,...)
     cat("\ngetting the data....\n")
     content <- callREST(grls = grls,async=TRUE,num_threads)
     cat("\nparsing the data....\n")
@@ -56,7 +56,7 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
     container=list()
     while(is.null(file)&all(unlist(num_results)==server_limit)){
         grls <- createURL(file=NULL, host=host, version=version, meta=meta, 
-        species=species, categ=categ, subcateg=subcateg, ids=ids, 
+                          species=species, categ=categ, subcateg=subcateg, ids=ids, 
         resource=resource,filters=filters,skip = skip)
         skip=skip+1000
         content <- callREST(grls = grls)
@@ -66,7 +66,13 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
         container[[i]] <- cell
         i=i+1
     }
-    ds <- rbind.pages(container)
+    if(class(container[[1]])=="data.frame"){
+      ds <- rbind.pages(container)
+    }else{
+      ds <- as.data.frame(container[[1]], stringsAsFactors=FALSE, names="result")
+      
+    }
+    
   }
 
 
@@ -168,49 +174,48 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     registerDoMC(num_cores)
     # 
     # ## Extracting the content in parallel
-    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
+    js <- mclapply(content, function(x)fromJSON(x, flatten=TRUE), mc.cores=num_cores)
     res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
     ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
-    # js <- pblapply(content, function(x)fromJSON(x))
-    # res <- pblapply(js, function(x)x$response$result)
-    # names(res) <- NULL
-    # ds <- foreach(k=1:length(res),.options.multicore=list(preschedule=TRUE),
-    #               .combine=function(...)rbind.pages(list(...)),
-    #               .packages='jsonlite',.multicombine=TRUE) %dopar% {
-    #                 rbind.pages(res[[k]])
-    #               }
-   
     ds <- pblapply(res, function(x)rbind.pages(x))
     ## Important to get correct merging of dataframe
     names(ds) <- NULL
     ds <- rbind.pages(ds)
     nums <- NULL
-    # js <- lapply(content, function(x)fromJSON(x))
-    # ares <- lapply(js, function(x)x$response$result)
-    # ds <- pblapply(ares,function(x)rbind.pages(x))
-    }else{
+     }else{
     js <- lapply(content, function(x)fromJSON(x))
     ares <- lapply(js, function(x)x$response$result)
     nums <- lapply(js, function(x)x$response$numResults)
-    ds <- pblapply(ares,function(x)rbind.pages(x))
-    ### Important to get correct vertical binding of dataframes
-    names(ds) <- NULL
-    ds <- rbind.pages(ds)
+    
+    if (class(ares[[1]][[1]])=="data.frame"){
+      ds <- pblapply(ares,function(x)rbind.pages(x))
+      ### Important to get correct vertical binding of dataframes
+      names(ds) <- NULL
+      ds <- rbind.pages(ds)
+    }else{
+      ds <-ares
+      names(ds) <- NULL
+      
     }
+    
+    }
+  
     return(list(result=ds,num_results=nums))
-    }
+}
+#' A convience fubction to directly annotate variants from a vcf file
+#' @importFrom RCurl getURIAsynchronous
+#' @importFrom foreach foreach
+#' @importFrom jsonlite fromJSON
+#' @importFrom doParallel registerDoParallel
+#' @importFrom  parallel detectCores
+#' @import BiocParallel
 Annovcf <- function(object, file, batch_size, num_threads){
-  require(RCurl)
-  require(jsonlite)
-  require(parallel)
-  require(doParallel)
-  require(foreach)
-  num_cores <-detectCores()/2
-  registerDoMC(num_cores)
-  registerDoParallel()
+  num_cores <-detectCores()-2
+  registerDoParallel(num_cores) 
+  p <- DoparParam()
   host <- object@host
   species <- object@species
   version <- object@version
@@ -239,12 +244,12 @@ Annovcf <- function(object, file, batch_size, num_threads){
   container <- list()
   while(i<=num){
     content <- getURIAsynchronous(grp[[i]],perform = Inf)#  alist of responses
-    js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
-    res <- mclapply(js, function(x)x$response$result, mc.cores=num_cores)
+    js <- bplapply(content, function(x)fromJSON(x),BPPARAM = p)
+    res <- bplapply(js, function(x)x$response$result, BPPARAM = p)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
-    ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
+    ds <- bplapply(res, function(x)rbind.pages(x), BPPARAM = p)
     container[[i]] <- ds 
     i=i+1
   }
@@ -258,3 +263,47 @@ Annovcf <- function(object, file, batch_size, num_threads){
   return(final)
   
 }
+
+# create GeneModel
+#' A convience functon to construct a genemodel
+#' 
+#' @details  This function takes cbResponse object and returns a geneRegionTrack
+#' model to be plotted by Gviz
+#' @param object an object of class CellbaseResponse
+#' @param region a character 
+#' @return A geneModel
+#' @examples 
+#' library(cellbaseR)
+#' cb <- CellBaseR()
+#' test <- createGeneModel(object = cb, region = "17:1500000-1550000")
+#' @export
+createGeneModel <- function(object, region=NULL){
+  require(data.table)
+  require(tidyr)
+  if(!is.null(region)){
+    host <- object@host
+    species <- object@species
+    version <- object@version
+    categ <- "genomic"
+    subcateg<- "region"
+    ids <- region
+    resource <- "gene"
+    data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
+                            ids=ids, resource=resource, filters=NULL)
+    rt4 <- as.data.table(data)
+    rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
+    #rt4 <- as.data.table(rt4)
+    setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+    hope <- unnest(rt4, transcripts) 
+    setnames(hope, c("id", "biotype"), c("transcript","feature"))
+    hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+    hope <- unnest(hope, exons)
+    hope <- subset(hope, feature=="protein_coding")
+    setnames(hope, c("id"), c("exon"))
+    
+    hope <- as.data.frame(hope)
+    hope <- hope[!duplicated(hope),1:9]
+  }
+  return(hope)
+}
+

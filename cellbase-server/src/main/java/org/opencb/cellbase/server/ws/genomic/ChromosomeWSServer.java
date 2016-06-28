@@ -114,7 +114,9 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
             List<QueryResult> queryResults = new ArrayList<>(chromosomeList.size());
             for (String chromosome : chromosomeList) {
-                queryResults.add(dbAdaptor.getChromosomeInfo(chromosome, queryOptions));
+                QueryResult queryResult = dbAdaptor.getChromosomeInfo(chromosome, queryOptions);
+                queryResult.setId(chromosome);
+                queryResults.add(queryResult);
             }
             return createOkResponse(queryResults);
         } catch (Exception e) {

@@ -147,7 +147,11 @@ public class VariationWSServer extends GenericRestWSServer {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
-            return createOkResponse(variationDBAdaptor.nativeGet(queries, queryOptions));
+            List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -187,13 +191,18 @@ public class VariationWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/next")
-    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP")
-    public Response getNextById(@PathParam("id") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP", hidden = true)
+    public Response getNextById(@PathParam("id")
+                                @ApiParam(name = "id",
+                                        value = "Rs id, e.g.: rs6025",
+                                        required = true) String id) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
-            return createOkResponse(variationDBAdaptor.next(query, queryOptions));
+            QueryResult queryResult = variationDBAdaptor.next(query, queryOptions);
+            queryResult.setId(id);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

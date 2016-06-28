@@ -67,3 +67,4 @@ R.Rproj
 .RData
 clients/R/vignettes/*.html
 clients/cellbaseR*.tar.gz
+clients/cellbaseR.Rcheck
