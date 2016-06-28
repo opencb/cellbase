@@ -9,17 +9,15 @@ Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
 Description: Classes and methods for querying cellbase web services
 License: Apache License
 Depends:
-    R(>= 3.2),
+    R(>= 3.3),
     RCurl,
-    jsonlite,methods
-imports:
-    R.utils,
+    jsonlite,methods, data.table
+imports: R.utils,
     BiocParallel,
     pbapply,
     doMC,
     parallel,
     Rsamtools,
-    data.table,
     tidyr,
     doParallel,
     foreach
@@ -28,6 +26,7 @@ biocViews: Annotation
 Lazy: TRUE
 Collate:
     'AllClasses.R'
+    'commons.R'
     'AllGenerics.R'
     'CellBaseParam-methods.R'
     'CellBaseR-methods.R'
@@ -46,7 +45,6 @@ Collate:
     'cbVariantClient-methods.R'
     'cbXrefClient-methods.R'
     'cellbase.R'
-    'commons.R'
     'show-methods.R'
 VignetteBuilder: knitr
 Suggests:

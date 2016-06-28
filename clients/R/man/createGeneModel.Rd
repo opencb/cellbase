@@ -15,15 +15,50 @@ createGeneModel(object, region = NULL)
 A geneModel
 }
 \description{
-A convience functon to construct a genemodel
+This function allow the user to build a geneodel for use with Gviz package
 }
 \details{
-This function takes cbResponse object and returns a geneRegionTrack
-model to be plotted by Gviz
+#' @export
+plotGenesByRegion <- function(object, region=NULL){
+  require(data.table)
+  require(tidyr)
+  if(!is.null(region)){
+    host <- object@host
+    species <- object@species
+    version <- object@version
+    categ <- "genomic"
+    subcateg<- "region"
+    ids <- region
+    resource <- "gene"
+    data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
+                          ids=ids, resource=resource, filters=NULL)
+    rt4 <- data.table::as.data.table(data)
+    rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
+    #rt4 <- as.data.table(rt4)
+    data.table::setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+    hope <- unnest(rt4, transcripts) 
+    data.table::setnames(hope, c("id", "biotype"), c("transcript","feature"))
+    hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+    hope <- unnest(hope, exons)
+    hope <- subset(hope, feature=="protein_coding")
+    setnames(hope, c("id"), c("exon"))
+    
+    hope <- as.data.frame(hope)
+    hope <- hope[!duplicated(hope),1:9]
+    chr <- paste0("chr",hope$chromosome[1])
+    from <- min(hope$start)-5000
+    to <- max(hope$end)+5000
+    #ideoTrack <- IdeogramTrack(genome = "hg19", chromosome = chr)
+    axisTrack <- Gviz::GenomeAxisTrack()
+    hope <- Gviz::GeneRegionTrack(hope)
+  }
+  Gviz::plotTracks(list(axisTrack,hope),from = from, to = to,
+                   transcriptAnnotation='symbol')
+
 }
-\examples{
-library(cellbaseR)
-cb <- CellBaseR()
-test <- createGeneModel(object = cb, region = "17:1500000-1550000")
+create GeneModel
+
+ This function takes cbResponse object and returns a geneRegionTrack
+model to be plotted by Gviz
 }
 
