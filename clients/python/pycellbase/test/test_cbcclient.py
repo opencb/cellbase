@@ -1,16 +1,20 @@
 import unittest
 from pycellbase.cbclient import CellBaseClient
+from pycellbase.config import ConfigClient
 
 
 class CellBaseClientTest(unittest.TestCase):
     def test_config(self):
         cbc = CellBaseClient()
-        assert cbc.get_configuration()['species'] == 'hsapiens'
-        assert cbc.get_configuration()['version'] == 'latest'
+        assert cbc.get_config()['species'] == 'hsapiens'
+        assert cbc.get_config()['version'] == 'latest'
 
-        cbc = CellBaseClient(species='mmusculus', version='v3')
-        assert cbc.get_configuration()['species'] == 'mmusculus'
-        assert cbc.get_configuration()['version'] == 'v3'
+        cc = ConfigClient()
+        cbc = CellBaseClient(cc)
+        cc.species = 'mmusculus'
+        cc.version = 'v3'
+        assert cbc.get_config()['species'] == 'mmusculus'
+        assert cbc.get_config()['version'] == 'v3'
 
     def test_create_clients(self):
         cbc = CellBaseClient()

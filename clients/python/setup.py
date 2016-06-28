@@ -4,10 +4,12 @@ from distutils.core import setup
 # Getting client version
 def get_version():
     version = 'Undefined'
-    for line in open('pycellbase/__init__.py'):
+    init_fhand = open('pycellbase/__init__.py', 'r')
+    for line in init_fhand:
         if line.startswith('__version__'):
             exec(line.strip())
             break
+    init_fhand.close()
     return version
 
 
@@ -27,8 +29,8 @@ setup_kwargs = {
     'author_email': 'daniel.perez@incliva.es',
     'url': 'https://github.com/opencb/cellbase',
     'packages': ['pycellbase'],
-    'package_dir': {'pycellbase': 'pycellbase'}
-    # 'install_requires': []
+    'package_dir': {'pycellbase': 'pycellbase'},
+    'install_requires': ['pyyaml']
 }
 
 setup(**setup_kwargs)

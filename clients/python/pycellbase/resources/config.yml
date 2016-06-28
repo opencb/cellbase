@@ -1,0 +1,10 @@
+---
+species: "hsapiens"
+version: "latest"
+
+## These are the RESTful configurations parameters
+rest:
+  hosts:
+  - "bioinfo.hpc.cam.ac.uk"
+  - ""
+  port: "80"
