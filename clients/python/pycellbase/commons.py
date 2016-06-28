@@ -1,26 +1,25 @@
-def create_rest_url(host, port, version, species, category, subcategory,
-                    query_id, resource, options):
+def _create_rest_url(host, port, version, species, category, subcategory,
+                     query_id, resource, options):
     """Creates the URL for querying the REST service"""
 
     cellbase_rest = 'cellbase/webservices/rest'
 
-    if port:
-        path = host + ':' + port
-    else:
-        path = host
-
     # Creating the basic URL
-    url = ('http://' + '/'.join([path,
+    url = ('http://' + '/'.join([host + ':' + port,
                                  cellbase_rest,
                                  version,
                                  species,
                                  category,
-                                 subcategory,
-                                 query_id,
-                                 resource]))
+                                 subcategory
+                                 ]))
+
+    if query_id is not None:
+        url += '/' + '/'.join([query_id,  resource])
+    else:
+        url += '/' + resource
 
     # Checking optional params
-    if options:
+    if options is not None:
         opts = []
         if 'include' in options:
             opts.append('include=' + options['include'])
