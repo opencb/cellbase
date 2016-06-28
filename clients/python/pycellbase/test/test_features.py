@@ -6,12 +6,9 @@ import pycellbase.config as config
 class GeneClientTest(unittest.TestCase):
     def test_get_protein(self):
         gc = fts.GeneClient(config.ConfigClient())
-        assert gc.get_protein('BRCA2')['response'][0]['id'] == 'BRCA2'
-        assert not gc.get_protein('BRCA2')['error']
-
-        assert gc.get_protein('BRCA1,BRCA2')['response'][0]['id'] == 'BRCA1'
-        assert gc.get_protein('BRCA1,BRCA2')['response'][1]['id'] == 'BRCA2'
-        assert not gc.get_protein('BRCA1,BRCA2')['error']
+        res = gc.get_protein('BRCA1,BRCA2')['response']
+        assert res[0]['result'][0]['name'][0] == 'BRCA1_HUMAN'
+        assert res[1]['result'][0]['name'][0] == 'BRCA2_HUMAN'
 
     def test_get_next(self):
         # TODO Write proper asserts

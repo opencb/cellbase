@@ -1,4 +1,4 @@
-def _create_rest_url(host, port, version, species, category, subcategory,
+def create_rest_url(host, port, version, species, category, subcategory,
                      query_id, resource, options):
     """Creates the URL for querying the REST service"""
 
@@ -13,6 +13,7 @@ def _create_rest_url(host, port, version, species, category, subcategory,
                                  subcategory
                                  ]))
 
+    # If subcategory is queried, query_id can be absent
     if query_id is not None:
         url += '/' + '/'.join([query_id,  resource])
     else:

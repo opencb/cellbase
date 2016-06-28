@@ -1,7 +1,7 @@
 import requests
 import pycellbase.features as fts
 import pycellbase.config as config
-from pycellbase.commons import _create_rest_url
+from pycellbase.commons import create_rest_url
 
 
 class CellBaseClient(object):
@@ -22,6 +22,14 @@ class CellBaseClient(object):
         if port is not None:
             self._configuration.port = port
 
+    def get_configuration(self):
+        """Returns current configuration parameters"""
+        conf = self._configuration.__dict__.items()
+        conf_formatted = {}
+        for k, v in conf:
+            conf_formatted[k.replace('_', '')] = v
+        return conf_formatted
+
     def get(self, category, subcategory, query_id, resource, species=None,
             host=None, port=None, version=None, **options):
         """Creates the URL for querying the REST service"""
@@ -35,15 +43,15 @@ class CellBaseClient(object):
         if version is None:
             version = self._configuration.version
 
-        url = _create_rest_url(host,
-                               port,
-                               version,
-                               species,
-                               category,
-                               subcategory,
-                               query_id,
-                               resource,
-                               options)
+        url = create_rest_url(host,
+                              port,
+                              version,
+                              species,
+                              category,
+                              subcategory,
+                              query_id,
+                              resource,
+                              options)
 
         response = requests.get(url, headers={"Accept-Encoding": "gzip"})
         return response.json()
