@@ -1,5 +1,5 @@
 {
-  "species": "hsapiens",
+  "species": "celegans",
   "version": "latest",
   "rest": {
 	"hosts": [
