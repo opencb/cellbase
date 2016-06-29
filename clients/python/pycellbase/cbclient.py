@@ -1,5 +1,5 @@
-import pycellbase.features as fts
-import pycellbase.config as config
+import pycellbase.cbfeatures as fts
+import pycellbase.cbconfig as config
 from pycellbase.commons import get
 
 

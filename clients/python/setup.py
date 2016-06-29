@@ -26,7 +26,7 @@ setup_kwargs = {
     'description': 'Python client for CellBase',
     'long_description': get_long_description(),
     'author': 'Daniel Perez-Gil',
-    'author_email': 'daniel.perez@incliva.es',
+    'author_email': 'opencb@googlegroups.com',
     'url': 'https://github.com/opencb/cellbase',
     'packages': ['pycellbase'],
     'package_dir': {'pycellbase': 'pycellbase'},

@@ -52,24 +52,24 @@ class GenomicRegionClient(RestClient):
 
     def get_transcript(self, query_id, **options):
         return super(GenomicRegionClient, self)._get("transcript", query_id,
-                                                    options)
+                                                     options)
 
     def get_variation(self, query_id, **options):
         return super(GenomicRegionClient, self)._get("variation", query_id,
-                                                    options)
+                                                     options)
 
     def get_sequence(self, query_id, **options):
         return super(GenomicRegionClient, self)._get("sequence", query_id,
-                                                    options)
+                                                     options)
 
     def get_regulatory(self, query_id, **options):
         return super(GenomicRegionClient, self)._get(query_id, "regulatory",
-                                                    options)
+                                                     options)
 
     def get_tfbs(self, query_id, **options):
         return super(GenomicRegionClient, self)._get(query_id, "tfbs", options)
 
     def get_conservation(self, query_id, **options):
         return super(GenomicRegionClient, self)._get(query_id, "conservation",
-                                                    options)
+                                                     options)
 

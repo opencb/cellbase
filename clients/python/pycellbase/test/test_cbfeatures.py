@@ -1,6 +1,6 @@
 import unittest
-import pycellbase.features as fts
-import pycellbase.config as config
+import pycellbase.cbfeatures as fts
+import pycellbase.cbconfig as config
 
 
 class GeneClientTest(unittest.TestCase):
