@@ -96,7 +96,6 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
                     .append(QueryParams.REFERENCE.key(), variant.getReference())
                     .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
         }
-
         return get(query, options);
     }
 
