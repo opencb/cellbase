@@ -84,4 +84,17 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(((Document) variantQueryResult.getResult().get(0)).get("reference"), "C");
         assertEquals(((Document) variantQueryResult.getResult().get(0)).get("alternate"), "T");
     }
+
+    @Test
+    public void testGetByVariant() {
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        QueryResult<Variant> variantQueryResult
+                = variationDBAdaptor.getByVariant(Variant.parseVariant("10:118187036:T:C"), new QueryOptions());
+        assertEquals(variantQueryResult.getNumResults(), 1);
+        assertEquals(variantQueryResult.getResult().get(0).getChromosome(), "10");
+        assertEquals(variantQueryResult.getResult().get(0).getStart(), new Integer(118187036));
+        assertEquals(variantQueryResult.getResult().get(0).getReference(), "T");
+        assertEquals(variantQueryResult.getResult().get(0).getAlternate(), "C");
+        assertEquals(variantQueryResult.getResult().get(0).getId(), "rs191078597");
+    }
 }
