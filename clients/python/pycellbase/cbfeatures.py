@@ -18,6 +18,9 @@ class GeneClient(_Feature):
     def get_biotypes(self, **options):
         return super(GeneClient, self)._get("biotype", None, options)
 
+    def get_clinical(self, query_id, **options):
+        return super(GeneClient, self)._get("clinical", query_id, options)
+
     def get_protein(self, query_id, **options):
         return super(GeneClient, self)._get("protein", query_id, options)
 
@@ -27,8 +30,11 @@ class GeneClient(_Feature):
     def get_tfbs(self, query_id, **options):
         return super(GeneClient, self)._get("tfbs", query_id, options)
 
-    def get_variation(self, query_id, **options):
-        return super(GeneClient, self)._get("variation", query_id, options)
+    def get_snp(self, query_id, **options):
+        return super(GeneClient, self)._get("snp", query_id, options)
+
+    def get_info(self, query_id, **options):
+        return super(GeneClient, self)._get("info", query_id, options)
 
 
 class ProteinClient(_Feature):

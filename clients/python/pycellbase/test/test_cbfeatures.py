@@ -11,12 +11,42 @@ class GeneClientTest(unittest.TestCase):
         res = gc.get_biotypes()['response']
         assert 'protein_coding' in res[0]['result']
 
+    def test_get_clinical(self):
+        """Checks retrieval of gene clinical info"""
+        gc = cbfts.GeneClient(config.ConfigClient())
+        res = gc.get_clinical('BRCA1')['response']
+        assert res[0]['result'][0]['annot']['chromosome'] == '17'
+
     def test_get_protein(self):
-        """Checks retrieval of protein info"""
+        """Checks retrieval of protein"""
         gc = cbfts.GeneClient(config.ConfigClient())
         res = gc.get_protein('BRCA1,BRCA2')['response']
         assert res[0]['result'][0]['name'][0] == 'BRCA1_HUMAN'
         assert res[1]['result'][0]['name'][0] == 'BRCA2_HUMAN'
+
+    def test_get_transcript(self):
+        """Checks retrieval of protein"""
+        gc = cbfts.GeneClient(config.ConfigClient())
+        res = gc.get_transcript('BRCA1')['response']
+        assert res[0]['result'][0]['name'] == 'BRCA1-001'
+
+    def test_get_tfbs(self):
+        """Checks retrieval of protein"""
+        gc = cbfts.GeneClient(config.ConfigClient())
+        res = gc.get_tfbs('BRCA1')['response']
+        assert res[0]['result'][0]['tfName'] == 'E2F4'
+
+    def test_get_snp(self):
+        """Checks retrieval of snp"""
+        gc = cbfts.GeneClient(config.ConfigClient())
+        res = gc.get_snp('LDLR')['response']
+        assert res[0]['result'][0]['id'] == 'rs191722900'
+
+    def test_get_info(self):
+        """Checks retrieval of gene info"""
+        gc = cbfts.GeneClient(config.ConfigClient())
+        res = gc.get_info('BRCA1')['response']
+        assert res[0]['id'] == 'BRCA1'
 
 
 class ProteinClientTest(unittest.TestCase):
