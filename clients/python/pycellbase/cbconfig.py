@@ -6,7 +6,8 @@ class ConfigClient(object):
     """Sets up the default configuration for the CellBase client"""
     def __init__(self, config_fpath=None):
         # Default config params
-        self._host = 'bioinfo.hpc.cam.ac.uk'
+        hosts = ['bioinfodev.hpc.cam.ac.uk', 'bioinfo.hpc.cam.ac.uk']
+        self._host = hosts[0]
         self._port = '80'
         self._version = 'latest'
         self._species = 'hsapiens'

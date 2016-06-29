@@ -6,14 +6,17 @@ class _Feature(RestClient):
         _category = "feature"
         super(_Feature, self).__init__(configuration, subcategory, _category)
 
-    def get_next(self, query_id, **options):
-        return super(_Feature, self)._get('next', query_id, options)
+    def search(self, query_id, **options):
+        return super(_Feature, self)._get('search', query_id, options)
 
 
 class GeneClient(_Feature):
     def __init__(self, configuration):
         _subcategory = "gene"
         super(GeneClient, self).__init__(configuration, _subcategory)
+
+    def get_biotypes(self, **options):
+        return super(GeneClient, self)._get("biotype", None, options)
 
     def get_protein(self, query_id, **options):
         return super(GeneClient, self)._get("protein", query_id, options)
@@ -33,10 +36,14 @@ class ProteinClient(_Feature):
         _subcategory = "protein"
         super(ProteinClient, self).__init__(configuration, _subcategory)
 
+    def get_substitution_scores(self, query_id, **options):
+        return super(ProteinClient, self)._get("substitution_scores", query_id,
+                                               options)
+
 
 class VariationClient(_Feature):
     def __init__(self, configuration):
-        _subcategory = "protein"
+        _subcategory = "snp"
         super(VariationClient, self).__init__(configuration, _subcategory)
 
 
@@ -61,15 +68,3 @@ class GenomicRegionClient(RestClient):
     def get_sequence(self, query_id, **options):
         return super(GenomicRegionClient, self)._get("sequence", query_id,
                                                      options)
-
-    def get_regulatory(self, query_id, **options):
-        return super(GenomicRegionClient, self)._get(query_id, "regulatory",
-                                                     options)
-
-    def get_tfbs(self, query_id, **options):
-        return super(GenomicRegionClient, self)._get(query_id, "tfbs", options)
-
-    def get_conservation(self, query_id, **options):
-        return super(GenomicRegionClient, self)._get(query_id, "conservation",
-                                                     options)
-

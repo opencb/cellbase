@@ -5,7 +5,8 @@ def _create_rest_url(host, port, version, species, category, subcategory,
                     resource, query_id, options):
     """Creates the URL for querying the REST service"""
 
-    cellbase_rest = 'cellbase/webservices/rest'
+    # cellbase_rest = 'cellbase/webservices/rest'
+    cellbase_rest = 'cellbase-dev-v4.0/webservices/rest'
 
     # Creating the basic URL
     url = ('http://' + '/'.join([host + ':' + port,
@@ -23,18 +24,12 @@ def _create_rest_url(host, port, version, species, category, subcategory,
         url += '/' + resource
 
     # Checking optional params
+    opt_params = ['include', 'exclude', 'skip', 'limit', 'count']
     if options is not None:
         opts = []
-        if 'include' in options:
-            opts.append('include=' + options['include'])
-        if 'exclude' in options:
-            opts.append('exclude=' + options['exclude'])
-        if 'skip' in options:
-            opts.append('skip=' + str(options['skip']))
-        if 'limit' in options:
-            opts.append('limit=' + str(options['limit']))
-        if 'count' in options:
-            opts.append('count=' + str(options['count']).lower())
+        for k, v in options.items():
+            if k in opt_params:
+                opts.append(k + '=' + str(v))
         if opts:
             url += '?' + '&'.join(opts)
 
@@ -55,5 +50,5 @@ def get(host, port, version, species, category, subcategory, resource,
                            options=options)
 
     response = requests.get(url, headers={"Accept-Encoding": "gzip"})
-
+    print(url)
     return response

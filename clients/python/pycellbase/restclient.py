@@ -8,7 +8,7 @@ class RestClient(object):
         self._subcategory = subcategory
         self._category = category
 
-    def _get(self, resource, query_id=None, options=None):
+    def _get(self, resource, query_id, options):
         """Queries the REST service and returns the result"""
         response = get(host=self._configuration.host,
                        port=self._configuration.port,
