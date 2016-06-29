@@ -37,6 +37,8 @@ import java.util.*;
 
 public class MongoDBAdaptor {
 
+    enum QueryValueType {INTEGER, STRING}
+
     protected String species;
     protected String assembly;
 
@@ -172,17 +174,28 @@ public class MongoDBAdaptor {
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
+        createOrQuery(query, queryParam, mongoDbField, andBsonList, QueryValueType.STRING);
+    }
+
+    protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList,
+                                 QueryValueType queryValueType) {
         if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
+            switch (queryValueType) {
+                case INTEGER:
+                    createOrQuery(query.getAsIntegerList(queryParam), mongoDbField, andBsonList);
+                    break;
+                default:
+                    createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
+            }
         }
     }
 
-    protected void createOrQuery(List<String> queryValues, String mongoDbField, List<Bson> andBsonList) {
+    protected <T> void createOrQuery(List<T> queryValues, String mongoDbField, List<Bson> andBsonList) {
         if (queryValues.size() == 1) {
             andBsonList.add(Filters.eq(mongoDbField, queryValues.get(0)));
         } else {
             List<Bson> orBsonList = new ArrayList<>(queryValues.size());
-            for (String queryItem : queryValues) {
+            for (T queryItem : queryValues) {
                 orBsonList.add(Filters.eq(mongoDbField, queryItem));
             }
             andBsonList.add(Filters.or(orBsonList));
