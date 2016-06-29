@@ -207,6 +207,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             } else if (variationQueryResultList.get(i).getResult().get(0).getAnnotation() != null
                         && variationQueryResultList.get(i).getResult().get(0).getAnnotation().getChromosome() == null) {
                 mustSearchVariation.get(i).setId(variationQueryResultList.get(i).getResult().get(0).getId());
+                if (mustSearchVariation.get(i).getAnnotation() == null) {
+                    mustSearchVariation.get(i).setAnnotation(new VariantAnnotation());
+                }
                 mustSearchVariation.get(i).getAnnotation()
                         .setPopulationFrequencies(variationQueryResultList.get(i).getResult().get(0).getAnnotation()
                                 .getPopulationFrequencies());
