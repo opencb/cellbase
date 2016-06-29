@@ -723,7 +723,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
         // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
         // FIXME: insertions and deletions
-        if (variant.getType().equals(VariantType.INDEL)) {
+        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
             if (variant.getReference().isEmpty()) {
                 variant.setType(VariantType.INSERTION);
             } else {
