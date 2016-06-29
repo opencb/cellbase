@@ -36,7 +36,7 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
-    private static VariantNormalizer normalizer = new VariantNormalizer(false, false, true);
+    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
     private boolean normalize;
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version, List<VariantAnnotator> variantAnnotatorList) {

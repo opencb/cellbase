@@ -226,10 +226,30 @@ public class VariationParser extends CellBaseParser {
                                  List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
                                  String displayConsequenceType, List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
                                  String strand, String ancestralAllele, String minorAllele, Float minorAlleleFreq) {
-        end = fixEndForInsertions(start, end, type);
+
+        StructuralVariation sv = null;
+        switch (type) {
+            case INDEL:
+            case INSERTION:
+                if (end < start) {
+                    end = start;
+                }
+                break;
+            case CNV:
+                reference = String.valueOf(reference.toCharArray()[1]);
+                String copyNumberStr = alternate.split("\\)")[1];
+                alternate = "<CN" + copyNumberStr + ">";
+                sv = new StructuralVariation(start, start, end, end, Integer.valueOf(copyNumberStr));
+                break;
+            default:
+                break;
+        }
+
+//        end = fixEndForInsertions(start, end, type);
         Variant variant = new Variant(chromosome, start, end, reference, alternate);
         variant.setIds(ids);
         variant.setType(type);
+        variant.setSv(sv);
         VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(null, null, null, null, null, id, xrefs, hgvs,
                 displayConsequenceType, conseqTypes, null, null, null, null, null, null, null, null, null, null);
         try {
@@ -247,14 +267,14 @@ public class VariationParser extends CellBaseParser {
         return variant;
     }
 
-    private int fixEndForInsertions(int start, int end, VariantType type) {
-        if (type == VariantType.INDEL || type == VariantType.INSERTION) {
-            if (end < start) {
-                end = start;
-            }
-        }
-        return end;
-    }
+//    private int fixEndForInsertions(int start, int end, VariantType type) {
+//        if (type == VariantType.INDEL || type == VariantType.INSERTION) {
+//            if (end < start) {
+//                end = start;
+//            }
+//        }
+//        return end;
+//    }
 
     private String getDisplayConsequenceType(String[] variationFeatureFields) {
         List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));

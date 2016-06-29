@@ -295,8 +295,10 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(4);
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<QueryResult<Variant>>> variationFuture = null;
-        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
-            futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, queryOptions);
+
+        if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
+            futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
+                    "id,annotation.populationFrequencies"));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
         }
 
