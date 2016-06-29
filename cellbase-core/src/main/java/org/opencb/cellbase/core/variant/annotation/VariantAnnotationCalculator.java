@@ -198,11 +198,18 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             // distinguish CellBase from ENSEMBL annotation because when CellBase annotates, it includes chromosome, start,
             // reference and alternate fields - TODO: change this.
             // Must be annotated by running the whole process
-            if (variationQueryResultList.get(i).getNumResults() == 0
-                    || variationQueryResultList.get(i).getResult().get(0).getChromosome() == null) {
+            if (variationQueryResultList.get(i).getNumResults() == 0) {
 //                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation() == null
 //                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes() == null
 //                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes().isEmpty()) {
+                mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
+                mustRunAnnotation.add(mustSearchVariation.get(i));
+            } else if (variationQueryResultList.get(i).getResult().get(0).getAnnotation() != null
+                        && variationQueryResultList.get(i).getResult().get(0).getAnnotation().getChromosome() == null) {
+                mustSearchVariation.get(i).setId(variationQueryResultList.get(i).getResult().get(0).getId());
+                mustSearchVariation.get(i).getAnnotation()
+                        .setPopulationFrequencies(variationQueryResultList.get(i).getResult().get(0).getAnnotation()
+                                .getPopulationFrequencies());
                 mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
                 mustRunAnnotation.add(mustSearchVariation.get(i));
             } else {
@@ -296,7 +303,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<QueryResult<Variant>>> variationFuture = null;
 
-        if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
+        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
                     "id,annotation.populationFrequencies"));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
