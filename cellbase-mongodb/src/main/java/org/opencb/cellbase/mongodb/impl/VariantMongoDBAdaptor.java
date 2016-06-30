@@ -33,6 +33,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.filters.Filter;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -166,14 +167,16 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "ids", andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
-                andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
         createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
         createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
         createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "consequenceTypes.sequenceOntologyTerms.name", andBsonList);
+//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
+//                andBsonList);
+        createGeneOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), andBsonList);
+
 //        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
         if (andBsonList.size() > 0) {
@@ -181,6 +184,32 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         } else {
             return new Document();
         }
+    }
+
+    private void createGeneOrQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null) {
+            List<String> geneList = query.getAsStringList(queryParam);
+            if (geneList != null && !geneList.isEmpty()) {
+                if (geneList.size() == 1) {
+                    andBsonList.add(getGeneQuery(geneList.get(0)));
+                } else {
+                    List<Bson> orBsonList = new ArrayList<>(geneList.size());
+                    for (String geneId : geneList) {
+                        orBsonList.add(getGeneQuery(geneId));
+                    }
+                    andBsonList.add(Filters.or(orBsonList));
+                }
+            }
+        }
+    }
+
+    private Bson getGeneQuery(String geneId) {
+        List<Bson> orBsonList = new ArrayList<>(3);
+        orBsonList.add(Filters.eq(geneId, "annotation.consequenceTypes.geneName"));
+        orBsonList.add(Filters.eq(geneId, "annotation.consequenceTypes.ensemblGeneId"));
+        orBsonList.add(Filters.eq(geneId, "annotation.consequenceTypes.ensemblTranscriptId"));
+
+        return Filters.or(orBsonList);
     }
 
     private QueryResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList) {

@@ -74,6 +74,23 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    public void testGet() {
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        QueryResult<Variant> result = variationDBAdaptor
+                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ATRNL1"), new QueryOptions());
+        assertEquals(result.getNumResults(), 1);
+
+        QueryResult<Variant> resultENSEMBLGene = variationDBAdaptor
+                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENSG00000107518"), new QueryOptions());
+        assertEquals(result.getResult(), resultENSEMBLGene.getResult());
+
+        // ENSEMBL transcript ids are also allowed for the GENE query parameter - this was done on purpose
+        QueryResult<Variant> resultENSEMBLTranscript = variationDBAdaptor
+                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENST00000424738"), new QueryOptions());
+        assertEquals(result.getResult(), resultENSEMBLTranscript.getResult());
+    }
+
+    @Test
     public void testNativeGet() {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryResult variantQueryResult = variationDBAdaptor.nativeGet(new Query(VariantDBAdaptor.QueryParams.ID.key(), "rs666"),
