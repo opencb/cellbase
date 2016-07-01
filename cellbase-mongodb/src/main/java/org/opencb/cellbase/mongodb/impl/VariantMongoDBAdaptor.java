@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.BulkWriteException;
+import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
@@ -33,7 +34,6 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
-import org.opencb.commons.filters.Filter;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -45,6 +45,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final float DECIMAL_RESOLUTION = 100f;
+    private static final String ENSEMBL_GENE_ID_PATTERN = "ENSG00";
+    private static final String ENSEMBL_TRANSCRIPT_ID_PATTERN = "ENST00";
 
     private MongoDBCollection caddDBCollection;
 
@@ -112,6 +114,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         Bson bson = parseQuery(query);
         options.put(MongoDBCollection.SKIP_COUNT, true);
         options = addPrivateExcludeOptions(options);
+        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
 
@@ -204,12 +207,20 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     private Bson getGeneQuery(String geneId) {
-        List<Bson> orBsonList = new ArrayList<>(3);
-        orBsonList.add(Filters.eq(geneId, "annotation.consequenceTypes.geneName"));
-        orBsonList.add(Filters.eq(geneId, "annotation.consequenceTypes.ensemblGeneId"));
-        orBsonList.add(Filters.eq(geneId, "annotation.consequenceTypes.ensemblTranscriptId"));
+//        List<Bson> orBsonList = new ArrayList<>(3);
+//        orBsonList.add(Filters.eq("annotation.consequenceTypes.geneName", geneId));
+//        orBsonList.add(Filters.eq("annotation.consequenceTypes.ensemblGeneId", geneId));
+//        orBsonList.add(Filters.eq("annotation.consequenceTypes.ensemblTranscriptId", geneId));
 
-        return Filters.or(orBsonList);
+        // For some reason Mongo does not deal properly with OR queries and indexes. It is extremely slow to perform
+        // the commented query above. On the contrary this query below provides instant results
+        if (geneId.startsWith(ENSEMBL_GENE_ID_PATTERN)) {
+            return Filters.eq("annotation.consequenceTypes.ensemblGeneId", geneId);
+        } else if (geneId.startsWith(ENSEMBL_TRANSCRIPT_ID_PATTERN)) {
+            return Filters.eq("annotation.consequenceTypes.ensemblTranscriptId", geneId);
+        } else {
+            return Filters.eq("annotation.consequenceTypes.geneName", geneId);
+        }
     }
 
     private QueryResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList) {

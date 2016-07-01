@@ -35,8 +35,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -76,18 +76,36 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testGet() {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        QueryOptions queryOptions = new QueryOptions("include", "id");
+//        queryOptions.put("limit", 3);
         QueryResult<Variant> result = variationDBAdaptor
-                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ATRNL1"), new QueryOptions());
-        assertEquals(result.getNumResults(), 1);
+                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions);
+        assertEquals(result.getNumResults(), 667);
+        List<String> rsList = Arrays.asList("rs191188630", "rs191113747", "rs191348407", "rs191952842",
+                "rs192035553", "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199826190",
+                "rs199934473", "rs200591220", "rs200883222", "rs200830209", "rs200830209", "rs200915243",
+                "rs200994757", "rs200942224", "rs201498625", "rs201498625");
+        assertContainsRs(result, rsList);
 
         QueryResult<Variant> resultENSEMBLGene = variationDBAdaptor
-                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENSG00000107518"), new QueryOptions());
+                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions);
         assertEquals(result.getResult(), resultENSEMBLGene.getResult());
 
         // ENSEMBL transcript ids are also allowed for the GENE query parameter - this was done on purpose
         QueryResult<Variant> resultENSEMBLTranscript = variationDBAdaptor
-                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENST00000424738"), new QueryOptions());
-        assertEquals(result.getResult(), resultENSEMBLTranscript.getResult());
+                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENST00000565764"), queryOptions);
+        assertEquals(resultENSEMBLTranscript.getNumResults(), 630);
+        rsList = Arrays.asList("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
+                "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199934473", "rs200591220",
+                "rs200883222", "rs200830209", "rs200830209", "rs200915243", "rs200994757", "rs200942224",
+                "rs201498625", "rs201498625", "rs201498625");
+        assertContainsRs(resultENSEMBLTranscript, rsList);
+    }
+
+    private void assertContainsRs(QueryResult<Variant> queryResult, List<String> rsList) {
+        Set<String> set1 = (Set) queryResult.getResult().stream()
+                .map(variant -> variant.getId()).collect(Collectors.toSet());
+        assertTrue(set1.containsAll(new HashSet<String>(rsList)));
     }
 
     @Test
