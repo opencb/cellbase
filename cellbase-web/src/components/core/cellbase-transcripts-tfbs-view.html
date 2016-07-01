@@ -14,13 +14,9 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../shared/cellbase-shared-styles.html">
-
 <dom-module id="cellbase-transcritps-tfbs-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
         <div>
             <template is="dom-repeat" items="{{data}}" as="transcript">
                 <h3>{{transcript.id}} ({{transcript.name}})</h3> <i id={{transcript.name}} class="fa fa-minus-circle" aria-hidden="true" on-click="iconChange"></i>
