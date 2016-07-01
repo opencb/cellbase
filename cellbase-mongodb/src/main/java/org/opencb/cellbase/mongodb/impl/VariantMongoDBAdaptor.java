@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import com.mongodb.BulkWriteException;
+import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
@@ -46,6 +47,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final float DECIMAL_RESOLUTION = 100f;
+    private static final String ENSEMBL_GENE_ID_PATTERN = "ENSG00";
+    private static final String ENSEMBL_TRANSCRIPT_ID_PATTERN = "ENST00";
 
     private MongoDBCollection caddDBCollection;
 
@@ -120,6 +123,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
         options = addPrivateExcludeOptions(options);
+        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
 
@@ -175,8 +179,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "ids", andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
-                andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
         createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
                 "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
@@ -187,6 +189,10 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "consequenceTypes.sequenceOntologyTerms.name", andBsonList);
+//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
+//                andBsonList);
+        createGeneOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), andBsonList);
+
 //        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
         if (andBsonList.size() > 0) {
@@ -216,6 +222,39 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //
 //        return Filters.and(andBsonList);
 //    }
+    private void createGeneOrQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null) {
+            List<String> geneList = query.getAsStringList(queryParam);
+            if (geneList != null && !geneList.isEmpty()) {
+                if (geneList.size() == 1) {
+                    andBsonList.add(getGeneQuery(geneList.get(0)));
+                } else {
+                    List<Bson> orBsonList = new ArrayList<>(geneList.size());
+                    for (String geneId : geneList) {
+                        orBsonList.add(getGeneQuery(geneId));
+                    }
+                    andBsonList.add(Filters.or(orBsonList));
+                }
+            }
+        }
+    }
+
+    private Bson getGeneQuery(String geneId) {
+//        List<Bson> orBsonList = new ArrayList<>(3);
+//        orBsonList.add(Filters.eq("annotation.consequenceTypes.geneName", geneId));
+//        orBsonList.add(Filters.eq("annotation.consequenceTypes.ensemblGeneId", geneId));
+//        orBsonList.add(Filters.eq("annotation.consequenceTypes.ensemblTranscriptId", geneId));
+
+        // For some reason Mongo does not deal properly with OR queries and indexes. It is extremely slow to perform
+        // the commented query above. On the contrary this query below provides instant results
+        if (geneId.startsWith(ENSEMBL_GENE_ID_PATTERN)) {
+            return Filters.eq("annotation.consequenceTypes.ensemblGeneId", geneId);
+        } else if (geneId.startsWith(ENSEMBL_TRANSCRIPT_ID_PATTERN)) {
+            return Filters.eq("annotation.consequenceTypes.ensemblTranscriptId", geneId);
+        } else {
+            return Filters.eq("annotation.consequenceTypes.geneName", geneId);
+        }
+    }
 
     private QueryResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList) {
 
