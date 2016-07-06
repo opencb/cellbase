@@ -167,7 +167,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<QueryResult<Variant>>> variationFuture = null;
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
-            futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, queryOptions);
+            futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
+                    "id,annotation.populationFrequencies"));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
         }
 
