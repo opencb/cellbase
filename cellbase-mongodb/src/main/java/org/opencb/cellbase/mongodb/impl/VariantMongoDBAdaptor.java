@@ -172,8 +172,10 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "ids", andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
         createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
-        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
-        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
+//        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
+        createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
+        createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+//        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "consequenceTypes.sequenceOntologyTerms.name", andBsonList);
 //        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
