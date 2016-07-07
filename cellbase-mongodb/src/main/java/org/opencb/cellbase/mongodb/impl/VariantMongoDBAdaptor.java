@@ -335,12 +335,13 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
             updates.add(update);
 
-            String chunkId = getChunkIdPrefix((String) variantDBObject.get("chromosome"),
-                    (int) variantDBObject.get("start"), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE);
-            queries.add(new Document("_chunkIds", chunkId)
-                    .append("chromosome", variantDBObject.get("chromosome"))
+//            String chunkId = getChunkIdPrefix((String) variantDBObject.get("chromosome"),
+//                    (int) variantDBObject.get("start"), MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE);
+//            queries.add(new Document("_chunkIds", chunkId)
+//                    .append("chromosome", variantDBObject.get("chromosome"))
+            queries.add(new Document("chromosome", variantDBObject.get("chromosome"))
                     .append("start", variantDBObject.get("start"))
-                    .append("end", variantDBObject.get("end"))
+//                    .append("end", variantDBObject.get("end"))
                     .append("reference", variantDBObject.get("reference"))
                     .append("alternate", variantDBObject.get("alternate")));
         }
