@@ -185,8 +185,10 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
                 "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
         createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
-        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
-        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
+//        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
+        createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
+        createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+//        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "consequenceTypes.sequenceOntologyTerms.name", andBsonList);
 //        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",

@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
@@ -131,5 +132,16 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(variantQueryResult.getResult().get(0).getReference(), "T");
         assertEquals(variantQueryResult.getResult().get(0).getAlternate(), "C");
         assertEquals(variantQueryResult.getResult().get(0).getId(), "rs191078597");
+
+        variantQueryResult
+                = variationDBAdaptor.getByVariant(Variant.parseVariant("22:17438072:G:-"), new QueryOptions());
+        assertEquals(variantQueryResult.getNumResults(), 1);
+        assertEquals(variantQueryResult.getResult().get(0).getChromosome(), "22");
+        assertEquals(variantQueryResult.getResult().get(0).getStart(), new Integer(17438072));
+        assertEquals(variantQueryResult.getResult().get(0).getReference(), "G");
+        assertEquals(variantQueryResult.getResult().get(0).getAlternate(), "");
+        assertEquals(variantQueryResult.getResult().get(0).getId(), "rs76677441");
+        assertEquals(variantQueryResult.getResult().get(0).getType(), VariantType.DELETION);
+
     }
 }
