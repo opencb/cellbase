@@ -22,8 +22,8 @@ import java.util.Set;
 public class BenchmarkTask implements
         ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception> {
 
-    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
     private FastaIndexManager fastaIndexManager;
+    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CN([0123456789]+)>)";
     private VariantAnnotator variantAnnotator;
 
     public BenchmarkTask(VariantAnnotator variantAnnotator, FastaIndexManager fastaIndexManager) {
