@@ -41,7 +41,7 @@ import java.util.Arrays;
 /**
  * Created by imedina on 04/08/15.
  */
-@Path("/{version}/{species}/meta")
+@Path("/{version}/meta")
 @Produces("application/json")
 @Api(value = "Meta", description = "Meta RESTful Web Services API")
 public class MetaWSServer extends GenericRestWSServer {
@@ -49,14 +49,9 @@ public class MetaWSServer extends GenericRestWSServer {
     public MetaWSServer(@PathParam("version")
                         @ApiParam(name = "version", value = "Use 'latest' for last stable version",
                                 defaultValue = "latest") String version,
-                        @PathParam("species")
-                        @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                + "of potentially available species ids, please refer to: "
-                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species")
-                                String species,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
-        super(version, species, uriInfo, hsr);
+        super(version, uriInfo, hsr);
     }
 
 
