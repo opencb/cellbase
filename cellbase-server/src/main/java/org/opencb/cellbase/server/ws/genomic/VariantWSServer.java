@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -162,21 +164,22 @@ public class VariantWSServer extends GenericRestWSServer {
             + "will be included in that collection, meaning that the use of this cache may significantly improve "
             + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "normalize",
-                    value = "Boolean to indicate whether input variants shall be normalized or not. Normalization"
-                            + " process includes decomposing MNVs", allowableValues = "false,true", defaultValue = "false",
-                    required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "useCache",
-                    value = "Boolean to indicate whether "
-                            + " cached annotation should be used or not", allowableValues = "false,true", defaultValue = "false",
-                    required = false, dataType = "list of strings", paramType = "query")
-    })
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
                                                         + "annotate, e.g. "
                                                         + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
                                                         + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
-                                                        required = true) String variants) {
+                                                        required = true) String variants,
+                                                @QueryParam("normalize")
+                                                @ApiParam(name = "normalize",
+                                                        value = "Boolean to indicate whether input variants shall be "
+                                                                + "normalized or not. Normalization process includes "
+                                                                + "decomposing MNVs", allowableValues = "false,true",
+                                                        defaultValue = "false", required = false) Boolean normalize,
+                                                @QueryParam("useCache")
+                                                    @ApiParam(name = "useCache",
+                                                            value = "Boolean to indicate whether cached annotation should be"
+                                                                    + " used or not", allowableValues = "false,true",
+                                                            defaultValue = "false", required = false) Boolean useCache) {
 
         try {
             parseQueryParams();
@@ -185,6 +188,12 @@ public class VariantWSServer extends GenericRestWSServer {
 //            boolean normalize = (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true"));
 //            // Use cache by default
 //            boolean useCache = (queryOptions.get("useCache") != null ? queryOptions.get("useCache").equals("true") : true);
+            if (normalize != null) {
+                queryOptions.put("normalize", normalize);
+            }
+            if (useCache != null) {
+                queryOptions.put("useCache", useCache);
+            }
             VariantAnnotationCalculator variantAnnotationCalculator =
                     new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
             List<QueryResult<VariantAnnotation>> queryResultList =
@@ -206,27 +215,35 @@ public class VariantWSServer extends GenericRestWSServer {
             + "will be included in that collection, meaning that the use of this cache may significantly improve "
             + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "normalize",
-                    value = "Boolean to indicate whether input variants shall be normalized or not. Normalization"
-                            + " process includes decomposing MNVs", allowableValues = "false,true", defaultValue = "false",
-                    required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "useCache",
-                    value = "Boolean to indicate whether "
-                            + " cached annotation should be used or not", allowableValues = "false,true", defaultValue = "false",
-                    required = false, dataType = "list of strings", paramType = "query")
-    })
     public Response getAnnotationByVariantsGET(@PathParam("variants")
                                                @ApiParam(name = "variants", value = "Comma separated list of variants to"
                                                        + "annotate, e.g. "
                                                        + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
                                                        + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>",
-                                                       required = true) String variants) {
+                                                       required = true) String variants,
+                                               @QueryParam("normalize")
+                                               @ApiParam(name = "normalize",
+                                                       value = "Boolean to indicate whether input variants shall be "
+                                                               + "normalized or not. Normalization process includes "
+                                                               + "decomposing MNVs", allowableValues = "false,true",
+                                                       defaultValue = "false", required = false) Boolean normalize,
+                                               @QueryParam("useCache")
+                                               @ApiParam(name = "useCache",
+                                                       value = "Boolean to indicate whether cached annotation should be"
+                                                               + " used or not", allowableValues = "false,true",
+                                                       defaultValue = "false", required = false) Boolean useCache) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
             VariantAnnotationCalculator variantAnnotationCalculator =
                     new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+            if (normalize != null) {
+                queryOptions.put("normalize", normalize);
+            }
+            if (useCache != null) {
+                queryOptions.put("useCache", useCache);
+            }
+            logger.debug(queryOptions.toJson());
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
@@ -249,6 +266,7 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+
             List<QueryResult<Score>> functionalScoreVariant =
                     variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);
             return createOkResponse(functionalScoreVariant);

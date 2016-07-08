@@ -18,12 +18,12 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.*;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -460,9 +460,10 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         includeGeneFields = getIncludedGeneFields(annotatorSet);
 
         // Default behaviour no normalization
-        normalize = (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true"));
+        normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
+        logger.debug("normalize = {}", normalize);
         // Default behaviour use cache
-        useCache = (queryOptions.get("useCache") != null ? queryOptions.get("useCache").equals("true") : true);
+        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : true);
     }
 
 
