@@ -36,14 +36,14 @@
             <artifactId>cellbase-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-server</artifactId>
+            <version>${cellbase.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.opencb.commons</groupId>
             <artifactId>commons-datastore-core</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.opencb.commons</groupId>-->
-            <!--<artifactId>commons-datastore-mongodb</artifactId>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
