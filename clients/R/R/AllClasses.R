@@ -29,8 +29,7 @@ setClass("CellBaseR",
 ################################################################################
 #' The CellBaseResponse class defintion
 #'  
-#' @description This class holds the response data from CellBaseR Methods
-#' @aliases CellBaseResponse
+#' This class holds the response data from CellBaseR Methods
 #' @details This class stores a response of CellBaseR query methods. An object 
 #' of class CellBaseResponse is automatically generated when you call any of 
 #' CellbaseR methods.

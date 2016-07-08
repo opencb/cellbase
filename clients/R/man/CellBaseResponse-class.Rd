@@ -4,8 +4,12 @@
 \name{CellBaseResponse-class}
 \alias{CellBaseResponse}
 \alias{CellBaseResponse-class}
-\title{The CellBaseResponse class defintion}
+\title{The CellBaseResponse class defintion
+ 
+This class holds the response data from CellBaseR Methods}
 \description{
+The CellBaseResponse class defintion
+ 
 This class holds the response data from CellBaseR Methods
 }
 \details{
