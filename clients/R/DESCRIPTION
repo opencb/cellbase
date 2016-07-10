@@ -14,8 +14,7 @@ Depends:
     jsonlite,
     methods,
     data.table
-imports: 
-    R.utils,
+imports: R.utils,
     BiocParallel,
     pbapply,
     doMC,
@@ -49,6 +48,7 @@ Collate:
     'cellbase.R'
     'commons.R'
     'show-methods.R'
+    'tools.R'
 VignetteBuilder: knitr
 Suggests:
     BiocStyle,
