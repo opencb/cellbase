@@ -11,7 +11,9 @@ License: Apache License
 Depends:
     R(>= 3.2),
     RCurl,
-    jsonlite,methods
+    jsonlite,
+    methods,
+    data.table
 imports: 
     R.utils,
     BiocParallel,
@@ -19,7 +21,6 @@ imports:
     doMC,
     parallel,
     Rsamtools,
-    data.table,
     tidyr,
     doParallel,
     foreach
