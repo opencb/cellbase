@@ -80,10 +80,6 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
 }
 ## all working functions
 ## a function to read the varinats from a vcf file
-#' @import pbapply
-#' @import Rsamtools
-#' @import foreach
-#' @importFrom R.utils countLines
 readIds <- function(file=file,batch_size,num_threads)
     {
   
@@ -138,7 +134,6 @@ createURL <- function(file=NULL, host=host, version=version, meta=meta,
   return(grls)
 }
 ## A function to make the API calls
-#' @import pbapply
 callREST <- function(grls,async=FALSE,num_threads=num_threads)
     {
     content <- list()
@@ -148,13 +143,13 @@ callREST <- function(grls,async=FALSE,num_threads=num_threads)
        if(async==TRUE){
         prp <- split(grls,ceiling(seq_along(grls)/num_threads))
         cat("Preparing The Asynchronus call.............")
-        gs <- pblapply(prp, function(x)unlist(x))
+        gs <- pbapply::pblapply(prp, function(x)unlist(x))
         cat("Getting the Data...............")
-        content <- pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
+        content <- pbapply::pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
         content <- unlist(content)
 
         }else{
-              content <- pbsapply(grls, function(x)getURI(x))
+              content <- pbapply::pbsapply(grls, function(x)getURI(x))
 
     }
   }
@@ -163,11 +158,6 @@ callREST <- function(grls,async=FALSE,num_threads=num_threads)
   return(content)
 }
 ## A function to parse the json data into R dataframes
-#' @import doMC
-#' @import parallel
-#' @import pbapply
-#' @importFrom jsonlite fromJSON
-#'
 parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
         if(parallel==TRUE){
     num_cores <-detectCores()/2
@@ -191,7 +181,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     nums <- lapply(js, function(x)x$response$numResults)
     
     if (class(ares[[1]][[1]])=="data.frame"){
-      ds <- pblapply(ares,function(x)rbind.pages(x))
+      ds <- pbapply::pblapply(ares,function(x)rbind.pages(x))
       ### Important to get correct vertical binding of dataframes
       names(ds) <- NULL
       ds <- rbind.pages(ds)

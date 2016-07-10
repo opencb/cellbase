@@ -5,7 +5,7 @@
 \alias{CellBaseR-class}
 \title{This class defines the CellBaseR object}
 \description{
-This is an S4 class  which defines the CellBaseR object
+This class defines the CellBaseR object
 }
 \details{
 This S4 class holds the default configuration required by CellBaseR 

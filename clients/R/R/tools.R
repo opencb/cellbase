@@ -96,10 +96,10 @@ createGeneModel <- function(object, region=NULL){
     rt4 <- as.data.table(data)
     #rt4 <- as.data.table(rt4)
     setnames(rt4,  c("id", "name"), c("gene", "symbol"))
-    hope <- tidyr::unnest(rt4, transcripts) 
+    hope <- unnest(rt4, transcripts) 
     setnames(hope, c("id", "biotype"), c("transcript","feature"))
     hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
-    hope <- tidyr::unnest(hope, exons)
+    hope <- unnest(hope, exons)
     setnames(hope, c("id"), c("exon"))
     
     hope <- as.data.frame(hope)
