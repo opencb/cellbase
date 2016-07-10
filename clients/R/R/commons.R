@@ -268,36 +268,6 @@ Annovcf <- function(object, file, batch_size, num_threads){
   
 }
 
-
-# createGeneModel <- function(object, region=NULL){
-#   requireNamespace("tidyr")
-#   if(!is.null(region)){
-#     host <- object@host
-#     species <- object@species
-#     version <- object@version
-#     categ <- "genomic"
-#     subcateg<- "region"
-#     ids <- region
-#     resource <- "gene"
-#     data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
-#                           ids=ids, resource=resource, filters=NULL)
-#     hope <- tidyr::unnest(data[,1:11], transcripts, .sep = "_") 
-#     hope <- tidyr::unnest(hope, transcripts_exons, .sep = "_")
-#     hope <- hope[!duplicated(hope),]
-#     Hnames <- c("gene","symbol","feature","transcript",
-#                 "exon","chromosome", "start","end", "strand")
-#     hope <- data.table::setnames(hope, old = c("id", "name","biotype", 
-#                                                "transcripts_id", 
-#                                                "transcripts_exons_id",
-#                                                "transcripts_exons_chromosome",
-#                                                "transcripts_exons_start",
-#                                                "transcripts_exons_end",
-#                                                "transcripts_exons_strand"),
-#                                  new = Hnames)
-#     hope <- hope[,Hnames]
-#   }
-#   hope
-# }
 ### Docs
 #' A function to get help about cellbase queries
 #' 
@@ -340,46 +310,6 @@ cbHelp <- function(object, category, subcategory, resource=NULL){
   res
 }
 
-###
-#' @export
-plotGenesByRegion <- function(object, region=NULL){
-  require(data.table)
-  require(tidyr)
-  if(!is.null(region)){
-    host <- object@host
-    species <- object@species
-    version <- object@version
-    categ <- "genomic"
-    subcateg<- "region"
-    ids <- region
-    resource <- "gene"
-    data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
-                          ids=ids, resource=resource, filters=NULL)
-    rt4 <- data.table::as.data.table(data)
-    rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
-    #rt4 <- as.data.table(rt4)
-    data.table::setnames(rt4,  c("id", "name"), c("gene", "symbol"))
-    hope <- unnest(rt4, transcripts) 
-    data.table::setnames(hope, c("id", "biotype"), c("transcript","feature"))
-    hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
-    hope <- unnest(hope, exons)
-    hope <- subset(hope, feature=="protein_coding")
-    setnames(hope, c("id"), c("exon"))
-    
-    hope <- as.data.frame(hope)
-    hope <- hope[!duplicated(hope),1:9]
-    chr <- paste0("chr",hope$chromosome[1])
-    from <- min(hope$start)-5000
-    to <- max(hope$end)+5000
-    #ideoTrack <- IdeogramTrack(genome = "hg19", chromosome = chr)
-    axisTrack <- Gviz::GenomeAxisTrack()
-    hope <- Gviz::GeneRegionTrack(hope)
-  }
-  Gviz::plotTracks(list(axisTrack,hope),from = from, to = to,
-                   transcriptAnnotation='symbol')
-
-}
-###
 # create GeneModel
 #' A convience functon to construct a genemodel
 #' 
@@ -388,13 +318,13 @@ plotGenesByRegion <- function(object, region=NULL){
 #' @param object an object of class CellbaseResponse
 #' @param region a character 
 #' @return A geneModel
-#' @examples 
-#' library(cellbaseR)
-#' cb <- CellBaseR()
-#' test <- createGeneModel(object = cb, region = "17:1500000-1550000")
-#' @export
+# @examples
+# library(cellbaseR)
+# cb <- CellBaseR()
+# test <- createGeneModel(object = cb, region = "17:1500000-1550000")
 #' @export
 createGeneModel <- function(object, region=NULL){
+  requireNamespace("data.table")
   if(!is.null(region)){
     host <- object@host
     species <- object@species
@@ -405,15 +335,14 @@ createGeneModel <- function(object, region=NULL){
     resource <- "gene"
     data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
                           ids=ids, resource=resource, filters=NULL)
-    rt4 <- data.table::as.data.table(data)
-    rt4 <- rt4[,c("id", "name", "transcripts"), with=FALSE]
+    rt4 <- data[, c(1,2,11)]
+    rt4 <- as.data.table(data)
     #rt4 <- as.data.table(rt4)
-    data.table::setnames(rt4,  c("id", "name"), c("gene", "symbol"))
-    hope <- unnest(rt4, transcripts) 
-    data.table::setnames(hope, c("id", "biotype"), c("transcript","feature"))
+    setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+    hope <- tidyr::unnest(rt4, transcripts) 
+    setnames(hope, c("id", "biotype"), c("transcript","feature"))
     hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
-    hope <- unnest(hope, exons)
-    hope <- subset(hope, feature=="protein_coding")
+    hope <- tidyr::unnest(hope, exons)
     setnames(hope, c("id"), c("exon"))
     
     hope <- as.data.frame(hope)
