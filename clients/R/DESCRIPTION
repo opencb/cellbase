@@ -6,11 +6,13 @@ Title: Querying annotation data from the high performance Cellbase web
 Version: 0.9.1
 Author: Mohammed OE Abdallah
 Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
-Description: Classes and methods for querying cellbase web services
-License: Apache License
+Description: This package introduces many classes and methods for querying 
+    cellbase web services
+License: Apache License (== 2.0)
 Depends:
     R(>= 3.3),
     RCurl,
+<<<<<<< HEAD
     jsonlite,methods, data.table
 imports: R.utils,
     BiocParallel,
@@ -18,13 +20,21 @@ imports: R.utils,
     doMC,
     parallel,
     Rsamtools,
+=======
+    jsonlite,
+    methods,
+    data.table
+imports: BiocParallel,
+    parallel,
+>>>>>>> 8bd95ec078fbc38d1d991122dd61e5d1d76362af
     tidyr,
     doParallel,
-    foreach
-RoxygenNote: 5.0.1.9000
+    pbapply
+RoxygenNote: 5.0.1
 biocViews: Annotation
 Lazy: TRUE
 Collate:
+    'commons.R'
     'AllClasses.R'
     'commons.R'
     'AllGenerics.R'
@@ -46,6 +56,7 @@ Collate:
     'cbXrefClient-methods.R'
     'cellbase.R'
     'show-methods.R'
+    'tools.R'
 VignetteBuilder: knitr
 Suggests:
     BiocStyle,

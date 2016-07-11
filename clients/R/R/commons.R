@@ -83,14 +83,15 @@ fetchCellbase <- function(file=NULL,host=host, version=version, meta=meta,
 ## a function to read the varinats from a vcf file
 readIds <- function(file=file,batch_size,num_threads)
     {
+  
     ids<- list()
-    num_iter<- ceiling(R.utils::countLines(file)[[1]]/(batch_size*num_threads))
+    num_iter<- ceiling(countLines(file)[[1]]/(batch_size*num_threads))
     #batchSize * numThreads
-    demo <- Rsamtools::TabixFile(file,yieldSize = batch_size*num_threads)
+    demo <- TabixFile(file,yieldSize = batch_size*num_threads)
     tbx <- open(demo)
     i <- 1
     while (i <=num_iter) {
-    inter <- Rsamtools::scanTabix(tbx)[[1]]
+    inter <- scanTabix(tbx)[[1]]
     if(length(inter)==0)break
     whim <- lapply(inter, function(x){
         strsplit(x[1],split = "\t")[[1]][c(1,2,4,5)]})
@@ -99,8 +100,7 @@ readIds <- function(file=file,batch_size,num_threads)
     ids[[i]] <- hope
     i <- i+1
     }
-    requireNamespace("foreach")
-    ids <-foreach::foreach(k=1:length(ids))%do%{
+    ids <-foreach(k=1:length(ids))%do%{
         foreach(j=1:length(ids[[k]]))%do%{
         ids[[k]][[j]]
         }
@@ -134,26 +134,23 @@ createURL <- function(file=NULL, host=host, version=version, meta=meta,
     }
   return(grls)
 }
-
 ## A function to make the API calls
 callREST <- function(grls,async=FALSE,num_threads=num_threads)
     {
     content <- list()
-    requireNamespace("RCurl")
     if(is.null(file)){
     content <- getURI(grls)
     }else{
-    require(pbapply)
-    if(async==TRUE){
+       if(async==TRUE){
         prp <- split(grls,ceiling(seq_along(grls)/num_threads))
         cat("Preparing The Asynchronus call.............")
-        gs <- pblapply(prp, function(x)unlist(x))
+        gs <- pbapply::pblapply(prp, function(x)unlist(x))
         cat("Getting the Data...............")
-        content <- pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
+        content <- pbapply::pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
         content <- unlist(content)
 
-    }else{
-      content <- pbsapply(grls, function(x)getURI(x))
+        }else{
+              content <- pbapply::pbsapply(grls, function(x)getURI(x))
 
     }
   }
@@ -163,11 +160,7 @@ callREST <- function(grls,async=FALSE,num_threads=num_threads)
 }
 ## A function to parse the json data into R dataframes
 parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
-    requireNamespace("BiocParallel")
-    requireNamespace("jsonlite")
-    if(parallel==TRUE){
-    requireNamespace("parallel")
-    requireNamespace("doMC")
+        if(parallel==TRUE){
     num_cores <-detectCores()/2
     registerDoMC(num_cores)
     # 
@@ -189,7 +182,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     nums <- lapply(js, function(x)x$response$numResults)
     
     if (class(ares[[1]][[1]])=="data.frame"){
-      ds <- pblapply(ares,function(x)rbind.pages(x))
+      ds <- pbapply::pblapply(ares,function(x)rbind.pages(x))
       ### Important to get correct vertical binding of dataframes
       names(ds) <- NULL
       ds <- rbind.pages(ds)
@@ -203,6 +196,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
   
     return(list(result=ds,num_results=nums))
 }
+<<<<<<< HEAD
 #' A convience fubction to directly annotate variants from a vcf file
 #' 
 #' This is a function to annotate variants from a vcf file
@@ -272,6 +266,9 @@ Annovcf <- function(object, file, batch_size, num_threads){
 
 
 
+=======
+
+>>>>>>> 8bd95ec078fbc38d1d991122dd61e5d1d76362af
 ### Docs
 #' A function to get help about cellbase queries
 #' 
@@ -312,6 +309,7 @@ cbHelp <- function(object, category, subcategory, resource=NULL){
     res <- subset(res,!(name %in% c("version", "species")), select=c("name", "description","required", "type"))
   }
   res
+<<<<<<< HEAD
 }
 
 ###
@@ -397,3 +395,6 @@ createGeneModel <- function(object, region=NULL){
     }
    hope
 }
+=======
+}
+>>>>>>> 8bd95ec078fbc38d1d991122dd61e5d1d76362af

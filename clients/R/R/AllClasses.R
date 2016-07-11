@@ -1,6 +1,6 @@
 ################################################################################
 #' This class defines the CellBaseR object
-#' 
+#' @include commons.R
 #' This is an S4 class  which defines the CellBaseR object
 #' @details This S4 class holds the default configuration required by CellBaseR 
 #' methods to connect to the cellbase web 
