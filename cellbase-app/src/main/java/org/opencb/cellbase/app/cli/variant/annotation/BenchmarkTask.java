@@ -61,7 +61,7 @@ public class BenchmarkTask implements
 
     private void fixReference(List<VariantAnnotation> variantAnnotationList) throws RocksDBException {
         for (VariantAnnotation variantAnnotation : variantAnnotationList) {
-            if (!variantAnnotation.getReference().isEmpty()) {
+            if (!variantAnnotation.getReference().isEmpty() && !variantAnnotation.getReference().equals("-")) {
                 variantAnnotation.setReference(fastaIndexManager.query(variantAnnotation.getChromosome(),
                         variantAnnotation.getStart(), variantAnnotation.getStart()
                                 + variantAnnotation.getReference().length() - 1));
