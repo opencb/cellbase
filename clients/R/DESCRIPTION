@@ -12,7 +12,6 @@ License: Apache License (== 2.0)
 Depends:
     R(>= 3.3),
     RCurl,
-<<<<<<< HEAD
     jsonlite,methods, data.table
 imports: R.utils,
     BiocParallel,
@@ -20,16 +19,7 @@ imports: R.utils,
     doMC,
     parallel,
     Rsamtools,
-=======
-    jsonlite,
-    methods,
-    data.table
-imports: BiocParallel,
-    parallel,
->>>>>>> 8bd95ec078fbc38d1d991122dd61e5d1d76362af
-    tidyr,
-    doParallel,
-    pbapply
+    tidyr
 RoxygenNote: 5.0.1
 biocViews: Annotation
 Lazy: TRUE
