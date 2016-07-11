@@ -34,7 +34,6 @@ and  additional filters of this function refer to
 documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbGeneClient(object=cb, ids=c("TP73","TET1"), resource="info")
 }

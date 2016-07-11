@@ -32,7 +32,6 @@ https://github.com/opencb/cellbase/wiki and the RESTful API documentation
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbTfbsClient(object=cb, ids="PAX1", resource="gene")
 }

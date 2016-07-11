@@ -14,7 +14,6 @@
 #' @return an object of class CellBaseResponse which holds a dataframe with the 
 #' results of the query
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbGeneClient(object=cb, ids=c("TP73","TET1"), resource="info")
 #' @export

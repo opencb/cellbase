@@ -33,7 +33,6 @@ https://github.com/opencb/cellbase/wiki and the RESTful API documentation
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbVariantClient(object=cb, ids="19:45411941:T:C", resource="annotation")
 }

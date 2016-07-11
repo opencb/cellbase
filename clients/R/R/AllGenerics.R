@@ -73,7 +73,6 @@ standardGeneric("cbChromosomeInfoClient"))
 #' @return an object of class CellBaseResponse which holds a dataframe with the
 #'  results of the query
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbSpeciesClient(object=cb)
 setGeneric("cbSpeciesClient", function(object) 

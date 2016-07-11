@@ -12,7 +12,6 @@
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbTfbsClient(object=cb, ids="PAX1", resource="gene")
 #' @export
