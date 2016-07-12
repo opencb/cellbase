@@ -131,6 +131,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, options);
     }
 
@@ -186,8 +187,12 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
                 "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
         createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
 //        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
-        createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
-        createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+        if (query.containsKey(QueryParams.REFERENCE.key())) {
+            createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
+        }
+        if (query.containsKey(QueryParams.ALTERNATE.key())) {
+            createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+        }
 //        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "consequenceTypes.sequenceOntologyTerms.name", andBsonList);

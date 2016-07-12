@@ -17,6 +17,7 @@
 package org.opencb.cellbase.mongodb.impl;
 
 import org.bson.Document;
+import org.hamcrest.CoreMatchers;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -82,11 +83,11 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult<Variant> result = variationDBAdaptor
                 .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions);
         assertEquals(result.getNumResults(), 667);
-        List<String> rsList = Arrays.asList("rs191188630", "rs191113747", "rs191348407", "rs191952842",
-                "rs192035553", "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199826190",
-                "rs199934473", "rs200591220", "rs200883222", "rs200830209", "rs200830209", "rs200915243",
-                "rs200994757", "rs200942224", "rs201498625", "rs201498625");
-        assertContainsRs(result, rsList);
+        assertThat(result.getResult().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
+                CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842",
+                        "rs192035553", "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199826190",
+                        "rs199934473", "rs200591220", "rs200883222", "rs200830209", "rs200830209", "rs200915243",
+                        "rs200994757", "rs200942224", "rs201498625", "rs201498625"));
 
         QueryResult<Variant> resultENSEMBLGene = variationDBAdaptor
                 .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENSG00000261188"), queryOptions);
@@ -96,17 +97,17 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult<Variant> resultENSEMBLTranscript = variationDBAdaptor
                 .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENST00000565764"), queryOptions);
         assertEquals(resultENSEMBLTranscript.getNumResults(), 630);
-        rsList = Arrays.asList("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
-                "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199934473", "rs200591220",
-                "rs200883222", "rs200830209", "rs200830209", "rs200915243", "rs200994757", "rs200942224",
-                "rs201498625", "rs201498625", "rs201498625");
-        assertContainsRs(resultENSEMBLTranscript, rsList);
-    }
+        assertThat(resultENSEMBLTranscript.getResult().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
+                CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
+                        "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199934473", "rs200591220",
+                        "rs200883222", "rs200830209", "rs200830209", "rs200915243", "rs200994757", "rs200942224",
+                        "rs201498625", "rs201498625", "rs201498625"));
 
-    private void assertContainsRs(QueryResult<Variant> queryResult, List<String> rsList) {
-        Set<String> set1 = (Set) queryResult.getResult().stream()
-                .map(variant -> variant.getId()).collect(Collectors.toSet());
-        assertTrue(set1.containsAll(new HashSet<String>(rsList)));
+        QueryResult<Variant> geneQueryResult = variationDBAdaptor
+                .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "CERK"), queryOptions);
+        assertThat(geneQueryResult.getResult().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
+                CoreMatchers.hasItems("rs192195512", "rs193091997", "rs200609865"));
+
     }
 
     @Test
