@@ -448,27 +448,31 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private void flagTranscriptAnnotationUpdated(Variant variant, String ensemblTranscriptId) {
-        Map<String, Object> additionalAttributesMap = variant.getAnnotation().getAdditionalAttributes();
+        Map<String, AdditionalAttribute> additionalAttributesMap = variant.getAnnotation().getAdditionalAttributes();
         if (additionalAttributesMap == null) {
             additionalAttributesMap = new HashMap<>();
+            AdditionalAttribute additionalAttribute = new AdditionalAttribute();
             Map<String, String> transcriptsSet = new HashMap<>();
             transcriptsSet.put(ensemblTranscriptId, null);
-            additionalAttributesMap.put("phasedTranscripts", transcriptsSet);
+            additionalAttribute.setAttribute(transcriptsSet);
+            additionalAttributesMap.put("phasedTranscripts", additionalAttribute);
             variant.getAnnotation().setAdditionalAttributes(additionalAttributesMap);
         } else if (additionalAttributesMap.get("phasedTranscripts") == null) {
+            AdditionalAttribute additionalAttribute = new AdditionalAttribute();
             Map<String, String> transcriptsSet = new HashMap<>();
             transcriptsSet.put(ensemblTranscriptId, null);
-            additionalAttributesMap.put("phasedTranscripts", transcriptsSet);
+            additionalAttribute.setAttribute(transcriptsSet);
+            additionalAttributesMap.put("phasedTranscripts", additionalAttribute);
         } else {
-            ((Map) additionalAttributesMap.get("phasedTranscripts")).put(ensemblTranscriptId, null);
+            additionalAttributesMap.get("phasedTranscripts").getAttribute().put(ensemblTranscriptId, null);
         }
     }
 
     private boolean transcriptAnnotationUpdated(Variant variant, String ensemblTranscriptId) {
         if (variant.getAnnotation().getAdditionalAttributes() != null
                 && variant.getAnnotation().getAdditionalAttributes().get("phasedTranscripts") != null
-                && ((Map<String, String>) variant.getAnnotation().getAdditionalAttributes().get("phasedTranscripts"))
-                .containsKey(ensemblTranscriptId)) {
+                && variant.getAnnotation().getAdditionalAttributes().get("phasedTranscripts")
+                    .getAttribute().containsKey(ensemblTranscriptId)) {
             return true;
         }
         return false;

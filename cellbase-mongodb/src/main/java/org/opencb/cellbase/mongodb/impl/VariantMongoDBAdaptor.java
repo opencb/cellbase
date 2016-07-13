@@ -113,9 +113,31 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         options.put(MongoDBCollection.SKIP_COUNT, true);
-        options = addPrivateExcludeOptions(options);
+
+        // FIXME: patch to exclude annotation.additionalAttributes from the results - restore the call to the common
+        // FIXME: addPrivateExcludeOptions as soon as the variation collection is updated with the new form of the
+        // FIXME: additionalAttributes field
+        options = addVariantPrivateExcludeOptions(options);
+//        options = addPrivateExcludeOptions(options);
+
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, null, Variant.class, options);
+    }
+
+    // FIXME: patch to exclude annotation.additionalAttributes from the results - to remove as soon as the variation
+    // FIXME: collection is updated with the new form of the additionalAttributes field
+    protected QueryOptions addVariantPrivateExcludeOptions(QueryOptions options) {
+        if (options != null) {
+            if (options.get("exclude") == null) {
+                options.put("exclude", "_id,_chunkIds,annotation.additionalAttributes");
+            } else {
+                String exclude = options.getString("exclude");
+                options.put("exclude", exclude + ",_id,_chunkIds,annotation.additionalAttributes");
+            }
+        } else {
+            options = new QueryOptions("exclude", "_id,_chunkIds,annotation.additionalAttributes");
+        }
+        return options;
     }
 
     @Override
