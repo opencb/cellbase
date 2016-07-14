@@ -490,12 +490,13 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    protected Map<String, Object> parseInfoAttributes(Variant variant, int customFileNumber) {
+    protected Map<String, String> parseInfoAttributes(Variant variant, int customFileNumber) {
         Map<String, String> infoMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
-        Map<String, Object> parsedInfo = new HashMap<>();
+        Map<String, String> parsedInfo = new HashMap<>();
         for (String attribute : infoMap.keySet()) {
             if (customFileFields.get(customFileNumber).contains(attribute)) {
-                parsedInfo.put(attribute, getValueFromString(infoMap.get(attribute)));
+                parsedInfo.put(attribute, infoMap.get(attribute));
+//                parsedInfo.put(attribute, getValueFromString(infoMap.get(attribute)));
             }
         }
 

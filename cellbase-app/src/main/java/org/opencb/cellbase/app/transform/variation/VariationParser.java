@@ -138,7 +138,8 @@ public class VariationParser extends CellBaseParser {
                             ids.add(id);
 
                             List<String> hgvs = getHgvs(transcriptVariation);
-                            Map<String, Object> additionalAttributes = getAdditionalAttributes(variationFields, variationFeatureFields);
+                            Map<String, AdditionalAttribute> additionalAttributes
+                                    = getAdditionalAttributes(variationFields, variationFeatureFields);
 
                             List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
                             String displayConsequenceTypes = getDisplayConsequenceType(variationFeatureFields);
@@ -223,7 +224,7 @@ public class VariationParser extends CellBaseParser {
     }
 
     private Variant buildVariant(String chromosome, int start, int end, String reference, String alternate, VariantType type,
-                                 List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
+                                 List<String> ids, List<String> hgvs, Map<String, AdditionalAttribute> additionalAttributes,
                                  String displayConsequenceType, List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
                                  String strand, String ancestralAllele, String minorAllele, Float minorAlleleFreq) {
 
@@ -254,7 +255,7 @@ public class VariationParser extends CellBaseParser {
                 displayConsequenceType, conseqTypes, null, null, null, null, null, null, null, null, null, null);
         try {
             String ensemblAnnotationJson = getEnsemblAnnotationJson(ensemblVariantAnnotation);
-            additionalAttributes.put("ensemblAnnotation", ensemblAnnotationJson);
+            additionalAttributes.get("ensemblAnnotation").getAttribute().put("annotation", ensemblAnnotationJson);
         } catch (JsonProcessingException e) {
             logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
         }
@@ -440,11 +441,16 @@ public class VariationParser extends CellBaseParser {
         return allelesArray;
     }
 
-    private Map<String, Object> getAdditionalAttributes(String[] variationFields, String[] variationFeatureFields) {
-        Map<String, Object> additionalAttributes = new HashMap<>();
+    private Map<String, AdditionalAttribute> getAdditionalAttributes(String[] variationFields, String[] variationFeatureFields) {
+        Map<String, AdditionalAttribute> additionalAttributes = new HashMap<>();
+        AdditionalAttribute additionalAttribute = new AdditionalAttribute();
+        additionalAttribute.setAttribute(new HashMap<String, String>());
 
-        additionalAttributes.put("Ensembl Validation Status", (variationFeatureFields[11] != null
-                && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "");
+        if ((variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N"))) {
+            additionalAttribute.getAttribute().put("ensemblValidationStatus", variationFeatureFields[11]);
+        }
+
+        additionalAttributes.put("ensemblAnnotation", additionalAttribute);
 
         return additionalAttributes;
     }
