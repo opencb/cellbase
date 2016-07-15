@@ -14,13 +14,12 @@ Depends:
     RCurl,
     jsonlite,methods,
     data.table
-imports: 
-    R.utils,
+imports: R.utils,
     pbapply,
     Rsamtools,
     tidyr
-enhances:BiocParallel, parallel, doMC, doParallel
-RoxygenNote: 5.0.1.9000
+enhances: BiocParallel, parallel, doMC, doParallel
+RoxygenNote: 5.0.1
 biocViews: Annotation
 Lazy: TRUE
 Collate:
