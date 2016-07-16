@@ -37,7 +37,6 @@ following parameters.
 run cbSpeciesClient to see avaiable species and their corresponding data
 }
 \examples{
-library(cellbaseR)
    cb <- CellBaseR()
    print(cb)
 }

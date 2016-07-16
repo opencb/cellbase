@@ -6,27 +6,25 @@ Title: Querying annotation data from the high performance Cellbase web
 Version: 0.9.1
 Author: Mohammed OE Abdallah
 Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
-Description: This package introduces many classes and methods for querying 
+Description: This package introduces many classes and methods for querying
     cellbase web services
 License: Apache License (== 2.0)
 Depends:
     R(>= 3.3),
     RCurl,
-    jsonlite,methods, data.table
+    jsonlite,methods,
+    data.table
 imports: R.utils,
-    BiocParallel,
     pbapply,
-    doMC,
-    parallel,
     Rsamtools,
     tidyr
+enhances: BiocParallel, parallel, doMC, doParallel
 RoxygenNote: 5.0.1
 biocViews: Annotation
 Lazy: TRUE
 Collate:
     'commons.R'
     'AllClasses.R'
-    'commons.R'
     'AllGenerics.R'
     'CellBaseParam-methods.R'
     'CellBaseR-methods.R'

@@ -23,7 +23,6 @@ https://github.com/opencb/cellbase/wiki and the RESTful
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbSpeciesClient(object=cb)
 }

@@ -12,7 +12,6 @@
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbRegionClient(object=cb, ids="17:1000000-1200000", resource="gene")
 #' @export

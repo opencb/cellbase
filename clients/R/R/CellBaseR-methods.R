@@ -22,7 +22,6 @@
 #' @param num_threads integer number of asynchronus batches to be sent to the server
 #' @return An object of class CellBaseR
 #' @examples
-#' library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    print(cb)
 #' @export
