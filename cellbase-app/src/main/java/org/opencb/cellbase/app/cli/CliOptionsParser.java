@@ -362,6 +362,13 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean skipNormalize;
 
+        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        public Map<String, String> buildParams;
+
+        public VariantAnnotationCommandOptions() {
+            buildParams = new HashMap<>();
+            buildParams.put("population-frequencies", null);
+        }
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
