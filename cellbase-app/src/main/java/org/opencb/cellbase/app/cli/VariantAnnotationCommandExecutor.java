@@ -561,6 +561,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Use cache
 //        queryOptions.put("useCache", variantAnnotationCommandOptions.noCache ? "false" : "true");
         queryOptions.put("useCache", !variantAnnotationCommandOptions.noCache);
+        queryOptions.put("phased", variantAnnotationCommandOptions.phased);
 
         // input file
         if (variantAnnotationCommandOptions.input != null) {

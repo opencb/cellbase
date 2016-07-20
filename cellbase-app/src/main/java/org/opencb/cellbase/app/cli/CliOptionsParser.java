@@ -381,6 +381,10 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean noCache;
 
+        @Parameter(names = {"--phased"}, description = "Flag to indicate whether phased annotation shall be activated." +
+                " By default phased annotation is not enabled.", required = false, arity = 0)
+        public boolean phased;
+
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")

@@ -68,6 +68,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
     private boolean useCache = true;
+    private boolean phased = false;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -173,11 +174,18 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         List<Variant> mustSearchVariation = new ArrayList<>();
 
         // Phased variants cannot be annotated using the variation collection
-        for (int i = 0; i < variantList.size(); i++) {
-            if (isPhased(variantList.get(i))) {
-                mustRunAnnotationPositions.add(i);
-                mustRunAnnotation.add(variantList.get(i));
-            } else {
+        if (phased) {
+            for (int i = 0; i < variantList.size(); i++) {
+                if (isPhased(variantList.get(i))) {
+                    mustRunAnnotationPositions.add(i);
+                    mustRunAnnotation.add(variantList.get(i));
+                } else {
+                    mustSearchVariationPositions.add(i);
+                    mustSearchVariation.add(variantList.get(i));
+                }
+            }
+        } else {
+            for (int i = 0; i < variantList.size(); i++) {
                 mustSearchVariationPositions.add(i);
                 mustSearchVariation.add(variantList.get(i));
             }
@@ -194,25 +202,31 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         // mustSearchVariation and variationQueryResultList do have same size, same order
         for (int i = 0; i < mustSearchVariation.size(); i++) {
+            // WARNING: variation collection may contain multiple documents for the same variant. ENSEMBL variation
+            // often provides multiple entries for the same variant (<1% variants). This line below will select just
+            // one of them.
+            Variant cacheVariant = getPreferredVariant(variationQueryResultList.get(i));
+
             // Variant not found in variation collection or the variant was found but not annotated with CellBase - I can
             // distinguish CellBase from ENSEMBL annotation because when CellBase annotates, it includes chromosome, start,
             // reference and alternate fields - TODO: change this.
             // Must be annotated by running the whole process
-            if (variationQueryResultList.get(i).getNumResults() == 0) {
+//            if (variationQueryResultList.get(i).getNumResults() == 0) {
+            if (cacheVariant == null) {
 //                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation() == null
 //                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes() == null
 //                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes().isEmpty()) {
                 mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
                 mustRunAnnotation.add(mustSearchVariation.get(i));
-            } else if (variationQueryResultList.get(i).getResult().get(0).getAnnotation() != null
-                        && variationQueryResultList.get(i).getResult().get(0).getAnnotation().getChromosome() == null) {
-                mustSearchVariation.get(i).setId(variationQueryResultList.get(i).getResult().get(0).getId());
+            } else if (cacheVariant.getAnnotation() != null && cacheVariant.getAnnotation().getChromosome() == null) {
+//            } else if (variationQueryResultList.get(i).getResult().get(0).getAnnotation() != null
+//                        && variationQueryResultList.get(i).getResult().get(0).getAnnotation().getChromosome() == null) {
+                mustSearchVariation.get(i).setId(cacheVariant.getId());
                 if (mustSearchVariation.get(i).getAnnotation() == null) {
                     mustSearchVariation.get(i).setAnnotation(new VariantAnnotation());
                 }
                 mustSearchVariation.get(i).getAnnotation()
-                        .setPopulationFrequencies(variationQueryResultList.get(i).getResult().get(0).getAnnotation()
-                                .getPopulationFrequencies());
+                        .setPopulationFrequencies(cacheVariant.getAnnotation().getPopulationFrequencies());
                 mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
                 mustRunAnnotation.add(mustSearchVariation.get(i));
             } else {
@@ -222,30 +236,43 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 // object already created, let's only overwrite those fields created by the annotator
                 VariantAnnotation variantAnnotation;
                 if (mustSearchVariation.get(i).getAnnotation() == null) {
-                    variantAnnotation =  variationQueryResultList.get(i).getResult().get(0).getAnnotation();
+                    variantAnnotation =  cacheVariant.getAnnotation();
                     mustSearchVariation.get(i).setAnnotation(variantAnnotation);
                 } else {
                     variantAnnotation = mustSearchVariation.get(i).getAnnotation();
-                    mergeAnnotation(variantAnnotation, variationQueryResultList.get(i).getResult().get(0).getAnnotation());
+                    mergeAnnotation(variantAnnotation, cacheVariant.getAnnotation());
                 }
                 variantAnnotationResultList.set(mustSearchVariationPositions.get(i),
                         new QueryResult<>(mustSearchVariation.get(i).toString(),
-                        variationQueryResultList.get(i).getDbTime(), variationQueryResultList.get(i).getNumResults(),
-                        variationQueryResultList.get(i).getNumTotalResults(), null, null,
+                        variationQueryResultList.get(i).getDbTime(), 1, 1, null, null,
                         Collections.singletonList(variantAnnotation)));
             }
         }
 
-        List<QueryResult<VariantAnnotation>> uncachedAnnotations = runAnnotationProcess(mustRunAnnotation);
-
-        for (int i = 0; i < mustRunAnnotation.size(); i++) {
-            variantAnnotationResultList.set(mustRunAnnotationPositions.get(i), uncachedAnnotations.get(i));
+        if (mustRunAnnotation.size() > 0) {
+            List<QueryResult<VariantAnnotation>> uncachedAnnotations = runAnnotationProcess(mustRunAnnotation);
+            for (int i = 0; i < mustRunAnnotation.size(); i++) {
+                variantAnnotationResultList.set(mustRunAnnotationPositions.get(i), uncachedAnnotations.get(i));
+            }
         }
 
         logger.debug("{}/{} ({}%) variants required running the annotation process", mustRunAnnotation.size(),
                 variantList.size(), (mustRunAnnotation.size() * (100.0 / variantList.size())));
         return variantAnnotationResultList;
 
+    }
+
+    private Variant getPreferredVariant(QueryResult<Variant> variantQueryResult) {
+        if (variantQueryResult.getNumResults() > 1
+                && variantQueryResult.first().getAnnotation().getPopulationFrequencies() == null) {
+            for (int i = 1; i < variantQueryResult.getResult().size(); i++) {
+                if (variantQueryResult.getResult().get(i).getAnnotation().getPopulationFrequencies() != null) {
+                    return variantQueryResult.getResult().get(i);
+                }
+            }
+        }
+
+        return variantQueryResult.first();
     }
 
     private boolean isPhased(Variant variant) {
@@ -306,7 +333,10 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<QueryResult<Variant>>> variationFuture = null;
 
-        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
+        // When running using cache: some variants may be in the variation collection (rs and popFrequencies needed)
+        // but were not searched before because do contain the PS attribute - allow repetition of this query
+        if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
+//        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
                     "id,annotation.populationFrequencies"));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
@@ -363,7 +393,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
-                    checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
+                    if (phased) {
+                        checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
+                    }
                     variantAnnotation
                             .setDisplayConsequenceType(getMostSevereConsequenceType(normalizedVariantList.get(i)
                                     .getAnnotation().getConsequenceTypes()));
@@ -419,7 +451,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         // Adjust phase of two last variants - if still anything remaining to adjust. This can happen if the two last
         // variants in the batch are phased and the distance between them < 3nts
-        if (variantBuffer.size() > 1) {
+        if (phased && variantBuffer.size() > 1) {
             adjustPhasedConsequenceTypes(variantBuffer.toArray());
         }
 
@@ -462,8 +494,13 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         // Default behaviour no normalization
         normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
         logger.debug("normalize = {}", normalize);
+
         // Default behaviour use cache
         useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : true);
+
+        // Default behaviour - don't calculate phased annotation
+        phased = (queryOptions.get("phased") != null ? (Boolean) queryOptions.get("phased") : false);
+        logger.debug("phased = {}", phased);
     }
 
 
@@ -990,14 +1027,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             List<QueryResult<Variant>> variationQueryResults = conservationFuture.get();
             if (variationQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                    if (variationQueryResults.get(i).first() != null && variationQueryResults.get(i).first().getIds().size() > 0) {
-                        variantAnnotationResultList.get(i).first().setId(variationQueryResults.get(i).first().getIds().get(0));
+                    Variant preferredVariant = getPreferredVariant(variationQueryResults.get(i));
+                    if (preferredVariant != null && preferredVariant.getIds().size() > 0) {
+                        variantAnnotationResultList.get(i).first().setId(preferredVariant.getIds().get(0));
 
                     }
 
-                    if (annotatorSet.contains("populationFrequencies") && variationQueryResults.get(i).first() != null) {
-                        variantAnnotationResultList.get(i).first().setPopulationFrequencies(variationQueryResults.get(i)
-                                .first().getAnnotation().getPopulationFrequencies());
+                    if (annotatorSet.contains("populationFrequencies") && preferredVariant != null) {
+                        variantAnnotationResultList.get(i).first()
+                                .setPopulationFrequencies(preferredVariant.getAnnotation().getPopulationFrequencies());
                     }
 //                        List<Document> variationDBList = (List<Document>) variationQueryResults.get(i).getResult();
 //                        if (variationDBList != null && variationDBList.size() > 0) {
