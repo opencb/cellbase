@@ -274,7 +274,12 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     populationFrequenciesFile.toString(), output.toString());
             int counter = 0;
             for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-                dataWriter.write(new Variant(mapper.readValue(rocksIterator.value(), VariantAvro.class)));
+                VariantAvro variantAvro = mapper.readValue(rocksIterator.value(), VariantAvro.class);
+                // The additional attributes field initialized with an empty map is used as the flag to indicate that
+                // this variant was not visited during the annotation process
+                if (variantAvro.getAnnotation().getAdditionalAttributes() != null) {
+                    dataWriter.write(new Variant(variantAvro));
+                }
 
                 counter++;
                 if (counter % 10000 == 0) {

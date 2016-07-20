@@ -1,7 +1,9 @@
 package org.opencb.cellbase.core.variant.annotation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
@@ -12,6 +14,7 @@ import org.rocksdb.RocksDBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,9 +28,11 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
     private List<VariantAnnotation> variantAnnotationList;
 
     private static ObjectMapper mapper = new ObjectMapper();
+    private static ObjectWriter jsonObjectWriter;
 
     static {
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectWriter = mapper.writer();
     }
 
     public PopulationFrequenciesAnnotator(String fileName, RocksDB dbIndex) {
@@ -74,12 +79,28 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
             if (dbContent == null) {
                 return null;
             } else {
-                dbIndex.remove(variantKey);
-                return mapper.readValue(dbContent, VariantAvro.class).getAnnotation().getPopulationFrequencies();
+//                dbIndex.remove(variantKey);
+                VariantAvro variantAvro = mapper.readValue(dbContent, VariantAvro.class);
+                flagVisitedVariant(variantKey, variantAvro);
+
+                return variantAvro.getAnnotation().getPopulationFrequencies();
             }
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private void flagVisitedVariant(byte[] key, VariantAvro variantAvro) {
+        // The annotation.additionalAttributes field is initialized with an empty map to flag this variant as
+        // already visited
+        variantAvro.getAnnotation().setAdditionalAttributes(Collections.emptyMap());
+        try {
+            dbIndex.put(key, jsonObjectWriter.writeValueAsBytes(variantAvro));
+        } catch (RocksDBException e) {
+            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
     }
 
