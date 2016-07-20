@@ -129,7 +129,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly = "GRCh37";
+        public String assembly = null;
 
         @Parameter(names = {"-o", "--output"}, description = "The output directory, species folder will be created", required = false, arity = 1)
         public String output = "/tmp";
@@ -154,7 +154,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly;
+        public String assembly = null;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the downloaded data sources to be loaded", required = true, arity = 1)
         public String input;
@@ -220,7 +220,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly = "GRCh37";
+        public String assembly = null;
 
         @Parameter(names = {"-o", "--output"}, description = "Write result into the file path", required = false, arity = 1)
         public String output;
@@ -305,7 +305,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be read", required = false, arity = 1)
-        public String assembly = "GRCh37";
+        public String assembly = null;
 
         @Parameter(names = {"-l", "--local"}, description = "Database credentials for local annotation are read from configuration.json file", required = false, arity = 0)
         public boolean local;

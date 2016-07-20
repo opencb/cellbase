@@ -597,7 +597,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadedUrls.add(url);
 
             String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
-            downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
+            downloadFile(readmeUrl, mirbaseFolder.resolve("mirbaseReadme.txt").toString());
             saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME,
                     getLine(mirbaseFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
                     Collections.singletonList(url), mirbaseFolder.resolve("mirbaseVersion.json"));
