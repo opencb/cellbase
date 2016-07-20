@@ -277,7 +277,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 VariantAvro variantAvro = mapper.readValue(rocksIterator.value(), VariantAvro.class);
                 // The additional attributes field initialized with an empty map is used as the flag to indicate that
                 // this variant was not visited during the annotation process
-                if (variantAvro.getAnnotation().getAdditionalAttributes() != null) {
+                if (variantAvro.getAnnotation().getAdditionalAttributes() == null) {
                     dataWriter.write(new Variant(variantAvro));
                 }
 
