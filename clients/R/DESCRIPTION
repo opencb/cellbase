@@ -3,7 +3,7 @@ Type: Package
 Date: 2016-04-17
 Title: Querying annotation data from the high performance Cellbase web
     services
-Version: 0.9.1
+Version: 0.99.0
 Author: Mohammed OE Abdallah
 Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
 Description: This package introduces many classes and methods for querying
