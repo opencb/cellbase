@@ -13,8 +13,8 @@
 
 Annovcf <- function(object, file, batch_size, num_threads){
   num_cores <-parallel::detectCores()-2
-  doParallel::registerDoParallel(num_cores) 
-  p <- BiocParallel::DoparParam()
+  registerDoParallel(num_cores) 
+  p <- DoparParam()
   host <- object@host
   species <- object@species
   version <- object@version
@@ -43,18 +43,18 @@ Annovcf <- function(object, file, batch_size, num_threads){
   container <- list()
   while(i<=num){
     content <- getURIAsynchronous(grp[[i]],perform = Inf)#  alist of responses
-    js <- BiocParallel::bplapply(content, function(x)fromJSON(x),BPPARAM = p)
-    res <- BiocParallel::bplapply(js, function(x)x$response$result, BPPARAM = p)
+    js <- bplapply(content, function(x)fromJSON(x),BPPARAM = p)
+    res <- bplapply(js, function(x)x$response$result, BPPARAM = p)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
-    ds <- BiocParallel::bplapply(res, function(x)rbind.pages(x), BPPARAM = p)
+    ds <- bplapply(res, function(x)rbind.pages(x), BPPARAM = p)
     container[[i]] <- ds 
     i=i+1
   }
   
   
-  final <- foreach::foreach(k=1:length(container),.options.multicore=list(preschedule=TRUE),
+  final <- foreach(k=1:length(container),.options.multicore=list(preschedule=TRUE),
                             .combine=function(...)rbind.pages(list(...)),
                             .packages='jsonlite',.multicombine=TRUE) %dopar% {
                               rbind.pages(container[[k]])
@@ -80,8 +80,6 @@ Annovcf <- function(object, file, batch_size, num_threads){
 # test <- createGeneModel(object = cb, region = "17:1500000-1550000")
 #' @export
 createGeneModel <- function(object, region=NULL){
-  requireNamespace("data.table")
-  requireNamespace("tidyr")
   if(!is.null(region)){
     host <- object@host
     species <- object@species
@@ -98,7 +96,7 @@ createGeneModel <- function(object, region=NULL){
     setnames(rt4,  c("id", "name"), c("gene", "symbol"))
     hope <- tidyr::unnest(rt4, transcripts) 
     setnames(hope, c("id", "biotype"), c("transcript","feature"))
-    hope <- hope[,c("gene", "feature","transcript", "exons", "symbol")]
+    hope <- hope[,c("gene", "symbol","transcript", "exons"), with=FALSE]
     hope <- tidyr::unnest(hope, exons)
     setnames(hope, c("id"), c("exon"))
     

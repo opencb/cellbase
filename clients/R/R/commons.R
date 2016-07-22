@@ -140,21 +140,13 @@ callREST <- function(grls,async=FALSE,num_threads=num_threads)
     content <- list()
     if(is.null(file)){
     content <- getURI(grls)
-    }else{
-       if(async==TRUE){
-        prp <- split(grls,ceiling(seq_along(grls)/num_threads))
-        cat("Preparing The Asynchronus call.............")
-        gs <- pbapply::pblapply(prp, function(x)unlist(x))
-        cat("Getting the Data...............")
-        content <- pbapply::pblapply(gs,function(x)getURIAsynchronous(x,perform = Inf))
-        content <- unlist(content)
-
-        }else{
-              content <- pbapply::pbsapply(grls, function(x)getURI(x))
+    } else{
+          if (requireNamespace("pbapply", quietly = TRUE)){
+            content <- pbapply::pbsapply(grls, function(x)getURI(x))
+            
+          }
 
     }
-  }
-
 
   return(content)
 }
@@ -163,6 +155,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
         if(parallel==TRUE){
     num_cores <-detectCores()/2
     registerDoMC(num_cores)
+    
     # 
     # ## Extracting the content in parallel
     js <- mclapply(content, function(x)fromJSON(x), mc.cores=num_cores)
@@ -171,7 +164,10 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
     ds <- mclapply(res, function(x)rbind.pages(x), mc.cores=num_cores)
-    ds <- pblapply(res, function(x)rbind.pages(x))
+    if(requireNamespace("pbapply", quietly = TRUE)){
+      ds <- pbapply::pblapply(res, function(x)rbind.pages(x))
+      
+    }
     ## Important to get correct merging of dataframe
     names(ds) <- NULL
     ds <- rbind.pages(ds)
@@ -179,10 +175,13 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
      }else{
     js <- lapply(content, function(x)fromJSON(x))
     ares <- lapply(js, function(x)x$response$result)
+    
     nums <- lapply(js, function(x)x$response$numResults)
     
     if (class(ares[[1]][[1]])=="data.frame"){
-      ds <- pbapply::pblapply(ares,function(x)rbind.pages(x))
+      if(requireNamespace("pbapply", quietly = TRUE)){
+        ds <- pbapply::pblapply(ares,function(x)rbind.pages(x))
+        }
       ### Important to get correct vertical binding of dataframes
       names(ds) <- NULL
       ds <- rbind.pages(ds)

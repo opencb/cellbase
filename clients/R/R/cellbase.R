@@ -17,4 +17,6 @@
 #' @import methods
 #' @import jsonlite
 #' @import RCurl
+#' @import pbapply
+#' @import data.table
 "_PACKAGE"

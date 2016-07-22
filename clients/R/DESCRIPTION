@@ -13,13 +13,15 @@ Depends:
     R(>= 3.3),
     RCurl,
     jsonlite,methods,
-    data.table
-imports: R.utils,
-    pbapply,
+    data.table,
+    pbapply
+Imports: tidyr,
+    R.utils,
     Rsamtools,
-    tidyr
-enhances: BiocParallel, parallel, doMC, doParallel
-RoxygenNote: 5.0.1
+    BiocParallel,
+    Gviz
+Enhances: parallel, doMC, doParallel
+RoxygenNote: 5.0.1.9000
 biocViews: Annotation
 Lazy: TRUE
 Collate:
