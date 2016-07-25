@@ -1,3 +1,4 @@
+utils::globalVariables(c("name", "j"))
 ################################################################################
 # we need to adjust the output for the protein and Genomesequence methods
 #
@@ -195,7 +196,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
   
     return(list(result=ds,num_results=nums))
 }
-
+# consider seperating into two functions
 ### Docs
 #' A function to get help about cellbase queries
 #' 
@@ -205,6 +206,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
 #' @param subcategory a character the subcategory to be queried
 #' @param  resource A charcter when specified will get all the parametrs for
 #' that specific resource
+#' @return documentation about avaiable resources or required parameters
 #' @examples 
 #' cb <- CellBaseR()
 #' cbHelp(cb, category="feature", subcategory="gene")

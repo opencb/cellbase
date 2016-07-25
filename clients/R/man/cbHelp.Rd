@@ -16,6 +16,9 @@ cbHelp(object, category, subcategory, resource = NULL)
 \item{resource}{A charcter when specified will get all the parametrs for
 that specific resource}
 }
+\value{
+documentation about avaiable resources or required parameters
+}
 \description{
 This is a convience function to get help on cellbase methods
 }

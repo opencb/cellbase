@@ -6,21 +6,30 @@ Title: Querying annotation data from the high performance Cellbase web
 Version: 0.99.0
 Author: Mohammed OE Abdallah
 Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
-Description: This package introduces many classes and methods for querying
-    cellbase web services
+Description: 
+    This R package makes use of the exhaustive RESTful Web service API that has been
+    implemented for the Cellabase database. It enable researchers to query and 
+    obtain a wealth of biological information from a single database saving a lot 
+    of time. Another benefit is that researchers can easily make  queries about 
+    different biological topics and link all this information together as all 
+    information is integrated.
 License: Apache License (== 2.0)
 Depends:
     R(>= 3.3),
-    RCurl,
-    jsonlite,methods,
+    RCurl
+Imports: 
+    methods,
+    jsonlite,
     data.table,
-    pbapply
-Imports: tidyr,
+    pbapply,
+    tidyr,
     R.utils,
     Rsamtools,
     BiocParallel,
-    Gviz
-Enhances: parallel, doMC, doParallel
+    Gviz,
+    foreach,
+    utils,
+    parallel, doMC, doParallel
 RoxygenNote: 5.0.1.9000
 biocViews: Annotation
 Lazy: TRUE
