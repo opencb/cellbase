@@ -454,10 +454,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         Document traitSet = (Document) referenceClinVarAssertion.get("traitSet");
         List<Document> traits = (List<Document>) traitSet.get("trait");
 
-
-        String acc = (String) clinVarAccession.get("acc");
-        String clinicalSignificanceName = (String) clinicalSignificance.get("description");
-        String reviewStatus = (String) clinicalSignificance.get("reviewStatus");
+        String acc = null;
+        if (clinVarAccession != null) {
+            acc = (String) clinVarAccession.get("acc");
+        }
+        String clinicalSignificanceName = null;
+        String reviewStatus = null;
+        if (clinicalSignificance != null) {
+            clinicalSignificanceName = (String) clinicalSignificance.get("description");
+            reviewStatus = (String) clinicalSignificance.get("reviewStatus");
+        }
         List<String> traitNames = new ArrayList<>();
         Set<String> geneNameSet = new HashSet<>();
 
