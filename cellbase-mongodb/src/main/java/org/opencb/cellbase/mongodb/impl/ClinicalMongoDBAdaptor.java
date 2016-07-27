@@ -458,9 +458,11 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             if (measureRelationships != null) {
                 for (Document measureRelationship : measureRelationships) {
                     List<Document> symbols = (List<Document>) measureRelationship.get("symbol");
-                    for (Document symbol : symbols) {
-                        Document elementValue = (Document) symbol.get("elementValue");
-                        geneNameSet.add((String) elementValue.get("value"));
+                    if (symbols != null) {
+                        for (Document symbol : symbols) {
+                            Document elementValue = (Document) symbol.get("elementValue");
+                            geneNameSet.add((String) elementValue.get("value"));
+                        }
                     }
                 }
             }
