@@ -3,6 +3,7 @@ package org.opencb.cellbase.client.rest;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -49,5 +50,11 @@ public class VariationClient extends FeatureClient<Variant> {
 
     public QueryResponse<Xref> getXref(String id, QueryOptions options) throws IOException {
         return execute(id, "xref", options, Xref.class);
+    }
+
+    public QueryResponse<VariantAnnotation> getAnnotations(String id, QueryOptions options) throws IOException {
+        this.category = "genomic";
+        this.subcategory = "variant";
+        return execute(id, "annotation", options, VariantAnnotation.class);
     }
 }

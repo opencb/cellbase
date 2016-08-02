@@ -2,6 +2,7 @@ package org.opencb.cellbase.client.rest;
 
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -56,5 +57,12 @@ public class VariationClientTest {
     public void getConsequenceTypeById() throws Exception {
         QueryResponse<String> stringQueryResponse = cellBaseClient.getVariationClient().getConsequenceTypeById("rs6661", null);
         assertEquals("Consequence Type of rs6661 is wrong", "3_prime_UTR_variant", stringQueryResponse.firstResult());
+    }
+
+    @Test
+    public void getAnnotations() throws Exception {
+        QueryResponse<VariantAnnotation> annotations = cellBaseClient.getVariationClient().getAnnotations("19:45411941:T:C, 14:38679764:-:GATCTG", null);
+        assertEquals("SNP Id for the first variant is wrong", "rs429358", annotations.firstResult().getId());
+        assertNotNull(annotations.getResponse().get(1));
     }
 }
