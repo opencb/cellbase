@@ -10,6 +10,8 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Created by swaathi on 23/05/16.
@@ -56,5 +58,46 @@ public class VariationClient extends FeatureClient<Variant> {
         this.category = "genomic";
         this.subcategory = "variant";
         return execute(id, "annotation", options, VariantAnnotation.class);
+    }
+
+    public QueryResponse<VariantAnnotation> getAnnotations(List<String> ids, QueryOptions options) throws IOException {
+        this.category = "genomic";
+        this.subcategory = "variant";
+
+
+        Future<QueryResponse<VariantAnnotation>> future = null;
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        for (int i = 0; i < 4; i++) {
+            future = executorService.submit(new AnnotatorRunnable(ids, options));
+        }
+
+        QueryResponse<VariantAnnotation> response = null;
+        try {
+            response = future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+        executorService.shutdown();
+
+        return response;
+    }
+
+    class AnnotatorRunnable implements Callable<QueryResponse<VariantAnnotation>> {
+
+        private List<String> ids;
+        private QueryOptions options;
+
+        public AnnotatorRunnable(List<String> ids, QueryOptions options) {
+            this.ids = ids;
+            this.options = options;
+        }
+
+        @Override
+        public QueryResponse<VariantAnnotation> call() throws Exception {
+            QueryResponse<VariantAnnotation> annotation = execute(ids, "annotation", options, VariantAnnotation.class);
+            return annotation;
+        }
     }
 }
