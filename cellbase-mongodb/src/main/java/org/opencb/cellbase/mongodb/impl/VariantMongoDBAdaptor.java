@@ -192,7 +192,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
         createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "ids", andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
         createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
 //        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
