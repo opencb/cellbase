@@ -31,6 +31,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 /**
@@ -90,7 +91,7 @@ public class ParentRestClient<T> {
 
         // Build the basic URL
         WebTarget path = client
-                .target(configuration.getRest().getHosts().get(0))
+                .target(URI.create(configuration.getRest().getHosts().get(0)))
                 .path("webservices/rest/v4")
                 .path("hsapiens")
                 .path(category)
