@@ -8,8 +8,11 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -64,24 +67,48 @@ public class VariationClient extends FeatureClient<Variant> {
         this.category = "genomic";
         this.subcategory = "variant";
 
+        List<String> idsList = new ArrayList<>();
+        if (ids.size() > 200) {
+            for (int i = 0, batch = 0; batch <= ids.size(); batch += 200, i++) {
+                idsList.add(i, ids.subList(batch, batch + 199).toString());
+            }
+        } else {
+            idsList.add(ids.toString());
+        }
 
-        Future<QueryResponse<VariantAnnotation>> future = null;
+        Future<QueryResponse<VariantAnnotation>> future;
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        for (int i = 0; i < 4; i++) {
-            future = executorService.submit(new AnnotatorRunnable(ids, options));
+        List<Future<QueryResponse<VariantAnnotation>>> futureList = new ArrayList<>();
+//        for (int i = 0; i < 4; i++) {
+//            future = executorService.submit(new AnnotatorRunnable(ids, options));
+//        }
+        for (int j=0; j < idsList.size(); j++) {
+            future = executorService.submit(new AnnotatorRunnable(Arrays.asList(idsList.get(j)), options));
+            futureList.add(j, future);
         }
 
         QueryResponse<VariantAnnotation> response = null;
-        try {
-            response = future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+        QueryResponse<VariantAnnotation> finalResponse = null;
+        List<QueryResult<VariantAnnotation>> queryResults = new ArrayList<>();
+        for (int i = 0; i < futureList.size(); i++) {
+            try {
+                response = futureList.get(i).get();
+                queryResults.add((QueryResult<VariantAnnotation>) response.allResults());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         }
 
-
+        finalResponse.setResponse(queryResults);
+//        try {
+//            response = future.get();
+//        } catch (InterruptedException | ExecutionException e) {
+//            e.printStackTrace();
+//        }
         executorService.shutdown();
 
-        return response;
+//        return response;
+        return finalResponse;
     }
 
     class AnnotatorRunnable implements Callable<QueryResponse<VariantAnnotation>> {
