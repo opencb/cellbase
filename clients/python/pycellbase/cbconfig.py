@@ -29,7 +29,7 @@ class ConfigClient(object):
 
         if config_dict is not None:
             if 'host' in config_dict['rest']:
-                self._host = config_dict['rest']['host'][0]
+                self._host = config_dict['rest']['hosts'][0]
             if 'port' in config_dict['rest']:
                 self._port = config_dict['rest']['port']
             if 'version' in config_dict:

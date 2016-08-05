@@ -14,7 +14,7 @@ class CellBaseClient(object):
         try:
             assert isinstance(config_client, config.ConfigClient)
         except:
-            msg = ('CellBaseClient configuration not properly setted.' +
+            msg = ('CellBaseClient configuration not properly set.' +
                    ' "pycellbase.config.ConfigClient" object is needed as' +
                    ' parameter')
             raise IOError(msg)
