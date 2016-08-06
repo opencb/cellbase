@@ -30,14 +30,15 @@ import java.util.List;
  */
 public class GenomicRegionClient extends ParentRestClient<GenomeSequenceFeature> {
 
-    public GenomicRegionClient(ClientConfiguration clientConfiguration) {
-        super(clientConfiguration);
+    public GenomicRegionClient(String species, ClientConfiguration clientConfiguration) {
+        super(species, clientConfiguration);
 
         this.clazz = GenomeSequenceFeature.class;
 
         this.category = "genomic";
         this.subcategory = "region";
     }
+
 
     public QueryResponse<Gene> getGene(List<String> id, QueryOptions options) throws IOException {
         return execute(id, "gene", options, Gene.class);

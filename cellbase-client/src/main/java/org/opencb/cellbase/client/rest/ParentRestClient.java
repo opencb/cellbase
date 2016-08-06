@@ -19,6 +19,7 @@ package org.opencb.cellbase.client.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -32,12 +33,14 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * Created by imedina on 12/05/16.
  */
 public class ParentRestClient<T> {
 
+    protected String species;
     protected Client client;
 
     protected String category;
@@ -53,7 +56,13 @@ public class ParentRestClient<T> {
 
     protected Class<T> clazz;
 
+    @Deprecated
     public ParentRestClient(ClientConfiguration configuration) {
+        this(configuration.getDefaultSpecies(), configuration);
+    }
+
+    public ParentRestClient(String species, ClientConfiguration configuration) {
+        this.species = species;
         this.configuration = configuration;
 
         this.client = ClientBuilder.newClient();
@@ -88,12 +97,12 @@ public class ParentRestClient<T> {
     protected <T> QueryResponse<T> execute(List<String> idList, String resource, QueryOptions options, Class<T> clazz) throws IOException {
 
         // Build the basic URL
-        WebTarget path = client
-                .target(configuration.getRest().getHosts().get(0))
-                .path("webservices/rest/v4")
-                .path("hsapiens")
-                .path(category)
-                .path(subcategory);
+//        WebTarget path = client
+//                .target(configuration.getRest().getHosts().get(0))
+//                .path("webservices/rest/v4")
+//                .path("hsapiens")
+//                .path(category)
+//                .path(subcategory);
 
         if (options == null) {
             options = new QueryOptions();
@@ -113,7 +122,7 @@ public class ParentRestClient<T> {
         QueryResponse<T> queryResponse = null;
         QueryResponse<T> finalQueryResponse = null;
         while (call) {
-            queryResponse = (QueryResponse<T>) callRest(path, ids, resource, options, clazz);
+            queryResponse = (QueryResponse<T>) callRest(configuration.getRest().getHosts(), configuration.getVersion(), ids, resource, options, clazz);
 
             // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
@@ -154,7 +163,15 @@ public class ParentRestClient<T> {
         return finalQueryResponse;
     }
 
-    private QueryResponse<T> callRest(WebTarget path, String ids, String resource, QueryOptions options, Class clazz) throws IOException {
+    private QueryResponse<T> callRest(List<String> hosts, String version, String ids, String resource, QueryOptions options, Class clazz) throws IOException {
+        WebTarget path = client
+                .target(hosts.get(0))
+                .path("webservices/rest/" + version)
+                .path(species)
+                .path(category)
+                .path(subcategory);
+
+
         WebTarget callUrl = path;
         if (ids != null && !ids.isEmpty()) {
             callUrl = path.path(ids);
@@ -169,13 +186,12 @@ public class ParentRestClient<T> {
             }
         }
 
-        System.out.println("REST URL: " + callUrl.getUri().toURL());
+        logger.debug("Calling to REST URL: {}", callUrl.getUri().toURL());
         String jsonString = callUrl.request().get(String.class);
-        logger.debug("jsonString = " + jsonString);
         return parseResult(jsonString, clazz);
     }
 
-    public static <T> QueryResponse<T> parseResult(String json, Class<T> clazz) throws IOException {
+    private static <T> QueryResponse<T> parseResult(String json, Class<T> clazz) throws IOException {
         ObjectReader reader = jsonObjectMapper
                 .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(QueryResponse.class, QueryResult.class, clazz));
         return reader.readValue(json);

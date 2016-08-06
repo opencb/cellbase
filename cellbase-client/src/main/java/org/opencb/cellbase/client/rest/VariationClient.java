@@ -25,8 +25,8 @@ public class VariationClient extends FeatureClient<Variant> {
 
     private static final int VARIANT_ANNOTATION_BATCH_SIZE = 200;
 
-    public VariationClient(ClientConfiguration configuration) {
-        super(configuration);
+    public VariationClient(String species, ClientConfiguration configuration) {
+        super(species, configuration);
         this.clazz = Variant.class;
 
         this.category = "feature";
