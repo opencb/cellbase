@@ -1,5 +1,6 @@
 package org.opencb.cellbase.client.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.Variant;
@@ -13,6 +14,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -20,6 +22,8 @@ import java.util.concurrent.*;
  * Created by swaathi on 23/05/16.
  */
 public class VariationClient extends FeatureClient<Variant> {
+
+    private static final int VARIANT_ANNOTATION_BATCH_SIZE = 200;
 
     public VariationClient(ClientConfiguration configuration) {
         super(configuration);
@@ -67,38 +71,71 @@ public class VariationClient extends FeatureClient<Variant> {
         this.category = "genomic";
         this.subcategory = "variant";
 
-        List<String> idsList = new ArrayList<>();
-        if (ids.size() > 200) {
-            for (int i = 0, batch = 0; batch <= ids.size(); batch += 200, i++) {
-                idsList.add(i, ids.subList(batch, batch + 199).toString());
-            }
-        } else {
-            idsList.add(ids.toString());
+
+        if (options == null) {
+            options = new QueryOptions();
+        }
+        int numThreads = options.getInt("numThreads",4);
+
+        if (ids == null) {
+            return null;
         }
 
+        // If the list contain less than VARIANT_ANNOTATION_BATCH_SIZE variants then we can call to the normal method.
+        if (ids.size() <= VARIANT_ANNOTATION_BATCH_SIZE) {
+            return getAnnotations(StringUtils.join(ids, ","), options);
+        }
+
+        // but if there are more than VARIANT_ANNOTATION_BATCH_SIZE variants then we launch several threads to increase performance.
+        // First we prepare the List of String with 200 ids per String.
+        List<String> idsList = new ArrayList<>();
+        if (ids.size() > VARIANT_ANNOTATION_BATCH_SIZE) {
+            int batchSize = VARIANT_ANNOTATION_BATCH_SIZE;
+            for (int batch = 0; batch < ids.size(); batch += VARIANT_ANNOTATION_BATCH_SIZE) {
+                // Swaathi, take a look to this commented line you implemented, there are several important issues (4 actually):
+                // idsList.add(i, ids.subList(batch, batch + 199).toString());
+
+                // Fixed code, please read it carefully:
+                if (batch + batchSize > ids.size()) {
+                    batchSize = ids.size() - batch;
+                }
+                String variantListString = StringUtils.join(ids.subList(batch, batch + batchSize), ",");
+                idsList.add(variantListString);
+            }
+        }
+
+        // Second we launch all calls using numThreads threads.
 //        Future<QueryResponse<VariantAnnotation>> future;
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-        List<Future<QueryResponse<VariantAnnotation>>> futureList = new ArrayList<>();
-//        for (int i = 0; i < 4; i++) {
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        List<Future<QueryResponse<VariantAnnotation>>> futureList = new ArrayList<>(idsList.size());
+//        for (int i=0; i < 4; i++) {
 //            future = executorService.submit(new AnnotatorRunnable(ids, options));
 //        }
-        for (int j=0; j < idsList.size(); j++) {
-            futureList.add(j, executorService.submit(new AnnotatorRunnable(Arrays.asList(idsList.get(j)), options)));
+        for (int i = 0; i < idsList.size(); i++) {
+            futureList.add(executorService.submit(new AnnotatorRunnable(Collections.singletonList(idsList.get(i)), options)));
         }
 
-        QueryResponse<VariantAnnotation> response = null;
-        QueryResponse<VariantAnnotation> finalResponse = null;
-        List<QueryResult<VariantAnnotation>> queryResults = new ArrayList<>();
-        for (int i = 0; i < futureList.size(); i++) {
+//        QueryResponse<VariantAnnotation> response;
+//        QueryResponse<VariantAnnotation> finalResponse = null;
+//        List<VariantAnnotation> variantAnnotations = new ArrayList<>(ids.size());
+        List<QueryResult<VariantAnnotation>> queryResults = new ArrayList<>(ids.size());
+
+        for (Future<QueryResponse<VariantAnnotation>> responseFuture : futureList) {
             try {
-                response = futureList.get(i).get();
-                queryResults.add((QueryResult<VariantAnnotation>) response.allResults());
+//                response = futureList.get(i).get();
+//                queryResults.add((QueryResult<VariantAnnotation>) response.allResults());
+                while (!responseFuture.isDone()) {
+                    Thread.sleep(5);
+                }
+                queryResults.addAll(responseFuture.get().getResponse());
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
         }
 
+        QueryResponse<VariantAnnotation> finalResponse = new QueryResponse<>();
         finalResponse.setResponse(queryResults);
+//        finalResponse.setResponse(queryResults);
 //        try {
 //            response = future.get();
 //        } catch (InterruptedException | ExecutionException e) {
@@ -106,7 +143,6 @@ public class VariationClient extends FeatureClient<Variant> {
 //        }
         executorService.shutdown();
 
-//        return response;
         return finalResponse;
     }
 
@@ -122,8 +158,7 @@ public class VariationClient extends FeatureClient<Variant> {
 
         @Override
         public QueryResponse<VariantAnnotation> call() throws Exception {
-            QueryResponse<VariantAnnotation> annotation = execute(ids, "annotation", options, VariantAnnotation.class);
-            return annotation;
+            return execute(ids, "annotation", options, VariantAnnotation.class);
         }
     }
 }

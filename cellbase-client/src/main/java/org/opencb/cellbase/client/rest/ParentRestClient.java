@@ -85,8 +85,7 @@ public class ParentRestClient<T> {
         return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz);
     }
 
-    protected <T> QueryResponse<T> execute(List<String> idList, String resource, QueryOptions queryOptions, Class<T> clazz)
-            throws IOException {
+    protected <T> QueryResponse<T> execute(List<String> idList, String resource, QueryOptions options, Class<T> clazz) throws IOException {
 
         // Build the basic URL
         WebTarget path = client
@@ -96,10 +95,10 @@ public class ParentRestClient<T> {
                 .path(category)
                 .path(subcategory);
 
-        if (queryOptions == null) {
-            queryOptions = new QueryOptions();
+        if (options == null) {
+            options = new QueryOptions();
         }
-        queryOptions.putIfAbsent("limit", LIMIT);
+        options.putIfAbsent("limit", LIMIT);
 
         String ids = "";
         if (idList != null && !idList.isEmpty()) {
@@ -114,7 +113,7 @@ public class ParentRestClient<T> {
         QueryResponse<T> queryResponse = null;
         QueryResponse<T> finalQueryResponse = null;
         while (call) {
-            queryResponse = (QueryResponse<T>) callRest(path, ids, resource, queryOptions, clazz);
+            queryResponse = (QueryResponse<T>) callRest(path, ids, resource, options, clazz);
 
             // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
@@ -147,7 +146,7 @@ public class ParentRestClient<T> {
             } else {
                 ids = StringUtils.join(newIdsList, ',');
                 skip += LIMIT;
-                queryOptions.put("skip", skip);
+                options.put("skip", skip);
             }
         }
 
@@ -155,8 +154,7 @@ public class ParentRestClient<T> {
         return finalQueryResponse;
     }
 
-    private QueryResponse<T> callRest(WebTarget path, String ids, String resource, QueryOptions options, Class clazz)
-            throws IOException {
+    private QueryResponse<T> callRest(WebTarget path, String ids, String resource, QueryOptions options, Class clazz) throws IOException {
         WebTarget callUrl = path;
         if (ids != null && !ids.isEmpty()) {
             callUrl = path.path(ids);

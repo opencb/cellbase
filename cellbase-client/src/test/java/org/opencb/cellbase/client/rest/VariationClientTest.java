@@ -8,7 +8,9 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,6 +19,7 @@ import static org.junit.Assert.assertNotNull;
  * Created by swaathi on 23/05/16.
  */
 public class VariationClientTest {
+
     private CellBaseClient cellBaseClient;
 
     public VariationClientTest() {
@@ -65,4 +68,16 @@ public class VariationClientTest {
         assertEquals("SNP Id for the first variant is wrong", "rs429358", annotations.firstResult().getId());
         assertNotNull(annotations.getResponse().get(1));
     }
+
+    @Test
+    public void getAnnotations1() throws Exception {
+        List<String> ids = new ArrayList<>(900);
+        for (int i = 0; i < 900; i++) {
+            ids.add("1:4541194:T:C");
+        }
+        QueryResponse<VariantAnnotation> annotations = cellBaseClient.getVariationClient().getAnnotations(ids, null);
+        System.out.println("annotations = " + annotations.getResponse().size());
+        System.out.println("annotations = " + annotations.getResponse().get(0));
+    }
+
 }
