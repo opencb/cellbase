@@ -31,6 +31,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -212,7 +213,7 @@ public class ParentRestClient<T> {
                                           Class<U> clazz) throws IOException {
 
         WebTarget path = client
-                .target(hosts.get(0))
+                .target(URI.create(hosts.get(0)))
                 .path("webservices/rest/" + version)
                 .path(species)
                 .path(category)
