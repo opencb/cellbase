@@ -5,6 +5,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
@@ -66,16 +67,18 @@ public class VariationClientTest {
     public void getAnnotations() throws Exception {
         QueryResponse<VariantAnnotation> annotations = cellBaseClient.getVariationClient().getAnnotations("19:45411941:T:C, 14:38679764:-:GATCTG", null);
         assertEquals("SNP Id for the first variant is wrong", "rs429358", annotations.firstResult().getId());
+        System.out.println(annotations.getResponse().get(1));
         assertNotNull(annotations.getResponse().get(1));
     }
 
     @Test
     public void getAnnotations1() throws Exception {
-        List<String> ids = new ArrayList<>(900);
-        for (int i = 0; i < 900; i++) {
+        List<String> ids = new ArrayList<>(1901);
+        for (int i = 0; i < 1901; i++) {
             ids.add("1:4541194:T:C");
         }
-        QueryResponse<VariantAnnotation> annotations = cellBaseClient.getVariationClient().getAnnotations(ids, null);
+        QueryResponse<VariantAnnotation> annotations = cellBaseClient.getVariationClient()
+                .getAnnotations(ids, new QueryOptions("numThreads", 4));
         System.out.println("annotations = " + annotations.getResponse().size());
         System.out.println("annotations = " + annotations.getResponse().get(0));
     }
