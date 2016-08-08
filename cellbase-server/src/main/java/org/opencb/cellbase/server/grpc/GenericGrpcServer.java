@@ -60,7 +60,7 @@ public class GenericGrpcServer {
             }
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
-            dbAdaptorFactory = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+            dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

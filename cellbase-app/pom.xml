@@ -23,10 +23,6 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-grpc</artifactId>
-        </dependency>
         <!--<dependency>-->
             <!--<groupId>org.opencb.cellbase</groupId>-->
             <!--<artifactId>cellbase-server</artifactId>-->
@@ -213,18 +209,4 @@
         </repository>
     </repositories>
 
-    <profiles>
-        <profile>
-            <id>mongodb</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.opencb.cellbase</groupId>
-                    <artifactId>cellbase-mongodb</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>

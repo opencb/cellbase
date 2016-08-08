@@ -16,7 +16,7 @@
     <modules>
         <module>cellbase-app</module>
         <module>cellbase-core</module>
-        <module>cellbase-mongodb</module>
+        <module>cellbase-lib</module>
         <module>cellbase-client</module>
         <module>cellbase-server</module>
     </modules>
@@ -95,11 +95,6 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.opencb.cellbase</groupId>
-                <artifactId>cellbase-grpc</artifactId>
-                <version>${cellbase.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-models</artifactId>
                 <version>${biodata.version}</version>
@@ -135,11 +130,6 @@
                 <groupId>org.xerial</groupId>
                 <artifactId>sqlite-jdbc</artifactId>
                 <version>3.8.7</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>3.0.0-beta-2</version>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
@@ -304,21 +294,6 @@
             <properties>
                 <cellbase.war.name>cellbase-${cellbase.version}</cellbase.war.name>
             </properties>
-        </profile>
-        <profile>
-            <id>mongodb</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.opencb.cellbase</groupId>
-                        <artifactId>cellbase-mongodb</artifactId>
-                        <version>${cellbase.version}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
         </profile>
         <profile>
             <id>deploy</id>

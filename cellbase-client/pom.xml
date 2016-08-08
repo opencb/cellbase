@@ -39,10 +39,6 @@
             <groupId>org.opencb.commons</groupId>
             <artifactId>commons-datastore-core</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.opencb.commons</groupId>-->
-            <!--<artifactId>commons-datastore-mongodb</artifactId>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -56,10 +52,6 @@
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
             <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
