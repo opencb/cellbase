@@ -109,12 +109,12 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java-util</artifactId>
-                <version>3.0.0-beta-2</version>
+                <version>3.0.0</version>
             </dependency>
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-all</artifactId>
-                <version>0.13.2</version>
+                <version>1.0.0-pre2</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
