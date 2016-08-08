@@ -59,13 +59,13 @@ public class GenomicRegionClientTest {
 
     @Test
     public void getVariation() throws Exception {
-        QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "ids");
+        QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,id");
         QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGenomicRegionClient()
                 .getVariation(Arrays.asList("3:555-77777", "11:58888-198888"), queryOptions);
 
         assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
         assertEquals("Number of variations do not match for 3:555-77777", 1259, variantQueryResponse.getResponse().get(0).getResult().size());
-        assertEquals("Number of variations do not match for 11:58888-198888", 2764, variantQueryResponse.getResponse().get(1).getResult().size());
+        assertEquals("Number of variations do not match for 11:58888-198888", 2755, variantQueryResponse.getResponse().get(1).getResult().size());
     }
 
     @Test
