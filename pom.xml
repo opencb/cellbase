@@ -96,41 +96,16 @@
             </dependency>
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
-                <artifactId>biodata-models</artifactId>
-                <version>${biodata.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.biodata</groupId>
-                <artifactId>biodata-formats</artifactId>
-                <version>${biodata.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.commons</groupId>
-                <artifactId>commons-lib</artifactId>
-                <version>${java-common-libs.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.commons</groupId>
                 <artifactId>commons-datastore-core</artifactId>
                 <version>${java-common-libs.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.opencb.commons</groupId>
-                <artifactId>commons-datastore-mongodb</artifactId>
-                <version>${java-common-libs.version}</version>
-            </dependency>
 
             <!-- General dependencies -->
-            <dependency>
-                <groupId>org.xerial</groupId>
-                <artifactId>sqlite-jdbc</artifactId>
-                <version>3.8.7</version>
-            </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java-util</artifactId>
