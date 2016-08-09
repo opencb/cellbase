@@ -91,7 +91,6 @@ public class GenomicRegionClientTest {
 
     @Test
     public void getConservation() throws Exception {
-        // TODO add default constructor to GenomicScoreRegion in biodata-models
         QueryResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1:555-66666"), null);
         assertNotNull("Conservation values for 1:555-66666 must be returned", conservation.firstResult());
 
