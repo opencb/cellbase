@@ -154,7 +154,7 @@ public class GenericRestWSServer implements IWSServer {
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
 //            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-            dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+            dbAdaptorFactory2 = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (IOException e) {
             e.printStackTrace();
         }

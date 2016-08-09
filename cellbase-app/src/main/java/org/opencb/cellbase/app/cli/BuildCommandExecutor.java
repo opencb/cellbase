@@ -23,7 +23,7 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.File;
