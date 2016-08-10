@@ -23,12 +23,14 @@
 
     <properties>
         <cellbase.version>4.1.0-beta</cellbase.version>
+        <compileSource>1.8</compileSource>
         <biodata.version>0.8.0-SNAPSHOT</biodata.version>
         <java-common-libs.version>3.3.0-SNAPSHOT</java-common-libs.version>
         <jackson.version>2.6.4</jackson.version>
         <jersey.version>2.22.1</jersey.version>
-        <compileSource>1.8</compileSource>
+        <protobuf.version>3.0.0</protobuf.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
+        <grpc.version>1.0.0-pre2</grpc.version>
     </properties>
 
     <scm>
@@ -109,12 +111,12 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java-util</artifactId>
-                <version>3.0.0</version>
+                <version>${protobuf.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-all</artifactId>
-                <version>1.0.0-pre2</version>
+                <version>${grpc.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>

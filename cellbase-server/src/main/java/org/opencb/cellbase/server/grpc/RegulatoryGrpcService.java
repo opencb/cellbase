@@ -20,6 +20,7 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
 import org.opencb.cellbase.server.grpc.service.RegulatoryRegionServiceGrpc;
@@ -33,7 +34,13 @@ import java.util.List;
 /**
  * Created by swaathi on 11/02/16.
  */
-public class RegulatoryGrpcServer extends GenericGrpcServer implements RegulatoryRegionServiceGrpc.RegulatoryRegionService {
+public class RegulatoryGrpcService extends RegulatoryRegionServiceGrpc.RegulatoryRegionServiceImplBase implements IGrpcService {
+
+    private DBAdaptorFactory dbAdaptorFactory;
+
+    public RegulatoryGrpcService(DBAdaptorFactory dbAdaptorFactory) {
+        this.dbAdaptorFactory = dbAdaptorFactory;
+    }
 
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {

@@ -20,6 +20,7 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
 import org.opencb.cellbase.server.grpc.service.TranscriptServiceGrpc;
@@ -33,7 +34,13 @@ import java.util.List;
 /**
  * Created by swaathi on 18/12/15.
  */
-public class TranscriptGrpcServer extends GenericGrpcServer implements TranscriptServiceGrpc.TranscriptService {
+public class TranscriptGrpcService extends TranscriptServiceGrpc.TranscriptServiceImplBase implements IGrpcService {
+
+    private DBAdaptorFactory dbAdaptorFactory;
+
+    public TranscriptGrpcService(DBAdaptorFactory dbAdaptorFactory) {
+        this.dbAdaptorFactory = dbAdaptorFactory;
+    }
 
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {

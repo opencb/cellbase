@@ -22,6 +22,7 @@ import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.server.grpc.service.GeneServiceGrpc;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
@@ -36,8 +37,13 @@ import java.util.List;
 /**
  * Created by swaathi on 16/12/15.
  */
-public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc.GeneService {
+public class GeneGrpcService extends GeneServiceGrpc.GeneServiceImplBase implements IGrpcService {
 
+    private DBAdaptorFactory dbAdaptorFactory;
+
+    public GeneGrpcService(DBAdaptorFactory dbAdaptorFactory) {
+        this.dbAdaptorFactory = dbAdaptorFactory;
+    }
 
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
