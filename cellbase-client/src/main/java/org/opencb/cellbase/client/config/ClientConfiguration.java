@@ -29,6 +29,7 @@ import java.io.OutputStream;
 public class ClientConfiguration {
 
     private String version;
+    private String defaultSpecies;
     private String logLevel;
     private String logFile;
 
@@ -70,6 +71,8 @@ public class ClientConfiguration {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ClientConfiguration{");
         sb.append("version='").append(version).append('\'');
+        sb.append(", defaultSpecies='").append(defaultSpecies).append('\'');
+        sb.append(", logLevel='").append(logLevel).append('\'');
         sb.append(", logFile='").append(logFile).append('\'');
         sb.append(", rest=").append(rest);
         sb.append(", grpc=").append(grpc);
@@ -83,6 +86,15 @@ public class ClientConfiguration {
 
     public ClientConfiguration setVersion(String version) {
         this.version = version;
+        return this;
+    }
+
+    public String getDefaultSpecies() {
+        return defaultSpecies;
+    }
+
+    public ClientConfiguration setDefaultSpecies(String defaultSpecies) {
+        this.defaultSpecies = defaultSpecies;
         return this;
     }
 

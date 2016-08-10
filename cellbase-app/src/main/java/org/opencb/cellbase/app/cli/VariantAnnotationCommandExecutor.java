@@ -45,7 +45,7 @@ import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.variant.annotation.*;
-import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -472,12 +472,13 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    protected Map<String, Object> parseInfoAttributes(Variant variant, int customFileNumber) {
+    protected Map<String, String> parseInfoAttributes(Variant variant, int customFileNumber) {
         Map<String, String> infoMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
-        Map<String, Object> parsedInfo = new HashMap<>();
+        Map<String, String> parsedInfo = new HashMap<>();
         for (String attribute : infoMap.keySet()) {
             if (customFileFields.get(customFileNumber).contains(attribute)) {
-                parsedInfo.put(attribute, getValueFromString(infoMap.get(attribute)));
+                parsedInfo.put(attribute, infoMap.get(attribute));
+//                parsedInfo.put(attribute, getValueFromString(infoMap.get(attribute)));
             }
         }
 

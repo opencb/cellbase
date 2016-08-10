@@ -129,7 +129,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly = "GRCh37";
+        public String assembly = null;
 
         @Parameter(names = {"-o", "--output"}, description = "The output directory, species folder will be created", required = false, arity = 1)
         public String output = "/tmp";
@@ -154,7 +154,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly;
+        public String assembly = null;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the downloaded data sources to be loaded", required = true, arity = 1)
         public String input;
@@ -213,7 +213,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly = "GRCh37";
+        public String assembly = null;
 
         @Parameter(names = {"-o", "--output"}, description = "Write result into the file path", required = false, arity = 1)
         public String output;
@@ -298,7 +298,7 @@ public class CliOptionsParser {
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be read", required = false, arity = 1)
-        public String assembly = "GRCh37";
+        public String assembly = null;
 
         @Parameter(names = {"-l", "--local"}, description = "Database credentials for local annotation are read from configuration.json file", required = false, arity = 0)
         public boolean local;
@@ -348,9 +348,9 @@ public class CliOptionsParser {
         public String chromosomeList;
 
         @Parameter(names = {"--benchmark"}, description = "Run variant annotation benchmark. If this flag is enabled,"
-                + "a directory containing a list of Variant Effect Predictor (VEP) files is expected at the -i parameter." +
-                "All .txt files within the directory will be processed - the directory must contain only .txt files that " +
-                "should be tested",
+                + "a directory containing a list of Variant Effect Predictor (VEP) files is expected at the -i parameter."
+                + " All .vep files within the directory will be processed - the directory must contain only .vep files that "
+                + "should be tested",
                 required = false, arity = 0)
         public boolean benchmark;
 

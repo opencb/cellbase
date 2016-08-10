@@ -26,39 +26,76 @@ import java.util.Map;
  */
 public class CellBaseClient {
 
-    private Map<String, ParentRestClient> clients;
-
+    private String species;
     private ClientConfiguration clientConfiguration;
 
+    private Map<String, ParentRestClient> clients;
+
+
     public CellBaseClient(ClientConfiguration clientConfiguration) {
+        this(clientConfiguration.getDefaultSpecies(), clientConfiguration);
+    }
+
+    public CellBaseClient(String species, ClientConfiguration clientConfiguration) {
+        this.species = species;
         this.clientConfiguration = clientConfiguration;
 
         clients = new HashMap<>();
     }
 
+
     public GeneClient getGeneClient() {
-        clients.putIfAbsent("GENE", new GeneClient(clientConfiguration));
+        clients.putIfAbsent("GENE", new GeneClient(species, clientConfiguration));
         return (GeneClient) clients.get("GENE");
     }
 
     public TranscriptClient getTranscriptClient() {
-        clients.putIfAbsent("TRANSCRIPT", new TranscriptClient(clientConfiguration));
+        clients.putIfAbsent("TRANSCRIPT", new TranscriptClient(species, clientConfiguration));
         return (TranscriptClient) clients.get("TRANSCRIPT");
     }
 
     public VariationClient getVariationClient() {
-        clients.putIfAbsent("VARIATION", new VariationClient(clientConfiguration));
+        clients.putIfAbsent("VARIATION", new VariationClient(species, clientConfiguration));
         return (VariationClient) clients.get("VARIATION");
     }
 
     public ProteinClient getProteinClient() {
-        clients.putIfAbsent("PROTEIN", new ProteinClient(clientConfiguration));
+        clients.putIfAbsent("PROTEIN", new ProteinClient(species, clientConfiguration));
         return (ProteinClient) clients.get("PROTEIN");
     }
 
     public GenomicRegionClient getGenomicRegionClient() {
-        clients.putIfAbsent("GENOME_REGION", new GenomicRegionClient(clientConfiguration));
+        clients.putIfAbsent("GENOME_REGION", new GenomicRegionClient(species, clientConfiguration));
         return (GenomicRegionClient) clients.get("GENOME_REGION");
     }
 
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CellBaseClient{");
+        sb.append("species='").append(species).append('\'');
+        sb.append(", clientConfiguration=").append(clientConfiguration);
+        sb.append(", clients=").append(clients);
+        sb.append('}');
+        return sb.toString();
+    }
+
+
+    public String getSpecies() {
+        return species;
+    }
+
+    public CellBaseClient setSpecies(String species) {
+        this.species = species;
+        return this;
+    }
+
+    public ClientConfiguration getClientConfiguration() {
+        return clientConfiguration;
+    }
+
+    public CellBaseClient setClientConfiguration(ClientConfiguration clientConfiguration) {
+        this.clientConfiguration = clientConfiguration;
+        return this;
+    }
 }
