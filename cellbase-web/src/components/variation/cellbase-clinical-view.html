@@ -84,8 +84,8 @@
                         </div>
                         <template is="dom-if" if="{{checkClinvar(clinicalObj)}}">
                             <div id="clinicalAssertion" role="tabpanel" class="tab-pane">
-                                <table class="table table-hover">
-                                    <thead>
+                                <table class="table table-hover table-bordered">
+                                    <thead style="background-color: #eee">
                                     <tr>
                                         <th>Submission Accession</th>
                                         <th>Clinical Significance</th>
@@ -149,7 +149,7 @@
                 let soterms = [];
                 let clinicalAssertion = [];
                 if (this.clinicalId.startsWith('RCV')) {
-                    if (typeof this.genomeViewer !== "undefined") {
+                    if (typeof this.cellbaseClient !== "undefined") {
                         let success = function (response) {
                             let clinicalResult = response.response[0].result[0];
                             if (typeof clinicalResult !== "undefined") {
@@ -159,7 +159,9 @@
                                     start: clinicalResult.start,
                                     end: clinicalResult.end
                                 });
-                                _this.genomeViewer.setRegion(region);
+                                if (typeof _this.genomeViewer !== "undefined") {
+                                    _this.genomeViewer.setRegion(region);
+                                }
                                 _this.clinicalObj = clinicalResult;
                                 _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
                                 // Converting the timestamp to UTC format
@@ -274,7 +276,7 @@
                     }
                 }
                 if (this.clinicalId.startsWith('COSM')) {
-                    if (typeof this.genomeViewer !== "undefined") {
+                    if (typeof this.cellbaseClient !== "undefined") {
                         let success = function (response) {
                             // TODO check number of results per cosmicId (COSM1748562)
                             let clinicalResult = response.response[0].result[0];
@@ -284,7 +286,9 @@
                                     start: clinicalResult.start,
                                     end: clinicalResult.end
                                 });
-                                _this.genomeViewer.setRegion(region);
+                                if (typeof _this.genomeViewer !== "undefined") {
+                                    _this.genomeViewer.setRegion(region);
+                                }
                                 _this.clinicalObj = clinicalResult;
                                 _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
                             }

@@ -14,15 +14,15 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="cellbase-variation-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variation-grid.html">
 <link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-transcripts-view.html">
-<link rel="import" href="cellbase-transcripts-tfbs-view.html">
-<link rel="import" href="cellbase-drugs-view.html">
-<link rel="import" href="cellbase-phenotype-grid.html">
-<link rel="import" href="cellbase-expression-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-transcripts-tfbs-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-drugs-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-phenotype-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-expression-grid.html">
 <link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-clinvar-grid.html">
-<link rel="import" href="cellbase-cosmic-grid.html">
-<link rel="import" href="../variation/cellbase-variantannotation-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-cosmic-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variantannotation-view.html">
 
 
 <dom-module id="cellbase-gene-view">
@@ -161,12 +161,14 @@
                 this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=clinvar';
                 this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=cosmic';
                 let _this = this;
-                if (typeof this.genomeViewer !== "undefined") {
+                if (typeof this.cellbaseClient !== "undefined") {
                     let success = function (response) {
                         let firstGene = response.response[0].result[0];
                         if (typeof firstGene !== "undefined") {
                             let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
-                            _this.genomeViewer.setRegion(region);
+                            if (typeof _this.genomeViewer !== "undefined") {
+                                _this.genomeViewer.setRegion(region);
+                            }
                         } else {
                             alert("Gene ID not valid: " + _this.geneId);
                         }
@@ -180,35 +182,6 @@
                     };
                     this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
                 }
-//
-//                // Variation
-//                let success = function (response) {
-//                    let variations = response.response[0].result;
-//                    _this.variations = variations;
-//                };
-//                let error = function (response) {
-//                    alert("Gene ID not valid: " + _this.geneId)
-//                };
-//                this.cellbaseClient.getGeneClient(this.geneId, 'snp', {exclude: 'annotation.additionalAttributes,annotation.populationFrequencies'}, {success: success, error: error, async: true});
-
-//                // Clinvar
-//                let successClinvar = function (response) {
-//                    let clinvar = response.response[0].result;
-//                    _this.clinvar = clinvar;
-//                };
-//                let errorClinvar = function (response) {
-//                    alert("Gene ID not valid: " + _this.geneId)
-//                };
-//                // Cosmic
-//                let successCosmic = function (response) {
-//                    let cosmic = response.response[0].result;
-//                    _this.cosmic = cosmic;
-//                };
-//                let errorCosmic = function (response) {
-//                    alert("Gene ID not valid: " + _this.geneId)
-//                };
-//                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
-//                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
             },
             attached: function() {
                 this.genomeViewer;

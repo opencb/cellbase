@@ -15,14 +15,14 @@
   -->
 
 <link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-transcripts-view.html">
-<link rel="import" href="cellbase-expression-grid.html">
-<link rel="import" href="cellbase-phenotype-grid.html">
-<link rel="import" href="cellbase-drugs-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-expression-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-phenotype-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-drugs-view.html">
 <link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/regulation/cellbase-regulation-grid.html">
-<link rel="import" href="cellbase-variation-grid.html">
-<link rel="import" href="../variation/cellbase-variantannotation-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variation-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variantannotation-view.html">
 <link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-clinvar-grid.html">
-<link rel="import" href="cellbase-cosmic-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-cosmic-grid.html">
 
 
 
@@ -74,6 +74,7 @@
 
                     <div class="tab-content">
                         <div id="genomicViewGeneTranscript" role="tabpanel" class="tab-pane active">
+                            <br>
                             <cellbase-transcripts-view data="{{transcripts}}" prefix="genomicView"></cellbase-transcripts-view>
                         </div>
                         <div id="genomicViewGeneExpression" role="tabpanel" class="tab-pane">
@@ -153,7 +154,9 @@
                 $('#cosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
             _regionChanged: function (newValue, oldValue) {
-                this.genomeViewer.setRegion(this.region);
+                if (typeof this.genomeViewer !== "undefined"){
+                    this.genomeViewer.setRegion(this.region);
+                }
                 this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/variation';
                 this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=clinvar';
                 this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=cosmic';
@@ -198,8 +201,8 @@
                             ]
                         ],
                         onClickRow: function (row, $element) {
-                            $('#geneTable tr').removeClass("highlight");
-                            $element.addClass("highlight");
+                            $('.success').removeClass('success');
+                            $($element).addClass('success');
                             _this.selectedGene = row.name;
                             _this.transcripts = row.transcripts;
                             _this.expression = row.annotation.expression;

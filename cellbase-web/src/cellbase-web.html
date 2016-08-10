@@ -14,39 +14,45 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="shared/cellbase-species-menu.html">
-<link rel="import" href="core/cellbase-genomic-panel.html">
-<link rel="import" href="core/cellbase-gene-panel.html">
-<link rel="import" href="core/cellbase-regulation-panel.html">
-<link rel="import" href="variation/cellbase-variation-panel.html">
-<link rel="import" href="variation/cellbase-clinical-panel.html">
-<link rel="import" href="variation/cellbase-variantannotation-panel.html">
+<link rel="import" href="components/shared/cellbase-species-menu.html">
+<link rel="import" href="components/core/cellbase-genomic-panel.html">
+<link rel="import" href="components/core/cellbase-gene-panel.html">
+<link rel="import" href="components/core/cellbase-regulation-panel.html">
+<link rel="import" href="components/variation/cellbase-variation-panel.html">
+<link rel="import" href="components/variation/cellbase-clinical-panel.html">
+<link rel="import" href="components/variation/cellbase-variantannotation-panel.html">
 
 <dom-module id="cellbase-web">
 
     <template>
         <style is="custom-style" include="jso-styles"></style>
+        <style>
+            .center {
+                margin: auto;
+                width: 98%;
+            }
+        </style>
 
         <div>
             <div style="height: 60px;">
                 <nav class="navbar navbar-inverse navbar-fixed-top">
                     <div class="container-fluid">
                         <!-- Brand and toggle get grouped for better mobile display -->
-                        <div class="navbar-header">
+                        <div class="navbar-header cellbase-menu">
                             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
                                 <span class="sr-only">Toggle navigation</span>
                                 <span class="icon-bar"></span>
                                 <span class="icon-bar"></span>
                                 <span class="icon-bar"></span>
                             </button>
-                            <a class="navbar-brand" href="#">CellBase Data Portal</a>
+                            <a class="navbar-brand" href="#home">CellBase Data Portal</a>
                         </div>
 
                         <!-- Collect the nav links, forms, and other content for toggling -->
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav">
-                                <li class="dropdown">
-                                    <a href="#home1"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
+                                <li class="dropdown cellbase-menu">
+                                    <a href="#home"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
                                 </li>
 
                                 <li class="dropdown">
@@ -137,7 +143,7 @@
 
             <!-- This is where main application is rendered -->
             <div class="center">
-                <div class="collapse content" id="home1">
+                <div class="collapse content" id="home">
                     <h2>Welcome to CellBase data portal tool!</h2>
                 </div>
                 <div class="collapse content" id="genomicPanel">
@@ -218,8 +224,6 @@
                 }
             },
             ready: function () {
-                console.log("Initializing cellbase-web component...")
-//                    this.cellbaseClient = new CellBaseClient();
                 this.cellbaseClient = new CellBaseClient();
 
                 this.cellbaseClient.setHosts(CELLBASE_HOSTS);
@@ -228,23 +232,12 @@
                     console.log("Creating CellBaseClient")
                 }
 
-
                 $(".cellbase-menu a").on('click', function(e) {
                     e.preventDefault(); // stops link form loading
                     $('.content').hide(); // hides all content divs
                     $( $(this).attr('href') ).show(); //get the href and use it find which div to show
                 });
-                $('#home1').show();
-
-            },
-            clickHandler: function (e) {
-                var dialog = document.getElementById("modal");
-                if (dialog) {
-                    dialog.open();
-                }
-            },
-            selectedMenuChanged: function(neo, old) {
-
+                $('#home').show();
             }
         });
     </script>
