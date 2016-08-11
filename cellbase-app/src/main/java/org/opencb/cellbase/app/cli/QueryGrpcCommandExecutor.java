@@ -183,6 +183,13 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                         output.println(next.toString());
                     }
                     break;
+                case "first":
+                    TranscriptModel.Transcript first = transcriptServiceBlockingStub.first(request);
+                    output.println(first.toString());
+                    break;
+                case "sequence":
+                    ServiceTypesModel.StringResponse stringResponse = transcriptServiceBlockingStub.getCdna(request);
+                    output.println(stringResponse);
                 default:
                     break;
             }
@@ -190,6 +197,10 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         if (queryGrpcCommandOptions.count) {
             ServiceTypesModel.LongResponse value = transcriptServiceBlockingStub.count(request);
             output.println(value);
+        }
+        if (queryGrpcCommandOptions.distinct != null) {
+            ServiceTypesModel.StringArrayResponse values = transcriptServiceBlockingStub.distinct(request);
+            output.println(values);
         }
     }
 

@@ -59,12 +59,25 @@ public class TranscriptGrpcService extends TranscriptServiceGrpc.TranscriptServi
     @Override
     public void distinct(GenericServiceModel.Request request,
                          StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
-
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
+        Query query = createQuery(request);
+        QueryResult queryResult = transcriptDBAdaptor.distinct(query, request.getOptionsMap().get("distinct"));
+        List values = queryResult.getResult();
+        ServiceTypesModel.StringArrayResponse distinctValues = ServiceTypesModel.StringArrayResponse.newBuilder()
+                .addAllValues(values)
+                .build();
+        responseObserver.onNext(distinctValues);
+        responseObserver.onCompleted();
     }
 
     @Override
     public void first(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
 
+        QueryOptions queryOptions = createQueryOptions(request);
+        QueryResult first = transcriptDBAdaptor.first(queryOptions);
+        responseObserver.onNext(ProtoConverterUtils.createTranscript((Document) first.getResult().get(0)));
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -77,19 +90,19 @@ public class TranscriptGrpcService extends TranscriptServiceGrpc.TranscriptServi
 
     }
 
-//    @Override
-//    public void getCdna(GenericServiceModel.CellbaseRequest request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
-//        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
-//
-//        Query query = createQuery(request);
-//        QueryResult queryResult = transcriptDBAdaptor.getCdna(query.getString("id"));
-//        String cdna = String.valueOf(queryResult);
-//        ServiceTypesModel.StringResponse value = ServiceTypesModel.StringResponse.newBuilder()
-//                .setValue(cdna)
-//                .build();
-//        responseObserver.onNext(value);
-//        responseObserver.onCompleted();
-//    }
+    @Override
+    public void getCdna(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryResult queryResult = transcriptDBAdaptor.getCdna(query.getString("id"));
+        String cdna = String.valueOf(queryResult.getResult().get(0));
+        ServiceTypesModel.StringResponse value = ServiceTypesModel.StringResponse.newBuilder()
+                .setValue(cdna)
+                .build();
+        responseObserver.onNext(value);
+        responseObserver.onCompleted();
+    }
 
     @Override
     public void get(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
@@ -115,49 +128,5 @@ public class TranscriptGrpcService extends TranscriptServiceGrpc.TranscriptServi
         }
         responseObserver.onCompleted();
     }
-
-//    private TranscriptModel.Transcript convert(Document document) {
-//        TranscriptModel.Transcript.Builder builder = TranscriptModel.Transcript.newBuilder()
-//                .setId(document.getString("id"))
-//                .setName(document.getString("name"))
-//                .setBiotype(document.getString("biotype"))
-//                .setStatus(document.getString("status"))
-//                .setChromosome(document.getString("chromosome"))
-//                .setStart(document.getInteger("start"))
-//                .setEnd(document.getInteger("end"))
-//                .setCdnaSequence((String) document.getOrDefault("cDnaSequence", ""));
-//
-//        List<Document> xrefs = (List<Document>) document.get("xrefs");
-//        if (xrefs != null) {
-//            for (Document doc : xrefs) {
-//                TranscriptModel.Xref xrefBuilder = TranscriptModel.Xref.newBuilder()
-//                        .setId(doc.getString("id"))
-//                        .setDbName(doc.getString("dbName"))
-//                        .setDbDisplayName(doc.getString("dbDisplayName"))
-//                        .build();
-//                builder.addXrefs(xrefBuilder);
-//            }
-//        }
-//
-//        List<Document> exons = (List<Document>) document.get("exons");
-//        for (Document doc : exons) {
-//            TranscriptModel.Exon exonBuilder = TranscriptModel.Exon.newBuilder()
-//                    .setId(doc.getString("id"))
-//                    .setChromosome(doc.getString("chromosome"))
-//                    .setStart(doc.getInteger("start"))
-//                    .setEnd(doc.getInteger("end"))
-//                    .setStrand(doc.getString("strand"))
-//                    .setExonNumber(doc.getInteger("exonNumber"))
-//                    .setSequence(doc.getString("sequence"))
-//                    .build();
-//            builder.addExons(exonBuilder);
-//        }
-//
-////        List<org.opencb.biodata.models.core.protobuf.TranscriptModel.Exon> exonList = ...
-////        builder.addAllExons(exonList)
-//
-//
-//        return builder.build();
-//    }
 
 }
