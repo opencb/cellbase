@@ -242,6 +242,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                     variantAnnotation = mustSearchVariation.get(i).getAnnotation();
                     mergeAnnotation(variantAnnotation, cacheVariant.getAnnotation());
                 }
+                setGeneAnnotation(mustSearchVariation.get(i));
                 variantAnnotationResultList.set(mustSearchVariationPositions.get(i),
                         new QueryResult<>(mustSearchVariation.get(i).toString(),
                         variationQueryResultList.get(i).getDbTime(), 1, 1, null, null,
@@ -271,8 +272,46 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 }
             }
         }
-
         return variantQueryResult.first();
+    }
+
+    private List<Gene> setGeneAnnotation(Variant variant) {
+        // Fetch overlapping genes for this variant
+        List<Gene> geneList = getAffectedGenes(variant, includeGeneFields);
+        VariantAnnotation variantAnnotation = variant.getAnnotation();
+
+        /*
+         * Gene Annotation
+         */
+        if (annotatorSet.contains("expression")) {
+            variantAnnotation.setGeneExpression(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation().getExpression() != null) {
+                    variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
+                }
+            }
+        }
+
+        if (annotatorSet.contains("geneDisease")) {
+            variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation().getDiseases() != null) {
+                    variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
+                }
+            }
+        }
+
+        if (annotatorSet.contains("drugInteraction")) {
+            variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation().getDrugs() != null) {
+                    variantAnnotation.getGeneDrugInteraction().addAll(gene.getAnnotation().getDrugs());
+                }
+            }
+        }
+
+        return geneList;
+
     }
 
     private boolean isPhased(Variant variant) {
@@ -370,9 +409,6 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         Queue<Variant> variantBuffer = new LinkedList<>();
         startTime = System.currentTimeMillis();
         for (int i = 0; i < normalizedVariantList.size(); i++) {
-            // Fetch overlapping genes for this variant
-            geneList = getAffectedGenes(normalizedVariantList.get(i), includeGeneFields);
-
             // normalizedVariantList is the passed by reference argument - modifying normalizedVariantList will
             // modify user-provided Variant objects. If there's no annotation - just set it; if there's an annotation
             // object already created, let's only overwrite those fields created by the annotator
@@ -388,6 +424,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             variantAnnotation.setStart(normalizedVariantList.get(i).getStart());
             variantAnnotation.setReference(normalizedVariantList.get(i).getReference());
             variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
+
+            geneList = setGeneAnnotation(normalizedVariantList.get(i));
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
@@ -406,36 +444,6 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                     logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
                             + " consequence type list.", normalizedVariantList.get(i).toString());
 //                    throw e;
-                }
-            }
-
-            /*
-             * Gene Annotation
-             */
-            if (annotatorSet.contains("expression")) {
-                variantAnnotation.setGeneExpression(new ArrayList<>());
-                for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getExpression() != null) {
-                        variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
-                    }
-                }
-            }
-
-            if (annotatorSet.contains("geneDisease")) {
-                variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
-                for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getDiseases() != null) {
-                        variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
-                    }
-                }
-            }
-
-            if (annotatorSet.contains("drugInteraction")) {
-                variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
-                for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getDrugs() != null) {
-                        variantAnnotation.getGeneDrugInteraction().addAll(gene.getAnnotation().getDrugs());
-                    }
                 }
             }
 
@@ -513,10 +521,10 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
         destination.setConsequenceTypes(origin.getConsequenceTypes());
         destination.setConservation(origin.getConservation());
-        destination.setGeneExpression(origin.getGeneExpression());
-        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
+//        destination.setGeneExpression(origin.getGeneExpression());
+//        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
         destination.setPopulationFrequencies(origin.getPopulationFrequencies());
-        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
+//        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
         destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
         destination.setFunctionalScore(origin.getFunctionalScore());
     }
