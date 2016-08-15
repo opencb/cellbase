@@ -6,7 +6,6 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.rocksdb.RocksDBException;
@@ -125,13 +124,13 @@ public class BenchmarkTask implements
             Set<SequenceOntologyTermComparisonObject> set = new HashSet<>(consequenceTypeList.size());
             for (ConsequenceType consequenceType : consequenceTypeList) {
                 for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
-                    // Expected many differences depending on the regulatory source databases used by the annotators.
-                    // Better skip regulatory_region_variant annotations
-                    if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
-                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
-                        set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
-                                sequenceOntologyTerm));
-                    }
+//                    // Expected many differences depending on the regulatory source databases used by the annotators.
+//                    // Better skip regulatory_region_variant annotations
+//                    if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
+//                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
+                    set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
+                            sequenceOntologyTerm));
+//                    }
                 }
             }
 

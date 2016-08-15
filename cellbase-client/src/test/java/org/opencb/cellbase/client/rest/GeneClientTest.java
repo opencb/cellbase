@@ -116,8 +116,10 @@ public class GeneClientTest {
 //
     @Test
     public void getSnp() throws Exception {
-        QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getVariation(Arrays.asList("BRCA1", "TFF1"), new QueryOptions());
+        QueryOptions queryOptions = new QueryOptions("exclude", "annotation");
+        QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGeneClient().getVariation(Arrays.asList("BRCA1", "TFF1"), queryOptions);
         assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
+        assertNotNull("SNPs of TFF1 must be returned", variantQueryResponse.getResponse().get(1).getResult());
     }
 //
     @Test
