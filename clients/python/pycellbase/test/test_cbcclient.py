@@ -1,4 +1,5 @@
 import unittest
+
 from pycellbase.cbclient import CellBaseClient
 from pycellbase.cbconfig import ConfigClient
 

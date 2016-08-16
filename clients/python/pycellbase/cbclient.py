@@ -1,5 +1,5 @@
 import pycellbase.cbfeatures as fts
-import pycellbase.cbconfig as config
+from pycellbase.cbconfig import ConfigClient
 from pycellbase.commons import get
 
 
@@ -12,7 +12,7 @@ class CellBaseClient(object):
 
         # Setting up config params
         try:
-            assert isinstance(config_client, config.ConfigClient)
+            assert isinstance(config_client, ConfigClient)
         except:
             msg = ('CellBaseClient configuration not properly set.' +
                    ' "pycellbase.config.ConfigClient" object is needed as' +
