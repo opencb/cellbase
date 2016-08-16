@@ -118,7 +118,7 @@
                         </program>
                         <program>
                             <name>cellbase-grpc.sh</name>
-                            <mainClass>org.opencb.cellbase.server.grpc.GeneGrpcServer</mainClass>
+                            <mainClass>org.opencb.cellbase.server.grpc.GrpcServer</mainClass>
                         </program>
                     </programs>
                 </configuration>

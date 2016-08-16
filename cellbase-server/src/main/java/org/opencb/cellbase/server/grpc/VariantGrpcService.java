@@ -20,9 +20,9 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
-import org.opencb.cellbase.server.grpc.service.VariantServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -33,8 +33,14 @@ import java.util.List;
 /**
  * Created by swaathi on 16/12/15.
  */
-public class VariantGrpcServer extends GenericGrpcServer implements VariantServiceGrpc.VariantService {
+public class VariantGrpcService extends org.opencb.cellbase.server.grpc.service.VariantServiceGrpc.VariantServiceImplBase
+        implements IGrpcService {
 
+    private DBAdaptorFactory dbAdaptorFactory;
+
+    public VariantGrpcService(DBAdaptorFactory dbAdaptorFactory) {
+        this.dbAdaptorFactory = dbAdaptorFactory;
+    }
 
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
