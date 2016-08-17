@@ -27,4 +27,25 @@ public class CellbaseGrpcClient {
         clients.putIfAbsent("GENE", new GeneGrpcClient(channel));
         return (GeneGrpcClient) clients.get("GENE");
     }
+
+    public TranscriptGrpcClient getTranscriptClient() {
+        clients.putIfAbsent("TRANSCRIPT", new TranscriptGrpcClient(channel));
+        return (TranscriptGrpcClient) clients.get("TRANSCRIPT");
+    }
+
+    public VariationGrpcClient getVariationClient() {
+        clients.putIfAbsent("VARIATION", new VariationGrpcClient(channel));
+        return (VariationGrpcClient) clients.get("VARIATION");
+    }
+
+    public RegulatoryGrpcClient getRegulatoryRegionClient() {
+        clients.putIfAbsent("REGULATORY_REGION", new RegulatoryGrpcClient(channel));
+        return (RegulatoryGrpcClient) clients.get("REGULATORY_REGION");
+    }
+
+    public VariantAnnotationGrpcClient getVariantAnnotationGrpcClient() {
+        clients.putIfAbsent("VARIANT_ANNOTATION", new VariantAnnotationGrpcClient(channel));
+        return (VariantAnnotationGrpcClient) clients.get("VARIANT_ANNOTATION");
+    }
+
 }
