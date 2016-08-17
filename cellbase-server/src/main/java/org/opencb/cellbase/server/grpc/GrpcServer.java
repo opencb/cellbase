@@ -71,6 +71,7 @@ public class GrpcServer {
                 .addService(new TranscriptGrpcService(dbAdaptorFactory))
                 .addService(new VariantGrpcService(dbAdaptorFactory))
                 .addService(new RegulatoryGrpcService(dbAdaptorFactory))
+                .addService(new VariantAnnotationGrpcService(dbAdaptorFactory))
                 .build()
                 .start();
 

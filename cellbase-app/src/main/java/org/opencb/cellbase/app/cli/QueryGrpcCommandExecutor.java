@@ -23,6 +23,7 @@ import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
+import org.opencb.biodata.models.variant.protobuf.VariantAnnotationProto;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
 import org.opencb.cellbase.server.grpc.service.*;
 
@@ -102,6 +103,9 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                     break;
                 case "transcript":
                     executeTranscriptQuery(request, output);
+                    break;
+                case "variant_annotation":
+                    executeVariantAnnotationQuery(request, output);
                     break;
 //                case "conservation":
 //                    break;
@@ -231,6 +235,33 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         if (queryGrpcCommandOptions.distinct != null) {
             ServiceTypesModel.StringArrayResponse values = variantServiceBlockingStub.distinct(request);
             output.println(values);
+        }
+    }
+
+    private void executeVariantAnnotationQuery(GenericServiceModel.Request request, PrintStream output) throws JsonProcessingException {
+        VariantAnnotationServiceGrpc.VariantAnnotationServiceBlockingStub variantAnnotationServiceBlockingStub =
+                VariantAnnotationServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "annotate":
+                    Iterator<VariantAnnotationProto.VariantAnnotation> variantAnnotationIterator =
+                            variantAnnotationServiceBlockingStub.get(request);
+                    while (variantAnnotationIterator.hasNext()) {
+                        VariantAnnotationProto.VariantAnnotation next = variantAnnotationIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                case "score":
+                    Iterator<VariantAnnotationProto.Score> scoreIterator = variantAnnotationServiceBlockingStub.getCadd(request);
+                    while (scoreIterator.hasNext()) {
+                        VariantAnnotationProto.Score score = scoreIterator.next();
+                        output.println(score.toString());
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
