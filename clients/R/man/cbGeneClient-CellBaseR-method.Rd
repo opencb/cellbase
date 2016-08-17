@@ -15,24 +15,26 @@
 
 \item{resource}{a character vector to specify the resource to be queried}
 
-\item{filters}{a object of class CellBaseParam specifying additional filters for the CellBaseR}
+\item{filters}{an object of class CellBaseParam specifying additional filters
+for the CellBaseR}
 
 \item{...}{any extra arguments}
 }
 \value{
-an object of class CellBaseResponse which holds a dataframe with the results of the query
+an object of class CellBaseResponse which holds a dataframe with the 
+results of the query
 }
 \description{
 A method to query gene data from Cellbase web services.
 }
 \details{
 Please, for details on possible values for the parameters 
-and  additional filters of this function refer to https://github.com/opencb/cellbase/wiki and the RESTful API 
+and  additional filters of this function refer to
+ https://github.com/opencb/cellbase/wiki and the RESTful API 
 documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
-   res <- cbGeneClient(object=cb, ids=c("TP73","TET1"), resource="clinical")
+   res <- cbGeneClient(object=cb, ids=c("TP73","TET1"), resource="info")
 }
 
