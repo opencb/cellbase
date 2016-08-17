@@ -123,26 +123,4 @@ public class RegulatoryGrpcService extends RegulatoryRegionServiceGrpc.Regulator
 
     }
 
-//    private RegulatoryRegionModel.RegulatoryRegion convert(Document document) {
-//        RegulatoryRegionModel.RegulatoryRegion.Builder builder = RegulatoryRegionModel.RegulatoryRegion.newBuilder()
-//                .setId((String) document.getOrDefault("id", ""))
-//                .setChromosome((String) document.getOrDefault("chromosome", ""))
-//                .setSource((String) document.getOrDefault("source", ""))
-//                .setFeatureType((String) document.getOrDefault("featureType", ""))
-//                .setStart(document.getInteger("start", 0))
-//                .setEnd(document.getInteger("end", 0))
-//                .setScore((String) document.getOrDefault("score", ""))
-//                .setStrand((String) document.getOrDefault("strand", ""))
-//                .setFrame((String) document.getOrDefault("frame", ""))
-//                .setItemRGB((String) document.getOrDefault("itemRGB", ""))
-//                .setName((String) document.getOrDefault("name", ""))
-//                .setFeatureClass((String) document.getOrDefault("featureClass", ""))
-//                .setAlias((String) document.getOrDefault("alias", ""));
-//        List<String> cellTypes = (List<String>) document.get("cellTypes");
-//        if (cellTypes != null) {
-//            builder.addAllCellTypes(cellTypes);
-//        }
-//        builder.setMatrix((String) document.getOrDefault("matrix", ""));
-//        return builder.build();
-//    }
 }
