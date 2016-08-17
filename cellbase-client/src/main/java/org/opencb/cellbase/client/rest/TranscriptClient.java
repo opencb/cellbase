@@ -16,13 +16,14 @@ import java.util.List;
  */
 public class TranscriptClient extends ParentRestClient<Transcript> {
 
-    public TranscriptClient(ClientConfiguration configuration) {
-        super(configuration);
+    public TranscriptClient(String species, ClientConfiguration configuration) {
+        super(species, configuration);
         this.clazz = Transcript.class;
 
         this.category = "feature";
         this.subcategory = "transcript";
     }
+
 
     public QueryResponse<Gene> getGene(String id, QueryOptions options) throws IOException {
         return execute(id, "gene", options, Gene.class);

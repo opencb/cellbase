@@ -56,7 +56,7 @@ public class QueryCommandExecutor extends CommandExecutor {
 
     @Override
     public void execute() {
-        dbAdaptorFactory = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(configuration);
+        dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(configuration);
 
         if (queryCommandOptions.limit == 0) {
             queryCommandOptions.limit = 10;

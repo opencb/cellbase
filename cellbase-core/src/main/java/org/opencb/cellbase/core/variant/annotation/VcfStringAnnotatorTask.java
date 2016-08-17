@@ -31,12 +31,12 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
-public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, Variant> {
+public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
-    private static VariantNormalizer normalizer = new VariantNormalizer(false, false, true);
+    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
     private boolean normalize;
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version, List<VariantAnnotator> variantAnnotatorList) {
@@ -58,7 +58,7 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.Task<String, V
         }
     }
 
-    public List<Variant> apply(List<String> batch) {
+    public List<Variant> apply(List<String> batch) throws Exception {
         List<Variant> variantList = parseVariantList(batch);
         List<Variant> normalizedVariantList;
         if (normalize) {

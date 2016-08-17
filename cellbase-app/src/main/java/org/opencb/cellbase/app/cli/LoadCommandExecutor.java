@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.cli;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
@@ -87,53 +88,70 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
             loadRunner = new LoadRunner(loader, database, numThreads, configuration);
 
-            String[] buildOptions;
+            String[] loadOptions;
             if (loadCommandOptions.data.equals("all")) {
-                buildOptions = new String[]{"genome", "gene", "conservation", "regulatory_region",
-                        "protein", "ppi", "protein_functional_prediction", "variation", "variation_functional_score", "clinical", };
+                loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.CONSERVATION_DATA,
+                        EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
+                        EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
+                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_DATA, };
             } else {
-                buildOptions = loadCommandOptions.data.split(",");
+                loadOptions = loadCommandOptions.data.split(",");
             }
 
-            for (int i = 0; i < buildOptions.length; i++) {
-                String buildOption = buildOptions[i];
+            for (int i = 0; i < loadOptions.length; i++) {
+                String loadOption = loadOptions[i];
                 try {
-                    switch (buildOption) {
-                        case "genome":
+                    switch (loadOption) {
+                        case EtlCommons.GENOME_DATA:
                             loadRunner.load(input.resolve("genome_info.json"), "genome_info");
                             loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
+                            loadIfExists(input.resolve("genomeVersion.json"), "metadata");
                             loadRunner.index("genome_sequence");
                             break;
-                        case "gene":
+                        case EtlCommons.GENE_DATA:
                             loadRunner.load(input.resolve("gene.json.gz"), "gene");
+                            loadIfExists(input.resolve("dgidbVersion.json"), "metadata");
+                            loadIfExists(input.resolve("ensemblCoreVersion.json"), "metadata");
+                            loadIfExists(input.resolve("uniprotXrefVersion.json"), "metadata");
+                            loadIfExists(input.resolve("geneExpressionAtlasVersion.json"), "metadata");
+                            loadIfExists(input.resolve("hpoVersion.json"), "metadata");
+                            loadIfExists(input.resolve("disgenetVersion.json"), "metadata");
                             loadRunner.index("gene");
                             break;
-                        case "variation":
+                        case EtlCommons.VARIATION_DATA:
                             loadVariationData();
                             break;
-                        case "variation_functional_score":
+                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
+                            loadIfExists(input.resolve("caddVersion.json"), "metadata");
                             loadRunner.index("variation_functional_score");
                             break;
-                        case "conservation":
+                        case EtlCommons.CONSERVATION_DATA:
                             loadConservation();
                             break;
-                        case "regulatory_region":
+                        case EtlCommons.REGULATION_DATA:
                             loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
+                            loadIfExists(input.resolve("ensemblRegulationVersion.json"), "metadata");
+                            loadIfExists(input.resolve("mirbaseVersion.json"), "metadata");
+                            loadIfExists(input.resolve("targetScanVersion.json"), "metadata");
+                            loadIfExists(input.resolve("miRTarBaseVersion.json"), "metadata");
                             loadRunner.index("regulatory_region");
                             break;
-                        case "protein":
+                        case EtlCommons.PROTEIN_DATA:
                             loadRunner.load(input.resolve("protein.json.gz"), "protein");
+                            loadIfExists(input.resolve("uniprotVersion.json"), "metadata");
+                            loadIfExists(input.resolve("interproVersion.json"), "metadata");
                             loadRunner.index("protein");
                             break;
-                        case "ppi":
+                        case EtlCommons.PPI_DATA:
                             loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
+                            loadIfExists(input.resolve("intactVersion.json"), "metadata");
                             loadRunner.index("protein_protein_interaction");
                             break;
-                        case "protein_functional_prediction":
+                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA:
                             loadProteinFunctionalPrediction();
                             break;
-                        case "clinical":
+                        case EtlCommons.CLINICAL_DATA:
                             loadClinical();
                             break;
                         default:
@@ -145,6 +163,21 @@ public class LoadCommandExecutor extends CommandExecutor {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
+            ExecutionException, InstantiationException, IOException, IllegalAccessException, InvocationTargetException,
+            ClassNotFoundException {
+        File file = new File(path.toString());
+        if (file.exists()) {
+            if (file.isFile()) {
+                loadRunner.load(path, collection);
+            } else {
+                logger.warn("{} is not a file - skipping", path.toString());
+            }
+        } else {
+            logger.warn("{} does not exist - skipping", path.toString());
         }
     }
 
@@ -189,6 +222,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 logger.info("Loading file '{}'", entry.toString());
                 loadRunner.load(input.resolve(entry.getFileName()), "variation");
             }
+            loadIfExists(input.resolve("ensemblVariationVersion.json"), "metadata");
             loadRunner.index("variation");
             // Custom update required e.g. population freqs loading
         } else {
@@ -209,6 +243,9 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "conservation");
         }
+        loadIfExists(input.resolve("gerpVersion.json"), "metadata");
+        loadIfExists(input.resolve("phastConsVersion.json"), "metadata");
+        loadIfExists(input.resolve("phyloPVersion.json"), "metadata");
         loadRunner.index("conservation");
     }
 
@@ -241,13 +278,14 @@ public class LoadCommandExecutor extends CommandExecutor {
                 try {
                     logger.debug("Loading '{}' ...", entry);
                     loadRunner.load(path, entry);
+                    loadIfExists(input.resolve("clinvarVersion.json"), "metadata");
+                    loadIfExists(input.resolve("gwasVersion.json"), "metadata");
                 } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
                         | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
                     logger.error(e.toString());
                 }
             }
         });
-
         loadRunner.index("clinical");
     }
 

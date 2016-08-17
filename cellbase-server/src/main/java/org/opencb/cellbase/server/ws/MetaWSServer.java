@@ -20,8 +20,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +33,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -44,7 +46,10 @@ import java.util.Arrays;
 @Api(value = "Meta", description = "Meta RESTful Web Services API")
 public class MetaWSServer extends GenericRestWSServer {
 
-    public MetaWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+    public MetaWSServer(@PathParam("version")
+                        @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                defaultValue = "latest") String version,
+                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
         super(version, uriInfo, hsr);
     }
@@ -52,10 +57,12 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/versions")
-    @ApiOperation(httpMethod = "GET", value = "Returns source urls used to build current CellBase installation",
+    @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
+            + "data files were downloaded.",
             response = CellBaseConfiguration.DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion() {
-        return createOkResponse(cellBaseConfiguration.getDownload(), MediaType.APPLICATION_JSON_TYPE);
+        CellBaseDBAdaptor metaDBAdaptor = dbAdaptorFactory2.getMetaDBAdaptor(this.species, this.assembly);
+        return createOkResponse(metaDBAdaptor.nativeGet(new Query(), new QueryOptions()));
     }
 
     @GET
@@ -94,10 +101,10 @@ public class MetaWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{species}/{category}/{subcategory}")
+    @Path("/{category}/{subcategory}")
     @ApiOperation(httpMethod = "GET", value = "To be fixed",
             response = CellBaseConfiguration.SpeciesProperties.class, responseContainer = "QueryResponse", hidden = true)
-    public Response getSubcategory(@PathParam("species") String species, @PathParam("category") String category,
+    public Response getSubcategory(@PathParam("category") String category,
                                    @PathParam("subcategory") String subcategory) {
         return getCategory(category);
     }

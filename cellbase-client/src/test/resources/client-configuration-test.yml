@@ -1,11 +1,12 @@
 ---
 version: "v4"
+defaultSpecies: "hsapiens"
 logLevel: "info"
 logFile: ""
 rest:
   hosts:
-  - "http://localhost:8080/cellbase-4.1.0-beta"
-  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.1.0-beta"
+  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-beta"
+  - "http://localhost:8080/cellbase-4.5.0-beta"
   timeout: 2000
 grpc:
   host: "localhost:9091"

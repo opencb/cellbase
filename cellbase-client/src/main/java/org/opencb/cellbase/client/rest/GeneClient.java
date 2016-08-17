@@ -34,14 +34,15 @@ import java.util.List;
  */
 public class GeneClient extends FeatureClient<Gene> {
 
-    public GeneClient(ClientConfiguration clientConfiguration) {
-        super(clientConfiguration);
+    public GeneClient(String species, ClientConfiguration clientConfiguration) {
+        super(species, clientConfiguration);
 
         this.clazz = Gene.class;
 
         this.category = "feature";
         this.subcategory = "gene";
     }
+
 
     public QueryResponse<String> getBiotypes(Query query) throws IOException {
         return execute("biotype", query, new QueryOptions(), String.class);
