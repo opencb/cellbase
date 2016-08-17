@@ -27,7 +27,6 @@ and  additional filters of this function refer to https://github.com/opencb/cell
 documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    cbParam <- CellBaseParam(gene=c("TP73","TET1"))
    res <- cbClinicalClient(object=cb,filters=cbParam)

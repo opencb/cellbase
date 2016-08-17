@@ -19,7 +19,7 @@ An accessor method to get CellBaseResponse cbData slot
 }
 \examples{
  cb <- CellBaseR()
- res <- cbSnpClient(object=cb, ids="rs6025", resource="info")
+ res <- cbGeneClient(object=cb, ids="TET1", resource="info")
  res <- cbData(res)
 }
 

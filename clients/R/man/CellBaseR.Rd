@@ -23,6 +23,9 @@ queries will be sent to the server in batches. This slot indicates the size of e
 \value{
 An object of class CellBaseR
 }
+\description{
+This is a constructor function for CellBaseR object
+}
 \details{
 This class defines the CellBaseR object. It holds the default
 configuration required by CellBaseR methods to connect to the
@@ -34,7 +37,6 @@ following parameters.
 run cbSpeciesClient to see avaiable species and their corresponding data
 }
 \examples{
-library(cellbaseR)
    cb <- CellBaseR()
    print(cb)
 }

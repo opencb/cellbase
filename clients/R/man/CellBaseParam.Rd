@@ -35,7 +35,6 @@ use the CellBaseParam object to control what results are returned from the
 CellBaseR methods
 }
 \examples{
-library(cellbaseR)
 cbParam <- CellBaseParam(genome="GRCh38",gene=c("TP73","TET1"))
 print(cbParam)
 }

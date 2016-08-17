@@ -11,7 +11,6 @@
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbProteinClient(object=cb, ids="O15350", resource="info")
 #' @export
