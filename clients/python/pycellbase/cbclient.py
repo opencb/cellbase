@@ -40,7 +40,7 @@ class CellBaseClient(object):
                        resource=resource,
                        options=options)
 
-        return response.json()
+        return response
 
     def get_gene_client(self):
         """Creates the gene client"""

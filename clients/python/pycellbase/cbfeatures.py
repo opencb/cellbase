@@ -49,7 +49,7 @@ class ProteinClient(_Feature):
 
 class VariationClient(_Feature):
     def __init__(self, configuration):
-        _subcategory = "snp"
+        _subcategory = "variation"
         super(VariationClient, self).__init__(configuration, _subcategory)
 
 
