@@ -68,7 +68,6 @@ def get(host, port, version, species, category, subcategory, resource,
     call = True
     current_query_id = None  # Current REST query
     while call:
-
         # Check 'limit' parameter if there is a maximum limit of results
         if max_limit is not None and max_limit <= call_limit:
                 options['limit'] = max_limit
@@ -132,5 +131,8 @@ def get(host, port, version, species, category, subcategory, resource,
         # Subtracting the number of returned results from the maximum goal
         if max_limit is not None:
             max_limit -= call_limit
+            # When 'limit' is 0 returns all the results. So, break the loop if 0
+            if max_limit == 0:
+                break
 
     return final_response
