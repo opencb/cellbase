@@ -64,7 +64,7 @@ public class GeneGrpcService extends GeneServiceGrpc.GeneServiceImplBase impleme
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
-        QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptions().get("distinct"));
+        QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptionsMap().get("distinct"));
         List values = queryResult.getResult();
         ServiceTypesModel.StringArrayResponse distinctValues = ServiceTypesModel.StringArrayResponse.newBuilder()
                 .addAllValues(values)
@@ -151,23 +151,4 @@ public class GeneGrpcService extends GeneServiceGrpc.GeneServiceImplBase impleme
 
     }
 
-//    private GeneModel.Gene convert(Document document) {
-//        GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
-//                .setId((String) document.getOrDefault("id", ""))
-//                .setName((String) document.getOrDefault("name", ""))
-//                .setChromosome((String) document.getOrDefault("chromosome", ""))
-//                .setStart(document.getInteger("start"))
-//                .setEnd(document.getInteger("end"))
-//                .setBiotype((String) document.getOrDefault("biotype", ""))
-//                .setStatus((String) document.getOrDefault("status", ""))
-//                .setStrand((String) document.getOrDefault("strand", ""))
-//                .setSource((String) document.getOrDefault("source", ""));
-////                .addAllTranscripts()
-////        ArrayList<Document> tr = document.get("transcripts", ArrayList.class);
-////        for (Document document1 : tr) {
-////            convert(doc)
-////        }
-//
-//        return builder.build();
-//    }
 }
