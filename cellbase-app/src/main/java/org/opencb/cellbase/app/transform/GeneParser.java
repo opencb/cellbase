@@ -429,7 +429,8 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's cDNA sequences...");
         Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
-        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)) {
+        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)
+                && Files.size(cDnaFastaFile) > 0) {
             FastaReader fastaReader = new FastaReader(cDnaFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
@@ -446,7 +447,8 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Fasta> getProteinSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's protein sequences...");
         Map<String, Fasta> proteinSequencesMap = new HashMap<>();
-        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)) {
+        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)
+                && Files.size(proteinFastaFile) > 0) {
             FastaReader fastaReader = new FastaReader(proteinFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
@@ -465,7 +467,7 @@ public class GeneParser extends CellBaseParser {
         logger.info("Loading gene description data...");
         Map<String, String> geneDescriptionMap = new HashMap<>();
         String[] fields;
-        if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
+        if (geneDescriptionFile != null && Files.exists(geneDescriptionFile) && Files.size(geneDescriptionFile) > 0) {
             List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
             for (String line : lines) {
                 fields = line.split("\t", -1);
