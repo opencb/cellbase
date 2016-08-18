@@ -468,7 +468,8 @@ public class GeneParser extends CellBaseParser {
         Map<String, String> geneDescriptionMap = new HashMap<>();
         String[] fields;
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile) && Files.size(geneDescriptionFile) > 0) {
-            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
+            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.forName("ISO-8859-1"));
+//            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
             for (String line : lines) {
                 fields = line.split("\t", -1);
                 geneDescriptionMap.put(fields[0], fields[1]);
