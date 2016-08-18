@@ -9,6 +9,7 @@ import org.opencb.biodata.models.core.protobuf.TranscriptModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
 import org.opencb.cellbase.server.grpc.service.GenomicRegionServiceGrpc;
@@ -79,8 +80,18 @@ public class GenomicRegionGrpcService extends GenomicRegionServiceGrpc.GenomicRe
     }
 
     @Override
-    public void getRegulatoryRegion(GenericServiceModel.Request request, StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
-        super.getRegulatoryRegion(request, responseObserver);
+    public void getRegulatoryRegion(GenericServiceModel.Request request,
+                                    StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
+        while (iterator.hasNext()) {
+            Document document = (Document) iterator.next();
+            responseObserver.onNext(ProtoConverterUtils.createRegulatoryRegion(document));
+        }
+        responseObserver.onCompleted();
     }
 
     @Override
