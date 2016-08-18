@@ -120,7 +120,8 @@ public class GeneParserUtils {
         logger.info("Loading xref data...");
         String[] fields;
         if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
-            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
+            List<String> lines = Files.readAllLines(xrefsFile, Charset.forName("ISO-8859-1"));
+//            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
             for (String line : lines) {
                 fields = line.split("\t", -1);
                 if (fields.length >= 4) {
