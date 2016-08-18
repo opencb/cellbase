@@ -3,18 +3,18 @@ package org.opencb.cellbase.server.grpc;
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
-import org.opencb.cellbase.core.api.DBAdaptorFactory;
-import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.api.RegulationDBAdaptor;
-import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
 import org.opencb.cellbase.server.grpc.service.GenomicRegionServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +76,20 @@ public class GenomicRegionGrpcService extends GenomicRegionServiceGrpc.GenomicRe
 
     @Override
     public void getSequence(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.StringResponse> responseObserver) {
-        super.getSequence(request, responseObserver);
+        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(request.getSpecies(), request.getAssembly());
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+
+        List<QueryResult<GenomeSequenceFeature>> queryResults =
+                genomeDBAdaptor.getSequence(Region.parseRegions(query.getString("region")), queryOptions);
+        for (QueryResult<GenomeSequenceFeature> result : queryResults) {
+            String value = result.getResult().get(0).getSequence();
+            ServiceTypesModel.StringResponse sequence = ServiceTypesModel.StringResponse.newBuilder()
+                    .setValue(value)
+                    .build();
+            responseObserver.onNext(sequence);
+        }
+        responseObserver.onCompleted();
     }
 
     @Override
