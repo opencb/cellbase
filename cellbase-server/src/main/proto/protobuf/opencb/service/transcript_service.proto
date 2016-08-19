@@ -23,4 +23,6 @@ service TranscriptService {
 
     rpc groupBy(Request) returns (GroupResponse) {}
 
+    rpc getCdna(Request) returns (StringResponse) {}
+
 }

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>4.1.0-beta</version>
+        <version>4.5.0-beta</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -118,7 +118,7 @@
                         </program>
                         <program>
                             <name>cellbase-grpc.sh</name>
-                            <mainClass>org.opencb.cellbase.server.grpc.GeneGrpcServer</mainClass>
+                            <mainClass>org.opencb.cellbase.server.grpc.GrpcServer</mainClass>
                         </program>
                     </programs>
                 </configuration>

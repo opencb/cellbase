@@ -18,11 +18,8 @@ package org.opencb.cellbase.server.grpc;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
-import org.opencb.cellbase.server.grpc.service.*;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +31,7 @@ import java.io.IOException;
 /**
  * Created by imedina on 16/12/15.
  */
-public class GenericGrpcServer {
+public class GrpcServer {
 
     private Server server;
     private int port = 9090;
@@ -70,18 +67,19 @@ public class GenericGrpcServer {
 
     private void start() throws Exception {
         server = ServerBuilder.forPort(port)
-                .addService(GeneServiceGrpc.bindService(new GeneGrpcServer()))
-                .addService(TranscriptServiceGrpc.bindService(new TranscriptGrpcServer()))
-                .addService(VariantServiceGrpc.bindService(new VariantGrpcServer()))
-                .addService(RegulatoryRegionServiceGrpc.bindService(new RegulatoryGrpcServer()))
+                .addService(new GeneGrpcService(dbAdaptorFactory))
+                .addService(new TranscriptGrpcService(dbAdaptorFactory))
+                .addService(new VariantGrpcService(dbAdaptorFactory))
+                .addService(new RegulatoryGrpcService(dbAdaptorFactory))
                 .build()
                 .start();
+
         logger.info("Server started, listening on {}", port);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                GenericGrpcServer.this.stop();
+                GrpcServer.this.stop();
                 System.err.println("*** server shut down");
             }
         });
@@ -100,29 +98,8 @@ public class GenericGrpcServer {
     }
 
 
-    protected Query createQuery(GenericServiceModel.Request request) {
-        Query query = new Query();
-        for (String key : request.getQuery().keySet()) {
-            if (request.getQuery().get(key) != null) {
-                query.put(key, request.getQuery().get(key));
-            }
-        }
-        return query;
-    }
-
-    protected QueryOptions createQueryOptions(GenericServiceModel.Request request) {
-        QueryOptions queryOptions = new QueryOptions();
-        for (String key : request.getOptions().keySet()) {
-            if (request.getOptions().get(key) != null) {
-                queryOptions.put(key, request.getOptions().get(key));
-            }
-        }
-        return queryOptions;
-    }
-
-
     public static void main(String[] args) throws Exception {
-        final GenericGrpcServer server = new GenericGrpcServer();
+        final GrpcServer server = new GrpcServer();
         server.start();
         server.blockUntilShutdown();
     }

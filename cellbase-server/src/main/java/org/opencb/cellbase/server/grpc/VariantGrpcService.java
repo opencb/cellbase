@@ -20,9 +20,9 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
-import org.opencb.cellbase.server.grpc.service.VariantServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -33,8 +33,14 @@ import java.util.List;
 /**
  * Created by swaathi on 16/12/15.
  */
-public class VariantGrpcServer extends GenericGrpcServer implements VariantServiceGrpc.VariantService {
+public class VariantGrpcService extends org.opencb.cellbase.server.grpc.service.VariantServiceGrpc.VariantServiceImplBase
+        implements IGrpcService {
 
+    private DBAdaptorFactory dbAdaptorFactory;
+
+    public VariantGrpcService(DBAdaptorFactory dbAdaptorFactory) {
+        this.dbAdaptorFactory = dbAdaptorFactory;
+    }
 
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
@@ -55,7 +61,7 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
                          StreamObserver<ServiceTypesModel.StringArrayResponse> responseObserver) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
         Query query = createQuery(request);
-        QueryResult queryResult = variationDBAdaptor.distinct(query, request.getOptions().get("distinct"));
+        QueryResult queryResult = variationDBAdaptor.distinct(query, request.getOptionsMap().get("distinct"));
         List values = queryResult.getResult();
         ServiceTypesModel.StringArrayResponse distinctValues = ServiceTypesModel.StringArrayResponse.newBuilder()
                 .addAllValues(values)
@@ -73,7 +79,6 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
         QueryResult first = variationDBAdaptor.first(queryOptions);
         responseObserver.onNext(ProtoConverterUtils.createVariant((Document) first.getResult().get(0)));
         responseObserver.onCompleted();
-
     }
 
     @Override
@@ -104,21 +109,4 @@ public class VariantGrpcServer extends GenericGrpcServer implements VariantServi
 
     }
 
-//    private VariantProto.Variant convert(Document document) {
-//        VariantProto.Variant.Builder builder = VariantProto.Variant.newBuilder()
-//                .setChromosome(document.getString("chromosome"))
-//                .setStart(document.getInteger("start"))
-//                .setEnd(document.getInteger("end"))
-//                .setReference((String) document.getOrDefault("reference", ""))
-//                .setReference((String) document.getOrDefault("alternate", ""))
-//                .setStrand(document.getString("strand"));
-////                .setId(document.getString("id"))
-////                .setName(document.getString("name"))
-////                .setBiotype(document.getString("biotype"))
-////                .setStatus(document.getString("status"))
-////                .setSource(document.getString("source"));
-////                .addAllTranscripts()
-//
-//        return builder.build();
-//    }
 }

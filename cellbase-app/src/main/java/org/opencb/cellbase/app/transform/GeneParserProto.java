@@ -33,7 +33,8 @@ import org.opencb.biodata.models.core.protobuf.TranscriptModel.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -63,7 +64,7 @@ public class GeneParserProto extends CellBaseParser {
     private Path geneDrugFile;
     private Path genomeSequenceFilePath;
 
-    private CellBaseConfiguration.SpeciesProperties.Species species;
+    private Species species;
 
     private Connection sqlConn;
     private PreparedStatement sqlQuery;
@@ -74,7 +75,7 @@ public class GeneParserProto extends CellBaseParser {
 
 
     public GeneParserProto(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                           CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
+                           Species species, CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
                 geneDirectoryPath.resolve("mirna.txt"),
@@ -88,7 +89,7 @@ public class GeneParserProto extends CellBaseParser {
 
     public GeneParserProto(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
                            Path mirnaFile, Path geneExpressionFile, Path geneDrugFile, Path genomeSequenceFilePath,
-                           CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
+                           Species species, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;

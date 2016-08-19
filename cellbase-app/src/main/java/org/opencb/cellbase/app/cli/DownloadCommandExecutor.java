@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;

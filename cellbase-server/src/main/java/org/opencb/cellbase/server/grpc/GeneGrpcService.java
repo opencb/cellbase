@@ -22,6 +22,7 @@ import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.server.grpc.service.GeneServiceGrpc;
 import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
@@ -36,8 +37,13 @@ import java.util.List;
 /**
  * Created by swaathi on 16/12/15.
  */
-public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc.GeneService {
+public class GeneGrpcService extends GeneServiceGrpc.GeneServiceImplBase implements IGrpcService {
 
+    private DBAdaptorFactory dbAdaptorFactory;
+
+    public GeneGrpcService(DBAdaptorFactory dbAdaptorFactory) {
+        this.dbAdaptorFactory = dbAdaptorFactory;
+    }
 
     @Override
     public void count(GenericServiceModel.Request request, StreamObserver<ServiceTypesModel.LongResponse> responseObserver) {
@@ -58,7 +64,7 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(request.getSpecies(), request.getAssembly());
 
         Query query = createQuery(request);
-        QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptions().get("distinct"));
+        QueryResult queryResult = geneDBAdaptor.distinct(query, request.getOptionsMap().get("distinct"));
         List values = queryResult.getResult();
         ServiceTypesModel.StringArrayResponse distinctValues = ServiceTypesModel.StringArrayResponse.newBuilder()
                 .addAllValues(values)
@@ -145,23 +151,4 @@ public class GeneGrpcServer extends GenericGrpcServer implements GeneServiceGrpc
 
     }
 
-//    private GeneModel.Gene convert(Document document) {
-//        GeneModel.Gene.Builder builder = GeneModel.Gene.newBuilder()
-//                .setId((String) document.getOrDefault("id", ""))
-//                .setName((String) document.getOrDefault("name", ""))
-//                .setChromosome((String) document.getOrDefault("chromosome", ""))
-//                .setStart(document.getInteger("start"))
-//                .setEnd(document.getInteger("end"))
-//                .setBiotype((String) document.getOrDefault("biotype", ""))
-//                .setStatus((String) document.getOrDefault("status", ""))
-//                .setStrand((String) document.getOrDefault("strand", ""))
-//                .setSource((String) document.getOrDefault("source", ""));
-////                .addAllTranscripts()
-////        ArrayList<Document> tr = document.get("transcripts", ArrayList.class);
-////        for (Document document1 : tr) {
-////            convert(doc)
-////        }
-//
-//        return builder.build();
-//    }
 }

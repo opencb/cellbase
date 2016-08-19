@@ -27,7 +27,7 @@ import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDBException;
@@ -61,7 +61,7 @@ public class GeneParser extends CellBaseParser {
     private Path disgenetFile;
     private Path genomeSequenceFilePath;
 
-    private CellBaseConfiguration.SpeciesProperties.Species species;
+    private Species species;
 
     private Connection sqlConn;
     private PreparedStatement sqlQuery;
@@ -71,7 +71,7 @@ public class GeneParser extends CellBaseParser {
     private Set<String> indexedSequences;
 
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseConfiguration.SpeciesProperties.Species species,
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, Species species,
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
@@ -88,7 +88,7 @@ public class GeneParser extends CellBaseParser {
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path genomeSequenceFilePath,
-                      CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
+                      Species species, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -429,7 +429,8 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's cDNA sequences...");
         Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
-        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)) {
+        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)
+                && Files.size(cDnaFastaFile) > 0) {
             FastaReader fastaReader = new FastaReader(cDnaFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
@@ -446,7 +447,8 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Fasta> getProteinSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's protein sequences...");
         Map<String, Fasta> proteinSequencesMap = new HashMap<>();
-        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)) {
+        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)
+                && Files.size(proteinFastaFile) > 0) {
             FastaReader fastaReader = new FastaReader(proteinFastaFile);
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
@@ -465,8 +467,9 @@ public class GeneParser extends CellBaseParser {
         logger.info("Loading gene description data...");
         Map<String, String> geneDescriptionMap = new HashMap<>();
         String[] fields;
-        if (geneDescriptionFile != null && Files.exists(geneDescriptionFile)) {
-            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
+        if (geneDescriptionFile != null && Files.exists(geneDescriptionFile) && Files.size(geneDescriptionFile) > 0) {
+            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.forName("ISO-8859-1"));
+//            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
             for (String line : lines) {
                 fields = line.split("\t", -1);
                 geneDescriptionMap.put(fields[0], fields[1]);

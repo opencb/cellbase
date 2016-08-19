@@ -117,9 +117,9 @@ public class PostLoadCommandExecutor extends CommandExecutor {
 //            e.printStackTrace();
 //        }
 
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getUser());
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getHost());
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getPassword());
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabases().get("mongodb").getUser());
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabases().get("mongodb").getHost());
+        System.out.println("cellBaseConfiguration = " + configuration.getDatabases().get("mongodb").getPassword());
         DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
 //        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(adaptorCellbaseConfiguration);
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", assembly);

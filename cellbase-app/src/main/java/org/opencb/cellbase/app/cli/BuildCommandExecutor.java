@@ -19,7 +19,7 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.variation.VariationParser;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -55,7 +55,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private File ensemblScriptsFolder;
     private File proteinScriptsFolder;
 
-    private CellBaseConfiguration.SpeciesProperties.Species species;
+    private Species species;
 
     public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
@@ -94,7 +94,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
-            for (CellBaseConfiguration.SpeciesProperties.Species sp : configuration.getAllSpecies()) {
+            for (Species sp : configuration.getAllSpecies()) {
                 if (buildCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getId())) {
@@ -111,13 +111,13 @@ public class BuildCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if (buildCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{EtlCommons.GENOME_INFO_DATA, EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA,
-                            EtlCommons.DISGENET_DATA, EtlCommons.HPO_DATA, EtlCommons.CONSERVATION_DATA,
-                            EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
-                            EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                            EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINVAR_DATA, EtlCommons.COSMIC_DATA,
-                            EtlCommons.GWAS_DATA, };
-
+//                    buildOptions = new String[]{EtlCommons.GENOME_INFO_DATA, EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA,
+//                            EtlCommons.DISGENET_DATA, EtlCommons.HPO_DATA, EtlCommons.CONSERVATION_DATA,
+//                            EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
+//                            EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
+//                            EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINVAR_DATA, EtlCommons.COSMIC_DATA,
+//                            EtlCommons.GWAS_DATA, };
+                    buildOptions = species.getData().toArray(new String[0]);
                 } else {
                     buildOptions = buildCommandOptions.data.split(",");
                 }
@@ -302,7 +302,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
     }
 
-    private void getProteinFunctionPredictionMatrices(CellBaseConfiguration.SpeciesProperties.Species sp, Path geneFolder)
+    private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
 
