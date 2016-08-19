@@ -1,3 +1,4 @@
+import requests
 import json
 import yaml
 
@@ -6,8 +7,8 @@ class ConfigClient(object):
     """Sets up the default configuration for the CellBase client"""
     def __init__(self, config_fpath=None):
         # Default config params
-        hosts = ['bioinfodev.hpc.cam.ac.uk', 'bioinfo.hpc.cam.ac.uk']
-        self._host = hosts[0]
+        self._hosts = ['bioinfodev.hpc.cam.ac.uk', 'bioinfo.hpc.cam.ac.uk']
+        self._host = self._get_available_host()
         self._port = '80'
         self._version = 'latest'
         self._species = 'hsapiens'
@@ -29,7 +30,8 @@ class ConfigClient(object):
 
         if config_dict is not None:
             if 'host' in config_dict['rest']:
-                self._host = config_dict['rest']['hosts'][0]
+                self._hosts = config_dict['rest']['hosts']
+                self._host = self._get_available_host()
             if 'port' in config_dict['rest']:
                 self._port = config_dict['rest']['port']
             if 'version' in config_dict:
@@ -39,9 +41,23 @@ class ConfigClient(object):
 
         config_fhand.close()
 
-    def _check_host(self):
-        # TODO Check host availability; Choose another if needed.
-        pass
+    def _get_available_host(self):
+        """Returns the first host which is available"""
+        available_host = None
+        for host in self._hosts:
+            try:
+                r = requests.head('http://' + host)
+                if r.status_code == 200:  # Successful HTTP request
+                    available_host = host
+                    break
+            except requests.ConnectionError:
+                pass
+
+        if available_host is None:
+            msg = 'No available host found'
+            raise ConnectionError(msg)
+        else:
+            return available_host
 
     @property
     def version(self):
