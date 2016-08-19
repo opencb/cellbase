@@ -28,8 +28,8 @@ class CellBaseClientTest(unittest.TestCase):
         cc = ConfigClient()
         cbc = CellBaseClient(cc)
 
-        r = cbc.get('feature', 'gene', 'protein', 'BRCA1')
-        assert r['response'][0]['result'][0]['name'][0] == 'BRCA1_HUMAN'
+        res = cbc.get('feature', 'gene', 'protein', 'BRCA1')
+        assert res[0]['result'][0]['name'][0] == 'BRCA1_HUMAN'
 
 
 if __name__ == '__main__':

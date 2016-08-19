@@ -1,8 +1,14 @@
 import requests
+import threading
+import itertools
+try:
+    from Queue import Queue
+except ImportError:
+    from queue import Queue
 
 
 def _create_rest_url(host, port, version, species, category, subcategory,
-                    resource, query_id, options):
+                     resource, query_id, options):
     """Creates the URL for querying the REST service"""
 
     # cellbase_rest = 'cellbase/webservices/rest'
@@ -36,9 +42,80 @@ def _create_rest_url(host, port, version, species, category, subcategory,
     return url
 
 
+def _queue_fetch(queue, results, host, port, version, species, category,
+                 subcategory, resource, options=None):
+    while True:
+        # Fetching new element from the queue
+        index, query_id = queue.get()
+        response = fetch(host, port, version, species, category, subcategory,
+                         resource, query_id, options)
+        # Store data in results at correct index
+        results[index] = response
+        # Signaling to the queue that task has been processed
+        queue.task_done()
+
+
 def get(host, port, version, species, category, subcategory, resource,
         query_id=None, options=None):
-    """Creates the URL for querying the REST service"""
+    """Queries the REST service retrieving results until exhaustion"""
+    call_batch_size = 2000
+    num_threads_default = 4
+
+    # if query_id is None or len(query_id.split(',')) <= call_batch_size:
+    if query_id is None or len(query_id.split(',')) <= 1:
+        response = fetch(host, port, version, species, category, subcategory,
+                         resource, query_id, options)
+        return response
+    else:
+        if options is not None and 'num_threads' in options:
+            num_threads = options['num_threads']
+        else:
+            num_threads = num_threads_default
+
+        # Splitting query_id into batches depending on the call batch size
+        id_list = query_id.split(',')
+        id_batches = [','.join(id_list[x:x+call_batch_size])
+                      for x in range(0, len(id_list), call_batch_size)]
+
+        # Setting up the queue to hold all the id batches
+        q = Queue(maxsize=0)
+        # Creating a size defined list to store thread results
+        res = [''] * len(id_batches)
+
+        # Setting up the threads
+        for thread in range(num_threads):
+            t = threading.Thread(target=_queue_fetch,
+                                 kwargs={'queue': q,
+                                         'results': res,
+                                         'host': host,
+                                         'port': port,
+                                         'version': version,
+                                         'species': species,
+                                         'category': category,
+                                         'subcategory': subcategory,
+                                         'resource': resource,
+                                         'options': options})
+            # Setting threads as "daemon" allows main program to exit eventually
+            # even if these dont finish correctly
+            t.setDaemon(True)
+            t.start()
+
+        # Loading up the queue with index and id batches for each job
+        for index, batch in enumerate(id_batches):
+            q.put((index, batch))  # Notice this is a tuple
+
+        # Waiting until the queue has been processed
+        q.join()
+
+    # Joining all the responses into a one final response
+    final_response = list(itertools.chain.from_iterable(res))
+
+    return final_response
+
+
+def fetch(host, port, version, species, category, subcategory, resource,
+          query_id=None, options=None):
+    """Queries the REST service retrieving results until exhaustion"""
     # HERE BE DRAGONS
     final_response = None
 
@@ -116,7 +193,6 @@ def get(host, port, version, species, category, subcategory, resource,
             for index, res in enumerate(response):
                 if res['numResults'] == call_limit:
                     next_id_list.append(current_id_list[index])
-
             # Ending REST calling when there are no more ids to retrieve
             if not next_id_list:
                 call = False

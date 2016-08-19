@@ -15,6 +15,7 @@ class GeneClientTest(unittest.TestCase):
     def test_get_clinical(self):
         """Checks retrieval of gene clinical info"""
         gc = cbfts.GeneClient(ConfigClient())
+
         res = gc.get_clinical('BRCA1')
         assert res[0]['result'][0]['chromosome'] == '17'
         assert len(res[0]['result']) == 6412
@@ -26,7 +27,6 @@ class GeneClientTest(unittest.TestCase):
         assert len(res[0]['result']) == 3412
 
         res = gc.get_clinical('BRCA1', limit=2000, skip=42)
-        print(len(res[0]['result']))
         assert len(res[0]['result']) == 2000
 
     def test_get_protein(self):
@@ -94,8 +94,7 @@ class GenomicRegionTest(unittest.TestCase):
         """Checks retrieval of sequence"""
         grc = cbfts.GenomicRegionClient(ConfigClient())
         res = grc.get_sequence('3:100-200')
-        sequence = res[0]['result'][0]['sequence']
-        assert len(sequence) == 101
+        assert len(res[0]['result'][0]['sequence']) == 101
 
 
 if __name__ == '__main__':
