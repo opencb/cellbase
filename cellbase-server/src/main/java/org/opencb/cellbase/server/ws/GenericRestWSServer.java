@@ -26,7 +26,8 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -400,7 +401,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @Deprecated
     private boolean isSpecieAvailable(String species) {
-        List<CellBaseConfiguration.SpeciesProperties.Species> speciesList = cellBaseConfiguration.getAllSpecies();
+        List<Species> speciesList = cellBaseConfiguration.getAllSpecies();
         for (int i = 0; i < speciesList.size(); i++) {
             // This only allows to show the information if species is in 3
             // letters format

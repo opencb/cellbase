@@ -1,6 +1,6 @@
 package org.opencb.cellbase.lib;
 
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 

@@ -17,8 +17,10 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.config.DatabaseProperties;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -43,7 +45,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     private void init() {
         if (mongoDataStoreManager == null) {
-            String[] hosts = cellBaseConfiguration.getDatabase().getHost().split(",");
+            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
             List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
             for (String host : hosts) {
                 String[] hostPort = host.split(":");
@@ -67,8 +69,11 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          Example:
          cellbase_hsapiens_grch37_v3
          **/
+
+        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+
         // We need to look for the species object in the configuration
-        CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);
+        Species speciesObject = getSpecies(species);
         if (speciesObject != null) {
             species = speciesObject.getId();
             assembly = getAssembly(speciesObject, assembly).toLowerCase();
@@ -83,26 +88,26 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 MongoDBConfiguration mongoDBConfiguration;
                 MongoDBConfiguration.Builder builder;
                 // For authenticated databases
-                if (!cellBaseConfiguration.getDatabase().getUser().isEmpty()
-                        && !cellBaseConfiguration.getDatabase().getPassword().isEmpty()) {
+                if (!mongodbCredentials.getUser().isEmpty()
+                        && !mongodbCredentials.getPassword().isEmpty()) {
                     // MongoDB could authenticate against different databases
-                    if (cellBaseConfiguration.getDatabase().getOptions().containsKey("authenticationDatabase")) {
+                    if (mongodbCredentials.getOptions().containsKey("authenticationDatabase")) {
                         builder = MongoDBConfiguration.builder()
-                                .add("username", cellBaseConfiguration.getDatabase().getUser())
-                                .add("password", cellBaseConfiguration.getDatabase().getPassword())
-                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"))
-                                .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions()
+                                .add("username", mongodbCredentials.getUser())
+                                .add("password", mongodbCredentials.getPassword())
+                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"))
+                                .add("authenticationDatabase", mongodbCredentials.getOptions()
                                         .get("authenticationDatabase"));
                     } else {
                         builder = MongoDBConfiguration.builder()
-                                .add("username", cellBaseConfiguration.getDatabase().getUser())
-                                .add("password", cellBaseConfiguration.getDatabase().getPassword())
-                                .add("readPreference", cellBaseConfiguration.getDatabase().getOptions().get("readPreference"));
+                                .add("username", mongodbCredentials.getUser())
+                                .add("password", mongodbCredentials.getPassword())
+                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"));
                     }
 
-                    String replicaSet = cellBaseConfiguration.getDatabase().getOptions().get("replicaSet");
+                    String replicaSet = mongodbCredentials.getOptions().get("replicaSet");
                     if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
-                        builder.add("replicaSet", cellBaseConfiguration.getDatabase().getOptions().get("replicaSet"));
+                        builder.add("replicaSet", mongodbCredentials.getOptions().get("replicaSet"));
                     }
                     mongoDBConfiguration = builder.build();
                 } else {

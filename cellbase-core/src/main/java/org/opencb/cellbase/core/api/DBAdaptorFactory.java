@@ -16,7 +16,8 @@
 
 package org.opencb.cellbase.core.api;
 
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.Species;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,9 @@ public abstract class DBAdaptorFactory {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    protected CellBaseConfiguration.SpeciesProperties.Species getSpecies(String speciesName) {
-        CellBaseConfiguration.SpeciesProperties.Species species = null;
-        for (CellBaseConfiguration.SpeciesProperties.Species sp : cellBaseConfiguration.getAllSpecies()) {
+    protected Species getSpecies(String speciesName) {
+        Species species = null;
+        for (Species sp : cellBaseConfiguration.getAllSpecies()) {
             if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
                 species = sp;
                 break;
@@ -48,12 +49,12 @@ public abstract class DBAdaptorFactory {
         return species;
     }
 
-    protected String getAssembly(CellBaseConfiguration.SpeciesProperties.Species species, String assemblyName) {
+    protected String getAssembly(Species species, String assemblyName) {
         String assembly = null;
         if (assemblyName == null || assemblyName.isEmpty()) {
             assembly = species.getAssemblies().get(0).getName();
         } else {
-            for (CellBaseConfiguration.SpeciesProperties.Species.Assembly assembly1 : species.getAssemblies()) {
+            for (Species.Assembly assembly1 : species.getAssemblies()) {
                 if (assemblyName.equalsIgnoreCase(assembly1.getName())) {
                     assembly = assembly1.getName();
                 }

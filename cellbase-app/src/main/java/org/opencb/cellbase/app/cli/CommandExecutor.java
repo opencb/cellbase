@@ -17,7 +17,7 @@
 package org.opencb.cellbase.app.cli;
 
 import org.apache.commons.lang.StringUtils;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

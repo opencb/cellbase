@@ -273,6 +273,22 @@
             </properties>
         </profile>
         <profile>
+            <id>default-config</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
+                <CELLBASE.DB.MONGODB.USER></CELLBASE.DB.MONGODB.USER>
+                <CELLBASE.DB.MONGODB.PASSWORD></CELLBASE.DB.MONGODB.PASSWORD>
+
+                <CELLBASE.DB.NEO4J.HOST>localhost:27017</CELLBASE.DB.NEO4J.HOST>
+                <CELLBASE.DB.NEO4J.USER></CELLBASE.DB.NEO4J.USER>
+                <CELLBASE.DB.NEO4J.PASSWORD></CELLBASE.DB.NEO4J.PASSWORD>
+
+            </properties>
+        </profile>
+        <profile>
             <id>deploy</id>
             <build>
                 <plugins>

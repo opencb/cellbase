@@ -17,7 +17,7 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.utils.CommandLineUtils;
 
 import java.io.IOException;
