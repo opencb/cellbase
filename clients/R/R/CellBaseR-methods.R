@@ -1,7 +1,8 @@
 ### CellbaseR constructor function
 #' @aliases CellBaseR
-#' @title
-#' A constructor function for CellBaseR object
+#' @title  A constructor function for CellBaseR object
+#' 
+#' @description  This is a constructor function for CellBaseR object
 #' @details
 #' This class defines the CellBaseR object. It holds the default
 #' configuration required by CellBaseR methods to connect to the
@@ -21,7 +22,6 @@
 #' @param num_threads integer number of asynchronus batches to be sent to the server
 #' @return An object of class CellBaseR
 #' @examples
-#' library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    print(cb)
 #' @export

@@ -31,29 +31,43 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by imedina on 12/05/16.
  */
 public class ParentRestClient<T> {
 
+    protected String species;
     protected Client client;
 
     protected String category;
     protected String subcategory;
 
+    protected Class<T> clazz;
+
     protected ClientConfiguration configuration;
 
     protected static ObjectMapper jsonObjectMapper;
-    protected static final int LIMIT = 1000;
-
     protected static Logger logger;
 
+    public static final int LIMIT = 1000;
+    public static final int REST_CALL_BATCH_SIZE = 200;
+    public static final int DEFAULT_NUM_THREADS = 4;
 
-    protected Class<T> clazz;
 
+    @Deprecated
     public ParentRestClient(ClientConfiguration configuration) {
+        this(configuration.getDefaultSpecies(), configuration);
+    }
+
+    public ParentRestClient(String species, ClientConfiguration configuration) {
+        this.species = species;
         this.configuration = configuration;
 
         this.client = ClientBuilder.newClient();
@@ -76,30 +90,70 @@ public class ParentRestClient<T> {
     }
 
 
-    protected <T> QueryResponse<T> execute(String action, Query query, QueryOptions queryOptions, Class<T> clazz) throws IOException {
-        queryOptions.putAll(query);
+    protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz) throws IOException {
+        if (query != null && queryOptions != null) {
+            queryOptions.putAll(query);
+        }
         return execute("", action, queryOptions, clazz);
     }
 
-    protected <T> QueryResponse<T> execute(String ids, String resource, QueryOptions queryOptions, Class<T> clazz) throws IOException {
+    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz) throws IOException {
         return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz);
     }
 
-    protected <T> QueryResponse<T> execute(List<String> idList, String resource, QueryOptions queryOptions, Class<T> clazz)
-            throws IOException {
+    protected <U> QueryResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz) throws IOException {
 
-        // Build the basic URL
-        WebTarget path = client
-                .target(configuration.getRest().getHosts().get(0))
-                .path("webservices/rest/v4")
-                .path("hsapiens")
-                .path(category)
-                .path(subcategory);
-
-        if (queryOptions == null) {
-            queryOptions = new QueryOptions();
+        if (idList == null || idList.isEmpty()) {
+            return new QueryResponse<>();
         }
-        queryOptions.putIfAbsent("limit", LIMIT);
+
+        // If the list contain less than REST_CALL_BATCH_SIZE variants then we can make a normal REST call.
+        if (idList.size() <= REST_CALL_BATCH_SIZE) {
+            return fetchData(idList, resource, options, clazz);
+        }
+
+        // But if there are more than REST_CALL_BATCH_SIZE variants then we launch several threads to increase performance.
+        int numThreads = (options != null)
+                ? options.getInt("numThreads", DEFAULT_NUM_THREADS)
+                : DEFAULT_NUM_THREADS;
+
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        List<Future<QueryResponse<U>>> futureList = new ArrayList<>((idList.size() / REST_CALL_BATCH_SIZE) + 1);
+        for (int i = 0; i < idList.size(); i += REST_CALL_BATCH_SIZE) {
+            final int from = i;
+            final int to = (from + REST_CALL_BATCH_SIZE > idList.size())
+                    ? idList.size()
+                    : from + REST_CALL_BATCH_SIZE;
+            futureList.add(executorService.submit(() ->
+                    fetchData(idList.subList(from, to), resource, options, clazz)
+            ));
+        }
+
+        List<QueryResult<U>> queryResults = new ArrayList<>(idList.size());
+        for (Future<QueryResponse<U>> responseFuture : futureList) {
+            try {
+                while (!responseFuture.isDone()) {
+                    Thread.sleep(5);
+                }
+                queryResults.addAll(responseFuture.get().getResponse());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        QueryResponse<U> finalResponse = new QueryResponse<>();
+        finalResponse.setResponse(queryResults);
+        executorService.shutdown();
+
+        return finalResponse;
+    }
+
+    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz) throws IOException {
+
+        if (options == null) {
+            options = new QueryOptions();
+        }
+        options.putIfAbsent("limit", LIMIT);
 
         String ids = "";
         if (idList != null && !idList.isEmpty()) {
@@ -111,10 +165,10 @@ public class ParentRestClient<T> {
         List<String> newIdsList = null;
         boolean call = true;
         int skip = 0;
-        QueryResponse<T> queryResponse = null;
-        QueryResponse<T> finalQueryResponse = null;
+        QueryResponse<U> queryResponse = null;
+        QueryResponse<U> finalQueryResponse = null;
         while (call) {
-            queryResponse = (QueryResponse<T>) callRest(path, ids, resource, queryOptions, clazz);
+            queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(), ids, resource, options, clazz);
 
             // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
@@ -147,7 +201,7 @@ public class ParentRestClient<T> {
             } else {
                 ids = StringUtils.join(newIdsList, ',');
                 skip += LIMIT;
-                queryOptions.put("skip", skip);
+                options.put("skip", skip);
             }
         }
 
@@ -155,37 +209,39 @@ public class ParentRestClient<T> {
         return finalQueryResponse;
     }
 
-    private QueryResponse<T> callRest(WebTarget path, String ids, String resource, QueryOptions options, Class clazz)
-            throws IOException {
+    private <U> QueryResponse<U> restCall(List<String> hosts, String version, String ids, String resource, QueryOptions queryOptions,
+                                          Class<U> clazz) throws IOException {
+
+        WebTarget path = client
+                .target(URI.create(hosts.get(0)))
+                .path("webservices/rest/" + version)
+                .path(species)
+                .path(category)
+                .path(subcategory);
+
         WebTarget callUrl = path;
         if (ids != null && !ids.isEmpty()) {
             callUrl = path.path(ids);
         }
 
-        // Add the last URL part, the 'action'
+        // Add the last URL part, the 'action' or 'resource'
         callUrl = callUrl.path(resource);
 
-        if (options != null) {
-            for (String s : options.keySet()) {
-                callUrl = callUrl.queryParam(s, options.get(s));
+        if (queryOptions != null) {
+            for (String s : queryOptions.keySet()) {
+                callUrl = callUrl.queryParam(s, queryOptions.get(s));
             }
         }
 
-        System.out.println("REST URL: " + callUrl.getUri().toURL());
+        logger.debug("Calling to REST URL: {}", callUrl.getUri().toURL());
         String jsonString = callUrl.request().get(String.class);
-        logger.debug("jsonString = " + jsonString);
         return parseResult(jsonString, clazz);
     }
 
-    public static <T> QueryResponse<T> parseResult(String json, Class<T> clazz) throws IOException {
+    private static <U> QueryResponse<U> parseResult(String json, Class<U> clazz) throws IOException {
         ObjectReader reader = jsonObjectMapper
                 .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(QueryResponse.class, QueryResult.class, clazz));
         return reader.readValue(json);
     }
 
-    protected Map<String, Object> createParamsMap(String key, Object value) {
-        Map<String, Object> params = new HashMap<>(10);
-        params.put(key, value);
-        return params;
-    }
 }

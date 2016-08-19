@@ -37,7 +37,6 @@ additional filters of this function refer to https://github.com/opencb/cellbase/
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbGet(object=cb, category="feature", subcategory="gene", ids="TET1", resource="info")
 }

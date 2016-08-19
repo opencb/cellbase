@@ -5,7 +5,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 
@@ -17,9 +16,11 @@ import java.util.Set;
 /**
  * Created by fjlopez on 07/04/16.
  */
-public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> {
+public class BenchmarkTask implements
+        ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception> {
 
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
+//    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CN([0123456789]+)>)";
     private VariantAnnotator variantAnnotator;
 
     public BenchmarkTask(VariantAnnotator variantAnnotator) {
@@ -30,7 +31,8 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
         variantAnnotator.open();
     }
 
-    public List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> apply(List<VariantAnnotation> batch) {
+    public List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> apply(List<VariantAnnotation> batch)
+            throws Exception {
         removeInvalidVariants(batch);
         List<Variant> cellBaseBatch = createEmptyVariantList(batch);
         variantAnnotator.run(cellBaseBatch);
@@ -106,13 +108,13 @@ public class BenchmarkTask implements ParallelTaskRunner.Task<VariantAnnotation,
             Set<SequenceOntologyTermComparisonObject> set = new HashSet<>(consequenceTypeList.size());
             for (ConsequenceType consequenceType : consequenceTypeList) {
                 for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
-                    // Expected many differences depending on the regulatory source databases used by the annotators.
-                    // Better skip regulatory_region_variant annotations
-                    if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
-                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
-                        set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
-                                sequenceOntologyTerm));
-                    }
+//                    // Expected many differences depending on the regulatory source databases used by the annotators.
+//                    // Better skip regulatory_region_variant annotations
+//                    if (!(sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.REGULATORY_REGION_VARIANT)
+//                            || sequenceOntologyTerm.getName().equals(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT))) {
+                    set.add(new SequenceOntologyTermComparisonObject(consequenceType.getEnsemblTranscriptId(),
+                            sequenceOntologyTerm));
+//                    }
                 }
             }
 

@@ -104,7 +104,7 @@ str(res,1)
 ```
 ### cbVraiantClient 
 Getting annotation for a specific variant
-```{r, message=FALSE, warning=FALSE}
+```{r, eval=FALSE,message=FALSE, warning=FALSE}
 library(cellbaseR)
 cb <- CellBaseR()
 res2 <- cbVariantClient(object=cb, ids="1:169549811:A:G", resource="annotation")
@@ -139,7 +139,7 @@ str(res,1)
 A usefull utility for fast building of gene models, compatible with Gviz 
 package for genomic visualization
 
-```{r,message=FALSE, warning=FALSE}
+```{r,message=FALSE, warning=FALSE, eval=FALSE}
 library(cellbaseR)
 cb <- CellBaseR()
 test <- createGeneModel(object = cb, region = "17:1500000-1550000")

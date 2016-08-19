@@ -138,7 +138,8 @@ public class VariationParser extends CellBaseParser {
                             ids.add(id);
 
                             List<String> hgvs = getHgvs(transcriptVariation);
-                            Map<String, Object> additionalAttributes = getAdditionalAttributes(variationFields, variationFeatureFields);
+                            Map<String, AdditionalAttribute> additionalAttributes
+                                    = getAdditionalAttributes(variationFields, variationFeatureFields);
 
                             List<ConsequenceType> conseqTypes = getConsequenceTypes(transcriptVariation);
                             String displayConsequenceTypes = getDisplayConsequenceType(variationFeatureFields);
@@ -223,18 +224,38 @@ public class VariationParser extends CellBaseParser {
     }
 
     private Variant buildVariant(String chromosome, int start, int end, String reference, String alternate, VariantType type,
-                                 List<String> ids, List<String> hgvs, Map<String, Object> additionalAttributes,
+                                 List<String> ids, List<String> hgvs, Map<String, AdditionalAttribute> additionalAttributes,
                                  String displayConsequenceType, List<ConsequenceType> conseqTypes, String id, List<Xref> xrefs,
                                  String strand, String ancestralAllele, String minorAllele, Float minorAlleleFreq) {
-        end = fixEndForInsertions(start, end, type);
+
+        StructuralVariation sv = null;
+        switch (type) {
+            case INDEL:
+            case INSERTION:
+                if (end < start) {
+                    end = start;
+                }
+                break;
+            case CNV:
+                reference = String.valueOf(reference.toCharArray()[1]);
+                String copyNumberStr = alternate.split("\\)")[1];
+                alternate = "<CN" + copyNumberStr + ">";
+                sv = new StructuralVariation(start, start, end, end, Integer.valueOf(copyNumberStr));
+                break;
+            default:
+                break;
+        }
+
+//        end = fixEndForInsertions(start, end, type);
         Variant variant = new Variant(chromosome, start, end, reference, alternate);
         variant.setIds(ids);
         variant.setType(type);
+        variant.setSv(sv);
         VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(null, null, null, null, null, id, xrefs, hgvs,
                 displayConsequenceType, conseqTypes, null, null, null, null, null, null, null, null, null, null);
         try {
             String ensemblAnnotationJson = getEnsemblAnnotationJson(ensemblVariantAnnotation);
-            additionalAttributes.put("ensemblAnnotation", ensemblAnnotationJson);
+            additionalAttributes.get("ensemblAnnotation").getAttribute().put("annotation", ensemblAnnotationJson);
         } catch (JsonProcessingException e) {
             logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
         }
@@ -247,14 +268,14 @@ public class VariationParser extends CellBaseParser {
         return variant;
     }
 
-    private int fixEndForInsertions(int start, int end, VariantType type) {
-        if (type == VariantType.INDEL || type == VariantType.INSERTION) {
-            if (end < start) {
-                end = start;
-            }
-        }
-        return end;
-    }
+//    private int fixEndForInsertions(int start, int end, VariantType type) {
+//        if (type == VariantType.INDEL || type == VariantType.INSERTION) {
+//            if (end < start) {
+//                end = start;
+//            }
+//        }
+//        return end;
+//    }
 
     private String getDisplayConsequenceType(String[] variationFeatureFields) {
         List<String> consequenceTypes = Arrays.asList(variationFeatureFields[12].split(","));
@@ -420,11 +441,16 @@ public class VariationParser extends CellBaseParser {
         return allelesArray;
     }
 
-    private Map<String, Object> getAdditionalAttributes(String[] variationFields, String[] variationFeatureFields) {
-        Map<String, Object> additionalAttributes = new HashMap<>();
+    private Map<String, AdditionalAttribute> getAdditionalAttributes(String[] variationFields, String[] variationFeatureFields) {
+        Map<String, AdditionalAttribute> additionalAttributes = new HashMap<>();
+        AdditionalAttribute additionalAttribute = new AdditionalAttribute();
+        additionalAttribute.setAttribute(new HashMap<String, String>());
 
-        additionalAttributes.put("Ensembl Validation Status", (variationFeatureFields[11] != null
-                && !variationFeatureFields[11].equals("\\N")) ? variationFeatureFields[11] : "");
+        if ((variationFeatureFields[11] != null && !variationFeatureFields[11].equals("\\N"))) {
+            additionalAttribute.getAttribute().put("ensemblValidationStatus", variationFeatureFields[11]);
+        }
+
+        additionalAttributes.put("ensemblAnnotation", additionalAttribute);
 
         return additionalAttributes;
     }

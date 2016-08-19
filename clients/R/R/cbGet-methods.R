@@ -13,7 +13,6 @@
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbGet(object=cb, category="feature", subcategory="gene", ids="TET1", resource="info")
 #' @export

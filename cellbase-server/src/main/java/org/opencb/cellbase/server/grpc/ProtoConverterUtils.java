@@ -20,6 +20,9 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
+import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variant.protobuf.VariantAnnotationProto;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
 
 import java.util.ArrayList;
@@ -53,11 +56,11 @@ public class ProtoConverterUtils {
 
     public static TranscriptModel.Transcript createTranscript(Document document) {
         TranscriptModel.Transcript.Builder builder = TranscriptModel.Transcript.newBuilder()
-                .setId(document.getString("id"))
-                .setName(document.getString("name"))
-                .setBiotype(document.getString("biotype"))
-                .setStatus(document.getString("status"))
-                .setChromosome(document.getString("chromosome"))
+                .setId((String) document.getOrDefault("id", ""))
+                .setName((String) document.getOrDefault("name", ""))
+                .setBiotype((String) document.getOrDefault("biotype", ""))
+                .setStatus((String) document.getOrDefault("status", ""))
+                .setChromosome((String) document.getOrDefault("chromosome", ""))
                 .setStart(document.getInteger("start"))
                 .setEnd(document.getInteger("end"))
                 .setCdnaSequence((String) document.getOrDefault("cDnaSequence", ""));
@@ -142,9 +145,28 @@ public class ProtoConverterUtils {
                 .setStart(document.getInteger("start"))
                 .setEnd(document.getInteger("end"))
                 .setReference((String) document.getOrDefault("reference", ""))
-                .setReference((String) document.getOrDefault("alternate", ""))
+                .setAlternate((String) document.getOrDefault("alternate", ""))
                 .setStrand(document.getString("strand"));
 
+        return builder.build();
+    }
+
+    public static VariantAnnotationProto.VariantAnnotation createVariantAnnotation(VariantAnnotation annotation) {
+        VariantAnnotationProto.VariantAnnotation.Builder builder = VariantAnnotationProto.VariantAnnotation.newBuilder()
+                .setChromosome(annotation.getChromosome())
+                .setStart(annotation.getStart())
+                .setReference(annotation.getReference())
+                .setAlternate(annotation.getAlternate())
+                .setId(annotation.getId());
+
+        return builder.build();
+    }
+
+    public static VariantAnnotationProto.Score createVariantAnnotationScore(Score score) {
+        VariantAnnotationProto.Score.Builder builder = VariantAnnotationProto.Score.newBuilder()
+                .setScore(score.getScore())
+                .setSource(score.getSource());
+//                .setDescription(score.getDescription());
         return builder.build();
     }
 }

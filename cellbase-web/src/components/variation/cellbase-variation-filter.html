@@ -139,7 +139,7 @@
                         <br>
                         <template is="dom-repeat" items="{{result}}">
                             <div>
-                                <b on-click="_updateVariationView" id="{{item.ids}}" style="cursor: pointer">{{item.ids}}</b>
+                                <b on-click="_updateVariationView" id="{{item.id}}" style="cursor: pointer">{{item.id}}</b>
                                 <i>{{item.annotation.displayConsequenceType}}</i><br>
                                 {{item.chromosome}}:{{item.start}}-{{item.end}}
                                 <hr>
@@ -190,7 +190,7 @@
                 $('#variationSpinImg').show();
 
                 // We first build the query params object
-                let queryParams = {include: "ids,chromosome,start,end,annotation.displayConsequenceType"};
+                let queryParams = {include: "id,chromosome,start,end,annotation.displayConsequenceType"};
                 if (this.consequenceTypes.length > 0) {
                     queryParams.consequenceType = this.consequenceTypes.join(",");
                 }

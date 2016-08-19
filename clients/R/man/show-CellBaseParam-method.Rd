@@ -2,7 +2,6 @@
 % Please edit documentation in R/show-methods.R
 \docType{methods}
 \name{show,CellBaseParam-method}
-\alias{show}
 \alias{show,CellBaseParam-method}
 \title{The show method for CellBaseParam class}
 \usage{
