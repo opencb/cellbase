@@ -23,7 +23,7 @@ import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.mongodb.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.File;
@@ -111,13 +111,13 @@ public class BuildCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if (buildCommandOptions.data.equals("all")) {
-                    buildOptions = new String[]{EtlCommons.GENOME_INFO_DATA, EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA,
-                            EtlCommons.DISGENET_DATA, EtlCommons.HPO_DATA, EtlCommons.CONSERVATION_DATA,
-                            EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
-                            EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                            EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINVAR_DATA, EtlCommons.COSMIC_DATA,
-                            EtlCommons.GWAS_DATA, };
-
+//                    buildOptions = new String[]{EtlCommons.GENOME_INFO_DATA, EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA,
+//                            EtlCommons.DISGENET_DATA, EtlCommons.HPO_DATA, EtlCommons.CONSERVATION_DATA,
+//                            EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
+//                            EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
+//                            EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINVAR_DATA, EtlCommons.COSMIC_DATA,
+//                            EtlCommons.GWAS_DATA, };
+                    buildOptions = species.getData().toArray(new String[0]);
                 } else {
                     buildOptions = buildCommandOptions.data.split(",");
                 }

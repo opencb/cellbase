@@ -14,9 +14,10 @@ import java.io.IOException;
  */
 public class FeatureClient<T> extends ParentRestClient<T> {
 
-    public FeatureClient(ClientConfiguration configuration) {
-        super(configuration);
+    public FeatureClient(String species, ClientConfiguration configuration) {
+        super(species, configuration);
     }
+
 
     public  QueryResponse<T> next(String id) throws IOException {
         return execute(id, "next", null, clazz);

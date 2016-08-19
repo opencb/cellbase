@@ -13,14 +13,15 @@ import java.util.List;
  */
 public class ProteinClient extends FeatureClient<Entry> {
 
-    public ProteinClient(ClientConfiguration configuration) {
-        super(configuration);
+    public ProteinClient(String species, ClientConfiguration configuration) {
+        super(species, configuration);
 
         this.clazz = Entry.class;
 
         this.category = "feature";
         this.subcategory = "protein";
     }
+
 
     public QueryResponse<List> getSubstitutionScores(String id, QueryOptions options) throws IOException {
         return execute(id, "substitution_scores", options, List.class);

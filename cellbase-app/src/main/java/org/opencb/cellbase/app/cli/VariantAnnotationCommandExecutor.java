@@ -47,7 +47,7 @@ import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.client.CellBaseClient;
 import org.opencb.cellbase.core.variant.annotation.*;
-import org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;

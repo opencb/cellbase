@@ -53,11 +53,11 @@ public class ProtoConverterUtils {
 
     public static TranscriptModel.Transcript createTranscript(Document document) {
         TranscriptModel.Transcript.Builder builder = TranscriptModel.Transcript.newBuilder()
-                .setId(document.getString("id"))
-                .setName(document.getString("name"))
-                .setBiotype(document.getString("biotype"))
-                .setStatus(document.getString("status"))
-                .setChromosome(document.getString("chromosome"))
+                .setId((String) document.getOrDefault("id", ""))
+                .setName((String) document.getOrDefault("name", ""))
+                .setBiotype((String) document.getOrDefault("biotype", ""))
+                .setStatus((String) document.getOrDefault("status", ""))
+                .setChromosome((String) document.getOrDefault("chromosome", ""))
                 .setStart(document.getInteger("start"))
                 .setEnd(document.getInteger("end"))
                 .setCdnaSequence((String) document.getOrDefault("cDnaSequence", ""));
