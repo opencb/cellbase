@@ -32,10 +32,12 @@ import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
+import org.opencb.biodata.formats.variant.io.JsonVariantReader;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
 import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
@@ -58,6 +60,7 @@ import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -67,6 +70,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
+
+import static java.nio.file.StandardOpenOption.APPEND;
 
 /**
  * Created by fjlopez on 18/03/15.
@@ -92,6 +97,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private int numThreads;
     private int batchSize;
     private List<Path> customFiles;
+    private Path populationFrequenciesFile = null;
     private List<RocksDB> dbIndexes;
     private List<Options> dbOptions;
     private List<String> dbLocations;
@@ -191,9 +197,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private boolean runAnnotation() throws Exception {
-        if (customFiles != null) {
-            getIndexes();
-        }
+
+        // Build indexes for custom files and/or population frequencies file
+        getIndexes();
 
         if (variantAnnotationCommandOptions.variant != null && !variantAnnotationCommandOptions.variant.isEmpty()) {
             List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
@@ -234,6 +240,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             ParallelTaskRunner<String, Variant> runner =
                     new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
             runner.run();
+            // For internal use only - will only be run when -Dpopulation-frequencies is activated
+            writeRemainingPopFrequencies();
         } else {
             // This will annotate the CellBase Variation collection
             if (cellBaseAnnotation) {
@@ -260,12 +268,47 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
         }
 
-        if (customFiles != null) {
+        if (customFiles != null || populationFrequenciesFile != null) {
             closeIndexes();
         }
 
         logger.info("Variant annotation finished.");
         return false;
+    }
+
+    private void writeRemainingPopFrequencies() throws IOException {
+        // For internal use only - will only be run when -Dpopulation-frequencies is activated
+        if (populationFrequenciesFile != null) {
+            DataWriter dataWriter = new JsonAnnotationWriter(output.toString(), APPEND);
+            dataWriter.open();
+            dataWriter.pre();
+
+            // Population frequencies rocks db will always be the last one in the list. DO NOT change the name of the
+            // rocksIterator variable - for some unexplainable reason Java VM crashes if it's named "iterator"
+            RocksIterator rocksIterator = dbIndexes.get(dbIndexes.size() - 1).newIterator();
+
+            ObjectMapper mapper = new ObjectMapper();
+            logger.info("Writing variants with frequencies that were not found within the input file to {}",
+                    populationFrequenciesFile.toString(), output.toString());
+            int counter = 0;
+            for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+                VariantAvro variantAvro = mapper.readValue(rocksIterator.value(), VariantAvro.class);
+                // The additional attributes field initialized with an empty map is used as the flag to indicate that
+                // this variant was not visited during the annotation process
+                if (variantAvro.getAnnotation().getAdditionalAttributes() == null) {
+                    dataWriter.write(new Variant(variantAvro));
+                }
+
+                counter++;
+                if (counter % 10000 == 0) {
+                    logger.info("{} written", counter);
+                }
+            }
+            dataWriter.post();
+            dataWriter.close();
+            logger.info("Done.");
+
+        }
     }
 
     private void setChromosomeList() {
@@ -348,10 +391,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorTaskList;
     }
 
-    private void closeIndexes() {
+    private void closeIndexes() throws IOException {
         for (int i = 0; i < dbIndexes.size(); i++) {
             dbIndexes.get(i).close();
             dbOptions.get(i).dispose();
+        }
+
+        if (populationFrequenciesFile != null) {
+            org.apache.commons.io.FileUtils.deleteDirectory(new File(dbLocations.get(dbLocations.size() - 1)));
         }
     }
 
@@ -370,6 +417,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                             customFileIds.get(i), customFileFields.get(i)));
                 }
             }
+        }
+
+        // Include population-frequencies file if required
+        if (populationFrequenciesFile != null) {
+            // Rocks db connection is always the last in the list
+            int i = dbIndexes.size() - 1;
+            variantAnnotatorList.add(new PopulationFrequenciesAnnotator(populationFrequenciesFile.toString(),
+                    dbIndexes.get(i)));
+
         }
 
         return variantAnnotatorList;
@@ -406,32 +462,85 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private void getIndexes() {
-        dbIndexes = new ArrayList<>(customFiles.size());
-        dbOptions = new ArrayList<>(customFiles.size());
-        dbLocations = new ArrayList<>(customFiles.size());
-        for (int i = 0; i < customFiles.size(); i++) {
-            if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
-                Object[] dbConnection = getDBConnection(customFiles.get(i).toString() + ".idx");
-                RocksDB rocksDB = (RocksDB) dbConnection[0];
-                Options dbOption = (Options) dbConnection[1];
-                String dbLocation = (String) dbConnection[2];
-                boolean indexingNeeded = (boolean) dbConnection[3];
-                if (indexingNeeded) {
-                    logger.info("Creating index DB at {} ", dbLocation);
-                    indexCustomVcfFile(i, rocksDB);
-                } else {
-                    logger.info("Index found at {}", dbLocation);
-                    logger.info("Skipping index creation");
+        dbIndexes = new ArrayList<>();
+        dbOptions = new ArrayList<>();
+        dbLocations = new ArrayList<>();
+
+        // Index custom files if provided
+        if (customFiles != null) {
+            for (int i = 0; i < customFiles.size(); i++) {
+                if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
+                    Object[] dbConnection = getDBConnection(customFiles.get(i).toString() + ".idx");
+                    RocksDB rocksDB = (RocksDB) dbConnection[0];
+                    Options dbOption = (Options) dbConnection[1];
+                    String dbLocation = (String) dbConnection[2];
+                    boolean indexingNeeded = (boolean) dbConnection[3];
+                    if (indexingNeeded) {
+                        logger.info("Creating index DB at {} ", dbLocation);
+                        indexCustomVcfFile(i, rocksDB);
+                    } else {
+                        logger.info("Index found at {}", dbLocation);
+                        logger.info("Skipping index creation");
+                    }
+                    dbIndexes.add(rocksDB);
+                    dbOptions.add(dbOption);
+                    dbLocations.add(dbLocation);
                 }
-                dbIndexes.add(rocksDB);
-                dbOptions.add(dbOption);
-                dbLocations.add(dbLocation);
             }
+        }
+
+        // Index population frequencies file if provided
+        if (populationFrequenciesFile != null) {
+            // We force the creation of a new index even if there was one already - Annotation of frequencies from
+            // these files implies deletions on the RocksDB database. Whatever is already there will probably be wrong
+            Object[] dbConnection = getDBConnection(populationFrequenciesFile + ".idx", true);
+            RocksDB rocksDB = (RocksDB) dbConnection[0];
+            Options dbOption = (Options) dbConnection[1];
+            String dbLocation = (String) dbConnection[2];
+
+            logger.info("Creating index DB at {} ", dbLocation);
+            indexPopulationFrequencies(rocksDB);
+
+            dbIndexes.add(rocksDB);
+            dbOptions.add(dbOption);
+            dbLocations.add(dbLocation);
+        }
+    }
+
+    private void indexPopulationFrequencies(RocksDB db) {
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+
+        try {
+            DataReader<Variant> dataReader = new JsonVariantReader(populationFrequenciesFile.toString());
+            dataReader.open();
+            dataReader.pre();
+            int lineCounter = 0;
+            List<Variant> variant = dataReader.read();
+            while (variant != null) {
+                db.put(VariantAnnotationUtils.buildVariantId(variant.get(0).getChromosome(), variant.get(0).getStart(),
+                        variant.get(0).getReference(), variant.get(0).getAlternate()).getBytes(),
+                        jsonObjectWriter.writeValueAsBytes(variant.get(0).getImpl()));
+                lineCounter++;
+                if (lineCounter % 100000 == 0) {
+                    logger.info("{} lines indexed", lineCounter);
+                }
+                variant = dataReader.read();
+            }
+            dataReader.post();
+            dataReader.close();
+        } catch (IOException | RocksDBException e) {
+            e.printStackTrace();
         }
     }
 
     private Object[] getDBConnection(String dbLocation) {
-        boolean indexingNeeded = !Files.exists(Paths.get(dbLocation));
+        return getDBConnection(dbLocation, false);
+    }
+
+    private Object[] getDBConnection(String dbLocation, boolean forceCreate) {
+        boolean indexingNeeded = forceCreate || !Files.exists(Paths.get(dbLocation));
         // a static method that loads the RocksDB C++ library.
         RocksDB.loadLibrary();
         // the Options class contains a set of configurable DB options
@@ -697,11 +806,22 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             String[] customFileFieldStrings = variantAnnotationCommandOptions.customFileFields.split(":");
             if (customFileFieldStrings.length != customFiles.size()) {
                 throw new ParameterException("Different number of custom files and lists of custom file fields. "
-                        + "Please, provide one list of fields for each custom file in a colon separated list (no spaces in betwen).");
+                        + "Please, provide one list of fields for each custom file in a colon separated list (no spaces in between).");
             }
             customFileFields = new ArrayList<>(customFileStrings.length);
             for (String fieldString : customFileFieldStrings) {
                 customFileFields.add(Arrays.asList(fieldString.split(",")));
+            }
+        }
+
+        // Semi-private build parameter for us to build the variation collection including population frequencies
+        if (variantAnnotationCommandOptions.buildParams.get("population-frequencies") != null) {
+            populationFrequenciesFile = Paths.get(variantAnnotationCommandOptions.buildParams.get("population-frequencies"));
+            FileUtils.checkFile(populationFrequenciesFile);
+            if (!(populationFrequenciesFile.toString().endsWith(".json")
+                    || populationFrequenciesFile.toString().endsWith(".json.gz"))) {
+                throw new ParameterException("Population frequencies file must be a .json (.json.gz) file containing"
+                        + " Variant objects.");
             }
         }
 

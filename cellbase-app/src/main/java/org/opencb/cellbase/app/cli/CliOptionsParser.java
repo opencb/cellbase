@@ -385,6 +385,14 @@ public class CliOptionsParser {
                 " By default phased annotation is not enabled.", required = false, arity = 0)
         public boolean phased;
 
+        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        public Map<String, String> buildParams;
+
+        public VariantAnnotationCommandOptions() {
+            buildParams = new HashMap<>();
+            buildParams.put("population-frequencies", null);
+        }
+
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")

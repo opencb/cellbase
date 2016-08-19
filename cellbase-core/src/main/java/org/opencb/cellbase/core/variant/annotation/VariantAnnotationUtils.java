@@ -1,8 +1,11 @@
 package org.opencb.cellbase.core.variant.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+import org.opencb.commons.utils.CryptoUtils;
 
 import java.util.*;
 
@@ -10,6 +13,8 @@ import java.util.*;
  * Created by fjlopez on 22/06/15.
  */
 public class VariantAnnotationUtils {
+
+    public static final char SEPARATOR_CHAR = ':';
 
     public static final String THREEPRIME_OVERLAPPING_NCRNA = "3prime_overlapping_ncrna";
     public static final String IG_C_GENE = "IG_C_gene";
@@ -449,5 +454,35 @@ public class VariantAnnotationUtils {
     public static SequenceOntologyTerm newSequenceOntologyTerm(String name) throws SOTermNotAvailableException {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
+
+    public static String buildVariantId(String chromosome, int start, String reference, String alternate) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        appendChromosome(chromosome, stringBuilder)
+                .append(SEPARATOR_CHAR)
+                .append(StringUtils.leftPad(Integer.toString(start), 10, " "))
+                .append(SEPARATOR_CHAR);
+
+        if (reference.length() > Variant.SV_THRESHOLD) {
+            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
+        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
+            stringBuilder.append(reference);
+        }
+        stringBuilder.append(SEPARATOR_CHAR);
+        if (alternate.length() > Variant.SV_THRESHOLD) {
+            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
+        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
+            stringBuilder.append(alternate);
+        }
+        return stringBuilder.toString();
+    }
+
+    protected static StringBuilder appendChromosome(String chromosome, StringBuilder stringBuilder) {
+        if (chromosome.length() == 1 && Character.isDigit(chromosome.charAt(0))) {
+            stringBuilder.append(' ');
+        }
+        return stringBuilder.append(chromosome);
+    }
+
 
 }
