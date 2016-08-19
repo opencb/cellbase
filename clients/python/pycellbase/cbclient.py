@@ -6,19 +6,22 @@ from pycellbase.commons import get
 class CellBaseClient(object):
     """Initializes the CellBase client and allows the creation of the
      different query clients"""
-    def __init__(self, config_client):
+    def __init__(self, config_client=None):
         # Client storage; If a client is already created, then it is returned
         self._clients = {}
 
         # Setting up config params
-        try:
-            assert isinstance(config_client, ConfigClient)
-        except:
-            msg = ('CellBaseClient configuration not properly set.' +
-                   ' "pycellbase.config.ConfigClient" object is needed as' +
-                   ' parameter')
-            raise IOError(msg)
-        self._configuration = config_client
+        if config_client is not None:
+            try:
+                assert isinstance(config_client, ConfigClient)
+            except:
+                msg = ('CellBaseClient configuration not properly set.' +
+                       ' "pycellbase.config.ConfigClient" object is needed as' +
+                       ' parameter')
+                raise IOError(msg)
+            self._configuration = config_client
+        else:
+            self._configuration = ConfigClient()
 
     def get_config(self):
         """Returns current configuration parameters"""
