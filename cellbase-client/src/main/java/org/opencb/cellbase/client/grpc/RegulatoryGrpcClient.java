@@ -24,28 +24,24 @@ public class RegulatoryGrpcClient extends ParentGrpcClient {
 
     public Long count(Map<String, String> query) {
         GenericServiceModel.Request request = buildRequest(query, new HashMap<>());
-        ServiceTypesModel.LongResponse count = regulatoryRegionServiceBlockingStub.count(request);
-        return count.getValue();
+        return regulatoryRegionServiceBlockingStub.count(request).getValue();
     }
 
     public RegulatoryRegionModel.RegulatoryRegion first(Map<String, String> query, Map<String, String> queryOptions)  {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        RegulatoryRegionModel.RegulatoryRegion regulatoryRegion = regulatoryRegionServiceBlockingStub.first(request);
-        return regulatoryRegion;
+        return regulatoryRegionServiceBlockingStub.first(request);
     }
 
     public Iterator<RegulatoryRegionModel.RegulatoryRegion> get(Map<String, String> query, Map<String, String> queryOptions) {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        Iterator<RegulatoryRegionModel.RegulatoryRegion> regulatoryRegionIterator = regulatoryRegionServiceBlockingStub.get(request);
-        return regulatoryRegionIterator;
+        return regulatoryRegionServiceBlockingStub.get(request);
     }
 
     public ServiceTypesModel.StringArrayResponse distinct(Map<String, String> query, String field) {
         Map<String, String> queryOptions = new HashMap<>();
         queryOptions.put("distinct", field);
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        ServiceTypesModel.StringArrayResponse values = regulatoryRegionServiceBlockingStub.distinct(request);
-        return values;
+        return regulatoryRegionServiceBlockingStub.distinct(request);
     }
 
 }

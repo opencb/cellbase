@@ -24,27 +24,23 @@ public class VariationGrpcClient extends ParentGrpcClient {
 
     public Long count(Map<String, String> query) {
         GenericServiceModel.Request request = buildRequest(query, new HashMap<>());
-        ServiceTypesModel.LongResponse count = variantServiceBlockingStub.count(request);
-        return count.getValue();
+        return variantServiceBlockingStub.count(request).getValue();
     }
 
     public VariantProto.Variant first(Map<String, String> query, Map<String, String> queryOptions)  {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        VariantProto.Variant variant = variantServiceBlockingStub.first(request);
-        return variant;
+        return variantServiceBlockingStub.first(request);
     }
 
     public Iterator<VariantProto.Variant> get(Map<String, String> query, Map<String, String> queryOptions) {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        Iterator<VariantProto.Variant> variantIterator = variantServiceBlockingStub.get(request);
-        return variantIterator;
+        return variantServiceBlockingStub.get(request);
     }
 
     public ServiceTypesModel.StringArrayResponse distinct(Map<String, String> query, String field) {
         Map<String, String> queryOptions = new HashMap<>();
         queryOptions.put("distinct", field);
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        ServiceTypesModel.StringArrayResponse values = variantServiceBlockingStub.distinct(request);
-        return values;
+        return variantServiceBlockingStub.distinct(request);
     }
 }

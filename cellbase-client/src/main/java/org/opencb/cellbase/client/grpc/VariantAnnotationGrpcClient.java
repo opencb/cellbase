@@ -23,13 +23,11 @@ public class VariantAnnotationGrpcClient extends ParentGrpcClient {
 
     public Iterator<VariantAnnotationProto.VariantAnnotation> get(Map<String, String> query, Map<String, String> queryOptions) {
         GenericServiceModel.Request request = buildRequest(query, new HashMap<>());
-        Iterator<VariantAnnotationProto.VariantAnnotation> variantAnnotationIterator = stub.get(request);
-        return variantAnnotationIterator;
+        return stub.get(request);
     }
 
     public Iterator<VariantAnnotationProto.Score> getCadd(Map<String, String> query, Map<String, String> queryOptions) {
         GenericServiceModel.Request request = buildRequest(query, new HashMap<>());
-        Iterator<VariantAnnotationProto.Score> scoreIterator = stub.getCadd(request);
-        return scoreIterator;
+        return stub.getCadd(request);
     }
 }

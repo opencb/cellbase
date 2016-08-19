@@ -26,52 +26,45 @@ public class GeneGrpcClient extends ParentGrpcClient {
 
     public Long count(Map<String, String> query) {
         GenericServiceModel.Request request = buildRequest(query, new HashMap<>());
-        ServiceTypesModel.LongResponse count = geneServiceBlockingStub.count(request);
-        return count.getValue();
+        return geneServiceBlockingStub.count(request).getValue();
     }
 
     public GeneModel.Gene first(Map<String, String> query, Map<String, String> queryOptions)  {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        GeneModel.Gene firstGene = geneServiceBlockingStub.first(request);
-        return firstGene;
+        return geneServiceBlockingStub.first(request);
     }
 
     public Iterator<GeneModel.Gene> get(Map<String, String> query, Map<String, String> queryOptions) {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        Iterator<GeneModel.Gene> genes = geneServiceBlockingStub.get(request);
-        return genes;
+        return geneServiceBlockingStub.get(request);
     }
 
     public ServiceTypesModel.StringArrayResponse distinct(Map<String, String> query, String field) {
         Map<String, String> queryOptions = new HashMap<>();
         queryOptions.put("distinct", field);
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        ServiceTypesModel.StringArrayResponse values = geneServiceBlockingStub.distinct(request);
-        return values;
+        return geneServiceBlockingStub.distinct(request);
     }
 
     public Iterator<TranscriptModel.Transcript> getTranscripts(String id, Map<String, String> queryOptions) {
         Map<String, String> query = new HashMap<>();
         query.put("id", id);
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        Iterator<TranscriptModel.Transcript> transcriptIterator = geneServiceBlockingStub.getTranscripts(request);
-        return transcriptIterator;
+        return geneServiceBlockingStub.getTranscripts(request);
     }
 
     public Iterator<RegulatoryRegionModel.RegulatoryRegion> getRegulatoryRegions(String id, Map<String, String> queryOptions) {
         Map<String, String> query = new HashMap<>();
         query.put("id", id);
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        Iterator<RegulatoryRegionModel.RegulatoryRegion> regulationIterator = geneServiceBlockingStub.getRegulatoryRegions(request);
-        return regulationIterator;
+        return geneServiceBlockingStub.getRegulatoryRegions(request);
     }
 
     public Iterator<TranscriptModel.TranscriptTfbs> getTranscriptTfbs(String id, Map<String, String> queryOptions) {
         Map<String, String> query = new HashMap<>();
         query.put("id", id);
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        Iterator<TranscriptModel.TranscriptTfbs> transcriptTfbsIterator = geneServiceBlockingStub.getTranscriptTfbs(request);
-        return transcriptTfbsIterator;
+        return geneServiceBlockingStub.getTranscriptTfbs(request);
     }
 
 

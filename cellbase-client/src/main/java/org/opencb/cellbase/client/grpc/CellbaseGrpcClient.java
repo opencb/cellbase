@@ -48,4 +48,9 @@ public class CellbaseGrpcClient {
         return (VariantAnnotationGrpcClient) clients.get("VARIANT_ANNOTATION");
     }
 
+    public GenomicRegionGrpcClient getGenomicRegionClient() {
+        clients.putIfAbsent("GENOMIC_REGION", new GenomicRegionGrpcClient(channel));
+        return (GenomicRegionGrpcClient) clients.get("GENOMIC_REGION");
+    }
+
 }

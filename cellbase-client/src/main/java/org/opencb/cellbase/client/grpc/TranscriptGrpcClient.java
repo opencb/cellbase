@@ -24,33 +24,28 @@ public class TranscriptGrpcClient extends ParentGrpcClient {
 
     public Long count(Map<String, String> query) {
         GenericServiceModel.Request request = buildRequest(query, new HashMap<>());
-        ServiceTypesModel.LongResponse count = transcriptServiceBlockingStub.count(request);
-        return count.getValue();
+        return transcriptServiceBlockingStub.count(request).getValue();
     }
 
     public TranscriptModel.Transcript first(Map<String, String> query, Map<String, String> queryOptions)  {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        TranscriptModel.Transcript transcript = transcriptServiceBlockingStub.first(request);
-        return transcript;
+        return transcriptServiceBlockingStub.first(request);
     }
 
     public Iterator<TranscriptModel.Transcript> get(Map<String, String> query, Map<String, String> queryOptions) {
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        Iterator<TranscriptModel.Transcript> transcripts = transcriptServiceBlockingStub.get(request);
-        return transcripts;
+        return transcriptServiceBlockingStub.get(request);
     }
 
     public ServiceTypesModel.StringArrayResponse distinct(Map<String, String> query, String field) {
         Map<String, String> queryOptions = new HashMap<>();
         queryOptions.put("distinct", field);
         GenericServiceModel.Request request = buildRequest(query, queryOptions);
-        ServiceTypesModel.StringArrayResponse values = transcriptServiceBlockingStub.distinct(request);
-        return values;
+        return transcriptServiceBlockingStub.distinct(request);
     }
 
     public ServiceTypesModel.StringResponse getSequence(Map<String, String> query) {
         GenericServiceModel.Request request = buildRequest(query, new HashMap<>());
-        ServiceTypesModel.StringResponse sequence = transcriptServiceBlockingStub.getCdna(request);
-        return sequence;
+        return transcriptServiceBlockingStub.getCdna(request);
     }
 }

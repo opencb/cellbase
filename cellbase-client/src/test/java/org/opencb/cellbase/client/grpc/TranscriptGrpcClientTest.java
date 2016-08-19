@@ -26,6 +26,7 @@ public class TranscriptGrpcClientTest {
     public void count() throws Exception {
         Long count = cellbaseGrpcClient.getTranscriptClient().count(new HashMap<>());
         assertEquals("Number of transcripts does not match", 196501, count.longValue());
+        System.out.println(count.longValue());
     }
 
     @Test
@@ -37,7 +38,16 @@ public class TranscriptGrpcClientTest {
 
     @Test
     public void get() throws Exception {
-
+        Map<String, String> query = new HashMap<>();
+        query.put("id", "ENST00000456328");
+        Iterator<TranscriptModel.Transcript> transcriptIterator = cellbaseGrpcClient.getTranscriptClient().get(query, new HashMap<>());
+        int count = 0;
+        while (transcriptIterator.hasNext()) {
+            TranscriptModel.Transcript next = transcriptIterator.next();
+            assertEquals("The biotype returned is wrong", "processed_transcript", next.getBiotype());
+            count++;
+        }
+        System.out.println(count);
     }
 
     @Test
@@ -50,6 +60,6 @@ public class TranscriptGrpcClientTest {
         Map<String, String> query = new HashMap<>();
         query.put("id", "ENST00000456328");
         ServiceTypesModel.StringResponse sequence = cellbaseGrpcClient.getTranscriptClient().getSequence(query);
-        assertNotNull(sequence);
+        assertTrue("The sequence returned is wrong", sequence.getValue().startsWith("GTTAACTTGCCGTCAGCCTTTTCTTT"));
     }
 }
