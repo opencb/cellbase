@@ -42,13 +42,14 @@ def _create_rest_url(host, port, version, species, category, subcategory,
     return url
 
 
-def _queue_fetch(queue, results, host, port, version, species, category,
-                 subcategory, resource, options=None):
+def _worker(queue, results, host, port, version, species, category,
+            subcategory, resource, options=None):
+    """Manages the queue system for the threads"""
     while True:
         # Fetching new element from the queue
         index, query_id = queue.get()
-        response = fetch(host, port, version, species, category, subcategory,
-                         resource, query_id, options)
+        response = _fetch(host, port, version, species, category, subcategory,
+                          resource, query_id, options)
         # Store data in results at correct index
         results[index] = response
         # Signaling to the queue that task has been processed
@@ -57,14 +58,13 @@ def _queue_fetch(queue, results, host, port, version, species, category,
 
 def get(host, port, version, species, category, subcategory, resource,
         query_id=None, options=None):
-    """Queries the REST service retrieving results until exhaustion"""
+    """Queries the REST service using multiple threads if needed"""
     call_batch_size = 2000
     num_threads_default = 4
 
-    # if query_id is None or len(query_id.split(',')) <= call_batch_size:
-    if query_id is None or len(query_id.split(',')) <= 1:
-        response = fetch(host, port, version, species, category, subcategory,
-                         resource, query_id, options)
+    if query_id is None or len(query_id.split(',')) <= call_batch_size:
+        response = _fetch(host, port, version, species, category, subcategory,
+                          resource, query_id, options)
         return response
     else:
         if options is not None and 'num_threads' in options:
@@ -84,7 +84,7 @@ def get(host, port, version, species, category, subcategory, resource,
 
         # Setting up the threads
         for thread in range(num_threads):
-            t = threading.Thread(target=_queue_fetch,
+            t = threading.Thread(target=_worker,
                                  kwargs={'queue': q,
                                          'results': res,
                                          'host': host,
@@ -113,9 +113,9 @@ def get(host, port, version, species, category, subcategory, resource,
     return final_response
 
 
-def fetch(host, port, version, species, category, subcategory, resource,
-          query_id=None, options=None):
-    """Queries the REST service retrieving results until exhaustion"""
+def _fetch(host, port, version, species, category, subcategory, resource,
+           query_id=None, options=None):
+    """Queries the REST service retrieving results until exhaustion or limit"""
     # HERE BE DRAGONS
     final_response = None
 
