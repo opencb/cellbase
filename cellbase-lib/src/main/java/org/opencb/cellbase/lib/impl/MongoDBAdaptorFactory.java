@@ -17,8 +17,8 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseProperties;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
@@ -129,13 +129,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
-
-    @Override
-    public void setConfiguration(CellBaseConfiguration cellBaseConfiguration) {
-        if (cellBaseConfiguration != null) {
-            this.cellBaseConfiguration = cellBaseConfiguration;
-        }
-    }
 
     @Override
     public void open(String species, String assembly) {
