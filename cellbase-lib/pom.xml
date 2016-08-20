@@ -27,7 +27,7 @@
         <dependency>
             <groupId>org.opencb.bionetdb</groupId>
             <artifactId>bionetdb-core</artifactId>
-            <version>0.1.0</version>
+            <version>${bionetdb.version}</version>
         </dependency>
 
         <dependency>
