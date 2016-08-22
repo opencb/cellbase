@@ -311,6 +311,14 @@ public class GeneWSServer extends GenericRestWSServer {
                             + "e.g.: ENSG00000139618,ENSG00000155657. Exact text matches will be returned",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "annotation.expression.tissue",
+                    value = "Must be used together with annotation.expression.value - tissue of interest, "
+                            + "e.g.: adipose tissue,heart atrium,tongue.",
+                    required = false, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.value",
+                    value = "Must be used together with annotation.expression.tissue - value of interest, either UP or "
+                            + "DOWN ",
+                    required = false, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.tissue",
                     value = "Comma separated list of tissues for which expression values are available, "
                             + "e.g.: adipose tissue,heart atrium,tongue."
                             + " Exact text matches will be returned",
