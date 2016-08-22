@@ -214,14 +214,44 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         createOrQuery(query, QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
-        createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "annotation.expression.factorValue", andBsonList);
+
+//        createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "annotation.expression.factorValue", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
+
+        createExpressionTissueQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), andBsonList);
+        createExpressionValueQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
+        }
+    }
+
+    private void createExpressionTissueQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null) {
+            List<String> tissueList = query.getAsStringList(queryParam);
+            if (tissueList != null && !tissueList.isEmpty()) {
+                if (tissueList.size() == 1) {
+                    andBsonList.add(Filters.regex(queryParam, "*" + tissueList.get(0) + "*", "i"));
+                } else {
+                    List<Bson> orBsonList = new ArrayList<>(tissueList.size());
+                    for (String tissue : tissueList) {
+                        orBsonList.add(Filters.regex(queryParam, "*" + tissue + "*", "i"));
+                    }
+                    andBsonList.add(Filters.or(orBsonList));
+                }
+            }
+        }
+    }
+
+    private void createExpressionValueQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null) {
+            String value = query.getString(queryParam).toUpperCase();
+            if (value != null) {
+                andBsonList.add(Filters.eq(queryParam, value));
+            }
         }
     }
 

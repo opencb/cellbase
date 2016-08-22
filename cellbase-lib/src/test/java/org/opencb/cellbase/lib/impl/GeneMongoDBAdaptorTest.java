@@ -1,4 +1,4 @@
-package org.opencb.cellbase.lib.db.core;
+package org.opencb.cellbase.lib.impl;
 
 import org.junit.Test;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
@@ -33,5 +33,10 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        assertTrue((Integer) clinicalSignificanceDBObject.get("Likely pathogenic")==35);
 //        assertTrue((Integer) clinicalSignificanceDBObject.get("conflicting data from submitters")==279);
 
+    }
+
+    @Test
+    public void testNativeGet() throws Exception {
+        dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
     }
 }
