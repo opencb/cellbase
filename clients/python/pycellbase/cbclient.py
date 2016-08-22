@@ -51,6 +51,13 @@ class CellBaseClient(object):
             self._clients['GENE'] = fts.GeneClient(self._configuration)
         return self._clients['GENE']
 
+    def get_transcript_client(self):
+        """Creates the protein client"""
+        if 'TRANSCRIPT' not in self._clients:
+            self._clients['TRANSCRIPT'] =\
+                fts.TranscriptClient(self._configuration)
+        return self._clients['TRANSCRIPT']
+
     def get_protein_client(self):
         """Creates the protein client"""
         if 'PROTEIN' not in self._clients:
@@ -64,9 +71,9 @@ class CellBaseClient(object):
                 fts.VariationClient(self._configuration)
         return self._clients['VARIATION']
 
-    def get_genomic_client(self):
+    def get_genomic_region_client(self):
         """Creates the genomic region client"""
-        if 'GENOMIC' not in self._clients:
-            self._clients['GENOMIC'] = \
+        if 'GENOMIC_REGION' not in self._clients:
+            self._clients['GENOMIC_REGION'] = \
                 fts.GenomicRegionClient(self._configuration)
-        return self._clients['GENOMIC']
+        return self._clients['GENOMIC_REGION']

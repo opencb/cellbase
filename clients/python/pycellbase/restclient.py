@@ -31,5 +31,3 @@ class RestClient(object):
         """Returns help for a specific element"""
         return self._get('help')
 
-    def count(self):
-        return self._get('count')
