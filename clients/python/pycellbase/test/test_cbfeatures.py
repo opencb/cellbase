@@ -10,6 +10,7 @@ class GeneClientTest(unittest.TestCase):
         """Checks retrieval of gene biotypes"""
         gc = cbfts.GeneClient(ConfigClient())
         res = gc.get_biotypes()
+        assert res[0]['numResults'] == 29
         assert 'protein_coding' in res[0]['result']
 
     def test_get_clinical(self):
@@ -17,17 +18,8 @@ class GeneClientTest(unittest.TestCase):
         gc = cbfts.GeneClient(ConfigClient())
 
         res = gc.get_clinical('BRCA1')
-        assert res[0]['result'][0]['chromosome'] == '17'
         assert len(res[0]['result']) == 6412
-
-        res = gc.get_clinical('BRCA1', limit=2042)
-        assert len(res[0]['result']) == 2042
-
-        res = gc.get_clinical('BRCA1', skip=3000)
-        assert len(res[0]['result']) == 3412
-
-        res = gc.get_clinical('BRCA1', limit=2000, skip=42)
-        assert len(res[0]['result']) == 2000
+        assert res[0]['result'][0]['chromosome'] == '17'
 
     def test_get_protein(self):
         """Checks retrieval of protein"""

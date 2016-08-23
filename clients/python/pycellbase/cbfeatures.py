@@ -77,6 +77,7 @@ class TranscriptClient(_Feature):
         super(TranscriptClient, self).__init__(configuration, _subcategory)
 
     def get_function_prediction(self, query_id, **options):
+        """Returns the function predictions of the transcript"""
         return self._get("function_prediction", query_id, options)
 
     def get_gene(self, query_id, **options):
