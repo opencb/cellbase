@@ -42,7 +42,7 @@ public interface GeneDBAdaptor<T> extends FeatureDBAdaptor<T> {
         ANNOTATION_DISEASE_NAME("annotation.diseases.name", TEXT_ARRAY, ""),
         ANNOTATION_EXPRESSION_GENE("annotation.expression.gene", TEXT_ARRAY, ""),
         ANNOTATION_EXPRESSION_TISSUE("annotation.expression.tissue", TEXT_ARRAY, ""),
-        ANNOTATION_EXPRESSION_VALUE("annotation.expression.expression", TEXT_ARRAY, ""),
+        ANNOTATION_EXPRESSION_VALUE("annotation.expression.value", TEXT_ARRAY, ""),
         ANNOTATION_DRUGS_NAME("annotation.drugs.name", TEXT_ARRAY, ""),
         ANNOTATION_DRUGS_GENE("annotation.drugs.gene", TEXT_ARRAY, ""),
         CLINICAL_SO("so", TEXT_ARRAY, ""),
