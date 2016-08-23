@@ -46,7 +46,7 @@ public class GeneParserUtils {
     public static Map<String, SortedSet<Gff2>> getTfbsMap(Path tfbsFile) throws IOException, NoSuchMethodException, FileFormatException {
         Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
 
-        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile)) {
+        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile) && Files.size(tfbsFile) > 0) {
             Gff2Reader motifsFeatureReader = new Gff2Reader(tfbsFile);
             Gff2 tfbsMotifFeature;
             while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
@@ -73,7 +73,8 @@ public class GeneParserUtils {
     public static Map<String, MiRNAGene> getmiRNAGeneMap(Path mirnaGeneFile) throws IOException {
         Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
 
-        if (mirnaGeneFile != null && Files.exists(mirnaGeneFile) && !Files.isDirectory(mirnaGeneFile)) {
+        if (mirnaGeneFile != null && Files.exists(mirnaGeneFile) && !Files.isDirectory(mirnaGeneFile)
+                && Files.size(mirnaGeneFile) > 0) {
             logger.info("Loading miRNA data ...");
             BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
 
@@ -118,8 +119,9 @@ public class GeneParserUtils {
         Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
         logger.info("Loading xref data...");
         String[] fields;
-        if (xrefsFile != null && Files.exists(xrefsFile)) {
-            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
+        if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
+            List<String> lines = Files.readAllLines(xrefsFile, Charset.forName("ISO-8859-1"));
+//            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
             for (String line : lines) {
                 fields = line.split("\t", -1);
                 if (fields.length >= 4) {
@@ -135,7 +137,7 @@ public class GeneParserUtils {
         }
 
         logger.info("Loading protein mapping into xref data...");
-        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile)) {
+        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile) && Files.size(uniprotIdMappingFile) > 0) {
             BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
             String line;
             while ((line = br.readLine()) != null) {
@@ -162,7 +164,7 @@ public class GeneParserUtils {
 
     public static Map<String, List<GeneDrugInteraction>> getGeneDrugMap(Path geneDrugFile) throws IOException {
         Map<String, List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
-        if (geneDrugFile != null && Files.exists(geneDrugFile)) {
+        if (geneDrugFile != null && Files.exists(geneDrugFile) && Files.size(geneDrugFile) > 0) {
             logger.info("Loading gene-drug interaction data from '{}'", geneDrugFile);
             BufferedReader br = FileUtils.newBufferedReader(geneDrugFile);
 
@@ -189,7 +191,8 @@ public class GeneParserUtils {
     public static Map<String, List<Expression>> getGeneExpressionMap(String species, Path geneExpressionFile) throws IOException {
         Map<String, List<Expression>> geneExpressionMap = new HashMap<>();
 
-        if (geneExpressionFile != null && Files.exists(geneExpressionFile) && species != null) {
+        if (geneExpressionFile != null && Files.exists(geneExpressionFile) && Files.size(geneExpressionFile) > 0
+                && species != null) {
             logger.info("Loading gene expression data from '{}'", geneExpressionFile);
             BufferedReader br = FileUtils.newBufferedReader(geneExpressionFile);
 
@@ -246,7 +249,7 @@ public class GeneParserUtils {
 
         String[] fields;
         String line;
-        if (hpoFilePath != null && hpoFilePath.toFile().exists()) {
+        if (hpoFilePath != null && hpoFilePath.toFile().exists() && Files.size(hpoFilePath) > 0) {
             BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath);
             // skip first header line
             bufferedReader.readLine();
@@ -259,7 +262,7 @@ public class GeneParserUtils {
             bufferedReader.close();
         }
 
-        if (disgenetFilePath != null && disgenetFilePath.toFile().exists()) {
+        if (disgenetFilePath != null && disgenetFilePath.toFile().exists() && Files.size(disgenetFilePath) > 0) {
             BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath);
             // skip first header line
             bufferedReader.readLine();

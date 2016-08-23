@@ -16,12 +16,12 @@ var SPECIES_V3 = ["afumigatus_cadre", "agambiae_agamp4", "athaliana_tair10", "bt
     "cintestinalis_kh", "csabaeus_chlsab11", "dmelanogaster_bdgp6", "drerio_zv9", "ggallus_galgal4", "ggorilla_gorgor31", "gmax_v10",
     "hsapiens_grch37", "hsapiens_grch38", "lmajor_asm272v2", "mmulatta_mmul10", "mmusculus_grcm38", "oaries_oarv31", "olatipes_hdrr",
     "osativa_irgsp10", "pfalciparum_asm276v1", "ptroglodytes_chimp214", "rnorvegicus_rnor50", "sbicolor_sorbi1", "scerevisiae_r6411",
-    "slycopersicum_sl240", "sscrofa_sscrofa102", "vvinifera_iggp12x", "zmays_agpv3"];
+    "slycopersicum_gca0001881152", "sscrofa_sscrofa102", "vvinifera_iggp12x", "zmays_agpv3"];
 var SPECIES_V4 = ["afumigatus_cadre", "agambiae_agamp4", "athaliana_tair10", "btaurus_umd31", "celegans_wbcel235", "cfamiliaris_canfam31",
     "cintestinalis_kh", "csabaeus_chlsab11", "dmelanogaster_bdgp6", "drerio_grcz10", "ggallus_galgal4", "ggorilla_gorgor31", "gmax_v10",
     "hsapiens_grch37", "hsapiens_grch38", "lmajor_asm272v2", "mmulatta_mmul10", "mmusculus_grcm38", "oaries_oarv31", "olatipes_hdrr",
     "osativa_irgsp10", "pfalciparum_asm276v1", "ptroglodytes_chimp214", "rnorvegicus_rnor60", "sbicolor_sorbi1", "scerevisiae_r6411",
-    "slycopersicum_sl240", "sscrofa_sscrofa102", "vvinifera_iggp12x", "zmays_agpv3"];
+    "slycopersicum_gca0001881152", "sscrofa_sscrofa102", "vvinifera_iggp12x", "zmays_agpv3"];
 var DATABASES = [];
 
 // we add v3 and v4 databases
