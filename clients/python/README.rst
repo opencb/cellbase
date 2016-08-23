@@ -80,14 +80,7 @@ Data can be accessed specifying one ID or multiple comma-separated IDs:
 
 What can I ask for?
 ```````````````````
-- The best way to know which data can be retrieved for each client is either checking out the `RESTful web services`_ section of the `CellBase Wiki`_ or using the class method "get_methods()":
-
-.. code-block:: python
-
-    >>> print(gc.get_methods())
-    >>> ['count', 'get_biotypes', 'get_clinical', 'get_tfbs', 'get_transcript', 'search', ...]
-
-- Check out also the `CellBase web services`_
+The best way to know which data can be retrieved for each client is either checking out the `RESTful web services`_ section of the CellBase Wiki or the `CellBase web services`_
 
 Configuration
 `````````````

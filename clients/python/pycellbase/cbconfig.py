@@ -8,6 +8,7 @@ class ConfigClient(object):
     def __init__(self, config_fpath=None):
         # Default config params
         self._hosts = ['bioinfodev.hpc.cam.ac.uk', 'bioinfo.hpc.cam.ac.uk']
+        # self._hosts = ['bioinfo.hpc.cam.ac.uk', 'bioinfodev.hpc.cam.ac.uk']
         self._host = self._get_available_host()
         self._port = '80'
         self._version = 'latest'
@@ -42,7 +43,7 @@ class ConfigClient(object):
         config_fhand.close()
 
     def _get_available_host(self):
-        """Returns the first host which is available"""
+        """Returns the first available host"""
         available_host = None
         for host in self._hosts:
             try:

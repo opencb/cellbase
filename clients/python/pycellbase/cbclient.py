@@ -4,8 +4,8 @@ from pycellbase.commons import get
 
 
 class CellBaseClient(object):
-    """Initializes the CellBase client and allows the creation of the
-     different query clients"""
+    """Creates different query clients and allows direct queries to the RESTful
+     service"""
     def __init__(self, config_client=None):
         # Client storage; If a client is already created, then it is returned
         self._clients = {}
