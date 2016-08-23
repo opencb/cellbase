@@ -1,0 +1,10 @@
+---
+species: "mmusculus"
+version: "v4"
+
+## These are the RESTful configurations parameters
+rest:
+  hosts:
+  - "bioinfodev.hpc.cam.ac.uk"
+  - ""
+  port: "80"
