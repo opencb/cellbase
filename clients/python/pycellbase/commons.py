@@ -6,6 +6,9 @@ try:
 except ImportError:
     from queue import Queue
 
+_CALL_BATCH_SIZE = 2000
+_NUM_THREADS_DEFAULT = 4
+
 
 def _create_rest_url(host, port, version, species, category, subcategory,
                      resource, query_id, options):
@@ -59,10 +62,8 @@ def _worker(queue, results, host, port, version, species, category,
 def get(host, port, version, species, category, subcategory, resource,
         query_id=None, options=None):
     """Queries the REST service using multiple threads if needed"""
-    call_batch_size = 2000
-    num_threads_default = 4
 
-    if query_id is None or len(query_id.split(',')) <= call_batch_size:
+    if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
         response = _fetch(host, port, version, species, category, subcategory,
                           resource, query_id, options)
         return response
@@ -70,12 +71,12 @@ def get(host, port, version, species, category, subcategory, resource,
         if options is not None and 'num_threads' in options:
             num_threads = options['num_threads']
         else:
-            num_threads = num_threads_default
+            num_threads = _NUM_THREADS_DEFAULT
 
         # Splitting query_id into batches depending on the call batch size
         id_list = query_id.split(',')
-        id_batches = [','.join(id_list[x:x+call_batch_size])
-                      for x in range(0, len(id_list), call_batch_size)]
+        id_batches = [','.join(id_list[x:x+_CALL_BATCH_SIZE])
+                      for x in range(0, len(id_list), _CALL_BATCH_SIZE)]
 
         # Setting up the queue to hold all the id batches
         q = Queue(maxsize=0)
@@ -124,15 +125,16 @@ def _fetch(host, port, version, species, category, subcategory, resource,
     call_limit = 1000
     max_limit = None
     if options is None:
-        options = {'skip': call_skip, 'limit': call_limit}
+        opts = {'skip': call_skip, 'limit': call_limit}
     else:
-        if 'skip' not in options:
-            options['skip'] = call_skip
+        opts = options.copy()  # Do not modify original data!
+        if 'skip' not in opts:
+            opts['skip'] = call_skip
         # If 'limit' is specified, a maximum of 'limit' results will be returned
-        if 'limit' in options:
-            max_limit = options['limit']
+        if 'limit' in opts:
+            max_limit = opts['limit']
         # Server must be always queried for results in groups of 1000
-        options['limit'] = call_limit
+        opts['limit'] = call_limit
 
     # If there is a query_id, the next variables will be used
     total_id_list = []  # All initial ids
@@ -147,7 +149,7 @@ def _fetch(host, port, version, species, category, subcategory, resource,
     while call:
         # Check 'limit' parameter if there is a maximum limit of results
         if max_limit is not None and max_limit <= call_limit:
-                options['limit'] = max_limit
+                opts['limit'] = max_limit
 
         # Updating query_id and list of ids to query
         if query_id is not None:
@@ -167,7 +169,7 @@ def _fetch(host, port, version, species, category, subcategory, resource,
                                subcategory=subcategory,
                                query_id=current_query_id,
                                resource=resource,
-                               options=options)
+                               options=opts)
         # print(url)  # DEBUG
 
         # Getting REST response
@@ -202,7 +204,7 @@ def _fetch(host, port, version, species, category, subcategory, resource,
                 call = False
 
         # Skipping the first 'limit' results to retrieve the next ones
-        options['skip'] += call_limit
+        opts['skip'] += call_limit
 
         # Subtracting the number of returned results from the maximum goal
         if max_limit is not None:
