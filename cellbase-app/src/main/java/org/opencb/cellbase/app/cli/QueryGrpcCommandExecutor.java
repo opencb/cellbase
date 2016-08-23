@@ -107,6 +107,9 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                 case "variant_annotation":
                     executeVariantAnnotationQuery(request, output);
                     break;
+                case "genomic_region":
+                    executeGenomicRegionQuery(request, output);
+                    break;
 //                case "conservation":
 //                    break;
                 default:
@@ -294,6 +297,45 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         if (queryGrpcCommandOptions.distinct != null) {
             ServiceTypesModel.StringArrayResponse values = regulatoryServiceBlockingStub.distinct(request);
             output.println(values);
+        }
+    }
+
+    private void executeGenomicRegionQuery(GenericServiceModel.Request request, PrintStream output)
+            throws JsonProcessingException {
+        GenomicRegionServiceGrpc.GenomicRegionServiceBlockingStub genomicRegionServiceBlockingStub =
+                GenomicRegionServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "gene":
+                    Iterator<GeneModel.Gene> geneIterator = genomicRegionServiceBlockingStub.getGene(request);
+                    while (geneIterator.hasNext()) {
+                        GeneModel.Gene gene = geneIterator.next();
+                        output.println(gene);
+                    }
+                    break;
+                case "transcript":
+                    Iterator<TranscriptModel.Transcript> transcriptIterator = genomicRegionServiceBlockingStub.getTranscript(request);
+                    while (transcriptIterator.hasNext()) {
+                        TranscriptModel.Transcript next = transcriptIterator.next();
+                        output.println(next);
+                    }
+                    break;
+                case "sequence":
+                    ServiceTypesModel.StringResponse sequence = genomicRegionServiceBlockingStub.getSequence(request);
+                    output.println(sequence);
+                    break;
+                case "regulatory":
+                    Iterator<RegulatoryRegionModel.RegulatoryRegion> iterator =
+                            genomicRegionServiceBlockingStub.getRegulatoryRegion(request);
+                    while (iterator.hasNext()) {
+                        RegulatoryRegionModel.RegulatoryRegion next = iterator.next();
+                        output.println(next);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
