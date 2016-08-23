@@ -333,6 +333,21 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                         output.println(next);
                     }
                     break;
+                case "tfbs":
+                    Iterator<RegulatoryRegionModel.RegulatoryRegion> tfbsIterator =
+                            genomicRegionServiceBlockingStub.getTfbs(request);
+                    while (tfbsIterator.hasNext()) {
+                        RegulatoryRegionModel.RegulatoryRegion next = tfbsIterator.next();
+                        output.println(next);
+                    }
+                    break;
+                case "variation":
+                    Iterator<VariantProto.Variant> variantIterator = genomicRegionServiceBlockingStub.getVariation(request);
+                    while (variantIterator.hasNext()) {
+                        VariantProto.Variant next = variantIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
                 default:
                     break;
             }

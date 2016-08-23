@@ -46,6 +46,7 @@ public class GenomicRegionGrpcService extends GenomicRegionServiceGrpc.GenomicRe
 
     @Override
     public void getTranscript(GenericServiceModel.Request request, StreamObserver<TranscriptModel.Transcript> responseObserver) {
+        // TODO iteration goes on and on. Need to be fixed
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(request.getSpecies(), request.getAssembly());
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
@@ -71,7 +72,20 @@ public class GenomicRegionGrpcService extends GenomicRegionServiceGrpc.GenomicRe
 
     @Override
     public void getVariation(GenericServiceModel.Request request, StreamObserver<VariantProto.Variant> responseObserver) {
-        super.getVariation(request, responseObserver);
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        Iterator iterator = variationDBAdaptor.nativeIterator(query, queryOptions);
+        int count = 0;
+        while (iterator.hasNext()) {
+            Document document = (Document) iterator.next();
+            responseObserver.onNext(ProtoConverterUtils.createVariant(document));
+            if (++count % 1000 == 0) {
+                System.out.println(count);
+            }
+        }
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -109,6 +123,17 @@ public class GenomicRegionGrpcService extends GenomicRegionServiceGrpc.GenomicRe
 
     @Override
     public void getTfbs(GenericServiceModel.Request request, StreamObserver<RegulatoryRegionModel.RegulatoryRegion> responseObserver) {
-        super.getTfbs(request, responseObserver);
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(request.getSpecies(), request.getAssembly());
+
+        Query query = createQuery(request);
+        QueryOptions queryOptions = createQueryOptions(request);
+        query.put(RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site + ","
+                + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
+        Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
+        while (iterator.hasNext()) {
+            Document document = (Document) iterator.next();
+            responseObserver.onNext(ProtoConverterUtils.createRegulatoryRegion(document));
+        }
+        responseObserver.onCompleted();
     }
 }
