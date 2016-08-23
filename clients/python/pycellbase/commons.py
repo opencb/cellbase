@@ -33,12 +33,10 @@ def _create_rest_url(host, port, version, species, category, subcategory,
         url += '/' + resource
 
     # Checking optional params
-    opt_params = ['include', 'exclude', 'skip', 'limit', 'count']
     if options is not None:
         opts = []
         for k, v in options.items():
-            if k in opt_params:
-                opts.append(k + '=' + str(v))
+            opts.append(k + '=' + str(v))
         if opts:
             url += '?' + '&'.join(opts)
 
