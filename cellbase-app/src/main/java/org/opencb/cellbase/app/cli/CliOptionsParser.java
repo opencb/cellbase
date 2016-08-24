@@ -191,7 +191,7 @@ public class CliOptionsParser {
         public String field;
 
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
-        public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";
+        public String loader = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
 
         @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", required = false, arity = 1)
         public int numThreads = 2;
