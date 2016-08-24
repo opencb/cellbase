@@ -11,7 +11,7 @@ class _Feature(RestClient):
         """Returns the number of entries"""
         return self._get('count')
 
-    def first(self):
+    def get_first(self):
         """Returns the first result"""
         return self._get('first')
 
@@ -98,6 +98,10 @@ class VariationClient(_Feature):
     def __init__(self, configuration):
         _subcategory = "variation"
         super(VariationClient, self).__init__(configuration, _subcategory)
+
+    def get_consequence_types(self, query_id=None, **options):
+        """Returns the different gene biotypes"""
+        return self._get("consequence_types", query_id, options)
 
 
 class GenomicRegionClient(RestClient):

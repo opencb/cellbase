@@ -26,3 +26,7 @@ class RestClient(object):
         """Returns help for a specific element"""
         return self._get('help')
 
+    def get_model(self):
+        """Returns the model for a specific element"""
+        return self._get('model')
+
