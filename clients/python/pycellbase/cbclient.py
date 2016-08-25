@@ -25,11 +25,7 @@ class CellBaseClient(object):
 
     def get_config(self):
         """Returns current configuration parameters"""
-        conf = self._configuration.__dict__.items()
-        conf_formatted = {}
-        for k, v in conf:
-            conf_formatted[k.replace('_', '')] = v
-        return conf_formatted
+        return self._configuration.configuration
 
     def get(self, category, subcategory, resource, query_id=None, **options):
         """Creates the URL for querying the REST service"""
