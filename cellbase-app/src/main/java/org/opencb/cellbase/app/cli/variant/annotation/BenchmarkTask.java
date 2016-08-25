@@ -5,8 +5,10 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.rocksdb.RocksDBException;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,12 +21,13 @@ import java.util.Set;
 public class BenchmarkTask implements
         ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception> {
 
-    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
-//    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CN([0123456789]+)>)";
+    private FastaIndexManager fastaIndexManager;
+    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CN([0123456789]+)>)";
     private VariantAnnotator variantAnnotator;
 
-    public BenchmarkTask(VariantAnnotator variantAnnotator) {
+    public BenchmarkTask(VariantAnnotator variantAnnotator, FastaIndexManager fastaIndexManager) {
         this.variantAnnotator = variantAnnotator;
+        this.fastaIndexManager = fastaIndexManager;
     }
 
     public void pre() {
@@ -33,6 +36,9 @@ public class BenchmarkTask implements
 
     public List<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> apply(List<VariantAnnotation> batch)
             throws Exception {
+        // VEP format does not include the reference allele. It's needed for the benchmark if the cache is activated -
+        // otherwise VariantAnnotationCalculator wont find most of the variants in the variation collection
+        fixReference(batch);
         removeInvalidVariants(batch);
         List<Variant> cellBaseBatch = createEmptyVariantList(batch);
         variantAnnotator.run(cellBaseBatch);
@@ -50,6 +56,16 @@ public class BenchmarkTask implements
             }
         }
         return comparisonResultList;
+    }
+
+    private void fixReference(List<VariantAnnotation> variantAnnotationList) throws RocksDBException {
+        for (VariantAnnotation variantAnnotation : variantAnnotationList) {
+            if (!variantAnnotation.getReference().isEmpty() && !variantAnnotation.getReference().equals("-")) {
+                variantAnnotation.setReference(fastaIndexManager.query(variantAnnotation.getChromosome(),
+                        variantAnnotation.getStart(), variantAnnotation.getStart()
+                                + variantAnnotation.getReference().length() - 1));
+            }
+        }
     }
 
     private void removeInvalidVariants(List<VariantAnnotation> variantAnnotationList) {

@@ -1,6 +1,7 @@
 package org.opencb.cellbase.app.cli.variant.annotation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -128,8 +129,7 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
             os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("annotation_" + annotator1Name + ".json.gz"),
                     CREATE, APPEND));
             annotation1Bw = new BufferedWriter(new OutputStreamWriter(os));
-            os = new GZIPOutputStream(Files.newOutputStream(outdir.resolve("annotation_" + annotator2Name + ".json.gz"),
-                    CREATE, APPEND));
+            os = Files.newOutputStream(outdir.resolve("annotation_" + annotator2Name + ".json"), CREATE, APPEND);
             annotation2Bw = new BufferedWriter(new OutputStreamWriter(os));
         } catch (IOException e) {
             e.printStackTrace();
@@ -388,7 +388,13 @@ public class BenchmarkDataWriter implements DataWriter<Pair<VariantAnnotationDif
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
+            try {
+                logger.error("Variant failing: {}\n", jsonObjectWriter
+                        .writeValueAsString(variantAnnotationDiff.getVariantAnnotation()));
+            } catch (JsonProcessingException e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         }
     }
