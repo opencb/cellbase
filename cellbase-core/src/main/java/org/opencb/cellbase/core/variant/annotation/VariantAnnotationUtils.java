@@ -394,6 +394,7 @@ public class VariantAnnotationUtils {
         CODING_SO_NAMES.add(SYNONYMOUS_VARIANT);
         CODING_SO_NAMES.add(STOP_GAINED);
         CODING_SO_NAMES.add(INITIATOR_CODON_VARIANT);
+        CODING_SO_NAMES.add(START_LOST);
         CODING_SO_NAMES.add(STOP_LOST);
         CODING_SO_NAMES.add(MISSENSE_VARIANT);
 
