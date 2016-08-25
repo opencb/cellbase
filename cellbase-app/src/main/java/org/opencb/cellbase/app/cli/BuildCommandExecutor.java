@@ -55,6 +55,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     private File ensemblScriptsFolder;
     private File proteinScriptsFolder;
 
+    private boolean flexibleGTFParsing;
+
     private CellBaseConfiguration.SpeciesProperties.Species species;
 
     public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
@@ -77,6 +79,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
         this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
+        this.flexibleGTFParsing = buildCommandOptions.flexibleGTFParsing;
     }
 
 
@@ -262,8 +265,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
-
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, serializer);
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, flexibleGTFParsing, serializer);
     }
 
 

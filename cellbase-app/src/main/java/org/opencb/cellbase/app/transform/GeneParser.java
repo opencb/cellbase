@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
@@ -60,6 +61,7 @@ public class GeneParser extends CellBaseParser {
     private Path hpoFile;
     private Path disgenetFile;
     private Path genomeSequenceFilePath;
+    private boolean flexibleGTFParsing;
 
     private CellBaseConfiguration.SpeciesProperties.Species species;
 
@@ -71,7 +73,8 @@ public class GeneParser extends CellBaseParser {
     private Set<String> indexedSequences;
 
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseConfiguration.SpeciesProperties.Species species,
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
+                      CellBaseConfiguration.SpeciesProperties.Species species, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
@@ -80,7 +83,7 @@ public class GeneParser extends CellBaseParser {
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
-                genomeSequenceFastaFile, species, serializer);
+                genomeSequenceFastaFile, species, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -88,7 +91,8 @@ public class GeneParser extends CellBaseParser {
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path genomeSequenceFilePath,
-                      CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
+                      CellBaseConfiguration.SpeciesProperties.Species species, boolean flexibleGTFParsing,
+                      CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -102,6 +106,7 @@ public class GeneParser extends CellBaseParser {
         this.disgenetFile = disgenetFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.species = species;
+        this.flexibleGTFParsing = flexibleGTFParsing;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
@@ -146,8 +151,13 @@ public class GeneParser extends CellBaseParser {
 
         logger.info("Parsing gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
+        Map<String, Map<String, Gtf>> gtfMap = null;
+        if (flexibleGTFParsing) {
+            gtfMap = loadGTFMap(gtfReader);
+        }
         Gtf gtf;
-        while ((gtf = gtfReader.read()) != null) {
+        while ((gtf = getGTFEntry(gtfReader, gtfMap)) != null) {
+//        while ((gtf = gtfReader.read()) != null) {
 
             if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
                     || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
@@ -351,6 +361,30 @@ public class GeneParser extends CellBaseParser {
         gtfReader.close();
         serializer.close();
         fastaIndexManager.close();
+    }
+
+    private Map<String, Map<String, Gtf>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
+        Map<String, Map<String, Gtf>> gtfMap = new HashedMap();
+        Gtf gtf;
+        while ((gtf = gtfReader.read()) != null) {
+            if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
+                    || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
+                continue;
+            }
+
+            String geneId = gtf.getAttributes().get("gene_id");
+
+            Map<String, Gtf> gtfMapEntry;
+            if (gtfMap.containsKey(geneId)) {
+                gtfMapEntry = gtfMap.get(geneId);
+            } else {
+                gtfMapEntry = new HashedMap();
+                gtfMap.put(geneId, gtfMapEntry);
+            }
+
+
+        }
+        return gtfMap;
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
