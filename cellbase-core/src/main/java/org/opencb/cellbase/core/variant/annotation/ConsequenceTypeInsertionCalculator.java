@@ -340,7 +340,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if (cdnaVariantStart != -1) {  // Insertion
             // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
             if (cdnaVariantStart < (cdnaCodingStart + 2) && !transcript.unconfirmedStart()) {
-                SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+                SoNames.add(VariantAnnotationUtils.START_LOST);
             }
 //            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
             int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
@@ -668,7 +668,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if (cdnaVariantStart != -1) {
             // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
             if (cdnaVariantStart < (cdnaCodingStart + 2) && !transcript.unconfirmedStart()) {
-                SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+                SoNames.add(VariantAnnotationUtils.START_LOST);
             }
 //            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
             int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
