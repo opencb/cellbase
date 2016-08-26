@@ -6,5 +6,5 @@ version: "v4"
 rest:
   hosts:
   - "bioinfodev.hpc.cam.ac.uk"
-  - ""
+  - "bioinfo.hpc.cam.ac.uk"
   port: "80"

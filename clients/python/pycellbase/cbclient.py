@@ -4,8 +4,8 @@ from pycellbase.commons import get
 
 
 class CellBaseClient(object):
-    """Initializes the CellBase client and allows the creation of the
-     different query clients"""
+    """Creates different query clients and allows direct queries to the RESTful
+     service"""
     def __init__(self, config_client=None):
         # Client storage; If a client is already created, then it is returned
         self._clients = {}
@@ -25,11 +25,7 @@ class CellBaseClient(object):
 
     def get_config(self):
         """Returns current configuration parameters"""
-        conf = self._configuration.__dict__.items()
-        conf_formatted = {}
-        for k, v in conf:
-            conf_formatted[k.replace('_', '')] = v
-        return conf_formatted
+        return self._configuration.configuration
 
     def get(self, category, subcategory, resource, query_id=None, **options):
         """Creates the URL for querying the REST service"""
@@ -51,6 +47,13 @@ class CellBaseClient(object):
             self._clients['GENE'] = fts.GeneClient(self._configuration)
         return self._clients['GENE']
 
+    def get_transcript_client(self):
+        """Creates the protein client"""
+        if 'TRANSCRIPT' not in self._clients:
+            self._clients['TRANSCRIPT'] =\
+                fts.TranscriptClient(self._configuration)
+        return self._clients['TRANSCRIPT']
+
     def get_protein_client(self):
         """Creates the protein client"""
         if 'PROTEIN' not in self._clients:
@@ -64,9 +67,9 @@ class CellBaseClient(object):
                 fts.VariationClient(self._configuration)
         return self._clients['VARIATION']
 
-    def get_genomic_client(self):
+    def get_genomic_region_client(self):
         """Creates the genomic region client"""
-        if 'GENOMIC' not in self._clients:
-            self._clients['GENOMIC'] = \
+        if 'GENOMIC_REGION' not in self._clients:
+            self._clients['GENOMIC_REGION'] = \
                 fts.GenomicRegionClient(self._configuration)
-        return self._clients['GENOMIC']
+        return self._clients['GENOMIC_REGION']
