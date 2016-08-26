@@ -321,7 +321,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     } else {
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
-                            SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                            SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
                                     String.valueOf(modifiedCodonArray))) {
                                 // Gary - initiator codon SO terms not compatible with the terms below
@@ -561,7 +561,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     } else {
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
-                            SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                            SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
                                     String.valueOf(modifiedCodonArray))) {
                                 // Gary - initiator codon SO terms not compatible with the terms below
