@@ -17,6 +17,7 @@ import java.util.*;
  *
  * @author Javi Lopez fjlopez@ebi.ac.uk
  */
+@Deprecated
 public class DisgenetParser extends CellBaseParser {
 
     private Path disgenetFilePath;
