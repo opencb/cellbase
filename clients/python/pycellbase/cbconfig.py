@@ -7,11 +7,14 @@ class ConfigClient(object):
     """Sets up the default configuration for the CellBase client"""
     def __init__(self, config_fpath=None):
         # Default config params
-        self._hosts = ['bioinfodev.hpc.cam.ac.uk', 'bioinfo.hpc.cam.ac.uk']
-        self._host = self._get_available_host()
-        self._port = '80'
-        self._version = 'latest'
-        self._species = 'hsapiens'
+        # self._hosts = ['bioinfodev.hpc.cam.ac.uk', 'bioinfo.hpc.cam.ac.uk']
+        self._hosts = ['bioinfo.hpc.cam.ac.uk', 'bioinfodev.hpc.cam.ac.uk']
+        self._config = {
+            'host': self._get_available_host(),
+            'port': '80',
+            'version': 'latest',
+            'species': 'hsapiens',
+        }
 
         # If config file is provided, override default config params
         if config_fpath is not None:
@@ -31,18 +34,18 @@ class ConfigClient(object):
         if config_dict is not None:
             if 'host' in config_dict['rest']:
                 self._hosts = config_dict['rest']['hosts']
-                self._host = self._get_available_host()
+                self._config['host'] = self._get_available_host()
             if 'port' in config_dict['rest']:
-                self._port = config_dict['rest']['port']
+                self._config['port'] = config_dict['rest']['port']
             if 'version' in config_dict:
-                self._version = config_dict['version']
+                self._config['version'] = config_dict['version']
             if 'species' in config_dict:
-                self._species = config_dict['species']
+                self._config['species'] = config_dict['species']
 
         config_fhand.close()
 
     def _get_available_host(self):
-        """Returns the first host which is available"""
+        """Returns the first available host"""
         available_host = None
         for host in self._hosts:
             try:
@@ -61,32 +64,36 @@ class ConfigClient(object):
 
     @property
     def version(self):
-        return self._version
+        return self._config['version']
 
     @version.setter
     def version(self, new_version):
-        self._version = new_version
+        self._config['version'] = new_version
 
     @property
     def host(self):
-        return self._host
+        return self._config['host']
 
     @host.setter
     def host(self, new_host):
-            self._host = new_host
+            self._config['host'] = new_host
 
     @property
     def port(self):
-        return self._port
+        return self._config['port']
 
     @port.setter
     def port(self, new_port):
-            self._port = new_port
+            self._config['port'] = new_port
 
     @property
     def species(self):
-        return self._species
+        return self._config['species']
 
     @species.setter
     def species(self, new_species):
-            self._species = new_species
+            self._config['species'] = new_species
+
+    @property
+    def configuration(self):
+        return self._config
