@@ -103,13 +103,13 @@ public class LoadCommandExecutor extends CommandExecutor {
                 try {
                     switch (loadOption) {
                         case EtlCommons.GENOME_DATA:
-                            loadRunner.load(input.resolve("genome_info.json"), "genome_info");
-                            loadRunner.load(input.resolve("genome_sequence.json.gz"), "genome_sequence");
+                            loadIfExists(input.resolve("genome_info.json"), "genome_info");
+                            loadIfExists(input.resolve("genome_sequence.json.gz"), "genome_sequence");
                             loadIfExists(input.resolve("genomeVersion.json"), "metadata");
                             loadRunner.index("genome_sequence");
                             break;
                         case EtlCommons.GENE_DATA:
-                            loadRunner.load(input.resolve("gene.json.gz"), "gene");
+                            loadIfExists(input.resolve("gene.json.gz"), "gene");
                             loadIfExists(input.resolve("dgidbVersion.json"), "metadata");
                             loadIfExists(input.resolve("ensemblCoreVersion.json"), "metadata");
                             loadIfExists(input.resolve("uniprotXrefVersion.json"), "metadata");
@@ -122,7 +122,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadVariationData();
                             break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-                            loadRunner.load(input.resolve("cadd.json.gz"), "cadd");
+                            loadIfExists(input.resolve("cadd.json.gz"), "cadd");
                             loadIfExists(input.resolve("caddVersion.json"), "metadata");
                             loadRunner.index("variation_functional_score");
                             break;
@@ -130,7 +130,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadConservation();
                             break;
                         case EtlCommons.REGULATION_DATA:
-                            loadRunner.load(input.resolve("regulatory_region.json.gz"), "regulatory_region");
+                            loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
                             loadIfExists(input.resolve("ensemblRegulationVersion.json"), "metadata");
                             loadIfExists(input.resolve("mirbaseVersion.json"), "metadata");
                             loadIfExists(input.resolve("targetScanVersion.json"), "metadata");
@@ -138,13 +138,13 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadRunner.index("regulatory_region");
                             break;
                         case EtlCommons.PROTEIN_DATA:
-                            loadRunner.load(input.resolve("protein.json.gz"), "protein");
+                            loadIfExists(input.resolve("protein.json.gz"), "protein");
                             loadIfExists(input.resolve("uniprotVersion.json"), "metadata");
                             loadIfExists(input.resolve("interproVersion.json"), "metadata");
                             loadRunner.index("protein");
                             break;
                         case EtlCommons.PPI_DATA:
-                            loadRunner.load(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
+                            loadIfExists(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
                             loadIfExists(input.resolve("intactVersion.json"), "metadata");
                             loadRunner.index("protein_protein_interaction");
                             break;
