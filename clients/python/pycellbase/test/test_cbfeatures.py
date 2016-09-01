@@ -175,6 +175,7 @@ class GenomicRegionTest(unittest.TestCase):
     def test_get_variation(self):
         """Checks retrieval of variations"""
         res = self._gr.get_variation('3:10000-100000')
+        print()
         assert len(res[0]['result']) == 2937
         assert res[0]['result'][0]['id'] == 'rs192023809'
 
