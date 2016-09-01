@@ -30,7 +30,6 @@ class CellBaseClient(object):
     def get(self, category, subcategory, resource, query_id=None, **options):
         """Creates the URL for querying the REST service"""
         response = get(host=self._configuration.host,
-                       port=self._configuration.port,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=category,

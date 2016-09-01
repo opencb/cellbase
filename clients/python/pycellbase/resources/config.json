@@ -1,11 +1,10 @@
 {
   "species": "celegans",
-  "version": "latest",
+  "version": "v3",
   "rest": {
 	"hosts": [
-      "bioinfo.hpc.cam.ac.uk",
-      "bioinfodev.hpc.cam.ac.uk"
-    ],
-    "port": "80"
+      "bioinfo.hpc.cam.ac.uk:80/cellbase",
+      "bioinfodev.hpc.cam.ac.uk:80/cellbase-4.5.0-beta"
+    ]
   }
 }

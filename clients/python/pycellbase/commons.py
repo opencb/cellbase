@@ -10,16 +10,12 @@ _CALL_BATCH_SIZE = 2000
 _NUM_THREADS_DEFAULT = 4
 
 
-def _create_rest_url(host, port, version, species, category, subcategory,
+def _create_rest_url(host, version, species, category, subcategory,
                      resource, query_id, options):
     """Creates the URL for querying the REST service"""
-
-    cellbase_rest = 'cellbase/webservices/rest'
-    # cellbase_rest = 'cellbase-4.5.0-beta/webservices/rest'
-
     # Creating the basic URL
-    url = ('http://' + '/'.join([host + ':' + port,
-                                 cellbase_rest,
+    url = ('http://' + '/'.join([host,
+                                 'webservices/rest',
                                  version,
                                  species,
                                  category,
@@ -43,13 +39,13 @@ def _create_rest_url(host, port, version, species, category, subcategory,
     return url
 
 
-def _worker(queue, results, host, port, version, species, category,
+def _worker(queue, results, host, version, species, category,
             subcategory, resource, options=None):
     """Manages the queue system for the threads"""
     while True:
         # Fetching new element from the queue
         index, query_id = queue.get()
-        response = _fetch(host, port, version, species, category, subcategory,
+        response = _fetch(host, version, species, category, subcategory,
                           resource, query_id, options)
         # Store data in results at correct index
         results[index] = response
@@ -57,12 +53,12 @@ def _worker(queue, results, host, port, version, species, category,
         queue.task_done()
 
 
-def get(host, port, version, species, category, subcategory, resource,
+def get(host, version, species, category, subcategory, resource,
         query_id=None, options=None):
     """Queries the REST service using multiple threads if needed"""
 
     if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
-        response = _fetch(host, port, version, species, category, subcategory,
+        response = _fetch(host, version, species, category, subcategory,
                           resource, query_id, options)
         return response
     else:
@@ -87,7 +83,6 @@ def get(host, port, version, species, category, subcategory, resource,
                                  kwargs={'queue': q,
                                          'results': res,
                                          'host': host,
-                                         'port': port,
                                          'version': version,
                                          'species': species,
                                          'category': category,
@@ -112,7 +107,7 @@ def get(host, port, version, species, category, subcategory, resource,
     return final_response
 
 
-def _fetch(host, port, version, species, category, subcategory, resource,
+def _fetch(host, version, species, category, subcategory, resource,
            query_id=None, options=None):
     """Queries the REST service retrieving results until exhaustion or limit"""
     # HERE BE DRAGONS
@@ -160,7 +155,6 @@ def _fetch(host, port, version, species, category, subcategory, resource,
 
         # Retrieving url
         url = _create_rest_url(host=host,
-                               port=port,
                                version=version,
                                species=species,
                                category=category,
