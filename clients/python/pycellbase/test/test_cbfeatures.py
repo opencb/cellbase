@@ -1,6 +1,6 @@
 import unittest
 
-import pycellbase.cbfeatures as cbfts
+import pycellbase.cbrestclients as cbfts
 from pycellbase.cbconfig import ConfigClient
 
 

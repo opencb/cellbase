@@ -1,4 +1,4 @@
-import pycellbase.cbfeatures as fts
+import pycellbase.cbrestclients as fts
 from pycellbase.cbconfig import ConfigClient
 from pycellbase.commons import get
 
