@@ -151,10 +151,13 @@ public class GeneParser extends CellBaseParser {
 
         logger.info("Parsing gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
-        Map<String, Map<String, Gtf>> gtfMap = null;
+
+        // Gene->Transcript->Feature->GTF line
+        Map<String, Map<String, Map<String, Object>>> gtfMap = null;
         if (flexibleGTFParsing) {
             gtfMap = loadGTFMap(gtfReader);
         }
+
         Gtf gtf;
         while ((gtf = getGTFEntry(gtfReader, gtfMap)) != null) {
 //        while ((gtf = gtfReader.read()) != null) {
@@ -363,8 +366,8 @@ public class GeneParser extends CellBaseParser {
         fastaIndexManager.close();
     }
 
-    private Map<String, Map<String, Gtf>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
-        Map<String, Map<String, Gtf>> gtfMap = new HashedMap();
+    private Map<String, Map<String, Map<String, Object>>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
+        Map<String, Map<String, Map<String, Object>>> gtfMap = new HashedMap();
         Gtf gtf;
         while ((gtf = gtfReader.read()) != null) {
             if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
@@ -372,19 +375,53 @@ public class GeneParser extends CellBaseParser {
                 continue;
             }
 
+            // Get GTF lines associated with this gene - create a new Map of GTF entries if it's a new gene
             String geneId = gtf.getAttributes().get("gene_id");
-
-            Map<String, Gtf> gtfMapEntry;
+            // Transcript -> feature -> GTF line
+            Map<String, Map<String, Object>> gtfMapGeneEntry;
             if (gtfMap.containsKey(geneId)) {
-                gtfMapEntry = gtfMap.get(geneId);
+                gtfMapGeneEntry =  gtfMap.get(geneId);
             } else {
-                gtfMapEntry = new HashedMap();
-                gtfMap.put(geneId, gtfMapEntry);
+                gtfMapGeneEntry = new HashedMap();
+                gtfMap.put(geneId, gtfMapGeneEntry);
             }
 
+            // Get GTF lines associated with this transcript - create a new Map of GTF entries if it's a new gene
+            String transcriptId = gtf.getAttributes().get("transcript_id");
+            Map<String, Object> gtfMapTranscriptEntry;
+            if (gtfMapGeneEntry.containsKey(transcriptId)) {
+                gtfMapTranscriptEntry =  gtfMapGeneEntry.get(transcriptId);
+            } else {
+                gtfMapTranscriptEntry = new HashedMap();
+                gtfMapGeneEntry.put(transcriptId, gtfMapTranscriptEntry);
+            }
+
+            addGTFLineToGTFMap(gtfMapTranscriptEntry, gtf);
 
         }
         return gtfMap;
+    }
+
+    private void addGTFLineToGTFMap(Map<String, Object> gtfMapTranscriptEntry, Gtf gtf) {
+
+        String featureType = gtf.getFeature();
+
+        // Add exon/cds GTF line to the corresponding gene entry in the map
+        if(featureType.equalsIgnoreCase("exon") || featureType.equalsIgnoreCase("cds")) {
+            List gtfList = null;
+            // Check if there were exons already stored
+            if (gtfMapTranscriptEntry.containsKey(featureType)) {
+                gtfList =  (List) gtfMapTranscriptEntry.get(featureType);
+            } else {
+                gtfList = new ArrayList<>();
+            }
+            gtfList.add(gtf);
+        // Only one start/stop codon can be stored per transcript - no need to check if the "start_codon"/"stop_codon"
+        // keys are already there
+        } else if (featureType.equalsIgnoreCase("start_codon") || featureType.equalsIgnoreCase("stop_codon")) {
+            gtfMapTranscriptEntry.put(featureType, gtf);
+        }
+
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
