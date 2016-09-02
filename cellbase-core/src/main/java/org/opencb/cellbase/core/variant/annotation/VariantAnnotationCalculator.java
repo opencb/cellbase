@@ -324,7 +324,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         stringBuilder.append(",annotation.alternate,annotation.id");
 
         if (annotatorSet.contains("variation")) {
-            stringBuilder.append(",annotation.id,annotation.populationFrequencies");
+            stringBuilder.append(",annotation.id");
         }
         if (annotatorSet.contains("clinical")) {
             stringBuilder.append(",annotation.variantTraitAssociation");
