@@ -52,6 +52,8 @@ public class CosmicParser extends CellBaseParser {
     private long invalidDuplicationLines;
     private long invalidMutationCDSOtherReason;
 
+    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
+
     public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.cosmicFilePath = cosmicFilePath;
@@ -74,6 +76,7 @@ public class CosmicParser extends CellBaseParser {
             cosmicReader.readLine(); // First line is the header -> ignore it
 
             while ((line = cosmicReader.readLine()) != null) {
+                logger.debug(line);
                 Cosmic cosmic = buildCosmic(line);
 
                 if (parseChromosomeStartAndEnd(cosmic) && parseVariant(cosmic)) {
@@ -248,7 +251,7 @@ public class CosmicParser extends CellBaseParser {
     private boolean parseInsertion(String mutationCds, Cosmic cosmic) {
         boolean validVariant = true;
         String insertedNucleotides = mutationCds.split("ins")[1];
-        if (insertedNucleotides.matches("\\d+")) {
+        if (insertedNucleotides.matches("\\d+") || !insertedNucleotides.matches(VARIANT_STRING_PATTERN)) {
             //c.503_508ins30
             validVariant = false;
         } else {
@@ -267,7 +270,8 @@ public class CosmicParser extends CellBaseParser {
         if (mutationCDSArray.length < 2) { // c.503_508del (usually, deletions of several nucleotides)
             // TODO: allow these variants
             validVariant = false;
-        } else if (mutationCDSArray[1].matches("\\d+")) { //  c.503_508del30
+        } else if (mutationCDSArray[1].matches("\\d+")
+                || !mutationCDSArray[1].matches(VARIANT_STRING_PATTERN)) { // Avoid allele strings containing Ns, for example
             validVariant = false;
         } else {
             cosmic.setReference(getPositiveStrandString(mutationCDSArray[1], cosmic.getMutationGRCh37Strand()));
@@ -282,8 +286,14 @@ public class CosmicParser extends CellBaseParser {
         Matcher snvMatcher = snvPattern.matcher(mutationCds);
 
         if (snvMatcher.matches()) {
-            cosmic.setReference(getPositiveStrandString(snvMatcher.group(REF), cosmic.getMutationGRCh37Strand()));
-            cosmic.setAlternate(getPositiveStrandString(snvMatcher.group(ALT), cosmic.getMutationGRCh37Strand()));
+            String ref = snvMatcher.group(REF);
+            String alt = snvMatcher.group(ALT);
+            if (!ref.equalsIgnoreCase("N") && !alt.equalsIgnoreCase("N")) {
+                cosmic.setReference(getPositiveStrandString(ref, cosmic.getMutationGRCh37Strand()));
+                cosmic.setAlternate(getPositiveStrandString(alt, cosmic.getMutationGRCh37Strand()));
+            } else {
+                validVariant = false;
+            }
         } else {
             validVariant = false;
         }
