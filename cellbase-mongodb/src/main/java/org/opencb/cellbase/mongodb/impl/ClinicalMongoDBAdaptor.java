@@ -330,6 +330,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 builder = builder.and("reference").is(genomicVariant.getReference());
             }
             queries.add(new Document(builder.get().toMap()));
+            logger.info(new Document(builder.get().toMap()).toJson());
             ids.add(genomicVariant.toString());
         }
 
