@@ -165,7 +165,7 @@ public class CosmicParser extends CellBaseParser {
             Matcher matcher = mutationGRCh37GenomePositionPattern.matcher(cosmic.getMutationGRCh37GenomePosition());
             if (matcher.matches()) {
                 setCosmicChromosome(matcher.group(CHROMOSOME), cosmic);
-                cosmic.setStart(Integer.parseInt(matcher.group(START)));
+                cosmic.setStart(getStart(Integer.parseInt(matcher.group(START)), cosmic.getMutationCDS()));
                 cosmic.setEnd(Integer.parseInt(matcher.group(END)));
                 success = true;
             }
@@ -174,6 +174,16 @@ public class CosmicParser extends CellBaseParser {
             this.invalidPositionLines++;
         }
         return success;
+    }
+
+    private Integer getStart(Integer readPosition, String mutationCDS) {
+        // In order to agree with the Variant model and what it's stored in variation, the start must be incremented in
+        // 1 for insertions given what is provided in the COSMIC file
+        if (mutationCDS.contains("ins")) {
+            return readPosition + 1;
+        } else {
+            return readPosition;
+        }
     }
 
     private void setCosmicChromosome(String chromosome, Cosmic cosmic) {
@@ -241,8 +251,8 @@ public class CosmicParser extends CellBaseParser {
             //c.503_508ins30
             validVariant = false;
         } else {
-            cosmic.setReference("-");
-            cosmic.setAlternate(insertedNucleotides);
+            cosmic.setReference("");
+            cosmic.setAlternate(getPositiveStrandString(insertedNucleotides, cosmic.getMutationGRCh37Strand()));
         }
 
         return validVariant;
@@ -259,8 +269,8 @@ public class CosmicParser extends CellBaseParser {
         } else if (mutationCDSArray[1].matches("\\d+")) { //  c.503_508del30
             validVariant = false;
         } else {
-            cosmic.setReference(mutationCDSArray[1]);
-            cosmic.setAlternate("-");
+            cosmic.setReference(getPositiveStrandString(mutationCDSArray[1], cosmic.getMutationGRCh37Strand()));
+            cosmic.setAlternate("");
         }
 
         return validVariant;
@@ -271,8 +281,8 @@ public class CosmicParser extends CellBaseParser {
         Matcher snvMatcher = snvPattern.matcher(mutationCds);
 
         if (snvMatcher.matches()) {
-            cosmic.setReference(snvMatcher.group(REF));
-            cosmic.setAlternate(snvMatcher.group(ALT));
+            cosmic.setReference(getPositiveStrandString(snvMatcher.group(REF), cosmic.getMutationGRCh37Strand()));
+            cosmic.setAlternate(getPositiveStrandString(snvMatcher.group(ALT), cosmic.getMutationGRCh37Strand()));
         } else {
             validVariant = false;
         }
