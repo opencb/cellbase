@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.transform;
 
 import org.opencb.cellbase.core.common.clinical.Cosmic;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -288,6 +289,23 @@ public class CosmicParser extends CellBaseParser {
         }
 
         return validVariant;
+    }
+
+    private String getPositiveStrandString(String alleleString, String strand) {
+        if (strand.equals("-")) {
+            return reverseComplementary(alleleString);
+        } else {
+            return alleleString;
+        }
+    }
+
+    private String reverseComplementary(String alleleString) {
+        char[] reverseAlleleString = new StringBuilder(alleleString).reverse().toString().toCharArray();
+        for (int i = 0; i < reverseAlleleString.length; i++) {
+            reverseAlleleString[i] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseAlleleString[i]);
+        }
+
+        return String.valueOf(reverseAlleleString);
     }
 
     private void printSummary(long processedCosmicLines, long ignoredCosmicLines) {
