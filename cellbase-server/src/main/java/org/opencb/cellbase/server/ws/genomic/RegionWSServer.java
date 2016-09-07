@@ -281,17 +281,23 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            query.put(GeneDBAdaptor.QueryParams.REGION.key(), region);
 
             if (hasHistogramQueryParam()) {
-//                queryOptions.put("interval", getHistogramIntervalSize());
-                QueryResult res = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
-                res.setId(region);
-                return createOkResponse(res);
+                List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = new ArrayList<>(queries.size());
+                for (Query query: queries) {
+                    QueryResult queryResult = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
+                    queryResult.setId((String) query.get(GeneDBAdaptor.QueryParams.REGION.key()));
+                    queryResults.add(queryResult);
+                }
+                return createOkResponse(queryResults);
             } else {
-                QueryResult queryResult = geneDBAdaptor.nativeGet(query, queryOptions);
-                queryResult.setId(region);
-                return createOkResponse(queryResult);
+                List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.REGION.key()));
+                }
+                return createOkResponse(queryResults);
             }
         } catch (Exception e) {
             return createErrorResponse(e);
