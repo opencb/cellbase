@@ -648,7 +648,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                    @ApiParam(name = "merge",
                                            value = "Return varaints for a gene per QueryResult or all of them merged"
                                                    + " into the same QueryResult object.",
-                                           defaultValue = "false", required = true) boolean merge) {
+                                           defaultValue = "false") boolean merge) {
 //    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
 //        try {
 //            parseQueryParams();
