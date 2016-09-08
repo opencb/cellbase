@@ -116,18 +116,17 @@ The best way to know which data can be retrieved for each client is either check
 Configuration
 `````````````
 
-Configuration stores the REST services host, port, API version and species.
+Configuration stores the REST services host, API version and species.
 
 Default configuration:
 
 .. code-block:: python
 
     >>> cbc.get_config()
-    {'hosts': ['bioinfo.hpc.cam.ac.uk',
-               'bioinfodev.hpc.cam.ac.uk'],
-     'host': 'bioinfo.hpc.cam.ac.uk',
-     'port': '80',
-     'version': 'latest',
+    {'hosts': ['bioinfo.hpc.cam.ac.uk:80/cellbase',
+               'bioinfodev.hpc.cam.ac.uk:80/cellbase-4.5.0-beta'],
+     'host': 'bioinfo.hpc.cam.ac.uk:80/cellbase',
+     'version': 'v4',
      'species': 'hsapiens'}
 
 A custom configuration can be passed to CellBaseClient with a ConfigClient object. JSON and YML files are supported:
@@ -146,10 +145,10 @@ If you want to change the configuration you can directly modify the ConfigClient
     >>> cc = ConfigClient()
     >>> cbc = CellBaseClient(cc)
     >>> cbc.get_config()['version']
-    'latest'
-    >>> cc.version = 'v4'
-    >>> cbc.get_config()['version']
     'v4'
+    >>> cc.version = 'v3'
+    >>> cbc.get_config()['version']
+    'v3'
 
 .. _CellBase: https://github.com/opencb/cellbase
 .. _CellBase Wiki: https://github.com/opencb/cellbase/wiki
