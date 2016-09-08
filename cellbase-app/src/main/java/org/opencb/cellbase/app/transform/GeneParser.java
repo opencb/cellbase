@@ -366,6 +366,33 @@ public class GeneParser extends CellBaseParser {
         fastaIndexManager.close();
     }
 
+    private Gtf getGTFEntry(GtfReader gtfReader, Map<String, Map<String, Map<String, Object>>> gtfMap) throws FileFormatException {
+        // Flexible parsing is deactivated, return next line
+        if (gtfMap == null) {
+            return gtfReader.read();
+        // Flexible parsing activated, carefully select next line to return
+        } else {
+            featureCounter = (featureCounter + 1) % featureTypes.len;
+            currentFeature = featureTypes[featureCounter];
+            transcriptCounter = (transcriptCounter + 1) % gtfMap.get(currentGene).size();
+
+            if (transcriptCounter == 0) {
+                geneCounter++;
+
+                // No more genes to process?
+                if (geneCounter < gtfMap.size()) {
+                    currentGene = new ArrayList<>(gtfMap.keySet()).get(geneCounter);
+                } else {
+                    return null;
+                }
+
+            }
+
+            currentTranscript = new ArrayList<>(gtfMap.get(currentGene).keySet()).get(transcriptCounter);
+            return gtfMap.get(currentGene).get(currentTranscript).get(currentFeature);
+        }
+    }
+
     private Map<String, Map<String, Map<String, Object>>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
         Map<String, Map<String, Map<String, Object>>> gtfMap = new HashedMap();
         Gtf gtf;
