@@ -34,7 +34,7 @@ public class VariantAnnotationGrpcService extends VariantAnnotationServiceGrpc.V
         QueryOptions queryOptions = createQueryOptions(request);
         VariantAnnotationCalculator variantAnnotationCalculator =
                 new VariantAnnotationCalculator(request.getSpecies(), request.getAssembly(),
-                dbAdaptorFactory, true);
+                dbAdaptorFactory);
         List<QueryResult<VariantAnnotation>> queryResultList = null;
         List<Variant> variantList = Variant.parseVariants(query.getString("id"));
         try {
