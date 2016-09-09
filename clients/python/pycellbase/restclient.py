@@ -22,14 +22,11 @@ class RestClient(object):
 
         return response
 
-    def get_methods(self):
-        """Returns available methods for an object"""
-        ms = [method for method in dir(self) if callable(getattr(self, method))]
-        return [m for m in ms if not m.startswith('_')]
-
     def get_help(self):
         """Returns help for a specific element"""
         return self._get('help')
 
-    def count(self):
-        return self._get('count')
+    def get_model(self):
+        """Returns the model for a specific element"""
+        return self._get('model')
+

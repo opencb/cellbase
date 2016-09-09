@@ -48,7 +48,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field) {
+    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 

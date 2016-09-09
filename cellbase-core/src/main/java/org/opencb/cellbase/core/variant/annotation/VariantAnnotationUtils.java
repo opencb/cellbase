@@ -85,6 +85,7 @@ public class VariantAnnotationUtils {
     public static final String STOP_RETAINED_VARIANT = "stop_retained_variant";
     public static final String SYNONYMOUS_VARIANT = "synonymous_variant";
     public static final String INITIATOR_CODON_VARIANT = "initiator_codon_variant";
+    public static final String START_LOST = "start_lost";
     public static final String STOP_GAINED = "stop_gained";
     public static final String STOP_LOST = "stop_lost";
     public static final String MISSENSE_VARIANT = "missense_variant";
@@ -357,6 +358,7 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("frameshift_variant", 33);
         SO_SEVERITY.put("stop_lost", 32);
         SO_SEVERITY.put("terminator_codon_variant", 31);
+        SO_SEVERITY.put("start_lost", 30);
         SO_SEVERITY.put("initiator_codon_variant", 30);
         SO_SEVERITY.put("transcript_amplification", 29);
         SO_SEVERITY.put("inframe_insertion", 28);
@@ -392,6 +394,7 @@ public class VariantAnnotationUtils {
         CODING_SO_NAMES.add(SYNONYMOUS_VARIANT);
         CODING_SO_NAMES.add(STOP_GAINED);
         CODING_SO_NAMES.add(INITIATOR_CODON_VARIANT);
+        CODING_SO_NAMES.add(START_LOST);
         CODING_SO_NAMES.add(STOP_LOST);
         CODING_SO_NAMES.add(MISSENSE_VARIANT);
 

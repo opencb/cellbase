@@ -18,12 +18,12 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.*;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -60,11 +60,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     private ClinicalDBAdaptor clinicalDBAdaptor;
     private ProteinDBAdaptor proteinDBAdaptor;
     private ConservationDBAdaptor conservationDBAdaptor;
+    private Set<String> annotatorSet;
+    private String includeGeneFields;
 
     private DBAdaptorFactory dbAdaptorFactory;
     //    private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
-    private boolean normalize = true;
+    private boolean normalize = false;
+    private boolean useCache = true;
+    private boolean phased = false;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -76,13 +80,13 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //    }
 
     public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory) {
-        this(species, assembly, dbAdaptorFactory, true);
-    }
-
-    public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory,
-                                       boolean normalize) {
+//        this(species, assembly, dbAdaptorFactory, true);
+//    }
+//
+//    public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory,
+//                                       boolean normalize) {
         this.normalizer = new VariantNormalizer(false, false, true);
-        this.normalize = normalize;
+//        this.normalize = normalize;
 
         this.dbAdaptorFactory = dbAdaptorFactory;
 
@@ -103,10 +107,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         // We process include and exclude query options to know which annotators to use.
         // Include parameter has preference over exclude.
-        Set<String> annotatorSet = getAnnotatorSet(queryOptions);
+//        Set<String> annotatorSet = getAnnotatorSet(queryOptions);
+//
+//        // This field contains all the fields to be returned by overlapping genes
+//        String includeGeneFields = getIncludedGeneFields(annotatorSet);
 
-        // This field contains all the fields to be returned by overlapping genes
-        String includeGeneFields = getIncludedGeneFields(annotatorSet);
+        parseQueryParam(queryOptions);
         List<Gene> geneList = getAffectedGenes(variant, includeGeneFields);
 
         // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
@@ -133,6 +139,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             throws InterruptedException, ExecutionException {
 
         logger.debug("Annotating  batch");
+        parseQueryParam(queryOptions);
 
         if (variantList == null || variantList.isEmpty()) {
             return new ArrayList<>();
@@ -144,20 +151,218 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             normalizedVariantList = variantList;
         }
 
-        // We process include and exclude query options to know which annotators to use.
-        // Include parameter has preference over exclude.
-        Set<String> annotatorSet = getAnnotatorSet(queryOptions);
-        logger.debug("Annotators to use: {}", annotatorSet.toString());
+        // Object to be returned
+        List<QueryResult<VariantAnnotation>> variantAnnotationResultList;
+        if (useCache) {
+            variantAnnotationResultList = getCachedPreferredAnnotation(normalizedVariantList);
+        } else {
+            variantAnnotationResultList = runAnnotationProcess(normalizedVariantList);
+        }
 
-        // This field contains all the fields to be returned by overlapping genes
-        String includeGeneFields = getIncludedGeneFields(annotatorSet);
+        return variantAnnotationResultList;
+    }
+
+    private List<QueryResult<VariantAnnotation>> getCachedPreferredAnnotation(List<Variant> variantList)
+            throws InterruptedException, ExecutionException {
+
+        // Expected to be very few within a batch, no capacity initialized for the array
+        List<Integer> mustRunAnnotationPositions = new ArrayList<>();
+        List<Variant> mustRunAnnotation = new ArrayList<>();
+
+        // Expected to be most of them, array capacity set to variantList size
+        List<Integer> mustSearchVariationPositions = new ArrayList<>(variantList.size());
+        List<Variant> mustSearchVariation = new ArrayList<>();
+
+        // Phased variants cannot be annotated using the variation collection
+        if (phased) {
+            for (int i = 0; i < variantList.size(); i++) {
+                if (isPhased(variantList.get(i))) {
+                    mustRunAnnotationPositions.add(i);
+                    mustRunAnnotation.add(variantList.get(i));
+                } else {
+                    mustSearchVariationPositions.add(i);
+                    mustSearchVariation.add(variantList.get(i));
+                }
+            }
+        } else {
+            for (int i = 0; i < variantList.size(); i++) {
+                mustSearchVariationPositions.add(i);
+                mustSearchVariation.add(variantList.get(i));
+            }
+        }
+
+        // Search unphased variants within variation collection
+        QueryOptions queryOptions = new QueryOptions("include", getCachedVariationIncludeFields());
+        List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(mustSearchVariation,
+                queryOptions);
 
         // Object to be returned
-        List<QueryResult<VariantAnnotation>> variantAnnotationResultList = new ArrayList<>(normalizedVariantList.size());
+        List<QueryResult<VariantAnnotation>> variantAnnotationResultList =
+                Arrays.asList(new QueryResult[variantList.size()]);
 
+        // mustSearchVariation and variationQueryResultList do have same size, same order
+        for (int i = 0; i < mustSearchVariation.size(); i++) {
+            // WARNING: variation collection may contain multiple documents for the same variant. ENSEMBL variation
+            // often provides multiple entries for the same variant (<1% variants). This line below will select just
+            // one of them.
+            Variant cacheVariant = getPreferredVariant(variationQueryResultList.get(i));
+
+            // Variant not found in variation collection or the variant was found but not annotated with CellBase - I can
+            // distinguish CellBase from ENSEMBL annotation because when CellBase annotates, it includes chromosome, start,
+            // reference and alternate fields - TODO: change this.
+            // Must be annotated by running the whole process
+//            if (variationQueryResultList.get(i).getNumResults() == 0) {
+            if (cacheVariant == null) {
+//                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation() == null
+//                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes() == null
+//                    || variationQueryResultList.get(i).getResult().get(0).getAnnotation().getConsequenceTypes().isEmpty()) {
+                mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
+                mustRunAnnotation.add(mustSearchVariation.get(i));
+            } else if (cacheVariant.getAnnotation() != null && cacheVariant.getAnnotation().getChromosome() == null) {
+//            } else if (variationQueryResultList.get(i).getResult().get(0).getAnnotation() != null
+//                        && variationQueryResultList.get(i).getResult().get(0).getAnnotation().getChromosome() == null) {
+                mustSearchVariation.get(i).setId(cacheVariant.getId());
+                if (mustSearchVariation.get(i).getAnnotation() == null) {
+                    mustSearchVariation.get(i).setAnnotation(new VariantAnnotation());
+                }
+                mustSearchVariation.get(i).getAnnotation()
+                        .setPopulationFrequencies(cacheVariant.getAnnotation().getPopulationFrequencies());
+                mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
+                mustRunAnnotation.add(mustSearchVariation.get(i));
+            } else {
+                // variantList is the passed by reference argument and reference to objects within variantList are
+                // copied within mustSearchVariation. Modifying reference objects within mustSearchVariation will
+                // modify user-provided Variant objects. If there's no annotation - just set it; if there's an annotation
+                // object already created, let's only overwrite those fields created by the annotator
+                VariantAnnotation variantAnnotation;
+                if (mustSearchVariation.get(i).getAnnotation() == null) {
+                    variantAnnotation =  cacheVariant.getAnnotation();
+                    mustSearchVariation.get(i).setAnnotation(variantAnnotation);
+                } else {
+                    variantAnnotation = mustSearchVariation.get(i).getAnnotation();
+                    mergeAnnotation(variantAnnotation, cacheVariant.getAnnotation());
+                }
+                setGeneAnnotation(mustSearchVariation.get(i));
+                variantAnnotationResultList.set(mustSearchVariationPositions.get(i),
+                        new QueryResult<>(mustSearchVariation.get(i).toString(),
+                        variationQueryResultList.get(i).getDbTime(), 1, 1, null, null,
+                        Collections.singletonList(variantAnnotation)));
+            }
+        }
+
+        if (mustRunAnnotation.size() > 0) {
+            List<QueryResult<VariantAnnotation>> uncachedAnnotations = runAnnotationProcess(mustRunAnnotation);
+            for (int i = 0; i < mustRunAnnotation.size(); i++) {
+                variantAnnotationResultList.set(mustRunAnnotationPositions.get(i), uncachedAnnotations.get(i));
+            }
+        }
+
+        logger.debug("{}/{} ({}%) variants required running the annotation process", mustRunAnnotation.size(),
+                variantList.size(), (mustRunAnnotation.size() * (100.0 / variantList.size())));
+        return variantAnnotationResultList;
+
+    }
+
+    private Variant getPreferredVariant(QueryResult<Variant> variantQueryResult) {
+        if (variantQueryResult.getNumResults() > 1
+                && variantQueryResult.first().getAnnotation().getPopulationFrequencies() == null) {
+            for (int i = 1; i < variantQueryResult.getResult().size(); i++) {
+                if (variantQueryResult.getResult().get(i).getAnnotation().getPopulationFrequencies() != null) {
+                    return variantQueryResult.getResult().get(i);
+                }
+            }
+        }
+        return variantQueryResult.first();
+    }
+
+    private List<Gene> setGeneAnnotation(Variant variant) {
+        // Fetch overlapping genes for this variant
+        List<Gene> geneList = getAffectedGenes(variant, includeGeneFields);
+        VariantAnnotation variantAnnotation = variant.getAnnotation();
+
+        /*
+         * Gene Annotation
+         */
+        if (annotatorSet.contains("expression")) {
+            variantAnnotation.setGeneExpression(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation().getExpression() != null) {
+                    variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
+                }
+            }
+        }
+
+        if (annotatorSet.contains("geneDisease")) {
+            variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation().getDiseases() != null) {
+                    variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
+                }
+            }
+        }
+
+        if (annotatorSet.contains("drugInteraction")) {
+            variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
+            for (Gene gene : geneList) {
+                if (gene.getAnnotation().getDrugs() != null) {
+                    variantAnnotation.getGeneDrugInteraction().addAll(gene.getAnnotation().getDrugs());
+                }
+            }
+        }
+
+        return geneList;
+
+    }
+
+    private boolean isPhased(Variant variant) {
+        return (variant.getStudies() != null && !variant.getStudies().isEmpty())
+            && variant.getStudies().get(0).getFormat().contains("PS");
+    }
+
+    private String getCachedVariationIncludeFields() {
+        StringBuilder stringBuilder = new StringBuilder("annotation.chromosome,annotation.start,annotation.reference");
+        stringBuilder.append(",annotation.alternate,annotation.id");
+
+        if (annotatorSet.contains("variation")) {
+            stringBuilder.append(",annotation.id");
+        }
+        if (annotatorSet.contains("clinical")) {
+            stringBuilder.append(",annotation.variantTraitAssociation");
+        }
+        if (annotatorSet.contains("conservation")) {
+            stringBuilder.append(",annotation.conservation");
+        }
+        if (annotatorSet.contains("functionalScore")) {
+            stringBuilder.append(",annotation.functionalScore");
+        }
+        if (annotatorSet.contains("consequenceType")) {
+            stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
+        }
+        if (annotatorSet.contains("expression")) {
+            stringBuilder.append(",annotation.geneExpression");
+        }
+        if (annotatorSet.contains("geneDisease")) {
+            stringBuilder.append(",annotation.geneTraitAssociation");
+        }
+        if (annotatorSet.contains("drugInteraction")) {
+            stringBuilder.append(",annotation.geneDrugInteraction");
+        }
+        if (annotatorSet.contains("populationFrequencies")) {
+            stringBuilder.append(",annotation.populationFrequencies");
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private List<QueryResult<VariantAnnotation>> runAnnotationProcess(List<Variant> normalizedVariantList)
+            throws InterruptedException, ExecutionException {
+        QueryOptions queryOptions;
         long globalStartTime = System.currentTimeMillis();
         long startTime;
         queryOptions = new QueryOptions();
+
+        // Object to be returned
+        List<QueryResult<VariantAnnotation>> variantAnnotationResultList = new ArrayList<>(normalizedVariantList.size());
 
         /*
          * Next three async blocks calculate annotations using Futures, this will be calculated in a different thread.
@@ -166,7 +371,11 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(4);
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<QueryResult<Variant>>> variationFuture = null;
+
+        // When running using cache: some variants may be in the variation collection (rs and popFrequencies needed)
+        // but were not searched before because do contain the PS attribute - allow repetition of this query
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
+//        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
                     "id,annotation.populationFrequencies"));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
@@ -200,9 +409,6 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         Queue<Variant> variantBuffer = new LinkedList<>();
         startTime = System.currentTimeMillis();
         for (int i = 0; i < normalizedVariantList.size(); i++) {
-            // Fetch overlapping genes for this variant
-            geneList = getAffectedGenes(normalizedVariantList.get(i), includeGeneFields);
-
             // normalizedVariantList is the passed by reference argument - modifying normalizedVariantList will
             // modify user-provided Variant objects. If there's no annotation - just set it; if there's an annotation
             // object already created, let's only overwrite those fields created by the annotator
@@ -219,11 +425,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             variantAnnotation.setReference(normalizedVariantList.get(i).getReference());
             variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
 
+            geneList = setGeneAnnotation(normalizedVariantList.get(i));
+
             if (annotatorSet.contains("consequenceType")) {
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
-                    checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
+                    if (phased) {
+                        checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
+                    }
                     variantAnnotation
                             .setDisplayConsequenceType(getMostSevereConsequenceType(normalizedVariantList.get(i)
                                     .getAnnotation().getConsequenceTypes()));
@@ -234,36 +444,6 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                     logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
                             + " consequence type list.", normalizedVariantList.get(i).toString());
 //                    throw e;
-                }
-            }
-
-            /*
-             * Gene Annotation
-             */
-            if (annotatorSet.contains("expression")) {
-                variantAnnotation.setGeneExpression(new ArrayList<>());
-                for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getExpression() != null) {
-                        variantAnnotation.getGeneExpression().addAll(gene.getAnnotation().getExpression());
-                    }
-                }
-            }
-
-            if (annotatorSet.contains("geneDisease")) {
-                variantAnnotation.setGeneTraitAssociation(new ArrayList<>());
-                for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getDiseases() != null) {
-                        variantAnnotation.getGeneTraitAssociation().addAll(gene.getAnnotation().getDiseases());
-                    }
-                }
-            }
-
-            if (annotatorSet.contains("drugInteraction")) {
-                variantAnnotation.setGeneDrugInteraction(new ArrayList<>());
-                for (Gene gene : geneList) {
-                    if (gene.getAnnotation().getDrugs() != null) {
-                        variantAnnotation.getGeneDrugInteraction().addAll(gene.getAnnotation().getDrugs());
-                    }
                 }
             }
 
@@ -279,7 +459,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         // Adjust phase of two last variants - if still anything remaining to adjust. This can happen if the two last
         // variants in the batch are phased and the distance between them < 3nts
-        if (variantBuffer.size() > 1) {
+        if (phased && variantBuffer.size() > 1) {
             adjustPhasedConsequenceTypes(variantBuffer.toArray());
         }
 
@@ -310,24 +490,43 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         return variantAnnotationResultList;
     }
 
-    private void mergeAnnotation(Variant destinationVariant, VariantAnnotation origin) {
-        if (destinationVariant.getAnnotation() == null) {
-            destinationVariant.setAnnotation(origin);
-        } else {
-            destinationVariant.getAnnotation().setId(origin.getId());
-            destinationVariant.getAnnotation().setChromosome(origin.getChromosome());
-            destinationVariant.getAnnotation().setStart(origin.getStart());
-            destinationVariant.getAnnotation().setReference(origin.getReference());
-            destinationVariant.getAnnotation().setAlternate(origin.getAlternate());
-            destinationVariant.getAnnotation().setDisplayConsequenceType(origin.getDisplayConsequenceType());
-            destinationVariant.getAnnotation().setConsequenceTypes(origin.getConsequenceTypes());
-            destinationVariant.getAnnotation().setConservation(origin.getConservation());
-            destinationVariant.getAnnotation().setGeneExpression(origin.getGeneExpression());
-            destinationVariant.getAnnotation().setGeneTraitAssociation(origin.getGeneTraitAssociation());
-            destinationVariant.getAnnotation().setGeneDrugInteraction(origin.getGeneDrugInteraction());
-            destinationVariant.getAnnotation().setVariantTraitAssociation(origin.getVariantTraitAssociation());
-            destinationVariant.getAnnotation().setFunctionalScore(origin.getFunctionalScore());
-        }
+    private void parseQueryParam(QueryOptions queryOptions) {
+        // We process include and exclude query options to know which annotators to use.
+        // Include parameter has preference over exclude.
+        annotatorSet = getAnnotatorSet(queryOptions);
+        logger.debug("Annotators to use: {}", annotatorSet.toString());
+
+        // This field contains all the fields to be returned by overlapping genes
+        includeGeneFields = getIncludedGeneFields(annotatorSet);
+
+        // Default behaviour no normalization
+        normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
+        logger.debug("normalize = {}", normalize);
+
+        // Default behaviour use cache
+        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : true);
+
+        // Default behaviour - don't calculate phased annotation
+        phased = (queryOptions.get("phased") != null ? (Boolean) queryOptions.get("phased") : false);
+        logger.debug("phased = {}", phased);
+    }
+
+
+    private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
+        destination.setId(origin.getId());
+        destination.setChromosome(origin.getChromosome());
+        destination.setStart(origin.getStart());
+        destination.setReference(origin.getReference());
+        destination.setAlternate(origin.getAlternate());
+        destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
+        destination.setConsequenceTypes(origin.getConsequenceTypes());
+        destination.setConservation(origin.getConservation());
+//        destination.setGeneExpression(origin.getGeneExpression());
+//        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
+        destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+//        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
+        destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+        destination.setFunctionalScore(origin.getFunctionalScore());
     }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer) {
@@ -838,14 +1037,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             List<QueryResult<Variant>> variationQueryResults = conservationFuture.get();
             if (variationQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResultList.size(); i++) {
-                    if (variationQueryResults.get(i).first() != null && variationQueryResults.get(i).first().getIds().size() > 0) {
-                        variantAnnotationResultList.get(i).first().setId(variationQueryResults.get(i).first().getIds().get(0));
+                    Variant preferredVariant = getPreferredVariant(variationQueryResults.get(i));
+                    if (preferredVariant != null && preferredVariant.getIds().size() > 0) {
+                        variantAnnotationResultList.get(i).first().setId(preferredVariant.getIds().get(0));
 
                     }
 
-                    if (annotatorSet.contains("populationFrequencies") && variationQueryResults.get(i).first() != null) {
-                        variantAnnotationResultList.get(i).first().setPopulationFrequencies(variationQueryResults.get(i)
-                                .first().getAnnotation().getPopulationFrequencies());
+                    if (annotatorSet.contains("populationFrequencies") && preferredVariant != null) {
+                        variantAnnotationResultList.get(i).first()
+                                .setPopulationFrequencies(preferredVariant.getAnnotation().getPopulationFrequencies());
                     }
 //                        List<Document> variationDBList = (List<Document>) variationQueryResults.get(i).getResult();
 //                        if (variationDBList != null && variationDBList.size() > 0) {

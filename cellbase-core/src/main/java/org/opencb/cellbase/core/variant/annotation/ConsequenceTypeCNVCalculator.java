@@ -321,7 +321,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart < 1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+                    SoNames.add(VariantAnnotationUtils.START_LOST);
                 }
                 if (variantStart < (transcript.getGenomicCodingStart() + 3)) {
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -372,7 +372,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
         if (cdnaVariantStart != -1 && cdnaVariantStart < (cdnaCodingStart + 3) && (cdnaCodingStart > 0
                 || !transcript.unconfirmedStart())) {
-            SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+            SoNames.add(VariantAnnotationUtils.START_LOST);
             codingAnnotationAdded = true;
         }
         if (cdnaVariantEnd != -1) {
@@ -657,7 +657,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart<1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+                    SoNames.add(VariantAnnotationUtils.START_LOST);
                 }
                 if (variantEnd > (transcript.getGenomicCodingEnd() - 3)) {
                     SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
@@ -708,7 +708,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
 
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
         if (cdnaVariantStart != -1 && cdnaVariantStart < (cdnaCodingStart + 3) && (cdnaCodingStart > 0 || !transcript.unconfirmedStart())) {
-            SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+            SoNames.add(VariantAnnotationUtils.START_LOST);
             codingAnnotationAdded = true;
         }
         if (cdnaVariantEnd != -1) {

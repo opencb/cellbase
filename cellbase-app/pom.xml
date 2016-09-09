@@ -41,11 +41,11 @@
             <artifactId>jcommander</artifactId>
             <version>1.47</version>
         </dependency>
-        <dependency>
-            <groupId>psidev.psi.mi</groupId>
-            <artifactId>psimitab</artifactId>
-            <version>1.8.5</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>psidev.psi.mi</groupId>-->
+            <!--<artifactId>psimitab</artifactId>-->
+            <!--<version>1.8.5</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -197,12 +197,12 @@
         </resources>
     </build>
 
-    <repositories>
-        <repository>
-            <id>intact.nexus</id>
-            <name>IntAct Nexus</name>
-            <url>http://www.ebi.ac.uk/intact/maven/nexus/content/groups/public</url>
-        </repository>
-    </repositories>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<id>intact.nexus</id>-->
+            <!--<name>IntAct Nexus</name>-->
+            <!--<url>http://www.ebi.ac.uk/intact/maven/nexus/content/groups/public</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
 
 </project>

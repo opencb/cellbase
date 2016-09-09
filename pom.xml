@@ -24,8 +24,8 @@
     <properties>
         <cellbase.version>4.5.0-beta</cellbase.version>
         <compileSource>1.8</compileSource>
-        <biodata.version>0.8.0-SNAPSHOT</biodata.version>
-        <java-common-libs.version>3.3.0-SNAPSHOT</java-common-libs.version>
+        <biodata.version>0.9.0-SNAPSHOT</biodata.version>
+        <java-common-libs.version>3.4.0-SNAPSHOT</java-common-libs.version>
         <jackson.version>2.6.4</jackson.version>
         <jersey.version>2.22.1</jersey.version>
         <protobuf.version>3.0.0</protobuf.version>
