@@ -72,6 +72,11 @@ public class GeneParser extends CellBaseParser {
     private String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
     private Set<String> indexedSequences;
 
+    private int featureCounter = -1; // initialize to -1 so that first +1 sets it to 0
+    private String[] featureTypes = {"exon", "cds", "start_codon", "stop_codon"};
+    private String currentFeature = "";
+    private Map<String, Object> currentTranscriptMap;
+
 
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       CellBaseConfiguration.SpeciesProperties.Species species, boolean flexibleGTFParsing,
@@ -372,6 +377,22 @@ public class GeneParser extends CellBaseParser {
             return gtfReader.read();
         // Flexible parsing activated, carefully select next line to return
         } else {
+            if (currentFeature.equals("exon")) {
+                if (currentTranscriptMap.containsKey("cds")) {
+                    Gtf currentExonGTF = gtfMap.get(currentGene).get(currentTranscript).get(currentFeature)
+                            .get(exonCounter);
+                    Gtf nextCDSLine = getExonCDSLine(currentExonGTF.getStart(), currentExonGTF.getEnd(),
+                            currentTranscriptMap.get("cds"));
+                    if (nextCDSLine != null) {
+                        currentFeature = "cds";
+                        return nextCDSLine;
+                    }
+                }
+            }
+            exonCounter = (exonCounter + 1) % ((List) currentTranscriptMap.get("exon")).size();
+
+            if (exonCounter > 0)
+
             featureCounter = (featureCounter + 1) % featureTypes.len;
             currentFeature = featureTypes[featureCounter];
             transcriptCounter = (transcriptCounter + 1) % gtfMap.get(currentGene).size();
@@ -431,10 +452,10 @@ public class GeneParser extends CellBaseParser {
 
     private void addGTFLineToGTFMap(Map<String, Object> gtfMapTranscriptEntry, Gtf gtf) {
 
-        String featureType = gtf.getFeature();
+        String featureType = gtf.getFeature().toLowerCase();
 
         // Add exon/cds GTF line to the corresponding gene entry in the map
-        if(featureType.equalsIgnoreCase("exon") || featureType.equalsIgnoreCase("cds")) {
+        if(featureType.equalsIgnoreCase("exon") || featureType.equals("cds")) {
             List gtfList = null;
             // Check if there were exons already stored
             if (gtfMapTranscriptEntry.containsKey(featureType)) {
@@ -445,7 +466,7 @@ public class GeneParser extends CellBaseParser {
             gtfList.add(gtf);
         // Only one start/stop codon can be stored per transcript - no need to check if the "start_codon"/"stop_codon"
         // keys are already there
-        } else if (featureType.equalsIgnoreCase("start_codon") || featureType.equalsIgnoreCase("stop_codon")) {
+        } else if (featureType.equals("start_codon") || featureType.equals("stop_codon")) {
             gtfMapTranscriptEntry.put(featureType, gtf);
         }
 
