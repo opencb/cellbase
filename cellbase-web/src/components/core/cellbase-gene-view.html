@@ -41,8 +41,8 @@
                 <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
                 <li role="presentation"><a href="#geneViewClinicalVariants" role="tab" data-toggle="tab">Clinical Variants</a></li>
                 <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#geneViewPpi" role="tab" data-toggle="tab">PPI</a></li>
-                <li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>
+                <!--<li role="presentation"><a href="#geneViewPpi" role="tab" data-toggle="tab">PPI</a></li>-->
+                <!--<li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>-->
             </ul>
 
             <div class="tab-content" style="width: 90%">
@@ -114,17 +114,17 @@
                 </div>
 
 
-                <div id="geneViewPpi" role="tabpanel" class="tab-pane">
-                    NOT YET READY FOR BETA VERSION
-                    <!--<cell-maps-element></cell-maps-element>-->
-                </div>
+                <!--<div id="geneViewPpi" role="tabpanel" class="tab-pane">-->
+                    <!--NOT YET READY FOR BETA VERSION-->
+                    <!--&lt;!&ndash;<cell-maps-element></cell-maps-element>&ndash;&gt;-->
+                <!--</div>-->
 
-                <div role="tabpanel" class="tab-pane" id="geneViewPdb">
-                    PDB
-                    <canvas class="ChemDoodleWebComponent" id="pdb_canvas" width="600" height="600" style="width: 800px; height: 800px; ">
-                        This browser does not support HTML5/Canvas.
-                    </canvas>
-                </div>
+                <!--<div role="tabpanel" class="tab-pane" id="geneViewPdb">-->
+                    <!--PDB-->
+                    <!--<canvas class="ChemDoodleWebComponent" id="pdb_canvas" width="600" height="600" style="width: 800px; height: 800px; ">-->
+                        <!--This browser does not support HTML5/Canvas.-->
+                    <!--</canvas>-->
+                <!--</div>-->
             </div>
         </div>
 
@@ -174,8 +174,8 @@
                         }
                         _this.geneObj = firstGene;
                         // testing 3D
-                        _this.display3D();
-                        _this.displayNetworkViewer();
+//                        _this.display3D();
+//                        _this.displayNetworkViewer();
                     };
                     let error = function (response) {
                         alert("Gene ID not valid: " + _this.geneId)

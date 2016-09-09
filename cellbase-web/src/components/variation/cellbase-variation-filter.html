@@ -138,8 +138,8 @@
                         <i id="variationSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
-                            <div>
-                                <b on-click="_updateVariationView" id="{{item.id}}" style="cursor: pointer">{{item.id}}</b>
+                            <div on-click="_updateVariationView" id="{{item.id}}" style="cursor: pointer">
+                                <b>{{item.id}}</b>
                                 <i>{{item.annotation.displayConsequenceType}}</i><br>
                                 {{item.chromosome}}:{{item.start}}-{{item.end}}
                                 <hr>
@@ -226,7 +226,7 @@
 //                this.cellBaseClient = CELLBASE_CLIENT;
             },
             _updateVariationView: function(e) {
-                this.variationId = e.srcElement.id;
+                this.variationId = e.currentTarget.id;
             },
             addVariationId: function(e) {
                 let allIds = this.$.variationFilterIdsTextarea.value.split(',');

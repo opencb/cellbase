@@ -166,8 +166,8 @@
                         <i id="geneSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
-                            <div>
-                                <b on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.name}}</b>
+                            <div on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">
+                                <b>{{item.name}}</b>
                                 <i>{{item.biotype}}</i><br>
                                 {{item.chromosome}}:{{item.start}}-{{item.end}}
                                 <hr>
@@ -253,7 +253,7 @@
                 $('.nav-tabs a[href="#result1"]').tab('show');
             },
             _updateGeneView: function(e) {
-                this.geneId = e.srcElement.id;
+                this.geneId = e.currentTarget.id;
             },
             addGeneId: function(e) {
                 let allIds = this.$.geneFilterIdsTextarea.value.split(',');

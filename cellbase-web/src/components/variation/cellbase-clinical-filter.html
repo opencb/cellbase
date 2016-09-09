@@ -156,9 +156,8 @@
                         <br>
                         <template is="dom-repeat" items="{{result}}">
                             <template is="dom-if" if="{{checkCosmic(item)}}">
-                                <div>
-                                    <b on-click="_updateClinicalView"
-                                       style="cursor: pointer">{{item.mutationID}}</b><br>
+                                <div on-click="_updateClinicalView" style="cursor: pointer" id="{{item.mutationID}}">
+                                    <b>{{item.mutationID}}</b><br>
                                     {{item.chromosome}}:{{item.start}}-{{item.end}}<br>
                                     Phenotypes:
                                     <template is="dom-repeat" items="{{item._phenotypes}}" as="phenotype">
@@ -168,8 +167,8 @@
                                 </div>
                             </template>
                             <template is="dom-if" if="{{checkClinvar(item)}}">
-                                <div>
-                                    <b on-click="_updateClinicalView" style="cursor: pointer">{{item.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc}}</b><br>
+                                <div on-click="_updateClinicalView" style="cursor: pointer" id="{{item.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc}}">
+                                    <b>{{item.clinvarSet.referenceClinVarAssertion.clinVarAccession.acc}}</b><br>
                                     {{item.chromosome}}:{{item.start}}-{{item.end}}
                                     <hr>
                                 </div>
@@ -280,7 +279,7 @@
                 return item.source === "clinvar";
             },
             _updateClinicalView: function (e) {
-                this.clinicalId = e.target.innerText;
+                this.clinicalId =  e.currentTarget.id;
             }
         });
     </script>
