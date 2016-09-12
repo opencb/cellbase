@@ -1,3 +1,6 @@
+import os
+import sys
+
 from pycellbase.commons import get
 
 
@@ -173,3 +176,20 @@ class GenomicRegionClient(_ParentRestClient):
     def get_variation(self, query_id, **options):
         """Returns the variations present in the genomic region"""
         return self._get("variation", query_id, options)
+
+
+class VariantClient(_ParentRestClient):
+    """Queries the RESTful service for genomic region data"""
+    def __init__(self, configuration):
+        _category = "genomic"
+        _subcategory = "variant"
+        super(VariantClient, self).__init__(configuration, _subcategory,
+                                            _category)
+
+    def get_annotation(self, query_id, **options):
+        """Returns annotation data of the variant"""
+        return self._get("annotation", query_id, options)
+
+    def get_cadd(self, query_id, **options):
+        """Returns cadd score of the variant"""
+        return self._get("cadd", query_id, options)

@@ -72,3 +72,9 @@ class CellBaseClient(object):
             self._clients['GENOMIC_REGION'] = \
                 fts.GenomicRegionClient(self._configuration)
         return self._clients['GENOMIC_REGION']
+
+    def get_variant_client(self):
+        """Creates the variant client"""
+        if 'VARIANT' not in self._clients:
+            self._clients['VARIANT'] = fts.VariantClient(self._configuration)
+        return self._clients['VARIANT']
