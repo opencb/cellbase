@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.transform;
 
 import org.opencb.cellbase.core.common.clinical.Cosmic;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -51,6 +52,8 @@ public class CosmicParser extends CellBaseParser {
     private long invalidDuplicationLines;
     private long invalidMutationCDSOtherReason;
 
+    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
+
     public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.cosmicFilePath = cosmicFilePath;
@@ -73,6 +76,7 @@ public class CosmicParser extends CellBaseParser {
             cosmicReader.readLine(); // First line is the header -> ignore it
 
             while ((line = cosmicReader.readLine()) != null) {
+                logger.debug(line);
                 Cosmic cosmic = buildCosmic(line);
 
                 if (parseChromosomeStartAndEnd(cosmic) && parseVariant(cosmic)) {
@@ -165,7 +169,7 @@ public class CosmicParser extends CellBaseParser {
             Matcher matcher = mutationGRCh37GenomePositionPattern.matcher(cosmic.getMutationGRCh37GenomePosition());
             if (matcher.matches()) {
                 setCosmicChromosome(matcher.group(CHROMOSOME), cosmic);
-                cosmic.setStart(Integer.parseInt(matcher.group(START)));
+                cosmic.setStart(getStart(Integer.parseInt(matcher.group(START)), cosmic.getMutationCDS()));
                 cosmic.setEnd(Integer.parseInt(matcher.group(END)));
                 success = true;
             }
@@ -174,6 +178,16 @@ public class CosmicParser extends CellBaseParser {
             this.invalidPositionLines++;
         }
         return success;
+    }
+
+    private Integer getStart(Integer readPosition, String mutationCDS) {
+        // In order to agree with the Variant model and what it's stored in variation, the start must be incremented in
+        // 1 for insertions given what is provided in the COSMIC file
+        if (mutationCDS.contains("ins")) {
+            return readPosition + 1;
+        } else {
+            return readPosition;
+        }
     }
 
     private void setCosmicChromosome(String chromosome, Cosmic cosmic) {
@@ -237,12 +251,12 @@ public class CosmicParser extends CellBaseParser {
     private boolean parseInsertion(String mutationCds, Cosmic cosmic) {
         boolean validVariant = true;
         String insertedNucleotides = mutationCds.split("ins")[1];
-        if (insertedNucleotides.matches("\\d+")) {
+        if (insertedNucleotides.matches("\\d+") || !insertedNucleotides.matches(VARIANT_STRING_PATTERN)) {
             //c.503_508ins30
             validVariant = false;
         } else {
-            cosmic.setReference("-");
-            cosmic.setAlternate(insertedNucleotides);
+            cosmic.setReference("");
+            cosmic.setAlternate(getPositiveStrandString(insertedNucleotides, cosmic.getMutationGRCh37Strand()));
         }
 
         return validVariant;
@@ -256,11 +270,12 @@ public class CosmicParser extends CellBaseParser {
         if (mutationCDSArray.length < 2) { // c.503_508del (usually, deletions of several nucleotides)
             // TODO: allow these variants
             validVariant = false;
-        } else if (mutationCDSArray[1].matches("\\d+")) { //  c.503_508del30
+        } else if (mutationCDSArray[1].matches("\\d+")
+                || !mutationCDSArray[1].matches(VARIANT_STRING_PATTERN)) { // Avoid allele strings containing Ns, for example
             validVariant = false;
         } else {
-            cosmic.setReference(mutationCDSArray[1]);
-            cosmic.setAlternate("-");
+            cosmic.setReference(getPositiveStrandString(mutationCDSArray[1], cosmic.getMutationGRCh37Strand()));
+            cosmic.setAlternate("");
         }
 
         return validVariant;
@@ -271,13 +286,36 @@ public class CosmicParser extends CellBaseParser {
         Matcher snvMatcher = snvPattern.matcher(mutationCds);
 
         if (snvMatcher.matches()) {
-            cosmic.setReference(snvMatcher.group(REF));
-            cosmic.setAlternate(snvMatcher.group(ALT));
+            String ref = snvMatcher.group(REF);
+            String alt = snvMatcher.group(ALT);
+            if (!ref.equalsIgnoreCase("N") && !alt.equalsIgnoreCase("N")) {
+                cosmic.setReference(getPositiveStrandString(ref, cosmic.getMutationGRCh37Strand()));
+                cosmic.setAlternate(getPositiveStrandString(alt, cosmic.getMutationGRCh37Strand()));
+            } else {
+                validVariant = false;
+            }
         } else {
             validVariant = false;
         }
 
         return validVariant;
+    }
+
+    private String getPositiveStrandString(String alleleString, String strand) {
+        if (strand.equals("-")) {
+            return reverseComplementary(alleleString);
+        } else {
+            return alleleString;
+        }
+    }
+
+    private String reverseComplementary(String alleleString) {
+        char[] reverseAlleleString = new StringBuilder(alleleString).reverse().toString().toCharArray();
+        for (int i = 0; i < reverseAlleleString.length; i++) {
+            reverseAlleleString[i] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseAlleleString[i]);
+        }
+
+        return String.valueOf(reverseAlleleString);
     }
 
     private void printSummary(long processedCosmicLines, long ignoredCosmicLines) {

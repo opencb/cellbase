@@ -280,13 +280,16 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            query.put(GeneDBAdaptor.QueryParams.REGION.key(), region);
 
             if (hasHistogramQueryParam()) {
-//                queryOptions.put("interval", getHistogramIntervalSize());
-                QueryResult res = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
-                res.setId(region);
-                return createOkResponse(res);
+                List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = new ArrayList<>(queries.size());
+                for (Query query: queries) {
+                    QueryResult queryResult = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
+                    queryResult.setId((String) query.get(GeneDBAdaptor.QueryParams.REGION.key()));
+                    queryResults.add(queryResult);
+                }
+                return createOkResponse(queryResults);
             } else {
                 List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
                 List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
