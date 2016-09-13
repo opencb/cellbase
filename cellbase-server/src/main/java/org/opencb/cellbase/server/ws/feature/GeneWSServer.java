@@ -267,7 +267,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of ENSEMBL gene ids, e.g.: ENST00000380152,ENSG00000155657."
+                    value = "Comma separated list of ENSEMBL gene ids, e.g.: ENSG00000139618,ENSG00000155657."
                             + " Exact text matches will be returned",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "name",
