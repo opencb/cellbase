@@ -65,7 +65,7 @@
                             <div id="featureType" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hTwo">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureType" selected={{featureTypes}}></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureType" selected="{{featureTypes}}" clear="{{clearFeatureType}}"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -83,7 +83,7 @@
                             <div id="featureClass" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hThree">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureClass" selected={{featureClasses}}></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureClass" selected="{{featureClasses}}" clear="{{clearFeatureClass}}"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -110,18 +110,29 @@
                 featureClasses: {
                     type: Array,
                     value: []
+                },
+                clearFeatureType: {
+                    type: String,
+                    value: ""
+                },
+                clearFeatureClass: {
+                    type: String,
+                    value: ""
                 }
             },
 
-                clear: function (e) {
-                    // we empty the textareas
+                clear: function () {
                     this.$.regFilterRegionTextarea.value = "";
-
+                    this.featureTypes = [];
+                    this.featureClasses = [];
+                    this.clearFeatureType = Utils.randomString(6); // Unchecking the checkboxes
+                    this.clearFeatureClass = Utils.randomString(6); // Unchecking the checkboxes
                 },
-                loadExample: function (e) {
+                loadExample: function () {
+                    this.clear();
                     this.$.regFilterRegionTextarea.value = "10:555-66666";
                 },
-                executeQuery: function (e) {
+                executeQuery: function () {
                     // We first build the query params object
 //                    let queryParams = {};
                     let featureType = [];

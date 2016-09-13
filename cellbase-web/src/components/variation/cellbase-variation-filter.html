@@ -28,6 +28,9 @@
                 max-height: 800px;
                 overflow: auto;
             }
+            .highlight {
+                background-color: lightblue;
+            }
         </style>
 
         <div>
@@ -107,7 +110,7 @@
                             </div>
                             <div id="consequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected="{{consequenceTypes}}" clear="{{clearConsequenceType}}"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -138,12 +141,12 @@
                         <i id="variationSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
-                            <div on-click="_updateVariationView" id="{{item.id}}" style="cursor: pointer">
+                            <div on-click="_updateVariationView" id="{{item.id}}" style="cursor: pointer" class="variationResultDiv">
                                 <b>{{item.id}}</b>
                                 <i>{{item.annotation.displayConsequenceType}}</i><br>
-                                {{item.chromosome}}:{{item.start}}-{{item.end}}
-                                <hr>
+                                {{item.location}}
                             </div>
+                            <hr>
                         </template>
                     </div>
                 </div>
@@ -174,59 +177,82 @@
                 consequenceTypes: {
                     type: Array,
                     value: []
+                },
+                clearConsequenceType: {
+                    type: String,
+                    value: ""
                 }
             },
-            clear: function (e) {
-                // we empty the textareas
+            clear: function() {
                 this.$.variationFilterIdsTextarea.value = "";
                 this.$.variationRegionList.value = "";
                 this.$.variationPopulationFrequencyText.value= "";
+                this.consequenceTypes = [];
+                this.clearConsequenceType = Utils.randomString(6);
             },
-            loadExample: function (e) {
+            loadExample: function() {
+                this.clear();
                 this.$.variationFilterIdsTextarea.value = "rs666";
             },
-            executeQuery: function (e) {
+            executeQuery: function() {
                 // activate the GIF
                 $('#variationSpinImg').show();
 
                 // We first build the query params object
-                let queryParams = {include: "id,chromosome,start,end,annotation.displayConsequenceType"};
+                let queryParams = {};
+
+                if (this.$.variationFilterIdsTextarea.value != "") {
+                    queryParams.id = this.$.variationFilterIdsTextarea.value;
+                }
+
+                if (this.$.variationRegionList.value != "") {
+                    queryParams.region = this.$.variationRegionList.value;
+                }
+
                 if (this.consequenceTypes.length > 0) {
                     queryParams.consequenceType = this.consequenceTypes.join(",");
                 }
-//                if (this.$.geneFilterDrugsTextarea.value != "") {
-//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
-//                }
+                // TODO add population frequency filter
 
-                //
                 this.result= [];
                 let _this = this;
                 let success = function (response) {
                     for(let i in response.response) {
-                        for(let j in response.response[i].result) {
-                            _this.push('result',response.response[i].result[j]);
+                        if (response.response[i].result.length > 0) {
+                            for(let j in response.response[i].result) {
+                                response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
+                                        + response.response[i].result[j].end;
+                                _this.push('result',response.response[i].result[j]);
+                            }
+                        } else {
+                            let obj = {};
+                            obj.id = "No results found";
+                            _this.push('result', obj);
                         }
                     }
                     // remove the GIF
                     $('#variationSpinImg').hide();
                 };
 
-                // Now we execute the query. Note that ID are preferred
-                if (this.$.variationFilterIdsTextarea.value !== "") {
-                    this.cellbaseClient.get('feature','variation', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                if (Object.keys(queryParams).length > 0) {
+                    queryParams.include = "id,chromosome,start,end,annotation.displayConsequenceType";
+                    this.cellbaseClient.get('feature', 'variation', null, 'search', queryParams, {success: success, async: true});
                 } else {
-                    if (this.$.variationRegionList.value !== "") {
-                        this.cellbaseClient.get('genomic','region', this.$.variationRegionList.value, 'variation', queryParams, {success: success, async: true});
-                    }
+                    $('#variationSpinImg').hide();
+                    let obj = {};
+                    obj.id = "Please fill in the filters";
+                    _this.push('result', obj);
                 }
 
                 $('.nav-tabs a[href="#variationResult"]').tab('show');
             },
-            ready: function() {
-//                this.cellBaseClient = CELLBASE_CLIENT;
-            },
             _updateVariationView: function(e) {
-                this.variationId = e.currentTarget.id;
+                if (typeof e.currentTarget.id !== "undefined" && e.currentTarget.id != "Please fill in the filters" && e.currentTarget.id != "No results found") {
+                    this.variationId = e.currentTarget.id;
+                    let highlightColor = 'highlight';
+                    $('.variationResultDiv').removeClass(highlightColor);
+                    $("#" + e.currentTarget.id).addClass(highlightColor);
+                }
             },
             addVariationId: function(e) {
                 let allIds = this.$.variationFilterIdsTextarea.value.split(',');
