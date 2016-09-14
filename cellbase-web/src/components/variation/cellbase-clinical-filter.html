@@ -95,7 +95,8 @@
                             <div id="clinicalConsequenceTypes" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="headingThree">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected="{{consequenceTypes}}" clear="{{clearConsequenceType}}"></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected="{{consequenceTypes}}"
+                                                           clear="{{clearConsequenceType}}" prefix="clinical"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -128,7 +129,8 @@
                             <div id="filterClinicalSignificance" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="headingSix">
                                 <div class="panel-body  menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="clinvar-significance" selected="{{clinicalSignificance}}" clear="{{clearClinicalSignificance}}"></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="clinvar-significance" selected="{{clinicalSignificance}}"
+                                                           clear="{{clearClinicalSignificance}}"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
