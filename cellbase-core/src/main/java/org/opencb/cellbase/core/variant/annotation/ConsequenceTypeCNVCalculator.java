@@ -187,6 +187,9 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        Integer variantStartExonNumber = null;
+        Integer variantEndExonNumber = null;
+
 
         if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {
             firstCdsPhase = exon.getPhase();
@@ -195,6 +198,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                variantStartExonNumber = exon.getExonNumber();
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 }
@@ -202,6 +206,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         } else if (variantStart >= exon.getStart()) {
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (variantEnd - exon.getStart());
+            variantEndExonNumber = exon.getExonNumber();
         } // Variant includes the whole exon. Variant end is located before the exon, variant start is located after the exon
 
         int exonCounter = 1;
@@ -222,6 +227,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    variantStartExonNumber = exon.getExonNumber();
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                     }
@@ -230,6 +236,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantStart <= exon.getEnd()) {  // Only variant start within the exon  ----||||||||||E||||----
                     cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
+                    variantEndExonNumber = exon.getExonNumber();
                 } else {  // Variant does not include this exon, variant is located before this exon
                     variantAhead = false;
                 }
@@ -238,6 +245,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             }
             exonCounter++;
         }
+        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
@@ -251,6 +259,8 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        Integer variantStartExonNumber = null;
+        Integer variantEndExonNumber = null;
 
         if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {
             firstCdsPhase = exon.getPhase();
@@ -259,6 +269,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                variantStartExonNumber = exon.getExonNumber();
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 }
@@ -266,6 +277,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         } else if (variantStart >= exon.getStart()) {
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (variantEnd - exon.getStart());
+            variantEndExonNumber = exon.getExonNumber();
         } // Variant includes the whole exon. Variant end is located before the exon, variant start is located after the exon
 
         int exonCounter = 1;
@@ -287,6 +299,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    variantStartExonNumber = exon.getExonNumber();
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                     }
@@ -295,6 +308,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantStart <= exon.getEnd()) {  // Only variant start within the exon  ----||||||||||E||||----
                     cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
+                    variantEndExonNumber = exon.getExonNumber();
                 } else {  // Variant does not include this exon, variant is located before this exon
                     variantAhead = false;
                 }
@@ -303,6 +317,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             }
             exonCounter++;
         }
+        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
             solveExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaVariantStart, cdnaVariantEnd,
@@ -521,6 +536,8 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        Integer variantStartExonNumber = null;
+        Integer variantEndExonNumber = null;
 
         if (transcript.getGenomicCodingStart() <= exon.getEnd()) {
             firstCdsPhase = exon.getPhase();
@@ -529,6 +546,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                variantStartExonNumber = exon.getExonNumber();
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 }
@@ -536,6 +554,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         } else if (variantEnd <= exon.getEnd()) {
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
+            variantEndExonNumber = exon.getExonNumber();
         } // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
 
 
@@ -558,6 +577,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    variantStartExonNumber = exon.getExonNumber();
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     }
@@ -566,6 +586,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantEnd >= exon.getStart()) {  // Only variant end within the exon  ----||||||||||E||||----
                     cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
+                    variantEndExonNumber = exon.getExonNumber();
                 } else {  // Variant does not include this exon, variant is located before this exon
                     variantAhead = false;
                 }
@@ -574,6 +595,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             }
             exonCounter++;
         }
+        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
             solveExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaVariantStart, cdnaVariantEnd,
@@ -591,6 +613,8 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        Integer variantStartExonNumber = null;
+        Integer variantEndExonNumber = null;
 
         if (transcript.getGenomicCodingStart() <= exon.getEnd()) {
             firstCdsPhase = exon.getPhase();
@@ -599,6 +623,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                variantStartExonNumber = exon.getExonNumber();
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 }
@@ -606,6 +631,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
         } else if (variantEnd <= exon.getEnd()) {
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
+            variantEndExonNumber = exon.getExonNumber();
         } // Variant includes the whole exon. Variant start is located before the exon, variant end is located after the exon
 
 
@@ -627,6 +653,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    variantStartExonNumber = exon.getExonNumber();
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     }
@@ -635,6 +662,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
                 if (variantEnd >= exon.getStart()) {  // Only variant end within the exon  ----||||||||||E||||----
                     cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
+                    variantEndExonNumber = exon.getExonNumber();
                 } else {  // Variant does not include this exon, variant is located before this exon
                     variantAhead = false;
                 }
@@ -643,6 +671,7 @@ public class ConsequenceTypeCNVCalculator extends ConsequenceTypeCalculator {
             }
             exonCounter++;
         }
+        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
