@@ -78,6 +78,17 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Object> currentTranscriptMap;
 
 
+    private int geneCounter;
+    private ArrayList<String> geneList;
+    private String geneName;
+    private int transcriptCounter;
+    private ArrayList<String> transcriptList;
+    private String transcriptName;
+    private int exonCounter;
+    private String feature;
+    private Gtf nextGtfToReturn;
+
+
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       CellBaseConfiguration.SpeciesProperties.Species species, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
@@ -161,6 +172,7 @@ public class GeneParser extends CellBaseParser {
         Map<String, Map<String, Map<String, Object>>> gtfMap = null;
         if (flexibleGTFParsing) {
             gtfMap = loadGTFMap(gtfReader);
+            initializePointers(gtfMap);
         }
 
         Gtf gtf;
@@ -371,47 +383,81 @@ public class GeneParser extends CellBaseParser {
         fastaIndexManager.close();
     }
 
+    private void initializePointers(Map<String, Map<String, Map<String, Object>>> gtfMap) {
+        geneCounter = 0;
+        geneList = new ArrayList<>(gtfMap.keySet());
+        geneName = geneList.get(geneCounter);
+        transcriptCounter = 0;
+        transcriptList = new ArrayList<>(gtfMap.get(geneName).keySet());
+        transcriptName = transcriptList.get(transcriptCounter);
+        exonCounter = 0;
+        feature = "exon";
+    }
+
     private Gtf getGTFEntry(GtfReader gtfReader, Map<String, Map<String, Map<String, Object>>> gtfMap) throws FileFormatException {
         // Flexible parsing is deactivated, return next line
         if (gtfMap == null) {
             return gtfReader.read();
         // Flexible parsing activated, carefully select next line to return
         } else {
-            if (currentFeature.equals("exon")) {
-                if (currentTranscriptMap.containsKey("cds")) {
-                    Gtf currentExonGTF = gtfMap.get(currentGene).get(currentTranscript).get(currentFeature)
-                            .get(exonCounter);
-                    Gtf nextCDSLine = getExonCDSLine(currentExonGTF.getStart(), currentExonGTF.getEnd(),
-                            currentTranscriptMap.get("cds"));
-                    if (nextCDSLine != null) {
-                        currentFeature = "cds";
-                        return nextCDSLine;
+            // No more genes/features to return
+            if (nextGtfToReturn == null) {
+                return null;
+            }
+
+            Gtf gtfToReturn = nextGtfToReturn;
+            if (feature.equals("exon")) {
+                gtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+                if (gtfMap.get(geneName).get(transcriptName).containsKey("cds")) {
+                    nextGtfToReturn = getExonCDSLine(((Gtf) ((List) gtfMap.get(geneName).get(transcriptName)).get(exonCounter)).getStart(),
+                            ((Gtf) ((List) gtfMap.get(geneName).get(transcriptName)).get(exonCounter)).getEnd(),
+                            gtfMap.get(geneName).get(transcriptName).get("cds"));
+                    if (nextGtfToReturn != null) {
+                        feature = "cds";
                     }
                 }
-            }
-            exonCounter = (exonCounter + 1) % ((List) currentTranscriptMap.get("exon")).size();
 
-            if (exonCounter > 0)
-
-            featureCounter = (featureCounter + 1) % featureTypes.len;
-            currentFeature = featureTypes[featureCounter];
-            transcriptCounter = (transcriptCounter + 1) % gtfMap.get(currentGene).size();
-
-            if (transcriptCounter == 0) {
-                geneCounter++;
-
-                // No more genes to process?
-                if (geneCounter < gtfMap.size()) {
-                    currentGene = new ArrayList<>(gtfMap.keySet()).get(geneCounter);
-                } else {
-                    return null;
-                }
-
+                // if no cds was found for this exon, get next exon
+                getFeatureFollowsExon(gtfMap);
             }
 
-            currentTranscript = new ArrayList<>(gtfMap.get(currentGene).keySet()).get(transcriptCounter);
-            return gtfMap.get(currentGene).get(currentTranscript).get(currentFeature);
+            if (feature.equals("cds") || feature.equals("stop_codon")) {
+                gtfToReturn = nextGtfToReturn;
+                getFeatureFollowsExon(gtfMap);
+            }
+
+            if (feature.equals("start_codon")) {
+                feature = "stop_codon";
+                nextGtfToReturn = (Gtf) gtfMap.get(geneName).get(transcriptName).get("stop_codon");
+            }
+            return gtfToReturn;
         }
+    }
+
+    private void getFeatureFollowsExon(Map<String, Map<String, Map<String, Object>>> gtfMap) {
+        exonCounter++;
+        if (exonCounter == ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).size()) {
+            if (gtfMap.get(geneName).get(transcriptName).containsKey("start_codon")) {
+                feature = "start_codon";
+                nextGtfToReturn = (Gtf) gtfMap.get(geneName).get(transcriptName).get("start_codon");
+            } else {
+                transcriptCounter++;
+                if (transcriptCounter == gtfMap.get(geneName).size()) {
+                    geneCounter++;
+                    if (geneCounter == gtfMap.size()) {
+                        nextGtfToReturn = null;
+                        feature = null;
+                    }
+                    geneName = geneList.get(geneCounter);
+                    transcriptCounter = 0;
+                    transcriptList = new ArrayList<>(gtfMap.get(geneName).keySet());
+                }
+                transcriptName = transcriptList.get(transcriptCounter);
+                exonCounter = 0;
+            }
+        }
+        feature = "exon";
+        nextGtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
     }
 
     private Map<String, Map<String, Map<String, Object>>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
