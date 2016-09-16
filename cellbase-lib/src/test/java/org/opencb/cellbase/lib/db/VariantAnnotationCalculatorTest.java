@@ -81,7 +81,7 @@ public class VariantAnnotationCalculatorTest {
         int i = 0;
         while (line !=null ) {
             assertVariantAnnotationQueryResultEquals(variantAnnotationCalculator.getAnnotationByVariantList((Variant.parseVariants(variantArray[i])),
-                    new QueryOptions()),
+                    new QueryOptions("normalize", true)),
                     jsonObjectMapper.convertValue(JSON.parse(line),
                             List.class));
             line = reader.readLine();

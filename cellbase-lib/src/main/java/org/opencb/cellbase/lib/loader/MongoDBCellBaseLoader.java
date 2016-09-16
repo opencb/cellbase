@@ -19,10 +19,9 @@ package org.opencb.cellbase.lib.loader;
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
-import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
@@ -36,7 +35,6 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
-import org.opencb.commons.utils.CryptoUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -68,18 +66,14 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String COSMICVARIANTSOURCE = "cosmic";
     private static final String GWASVARIANTSOURCE = "gwas";
 
-    public static final char SEPARATOR_CHAR = ':';
-
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
-        this(queue, data, database, null, null);
+        this(queue, data, database, null, null, null);
     }
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database, String field,
-                                 CellBaseConfiguration cellBaseConfiguration) {
-        super(queue, data, database, field, cellBaseConfiguration);
-//        if (cellBaseConfiguration.getDatabases().get("mongodb").getOptions().get("mongodb-index-folder") != null) {
+                                 String[] innerFields, CellBaseConfiguration cellBaseConfiguration) {
+        super(queue, data, database, field, innerFields, cellBaseConfiguration);
         if (cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder") != null) {
-//            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().get("mongodb").getOptions().get("mongodb-index-folder"));
             indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
         }
     }
@@ -143,57 +137,78 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private CellBaseDBAdaptor getDBAdaptor(String data) throws LoaderException {
         String[] databaseParts = database.split("_");
         String species = databaseParts[1];
-        String assembly = databaseParts[2];
+//        String assembly = databaseParts[2];
         CellBaseDBAdaptor dbAdaptor;
         switch (data) {
             case "genome_info":
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "genome_sequence":
-                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "gene":
-                dbAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "variation":
-                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
+                dbAdaptor = null;
                 break;
             case "cadd":
-//                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
+////                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
                 dbAdaptor = null;
                 break;
             case "regulatory_region":
-                dbAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "protein":
-                dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "protein_protein_interaction":
-                dbAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
-            // TODO: implement an adaptor for protein_functional_prediction - current queries are issued from the
-            // TODO: ProteinDBAdaptors, that's why there isn't one yet
+//            // TODO: implement an adaptor for protein_functional_prediction - current queries are issued from the
+//            // TODO: ProteinDBAdaptors, that's why there isn't one yet
             case "protein_functional_prediction":
                 dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
                 break;
             case "conservation":
-                dbAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "cosmic":
                 clinicalVariantSource = "cosmic";
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "clinvar":
                 clinicalVariantSource = "clinvar";
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
             case "gwas":
                 clinicalVariantSource = "gwas";
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
             case "clinical":
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
             case "metadata":
                 dbAdaptor = null;
@@ -317,7 +332,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         dbObjectsBatch.add(dbObject);
                     }
 
-                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field).first();
+                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     numLoadedObjects += numUpdates;
                 }
             } catch (InterruptedException e) {
@@ -361,41 +376,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         return numLoadedObjects;
     }
 
-    private void addVariationPrivateFields(Document document) {
-        if (data.equals("variation")) {
-            document.put("_id", buildId((String) document.get("chromosome"), (int) document.get("start"),
-                    (String) document.get("reference"), (String) document.get("alternate")));
-        }
-    }
-
-    public String buildId(String chromosome, int start, String reference, String alternate) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        appendChromosome(chromosome, stringBuilder)
-                .append(SEPARATOR_CHAR)
-                .append(StringUtils.leftPad(Integer.toString(start), 10, " "))
-                .append(SEPARATOR_CHAR);
-
-        if (reference.length() > Variant.SV_THRESHOLD) {
-            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
-        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
-            stringBuilder.append(reference);
-        }
-        stringBuilder.append(SEPARATOR_CHAR);
-        if (alternate.length() > Variant.SV_THRESHOLD) {
-            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
-        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
-            stringBuilder.append(alternate);
-        }
-        return stringBuilder.toString();
-    }
-
-    protected static StringBuilder appendChromosome(String chromosome, StringBuilder stringBuilder) {
-        if (chromosome.length() == 1 && Character.isDigit(chromosome.charAt(0))) {
-            stringBuilder.append(' ');
-        }
-        return stringBuilder.append(chromosome);
-    }
+//    private void addVariationPrivateFields(Document document) {
+//        if (data.equals("variation")) {
+//            document.put("_id", buildId((String) document.get("chromosome"), (int) document.get("start"),
+//                    (String) document.get("reference"), (String) document.get("alternate")));
+//        }
+//    }
 
     private void addClinicalPrivateFields(Document document) {
         if (clinicalVariantSource != null) {

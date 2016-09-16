@@ -84,7 +84,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field) {
+    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 

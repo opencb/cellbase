@@ -98,10 +98,10 @@
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt"
 		},
 		"interpro": {
-			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/Current/protein2ipr.dat.gz"
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/current/protein2ipr.dat.gz"
 		},
 		"interproRelNotes": {
-			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/Current/release_notes.txt"
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/current/release_notes.txt"
 		},
 		"conservation": {
 			"host": "ftp://hgdownload.cse.ucsc.edu/goldenPath/"
@@ -160,6 +160,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"gene_disease_association",
 					"variation",
@@ -181,6 +182,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"regulation",
@@ -199,6 +201,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -215,6 +218,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -231,6 +235,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -246,8 +251,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -261,6 +266,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -276,6 +282,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -291,8 +298,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -306,6 +313,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -322,6 +330,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -337,6 +346,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -352,8 +362,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -367,6 +377,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -382,6 +393,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -397,6 +409,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -412,8 +425,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -427,6 +440,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -442,8 +456,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -457,8 +471,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -472,8 +486,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -487,8 +501,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			}
 		],
@@ -504,6 +518,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -520,6 +535,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -536,8 +552,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -551,6 +567,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -567,8 +584,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			}
 		],
@@ -584,6 +601,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -600,8 +618,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -615,8 +633,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -630,8 +648,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -645,8 +663,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -660,8 +678,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			}
 		],
@@ -677,6 +695,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -693,8 +712,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -708,8 +727,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -723,8 +742,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -738,8 +757,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			}
 		],
@@ -755,6 +774,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation",
 					"protein"
@@ -771,8 +791,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -786,6 +806,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -801,8 +822,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			},
 			{
@@ -816,6 +837,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -831,6 +853,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -846,6 +869,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -861,6 +885,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -876,6 +901,7 @@
 				],
 				"data":[
 					"genome",
+					"genome_info",
 					"gene",
 					"variation"
 				]
@@ -891,8 +917,8 @@
 				],
 				"data":[
 					"genome",
-					"gene",
-					"variation"
+					"genome_info",
+					"gene"
 				]
 			}
 		]

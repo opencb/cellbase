@@ -137,12 +137,12 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.GENE_DATA:
                             parser = buildGene();
                             break;
-                        case EtlCommons.DISGENET_DATA:
-                            parser = buildDisgenet();
-                            break;
-                        case EtlCommons.HPO_DATA:
-                            parser = buildHpo();
-                            break;
+//                        case EtlCommons.DISGENET_DATA:
+//                            parser = buildDisgenet();
+//                            break;
+//                        case EtlCommons.HPO_DATA:
+//                            parser = buildHpo();
+//                            break;
                         case EtlCommons.VARIATION_DATA:
                             parser = buildVariation();
                             break;
@@ -392,6 +392,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new GwasParser(gwasFile, dbsnpFile, serializer);
     }
 
+    @Deprecated
     private CellBaseParser buildDisgenet() throws IOException {
         Path inputDir = getInputDirFromCommandLine().resolve("gene_disease_association");
         copyVersionFiles(Collections.singletonList(inputDir.resolve("disgenetVersion.json")));
@@ -401,6 +402,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new DisgenetParser(disgenetFile, serializer);
     }
 
+    @Deprecated
     private CellBaseParser buildHpo() throws IOException {
         Path inputDir = getInputDirFromCommandLine().resolve("gene_disease_association");
         copyVersionFiles(Collections.singletonList(inputDir.resolve("hpoVersion.json")));

@@ -185,13 +185,20 @@ public class CliOptionsParser {
         @Parameter(names = {"--database"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
         public String database;
 
-        @Parameter(names = {"--field"}, description = "Use this parameter when an custom update of the database documents is required. Indicate here" +
-                "the full path to the document field that must be updated, e.g. annotation.populationFrequencies. This parameter must be used together" +
+        @Parameter(names = {"--fields"}, description = "Use this parameter when an custom update of the database documents is required. Indicate here" +
+                " the full path to the document field that must be updated, e.g. annotation.populationFrequencies. This parameter must be used together" +
                 "with a custom file provided at --input and the data to update indicated at --data.", required = false, arity = 1)
         public String field;
 
+        @Parameter(names = {"--overwrite-inner-fields"}, description = "Use this parameter together with --fields to specify"
+                + " which inner attributes shall be overwritten for updated objects, "
+                + " e.g. --fields annotation --overwrite-inner-fields consequenceTypes,displayConsequenceType,conservation"
+                + " List of inner fields must be specified as a comma-separated list (no spaces in between).",
+                required = false, arity = 1)
+        public String innerFields;
+
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
-        public String loader = "org.opencb.cellbase.mongodb.loader.MongoDBCellBaseLoader";
+        public String loader = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
 
         @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", required = false, arity = 1)
         public int numThreads = 2;
@@ -354,6 +361,11 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean benchmark;
 
+        @Parameter(names = {"--reference-fasta"}, description = "To use only with the --benchmark flag. Full path to a "
+                + " fasta file containing the reference genome.",
+                required = false, arity = 1)
+        public String referenceFasta;
+
         @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of input variants. Normalization"
                 + " includes splitting multi-allele positions read from a VCF, allele trimming and decomposing MNVs. Has"
                 + " no effect if reading variants from a CellBase variation collection "
@@ -361,6 +373,25 @@ public class CliOptionsParser {
                 + " these two cases variant normalization is never carried out.",
                 required = false, arity = 0)
         public boolean skipNormalize;
+
+        @Parameter(names = {"--no-server-cache"}, description = "Annotation was already pre-calculated and cached in "
+                + "our servers for the whole ENSEMBL variation collection. Most of variants will be included in that "
+                + "collection, meaning that the use of this cache may significantly improve performance. Use this flag "
+                + "if you want to avoid the use of this server cache.",
+                required = false, arity = 0)
+        public boolean noCache;
+
+        @Parameter(names = {"--phased"}, description = "Flag to indicate whether phased annotation shall be activated." +
+                " By default phased annotation is not enabled.", required = false, arity = 0)
+        public boolean phased;
+
+        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        public Map<String, String> buildParams;
+
+        public VariantAnnotationCommandOptions() {
+            buildParams = new HashMap<>();
+            buildParams.put("population-frequencies", null);
+        }
 
     }
 

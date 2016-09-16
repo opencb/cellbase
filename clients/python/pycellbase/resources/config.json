@@ -1,0 +1,11 @@
+{
+  "species": "celegans",
+  "version": "latest",
+  "rest": {
+	"hosts": [
+      "bioinfo.hpc.cam.ac.uk",
+      "bioinfodev.hpc.cam.ac.uk"
+    ],
+    "port": "80"
+  }
+}

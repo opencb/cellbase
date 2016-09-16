@@ -34,7 +34,7 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
 //    int insert(List objectList);
 
-    QueryResult<Long> update(List objectList, String field);
+    QueryResult<Long> update(List objectList, String field, String[] innerFields);
 
 //    QueryResult<Long> update(Query query, ObjectMap parameters);
 
