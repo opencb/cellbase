@@ -3,10 +3,12 @@
 	"apiVersion": "${cellbase.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"databases": {
+//		"user": "${CELLBASE.DB.USER}",
+//		"password": "${CELLBASE.DB.PASSWORD}",
 		"mongodb": {
 			"host": "${CELLBASE.DB.MONGODB.HOST}",
-			"user": "${CELLBASE.DB.MONGODB.USER}",
-			"password": "${CELLBASE.DB.MONGODB.PASSWORD}",
+			"user": "${CELLBASE.DB.USER}",
+			"password": "${CELLBASE.DB.PASSWORD}",
 			"options": {
 				"authenticationDatabase": "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}",
 				"readPreference": "${CELLBASE.DB.MONGODB.READPREFERENCE}",
@@ -14,9 +16,34 @@
 			}
 		},
 		"neo4j": {
-			"host": "${CELLBASE.DB.NEO4J.HOST}",
-			"user": "${CELLBASE.DB.NEO4J.USER}",
-			"password": "${CELLBASE.DB.NEO4J.PASSWORD}"
+			"hsapiens": {
+				"host": "${CELLBASE.DB.NEO4J.HOST}",
+				"user": "${CELLBASE.DB.USER}",
+				"password": "${CELLBASE.DB.PASSWORD}"
+			},
+			"mmusculus": {
+				"host": "${CELLBASE.DB.NEO4J.HOST}",
+				"user": "${CELLBASE.DB.USER}",
+				"password": "${CELLBASE.DB.PASSWORD}"
+			}
+			//			{
+			//				"id": "",
+			//				"host": "${CELLBASE.DB.NEO4J.HOST}",
+			//				"user": "${CELLBASE.DB.NEO4J.USER}",
+			//				"password": "${CELLBASE.DB.NEO4J.PASSWORD}"
+			//			},
+			//			{
+			//				"id": "",
+			//				"host": "${CELLBASE.DB.NEO4J.HOST}",
+			//				"user": "${CELLBASE.DB.NEO4J.USER}",
+			//				"password": "${CELLBASE.DB.NEO4J.PASSWORD}"
+			//			},
+			//			{
+			//				"id": "",
+			//				"host": "${CELLBASE.DB.NEO4J.HOST}",
+			//				"user": "${CELLBASE.DB.NEO4J.USER}",
+			//				"password": "${CELLBASE.DB.NEO4J.PASSWORD}"
+			//			},
 		}
 	},
 	"defaultOutdir": "/tmp",
@@ -86,7 +113,7 @@
 			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-12.xml.gz"
 		},
 		"clinvarSummary": {
-				"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"
 		},
 		"clinvarEfoTerms": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/ClinVar_Traits_EFO_Names_260615.csv"

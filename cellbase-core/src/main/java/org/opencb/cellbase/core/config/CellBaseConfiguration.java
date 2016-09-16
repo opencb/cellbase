@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by parce on 12/02/15.
@@ -33,7 +32,7 @@ public class CellBaseConfiguration {
     private String apiVersion;
     private String wiki;
     private String defaultOutdir;
-    private Map<String, DatabaseProperties> databases;
+    private Databases databases;
     private DownloadProperties download;
     private SpeciesProperties species;
 
@@ -67,11 +66,11 @@ public class CellBaseConfiguration {
         this.wiki = wiki;
     }
 
-    public Map<String, DatabaseProperties> getDatabases() {
+    public Databases getDatabases() {
         return databases;
     }
 
-    public CellBaseConfiguration setDatabases(Map<String, DatabaseProperties> databases) {
+    public CellBaseConfiguration setDatabases(Databases databases) {
         this.databases = databases;
         return this;
     }

@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.impl;
 import org.bson.Document;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DatabaseProperties;
+import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
@@ -45,7 +45,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     private void init() {
         if (mongoDataStoreManager == null) {
-            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
+//            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
+            String[] hosts = cellBaseConfiguration.getDatabases().getMongodb().getHost().split(",");
             List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
             for (String host : hosts) {
                 String[] hostPort = host.split(":");
@@ -70,7 +71,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          cellbase_hsapiens_grch37_v3
          **/
 
-        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
 
         // We need to look for the species object in the configuration
         Species speciesObject = getSpecies(species);

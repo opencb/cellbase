@@ -23,7 +23,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
-import org.opencb.cellbase.core.config.DatabaseProperties;
+import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
@@ -77,8 +77,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database, String field,
                                  CellBaseConfiguration cellBaseConfiguration) {
         super(queue, data, database, field, cellBaseConfiguration);
-        if (cellBaseConfiguration.getDatabases().get("mongodb").getOptions().get("mongodb-index-folder") != null) {
-            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().get("mongodb").getOptions().get("mongodb-index-folder"));
+//        if (cellBaseConfiguration.getDatabases().get("mongodb").getOptions().get("mongodb-index-folder") != null) {
+        if (cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder") != null) {
+//            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().get("mongodb").getOptions().get("mongodb-index-folder"));
+            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
         }
     }
 
@@ -92,7 +94,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
          * 3. finally a connection to the collection is stored in 'mongoDBCollection'
          */
 
-        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
 
         String[] hosts = mongodbCredentials.getHost().split(",");
         List<DataStoreServerAddress> dataStoreServerAddressList = new ArrayList<>(hosts.length);
@@ -620,7 +623,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
 
     protected boolean runCreateIndexProcess(Path indexFilePath) throws IOException, InterruptedException {
-        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
         List<String> args = new ArrayList<>();
         args.add("mongo");
         args.add("--host");

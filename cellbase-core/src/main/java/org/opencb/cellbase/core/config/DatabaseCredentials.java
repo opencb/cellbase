@@ -5,20 +5,18 @@ import java.util.Map;
 /**
  * Created by imedina on 19/08/16.
  */
-public class DatabaseProperties {
+public class DatabaseCredentials {
 
     private String host;
-//    @Deprecated
-//    private String port;
     private String user;
     private String password;
     private Map<String, String> options;
 
 
-    public DatabaseProperties() {
+    public DatabaseCredentials() {
     }
 
-    public DatabaseProperties(String host, String user, String password, Map<String, String> options) {
+    public DatabaseCredentials(String host, String user, String password, Map<String, String> options) {
         this.host = host;
         this.user = user;
         this.password = password;

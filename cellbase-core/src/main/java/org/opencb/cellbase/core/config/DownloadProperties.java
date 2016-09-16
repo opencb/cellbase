@@ -286,15 +286,15 @@ public class DownloadProperties {
 
     public static class EnsemblProperties {
 
-        private DatabaseProperties database;
+        private DatabaseCredentials database;
         private String libs;
         private URLProperties url;
 
-        public DatabaseProperties getDatabase() {
+        public DatabaseCredentials getDatabase() {
             return database;
         }
 
-        public void setDatabase(DatabaseProperties database) {
+        public void setDatabase(DatabaseCredentials database) {
             this.database = database;
         }
 
