@@ -221,7 +221,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         }
 //        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
-                "consequenceTypes.sequenceOntologyTerms.name", andBsonList);
+                "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
 //        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
 //                andBsonList);
         createGeneOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), andBsonList);
