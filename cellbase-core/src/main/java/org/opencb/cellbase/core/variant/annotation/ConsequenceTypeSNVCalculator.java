@@ -170,6 +170,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (variant.getStart() <= exon.getEnd() && variant.getStart() >= exon.getStart()) {  // Variant within the exon
             cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
+            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -186,6 +187,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
@@ -212,6 +214,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (variant.getStart() <= exon.getEnd() && variant.getStart() >= exon.getStart()) {  // Variant within the exon
             cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
+            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -233,6 +236,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
@@ -389,6 +393,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             if (variant.getStart() <= exon.getEnd()) {  // Variant start within the exon
                 cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantPosition);
+                consequenceType.setExonNumber(exon.getExonNumber());
             }
         }
 
@@ -405,6 +410,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() <= exon.getEnd()) {  // Variant within the exon
                     cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
@@ -459,6 +465,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (variant.getStart() >= exon.getStart() && variant.getStart() <= exon.getEnd()) {  // Variant start within the exon
             cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
+            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -480,6 +487,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() <= exon.getEnd()) {  // Variant within the exon
                     cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
@@ -551,7 +559,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
                                     String.valueOf(modifiedCodonArray));
                     codingAnnotationAdded = true;
-                    if (VariantAnnotationUtils.isSynonymousCodon(referenceCodon, String.valueOf(modifiedCodonArray))) {
+                    if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
+                            referenceCodon, String.valueOf(modifiedCodonArray))) {
                         if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon)) {
                             SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
                         } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),

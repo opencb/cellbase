@@ -28,7 +28,6 @@ import java.nio.file.Paths
 /**
  * Created by lcruz on 23/10/14.
  */
-@Ignore
 class CosmicParserTest extends Specification {
 
     @Shared
@@ -62,39 +61,49 @@ class CosmicParserTest extends Specification {
         serializedVariants[variantNumber].reference.equals(ref)
         serializedVariants[variantNumber].alternate.equals(alt)
         serializedVariants[variantNumber].source.equals(source)
+        serializedVariants[variantNumber].mutationGRCh37Strand.equals(strand)
 
         where:
-        variantNumber || chr  | start     | end       | ref      | alt      | source
-        0             || "12" | 25398285  | 25398285  | "G"      | "T"      | "cosmic"
-        1             || "1"  | 215793922 | 215793922 | "A"      | "-"      | "cosmic"
-        2             || "4"  | 152069187 | 152069188 | "-"      | "A"      | "cosmic"
-        3             || "17" | 7578478   | 7578478   | "C"      | "T"      | "cosmic"
-        4             || "5"  | 35874605  | 35874607  | "CTC"    | "AAAAAG" | "cosmic"
-        5             || "19" | 13054627  | 13054628  | "-"      | "TTGTC"  | "cosmic"
-        6             || "9"  | 5070038   | 5070043   | "GAAGAT" | "-"      | "cosmic"
+        variantNumber || chr  | start      | end       | ref         | alt      | source   | strand
+        0             || "12" | 25398284   | 25398284  | "C"         | "A"      | "cosmic" | "-"
+        1             || "9"  | 5073770    | 5073770   | "G"         | "T"      | "cosmic" | "+"
+        2             || "10" | 50690757   | 50690757  | ""          | "C"      | "cosmic" | "-"
+        3             || "X"  | 132160412  | 132160412 | ""          | "T"      | "cosmic" | "-"
+        4             || "12" | 25398284   | 25398284  | "C"         | "A"      | "cosmic" | "-"
+        5             || "1"  | 8419849    | 8419849   | ""          | "CGCTCT" | "cosmic" | "-"
+        6             || "6"  | 33411675   | 33411683  | "GGGGGCAGC" | ""       | "cosmic" | "+"
+
+
+//        0             || "12" | 25398285  | 25398285  | "G"      | "T"      | "cosmic"
+//        1             || "1"  | 215793922 | 215793922 | "A"      | "-"      | "cosmic"
+//        2             || "4"  | 152069187 | 152069188 | "-"      | "A"      | "cosmic"
+//        3             || "17" | 7578478   | 7578478   | "C"      | "T"      | "cosmic"
+//        4             || "5"  | 35874605  | 35874607  | "CTC"    | "AAAAAG" | "cosmic"
+//        5             || "19" | 13054627  | 13054628  | "-"      | "TTGTC"  | "cosmic"
+//        6             || "9"  | 5070038   | 5070043   | "GAAGAT" | "-"      | "cosmic"
     }
 
-    @Unroll
-    def "parsed variant #chr:#start-#end #ref #alt has fathcm '#fathmm', pubmedid #pubmed, study id #idStudy and age #age"() {
-        expect:
-        serializedVariants[variantNumber].chromosome.equals(chr)
-        serializedVariants[variantNumber].start.equals(start)
-        serializedVariants[variantNumber].end.equals(end)
-        serializedVariants[variantNumber].reference.equals(ref)
-        serializedVariants[variantNumber].alternate.equals(alt)
-        serializedVariants[variantNumber].fathmmPrediction.equals(fathmm)
-        serializedVariants[variantNumber].pubmedPMID.equals(pubmed)
-        serializedVariants[variantNumber].idStudy.equals(idStudy)
-        serializedVariants[variantNumber].age == age
-
-        where:
-        variantNumber || chr  | start     | end       | ref      | alt      | fathmm   | pubmed     | idStudy | age
-        0             || "12" | 25398285  | 25398285  | "G"      | "T"      | "CANCER" | "23205087" | null    | null
-        1             || "1"  | 215793922 | 215793922 | "A"      | "-"      | ""       | "24293293" | 529     | 53.0
-        2             || "4"  | 152069187 | 152069188 | "-"      | "A"      | ""       | "22980975" | 431     | 80.0
-        3             || "17" | 7578478   | 7578478   | "C"      | "T"      | "CANCER" | "10780666" | null    | 24.0
-        4             || "5"  | 35874605  | 35874607  | "CTC"    | "AAAAAG" | ""       | "21536738" | null    | null
-        5             || "19" | 13054627  | 13054628  | "-"      | "TTGTC"  | ""       | "24895336" | null    | null
-        6             || "9"  | 5070038   | 5070043   | "GAAGAT" | "-"      | ""       | "17984312" | null    | 80.0
-    }
+//    @Unroll
+//    def "parsed variant #chr:#start-#end #ref #alt has fathcm '#fathmm', pubmedid #pubmed, study id #idStudy and age #age"() {
+//        expect:
+//        serializedVariants[variantNumber].chromosome.equals(chr)
+//        serializedVariants[variantNumber].start.equals(start)
+//        serializedVariants[variantNumber].end.equals(end)
+//        serializedVariants[variantNumber].reference.equals(ref)
+//        serializedVariants[variantNumber].alternate.equals(alt)
+//        serializedVariants[variantNumber].fathmmPrediction.equals(fathmm)
+//        serializedVariants[variantNumber].pubmedPMID.equals(pubmed)
+//        serializedVariants[variantNumber].idStudy.equals(idStudy)
+//        serializedVariants[variantNumber].age == age
+//
+//        where:
+//        variantNumber || chr  | start     | end       | ref      | alt      | fathmm   | pubmed     | idStudy | age
+//        0             || "12" | 25398285  | 25398285  | "G"      | "T"      | "CANCER" | "23205087" | null    | null
+//        1             || "1"  | 215793922 | 215793922 | "A"      | "-"      | ""       | "24293293" | 529     | 53.0
+//        2             || "4"  | 152069187 | 152069188 | "-"      | "A"      | ""       | "22980975" | 431     | 80.0
+//        3             || "17" | 7578478   | 7578478   | "C"      | "T"      | "CANCER" | "10780666" | null    | 24.0
+//        4             || "5"  | 35874605  | 35874607  | "CTC"    | "AAAAAG" | ""       | "21536738" | null    | null
+//        5             || "19" | 13054627  | 13054628  | "-"      | "TTGTC"  | ""       | "24895336" | null    | null
+//        6             || "9"  | 5070038   | 5070043   | "GAAGAT" | "-"      | ""       | "17984312" | null    | 80.0
+//    }
 }

@@ -383,7 +383,7 @@ public class VariationParser extends CellBaseParser {
                 consequenceTypes = new ArrayList<>();
             }
             consequenceTypes.add(new ConsequenceType(null, null, transcriptVariation.getTranscriptId(), null, null,
-                    null, transcriptVariation.getCdnaStart() != 0 ? transcriptVariation.getCdnaStart() : null,
+                    null, null, transcriptVariation.getCdnaStart() != 0 ? transcriptVariation.getCdnaStart() : null,
                     transcriptVariation.getCdsStart() != 0 ? transcriptVariation.getCdsStart() : null,
                     transcriptVariation.getCodonAlleleString(), proteinVariantAnnotation, soTerms));
 

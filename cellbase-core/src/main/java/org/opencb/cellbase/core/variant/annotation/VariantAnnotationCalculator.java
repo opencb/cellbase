@@ -324,7 +324,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         stringBuilder.append(",annotation.alternate,annotation.id");
 
         if (annotatorSet.contains("variation")) {
-            stringBuilder.append(",annotation.id,annotation.populationFrequencies");
+            stringBuilder.append(",annotation.id");
         }
         if (annotatorSet.contains("clinical")) {
             stringBuilder.append(",annotation.variantTraitAssociation");
@@ -835,8 +835,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         String includeGeneFields = "name,id,start,end,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,"
                 + "transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,"
                 + "transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,"
-                + "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,"
-                + "mirna.matures.cdnaStart,mirna.matures.cdnaEnd";
+                + "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,"
+                + "transcripts.exons.exonNumber,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,"
+                + "mirna.matures.cdnaEnd";
 
         if (annotatorSet.contains("expression")) {
             includeGeneFields += ",annotation.expression";
