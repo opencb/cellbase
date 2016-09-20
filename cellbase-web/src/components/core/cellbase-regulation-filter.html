@@ -122,51 +122,37 @@
                     value: ""
                 }
             },
+            clear: function () {
+                this.$.regFilterRegionTextarea.value = "";
+                this.featureTypes = [];
+                this.featureClasses = [];
+                this.clearFeatureType = Utils.randomString(6); // Unchecking the checkboxes
+                this.clearFeatureClass = Utils.randomString(6); // Unchecking the checkboxes
+            },
+            loadExample: function () {
+                this.clear();
+                this.$.regFilterRegionTextarea.value = "10:555-666666";
+            },
+            executeQuery: function () {
+                let url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/regulatory/search?';
 
-                clear: function () {
-                    this.$.regFilterRegionTextarea.value = "";
-                    this.featureTypes = [];
-                    this.featureClasses = [];
-                    this.clearFeatureType = Utils.randomString(6); // Unchecking the checkboxes
-                    this.clearFeatureClass = Utils.randomString(6); // Unchecking the checkboxes
-                },
-                loadExample: function () {
-                    this.clear();
-                    this.$.regFilterRegionTextarea.value = "10:555-66666";
-                },
-                executeQuery: function () {
-                    // We first build the query params object
-//                    let queryParams = {};
-                    let featureType = [];
-                    let featureClass = [];
+                let queryParams = [];
+                if (this.$.regFilterRegionTextarea.value != "") {
+                    queryParams.push('region=' + this.$.regFilterRegionTextarea.value);
+                }
                 if (this.featureTypes.length > 0) {
-                    featureType = this.featureTypes.join(",");
+                    queryParams.push('featureType=' + this.featureTypes.join(","));
                 }
                 if (this.featureClasses.length > 0) {
-                    featureClass = this.featureClasses.join(",");
+                    queryParams.push('featureClass=' + this.featureClasses.join(","));
                 }
 
-//                    let result = [];
-//                    let _this = this;
-//                    let success = function (response) {
-//                        for (let i in response.response) {
-//                            for (let j in response.response[i].result) {
-//                                result.push(response.response[i].result[j]);
-//                            }
-//                        }
-//                        _this.data = result;
-//                    };
-
-                    //TODO add queryParams to the url
-
-                    if (this.$.regFilterRegionTextarea.value !== "") {
-                        this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.$.regFilterRegionTextarea.value
-                                + '/regulatory?featureType=' + featureType + '&featureClass=' + featureClass;
-
-//                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', queryParams, {success: success, async: true});
-                        console.log(this.url)
-                    }
+                if (queryParams.length > 0) {
+                    url += queryParams.join('&');
                 }
+
+                this.url = url;
+            }
             });
     </script>
 </dom-module>
