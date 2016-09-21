@@ -31,7 +31,8 @@
 
         <div style="width: 90%">
 
-            <ul id="myTabs" class="nav nav-tabs" role="tablist">
+            <h3>{{geneId}}</h3>
+            <ul id="myTabs" class="nav nav-tabs" role="tablist" hidden$="{{checkGene(geneId)}}">
                 <li role="presentation" class="active"><a href="#geneViewInfo" role="tab" data-toggle="tab">{{geneId}} Summary</a></li>
                 <li role="presentation"><a href="#geneViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
                 <!--<li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>-->
@@ -45,7 +46,7 @@
                 <!--<li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>-->
             </ul>
 
-            <div class="tab-content" style="width: 90%">
+            <div class="tab-content" style="width: 90%" hidden$="{{checkGene(geneId)}}">
                 <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
                     <h4>{{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)</a></h4>
                     <!--Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>-->
@@ -139,6 +140,7 @@
                 },
                 geneId: {
                     type: String,
+                    value: "",
                     notify: true,
                     observer: '_geneIdChanged'
                 },
@@ -156,36 +158,41 @@
                 $('#geneCosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
             _geneIdChanged: function(newValue, oldValue) {
-                this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/'
-                        + this.geneId + '/snp?exclude=annotation.additionalAttributes,annotation.populationFrequencies';
-                this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=clinvar';
-                this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=cosmic';
-                let _this = this;
-                if (typeof this.cellbaseClient !== "undefined") {
-                    let success = function (response) {
-                        let firstGene = response.response[0].result[0];
-                        if (typeof firstGene !== "undefined") {
-                            let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
-                            if (typeof _this.genomeViewer !== "undefined") {
-                                _this.genomeViewer.setRegion(region);
+                if (typeof this.geneId !== "undefined" &&this.geneId != "") {
+                    this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/'
+                            + this.geneId + '/snp?exclude=annotation.additionalAttributes,annotation.populationFrequencies';
+                    this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=clinvar';
+                    this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=cosmic';
+                    let _this = this;
+                    if (typeof this.cellbaseClient !== "undefined") {
+                        let success = function (response) {
+                            let firstGene = response.response[0].result[0];
+                            if (typeof firstGene !== "undefined") {
+                                let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
+                                if (typeof _this.genomeViewer !== "undefined") {
+                                    _this.genomeViewer.setRegion(region);
+                                }
+                            } else {
+                                alert("Gene ID not valid: " + _this.geneId);
                             }
-                        } else {
-                            alert("Gene ID not valid: " + _this.geneId);
-                        }
-                        _this.geneObj = firstGene;
-                        // testing 3D
+                            _this.geneObj = firstGene;
+                            // testing 3D
 //                        _this.display3D();
 //                        _this.displayNetworkViewer();
-                    };
-                    let error = function (response) {
-                        alert("Gene ID not valid: " + _this.geneId)
-                    };
-                    this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                        };
+                        let error = function (response) {
+                            alert("Gene ID not valid: " + _this.geneId)
+                        };
+                        this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                    }
                 }
             },
             attached: function() {
 //                this.genomeViewer;
 //                this.renderGenomeViewer();
+            },
+            checkGene: function(geneId) {
+                return this.geneId == "";
             },
             onVariantSelected: function(e) {
                 this.variant = e.detail.variant;
