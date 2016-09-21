@@ -29,11 +29,11 @@ import java.nio.file.Paths
  * Created by parce on 5/03/15.
  */
 // TODO: fix test
-@Ignore
 class GeneParserTest extends Specification {
 
 
     static List<Gene> serializedGenes
+    static List<Gene> ebolaSerializedGenes
 
     def setupSpec() {
         def geneTestDir = Paths.get(GeneParserTest.class.getResource("/geneParser").toURI())
@@ -45,12 +45,23 @@ class GeneParserTest extends Specification {
         serializer.serialize(_) >> { Gene arg -> serializedGenes.add(arg) }
 
         def species = new CellBaseConfiguration.SpeciesProperties.Species()
-        def geneParser = new GeneParser(geneTestDir, genomeSequenceFasta, species, serializer)
+        def geneParser = new GeneParser(geneTestDir, genomeSequenceFasta, species, false, serializer)
         geneParser.parse()
+
+        def ebolaGeneTestDir = Paths.get(GeneParserTest.class.getResource("/ebolaGenome").toURI())
+        def ebolaGenomeSequenceFasta = Paths.get(GeneParserTest.class.getResource("/ebolaGenome/Ebola_virus.KM034562v1.fa.gz").toURI())
+
+        // custom test serializer that adds the serialized variants to a list
+        ebolaSerializedGenes = new ArrayList<Gene>()
+        serializer.serialize(_) >> { Gene arg -> serializedGenes.add(arg) }
+
+        def flexibleGeneParser = new GeneParser(ebolaGeneTestDir, ebolaGenomeSequenceFasta, species, true, serializer)
+        geneParser.parse()
+        flexibleGeneParser.parse()
     }
 
     @Unroll
-    def "gene #geneId parsed"() {
+    def "gene #geneId parsing"() {
         expect:
         serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
         def gene = serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).first()
@@ -143,9 +154,34 @@ class GeneParserTest extends Specification {
         "ENSG00000218839" | "ENST00000305248" || "Jund" | "MA0491.1" | "9"        | 36583 | 36593 | -722          | -712        | 0.993 | "+"
     }
 
+    @Unroll
+    def "gene #geneId flexible parsing"() {
+        expect:
+        serializedGenes.size() == 9
+        serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
+        def gene = serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).first()
+        gene.chromosome == chromosome
+        gene.start == start
+        gene.end == end
+        gene.strand == strand
+        gene.transcripts.size() == transcriptsNumber
+        gene.transcripts.first().getCdnaCodingStart() == cdnaCodingStart
+        gene.transcripts.first().getCdnaCodingEnd() == cdnaCodingEnd
+        gene.transcripts.first().getGenomicCodingStart() == genomicCodingStart
+        gene.transcripts.first().getGenomicCodingEnd() == genomicCodingEnd
+
+
+        where:
+        geneId || chromosome   | start | end   | strand | transcriptsNumber | cdnaCodingStart | cdnaCodingEnd | genomicCodingStart | genomicCodingEnd
+        "NP"   || "KM034562v1" | 56    | 3026  | "+"    | 1                 | 415             | 2631          | 470                | 2686
+        "ssGP" || "KM034562v1" | 5900  | 8305  | "+"    | 1                 | 140             | 1031          | 6039               | 6930
+        "VP35" || "KM034562v1" | 3032  | 4407  | "+"    | 1                 | 98              | 1117          | 3129               | 4148
+        "L"    || "KM034562v1" | 11501 | 18282 | "+"    | 1                 | 1               | 6717          | 11581              | 18216
+    }
+
     def cleanupSpec() {
         // delete reference genome sqlLite
-        File referenceGenomeSqlLiteFile = Paths.get(GeneParserTest.class.getResource("/geneParser/reference_genome.db").toURI()).toFile()
+        File referenceGenomeSqlLiteFile = Paths.get(GeneParserTest.class.getResource("/geneParser/Homo_sapiens.GRCh38.fa.rdb").toURI()).toFile()
         if (referenceGenomeSqlLiteFile.exists()) {
             referenceGenomeSqlLiteFile.delete()
         }

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
+import com.sun.org.apache.bcel.internal.classfile.CodeException;
 import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
@@ -392,6 +393,7 @@ public class GeneParser extends CellBaseParser {
         transcriptName = transcriptList.get(transcriptCounter);
         exonCounter = 0;
         feature = "exon";
+        nextGtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
     }
 
     private Gtf getGTFEntry(GtfReader gtfReader, Map<String, Map<String, Map<String, Object>>> gtfMap) throws FileFormatException {
@@ -407,31 +409,47 @@ public class GeneParser extends CellBaseParser {
 
             Gtf gtfToReturn = nextGtfToReturn;
             if (feature.equals("exon")) {
-                gtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+//                gtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
                 if (gtfMap.get(geneName).get(transcriptName).containsKey("cds")) {
-                    nextGtfToReturn = getExonCDSLine(((Gtf) ((List) gtfMap.get(geneName).get(transcriptName)).get(exonCounter)).getStart(),
-                            ((Gtf) ((List) gtfMap.get(geneName).get(transcriptName)).get(exonCounter)).getEnd(),
-                            gtfMap.get(geneName).get(transcriptName).get("cds"));
+                    nextGtfToReturn = getExonCDSLine(((Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter)).getStart(),
+                            ((Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter)).getEnd(),
+                            (List) gtfMap.get(geneName).get(transcriptName).get("cds"));
                     if (nextGtfToReturn != null) {
                         feature = "cds";
+                        return gtfToReturn;
                     }
                 }
 
                 // if no cds was found for this exon, get next exon
                 getFeatureFollowsExon(gtfMap);
+                return gtfToReturn;
             }
 
             if (feature.equals("cds") || feature.equals("stop_codon")) {
-                gtfToReturn = nextGtfToReturn;
                 getFeatureFollowsExon(gtfMap);
+                return gtfToReturn;
             }
 
             if (feature.equals("start_codon")) {
                 feature = "stop_codon";
                 nextGtfToReturn = (Gtf) gtfMap.get(geneName).get(transcriptName).get("stop_codon");
+                return gtfToReturn;
             }
-            return gtfToReturn;
+
+            // The only accepted features that should appear in the gtfMap are exon, cds, start_codon and stop_codon
+            throw new FileFormatException("Execution cannot reach this point");
         }
+    }
+
+    private Gtf getExonCDSLine(Integer exonStart, Integer exonEnd, List cdsList) {
+        for (Object cdsObject : cdsList) {
+            Integer cdsStart = ((Gtf) cdsObject).getStart();
+            Integer cdsEnd = ((Gtf) cdsObject).getEnd();
+            if (cdsStart <= exonEnd && cdsEnd >= exonStart) {
+                return (Gtf) cdsObject;
+            }
+        }
+        return null;
     }
 
     private void getFeatureFollowsExon(Map<String, Map<String, Map<String, Object>>> gtfMap) {
@@ -501,13 +519,14 @@ public class GeneParser extends CellBaseParser {
         String featureType = gtf.getFeature().toLowerCase();
 
         // Add exon/cds GTF line to the corresponding gene entry in the map
-        if(featureType.equalsIgnoreCase("exon") || featureType.equals("cds")) {
+        if(featureType.equals("exon") || featureType.equals("cds")) {
             List gtfList = null;
             // Check if there were exons already stored
             if (gtfMapTranscriptEntry.containsKey(featureType)) {
                 gtfList =  (List) gtfMapTranscriptEntry.get(featureType);
             } else {
                 gtfList = new ArrayList<>();
+                gtfMapTranscriptEntry.put(featureType, gtfList);
             }
             gtfList.add(gtf);
         // Only one start/stop codon can be stored per transcript - no need to check if the "start_codon"/"stop_codon"
