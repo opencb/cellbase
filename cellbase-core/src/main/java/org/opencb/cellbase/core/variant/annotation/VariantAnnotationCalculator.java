@@ -440,9 +440,11 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
                             + " Leaving an empty consequence type list.", normalizedVariantList.get(i).toString());
+                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
                 } catch (Exception e) {
                     logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
                             + " consequence type list.", normalizedVariantList.get(i).toString());
+                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
 //                    throw e;
                 }
             }
