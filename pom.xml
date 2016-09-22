@@ -23,7 +23,7 @@
 
     <properties>
         <cellbase.version>4.0.0</cellbase.version>
-        <biodata.version>0.7.1</biodata.version>
+        <biodata.version>0.7.3</biodata.version>
         <java-common-libs.version>3.2.1</java-common-libs.version>
         <jackson.version>2.6.4</jackson.version>
         <jersey.version>2.22.1</jersey.version>
