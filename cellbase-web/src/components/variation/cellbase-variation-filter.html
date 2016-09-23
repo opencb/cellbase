@@ -256,7 +256,10 @@
                 }
             },
             addVariationId: function(e) {
-                let allIds = this.$.variationFilterIdsTextarea.value.split(',');
+                let allIds = [];
+                if (this.$.geneFilterIdsTextarea.value != "") {
+                    allIds = this.$.geneFilterIdsTextarea.value.split(',');
+                }
                 var temp = this.$.variationIdText.value;
                 if (allIds.indexOf(temp) == -1){
                     allIds.push(temp);

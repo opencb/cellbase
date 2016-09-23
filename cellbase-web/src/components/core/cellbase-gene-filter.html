@@ -246,11 +246,11 @@
                 // We first build the query params object
                 let queryParams = {};
 
-                if (this.$.geneFilterIdsTextarea.value !== "") {
+                if (this.$.geneFilterIdsTextarea.value != "") {
                     queryParams["transcripts.xrefs"] = this.$.geneFilterIdsTextarea.value;
                 }
 
-                if (this.$.geneFilterRegionTextarea.value !== "") {
+                if (this.$.geneFilterRegionTextarea.value != "") {
                     queryParams.region = this.$.geneFilterRegionTextarea.value;
                 }
 
@@ -326,7 +326,10 @@
                 }
             },
             addGeneId: function(e) {
-                let allIds = this.$.geneFilterIdsTextarea.value.split(',');
+                let allIds = [];
+                if (this.$.geneFilterIdsTextarea.value != "") {
+                    allIds = this.$.geneFilterIdsTextarea.value.split(',');
+                }
                 var temp = this.$.geneIDText.value;
                 if (allIds.indexOf(temp) == -1){
                     allIds.push(temp);
