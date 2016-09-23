@@ -28,9 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.opencb.commons.datastore.core.QueryParam.Type.INTEGER;
-import static org.opencb.commons.datastore.core.QueryParam.Type.STRING;
-import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
+import static org.opencb.commons.datastore.core.QueryParam.Type.*;
 
 /**
  * Created by imedina on 26/11/15.
