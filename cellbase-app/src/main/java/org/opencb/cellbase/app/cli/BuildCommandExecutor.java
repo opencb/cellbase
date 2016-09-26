@@ -164,6 +164,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.DRUG_DATA:
                             parser = buildDrugParser();
                             break;
+                        case EtlCommons.CLINICAL_VARIANTS_DATA:
+                            parser = buildClinicalVariants();
+                            break;
                         case EtlCommons.CLINVAR_DATA:
                             parser = buildClinvar();
                             break;
@@ -351,8 +354,31 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ConservationParser(conservationFilesDir, conservationChunkSize, serializer);
     }
 
+    private CellBaseParser buildClinicalVariants() {
+        Path clinicalVariantFolder = input.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
+        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
+        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
 
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinical_variant");
+        return new ClinicalVariantParser(clinicalVariantFolder,
+                buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
+                serializer);
+    }
+
+    private String getDefaultHumanAssembly() {
+        for (CellBaseConfiguration.SpeciesProperties.Species species : configuration.getSpecies().getVertebrates()) {
+            if (species.getId().equals("hsapiens")) {
+                return species.getAssemblies().get(0).getName();
+            }
+        }
+
+        throw new ParameterException("Clinical data can only be built if an hsapiens entry is defined within the "
+                + "configuration file. No hsapiens data found within the configuration.json file");
+    }
+
+    @Deprecated
     private CellBaseParser buildClinvar() {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path clinvarFolder = input.resolve("clinical");
         copyVersionFiles(Arrays.asList(clinvarFolder.resolve("clinvarVersion.json")));
         Path clinvarFile = clinvarFolder.resolve("ClinVar.xml.gz");
@@ -373,7 +399,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ClinVarParser(clinvarFile, clinvarSummaryFile, efosFilePath, assembly, serializer);
     }
 
+    @Deprecated
     private CellBaseParser buildCosmic() {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
@@ -381,7 +409,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new CosmicParser(cosmicFilePath, serializer);
     }
 
+    @Deprecated
     private CellBaseParser buildGwas() throws IOException {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path inputDir = getInputDirFromCommandLine().resolve("clinical");
         copyVersionFiles(Arrays.asList(inputDir.resolve("gwasVersion.json")));
         Path gwasFile = inputDir.resolve(GWAS_INPUT_FILE_NAME);

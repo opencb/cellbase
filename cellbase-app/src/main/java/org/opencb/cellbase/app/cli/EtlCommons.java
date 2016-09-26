@@ -13,7 +13,16 @@ public class EtlCommons {
     public static final String REGULATION_DATA = "regulation";
     public static final String PROTEIN_DATA = "protein";
     public static final String CONSERVATION_DATA = "conservation";
-    public static final String CLINICAL_DATA = "clinical";
+    public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
+
+    public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
+    public static final String CLINVAR_XML_FILE = "ClinVar.xml.gz";
+    public static final String CLINVAR_EFO_FILE = "ClinVar_Traits_EFO_Names.csv";
+    public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
+    public static final String GWAS_FILE = "gwas_catalog.tsv";
+    public static final String COSMIC_FILE = "CosmicMutantExport.tsv";
+    public static final String DBSNP_FILE = "All.vcf.gz";
+
 
     // Build specific data options
     public static final String GENOME_INFO_DATA = "genome_info";

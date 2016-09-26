@@ -147,7 +147,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinical. 'all' build everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)

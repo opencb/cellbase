@@ -89,7 +89,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String PHYLOP_NAME = "PhyloP";
     private static final String CLINVAR_NAME = "ClinVar";
     private static final String GWAS_NAME = "Gwas Catalog";
-//    private static final String DBSNP_NAME = "dbSNP";
+    private static final String DBSNP_NAME = "dbSNP";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -239,8 +239,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadConservation(sp, assembly.getName(), spFolder);
                         }
                         break;
-                    case EtlCommons.CLINICAL_DATA:
-                        if (speciesHasInfoToDownload(sp, "clinical")) {
+                    case EtlCommons.CLINICAL_VARIANTS_DATA:
+                        if (speciesHasInfoToDownload(sp, "clinical_variants")) {
                             downloadClinical(sp, spFolder);
                         }
                         break;
@@ -846,45 +846,45 @@ public class DownloadCommandExecutor extends CommandExecutor {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading clinical information ...");
 
-            Path clinicalFolder = speciesFolder.resolve("clinical");
+            Path clinicalFolder = speciesFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
             makeDir(clinicalFolder);
             List<String> clinvarUrls = new ArrayList<>(3);
             String url = configuration.getDownload().getClinvar().getHost();
-            downloadFile(url, clinicalFolder.resolve("ClinVar.xml.gz").toString());
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString());
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarEfoTerms().getHost();
-            downloadFile(url, clinicalFolder.resolve("ClinVar_Traits_EFO_Names.csv").toString());
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_EFO_FILE).toString());
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarSummary().getHost();
-            downloadFile(url, clinicalFolder.resolve("variant_summary.txt.gz").toString());
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE).toString());
             clinvarUrls.add(url);
-            saveVersionData(EtlCommons.CLINICAL_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
 
             url = configuration.getDownload().getGwasCatalog().getHost();
-            downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
-            saveVersionData(EtlCommons.CLINICAL_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(), Collections.singletonList(url),
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString());
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(), Collections.singletonList(url),
                     clinicalFolder.resolve("gwasVersion.json"));
 
-//            List<String> dbsnpUrls = new ArrayList<>(2);
-//            url = configuration.getDownload().getDbsnp().getHost();
-//            downloadFile(url, clinicalFolder.resolve("All.vcf.gz").toString());
-//            dbsnpUrls.add(url);
-//
-//            url = url + ".tbi";
-//            downloadFile(url, clinicalFolder.resolve("All.vcf.gz.tbi").toString());
-//            dbsnpUrls.add(url);
-//            saveVersionData(EtlCommons.CLINICAL_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
-//                    clinicalFolder.resolve("dbsnpVersion.json"));
+            List<String> dbsnpUrls = new ArrayList<>(2);
+            url = configuration.getDownload().getDbsnp().getHost();
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE).toString());
+            dbsnpUrls.add(url);
+
+            url = url + ".tbi";
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE + ".tbi").toString());
+            dbsnpUrls.add(url);
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
+                    clinicalFolder.resolve("dbsnpVersion.json"));
         }
     }
 
-//    private String getDbsnpVersion() {
-//        // ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b144_GRCh37p13/VCF/All_20150605.vcf.gz
-//        return configuration.getDownload().getDbsnp().getHost().split("_")[2];
-//    }
+    private String getDbsnpVersion() {
+        // ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b144_GRCh37p13/VCF/All_20150605.vcf.gz
+        return configuration.getDownload().getDbsnp().getHost().split("_")[2];
+    }
 
     private String getGwasVersion() {
         // ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/05/10/gwas-catalog-associations.tsv
