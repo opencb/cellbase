@@ -15,7 +15,7 @@ def _create_rest_url(host, port, version, species, category, subcategory,
     """Creates the URL for querying the REST service"""
 
     cellbase_rest = 'cellbase/webservices/rest'
-    # cellbase_rest = 'cellbase-4.5.0-beta/webservices/rest'
+    # cellbase_rest = 'cellbase-4.5.0-rc/webservices/rest'
 
     # Creating the basic URL
     url = ('http://' + '/'.join([host + ':' + port,
