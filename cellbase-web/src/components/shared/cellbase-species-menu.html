@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="cellbase-shared-styles.html">
+
+<dom-module id="cellbase-species-menu">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div class="dropdown" style="background-color: transparent">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                {{title}} <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu cellbase-species-menu">
+                <template is="dom-repeat" items="{{keys}}" as="taxon">
+                    <li class="dropdown-submenu">
+                        <a href="#">{{taxon}}</a>
+                        <ul class="dropdown-menu">
+                            <template is="dom-repeat" items="{{_getSpeciesArrayByTaxon(taxon)}}" as="species">
+                                <li><a href="#">{{species}}</a></li>
+                            </template>
+                        </ul>
+                    </li>
+                </template>
+            </ul>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-species-menu',
+
+            properties: {
+                cellbaseClient: {
+                    type: Object
+                },
+                title: {
+                    type: String,
+                    value: "Select species"
+                },
+                speciesList: {
+                    type: Array,
+                    value: []
+                },
+                class: {
+                    type: String,
+                    value: ""
+                },
+                keys: {
+                    type: Array,
+                    value: []
+                }
+            },
+            attached: function () {
+                let _this = this;
+                var success = function (response) {
+                    console.log("OMG!!!!")
+                    _this.speciesList = response.response[0].result[0];
+                    _this.keys = Object.keys(_this.speciesList);
+                };
+
+                this.cellbaseClient.getMeta("species", {async: true}).then(success);
+
+                $(document).on('click', '.cellbase-species-menu li a', function() {
+                    console.log("event")
+                    _this.title = $(this).text();
+                });
+            },
+            _getSpeciesArrayByTaxon: function(taxon) {
+                var speciesArray = [];
+                let taxonSpecies = this.speciesList[taxon];
+                for (let speciesIdx in taxonSpecies) {
+                    let assemblies = taxonSpecies[speciesIdx].assemblies;
+                    for (let assemblyIdx in assemblies) {
+                        speciesArray.push(taxonSpecies[speciesIdx].scientificName + " " + assemblies[assemblyIdx].name)
+                    }
+                }
+                return speciesArray;
+            }
+        });
+    </script>
+</dom-module>

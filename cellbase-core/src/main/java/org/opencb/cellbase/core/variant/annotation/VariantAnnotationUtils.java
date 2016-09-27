@@ -1,8 +1,11 @@
 package org.opencb.cellbase.core.variant.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+import org.opencb.commons.utils.CryptoUtils;
 
 import java.util.*;
 
@@ -10,6 +13,8 @@ import java.util.*;
  * Created by fjlopez on 22/06/15.
  */
 public class VariantAnnotationUtils {
+
+    public static final char SEPARATOR_CHAR = ':';
 
     public static final String THREEPRIME_OVERLAPPING_NCRNA = "3prime_overlapping_ncrna";
     public static final String IG_C_GENE = "IG_C_gene";
@@ -91,6 +96,8 @@ public class VariantAnnotationUtils {
     public static final String FRAMESHIFT_VARIANT = "frameshift_variant";
     public static final String CODING_SEQUENCE_VARIANT = "coding_sequence_variant";
     public static final String TRANSCRIPT_ABLATION = "transcript_ablation";
+    public static final String COPY_NUMBER_CHANGE = "copy_number_change";
+    public static final String TERMINATOR_CODON_VARIANT = "terminator_codon_variant";
     public static final String FEATURE_TRUNCATION = "feature_truncation";
     public static final String INFRAME_DELETION = "inframe_deletion";
 
@@ -343,12 +350,14 @@ public class VariantAnnotationUtils {
         SIFT_DESCRIPTIONS.put(0, "tolerated");
         SIFT_DESCRIPTIONS.put(1, "deleterious");
 
-        SO_SEVERITY.put("transcript_ablation", 36);
-        SO_SEVERITY.put("splice_acceptor_variant", 35);
-        SO_SEVERITY.put("splice_donor_variant", 34);
-        SO_SEVERITY.put("stop_gained", 33);
-        SO_SEVERITY.put("frameshift_variant", 32);
-        SO_SEVERITY.put("stop_lost", 31);
+        SO_SEVERITY.put("copy_number_change", 38);
+        SO_SEVERITY.put("transcript_ablation", 37);
+        SO_SEVERITY.put("splice_acceptor_variant", 36);
+        SO_SEVERITY.put("splice_donor_variant", 35);
+        SO_SEVERITY.put("stop_gained", 34);
+        SO_SEVERITY.put("frameshift_variant", 33);
+        SO_SEVERITY.put("stop_lost", 32);
+        SO_SEVERITY.put("terminator_codon_variant", 31);
         SO_SEVERITY.put("start_lost", 30);
         SO_SEVERITY.put("initiator_codon_variant", 30);
         SO_SEVERITY.put("transcript_amplification", 29);
@@ -448,5 +457,35 @@ public class VariantAnnotationUtils {
     public static SequenceOntologyTerm newSequenceOntologyTerm(String name) throws SOTermNotAvailableException {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
+
+    public static String buildVariantId(String chromosome, int start, String reference, String alternate) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        appendChromosome(chromosome, stringBuilder)
+                .append(SEPARATOR_CHAR)
+                .append(StringUtils.leftPad(Integer.toString(start), 10, " "))
+                .append(SEPARATOR_CHAR);
+
+        if (reference.length() > Variant.SV_THRESHOLD) {
+            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
+        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
+            stringBuilder.append(reference);
+        }
+        stringBuilder.append(SEPARATOR_CHAR);
+        if (alternate.length() > Variant.SV_THRESHOLD) {
+            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
+        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
+            stringBuilder.append(alternate);
+        }
+        return stringBuilder.toString();
+    }
+
+    protected static StringBuilder appendChromosome(String chromosome, StringBuilder stringBuilder) {
+        if (chromosome.length() == 1 && Character.isDigit(chromosome.charAt(0))) {
+            stringBuilder.append(' ');
+        }
+        return stringBuilder.append(chromosome);
+    }
+
 
 }

@@ -35,6 +35,7 @@ public abstract class CellBaseLoader implements Callable<Integer> {
     protected String database;
 
     protected String field;
+    protected String[] innerFields;
 
     protected CellBaseConfiguration cellBaseConfiguration;
 
@@ -42,11 +43,12 @@ public abstract class CellBaseLoader implements Callable<Integer> {
 
 
     public CellBaseLoader(BlockingQueue<List<String>> blockingQueue, String data, String database, String field,
-                          CellBaseConfiguration configuration) {
+                          String[] innerFields, CellBaseConfiguration configuration) {
         this.blockingQueue = blockingQueue;
         this.data = data;
         this.database = database;
         this.field = field;
+        this.innerFields = innerFields;
 
         if (configuration != null) {
             this.cellBaseConfiguration = configuration;

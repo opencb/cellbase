@@ -1,0 +1,137 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="cellbase-exons-grid.html">
+<link rel="import" href="cellbase-xref-grid.html">
+
+<dom-module id="cellbase-transcripts-view">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .highlight {
+                background-color: darkgray;
+            }
+        </style>
+
+        <!--Transcripts table-->
+        <div>
+            <table class="table table-hover" id="{{prefix}}Transcripts">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Ensembl ID</th>
+                    <th>Biotype</th>
+                    <th>Location</th>
+                    <th>Coding</th>
+                    <th>cDNA</th>
+                    <th>CDS Length</th>
+                    <th>Annotation Flags</th>
+                </tr>
+                </thead>
+                <tbody>
+                <template is="dom-repeat" id="transcriptList" items="{{data}}" as="transcript">
+                    <tr on-click="loadTabs">
+                        <td>{{transcript.name}}</td>
+                        <td>
+                            <a target="_blank"
+                               href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;t={{transcript.id}}">{{transcript.id}}</a>
+                        </td>
+                        <td>{{transcript.biotype}}</td>
+                        <td>
+                            <a target="_blank"
+                               href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}">
+                                {{transcript.chromosome}}:{{transcript.start}}-{{transcript.end}}
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank"
+                               href="http://genomemaps.org/?region={{transcript.chromosome}}:{{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}">
+                                {{transcript.genomicCodingStart}}-{{transcript.genomicCodingEnd}}
+                            </a>
+                        </td>
+                        <td>
+                            {{transcript.cdnaCodingStart}}-{{transcript.cdnaCodingEnd}}
+                        </td>
+                        <td>{{transcript.cdsLength}}</td>
+                        <td>{{transcript.annotationFlags}}</td>
+                    </tr>
+                </template>
+                </tbody>
+            </table>
+
+            <array-selector id="selector" items="{{data}}" selected="{{selected}}"></array-selector>
+
+            <b>Transcript: {{selected.name}}({{selected.id}})</b> <br><br>
+
+            <!--Tab representation for Exons, Xrefs, Sequence-->
+            <div>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#{{prefix}}TranscriptViewExons" role="tab"
+                                                              data-toggle="tab">Exons</a></li>
+                    <li role="presentation"><a href="#{{prefix}}TranscriptViewXrefs" role="tab"
+                                               data-toggle="tab">Xrefs</a></li>
+                    <li role="presentation"><a href="#{{prefix}}TranscriptViewSequence" role="tab" data-toggle="tab">Sequence</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="{{prefix}}TranscriptViewExons" role="tabpanel" class="tab-pane active">
+                        <cellbase-exons-grid data="{{selected.exons}}" prefix="{{prefix}}"></cellbase-exons-grid>
+                    </div>
+
+                    <div id="{{prefix}}TranscriptViewXrefs" role="tabpanel" class="tab-pane">
+                        <cellbase-xref-grid data="{{selected.xrefs}}" prefix="{{prefix}}"></cellbase-xref-grid>
+                    </div>
+
+                    <div id="{{prefix}}TranscriptViewSequence" role="tabpanel" class="tab-pane">
+                        <br>
+                        cDNA Sequence:<textarea class="form-control" rows="10" readonly>{{selected.cDnaSequence}}</textarea> <br>
+                        <template is="dom-if" if="{{selected.proteinSequence}}">
+                            Protein Sequence:<textarea class="form-control" rows="10" readonly>{{selected.proteinSequence}}</textarea>
+                            <br>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-transcripts-view',
+
+            properties: {
+                cellbase: {
+                    type: Object
+                },
+                data: {
+                    type: Array,
+                    value: []
+                },
+                prefix: {
+                    type: String
+                }
+            },
+            loadTabs: function (e) {
+                $('#' + this.prefix + 'Transcripts' + ' tbody tr').removeClass("highlight");
+                $(e.currentTarget).addClass("highlight");
+                var item = this.$.transcriptList.itemForElement(e.target);
+                this.$.selector.select(item);
+            }
+        });
+    </script>
+</dom-module>

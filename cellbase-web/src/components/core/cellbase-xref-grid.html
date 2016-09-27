@@ -1,0 +1,49 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-xref-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div style="padding: 10px; ">
+            <table id="{{prefix}}XrefTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-xref-grid',
+            properties: {
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'render'
+                },
+                prefix: {
+                    type: String
+                }
+            },
+            render: function () {
+                $('#' + this.prefix + 'XrefTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'XrefTable').bootstrapTable({
+                    data: this.data,
+                    columns: [
+                        [
+                            {
+                                title: 'ID',
+                                field: 'id'
+                            },
+                            {
+                                title: 'DB Display Name',
+                                field: 'dbDisplayName'
+                            }
+                        ]
+                    ]
+                });
+            }
+        });
+    </script>
+</dom-module>

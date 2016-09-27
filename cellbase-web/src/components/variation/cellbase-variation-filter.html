@@ -1,0 +1,254 @@
+<!--
+  ~ Copyright 2015 OpenCB
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+<link rel="import" href="../common/cellbase-options-list.html">
+<link rel="import" href="../common/cellbase-filter-toolbar.html">
+
+<dom-module id="cellbase-variation-filter">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles">
+            .menu-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
+            }
+            .variation-display {
+                max-height: 800px;
+                overflow: auto;
+            }
+        </style>
+
+        <div>
+            <!--Variation Filter Tabs-->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#variationFilter" role="tab" data-toggle="tab">Filter</a></li>
+                <li role="presentation"><a href="#variationResult" role="tab" data-toggle="tab">Result</a></li>
+            </ul>
+
+            <!--Variation Filter Tab Content-->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="variationFilter">
+                    <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
+                    <br>
+
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+                        <!--Variation ID filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h4 class="panel-title">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#variationIdSearch"
+                                       aria-expanded="true" aria-controls="variationIdSearch">
+                                        Variation IDs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="variationIdSearch" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                                <div class="panel-body">
+                                    <form class="form-inline">
+                                        Search:
+                                        <div style="float: right">
+                                            <input id="variationIdText" type="text" class="form-control" list="variation-datalist" value="" on-keyup="callVariationAutocomplete">
+                                            <datalist id="variation-datalist">
+                                                <template is="dom-repeat" items="{{autocompleteData}}" as="object">
+                                                    <template is="dom-repeat" items="{{object.ids}}">
+                                                        <option value="{{item}}">
+                                                    </template>
+                                                </template>
+                                            </datalist>
+                                            <button type="button" class="btn btn-default btn-sm form-control" on-click="addVariationId">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <textarea id="variationFilterIdsTextarea" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Region filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingTwo">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#variationRegion" aria-expanded="false" aria-controls="variationRegion">
+                                        Region
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="variationRegion" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                <div class="panel-body">
+                                    <textarea id="variationRegionList" class="form-control clearable" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Consequence Types filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#consequenceTypes" aria-expanded="false" aria-controls="consequenceTypes">
+                                        Select Consequence Types
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="consequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                <div class="panel-body menu-scroll">
+                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Population frequency filter menu-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFive">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#variationPopulationFrequency" aria-expanded="false" aria-controls="variationPopulationFrequency">
+                                        Population Frequencies
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="variationPopulationFrequency" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+                                <div class="panel-body">
+                                    <textarea id="variationPopulationFrequencyText" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Result tab content -->
+                <div role="tabpanel" class="tab-pane" id="variationResult">
+                    <div class="variation-display">
+                        <i id="variationSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
+                        <br>
+                        <template is="dom-repeat" items="{{result}}">
+                            <div>
+                                <b on-click="_updateVariationView" id="{{item.ids}}" style="cursor: pointer">{{item.ids}}</b>
+                                <i>{{item.annotation.displayConsequenceType}}</i><br>
+                                {{item.chromosome}}:{{item.start}}-{{item.end}}
+                                <hr>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-variation-filter',
+            properties: {
+                variationId: {
+                    type: String,
+                    notify: true
+                },
+                cellbaseClient: {
+                    type: Object,
+                    notify: true
+                },
+                result: {
+                    type: Array,
+                    value: []
+                },
+                autocompleteData: {
+                    type: Array,
+                    value: []
+                },
+                consequenceTypes: {
+                    type: Array,
+                    value: []
+                }
+            },
+            clear: function (e) {
+                // we empty the textareas
+                this.$.variationFilterIdsTextarea.value = "";
+                this.$.variationRegionList.value = "";
+                this.$.variationPopulationFrequencyText.value= "";
+            },
+            loadExample: function (e) {
+                this.$.variationFilterIdsTextarea.value = "rs666";
+            },
+            executeQuery: function (e) {
+                // activate the GIF
+                $('#variationSpinImg').show();
+
+                // We first build the query params object
+                let queryParams = {include: "ids,chromosome,start,end,annotation.displayConsequenceType"};
+                if (this.consequenceTypes.length > 0) {
+                    queryParams.consequenceType = this.consequenceTypes.join(",");
+                }
+//                if (this.$.geneFilterDrugsTextarea.value != "") {
+//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
+//                }
+
+                //
+                this.result= [];
+                let _this = this;
+                let success = function (response) {
+                    for(let i in response.response) {
+                        for(let j in response.response[i].result) {
+                            _this.push('result',response.response[i].result[j]);
+                        }
+                    }
+                    // remove the GIF
+                    $('#variationSpinImg').hide();
+                };
+
+                // Now we execute the query. Note that ID are preferred
+                if (this.$.variationFilterIdsTextarea.value !== "") {
+                    this.cellbaseClient.get('feature','variation', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                } else {
+                    if (this.$.variationRegionList.value !== "") {
+                        this.cellbaseClient.get('genomic','region', this.$.variationRegionList.value, 'variation', queryParams, {success: success, async: true});
+                    }
+                }
+
+                $('.nav-tabs a[href="#variationResult"]').tab('show');
+            },
+            ready: function() {
+//                this.cellBaseClient = CELLBASE_CLIENT;
+            },
+            _updateVariationView: function(e) {
+                this.variationId = e.srcElement.id;
+            },
+            addVariationId: function(e) {
+                let allIds = this.$.variationFilterIdsTextarea.value.split(',');
+                var temp = this.$.variationIdText.value;
+                if (allIds.indexOf(temp) == -1){
+                    allIds.push(temp);
+                }
+                this.$.variationIdText.value = '';
+                this.$.variationFilterIdsTextarea.value = allIds;
+            },
+            callVariationAutocomplete: function(e) {
+                if (this.$.variationIdText.value.length > 6) {
+                    let _this = this;
+                    let success = function (response) {
+                        _this.autocompleteData = response.response[0].result;
+                    };
+                    _this.cellbaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
+                }
+            }
+        });
+    </script>
+</dom-module>

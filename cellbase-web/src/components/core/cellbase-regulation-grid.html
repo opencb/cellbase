@@ -1,0 +1,123 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../shared/cellbase-shared-styles.html">
+
+<dom-module id="cellbase-regulation-grid">
+    <template>
+        <style is="custom-style" include="cellbase-shared-styles"></style>
+
+        <div style="padding: 10px; ">
+            <table id="{{prefix}}RegulationTable" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+                   data-show-pagination-switch="true" data-show-export="true">
+
+            </table>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'cellbase-regulation-grid',
+            properties: {
+                data: {
+                    type: Array,
+                    value: [],
+                    observer: 'renderFromLocal'
+                },
+                url: {
+                    type: String,
+                    observer: 'renderFromServer'
+                },
+                prefix: {
+                    type: String
+                },
+                count: {
+                    type: Number,
+                    notify: true
+                }
+            },
+            ready: function () {
+                this.cols = [
+                    [
+                        {
+                            title: 'Location',
+                            formatter: this.locationFormatter
+                        },
+                        {
+                            title: 'Strand',
+                            field: 'strand'
+                        },
+                        {
+                            title: 'Source',
+                            field: 'source'
+                        },
+                        {
+                            title: 'Feature Type',
+                            field: 'featureType'
+                        },
+                        {
+                            title: 'Feature Class',
+                            field: 'featureClass'
+                        },
+                        {
+                            title: 'Name',
+                            field: 'name'
+                        },
+
+                        {
+                            title: 'Alias',
+                            field: 'alias'
+                        },
+                        {
+                            title: 'Cell Types',
+                            field: 'cellTypes'
+                        },
+                        {
+                            title: 'Frame',
+                            field: 'frame'
+                        },
+                        {
+                            title: 'Score',
+                            field: 'score'
+                        }
+                    ]
+                ]
+            },
+            renderFromServer: function () {
+                let _this = this;
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
+                let _numTotal = -1;
+
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable({
+                    url: this.url,
+                    method: 'get',
+                    sidePagination: 'server',
+                    queryParams: function (params) {
+                        return {
+                            limit: params.limit,
+                            skip: params.offset
+                        };
+                    },
+                    responseHandler: function (res) {
+                        if (_numTotal == -1) {
+                            _numTotal = res.response[0].numTotalResults;
+                            _this.count = _numTotal;
+                        }
+                        return {total: _numTotal, rows: res.response[0].result}
+                    },
+                    columns: this.cols
+                });
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('showLoading');
+            },
+            renderFromLocal: function () {
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable('destroy');
+                $('#' + this.prefix + 'RegulationTable').bootstrapTable({
+                    data: this.data,
+                    columns: this.cols
+                });
+            },
+
+            locationFormatter: function (value, row, index) {
+                return row.chromosome + ":" + row.start + "-" + row.end;
+            }
+        });
+    </script>
+</dom-module>

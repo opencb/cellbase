@@ -24,7 +24,7 @@ import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
-import org.opencb.cellbase.grpc.service.*;
+import org.opencb.cellbase.server.grpc.service.*;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -183,6 +183,13 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                         output.println(next.toString());
                     }
                     break;
+                case "first":
+                    TranscriptModel.Transcript first = transcriptServiceBlockingStub.first(request);
+                    output.println(first.toString());
+                    break;
+                case "sequence":
+                    ServiceTypesModel.StringResponse stringResponse = transcriptServiceBlockingStub.getCdna(request);
+                    output.println(stringResponse);
                 default:
                     break;
             }
@@ -190,6 +197,10 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         if (queryGrpcCommandOptions.count) {
             ServiceTypesModel.LongResponse value = transcriptServiceBlockingStub.count(request);
             output.println(value);
+        }
+        if (queryGrpcCommandOptions.distinct != null) {
+            ServiceTypesModel.StringArrayResponse values = transcriptServiceBlockingStub.distinct(request);
+            output.println(values);
         }
     }
 

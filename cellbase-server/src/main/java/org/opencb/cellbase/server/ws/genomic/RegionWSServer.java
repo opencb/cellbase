@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -305,7 +304,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chrRegionId}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects", response = Transcript.class,
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "transcripts.biotype",
@@ -336,10 +335,12 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            query.put(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-            QueryResult queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(region);
-            return createOkResponse(queryResult);
+            List<Query> queries = createQueries(region, TranscriptDBAdaptor.QueryParams.REGION.key());
+            List<QueryResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.REGION.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -416,9 +417,12 @@ public class RegionWSServer extends GenericRestWSServer {
                 query.put(VariantDBAdaptor.QueryParams.REGION.key(), chrRegionId);
                 logger.debug("query = " + query.toJson());
                 logger.debug("queryOptions = " + queryOptions.toJson());
-                QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
-                queryResult.setId(chrRegionId);
-                return createOkResponse(queryResult);
+                List<Query> queries = createQueries(chrRegionId, VariantDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
+                }
+                return createOkResponse(queryResults);
             }
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -480,18 +484,20 @@ public class RegionWSServer extends GenericRestWSServer {
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
 
             if (chrRegionId.contains(",")) {
-                String[] regions = chrRegionId.split(",");
-                List<Query> queries = new ArrayList<>(regions.length);
-                for (String s : regions) {
-                    Query q = new Query("region", s);
-                    q.put("strand", strand);
-                    queries.add(q);
+//                String[] regions = chrRegionId.split(",");
+//                List<Query> queries = new ArrayList<>(regions.length);
+//                for (String s : regions) {
+//                    Query q = new Query("region", s);
+//                    q.put("strand", strand);
+//                    queries.add(q);
+//                }
+                List<Region> regionList = Region.parseRegions(chrRegionId);
+                List<QueryResult<GenomeSequenceFeature>> queryResults =
+                        genomeDBAdaptor.getSequence(Region.parseRegions(chrRegionId), queryOptions);
+                for (int i = 0; i < regionList.size(); i++) {
+                    queryResults.get(i).setId(regionList.get(i).toString());
                 }
-                List<QueryResult<GenomeSequenceFeature>> queryResultList = genomeDBAdaptor.getGenomicSequence(queries, queryOptions);
-                for (int i = 0; i < queries.size(); i++) {
-                    queryResultList.get(i).setId(regions[i]);
-                }
-                return createOkResponse(queryResultList);
+                return createOkResponse(queryResults);
             } else {
                 query.put(GenomeDBAdaptor.QueryParams.REGION.key(), chrRegionId);
                 query.put("strand", strand);
@@ -525,7 +531,7 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "phenotype",
                     value = "String to indicate the phenotypes to query. A text search will be run.",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "rcv",
+            @ApiImplicitParam(name = "clinvarId",
                     value = "Comma separated list of rcv ids, e.g.: RCV000033215",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "rs",
@@ -539,7 +545,7 @@ public class RegionWSServer extends GenericRestWSServer {
                     value = "Comma separated list of review lables (only enabled for ClinVar variants), "
                             + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "significance",
+            @ApiImplicitParam(name = "clinvar-significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query"),
@@ -718,7 +724,7 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. "
             + "If query param "
             + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
-            + "histogram=false TranscriptTfbs objects will be returned "
+            + "histogram=false RegulatoryFeature objects will be returned "
             + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
             + "An independent database query will be issued for each region in regionStr, meaning that results for each "
             + "region will be returned in independent QueryResult objects within the QueryResponse object."

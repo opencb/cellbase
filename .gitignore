@@ -2,6 +2,7 @@
 build
 bower_components
 node_modules
+bower_components
 private
 
 # General
@@ -56,3 +57,14 @@ local.properties
 
 # Python
 *.pyc
+os
+sys
+
+# R
+R.Rproj
+.Rproj.user
+.Rhistory
+.RData
+clients/R/vignettes/*.html
+clients/cellbaseR*.tar.gz
+clients/cellbaseR.Rcheck

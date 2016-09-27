@@ -17,6 +17,8 @@
 
 db.getCollection('variation').createIndex({'_chunkIds': 1})
 db.getCollection('variation').createIndex({'chromosome': 1, "start": 1, "end":1})
+db.getCollection('variation').createIndex({'chromosome': 1, "sv.ciStartLeft": 1, "sv.ciStartRight": 1,
+    "sv.ciEndLeft": 1, "sv.ciEndRight": 1})
 db.getCollection('variation').createIndex({'id': 1})
 db.getCollection('variation').createIndex({'type': 1})
 db.getCollection('variation').createIndex({'annotation.xrefs': 1})

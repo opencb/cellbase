@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>4.0.0</version>
+        <version>4.5.0-beta</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -23,15 +23,17 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-grpc</artifactId>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.opencb.cellbase</groupId>-->
+        <!--<artifactId>cellbase-server</artifactId>-->
+        <!--<version>${cellbase.version}</version>-->
+        <!--<type>jar</type>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-server</artifactId>
             <version>${cellbase.version}</version>
-            <type>war</type>
+            <!--<type>war</type>-->
         </dependency>
 
         <dependency>
@@ -39,16 +41,16 @@
             <artifactId>jcommander</artifactId>
             <version>1.47</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
-        </dependency>
         <!--<dependency>-->
             <!--<groupId>psidev.psi.mi</groupId>-->
             <!--<artifactId>psimitab</artifactId>-->
             <!--<version>1.8.5</version>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
@@ -66,10 +68,6 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
             <scope>test</scope>
@@ -80,14 +78,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.4</version>
         </dependency>
     </dependencies>
 
@@ -120,7 +118,7 @@
                         </program>
                         <program>
                             <name>cellbase-grpc.sh</name>
-                            <mainClass>org.opencb.cellbase.grpc.server.GeneGrpcServer</mainClass>
+                            <mainClass>org.opencb.cellbase.server.grpc.GrpcServer</mainClass>
                         </program>
                     </programs>
                 </configuration>
@@ -168,9 +166,15 @@
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
-                                    <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>
+                                    <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${project.basedir}/../LICENSE"/>
+                                    <arg value="${build.dir}"/>
+                                </exec>
+
+                                <echo>Coping war file</echo>
+                                <exec executable="cp">
+                                    <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>
                                     <arg value="${build.dir}"/>
                                 </exec>
                             </target>
@@ -193,26 +197,12 @@
         </resources>
     </build>
 
-    <repositories>
-        <repository>
-            <id>intact.nexus</id>
-            <name>IntAct Nexus</name>
-            <url>http://www.ebi.ac.uk/intact/maven/nexus/content/groups/public</url>
-        </repository>
-    </repositories>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<id>intact.nexus</id>-->
+            <!--<name>IntAct Nexus</name>-->
+            <!--<url>http://www.ebi.ac.uk/intact/maven/nexus/content/groups/public</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
 
-    <profiles>
-        <profile>
-            <id>mongodb</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.opencb.cellbase</groupId>
-                    <artifactId>cellbase-mongodb</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>

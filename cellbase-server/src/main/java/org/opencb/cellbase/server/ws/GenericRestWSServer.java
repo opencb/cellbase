@@ -154,7 +154,7 @@ public class GenericRestWSServer implements IWSServer {
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
 //            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-            dbAdaptorFactory2 = new org.opencb.cellbase.mongodb.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+            dbAdaptorFactory2 = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -255,7 +255,7 @@ public class GenericRestWSServer implements IWSServer {
         }
 
         queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
-        queryOptions.put("skip", (skip > 0) ? skip : -1);
+        queryOptions.put("skip", (skip >= 0) ? skip : -1);
         queryOptions.put("count", (count != null && !count.equals("")) && Boolean.parseBoolean(count));
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
@@ -264,7 +264,7 @@ public class GenericRestWSServer implements IWSServer {
             if (!queryOptions.containsKey(entry.getKey())) {
 //                logger.info("Adding '{}' to queryOptions", entry);
                 // FIXME delete this!!
-                queryOptions.put(entry.getKey(), entry.getValue().get(0));
+//                queryOptions.put(entry.getKey(), entry.getValue().get(0));
                 query.put(entry.getKey(), entry.getValue().get(0));
             }
         }
@@ -379,6 +379,8 @@ public class GenericRestWSServer implements IWSServer {
         return responseBuilder
                 .header("Access-Control-Allow-Origin", "*")
                 .header("Access-Control-Allow-Headers", "x-requested-with, content-type")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                 .build();
     }
 
@@ -421,14 +423,16 @@ public class GenericRestWSServer implements IWSServer {
     protected List<Query> createQueries(String csvField, String queryKey, String... args) {
         String[] ids = csvField.split(",");
         List<Query> queries = new ArrayList<>(ids.length);
-        for (String s : ids) {
-            Query query = new Query(queryKey, s);
+        for (String id : ids) {
+//            q = new Query(queryKey, id);
+            Query q = new Query(query);
+            q.put(queryKey, id);
             if (args != null && args.length > 0 && args.length % 2 == 0) {
                 for (int i = 0; i < args.length; i += 2) {
-                    query.put(args[i], args[i + 1]);
+                    q.put(args[i], args[i + 1]);
                 }
             }
-            queries.add(query);
+            queries.add(q);
         }
         return queries;
     }

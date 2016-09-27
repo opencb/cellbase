@@ -66,7 +66,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/model")
     @ApiOperation(httpMethod = "GET", value = "Get JSON specification of gene data model", response = Map.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Gene.class);
     }
@@ -260,8 +260,8 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
-        value = "Retrieves all gene objects", response = Gene.class,
-        responseContainer = "QueryResponse")
+            value = "Retrieves all gene objects", response = Gene.class,
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -341,7 +341,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/list")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs", response = List.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -418,7 +418,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/info")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "biotype",
                     value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
@@ -474,11 +474,10 @@ public class GeneWSServer extends GenericRestWSServer {
                                                    + " ENSG00000145113,35912_at,GO:0002020."
                                                    + " Exact text matches will be returned",
                                            required = true)
-                                   String geneId) {
+                                           String geneId) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-//            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
             List<Query> queries = createQueries(geneId, GeneDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
@@ -493,7 +492,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/next")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s) - Not yet implemented",
-        hidden = true)
+            hidden = true)
     public Response getNextByEnsemblId(@PathParam("geneId") String geneId) {
         try {
             parseQueryParams();
@@ -508,7 +507,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs", response = Transcript.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "transcripts.region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -535,10 +534,12 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), geneId);
-            QueryResult queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(geneId);
-            return createOkResponse(queryResult);
+            List<Query> queries = createQueries(geneId, TranscriptDBAdaptor.QueryParams.XREFS.key());
+            List<QueryResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
+            }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -619,8 +620,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes", response = Variant.class,
             notes = "A large number of variants are usually associated to genes. Variant data tends to be heavy. Please,"
                     + "make use of the limit/exclude/include and the rest of query parameters to limit the size of your "
-                    + "results.",
-            responseContainer = "QueryResponse")
+                    + "results.", responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -642,9 +642,14 @@ public class GeneWSServer extends GenericRestWSServer {
                                            value = "Comma separated list of gene names/ids. Can use HGNC gene symbols,"
                                                    + "ENSEMBL gene ids and even ENSEMBL transcript ids, e.g.: "
                                                    + "BRCA2,ENSG00000243485,ENSG00000269981."
-                                                   + " Exact text matches will be returned") String geneId) {
+                                                   + " Exact text matches will be returned") String geneId,
+                                   @DefaultValue("false")
+                                   @QueryParam("merge")
+                                   @ApiParam(name = "merge",
+                                           value = "Return varaints for a gene per QueryResult or all of them merged"
+                                                   + " into the same QueryResult object.",
+                                           defaultValue = "false") boolean merge) {
 //    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
-
 //        try {
 //            parseQueryParams();
 //            QueryResult queryResult = null;
@@ -674,12 +679,22 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            query.put(VariantDBAdaptor.QueryParams.GENE.key(), geneId);
-            QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
-            return createOkResponse(queryResult);
+            if (merge) {
+                query.put(VariantDBAdaptor.QueryParams.GENE.key(), geneId);
+                QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+                return createOkResponse(queryResult);
+            } else {
+                List<Query> queries = createQueries(geneId, VariantDBAdaptor.QueryParams.GENE.key());
+                List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.GENE.key()));
+                }
+                return createOkResponse(queryResults);
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+
     }
 
 
@@ -741,7 +756,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)",
-        response = TranscriptTfbs.class, responseContainer = "QueryResponse")
+            response = TranscriptTfbs.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -836,7 +851,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/{geneId}/protein")
     @ApiOperation(httpMethod = "GET", value = "Return info of the corresponding proteins", response = Entry.class,
-        responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyword",
                     value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
