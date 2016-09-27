@@ -8,7 +8,8 @@ import java.util.List;
 /**
  * Created by fjlopez on 11/02/16.
  */
-public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Variant> {
+public class VariantAnnotatorTask implements
+        ParallelTaskRunner.TaskWithException<Variant, Variant, Exception> {
 
     private List<VariantAnnotator> variantAnnotatorList;
 
@@ -22,7 +23,7 @@ public class VariantAnnotatorTask implements ParallelTaskRunner.Task<Variant, Va
         }
     }
 
-    public List<Variant> apply(List<Variant> batch) {
+    public List<Variant> apply(List<Variant> batch) throws Exception {
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             variantAnnotator.run(batch);
         }

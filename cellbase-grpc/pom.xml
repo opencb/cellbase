@@ -21,7 +21,7 @@
     <parent>
         <artifactId>cellbase</artifactId>
         <groupId>org.opencb.cellbase</groupId>
-        <version>4.0.0-rc</version>
+        <version>4.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

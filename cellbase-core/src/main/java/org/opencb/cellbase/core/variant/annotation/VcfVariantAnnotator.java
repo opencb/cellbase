@@ -2,6 +2,7 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.AdditionalAttribute;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -86,13 +87,13 @@ public class VcfVariantAnnotator implements VariantAnnotator {
      */
     public void run(List<Variant> variantList) {
         for (int i = 0; i < variantList.size(); i++) {
-            Map<String, Object> customAnnotation = getCustomAnnotation(variantList.get(i));
+            Map<String, AdditionalAttribute> customAnnotation = getCustomAnnotation(variantList.get(i));
             // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
             // exists in the vcf but the info field does not contain any of the required attributes
-            if (customAnnotation != null && ((Map) customAnnotation.get(fileId)).size() > 0) {
+            if (customAnnotation != null && customAnnotation.get(fileId).getAttribute().size() > 0) {
                 VariantAnnotation variantAnnotation = variantList.get(i).getAnnotation();
                 if (variantAnnotation != null) {
-                    Map<String, Object> additionalAttributes = variantAnnotation.getAdditionalAttributes();
+                    Map<String, AdditionalAttribute> additionalAttributes = variantAnnotation.getAdditionalAttributes();
                     if (additionalAttributes == null) {
                         // variantList and variantAnnotationList must contain variants in the SAME order: variantAnnotation
                         // at position i must correspond to variant i
@@ -108,7 +109,7 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         }
     }
 
-    private Map<String, Object> getCustomAnnotation(Variant variant) {
+    private Map<String, AdditionalAttribute> getCustomAnnotation(Variant variant) {
         try {
             byte[] dbContent = dbIndex.get((variant.getChromosome() + "_" + variant.getStart() + "_"
                     + variant.getReference() + "_" + variant.getAlternate()).getBytes());
@@ -116,9 +117,10 @@ public class VcfVariantAnnotator implements VariantAnnotator {
                 return null;
             } else {
                 ObjectMapper mapper = new ObjectMapper();
-                Map<String, Object> infoAttributes = mapper.readValue(dbContent, Map.class);
-                Map<String, Object> customAnnotation = new HashMap<>(1);
-                customAnnotation.put(fileId, infoAttributes);
+                AdditionalAttribute infoAttribute = new AdditionalAttribute();
+                infoAttribute.setAttribute(mapper.readValue(dbContent, Map.class));
+                Map<String, AdditionalAttribute> customAnnotation = new HashMap<>(1);
+                customAnnotation.put(fileId, infoAttribute);
 
                 return customAnnotation;
             }

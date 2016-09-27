@@ -68,11 +68,11 @@
         <servlet-class>io.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
         <init-param>
             <param-name>api.version</param-name>
-            <param-value>3.2.0</param-value>
+            <param-value>4.0.0</param-value>
         </init-param>
         <init-param>
             <param-name>swagger.api.basepath</param-name>
-            <param-value>/cellbase/webservices/rest</param-value>
+            <param-value>/${cellbase.war.name}/webservices/rest</param-value>
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>

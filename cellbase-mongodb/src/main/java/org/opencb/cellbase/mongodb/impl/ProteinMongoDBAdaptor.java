@@ -183,7 +183,10 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //            if (ensemblTranscriptId.equals("ENST00000383037") || ensemblTranscriptId.equals("ENST00000428666")) {
 //                int a = 1;
 //            }
-        proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+        // Stop_gain/lost variants do not have SIFT/POLYPHEN scores
+        if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
+            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+        }
 //        } catch (Exception e) {
 //            int a = 1;
 //        }
@@ -351,9 +354,9 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
         createOrQuery(query, QueryParams.ACCESSION.key(), "accession", andBsonList);
         createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(query, QueryParams.GENE.key(), "gene", andBsonList);
+        createOrQuery(query, QueryParams.GENE.key(), "gene.name.value", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "dbReference.id", andBsonList);
-        createOrQuery(query, QueryParams.KEYWORD.key(), "keyword", andBsonList);
+        createOrQuery(query, QueryParams.KEYWORD.key(), "keyword.value", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
         createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
 

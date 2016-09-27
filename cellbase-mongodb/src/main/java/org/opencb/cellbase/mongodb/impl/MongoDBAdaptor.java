@@ -37,6 +37,8 @@ import java.util.*;
 
 public class MongoDBAdaptor {
 
+    enum QueryValueType {INTEGER, STRING}
+
     protected String species;
     protected String assembly;
 
@@ -117,22 +119,22 @@ public class MongoDBAdaptor {
         if (chunkSize <= 0) {
             // if chunkSize is not valid we call to the default method
             createRegionQuery(query, queryParam, andBsonList);
-        }
-
-        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            List<Region> regions = Region.parseRegions(query.getString(queryParam));
-            if (regions != null && regions.size() > 0) {
-                if (regions.size() == 1) {
-                    Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
-                    andBsonList.add(chunkQuery);
-                } else {
-                    // if multiple regions we add them first to a OR list
-                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                    for (Region region : regions) {
-                        Bson chunkQuery = createChunkQuery(region, chunkSize);
-                        orRegionBsonList.add(chunkQuery);
+        } else {
+            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+                List<Region> regions = Region.parseRegions(query.getString(queryParam));
+                if (regions != null && regions.size() > 0) {
+                    if (regions.size() == 1) {
+                        Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
+                        andBsonList.add(chunkQuery);
+                    } else {
+                        // if multiple regions we add them first to a OR list
+                        List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                        for (Region region : regions) {
+                            Bson chunkQuery = createChunkQuery(region, chunkSize);
+                            orRegionBsonList.add(chunkQuery);
+                        }
+                        andBsonList.add(Filters.or(orRegionBsonList));
                     }
-                    andBsonList.add(Filters.or(orRegionBsonList));
                 }
             }
         }
@@ -168,17 +170,28 @@ public class MongoDBAdaptor {
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
+        createOrQuery(query, queryParam, mongoDbField, andBsonList, QueryValueType.STRING);
+    }
+
+    protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList,
+                                 QueryValueType queryValueType) {
         if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-            createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
+            switch (queryValueType) {
+                case INTEGER:
+                    createOrQuery(query.getAsIntegerList(queryParam), mongoDbField, andBsonList);
+                    break;
+                default:
+                    createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
+            }
         }
     }
 
-    protected void createOrQuery(List<String> queryValues, String mongoDbField, List<Bson> andBsonList) {
+    protected <T> void createOrQuery(List<T> queryValues, String mongoDbField, List<Bson> andBsonList) {
         if (queryValues.size() == 1) {
             andBsonList.add(Filters.eq(mongoDbField, queryValues.get(0)));
         } else {
             List<Bson> orBsonList = new ArrayList<>(queryValues.size());
-            for (String queryItem : queryValues) {
+            for (T queryItem : queryValues) {
                 orBsonList.add(Filters.eq(mongoDbField, queryItem));
             }
             andBsonList.add(Filters.or(orBsonList));

@@ -321,7 +321,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     } else {
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
-                            SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+                            SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
                                     String.valueOf(modifiedCodonArray))) {
                                 // Gary - initiator codon SO terms not compatible with the terms below
@@ -551,7 +551,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
                                     String.valueOf(modifiedCodonArray));
                     codingAnnotationAdded = true;
-                    if (VariantAnnotationUtils.isSynonymousCodon(referenceCodon, String.valueOf(modifiedCodonArray))) {
+                    if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
+                            referenceCodon, String.valueOf(modifiedCodonArray))) {
                         if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon)) {
                             SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
                         } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
@@ -561,7 +562,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     } else {
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
-                            SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
+                            SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
                                     String.valueOf(modifiedCodonArray))) {
                                 // Gary - initiator codon SO terms not compatible with the terms below

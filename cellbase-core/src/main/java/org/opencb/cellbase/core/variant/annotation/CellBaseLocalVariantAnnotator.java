@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by fjlopez on 22/09/15.
@@ -30,7 +31,7 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         return true;
     }
 
-    public void run(List<Variant> variantList) {
+    public void run(List<Variant> variantList) throws InterruptedException, ExecutionException {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
 //        List<QueryResult> queryResultList = variantAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
         List<QueryResult<VariantAnnotation>> queryResultList =

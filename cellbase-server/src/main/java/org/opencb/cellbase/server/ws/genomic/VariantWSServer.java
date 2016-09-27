@@ -16,9 +16,7 @@
 
 package org.opencb.cellbase.server.ws.genomic;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -40,6 +38,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Path("/{version}/{species}/genomic/variant")
 @Produces(MediaType.APPLICATION_JSON)
@@ -48,20 +47,31 @@ public class VariantWSServer extends GenericRestWSServer {
 
     protected static final HashMap<String, List<Transcript>> CACHE_TRANSCRIPT = new HashMap<>();
 
-    public VariantWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+    public VariantWSServer(@PathParam("version")
+                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                                   defaultValue = "latest") String version,
+                           @PathParam("species")
+                           @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
+                                   + "of potentially available species ids, please refer to: "
+                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                           @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
+    @ApiOperation(httpMethod = "GET", value = "Get JSON specification of Variant data model", response = Map.class,
+            responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Variant.class);
     }
 
     @GET
     @Path("/{phenotype}/phenotype")
+    @ApiOperation(httpMethod = "GET",
+            value = "Not implemented yet",
+            response = QueryResponse.class, hidden = true)
     public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
         try {
             parseQueryParams();
@@ -141,15 +151,73 @@ public class VariantWSServer extends GenericRestWSServer {
         return help();
     }
 
+    @POST
+    @Consumes("text/plain")
+    @Path("/annotation")
+    @ApiOperation(httpMethod = "POST",
+            value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
+            + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
+            + " expression, geneDisease, drugInteraction, populationFrequencies}", response = VariantAnnotation.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "normalize",
+                    value = "Boolean to indicate whether input variants shall be normalized or not. Normalization"
+                            + " process includes decomposing MNVs", allowableValues = "false,true", defaultValue = "false",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
+    public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
+                                                        + "annotate, e.g. "
+                                                        + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
+                                                        + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
+                                                        required = true) String variants) {
+
+        try {
+            parseQueryParams();
+            List<Variant> variantList = Variant.parseVariants(variants);
+            logger.debug("queryOptions: " + queryOptions);
+//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
+//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
+//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
+
+//            VariantAnnotationCalculator variantAnnotationCalculator =
+//                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+
+            VariantAnnotationCalculator variantAnnotationCalculator = null;
+            if (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true")) {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, true);
+            } else {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
+            }
+            List<QueryResult<VariantAnnotation>> queryResultList =
+                    variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
+
+            return createOkResponse(queryResultList);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
     @GET
     @Path("/{variants}/annotation")
     @ApiOperation(httpMethod = "GET",
-            value = "Retrieves variant annotation for a list of variants. Results within response will contain a list "
-                    + "of VariantAnnotation objects.",
-            response = QueryResponse.class)
-    public Response getAnnotationByVariantsGET(@ApiParam(value = "Comma-separated list of variants to annotate")
-                                               @DefaultValue("19:45411941:T:C,14:38679764:-:GATCTGAGAAGGGAAAAAGGG")
-                                               @PathParam("variants") String variants) {
+            value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
+            + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
+            + " expression, geneDisease, drugInteraction, populationFrequencies", response = VariantAnnotation.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "normalize",
+                    value = "Boolean to indicate whether input variants shall be normalized or not. Normalization"
+                            + " process includes decomposing MNVs", allowableValues = "false,true", defaultValue = "false",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
+    public Response getAnnotationByVariantsGET(@PathParam("variants")
+                                               @ApiParam(name = "variants", value = "Comma separated list of variants to"
+                                                       + "annotate, e.g. "
+                                                       + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
+                                                       + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
+                                                       required = true) String variants) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
@@ -163,8 +231,14 @@ public class VariantWSServer extends GenericRestWSServer {
 //                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
 //            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
-            VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+            VariantAnnotationCalculator variantAnnotationCalculator = null;
+            if (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true")) {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, true);
+            } else {
+                variantAnnotationCalculator =
+                        new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2, false);
+            }
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
@@ -176,7 +250,14 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{variants}/cadd")
-    public Response getCaddScoreByVariant(@PathParam("variants") String variants) {
+    @ApiOperation(httpMethod = "GET", value = "Get CADD scores for a (list of) variant(s)", response = Score.class,
+            responseContainer = "QueryResponse")
+    public Response getCaddScoreByVariant(@PathParam("variants")
+                                          @ApiParam(name = "variants", value = "Comma separated list of variants for"
+                                                  + "which CADD socores will be returned, e.g. "
+                                                  + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
+                                                  + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
+                                                    required = true) String variants) {
         try {
             parseQueryParams();
             VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
@@ -188,65 +269,42 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
-    @Deprecated
-    @GET
-    @Path("/{variants}/full_annotation")
-    public Response getFullAnnotationByVariantsGET(@PathParam("variants") String variants) {
-        return getAnnotationByVariantsGET(variants);
-    }
+//    @Deprecated
+//    @GET
+//    @Path("/{variants}/full_annotation")
+//    @ApiOperation(httpMethod = "GET", value = "Get the object data model")
+//    public Response getFullAnnotationByVariantsGET(@PathParam("variants") String variants) {
+//        return getAnnotationByVariantsGET(variants);
+//    }
 
-    @POST
-    @Consumes("text/plain")
-    @Path("/annotation")
-    @ApiOperation(httpMethod = "POST",
-            value = "Retrieves variant annotation for a list of variants. Results within response will contain a list "
-                    + "of VariantAnnotation objects.",
-            response = QueryResponse.class)
-    public Response getAnnotationByVariantsPOST(String variants) {
-        try {
-            parseQueryParams();
-            List<Variant> variantList = Variant.parseVariants(variants);
-            logger.debug("queryOptions: " + queryOptions);
-//            VariantAnnotationDBAdaptor varAnnotationDBAdaptor =
-//                    dbAdaptorFactory2.getVariantAnnotationDBAdaptor(this.species, this.assembly);
-//            List<QueryResult> clinicalQueryResultList = varAnnotationDBAdaptor.getAnnotationByVariantList(variantList, queryOptions);
 
-            VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
-            List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
-                    variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
-            return createOkResponse(clinicalQueryResultList);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @POST
+//    @Consumes("text/plain")
+//    @Path("/full_annotation")
+//    @Deprecated
+//    public Response getFullAnnotationByVariantsPOST(String variants) {
+//        return getAnnotationByVariantsPOST(variants);
+//    }
 
-    @POST
-    @Consumes("text/plain")
-    @Path("/full_annotation")
-    @Deprecated
-    public Response getFullAnnotationByVariantsPOST(String variants) {
-        return getAnnotationByVariantsPOST(variants);
-    }
 
-    @GET
-    @Path("/help")
-    public Response help() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Input:\n");
-        sb.append("Variant format: chr:position:new allele (i.e.: 1:150044250:G)\n\n\n");
-        sb.append("Resources:\n");
-        sb.append("- consequence_type: Suppose that we have obtained some variants from a resequencing analysis and we want to obtain "
-                + "the consequence type of a variant over the transcripts\n");
-        sb.append(" Output columns: chromosome, start, end, feature ID, feature name, consequence type, biotype, feature chromosome, "
-                + "feature start, feature end, feature strand, snp ID, ancestral allele, alternative allele, gene Ensembl ID, Ensembl "
-                + "transcript ID, gene name, SO consequence type ID, SO consequence type name, consequence type description, "
-                + "consequence type category, aminoacid change, codon change.\n\n\n");
-        sb.append("Documentation:\n");
-        sb.append("http://docs.bioinfo.cipf.es/projects/cellbase/wiki/Genomic_rest_ws_api#Variant");
-
-        return createOkResponse(sb.toString());
-    }
+//    @GET
+//    @Path("/help")
+//    public Response help() {
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("Input:\n");
+//        sb.append("Variant format: chr:position:new allele (i.e.: 1:150044250:G)\n\n\n");
+//        sb.append("Resources:\n");
+//        sb.append("- consequence_type: Suppose that we have obtained some variants from a resequencing analysis and we want to obtain "
+//                + "the consequence type of a variant over the transcripts\n");
+//        sb.append(" Output columns: chromosome, start, end, feature ID, feature name, consequence type, biotype, feature chromosome, "
+//                + "feature start, feature end, feature strand, snp ID, ancestral allele, alternative allele, gene Ensembl ID, Ensembl "
+//                + "transcript ID, gene name, SO consequence type ID, SO consequence type name, consequence type description, "
+//                + "consequence type category, aminoacid change, codon change.\n\n\n");
+//        sb.append("Documentation:\n");
+//        sb.append("http://docs.bioinfo.cipf.es/projects/cellbase/wiki/Genomic_rest_ws_api#Variant");
+//
+//        return createOkResponse(sb.toString());
+//    }
 
 }

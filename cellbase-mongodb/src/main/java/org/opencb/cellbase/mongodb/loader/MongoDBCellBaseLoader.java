@@ -132,57 +132,82 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private CellBaseDBAdaptor getDBAdaptor(String data) throws LoaderException {
         String[] databaseParts = database.split("_");
         String species = databaseParts[1];
-        String assembly = databaseParts[2];
+//        String assembly = databaseParts[2];
         CellBaseDBAdaptor dbAdaptor;
         switch (data) {
             case "genome_info":
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "genome_sequence":
-                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "gene":
-                dbAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "variation":
-                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
+                dbAdaptor = null;
                 break;
             case "cadd":
-//                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
+////                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
                 dbAdaptor = null;
                 break;
             case "regulatory_region":
-                dbAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "protein":
-                dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "protein_protein_interaction":
-                dbAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
-            // TODO: implement an adaptor for protein_functional_prediction - current queries are issued from the
-            // TODO: ProteinDBAdaptors, that's why there isn't one yet
+//            // TODO: implement an adaptor for protein_functional_prediction - current queries are issued from the
+//            // TODO: ProteinDBAdaptors, that's why there isn't one yet
             case "protein_functional_prediction":
                 dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
                 break;
             case "conservation":
-                dbAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "cosmic":
                 clinicalVariantSource = "cosmic";
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                dbAdaptor = null;
                 break;
             case "clinvar":
                 clinicalVariantSource = "clinvar";
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
             case "gwas":
                 clinicalVariantSource = "gwas";
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
             case "clinical":
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
+                break;
+            case "metadata":
+                dbAdaptor = null;
+//                collectionName = "protein_functional_prediction";
                 break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
@@ -239,6 +264,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "clinical":
                 collectionName = "clinical";
+                break;
+            case "metadata":
+                collectionName = "metadata";
                 break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
