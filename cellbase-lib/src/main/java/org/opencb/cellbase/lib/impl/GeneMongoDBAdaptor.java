@@ -59,8 +59,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
-        if (query.getString("region") != null) {
-            Region region = Region.parseRegion(query.getString("region"));
+        if (query.getString(QueryParams.REGION.key()) != null) {
+            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
             Bson bsonDocument = parseQuery(query);
             return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
         }
