@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.transform;
+package org.opencb.cellbase.app.transform.clinical.variant;
 
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
+import org.opencb.cellbase.app.transform.CellBaseParser;
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
@@ -38,6 +39,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * Created by imedina on 26/09/14.
  */
+@Deprecated
 public class ClinVarParser extends CellBaseParser {
 
     private static final String ASSEMBLY_PREFIX = "GRCh";

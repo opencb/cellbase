@@ -18,6 +18,10 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.transform.*;
+import org.opencb.cellbase.app.transform.clinical.variant.ClinVarParser;
+import org.opencb.cellbase.app.transform.clinical.variant.ClinicalVariantParser;
+import org.opencb.cellbase.app.transform.clinical.variant.CosmicParser;
+import org.opencb.cellbase.app.transform.clinical.variant.GwasParser;
 import org.opencb.cellbase.app.transform.variation.VariationParser;
 import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
