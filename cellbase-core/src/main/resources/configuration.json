@@ -884,6 +884,21 @@
 					"gene"
 				]
 			}
+		],
+		"virus" : [
+			{
+				"id":"evirus",
+				"scientificName":"Ebola virus",
+				"assemblies":[
+					{
+						"name":"KM034562v1"
+					}
+				],
+				"data":[
+					"genome",
+					"gene"
+				]
+			}
 		]
 	}
 }

@@ -106,6 +106,7 @@ public class CellBaseConfiguration {
         allSpecies.addAll(species.getFungi());
         allSpecies.addAll(species.getProtist());
         allSpecies.addAll(species.getPlants());
+        allSpecies.addAll(species.getVirus());
 
         return allSpecies;
     }
@@ -437,6 +438,7 @@ public class CellBaseConfiguration {
         private List<Species> fungi;
         private List<Species> protist;
         private List<Species> plants;
+        private List<Species> virus;
 
         public List<Species> getVertebrates() {
             return vertebrates;
@@ -476,6 +478,14 @@ public class CellBaseConfiguration {
 
         public void setPlants(List<Species> plants) {
             this.plants = plants;
+        }
+
+        public List<Species> getVirus() {
+            return virus;
+        }
+
+        public void setVirus(List<Species> virus) {
+            this.virus = virus;
         }
 
         public static class Species {
