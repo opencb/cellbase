@@ -43,6 +43,8 @@ public class ClinVarIndexer {
     private int numberNewVariants = 0;
     private int numberVariantUpdates = 0;
     private int totalNumberRecords = 0;
+    private int numberSomaticRecords = 0;
+    private int numberGermlineRecords = 0;
 
     public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarEFOFile, String assembly,
                           RocksDB rdb) {
@@ -74,7 +76,7 @@ public class ClinVarIndexer {
                 totalNumberRecords++;
             }
             logger.info("Done");
-            this.printSummary();
+            printSummary();
         } catch (RocksDBException e) {
             logger.error("Error reading/writing from/to the RocksDB index while indexing ClinVar");
             throw e;
@@ -83,6 +85,15 @@ public class ClinVarIndexer {
         } catch (IOException e) {
             logger.error("Error indexing clinvar Xml file: " + e.getMessage());
         }
+    }
+
+    private void printSummary() {
+        logger.info("Total number of parsed ClinVar records: {}", totalNumberRecords);
+        logger.info("Number of indexed Clinvar records: {}", numberIndexedRecords);
+        logger.info("Number of new variants in ClinVar not previously indexed in RocksDB: {}", numberNewVariants);
+        logger.info("Number of updated variants during ClinVar indexing: {}", numberVariantUpdates);
+        logger.info("Number of ClinVar germline variants: {}", numberGermlineRecords);
+        logger.info("Number of ClinVar somatic variants: {}", numberSomaticRecords);
     }
 
     private void updateRocksDB(SequenceLocation sequenceLocation, PublicSetType publicSet,
@@ -107,34 +118,78 @@ public class ClinVarIndexer {
             variantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
             numberVariantUpdates++;
         }
-        addNewEntries(variantTraitAssociation, publicSet);
+        addNewEntries(variantTraitAssociation, publicSet, traitsToEfoTermsMap);
         ObjectWriter jsonObjectWriter = mapper.writer();
         rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
     }
 
-    private void addNewEntries(VariantTraitAssociation variantTraitAssociation, PublicSetType publicSet) {
+    private void addNewEntries(VariantTraitAssociation variantTraitAssociation, PublicSetType publicSet,
+                               Map<String, EFO> traitsToEfoTermsMap) {
 
         String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
         String clinicalSignificance = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getDescription();
-        List<String> disease = getDisease(publicSet);
-        String inheritanceModel = getInheritanceModel(publicSet);
         String reviewStatus = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getReviewStatus().name();
-        String source = CLINVAR_NAME;
         List<String> geneNames = getGeneNames(publicSet);
         List<String> germlineBibliography = null;
         List<String> somaticBibliography = null;
         Germline germline = null;
         Somatic somatic = null;
-        somatic.se
         for (ObservationSet observationSet : publicSet.getReferenceClinVarAssertion().getObservedIn()) {
-            if (observationSet.getSample().getOrigin().equalsIgnoreCase("germline")) {
-                germlineBibliography = addBibliographyFromObservationSet(germlineBibliography, observationSet);
-            } else {
+            // Origin for a number of the variants may not be clear, values found in the database for this field are:
+            // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
+            // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
+            // For the sake of simplicity and since it's not clear what to do with the rest of tags, we'll classify
+            // as somatic only those with the "somatic" tag and the rest will be stored as germline
+            if (observationSet.getSample().getOrigin().equalsIgnoreCase("somatic")) {
                 somaticBibliography = addBibliographyFromObservationSet(somaticBibliography, observationSet);
+            } else {
+                germlineBibliography = addBibliographyFromObservationSet(germlineBibliography, observationSet);
             }
 
         }
 
+        if (somaticBibliography != null) {
+            somatic.setBibliography(germlineBibliography);
+            somatic.setSource(CLINVAR_NAME);
+            somatic.setReviewStatus(reviewStatus);
+            somatic.setGeneNames(geneNames);
+            somatic.setBibliography(somaticBibliography);
+            somatic.setAccession(accession);
+            somatic.setPrimaryHistology(getPreferredTraitName(publicSet, traitsToEfoTermsMap));
+            numberSomaticRecords++;
+        }
+        if (germlineBibliography != null) {
+            germline.setAccession(accession);
+            germline.setClinicalSignificance(clinicalSignificance);
+            germline.setDisease(getDisease(publicSet, traitsToEfoTermsMap));
+            germline.setReviewStatus(reviewStatus);
+            germline.setSource(CLINVAR_NAME);
+            germline.setBibliography(germlineBibliography);
+            germline.setInheritanceModel(getInheritanceModel(publicSet));
+            germline.setGeneNames(geneNames);
+            numberGermlineRecords++;
+        }
+
+    }
+
+    private String getPreferredTraitName(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
+        for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
+            if (!trait.getType().equalsIgnoreCase("disease")) {
+                logger.error("Trait type != disease - no action defined for these traits");
+                System.exit(1);
+            } else {
+                for (SetElementSetType setElementSet : trait.getName()) {
+                    if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
+                        if (traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
+                            return traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name;
+                        } else {
+                            return setElementSet.getElementValue().getValue();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private String getInheritanceModel(PublicSetType publicSet) {
@@ -181,7 +236,7 @@ public class ClinVarIndexer {
         }
     }
 
-    private List<String> getDisease(PublicSetType publicSet) {
+    private List<String> getDisease(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
         Set<String> diseaseList = new HashSet<>();
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
             if (!trait.getType().equalsIgnoreCase("disease")) {
@@ -190,6 +245,11 @@ public class ClinVarIndexer {
             } else {
                 for (SetElementSetType setElementSet : trait.getName()) {
                     diseaseList.add(setElementSet.getElementValue().getValue());
+                    if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
+                        if (traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
+                            diseaseList.add(traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name);
+                        }
+                    }
                 }
             }
         }
