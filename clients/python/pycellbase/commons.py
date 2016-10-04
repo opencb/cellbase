@@ -13,6 +13,7 @@ _NUM_THREADS_DEFAULT = 4
 def _create_rest_url(host, version, species, category, subcategory,
                      resource, query_id, options):
     """Creates the URL for querying the REST service"""
+
     # Creating the basic URL
     url = ('http://' + '/'.join([host,
                                  'webservices/rest',

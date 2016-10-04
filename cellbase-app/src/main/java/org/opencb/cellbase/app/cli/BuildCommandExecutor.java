@@ -377,7 +377,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "cosmic");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "cosmic", true);
         return new CosmicParser(cosmicFilePath, serializer);
     }
 

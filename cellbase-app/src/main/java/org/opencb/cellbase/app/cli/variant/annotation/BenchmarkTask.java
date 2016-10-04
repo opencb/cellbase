@@ -46,8 +46,9 @@ public class BenchmarkTask implements
         for (int i = 0; i < batch.size(); i++) {
             // Variants such as MT:453:TTT:ATT are skipped for the benchmark - will not have CellBase annotation
             // compatible with VEP annotation and therefore consequenceTypeList = null
-            if (batch.get(i).getConsequenceTypes() != null
-                    && cellBaseBatch.get(i).getAnnotation().getConsequenceTypes() != null) {
+            if (batch.get(i).getConsequenceTypes() != null && batch.get(i).getConsequenceTypes().size() > 0
+                    && cellBaseBatch.get(i).getAnnotation().getConsequenceTypes() != null
+                    && cellBaseBatch.get(i).getAnnotation().getConsequenceTypes().size() > 0) {
                 Pair<VariantAnnotationDiff, VariantAnnotationDiff> comparisonResult = compare(batch.get(i),
                         cellBaseBatch.get(i).getAnnotation());
                 comparisonResult.getLeft().setVariantAnnotation(batch.get(i));

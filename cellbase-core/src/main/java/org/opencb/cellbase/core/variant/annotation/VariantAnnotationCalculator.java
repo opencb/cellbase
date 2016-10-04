@@ -440,9 +440,11 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 } catch (UnsupportedURLVariantFormat e) {
                     logger.error("Consequence type was not calculated for variant {}. Unrecognised variant format."
                             + " Leaving an empty consequence type list.", normalizedVariantList.get(i).toString());
+                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
                 } catch (Exception e) {
                     logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
                             + " consequence type list.", normalizedVariantList.get(i).toString());
+                    variantAnnotation.setConsequenceTypes(Collections.emptyList());
 //                    throw e;
                 }
             }
@@ -835,8 +837,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         String includeGeneFields = "name,id,start,end,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,"
                 + "transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,"
                 + "transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,"
-                + "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,mirna.matures,mirna.sequence,"
-                + "mirna.matures.cdnaStart,mirna.matures.cdnaEnd";
+                + "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,"
+                + "transcripts.exons.exonNumber,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,"
+                + "mirna.matures.cdnaEnd";
 
         if (annotatorSet.contains("expression")) {
             includeGeneFields += ",annotation.expression";

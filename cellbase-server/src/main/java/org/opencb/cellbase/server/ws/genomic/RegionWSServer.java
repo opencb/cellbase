@@ -280,13 +280,14 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
-            query.put(GeneDBAdaptor.QueryParams.REGION.key(), region);
 
             if (hasHistogramQueryParam()) {
-//                queryOptions.put("interval", getHistogramIntervalSize());
-                QueryResult res = geneDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
-                res.setId(region);
-                return createOkResponse(res);
+                List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = geneDBAdaptor.getIntervalFrequencies(queries, getHistogramIntervalSize(), queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) query.get(GeneDBAdaptor.QueryParams.REGION.key()));
+                }
+                return createOkResponse(queryResults);
             } else {
                 List<Query> queries = createQueries(region, GeneDBAdaptor.QueryParams.REGION.key());
                 List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
@@ -399,15 +400,21 @@ public class RegionWSServer extends GenericRestWSServer {
                 }
             }
 
-            query.put(VariantDBAdaptor.QueryParams.REGION.key(), chrRegionId);
-
             if (hasHistogramQueryParam()) {
+                List<Query> queries = createQueries(chrRegionId, GeneDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = variationDBAdaptor.getIntervalFrequencies(queries,
+                        getHistogramIntervalSize(), queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId(queries.get(i).getString(GeneDBAdaptor.QueryParams.REGION.key()));
+                }
+
 //                queryOptions.put("interval", getHistogramIntervalSize());
-                QueryResult queryResult = variationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(),
-                        queryOptions);
-                queryResult.setId(chrRegionId);
-                return createOkResponse(queryResult);
+//                QueryResult queryResult = variationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(),
+//                        queryOptions);
+//                queryResult.setId(chrRegionId);
+                return createOkResponse(queryResults);
             } else {
+                query.put(VariantDBAdaptor.QueryParams.REGION.key(), chrRegionId);
                 logger.debug("query = " + query.toJson());
                 logger.debug("queryOptions = " + queryOptions.toJson());
                 List<Query> queries = createQueries(chrRegionId, VariantDBAdaptor.QueryParams.REGION.key());
@@ -734,11 +741,19 @@ public class RegionWSServer extends GenericRestWSServer {
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
 
             if (hasHistogramQueryParam()) {
-                Query query = new Query();
-                QueryResult intervalFrequencies =
-                        regulationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
-                intervalFrequencies.setId(chrRegionId);
-                return createOkResponse(intervalFrequencies);
+                List<Query> queries = createQueries(chrRegionId, GeneDBAdaptor.QueryParams.REGION.key());
+                List<QueryResult> queryResults = regulationDBAdaptor.getIntervalFrequencies(queries,
+                        getHistogramIntervalSize(), queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) query.get(GeneDBAdaptor.QueryParams.REGION.key()));
+                }
+                return createOkResponse(queryResults);
+
+//                Query query = new Query();
+//                QueryResult intervalFrequencies =
+//                        regulationDBAdaptor.getIntervalFrequencies(query, getHistogramIntervalSize(), queryOptions);
+//                intervalFrequencies.setId(chrRegionId);
+//                return createOkResponse(intervalFrequencies);
             } else {
                 List<Query> queries = createQueries(chrRegionId, RegulationDBAdaptor.QueryParams.REGION.key(),
                         RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),

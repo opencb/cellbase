@@ -183,6 +183,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 } else {  // Only variant start within the exon  ---ES||||||||||||----
@@ -192,6 +193,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         } else if (variantStart == exon.getEnd()) {
             cdnaVariantEnd = cdnaExonEnd - (variantEnd - exon.getStart());
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
+            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -211,13 +213,16 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||SE|||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
+                        consequenceType.setExonNumber(exon.getExonNumber());
                     }
                 }
             } else if (variantStart == exon.getEnd()) {  // Only variant start within the exon  ----||||||||||||||SE---
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
+                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
@@ -244,6 +249,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 } else {  // Only variant start within the exon  ---ES||||||||||||----
@@ -253,6 +259,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         } else if (variantStart == exon.getEnd()) {
             cdnaVariantEnd = cdnaExonEnd - (variantEnd - exon.getStart());
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
+            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -274,13 +281,16 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||SE|||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
+                        consequenceType.setExonNumber(exon.getExonNumber());
                     }
                 }
             } else if (variantStart == exon.getEnd()) {  // Only variant start within the exon  ----||||||||||||||SE---
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
+                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
@@ -501,16 +511,19 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantStart <= exon.getEnd()) { // Variant start within the exon (this is a insertion, variantEnd=variantStart+1)
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 } else {  // Only variant start within the exon  ---||||||||||||SE----
                     cdnaVariantEnd = cdnaVariantStart + 1;  // To account for those insertions in the last nucleotide of the exon
                 }
+
             }
         } else if (variantEnd == exon.getStart()) {  // Only variant end within the exon  ----E|||||||||||||----
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
+            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -532,6 +545,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     } else {  // Only variant start within the exon  ---||||||||||||SE----
@@ -542,6 +556,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the 3' end of an intron
+                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
@@ -570,6 +585,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantStart <= exon.getEnd()) { // Variant start within the exon (this is a insertion, variantEnd=variantStart+1)
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                 consequenceType.setCdnaPosition(cdnaVariantStart);
+                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 } else {  // Only variant start within the exon  ---||||||||||||SE----
@@ -580,6 +596,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
+            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -602,6 +619,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                     consequenceType.setCdnaPosition(cdnaVariantStart);
+                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     } else {  // Only variant start within the exon  ---||||||||||||SE----
@@ -612,6 +630,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the 3' end of an intron
+                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
