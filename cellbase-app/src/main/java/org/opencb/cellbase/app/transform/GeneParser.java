@@ -298,7 +298,6 @@ public class GeneParser extends CellBaseParser {
                         // CDS states the beginning of coding start
                         exon.setGenomicCodingStart(gtf.getStart());
                         exon.setGenomicCodingEnd(gtf.getEnd());
-
                         // cDNA coordinates
                         // cdnaCodingStart points to the same base position than genomicCodingEnd
                         exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
@@ -306,14 +305,12 @@ public class GeneParser extends CellBaseParser {
                         exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
                         // Set cdnaCodingEnd to prevent those cases without stop_codon
                         transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
                         transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-
                         exon.setPhase(Integer.valueOf(gtf.getFrame()));
 
                         if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
@@ -331,15 +328,13 @@ public class GeneParser extends CellBaseParser {
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
-
                 if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
                     // nothing to do
                     System.out.println("Empty block, this should be redesigned");
                 }
-
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
-//                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
-//                      no need to set it at the beginning of next feature
+                    //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
+                    //                      no need to set it at the beginning of next feature
                     if (exon.getStrand().equals("+")) {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingEnd(gtf.getEnd());
@@ -400,7 +395,6 @@ public class GeneParser extends CellBaseParser {
             if (nextGtfToReturn == null) {
                 return null;
             }
-
             Gtf gtfToReturn = nextGtfToReturn;
             if (feature.equals("exon")) {
 //                gtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
@@ -414,23 +408,19 @@ public class GeneParser extends CellBaseParser {
                         return gtfToReturn;
                     }
                 }
-
                 // if no cds was found for this exon, get next exon
                 getFeatureFollowsExon(gtfMap);
                 return gtfToReturn;
             }
-
             if (feature.equals("cds") || feature.equals("stop_codon")) {
                 getFeatureFollowsExon(gtfMap);
                 return gtfToReturn;
             }
-
             if (feature.equals("start_codon")) {
                 feature = "stop_codon";
                 nextGtfToReturn = (Gtf) gtfMap.get(geneName).get(transcriptName).get("stop_codon");
                 return gtfToReturn;
             }
-
             // The only accepted features that should appear in the gtfMap are exon, cds, start_codon and stop_codon
             throw new FileFormatException("Execution cannot reach this point");
         }
@@ -458,20 +448,27 @@ public class GeneParser extends CellBaseParser {
                 nextGtfToReturn = (Gtf) gtfMap.get(geneName).get(transcriptName).get("start_codon");
             } else {
                 transcriptCounter++;
+                // No more transcripts in this gene, check if there are more genes
                 if (transcriptCounter == gtfMap.get(geneName).size()) {
                     geneCounter++;
+                    // No more genes available, end parsing
                     if (geneCounter == gtfMap.size()) {
                         nextGtfToReturn = null;
                         feature = null;
+                    // Still more genes to parse, select next one
+                    } else {
+                        geneName = geneList.get(geneCounter);
+                        transcriptCounter = 0;
+                        transcriptList = new ArrayList<>(gtfMap.get(geneName).keySet());
                     }
-                    geneName = geneList.get(geneCounter);
-                    transcriptCounter = 0;
-                    transcriptList = new ArrayList<>(gtfMap.get(geneName).keySet());
                 }
-                transcriptName = transcriptList.get(transcriptCounter);
-                exonCounter = 0;
-                feature = "exon";
-                nextGtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+                // Check if a new gene was selected - null would indicate there're no more genes
+                if (nextGtfToReturn != null) {
+                    transcriptName = transcriptList.get(transcriptCounter);
+                    exonCounter = 0;
+                    feature = "exon";
+                    nextGtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+                }
             }
         } else {
             feature = "exon";

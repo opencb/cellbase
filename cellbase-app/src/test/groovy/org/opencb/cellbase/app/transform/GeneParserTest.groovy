@@ -53,10 +53,9 @@ class GeneParserTest extends Specification {
 
         // custom test serializer that adds the serialized variants to a list
         ebolaSerializedGenes = new ArrayList<Gene>()
-        serializer.serialize(_) >> { Gene arg -> serializedGenes.add(arg) }
+        serializer.serialize(_) >> { Gene arg -> ebolaSerializedGenes.add(arg) }
 
         def flexibleGeneParser = new GeneParser(ebolaGeneTestDir, ebolaGenomeSequenceFasta, species, true, serializer)
-        geneParser.parse()
         flexibleGeneParser.parse()
     }
 
@@ -157,9 +156,9 @@ class GeneParserTest extends Specification {
     @Unroll
     def "gene #geneId flexible parsing"() {
         expect:
-        serializedGenes.size() == 9
-        serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
-        def gene = serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).first()
+        ebolaSerializedGenes.size() == 9
+        ebolaSerializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
+        def gene = ebolaSerializedGenes.findAll({gene -> gene.getId().equals(geneId)}).first()
         gene.chromosome == chromosome
         gene.start == start
         gene.end == end
