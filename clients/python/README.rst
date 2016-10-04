@@ -44,7 +44,6 @@ The second step is to create the specific client for the data we want to query:
 .. code-block:: python
 
    >>> gc = cbc.get_gene_client()
-   >>> pc = cbc.get_protein_client()
 
 And now, you can start asking to the CellBase RESTful service by providing a query ID:
 
@@ -70,13 +69,45 @@ Responses are retrieved as JSON formatted data. Therefore, fields can be queried
     'Number of TFBS for "BRCA2": 43'
     'Number of TFBS for "LDLR": 141'
 
-Data can be accessed specifying one ID or multiple comma-separated IDs:
+Data can be accessed specifying comma-separated IDs or a list of IDs:
 
 .. code-block:: python
+
+    >>> tfbs_responses = gc.get_tfbs('BRCA1')
+    >>> len(tfbs_responses)
+    1
 
     >>> tfbs_responses = gc.get_tfbs('BRCA1,BRCA2')
     >>> len(tfbs_responses)
     2
+
+    >>> tfbs_responses = gc.get_tfbs(['BRCA1', 'BRCA2'])
+    >>> len(tfbs_responses)
+    2
+
+If there is an available resource, but there is not an available method in this python package, the CellBaseClient can be used to create the URL of interest and query the RESTful service:
+
+.. code-block:: python
+
+    >>> tfbs_responses = cbc.get(category='feature', subcategory='gene', query_id='BRCA1', resource='tfbs')
+    >>> tfbs_responses[0]['result'][0]['tfName']
+    'E2F4'
+
+Optional filters and extra options can be added as key-value parameters:
+
+.. code-block:: python
+
+    >>> tfbs_responses = gc.get_tfbs('BRCA1')
+    >>> len(res[0]['result'])
+    175
+
+    >>> tfbs_responses = gc.get_tfbs('BRCA1', limit=100)
+    >>> len(res[0]['result'])
+    100
+
+    >>> tfbs_responses = gc.get_tfbs('BRCA1', skip=100)
+    >>> len(res[0]['result'])
+    75
 
 What can I ask for?
 ```````````````````
@@ -85,18 +116,17 @@ The best way to know which data can be retrieved for each client is either check
 Configuration
 `````````````
 
-Configuration stores the REST services host, port, API version and species.
+Configuration stores the REST services host, API version and species.
 
 Default configuration:
 
 .. code-block:: python
 
     >>> cbc.get_config()
-    {'hosts': ['bioinfo.hpc.cam.ac.uk',
-               'bioinfodev.hpc.cam.ac.uk'],
-     'host': 'bioinfo.hpc.cam.ac.uk',
-     'port': '80',
-     'version': 'latest',
+    {'hosts': ['bioinfo.hpc.cam.ac.uk:80/cellbase',
+               'bioinfodev.hpc.cam.ac.uk:80/cellbase-4.5.0-beta'],
+     'host': 'bioinfo.hpc.cam.ac.uk:80/cellbase',
+     'version': 'v4',
      'species': 'hsapiens'}
 
 A custom configuration can be passed to CellBaseClient with a ConfigClient object. JSON and YML files are supported:
@@ -115,10 +145,10 @@ If you want to change the configuration you can directly modify the ConfigClient
     >>> cc = ConfigClient()
     >>> cbc = CellBaseClient(cc)
     >>> cbc.get_config()['version']
-    'latest'
-    >>> cc.version = 'v4'
-    >>> cbc.get_config()['version']
     'v4'
+    >>> cc.version = 'v3'
+    >>> cbc.get_config()['version']
+    'v3'
 
 .. _CellBase: https://github.com/opencb/cellbase
 .. _CellBase Wiki: https://github.com/opencb/cellbase/wiki

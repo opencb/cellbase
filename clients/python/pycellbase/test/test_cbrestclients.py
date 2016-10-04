@@ -1,6 +1,6 @@
 import unittest
 
-import pycellbase.cbfeatures as cbfts
+import pycellbase.cbrestclients as cbfts
 from pycellbase.cbconfig import ConfigClient
 
 
@@ -43,7 +43,7 @@ class GeneClientTest(unittest.TestCase):
     def test_get_snp(self):
         """Checks retrieval of snp"""
         res = self._gc.get_snp('LDLR')
-        assert len(res[0]['result']) == 4113
+        assert len(res[0]['result']) == 4108
         assert res[0]['result'][0]['id'] == 'rs191244119'
 
     def test_get_info(self):
@@ -175,8 +175,31 @@ class GenomicRegionTest(unittest.TestCase):
     def test_get_variation(self):
         """Checks retrieval of variations"""
         res = self._gr.get_variation('3:10000-100000')
-        assert len(res[0]['result']) == 2937
+        assert len(res[0]['result']) == 2930
         assert res[0]['result'][0]['id'] == 'rs192023809'
+
+
+class VariantTest(unittest.TestCase):
+    """Tests the Variant class"""
+    def setUp(self):
+        """Initializes the variation client"""
+        self._vc = cbfts.VariantClient(ConfigClient())
+
+    def test_get_annotation(self):
+        """Checks retrieval of annotation data"""
+        res = self._vc.get_annotation('19:45411941:T:C')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['id'] == 'rs429358'
+
+    def test_get_cadd(self):
+        """Checks retrieval of cadd"""
+        res = self._vc.get_cadd('19:45411941:T:C')
+        assert len(res[0]['result']) == 2
+        assert res[0]['result'][0]['score'] == -1.1800003051757812
+
+    def test_annotate(self):
+        """Annotates specific variants from a file"""
+        self._vc.annotate('../resources/annot_example.tsv')
 
 
 if __name__ == '__main__':
