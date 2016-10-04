@@ -30,25 +30,20 @@ import java.util.zip.GZIPInputStream;
 /**
  * Created by fjlopez on 28/09/16.
  */
-public class ClinVarIndexer {
+public class ClinVarIndexer extends ClinicalIndexer {
 
     private static final String CLINVAR_NAME = "clinvar";
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
     private final Path clinvarEFOFile;
-    private final Logger logger;
     private final String assembly;
     private RocksDB rdb;
-    private int numberIndexedRecords = 0;
-    private int numberNewVariants = 0;
-    private int numberVariantUpdates = 0;
-    private int totalNumberRecords = 0;
     private int numberSomaticRecords = 0;
     private int numberGermlineRecords = 0;
 
     public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarEFOFile, String assembly,
                           RocksDB rdb) {
-        logger = LoggerFactory.getLogger(this.getClass());
+        super();
         this.rdb = rdb;
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;
@@ -332,42 +327,6 @@ public class ClinVarIndexer {
         return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v24);
     }
 
-    class SequenceLocation {
-        private final String chromosome;
-        private final int start;
-        private final int end;
-        private final String reference;
-        private final String alternate;
-
-        public SequenceLocation(String chromosome, int start, int end, String reference, String alternate) {
-            this.chromosome = chromosome;
-            this.start = start;
-            this.end = end;
-            this.reference = reference;
-            this.alternate = alternate;
-        }
-
-        public String getChromosome() {
-            return chromosome;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        public int getEnd() {
-            return end;
-        }
-
-        public String getReference() {
-            return reference;
-        }
-
-        public String getAlternate() {
-            return alternate;
-        }
-    }
-
     class EFO {
         private final String id;
         private final String name;
@@ -379,6 +338,5 @@ public class ClinVarIndexer {
             this.url = url;
         }
     }
-
 
 }
