@@ -87,6 +87,9 @@
 		"clinvarEfoTerms": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/ClinVar_Traits_EFO_Names_260615.csv"
 		},
+		"iarctp53": {
+			"host": "http://p53.iarc.fr/ajax/Zipper.ashx"
+		},
 		"gwasCatalog": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/05/10/gwas-catalog-associations.tsv"
 		},

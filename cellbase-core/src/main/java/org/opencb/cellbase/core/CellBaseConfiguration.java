@@ -179,6 +179,7 @@ public class CellBaseConfiguration {
         private URLProperties clinvar;
         private URLProperties clinvarSummary;
         private URLProperties clinvarEfoTerms;
+        private URLProperties iarctp53;
         private URLProperties hpo;
         private URLProperties disgenet;
         private URLProperties disgenetReadme;

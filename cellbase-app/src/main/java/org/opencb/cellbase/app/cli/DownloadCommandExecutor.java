@@ -878,6 +878,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
             dbsnpUrls.add(url);
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
                     clinicalFolder.resolve("dbsnpVersion.json"));
+
+            url = configuration.getDownload().getIARCTP53().getHost();
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
+                    Collections.singletonList("--post-data=\"dataset-somaticMutationData=somaticMutationData\""));
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME, getIARCTP53Version(), getTimeStamp(),
+                    Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
+
         }
     }
 
