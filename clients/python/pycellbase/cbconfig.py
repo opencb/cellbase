@@ -31,7 +31,7 @@ class ConfigClient(object):
             config_dict = json.loads(config_fhand.read())
 
         if config_dict is not None:
-            if 'host' in config_dict['rest']:
+            if 'hosts' in config_dict['rest']:
                 self._hosts = config_dict['rest']['hosts']
                 self._config['host'] = self._get_available_host()
             if 'version' in config_dict:
