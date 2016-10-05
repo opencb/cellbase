@@ -74,6 +74,7 @@ def _fetch(host, version, species, category, subcategory, resource,
     call = True
     current_query_id = None  # Current REST query
     current_id_list = None  # Current list of ids
+    time_out_counter = 0  # Number of times a query is repeated due to time-out
     while call:
         # Check 'limit' parameter if there is a maximum limit of results
         if max_limit is not None and max_limit <= call_limit:
@@ -103,6 +104,13 @@ def _fetch(host, version, species, category, subcategory, resource,
 
         # Getting REST response
         r = requests.get(url, headers={"Accept-Encoding": "gzip"})
+        if r.status_code == 504:  # Gateway Time-out
+            if time_out_counter == 99:
+                msg = 'Server not responding in time'
+                raise ConnectionError(msg)
+            time_out_counter += 1
+            continue
+        time_out_counter = 0
         try:
             response = r.json()['response']
         except JSONDecodeError:
@@ -124,6 +132,7 @@ def _fetch(host, version, species, category, subcategory, resource,
         if query_id is not None:
             # Checking which ids are completely retrieved
             next_id_list = []
+            next_id_indexes = []
             for index, res in enumerate(response):
                 if res['numResults'] == call_limit:
                     next_id_list.append(current_id_list[index])
@@ -205,7 +214,7 @@ def get(host, version, species, category, subcategory, resource,
                                          'resource': resource,
                                          'options': options})
             # Setting threads as "daemon" allows main program to exit eventually
-            # even if these dont finish correctly
+            # even if these do not finish correctly
             t.setDaemon(True)
             t.start()
 

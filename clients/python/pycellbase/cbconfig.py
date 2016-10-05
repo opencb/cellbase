@@ -50,7 +50,7 @@ class ConfigClient(object):
                 if r.status_code == 302:  # Found
                     available_host = host
                     break
-            except requests.ConnectionError:
+            except ConnectionError:
                 pass
 
         if available_host is None:
