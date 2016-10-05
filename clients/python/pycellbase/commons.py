@@ -64,6 +64,7 @@ def _fetch(host, version, species, category, subcategory, resource,
     # If there is a query_id, the next variables will be used
     total_id_list = []  # All initial ids
     next_id_list = []  # Ids which should be queried again for more results
+    next_id_indexes = []  # Ids position in the final response
     if query_id is not None:
         total_id_list = query_id.split(',')
 
@@ -71,6 +72,7 @@ def _fetch(host, version, species, category, subcategory, resource,
     # queried again to retrieve the next 'call_limit results'
     call = True
     current_query_id = None  # Current REST query
+    current_id_list = None  # Current list of ids
     while call:
         # Check 'limit' parameter if there is a maximum limit of results
         if max_limit is not None and max_limit <= call_limit:
@@ -81,9 +83,11 @@ def _fetch(host, version, species, category, subcategory, resource,
             if current_query_id is None:
                 current_query_id = query_id
                 current_id_list = total_id_list
+                current_id_indexes = range(len(total_id_list))
             else:
                 current_query_id = ','.join(next_id_list)
                 current_id_list = next_id_list
+                current_id_indexes = next_id_indexes
 
         # Retrieving url
         url = _create_rest_url(host=host,
@@ -107,8 +111,7 @@ def _fetch(host, version, species, category, subcategory, resource,
         else:
             if query_id is not None:
                 for index, res in enumerate(response):
-                    id_name = current_id_list[index]
-                    id_index = total_id_list.index(id_name)
+                    id_index = current_id_indexes[index]
                     final_response[id_index]['result'] += res['result']
             else:
                 final_response[0]['result'] += response[0]['result']
@@ -119,6 +122,7 @@ def _fetch(host, version, species, category, subcategory, resource,
             for index, res in enumerate(response):
                 if res['numResults'] == call_limit:
                     next_id_list.append(current_id_list[index])
+                    next_id_indexes.append(current_id_indexes[index])
             # Ending REST calling when there are no more ids to retrieve
             if not next_id_list:
                 call = False
