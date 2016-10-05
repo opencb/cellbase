@@ -5,6 +5,7 @@ try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+from simplejson import JSONDecodeError
 
 _CALL_BATCH_SIZE = 2000
 _NUM_THREADS_DEFAULT = 4
@@ -102,7 +103,11 @@ def _fetch(host, version, species, category, subcategory, resource,
 
         # Getting REST response
         r = requests.get(url, headers={"Accept-Encoding": "gzip"})
-        response = r.json()['response']
+        try:
+            response = r.json()['response']
+        except JSONDecodeError:
+            msg = 'Bad JSON format retrieved from server'
+            raise ValueError(msg)
 
         # Setting up final_response
         if final_response is None:
