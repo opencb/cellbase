@@ -79,7 +79,7 @@
 			"host": "http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz"
 		},
 		"clinvar": {
-			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2016-09.xml.gz"
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2016-10.xml.gz"
 		},
 		"clinvarSummary": {
 				"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"
@@ -88,7 +88,7 @@
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/ClinVar_Traits_EFO_Names_260615.csv"
 		},
 		"gwasCatalog": {
-			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/05/10/gwas-catalog-associations.tsv"
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"
 		},
 		"hpo": {
 			"host": "http://compbio.charite.de/hudson/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"
@@ -117,7 +117,7 @@
 						"name":"GRCh37"
 					},
 					{
-						"ensemblVersion":"82_38",
+						"ensemblVersion":"86_38",
 						"name":"GRCh38"
 					}
 				],
