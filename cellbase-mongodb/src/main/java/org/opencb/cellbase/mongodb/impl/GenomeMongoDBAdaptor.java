@@ -122,7 +122,12 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             for (Document document : queryResult.getResult()) {
                 stringBuilder.append(document.getString("sequence"));
             }
-            int startIndex = region.getStart() % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
+
+            // The first chunk does contain 1 nt less than the rest and is 0-indexed - The rest of chunks contain
+            // GENOME_SEQUENCE_CHUNK_SIZE nts and are 1 indexed (position 0 contains the GENOME_SEQUENCE_CHUNK_SIZE) nt
+            int startIndex = (region.getStart() < MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE)
+                    ? (region.getStart() - 1) % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE
+                    : region.getStart() % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
             int length = region.getEnd() - region.getStart() + 1;
             String sequence = stringBuilder.toString().substring(startIndex, startIndex + length);
 
