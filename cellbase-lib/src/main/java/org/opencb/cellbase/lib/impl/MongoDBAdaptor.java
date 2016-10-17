@@ -389,39 +389,58 @@ public class MongoDBAdaptor {
         return queryResult;
     }
 
-
-
-
-
-
-    protected QueryResult executeDistinct(Object id, String fields, Document query) {
-//        long dbTimeStart, dbTimeEnd;
-//        dbTimeStart = System.currentTimeMillis();
-        QueryResult queryResult = mongoDBCollection.distinct(fields, query);
-//        List<Document> dbObjectList = new LinkedList<>();
-//        while (cursor.hasNext()) {
-//            dbObjectList.add(cursor.next());
-//        }
-//        dbTimeEnd = System.currentTimeMillis();
-        // setting queryResult fields
-        queryResult.setId(id.toString());
-//        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-//        queryResult.setNumResults(dbObjectList.size());
-        return queryResult;
+    protected QueryResult<Long> count(Bson query, MongoDBCollection mongoDBCollection) {
+//        QueryResult result = cacheManager.get();
+        QueryResult result = null;
+        if (result == null) {
+            result = mongoDBCollection.count(query);
+//            cacheManager.set(result);
+        }
+        return result;
     }
 
+
+    protected QueryResult distinct(String field, Bson query, MongoDBCollection mongoDBCollection) {
+//        QueryResult result = cacheManager.get();
+        QueryResult result = null;
+        if (result == null) {
+            result = mongoDBCollection.distinct(field, query);
+//            cacheManager.set(result);
+        }
+        return result;
+    }
+
+    protected <T> QueryResult<T> executeBsonQuery(Bson query, Bson projection, QueryOptions options,
+                                                  MongoDBCollection mongoDBCollection, Class<T> clazz) {
+        QueryResult<T> result = null;
+        if (options.getBoolean("cache")) {
+//            result = cacheManager.get();
+//            result = null;
+            if (result == null) {
+                options = addPrivateExcludeOptions(options);
+                result = mongoDBCollection.find(query, projection, clazz, options);
+//                cacheManager.set(result);
+            }
+        } else {
+            options = addPrivateExcludeOptions(options);
+            result = mongoDBCollection.find(query, projection, clazz, options);
+        }
+        return result;
+    }
+
+    @Deprecated
     protected QueryResult executeQuery(Object id, Document query, QueryOptions options) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection).get(0);
     }
-
+    @Deprecated
     protected QueryResult executeQuery(Object id, Document query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
     }
-
+    @Deprecated
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options) {
         return executeQueryList2(ids, queries, options, mongoDBCollection);
     }
-
+    @Deprecated
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options,
                                                   MongoDBCollection mongoDBCollection2) {
         List<QueryResult> queryResults = new ArrayList<>(ids.size());

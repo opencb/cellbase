@@ -66,12 +66,14 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
 
     @Override
     public QueryResult<Long> count(Query query) {
-        return mongoDBCollection.count(parseQuery(query));
+        Bson document = parseQuery(query);
+        return count(document, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return mongoDBCollection.distinct(field, parseQuery(query));
+        Bson document = parseQuery(query);
+        return distinct(field, document, mongoDBCollection);
     }
 
     @Override
@@ -86,7 +88,8 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return mongoDBCollection.find(parseQuery(query), options);
+        Bson bson = parseQuery(query);
+        return executeBsonQuery(bson, null, options, mongoDBCollection, Document.class);
     }
 
     @Override

@@ -75,13 +75,13 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public QueryResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.count(bsonDocument);
+        return count(bsonDocument, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.distinct(field, bsonDocument);
+        return distinct(field, bsonDocument, mongoDBCollection);
     }
 
     @Override
@@ -92,15 +92,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public QueryResult<Gene> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options = addPrivateExcludeOptions(options);
-        return mongoDBCollection.find(bson, null, Gene.class, options);
+        return executeBsonQuery(bson, null, options, mongoDBCollection, Gene.class);
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return mongoDBCollection.find(bson, options);
+        return executeBsonQuery(bson, null, options, mongoDBCollection, Document.class);
     }
 
     @Override
