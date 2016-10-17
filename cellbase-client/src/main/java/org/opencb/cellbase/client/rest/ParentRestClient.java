@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.client.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
@@ -72,6 +74,7 @@ public class ParentRestClient<T> {
 
         this.client = ClientBuilder.newClient();
         jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
     }
@@ -148,17 +151,13 @@ public class ParentRestClient<T> {
         return finalResponse;
     }
 
-    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz) throws IOException {
+    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz)
+            throws IOException {
 
         if (options == null) {
             options = new QueryOptions();
         }
         options.putIfAbsent("limit", LIMIT);
-
-        String ids = "";
-        if (idList != null && !idList.isEmpty()) {
-            ids = StringUtils.join(idList, ',');
-        }
 
         Map<Integer, Integer> idMap = new HashMap<>();
         List<String> prevIdList = idList;
@@ -168,13 +167,14 @@ public class ParentRestClient<T> {
         QueryResponse<U> queryResponse = null;
         QueryResponse<U> finalQueryResponse = null;
         while (call) {
-            queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(), ids, resource, options, clazz);
+            queryResponse = robustRestCall(idList, resource, options, clazz);
 
             // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
                 finalQueryResponse = queryResponse;
             } else {    // merge query responses
-                if (newIdsList != null && newIdsList.size() > 0) {
+//                if (newIdsList != null && newIdsList.size() > 0) {
+                if (newIdsList.size() > 0) {
                     for (int i = 0; i < newIdsList.size(); i++) {
                         finalQueryResponse.getResponse().get(idMap.get(i)).getResult()
                                 .addAll(queryResponse.getResponse().get(i).getResult());
@@ -199,7 +199,7 @@ public class ParentRestClient<T> {
                 // this breaks the while condition
                 call = false;
             } else {
-                ids = StringUtils.join(newIdsList, ',');
+                idList = newIdsList;
                 skip += LIMIT;
                 options.put("skip", skip);
             }
@@ -207,6 +207,67 @@ public class ParentRestClient<T> {
 
         logger.debug("queryResponse = " + queryResponse);
         return finalQueryResponse;
+    }
+
+    private <U> QueryResponse<U> robustRestCall(List<String> idList, String resource, QueryOptions queryOptions,
+                                                Class<U> clazz)
+            throws IOException {
+
+        String ids = "";
+        if (idList != null && !idList.isEmpty()) {
+            ids = StringUtils.join(idList, ',');
+        }
+
+        boolean queryError = false;
+        QueryResponse<U> queryResponse;
+        try {
+            queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(),
+                    ids, resource, queryOptions, clazz);
+            if (idList.contains("1:26808191:A:G")) {
+                queryResponse = null;
+            }
+            if (queryResponse == null) {
+                logger.warn("CellBase REST fail. Returned null. {} for ids {}. hosts: {}, version: {}, resource: {}, "
+                        + "queryOptions: {}", ids, StringUtils.join(configuration.getRest().getHosts(), ","),
+                        configuration.getVersion(), resource, queryOptions.toJson());
+                queryError = true;
+            }
+        } catch (JsonProcessingException | javax.ws.rs.ProcessingException e) {
+            logger.warn("CellBase REST fail. Error parsing query result for ids {}. hosts: {}, version: {}, "
+                    + "resource: {}, queryOptions: {}", ids, StringUtils.join(configuration.getRest().getHosts(), ","),
+                    configuration.getVersion(), resource, queryOptions.toJson());
+            queryError = true;
+            queryResponse = null;
+        }
+
+        if (queryResponse != null && queryResponse.getResponse().size() != idList.size()) {
+            logger.warn("QueryResponse size (" + queryResponse.getResponse().size() + ") != id list size ("
+                    + idList.size() + ").");
+        }
+
+        if (queryError) {
+            if (idList.size() == 1) {
+                logger.warn("CellBase REST warning. Skipping id. {}", idList.get(0));
+                return new QueryResponse<U>(configuration.getVersion(), -1, null,
+                        "CellBase REST error. Skipping id " + idList.get(0), queryOptions,
+                        Collections.singletonList(new QueryResult<U>(idList.get(0), -1, 0, 0, null, null,
+                                Collections.emptyList())));
+            }
+
+            List<QueryResult<U>> queryResultList = new LinkedList<>();
+            queryResponse = new QueryResponse<U>(configuration.getVersion(), -1, null, null, queryOptions,
+                    queryResultList);
+            logger.warn("Re-attempting to solve the query - trying to identify any problematic id to skip it");
+            List<String> idList1 = idList.subList(0, idList.size() / 2);
+            if (!idList1.isEmpty()) {
+                queryResultList.addAll(robustRestCall(idList1, resource, queryOptions, clazz).getResponse());
+            }
+            List<String> idList2 = idList.subList(idList.size() / 2, idList.size());
+            if (!idList2.isEmpty()) {
+                queryResultList.addAll(robustRestCall(idList2, resource, queryOptions, clazz).getResponse());
+            }
+        }
+        return queryResponse;
     }
 
     private <U> QueryResponse<U> restCall(List<String> hosts, String version, String ids, String resource, QueryOptions queryOptions,
