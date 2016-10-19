@@ -43,6 +43,12 @@ public class CosmicParser extends CellBaseParser {
     private static final String END = "END";
     private static final String REF = "REF";
     private static final String ALT = "ALT";
+    private final int mutationSomaticStatusColumn;
+    private final int pubmedPMIDColumn;
+    private final int idStudyColumn;
+    private final int sampleSourceColumn;
+    private final int tumourOriginColumn;
+    private final int ageColumn;
     private Pattern mutationGRCh37GenomePositionPattern;
     private Pattern snvPattern;
     private long invalidPositionLines;
@@ -55,9 +61,32 @@ public class CosmicParser extends CellBaseParser {
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
     public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer) {
+        this(cosmicFilePath, serializer, "GRCh37");
+    }
+
+    public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer, String assembly) {
         super(serializer);
         this.cosmicFilePath = cosmicFilePath;
         this.compileRegularExpressionPatterns();
+
+        // COSMIC v78 GRCh38 includes one more column at position 27 (1-based) "Resistance Mutation" which is not
+        // provided in the GRCh37 file
+        if (assembly.equalsIgnoreCase("grch37")) {
+            this.mutationSomaticStatusColumn = 28;
+            this.pubmedPMIDColumn = 29;
+            this.idStudyColumn = 30;
+            this.sampleSourceColumn = 31;
+            this.tumourOriginColumn = 32;
+            this.ageColumn = 33;
+        } else {
+            this.mutationSomaticStatusColumn = 29;
+            this.pubmedPMIDColumn = 30;
+            this.idStudyColumn = 31;
+            this.sampleSourceColumn = 32;
+            this.tumourOriginColumn = 33;
+            this.ageColumn = 34;
+        }
+
     }
 
     private void compileRegularExpressionPatterns() {
@@ -149,15 +178,15 @@ public class CosmicParser extends CellBaseParser {
             cosmic.setSnp(true);
         }
         cosmic.setFathmmPrediction(fields[26]);
-        cosmic.setMutationSomaticStatus(fields[28]);
-        cosmic.setPubmedPMID(fields[29]);
-        if (!fields[30].isEmpty() && !fields[30].equals("NS")) {
-            cosmic.setIdStudy(Integer.parseInt(fields[30]));
+        cosmic.setMutationSomaticStatus(fields[mutationSomaticStatusColumn]);
+        cosmic.setPubmedPMID(fields[pubmedPMIDColumn]);
+        if (!fields[idStudyColumn].isEmpty() && !fields[idStudyColumn].equals("NS")) {
+            cosmic.setIdStudy(Integer.parseInt(fields[idStudyColumn]));
         }
-        cosmic.setSampleSource(fields[31]);
-        cosmic.setTumourOrigin(fields[32]);
-        if (!fields[33].isEmpty() && !fields[33].equals("NS")) {
-            cosmic.setAge(Float.parseFloat(fields[33]));
+        cosmic.setSampleSource(fields[sampleSourceColumn]);
+        cosmic.setTumourOrigin(fields[tumourOriginColumn]);
+        if (!fields[ageColumn].isEmpty() && !fields[ageColumn].equals("NS")) {
+            cosmic.setAge(Float.parseFloat(fields[ageColumn]));
         }
 //        cosmic.setComments(fields[34]);
         return cosmic;
