@@ -60,10 +60,6 @@ public class CosmicParser extends CellBaseParser {
 
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
-    public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer) {
-        this(cosmicFilePath, serializer, "GRCh37");
-    }
-
     public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer, String assembly) {
         super(serializer);
         this.cosmicFilePath = cosmicFilePath;
