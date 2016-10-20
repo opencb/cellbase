@@ -23,6 +23,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by imedina on 25/11/15.
@@ -60,5 +61,15 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
     }
 
     QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options);
+
+    default List<QueryResult> getIntervalFrequencies(List<Query> queries, int intervalSize, QueryOptions options) {
+        Objects.requireNonNull(queries);
+        List<QueryResult> queryResults = new ArrayList<>(queries.size());
+        for (Query query : queries) {
+            queryResults.add(getIntervalFrequencies(query, intervalSize, options));
+        }
+        return queryResults;
+    }
+
 
 }

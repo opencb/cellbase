@@ -5,6 +5,6 @@ version: "v4"
 ## These are the RESTful configurations parameters
 rest:
   hosts:
-  - "bioinfodev.hpc.cam.ac.uk"
-  - "bioinfo.hpc.cam.ac.uk"
-  port: "80"
+  - "bioinfo.hpc.cam.ac.uk:80/cellbase"
+  - "bioinfodev.hpc.cam.ac.uk:80/cellbase-4.5.0-beta"
+

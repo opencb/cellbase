@@ -16,6 +16,7 @@ private
 *.out
 *.log
 sonar-project.properties
+git.properties
 
 # Maven
 target/

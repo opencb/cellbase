@@ -17,11 +17,14 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.common.GitRepositoryState;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.utils.CommandLineUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 03/02/15.
@@ -423,7 +426,9 @@ public class CliOptionsParser {
         if(getCommand().isEmpty()) {
             System.err.println("");
             System.err.println("Program:     " + ANSI_WHITE + "CellBase (OpenCB)" + ANSI_RESET);
-            System.err.println("Version:     " + getAPIVersion());
+//            System.err.println("Version:     " + getAPIVersion());
+            System.err.println("Version:     " + GitRepositoryState.get().getBuildVersion());
+            System.out.println("Git version: " + GitRepositoryState.get().getBranch() + " " + GitRepositoryState.get().getCommitId());
             System.err.println("Description: High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
             System.err.println("");
             System.err.println("Usage:       cellbase.sh [-h|--help] [--version] <command> [options]");
@@ -449,6 +454,7 @@ public class CliOptionsParser {
         System.err.println("");
     }
 
+    @Deprecated
     private String getAPIVersion() {
         CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
         try {

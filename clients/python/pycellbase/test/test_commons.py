@@ -10,7 +10,6 @@ class CommonsTest(unittest.TestCase):
         """Initializes config params"""
         cc = ConfigClient()
         self._host = cc.host
-        self._port = cc.port
         self._version = cc.version
         self._species = cc.species
 
@@ -18,48 +17,57 @@ class CommonsTest(unittest.TestCase):
         """Tests the retrieval of information for one ID"""
 
         # Normal query
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1")
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1')
         assert len(res[0]['result']) == 8196
 
         # Query with limit
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1',
                   options={'limit': 2042})
         assert len(res[0]['result']) == 2042
 
         # Query with skip
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1',
                   options={'skip': 3000})
         assert len(res[0]['result']) == 5196
 
         # Query with limit and skip
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1',
                   options={'limit': 2000, 'skip': 42})
         assert len(res[0]['result']) == 2000
 
     def test_get_multiple_ids(self):
         """Tests the retrieval of information for multiple ID"""
 
-        # Normal query
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR")
+        # Normal query with string ids
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR')
+        assert len(res) == 3
+        assert len(res[0]['result']) == 8196
+        assert len(res[1]['result']) == 10519
+        assert len(res[2]['result']) == 4113
+
+        # Normal query with list ids
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id=['BRCA1', 'BRCA2', 'LDLR'])
         assert len(res) == 3
         assert len(res[0]['result']) == 8196
         assert len(res[1]['result']) == 10519
         assert len(res[2]['result']) == 4113
 
         # Query with limit
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 8000})
         assert len(res) == 3
         assert len(res[0]['result']) == 8000
@@ -67,9 +75,9 @@ class CommonsTest(unittest.TestCase):
         assert len(res[2]['result']) == 4113
 
         # Query with skip
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'skip': 4000})
         assert len(res) == 3
         assert len(res[0]['result']) == 4196
@@ -77,9 +85,9 @@ class CommonsTest(unittest.TestCase):
         assert len(res[2]['result']) == 113
 
         # Query with limit and skip
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 6000, 'skip': 4000})
         assert len(res) == 3
         assert len(res[0]['result']) == 4196
@@ -91,18 +99,18 @@ class CommonsTest(unittest.TestCase):
         get.__globals__['_CALL_BATCH_SIZE'] = 2
 
         # Normal query
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR")
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR')
         assert len(res) == 3
         assert len(res[0]['result']) == 8196
         assert len(res[1]['result']) == 10519
         assert len(res[2]['result']) == 4113
 
         # Query with limit
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 8000})
         assert len(res) == 3
         assert len(res[0]['result']) == 8000
@@ -110,9 +118,9 @@ class CommonsTest(unittest.TestCase):
         assert len(res[2]['result']) == 4113
 
         # Query with skip
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'skip': 4000})
         assert len(res) == 3
         assert len(res[0]['result']) == 4196
@@ -120,9 +128,9 @@ class CommonsTest(unittest.TestCase):
         assert len(res[2]['result']) == 113
 
         # Query with limit and skip
-        res = get(host=self._host, port=self._port, version=self._version,
-                  species=self._species, category="feature", subcategory="gene",
-                  resource="snp", query_id="BRCA1,BRCA2,LDLR",
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 6000, 'skip': 4000})
         assert len(res) == 3
         assert len(res[0]['result']) == 4196

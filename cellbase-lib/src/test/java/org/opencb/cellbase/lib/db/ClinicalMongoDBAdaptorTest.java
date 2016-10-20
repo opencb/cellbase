@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.db;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;

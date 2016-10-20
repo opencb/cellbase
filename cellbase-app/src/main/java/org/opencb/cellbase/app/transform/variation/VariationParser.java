@@ -67,7 +67,10 @@ public class VariationParser extends CellBaseParser {
         super(serializer);
         fileSerializer = serializer;
         this.variationDirectoryPath = variationDirectoryPath;
-        cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))+");
+        //cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))+");
+        // Avoid patterns alleles like "(AG)15(TG)16" to be procesed as CNVs - just one occurrence like "(AG)15"
+        // will be accepted
+        cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))");
         outputFileNames = new HashMap<>();
         // create files
         variationFile = new VariationFile(variationDirectoryPath);
