@@ -33,6 +33,7 @@ public class CellBaseConfiguration {
     private String wiki;
     private String defaultOutdir;
     private Databases databases;
+    private CacheProperties cache;
     private DownloadProperties download;
     private SpeciesProperties species;
 
@@ -40,63 +41,6 @@ public class CellBaseConfiguration {
     public static CellBaseConfiguration load(InputStream configurationInputStream) throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();
         return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getApiVersion() {
-        return apiVersion;
-    }
-
-    public void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion;
-    }
-
-    public String getWiki() {
-        return wiki;
-    }
-
-    public void setWiki(String wiki) {
-        this.wiki = wiki;
-    }
-
-    public Databases getDatabases() {
-        return databases;
-    }
-
-    public CellBaseConfiguration setDatabases(Databases databases) {
-        this.databases = databases;
-        return this;
-    }
-
-    public String getDefaultOutdir() {
-        return defaultOutdir;
-    }
-
-    public void setDefaultOutdir(String defaultOutdir) {
-        this.defaultOutdir = defaultOutdir;
-    }
-
-    public DownloadProperties getDownload() {
-        return download;
-    }
-
-    public void setDownload(DownloadProperties download) {
-        this.download = download;
-    }
-
-    public SpeciesProperties getSpecies() {
-        return species;
-    }
-
-    public void setSpecies(SpeciesProperties species) {
-        this.species = species;
     }
 
     public List<Species> getAllSpecies() {
@@ -110,4 +54,90 @@ public class CellBaseConfiguration {
         return allSpecies;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CellBaseConfiguration{");
+        sb.append("version='").append(version).append('\'');
+        sb.append(", apiVersion='").append(apiVersion).append('\'');
+        sb.append(", wiki='").append(wiki).append('\'');
+        sb.append(", defaultOutdir='").append(defaultOutdir).append('\'');
+        sb.append(", databases=").append(databases);
+        sb.append(", cache=").append(cache);
+        sb.append(", download=").append(download);
+        sb.append(", species=").append(species);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public CellBaseConfiguration setVersion(String version) {
+        this.version = version;
+        return this;
+    }
+
+    public String getApiVersion() {
+        return apiVersion;
+    }
+
+    public CellBaseConfiguration setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+        return this;
+    }
+
+    public String getWiki() {
+        return wiki;
+    }
+
+    public CellBaseConfiguration setWiki(String wiki) {
+        this.wiki = wiki;
+        return this;
+    }
+
+    public String getDefaultOutdir() {
+        return defaultOutdir;
+    }
+
+    public CellBaseConfiguration setDefaultOutdir(String defaultOutdir) {
+        this.defaultOutdir = defaultOutdir;
+        return this;
+    }
+
+    public Databases getDatabases() {
+        return databases;
+    }
+
+    public CellBaseConfiguration setDatabases(Databases databases) {
+        this.databases = databases;
+        return this;
+    }
+
+    public CacheProperties getCache() {
+        return cache;
+    }
+
+    public CellBaseConfiguration setCache(CacheProperties cache) {
+        this.cache = cache;
+        return this;
+    }
+
+    public DownloadProperties getDownload() {
+        return download;
+    }
+
+    public CellBaseConfiguration setDownload(DownloadProperties download) {
+        this.download = download;
+        return this;
+    }
+
+    public SpeciesProperties getSpecies() {
+        return species;
+    }
+
+    public CellBaseConfiguration setSpecies(SpeciesProperties species) {
+        this.species = species;
+        return this;
+    }
 }
