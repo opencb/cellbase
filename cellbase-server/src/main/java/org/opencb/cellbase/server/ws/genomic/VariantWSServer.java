@@ -227,6 +227,12 @@ public class VariantWSServer extends GenericRestWSServer {
                                                                + "normalized or not. Normalization process includes "
                                                                + "decomposing MNVs", allowableValues = "false,true",
                                                        defaultValue = "false", required = false) Boolean normalize,
+                                               @QueryParam("phased")
+                                               @ApiParam(name = "phased",
+                                                       value = "Boolean to indicate whether phase should be considered "
+                                                               + "during the annotation process",
+                                                       allowableValues = "false,true", defaultValue = "false",
+                                                       required = false) Boolean phased,
                                                @QueryParam("useCache")
                                                @ApiParam(name = "useCache",
                                                        value = "Boolean to indicate whether cached annotation should be"
@@ -242,6 +248,9 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (useCache != null) {
                 queryOptions.put("useCache", useCache);
+            }
+            if (phased != null) {
+                queryOptions.put("phased", phased);
             }
             logger.debug(queryOptions.toJson());
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
