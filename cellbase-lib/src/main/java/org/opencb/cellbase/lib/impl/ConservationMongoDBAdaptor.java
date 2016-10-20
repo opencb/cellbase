@@ -25,6 +25,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.ConservationDBAdaptor;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -40,8 +41,9 @@ import java.util.function.Consumer;
 @Deprecated
 public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
 
-    public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                                      CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, mongoDataStore, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("conservation");
 
         logger.debug("ConservationMongoDBAdaptor: in 'constructor'");

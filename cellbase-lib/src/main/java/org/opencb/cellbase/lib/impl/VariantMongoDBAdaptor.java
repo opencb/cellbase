@@ -28,6 +28,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
 import org.opencb.commons.datastore.core.Query;
@@ -53,8 +54,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                                 CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, mongoDataStore, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
 

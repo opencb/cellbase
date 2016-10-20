@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.protein.Interaction;
 import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -37,8 +38,9 @@ import java.util.function.Consumer;
 public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor implements ProteinProteinInteractionDBAdaptor<Interaction> {
 
 
-    public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                                                   CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, mongoDataStore, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("variation");
 
         logger.debug("ProteinProteinInteractionMongoDBAdaptor: in 'constructor'");

@@ -28,6 +28,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.cache.CacheManager;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -48,21 +49,23 @@ public class MongoDBAdaptor {
 
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
-
+    protected CellBaseConfiguration cellBaseConfiguration;
     private CacheManager cacheManager;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected ObjectMapper objectMapper;
 
-    public MongoDBAdaptor(MongoDataStore mongoDataStore) {
-        this("", "", mongoDataStore);
+    public MongoDBAdaptor(MongoDataStore mongoDataStore, CellBaseConfiguration cellBaseConfiguration) {
+        this("", "", mongoDataStore, cellBaseConfiguration);
     }
 
-    public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                          CellBaseConfiguration cellBaseConfiguration) {
         this.species = species;
         this.assembly = assembly;
         this.mongoDataStore = mongoDataStore;
+        this.cellBaseConfiguration = cellBaseConfiguration;
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
         objectMapper = new ObjectMapper();
@@ -420,6 +423,7 @@ public class MongoDBAdaptor {
                                                   MongoDBCollection mongoDBCollection, Class<T> clazz) {
         QueryResult<T> result = null;
         if (options.getBoolean("cache")) {
+//              cacheManger.createKey(this.species, mongoDBCollection, query, queryOptions);
 //            result = cacheManager.get();
 //            result = null;
             if (result == null) {

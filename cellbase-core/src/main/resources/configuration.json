@@ -3,8 +3,6 @@
 	"apiVersion": "${cellbase.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"databases": {
-//		"user": "${CELLBASE.DB.USER}",
-//		"password": "${CELLBASE.DB.PASSWORD}",
 		"mongodb": {
 			"host": "${CELLBASE.DB.MONGODB.HOST}",
 			"user": "${CELLBASE.DB.USER}",
@@ -26,24 +24,7 @@
 				"user": "${CELLBASE.DB.USER}",
 				"password": "${CELLBASE.DB.PASSWORD}"
 			}
-			//			{
-			//				"id": "",
-			//				"host": "${CELLBASE.DB.NEO4J.HOST}",
-			//				"user": "${CELLBASE.DB.NEO4J.USER}",
-			//				"password": "${CELLBASE.DB.NEO4J.PASSWORD}"
-			//			},
-			//			{
-			//				"id": "",
-			//				"host": "${CELLBASE.DB.NEO4J.HOST}",
-			//				"user": "${CELLBASE.DB.NEO4J.USER}",
-			//				"password": "${CELLBASE.DB.NEO4J.PASSWORD}"
-			//			},
-			//			{
-			//				"id": "",
-			//				"host": "${CELLBASE.DB.NEO4J.HOST}",
-			//				"user": "${CELLBASE.DB.NEO4J.USER}",
-			//				"password": "${CELLBASE.DB.NEO4J.PASSWORD}"
-			//			},
+
 		}
 	},
 	"defaultOutdir": "/tmp",

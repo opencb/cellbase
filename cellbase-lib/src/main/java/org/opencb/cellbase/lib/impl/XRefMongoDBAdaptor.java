@@ -23,6 +23,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -40,8 +41,9 @@ import java.util.regex.Pattern;
  */
 public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<Xref> {
 
-    public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                              CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, mongoDataStore, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
