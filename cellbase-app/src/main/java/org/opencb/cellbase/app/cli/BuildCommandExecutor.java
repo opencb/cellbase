@@ -378,7 +378,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "cosmic", true);
-        return new CosmicParser(cosmicFilePath, serializer);
+        String assembly = buildCommandOptions.assembly;
+        return new CosmicParser(cosmicFilePath, serializer, assembly);
     }
 
     private CellBaseParser buildGwas() throws IOException {
