@@ -19,10 +19,14 @@ package org.opencb.cellbase.lib.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.*;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.cache.CacheManager;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -44,6 +48,8 @@ public class MongoDBAdaptor {
 
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
+
+    private CacheManager cacheManager;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -427,6 +433,9 @@ public class MongoDBAdaptor {
         }
         return result;
     }
+
+
+
 
     @Deprecated
     protected QueryResult executeQuery(Object id, Document query, QueryOptions options) {

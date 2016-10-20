@@ -6,13 +6,13 @@ package org.opencb.cellbase.core.config;
 public class CacheProperties {
 
     /**
-     * This field contain the host and port, ie. host[:port]
+     * This field contain the host and port, ie. host[:port].
      */
     private String host;
     private boolean active;
 
     /**
-     * Accepted values are: JSON, Kryo
+     * Accepted values are: JSON, Kryo.
      */
     private String serialization;
 
