@@ -4,7 +4,6 @@ bower_components
 node_modules
 bower_components
 private
-git.properties
 
 # General
 *.jar
