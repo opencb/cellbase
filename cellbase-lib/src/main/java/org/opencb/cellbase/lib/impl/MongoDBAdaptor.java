@@ -77,7 +77,7 @@ public class MongoDBAdaptor {
         initSpeciesAssembly(species, assembly);
         init();
         this.mongoDataStore = createMongoDBDatastore(species, assembly);
-//        jsonObjectMapper = new ObjectMapper();
+        this.cacheManager = new CacheManager(cellBaseConfiguration);
     }
 
     private void initSpeciesAssembly(String species, String assembly) {
@@ -537,21 +537,23 @@ public class MongoDBAdaptor {
         return result;
     }
 
-    protected <T> QueryResult<T> executeBsonQuery(Bson query, Bson projection, QueryOptions options,
+    protected <T> QueryResult<T> executeBsonQuery(Bson bsonQuery, Bson projection, Query query, QueryOptions options,
                                                   MongoDBCollection mongoDBCollection, Class<T> clazz) {
         QueryResult<T> result = null;
         if (options.getBoolean("cache")) {
-//              cacheManger.createKey(this.species, mongoDBCollection, query, queryOptions);
+
+            String key = cacheManager.createKey(this.species, "gene", query, options);
+           // if( !key.isEmpty()){
 //            result = cacheManager.get();
 //            result = null;
             if (result == null) {
                 options = addPrivateExcludeOptions(options);
-                result = mongoDBCollection.find(query, projection, clazz, options);
+                result = mongoDBCollection.find(bsonQuery, projection, clazz, options);
 //                cacheManager.set(result);
             }
         } else {
             options = addPrivateExcludeOptions(options);
-            result = mongoDBCollection.find(query, projection, clazz, options);
+            result = mongoDBCollection.find(bsonQuery, projection, clazz, options);
         }
         return result;
     }

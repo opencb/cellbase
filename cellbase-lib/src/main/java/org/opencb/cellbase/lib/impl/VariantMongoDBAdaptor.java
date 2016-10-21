@@ -135,7 +135,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //        options = addPrivateExcludeOptions(options);
 
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return executeBsonQuery(bson, null, options, mongoDBCollection, Variant.class);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Variant.class);
     }
 
     // FIXME: patch to exclude annotation.additionalAttributes from the results - to remove as soon as the variation
@@ -159,7 +159,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return executeBsonQuery(bson, null, options, mongoDBCollection, Document.class);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

@@ -112,7 +112,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options);
-        return executeBsonQuery(bson, null, options, mongoDBCollection, Document.class);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

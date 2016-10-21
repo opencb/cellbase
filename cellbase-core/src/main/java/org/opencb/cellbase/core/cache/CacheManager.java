@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.cache;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -9,6 +10,8 @@ import org.redisson.Redisson;
 import org.redisson.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.codec.KryoCodec;
+
+import java.util.*;
 
 
 /**
@@ -52,10 +55,26 @@ public class CacheManager {
         // insert the object into map with key and query and queryResult
     }
 
-    public String createKey(String species, String collection, String subcategory, Query query, QueryOptions queryOptions) {
-        String key = "";
+    public String createKey(String species, String subcategory, Query query, QueryOptions queryOptions) {
+        StringBuilder key = new StringBuilder();
         if (queryOptions.getBoolean("cache", false)) {
-            key = "set";
+            key.append("cb:").append(cellBaseConfiguration.getVersion()).append(":").append(species).append(":")
+                    .append(subcategory);
+
+            SortedMap<String, SortedSet<Object>> map = new TreeMap<String, SortedSet<Object>>();
+            // TODO: remove cache from options
+            for (String item: query.keySet()) {
+                map.put(item.toLowerCase(), new TreeSet<Object>(Arrays.asList(query.get(item))));
+            }
+
+            for (String item: queryOptions.keySet()) {
+                map.put(item.toLowerCase(), new TreeSet<Object>(Arrays.asList(queryOptions.get(item))));
+            }
+
+            String sha1 = DigestUtils.sha1Hex(map.toString());
+
+            key.append(":").append(sha1);
+
             // cellBase
             // version We get from CellBaseConfiguration
             // CB:version:species:collection
@@ -64,6 +83,6 @@ public class CacheManager {
             // get SHA1
 
         }
-        return key;
+        return key.toString();
     }
 }

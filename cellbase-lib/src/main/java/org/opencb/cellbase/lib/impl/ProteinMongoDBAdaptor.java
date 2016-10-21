@@ -325,13 +325,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     @Override
     public QueryResult<Entry> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return executeBsonQuery(bson, null, options, mongoDBCollection, Entry.class);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Entry.class);
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return executeBsonQuery(bson, null, options, mongoDBCollection, Document.class);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override
