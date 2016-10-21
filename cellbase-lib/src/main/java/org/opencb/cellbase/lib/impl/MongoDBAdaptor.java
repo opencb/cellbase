@@ -540,22 +540,21 @@ public class MongoDBAdaptor {
     protected <T> QueryResult<T> executeBsonQuery(Bson bsonQuery, Bson projection, Query query, QueryOptions options,
                                                   MongoDBCollection mongoDBCollection, Class<T> clazz) {
         QueryResult<T> result = null;
-        if (options.getBoolean("cache")) {
-
+        if (options.getBoolean("cache", true)) {
             String key = cacheManager.createKey(this.species, "gene", query, options);
-           // if( !key.isEmpty()){
-//            result = cacheManager.get();
-//            result = null;
-            if (result == null) {
+            result = cacheManager.get(key, clazz);
+                if (result != null) {
+                    return result;
+                } else {
+                    options = addPrivateExcludeOptions(options);
+                    result = mongoDBCollection.find(bsonQuery, projection, clazz, options);
+                    cacheManager.set(key, query, result);
+                }
+            } else {
                 options = addPrivateExcludeOptions(options);
                 result = mongoDBCollection.find(bsonQuery, projection, clazz, options);
-//                cacheManager.set(result);
             }
-        } else {
-            options = addPrivateExcludeOptions(options);
-            result = mongoDBCollection.find(bsonQuery, projection, clazz, options);
-        }
-        return result;
+            return result;
     }
 
 

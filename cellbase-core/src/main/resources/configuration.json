@@ -28,6 +28,10 @@
 		}
 	},
 	"defaultOutdir": "/tmp",
+	"cache": {
+		"host": "localhost:6379",
+		"active": true
+	},
 	"download": {
 		"ensembl": {
 			"database": {
