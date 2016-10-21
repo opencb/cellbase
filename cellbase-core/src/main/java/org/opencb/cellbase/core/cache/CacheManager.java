@@ -34,8 +34,7 @@ public class CacheManager {
 
             if ("Kryo".equals(codec)) {
                 redissonConfig.setCodec(new KryoCodec());
-            }
-            else if("JSON".equals(codec)) {
+            } else if ("JSON".equals(codec)) {
                 redissonConfig.setCodec(new JsonJacksonCodec());
             }
             this.redissonClient = Redisson.create(redissonConfig);
@@ -50,13 +49,13 @@ public class CacheManager {
         return null;
     }
 
-    public void set(String Key, Query query, QueryResult queryResult) {
+    public void set(String key, Query query, QueryResult queryResult) {
 //  redissonClient.getMap(key);
         // insert the object into map with key and query and queryResult
     }
 
-    public String createKey(String species, String collection, Query query, QueryOptions queryOptions){
-        String key = null;
+    public String createKey(String species, String collection, Query query, QueryOptions queryOptions) {
+        String key = "test";
         // cellBase
         // version We get from CellBaseConfiguration
         // CB:version:species:collection
