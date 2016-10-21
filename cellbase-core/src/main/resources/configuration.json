@@ -30,8 +30,10 @@
 	"defaultOutdir": "/tmp",
 	"cache": {
 		"host": "localhost:6379",
-		"active": true
+		"active": true,
+		"serialization": "JDK"
 	},
+
 	"download": {
 		"ensembl": {
 			"database": {

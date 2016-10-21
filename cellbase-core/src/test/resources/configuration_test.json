@@ -29,7 +29,8 @@
     },
     "cache": {
         "host": "localhost:6379",
-        "active": true
+        "active": true,
+        "serialization": "kryo"
     },
     "download": {
         "ensembl": {

@@ -10,6 +10,7 @@ import org.redisson.Redisson;
 import org.redisson.RedissonClient;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.codec.KryoCodec;
+import org.redisson.codec.SerializationCodec;
 import org.redisson.core.RMap;
 
 import java.util.*;
@@ -39,7 +40,10 @@ public class CacheManager {
                 redissonConfig.setCodec(new KryoCodec());
             } else if ("JSON".equalsIgnoreCase(codec)) {
                 redissonConfig.setCodec(new JsonJacksonCodec());
+            } else if ("JDK".equalsIgnoreCase(codec)) {
+                redissonConfig.setCodec(new SerializationCodec());
             }
+
             this.redissonClient = Redisson.create(redissonConfig);
         }
 
@@ -48,6 +52,7 @@ public class CacheManager {
 
     public <T> QueryResult<T> get(String key, Class<T> clazz) {
 
+        long start = System.currentTimeMillis();
         RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
         Map<Integer, Map<String, Object>> result = new HashMap<Integer, Map<String, Object>>();
         Set<Integer> set = new HashSet<Integer>();
@@ -55,7 +60,10 @@ public class CacheManager {
         result = map.getAll(set);
         if (!result.isEmpty()) {
             Object queryResult= result.get(0).get("result");
-            return (QueryResult<T>) queryResult;
+            QueryResult<T> queryResult1 = (QueryResult<T>) queryResult;
+            queryResult1.setDbTime((int) (System.currentTimeMillis() - start));
+            queryResult1.setWarningMsg("Cached!!  :-)");
+            return queryResult1;
         }
         //if empty return null else type cast object
         return null;
@@ -81,8 +89,11 @@ public class CacheManager {
                 map.put(item.toLowerCase(), new TreeSet<Object>(Arrays.asList(query.get(item))));
             }
 
+
+            queryOptions.remove("cache");
             for (String item: queryOptions.keySet()) {
-                map.put(item.toLowerCase(), new TreeSet<Object>(Arrays.asList(queryOptions.get(item))));
+//                List<Serin> objects = Arrays.asList(queryOptions.getAsStringList(item));
+                map.put(item.toLowerCase(), new TreeSet<Object>(queryOptions.getAsStringList(item)));
             }
 
             String sha1 = DigestUtils.sha1Hex(map.toString());
