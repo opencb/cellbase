@@ -31,7 +31,6 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -42,9 +41,9 @@ import java.util.stream.Collectors;
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+    public ClinicalMongoDBAdaptor(String species, String assembly,
                                   CellBaseConfiguration cellBaseConfiguration) {
-        super(species, assembly, mongoDataStore, cellBaseConfiguration);
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("clinical");
 
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");

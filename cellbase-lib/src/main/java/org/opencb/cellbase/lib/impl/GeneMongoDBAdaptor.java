@@ -31,7 +31,6 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -41,9 +40,8 @@ import java.util.function.Consumer;
  */
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<Gene> {
 
-    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
-                              CellBaseConfiguration cellBaseConfiguration) {
-        super(species, assembly, mongoDataStore, cellBaseConfiguration);
+    public GeneMongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");

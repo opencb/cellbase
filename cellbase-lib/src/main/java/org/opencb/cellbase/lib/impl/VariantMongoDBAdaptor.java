@@ -35,7 +35,6 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -54,9 +53,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+    public VariantMongoDBAdaptor(String species, String assembly,
                                  CellBaseConfiguration cellBaseConfiguration) {
-        super(species, assembly, mongoDataStore, cellBaseConfiguration);
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
 

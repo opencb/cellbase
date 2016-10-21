@@ -29,11 +29,16 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.cache.CacheManager;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DatabaseCredentials;
+import org.opencb.cellbase.core.config.Species;
+import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +52,7 @@ public class MongoDBAdaptor {
     protected String species;
     protected String assembly;
 
+    protected MongoDataStoreManager mongoDataStoreManager;
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
     protected CellBaseConfiguration cellBaseConfiguration;
@@ -56,21 +62,21 @@ public class MongoDBAdaptor {
 
     protected ObjectMapper objectMapper;
 
-    public MongoDBAdaptor(MongoDataStore mongoDataStore, CellBaseConfiguration cellBaseConfiguration) {
-        this("", "", mongoDataStore, cellBaseConfiguration);
+    public MongoDBAdaptor(CellBaseConfiguration cellBaseConfiguration) {
+        this("", "", cellBaseConfiguration);
     }
 
-    public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
-                          CellBaseConfiguration cellBaseConfiguration) {
+    public MongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
         this.species = species;
         this.assembly = assembly;
-        this.mongoDataStore = mongoDataStore;
         this.cellBaseConfiguration = cellBaseConfiguration;
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
         objectMapper = new ObjectMapper();
 
         initSpeciesAssembly(species, assembly);
+        init();
+        this.mongoDataStore = createMongoDBDatastore(species, assembly);
 //        jsonObjectMapper = new ObjectMapper();
     }
 
@@ -81,6 +87,119 @@ public class MongoDBAdaptor {
                 this.assembly = "default";
             }
         }
+    }
+
+    private void init() {
+        if (mongoDataStoreManager == null) {
+//            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
+            String[] hosts = cellBaseConfiguration.getDatabases().getMongodb().getHost().split(",");
+            List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
+            for (String host : hosts) {
+                String[] hostPort = host.split(":");
+                if (hostPort.length == 1) {
+                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], 27017));
+                } else {
+                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], Integer.parseInt(hostPort[1])));
+                }
+            }
+            mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
+            logger.debug("MongoDBAdaptorFactory constructor, this should be only be printed once");
+        }
+
+//        logger = LoggerFactory.getLogger(this.getClass());
+    }
+
+    private MongoDataStore createMongoDBDatastore(String species, String assembly) {
+        /**
+         Database name has the following pattern in lower case and with no '.' in the name:
+         cellbase_speciesId_assembly_cellbaseVersion
+         Example:
+         cellbase_hsapiens_grch37_v3
+         **/
+
+//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
+
+        // We need to look for the species object in the configuration
+        Species speciesObject = getSpecies(species);
+        if (speciesObject != null) {
+            species = speciesObject.getId();
+            assembly = getAssembly(speciesObject, assembly).toLowerCase();
+
+            if (species != null && !species.isEmpty() && assembly != null && !assembly.isEmpty()) {
+
+                // Database name is built following the above pattern
+                String database = "cellbase" + "_" + species + "_" + assembly.replaceAll("\\.", "").replaceAll("-", "")
+                        .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
+                logger.debug("Database for the species is '{}'", database);
+
+                MongoDBConfiguration mongoDBConfiguration;
+                MongoDBConfiguration.Builder builder;
+                // For authenticated databases
+                if (!mongodbCredentials.getUser().isEmpty()
+                        && !mongodbCredentials.getPassword().isEmpty()) {
+                    // MongoDB could authenticate against different databases
+                    if (mongodbCredentials.getOptions().containsKey("authenticationDatabase")) {
+                        builder = MongoDBConfiguration.builder()
+                                .add("username", mongodbCredentials.getUser())
+                                .add("password", mongodbCredentials.getPassword())
+                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"))
+                                .add("authenticationDatabase", mongodbCredentials.getOptions()
+                                        .get("authenticationDatabase"));
+                    } else {
+                        builder = MongoDBConfiguration.builder()
+                                .add("username", mongodbCredentials.getUser())
+                                .add("password", mongodbCredentials.getPassword())
+                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"));
+                    }
+
+                    String replicaSet = mongodbCredentials.getOptions().get("replicaSet");
+                    if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
+                        builder.add("replicaSet", mongodbCredentials.getOptions().get("replicaSet"));
+                    }
+                    mongoDBConfiguration = builder.build();
+                } else {
+                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+                }
+
+                // A MongoDataStore to this host and database is returned
+                MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
+
+                // we return the MongoDataStore object
+                return mongoDatastore;
+            } else {
+                logger.error("Species name or assembly are not valid, species '{}', assembly '{}'", species, assembly);
+                return null;
+            }
+        } else {
+            logger.error("Species name is not valid: '{}'", species);
+            return null;
+        }
+    }
+
+    protected Species getSpecies(String speciesName) {
+        Species species = null;
+        for (Species sp : cellBaseConfiguration.getAllSpecies()) {
+            if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
+                species = sp;
+                break;
+            }
+        }
+        return species;
+    }
+
+    protected String getAssembly(Species species, String assemblyName) {
+        String assembly = null;
+        if (assemblyName == null || assemblyName.isEmpty()) {
+            assembly = species.getAssemblies().get(0).getName();
+        } else {
+            for (Species.Assembly assembly1 : species.getAssemblies()) {
+                if (assemblyName.equalsIgnoreCase(assembly1.getName())) {
+                    assembly = assembly1.getName();
+                }
+            }
+        }
+        return assembly;
     }
 
     protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
@@ -270,7 +389,6 @@ public class MongoDBAdaptor {
     }
 
 
-
     public QueryResult getIntervalFrequencies(Bson query, Region region, int intervalSize, QueryOptions options) {
         //  MONGO QUERY TO IMPLEMENT
         //    db.variation.aggregate({$match: {$and: [{chromosome: "1"}, {start: {$gt: 251391, $lt: 2701391}}]}}, {$group:
@@ -439,20 +557,21 @@ public class MongoDBAdaptor {
     }
 
 
-
-
     @Deprecated
     protected QueryResult executeQuery(Object id, Document query, QueryOptions options) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection).get(0);
     }
+
     @Deprecated
     protected QueryResult executeQuery(Object id, Document query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
     }
+
     @Deprecated
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options) {
         return executeQueryList2(ids, queries, options, mongoDBCollection);
     }
+
     @Deprecated
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options,
                                                   MongoDBCollection mongoDBCollection2) {
@@ -553,9 +672,6 @@ public class MongoDBAdaptor {
     private int getChunkEnd(int id, int chunkSize) {
         return (id * chunkSize) + chunkSize - 1;
     }
-
-
-
 
 
     public QueryResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
@@ -722,9 +838,6 @@ public class MongoDBAdaptor {
 //        }
 //        return queryResult;
 //    }
-
-
-
 
 
     /*

@@ -32,7 +32,6 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -72,9 +71,9 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     }
 
 
-    public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+    public ProteinMongoDBAdaptor(String species, String assembly,
                                  CellBaseConfiguration cellBaseConfiguration) {
-        super(species, assembly, mongoDataStore, cellBaseConfiguration);
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
 

@@ -15,7 +15,6 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -25,9 +24,9 @@ import java.util.function.Consumer;
  */
 public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor<Transcript> {
 
-    public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+    public TranscriptMongoDBAdaptor(String species, String assembly,
                                     CellBaseConfiguration cellBaseConfiguration) {
-        super(species, assembly, mongoDataStore, cellBaseConfiguration);
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");

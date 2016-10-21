@@ -27,7 +27,6 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,9 +38,9 @@ import java.util.function.Consumer;
  */
 public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<RegulatoryFeature> {
 
-    public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+    public RegulationMongoDBAdaptor(String species, String assembly,
                                     CellBaseConfiguration cellBaseConfiguration) {
-        super(species, assembly, mongoDataStore, cellBaseConfiguration);
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
