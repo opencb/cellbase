@@ -23,8 +23,6 @@ public class CacheManager {
     private CellBaseConfiguration cellBaseConfiguration;
     private Config redissonConfig;
     private RedissonClient redissonClient;
-    private String codec;
-
 
     public CacheManager() {
     }
@@ -35,7 +33,7 @@ public class CacheManager {
             this.cellBaseConfiguration = configuration;
             redissonConfig = new Config();
             redissonConfig.useSingleServer().setAddress(configuration.getCache().getHost());
-            codec = configuration.getCache().getSerialization();
+            String codec = configuration.getCache().getSerialization();
 
             if ("Kryo".equalsIgnoreCase(codec)) {
                 redissonConfig.setCodec(new KryoCodec());
@@ -68,11 +66,13 @@ public class CacheManager {
     }
 
     public void set(String key, Query query, QueryResult queryResult) {
-        RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
-        Map<String, Object> record = new HashMap<String, Object>();
-        record.put("query", query);
-        record.put("result", queryResult);
-        map.fastPut(0, record);
+        if (queryResult.getDbTime() > cellBaseConfiguration.getCache().getSlowThreshold()) {
+            RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
+            Map<String, Object> record = new HashMap<String, Object>();
+            record.put("query", query);
+            record.put("result", queryResult);
+            map.fastPut(0, record);
+        }
     }
 
     public String createKey(String species, String subcategory, Query query, QueryOptions queryOptions) {

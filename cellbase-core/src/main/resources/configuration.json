@@ -31,7 +31,8 @@
 	"cache": {
 		"host": "localhost:6379",
 		"active": true,
-		"serialization": "kryo"
+		"serialization": "kryo",
+		"slowThreshold": 50
 	},
 
 	"download": {
