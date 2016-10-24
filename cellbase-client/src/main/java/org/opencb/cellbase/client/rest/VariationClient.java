@@ -57,13 +57,21 @@ public class VariationClient extends FeatureClient<Variant> {
     }
 
     public QueryResponse<VariantAnnotation> getAnnotations(String id, QueryOptions options) throws IOException {
-        return getAnnotations(Arrays.asList(id.split(",")), options);
+        return getAnnotations(Arrays.asList(id.split(",")), options, false);
+    }
+
+    public QueryResponse<VariantAnnotation> getAnnotations(String id, QueryOptions options, boolean post) throws IOException {
+        return getAnnotations(Arrays.asList(id.split(",")), options, post);
     }
 
     public QueryResponse<VariantAnnotation> getAnnotations(List<String> ids, QueryOptions options) throws IOException {
+        return getAnnotations(ids, options, false);
+    }
+
+    public QueryResponse<VariantAnnotation> getAnnotations(List<String> ids, QueryOptions options, boolean post) throws IOException {
         this.category = "genomic";
         this.subcategory = "variant";
-        QueryResponse<VariantAnnotation> annotation = execute(ids, "annotation", options, VariantAnnotation.class);
+        QueryResponse<VariantAnnotation> annotation = execute(ids, "annotation", options, VariantAnnotation.class, post);
 
         this.category = "feature";
         this.subcategory = "variation";
