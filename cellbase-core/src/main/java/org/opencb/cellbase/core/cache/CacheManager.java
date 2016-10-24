@@ -83,8 +83,12 @@ public class CacheManager {
                     .append(subcategory);
         SortedMap<String, SortedSet<Object>> map = new TreeMap<String, SortedSet<Object>>();
 
-        for (String item: Sets.union(query.keySet(), queryOptions.keySet())) {
+        for (String item: query.keySet()) {
             map.put(item.toLowerCase(), new TreeSet<Object>(query.getAsStringList(item)));
+        }
+
+        for (String item: queryOptions.keySet()) {
+            map.put(item.toLowerCase(), new TreeSet<Object>(queryOptions.getAsStringList(item)));
         }
 
         String sha1 = DigestUtils.sha1Hex(map.toString());
