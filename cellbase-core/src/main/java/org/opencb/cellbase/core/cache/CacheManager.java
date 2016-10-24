@@ -1,6 +1,5 @@
 package org.opencb.cellbase.core.cache;
 
-import com.google.common.collect.Sets;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
