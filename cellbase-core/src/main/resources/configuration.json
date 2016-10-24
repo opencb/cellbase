@@ -31,7 +31,7 @@
 	"cache": {
 		"host": "localhost:6379",
 		"active": true,
-		"serialization": "JDK"
+		"serialization": "kryo"
 	},
 
 	"download": {
