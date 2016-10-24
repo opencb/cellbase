@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.net.URI;
@@ -94,17 +95,33 @@ public class ParentRestClient<T> {
 
 
     protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz) throws IOException {
+        return  execute(action, query, queryOptions, clazz, false);
+    }
+
+    protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz,
+                                           boolean post) throws IOException {
         if (query != null && queryOptions != null) {
             queryOptions.putAll(query);
         }
-        return execute("", action, queryOptions, clazz);
+        return execute("", action, queryOptions, clazz, post);
     }
 
-    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz) throws IOException {
-        return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz);
+    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz)
+            throws IOException {
+        return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz, false);
+    }
+
+    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz,
+                                           boolean post) throws IOException {
+        return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz, post);
     }
 
     protected <U> QueryResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz) throws IOException {
+        return execute(idList, resource, options, clazz, false);
+    }
+
+    protected <U> QueryResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
+                                           boolean post) throws IOException {
 
         if (idList == null || idList.isEmpty()) {
             return new QueryResponse<>();
@@ -112,7 +129,7 @@ public class ParentRestClient<T> {
 
         // If the list contain less than REST_CALL_BATCH_SIZE variants then we can make a normal REST call.
         if (idList.size() <= REST_CALL_BATCH_SIZE) {
-            return fetchData(idList, resource, options, clazz);
+            return fetchData(idList, resource, options, clazz, post);
         }
 
         // But if there are more than REST_CALL_BATCH_SIZE variants then we launch several threads to increase performance.
@@ -128,7 +145,7 @@ public class ParentRestClient<T> {
                     ? idList.size()
                     : from + REST_CALL_BATCH_SIZE;
             futureList.add(executorService.submit(() ->
-                    fetchData(idList.subList(from, to), resource, options, clazz)
+                    fetchData(idList.subList(from, to), resource, options, clazz, post)
             ));
         }
 
@@ -151,8 +168,8 @@ public class ParentRestClient<T> {
         return finalResponse;
     }
 
-    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz)
-            throws IOException {
+    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
+                                           boolean post) throws IOException {
 
         if (options == null) {
             options = new QueryOptions();
@@ -167,7 +184,7 @@ public class ParentRestClient<T> {
         QueryResponse<U> queryResponse = null;
         QueryResponse<U> finalQueryResponse = null;
         while (call) {
-            queryResponse = robustRestCall(idList, resource, options, clazz);
+            queryResponse = robustRestCall(idList, resource, options, clazz, post);
 
             // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
@@ -210,7 +227,7 @@ public class ParentRestClient<T> {
     }
 
     private <U> QueryResponse<U> robustRestCall(List<String> idList, String resource, QueryOptions queryOptions,
-                                                Class<U> clazz)
+                                                Class<U> clazz, boolean post)
             throws IOException {
 
         String ids = "";
@@ -222,10 +239,7 @@ public class ParentRestClient<T> {
         QueryResponse<U> queryResponse;
         try {
             queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(),
-                    ids, resource, queryOptions, clazz);
-            if (idList.contains("1:26808191:A:G")) {
-                queryResponse = null;
-            }
+                    ids, resource, queryOptions, clazz, post);
             if (queryResponse == null) {
                 logger.warn("CellBase REST fail. Returned null. {} for ids {}. hosts: {}, version: {}, resource: {}, "
                         + "queryOptions: {}", ids, StringUtils.join(configuration.getRest().getHosts(), ","),
@@ -260,18 +274,18 @@ public class ParentRestClient<T> {
             logger.warn("Re-attempting to solve the query - trying to identify any problematic id to skip it");
             List<String> idList1 = idList.subList(0, idList.size() / 2);
             if (!idList1.isEmpty()) {
-                queryResultList.addAll(robustRestCall(idList1, resource, queryOptions, clazz).getResponse());
+                queryResultList.addAll(robustRestCall(idList1, resource, queryOptions, clazz, post).getResponse());
             }
             List<String> idList2 = idList.subList(idList.size() / 2, idList.size());
             if (!idList2.isEmpty()) {
-                queryResultList.addAll(robustRestCall(idList2, resource, queryOptions, clazz).getResponse());
+                queryResultList.addAll(robustRestCall(idList2, resource, queryOptions, clazz, post).getResponse());
             }
         }
         return queryResponse;
     }
 
     private <U> QueryResponse<U> restCall(List<String> hosts, String version, String ids, String resource, QueryOptions queryOptions,
-                                          Class<U> clazz) throws IOException {
+                                          Class<U> clazz, boolean post) throws IOException {
 
         WebTarget path = client
                 .target(URI.create(hosts.get(0)))
@@ -281,7 +295,7 @@ public class ParentRestClient<T> {
                 .path(subcategory);
 
         WebTarget callUrl = path;
-        if (ids != null && !ids.isEmpty()) {
+        if (ids != null && !ids.isEmpty() && !post) {
             callUrl = path.path(ids);
         }
 
@@ -294,8 +308,15 @@ public class ParentRestClient<T> {
             }
         }
 
-        logger.debug("Calling to REST URL: {}", callUrl.getUri().toURL());
-        String jsonString = callUrl.request().get(String.class);
+        String jsonString;
+        if (post) {
+            logger.debug("Making POST call to REST URL: {}", callUrl.getUri().toURL());
+            jsonString = callUrl.request().post(Entity.text(ids), String.class);
+        } else {
+            logger.debug("Making GET call to REST URL: {}", callUrl.getUri().toURL());
+            jsonString = callUrl.request().get(String.class);
+        }
+
         return parseResult(jsonString, clazz);
     }
 
