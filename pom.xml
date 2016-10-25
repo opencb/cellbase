@@ -284,7 +284,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
+                <CELLBASE.DB.MONGODB.HOST>localhost:9999</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
 
