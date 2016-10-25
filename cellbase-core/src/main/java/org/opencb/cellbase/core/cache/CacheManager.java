@@ -22,7 +22,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
  */
 public class CacheManager {
 
-    private final String dataBase = "cb:";
+    private final String DATABASE = "cb:";
     private CellBaseConfiguration cellBaseConfiguration;
     private Config redissonConfig;
     private RedissonClient redissonClient;
@@ -96,7 +96,7 @@ public class CacheManager {
     public String createKey(String species, String subcategory, Query query, QueryOptions queryOptions) {
 
         queryOptions.remove("cache");
-        StringBuilder key = new StringBuilder(dataBase);
+        StringBuilder key = new StringBuilder(DATABASE);
         key.append(cellBaseConfiguration.getVersion()).append(":").append(species).append(":")
                     .append(subcategory);
         SortedMap<String, SortedSet<Object>> map = new TreeMap<String, SortedSet<Object>>();
@@ -123,7 +123,7 @@ public class CacheManager {
     public void clear() {
         redissonClient = Redisson.create(redissonConfig);
         RKeys redisKeys = redissonClient.getKeys();
-        redisKeys.deleteByPattern(dataBase + "*");
+        redisKeys.deleteByPattern(DATABASE + "*");
         redissonClient.shutdown();
     }
 
