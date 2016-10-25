@@ -43,13 +43,24 @@ public class CellBaseConfiguration {
         return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
     }
 
+
     public List<Species> getAllSpecies() {
         List<Species> allSpecies = new ArrayList<>();
-        allSpecies.addAll(species.getVertebrates());
-        allSpecies.addAll(species.getMetazoa());
-        allSpecies.addAll(species.getFungi());
-        allSpecies.addAll(species.getProtist());
-        allSpecies.addAll(species.getPlants());
+        if (species.getVertebrates() != null && !species.getVertebrates().isEmpty()) {
+            allSpecies.addAll(species.getVertebrates());
+        }
+        if (species.getMetazoa() != null && !species.getMetazoa().isEmpty()) {
+            allSpecies.addAll(species.getMetazoa());
+        }
+        if (species.getFungi() != null && !species.getFungi().isEmpty()) {
+            allSpecies.addAll(species.getFungi());
+        }
+        if (species.getProtist() != null && !species.getProtist().isEmpty()) {
+            allSpecies.addAll(species.getProtist());
+        }
+        if (species.getPlants() != null && !species.getPlants().isEmpty()) {
+            allSpecies.addAll(species.getPlants());
+        }
 
         return allSpecies;
     }
@@ -140,4 +151,5 @@ public class CellBaseConfiguration {
         this.species = species;
         return this;
     }
+
 }

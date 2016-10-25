@@ -60,7 +60,7 @@ public class GenericRestWSServer implements IWSServer {
 //    @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens.")
     protected String species;
 
-    @ApiParam(name = "genome assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of"
+    @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of"
             + "potentially available assemblies, please refer to: "
             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species")
     @DefaultValue("")

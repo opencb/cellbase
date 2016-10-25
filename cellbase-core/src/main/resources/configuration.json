@@ -24,7 +24,6 @@
 				"user": "${CELLBASE.DB.USER}",
 				"password": "${CELLBASE.DB.PASSWORD}"
 			}
-
 		}
 	},
 	"defaultOutdir": "/tmp",
