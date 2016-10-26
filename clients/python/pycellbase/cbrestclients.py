@@ -1,7 +1,39 @@
-from pycellbase.restclient import RestClient
+import os
+import sys
+
+from pycellbase.commons import get
 
 
-class _Feature(RestClient):
+class _ParentRestClient(object):
+    """Queries the REST service given the different query params"""
+    def __init__(self, configuration, subcategory, category):
+        self._configuration = configuration
+        self._subcategory = subcategory
+        self._category = category
+
+    def _get(self, resource, query_id=None, options=None):
+        """Queries the REST service and returns the result"""
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species=self._configuration.species,
+                       category=self._category,
+                       subcategory=self._subcategory,
+                       query_id=query_id,
+                       resource=resource,
+                       options=options)
+
+        return response
+
+    def get_help(self):
+        """Returns help for a specific element"""
+        return self._get('help')
+
+    def get_model(self):
+        """Returns the model for a specific element"""
+        return self._get('model')
+
+
+class _Feature(_ParentRestClient):
     """Queries the RESTful service for feature data"""
     def __init__(self, configuration, subcategory):
         _category = "feature"
@@ -104,7 +136,7 @@ class VariationClient(_Feature):
         return self._get("consequence_types", query_id, options)
 
 
-class GenomicRegionClient(RestClient):
+class GenomicRegionClient(_ParentRestClient):
     """Queries the RESTful service for genomic region data"""
     def __init__(self, configuration):
         _category = "genomic"
@@ -144,3 +176,20 @@ class GenomicRegionClient(RestClient):
     def get_variation(self, query_id, **options):
         """Returns the variations present in the genomic region"""
         return self._get("variation", query_id, options)
+
+
+class VariantClient(_ParentRestClient):
+    """Queries the RESTful service for genomic region data"""
+    def __init__(self, configuration):
+        _category = "genomic"
+        _subcategory = "variant"
+        super(VariantClient, self).__init__(configuration, _subcategory,
+                                            _category)
+
+    def get_annotation(self, query_id, **options):
+        """Returns annotation data of the variant"""
+        return self._get("annotation", query_id, options)
+
+    def get_cadd(self, query_id, **options):
+        """Returns cadd score of the variant"""
+        return self._get("cadd", query_id, options)

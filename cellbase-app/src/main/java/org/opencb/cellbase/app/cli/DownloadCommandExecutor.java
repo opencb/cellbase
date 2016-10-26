@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
@@ -90,6 +90,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String CLINVAR_NAME = "ClinVar";
     private static final String GWAS_NAME = "Gwas Catalog";
 //    private static final String DBSNP_NAME = "dbSNP";
+    private static final String REACTOME_NAME = "Reactome";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -934,6 +935,15 @@ public class DownloadCommandExecutor extends CommandExecutor {
             saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
                     Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
         }
+    }
+
+    private void downloadReactomeData() throws IOException, InterruptedException {
+        Path proteinFolder = common.resolve("protein");
+
+        String url = configuration.getDownload().getReactome().getHost();
+        downloadFile(url, proteinFolder.resolve("biopax.zip").toString());
+        saveVersionData(EtlCommons.PROTEIN_DATA, REACTOME_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                proteinFolder.resolve("reactomeVersion.json"));
     }
 
 

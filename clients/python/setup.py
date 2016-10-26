@@ -25,12 +25,13 @@ setup_kwargs = {
     'version': get_version(),
     'description': 'Python client for CellBase',
     'long_description': get_long_description(),
+    'keywords': 'opencb cellbase client',
     'author': 'Daniel Perez-Gil',
     'author_email': 'opencb@googlegroups.com',
     'url': 'https://github.com/opencb/cellbase',
     'packages': ['pycellbase'],
     'package_dir': {'pycellbase': 'pycellbase'},
-    'install_requires': ['pyyaml']
+    'install_requires': ['pyyaml', 'requests']
 }
 
 setup(**setup_kwargs)

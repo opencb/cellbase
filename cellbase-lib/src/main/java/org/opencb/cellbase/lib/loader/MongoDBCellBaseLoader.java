@@ -19,9 +19,10 @@ package org.opencb.cellbase.lib.loader;
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
-import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
@@ -72,8 +73,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database, String field,
                                  String[] innerFields, CellBaseConfiguration cellBaseConfiguration) {
         super(queue, data, database, field, innerFields, cellBaseConfiguration);
-        if (cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder") != null) {
-            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabase().getOptions().get("mongodb-index-folder"));
+        if (cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder") != null) {
+            indexScriptFolder = Paths.get(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("mongodb-index-folder"));
         }
     }
 
@@ -86,7 +87,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
          * 2. a 'datastore' object connects to a specific database
          * 3. finally a connection to the collection is stored in 'mongoDBCollection'
          */
-        String[] hosts = cellBaseConfiguration.getDatabase().getHost().split(",");
+
+//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
+
+        String[] hosts = mongodbCredentials.getHost().split(",");
         List<DataStoreServerAddress> dataStoreServerAddressList = new ArrayList<>(hosts.length);
         for (String host : hosts) {
             String[] hostAndPort = host.split(":");
@@ -97,21 +102,21 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
         MongoDBConfiguration mongoDBConfiguration;
         if (cellBaseConfiguration != null
-                && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null
-                && !cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase").isEmpty()) {
+                && mongodbCredentials.getOptions().get("authenticationDatabase") != null
+                && !mongodbCredentials.getOptions().get("authenticationDatabase").isEmpty()) {
             mongoDBConfiguration = MongoDBConfiguration.builder()
-                    .add("username", cellBaseConfiguration.getDatabase().getUser())
-                    .add("password", cellBaseConfiguration.getDatabase().getPassword())
-                    .add("authenticationDatabase", cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase")).build();
+                    .add("username", mongodbCredentials.getUser())
+                    .add("password", mongodbCredentials.getPassword())
+                    .add("authenticationDatabase", mongodbCredentials.getOptions().get("authenticationDatabase")).build();
             logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
-                    cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
+                    mongodbCredentials.getOptions().get("authenticationDatabase"));
         } else {
             mongoDBConfiguration = MongoDBConfiguration.builder()
-                    .add("username", cellBaseConfiguration.getDatabase().getUser())
-                    .add("password", cellBaseConfiguration.getDatabase().getPassword()).build();
+                    .add("username", mongodbCredentials.getUser())
+                    .add("password", mongodbCredentials.getPassword()).build();
         }
         logger.debug("MongoDB credentials are user: '{}', password: '{}'",
-                cellBaseConfiguration.getDatabase().getUser(), cellBaseConfiguration.getDatabase().getPassword());
+                mongodbCredentials.getUser(), mongodbCredentials.getPassword());
 
         mongoDataStore = mongoDataStoreManager.get(database, mongoDBConfiguration);
 
@@ -604,21 +609,23 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
 
     protected boolean runCreateIndexProcess(Path indexFilePath) throws IOException, InterruptedException {
+//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
         List<String> args = new ArrayList<>();
         args.add("mongo");
         args.add("--host");
-        args.add(cellBaseConfiguration.getDatabase().getHost());
-        if (cellBaseConfiguration.getDatabase().getUser() != null && !cellBaseConfiguration.getDatabase().getUser().equals("")) {
+        args.add(mongodbCredentials.getHost());
+        if (mongodbCredentials.getUser() != null && !mongodbCredentials.getUser().equals("")) {
             args.addAll(Arrays.asList(
-                    "-u", cellBaseConfiguration.getDatabase().getUser(),
-                    "-p", cellBaseConfiguration.getDatabase().getPassword()
+                    "-u", mongodbCredentials.getUser(),
+                    "-p", mongodbCredentials.getPassword()
             ));
         }
-        if (cellBaseConfiguration != null && cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase") != null) {
+        if (cellBaseConfiguration != null && mongodbCredentials.getOptions().get("authenticationDatabase") != null) {
             args.add("--authenticationDatabase");
-            args.add(cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
+            args.add(mongodbCredentials.getOptions().get("authenticationDatabase"));
             logger.debug("MongoDB 'authenticationDatabase' database parameter set to '{}'",
-                    cellBaseConfiguration.getDatabase().getOptions().get("authenticationDatabase"));
+                    mongodbCredentials.getOptions().get("authenticationDatabase"));
         }
         args.add(database);
         args.add(indexFilePath.toString());

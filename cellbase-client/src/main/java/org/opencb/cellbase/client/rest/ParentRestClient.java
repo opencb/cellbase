@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.client.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.net.URI;
@@ -72,6 +75,7 @@ public class ParentRestClient<T> {
 
         this.client = ClientBuilder.newClient();
         jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
     }
@@ -91,17 +95,33 @@ public class ParentRestClient<T> {
 
 
     protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz) throws IOException {
+        return  execute(action, query, queryOptions, clazz, false);
+    }
+
+    protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz,
+                                           boolean post) throws IOException {
         if (query != null && queryOptions != null) {
             queryOptions.putAll(query);
         }
-        return execute("", action, queryOptions, clazz);
+        return execute("", action, queryOptions, clazz, post);
     }
 
-    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz) throws IOException {
-        return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz);
+    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz)
+            throws IOException {
+        return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz, false);
+    }
+
+    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz,
+                                           boolean post) throws IOException {
+        return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz, post);
     }
 
     protected <U> QueryResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz) throws IOException {
+        return execute(idList, resource, options, clazz, false);
+    }
+
+    protected <U> QueryResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
+                                           boolean post) throws IOException {
 
         if (idList == null || idList.isEmpty()) {
             return new QueryResponse<>();
@@ -109,7 +129,7 @@ public class ParentRestClient<T> {
 
         // If the list contain less than REST_CALL_BATCH_SIZE variants then we can make a normal REST call.
         if (idList.size() <= REST_CALL_BATCH_SIZE) {
-            return fetchData(idList, resource, options, clazz);
+            return fetchData(idList, resource, options, clazz, post);
         }
 
         // But if there are more than REST_CALL_BATCH_SIZE variants then we launch several threads to increase performance.
@@ -125,7 +145,7 @@ public class ParentRestClient<T> {
                     ? idList.size()
                     : from + REST_CALL_BATCH_SIZE;
             futureList.add(executorService.submit(() ->
-                    fetchData(idList.subList(from, to), resource, options, clazz)
+                    fetchData(idList.subList(from, to), resource, options, clazz, post)
             ));
         }
 
@@ -148,17 +168,13 @@ public class ParentRestClient<T> {
         return finalResponse;
     }
 
-    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz) throws IOException {
+    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
+                                           boolean post) throws IOException {
 
         if (options == null) {
             options = new QueryOptions();
         }
         options.putIfAbsent("limit", LIMIT);
-
-        String ids = "";
-        if (idList != null && !idList.isEmpty()) {
-            ids = StringUtils.join(idList, ',');
-        }
 
         Map<Integer, Integer> idMap = new HashMap<>();
         List<String> prevIdList = idList;
@@ -168,13 +184,14 @@ public class ParentRestClient<T> {
         QueryResponse<U> queryResponse = null;
         QueryResponse<U> finalQueryResponse = null;
         while (call) {
-            queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(), ids, resource, options, clazz);
+            queryResponse = robustRestCall(idList, resource, options, clazz, post);
 
             // First iteration we set the response object, no merge needed
             if (finalQueryResponse == null) {
                 finalQueryResponse = queryResponse;
             } else {    // merge query responses
-                if (newIdsList != null && newIdsList.size() > 0) {
+//                if (newIdsList != null && newIdsList.size() > 0) {
+                if (newIdsList.size() > 0) {
                     for (int i = 0; i < newIdsList.size(); i++) {
                         finalQueryResponse.getResponse().get(idMap.get(i)).getResult()
                                 .addAll(queryResponse.getResponse().get(i).getResult());
@@ -199,7 +216,7 @@ public class ParentRestClient<T> {
                 // this breaks the while condition
                 call = false;
             } else {
-                ids = StringUtils.join(newIdsList, ',');
+                idList = newIdsList;
                 skip += LIMIT;
                 options.put("skip", skip);
             }
@@ -209,8 +226,66 @@ public class ParentRestClient<T> {
         return finalQueryResponse;
     }
 
+    private <U> QueryResponse<U> robustRestCall(List<String> idList, String resource, QueryOptions queryOptions,
+                                                Class<U> clazz, boolean post)
+            throws IOException {
+
+        String ids = "";
+        if (idList != null && !idList.isEmpty()) {
+            ids = StringUtils.join(idList, ',');
+        }
+
+        boolean queryError = false;
+        QueryResponse<U> queryResponse;
+        try {
+            queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(),
+                    ids, resource, queryOptions, clazz, post);
+            if (queryResponse == null) {
+                logger.warn("CellBase REST fail. Returned null. {} for ids {}. hosts: {}, version: {}, resource: {}, "
+                        + "queryOptions: {}", ids, StringUtils.join(configuration.getRest().getHosts(), ","),
+                        configuration.getVersion(), resource, queryOptions.toJson());
+                queryError = true;
+            }
+        } catch (JsonProcessingException | javax.ws.rs.ProcessingException e) {
+            logger.warn("CellBase REST fail. Error parsing query result for ids {}. hosts: {}, version: {}, "
+                    + "resource: {}, queryOptions: {}", ids, StringUtils.join(configuration.getRest().getHosts(), ","),
+                    configuration.getVersion(), resource, queryOptions.toJson());
+            queryError = true;
+            queryResponse = null;
+        }
+
+        if (queryResponse != null && queryResponse.getResponse().size() != idList.size()) {
+            logger.warn("QueryResponse size (" + queryResponse.getResponse().size() + ") != id list size ("
+                    + idList.size() + ").");
+        }
+
+        if (queryError) {
+            if (idList.size() == 1) {
+                logger.warn("CellBase REST warning. Skipping id. {}", idList.get(0));
+                return new QueryResponse<U>(configuration.getVersion(), -1, null,
+                        "CellBase REST error. Skipping id " + idList.get(0), queryOptions,
+                        Collections.singletonList(new QueryResult<U>(idList.get(0), -1, 0, 0, null, null,
+                                Collections.emptyList())));
+            }
+
+            List<QueryResult<U>> queryResultList = new LinkedList<>();
+            queryResponse = new QueryResponse<U>(configuration.getVersion(), -1, null, null, queryOptions,
+                    queryResultList);
+            logger.warn("Re-attempting to solve the query - trying to identify any problematic id to skip it");
+            List<String> idList1 = idList.subList(0, idList.size() / 2);
+            if (!idList1.isEmpty()) {
+                queryResultList.addAll(robustRestCall(idList1, resource, queryOptions, clazz, post).getResponse());
+            }
+            List<String> idList2 = idList.subList(idList.size() / 2, idList.size());
+            if (!idList2.isEmpty()) {
+                queryResultList.addAll(robustRestCall(idList2, resource, queryOptions, clazz, post).getResponse());
+            }
+        }
+        return queryResponse;
+    }
+
     private <U> QueryResponse<U> restCall(List<String> hosts, String version, String ids, String resource, QueryOptions queryOptions,
-                                          Class<U> clazz) throws IOException {
+                                          Class<U> clazz, boolean post) throws IOException {
 
         WebTarget path = client
                 .target(URI.create(hosts.get(0)))
@@ -220,7 +295,7 @@ public class ParentRestClient<T> {
                 .path(subcategory);
 
         WebTarget callUrl = path;
-        if (ids != null && !ids.isEmpty()) {
+        if (ids != null && !ids.isEmpty() && !post) {
             callUrl = path.path(ids);
         }
 
@@ -233,8 +308,15 @@ public class ParentRestClient<T> {
             }
         }
 
-        logger.debug("Calling to REST URL: {}", callUrl.getUri().toURL());
-        String jsonString = callUrl.request().get(String.class);
+        String jsonString;
+        if (post) {
+            logger.debug("Making POST call to REST URL: {}", callUrl.getUri().toURL());
+            jsonString = callUrl.request().post(Entity.text(ids), String.class);
+        } else {
+            logger.debug("Making GET call to REST URL: {}", callUrl.getUri().toURL());
+            jsonString = callUrl.request().get(String.class);
+        }
+
         return parseResult(jsonString, clazz);
     }
 
