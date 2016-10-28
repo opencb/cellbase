@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.server.ws.network;
 
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import org.opencb.biodata.models.protein.Interaction;
 import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -75,6 +77,13 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{interaction}/info")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
+    })
     public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
         try {
             parseQueryParams();

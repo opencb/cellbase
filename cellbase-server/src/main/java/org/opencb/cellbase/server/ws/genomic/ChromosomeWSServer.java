@@ -17,9 +17,7 @@
 package org.opencb.cellbase.server.ws.genomic;
 
 import com.google.common.base.Splitter;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -103,6 +101,13 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @Path("/{chromosomeName}/info")
     @ApiOperation(httpMethod = "GET", value = "Retrieves chromosome data for specified chromosome names",
             response = Chromosome.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
+    })
     public Response getChromosomes(@PathParam("chromosomeName")
                                    @ApiParam(name = "chromosomeName", value = "Comma separated list of chromosome ids,"
                                            + " e.g.: 1,2,X,MT. Exact text matches will be returned.",

@@ -17,9 +17,7 @@
 package org.opencb.cellbase.server.ws.feature;
 
 import com.google.common.base.Splitter;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
@@ -74,6 +72,13 @@ public class IdWSServer extends GenericRestWSServer {
             notes = "An independent database query will be issued for each id, meaning that results for each id will be"
             + " returned in independent QueryResult objects within the QueryResponse object.", response = Xref.class,
             responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
+    })
     public Response getByFeatureIdInfo(@PathParam("id")
                                        @ApiParam(name = "id", value = "Comma separated list of ids, e.g.: BRCA2. Exact "
                                                + "text matches will be returned.", required = true) String id) {
@@ -207,6 +212,13 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/dbnames")
     @ApiOperation(httpMethod = "GET", value = "Get list of distinct source DB names from which xref ids were collected ",
         response = String.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
+    })
     public Response getDBNames() {
         try {
             parseQueryParams();
