@@ -93,7 +93,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson bsonDocument = parseQuery(query);
-        return distinct(field, bsonDocument, mongoDBCollection);
+        return distinct(field, bsonDocument, query, mongoDBCollection);
     }
 
     @Override

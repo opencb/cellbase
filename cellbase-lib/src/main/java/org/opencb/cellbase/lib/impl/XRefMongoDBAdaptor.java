@@ -72,13 +72,13 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     @Override
     public QueryResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return count(bson, mongoDBCollection);
+        return count(bson, query, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return distinct(field, bson, mongoDBCollection);
+        return distinct(field, bson, query, mongoDBCollection);
     }
 
     @Override

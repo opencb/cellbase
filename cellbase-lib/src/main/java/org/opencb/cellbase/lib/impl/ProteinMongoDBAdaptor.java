@@ -309,13 +309,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
-        return count(document, mongoDBCollection);
+        return count(document, query, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson document = parseQuery(query);
-        return distinct(field, document, mongoDBCollection);
+        return distinct(field, document, query, mongoDBCollection);
     }
 
     @Override

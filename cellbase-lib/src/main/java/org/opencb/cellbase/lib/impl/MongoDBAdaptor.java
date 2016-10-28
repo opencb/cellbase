@@ -518,25 +518,30 @@ public class MongoDBAdaptor {
         return queryResult;
     }
 
-    protected QueryResult<Long> count(Bson query, MongoDBCollection mongoDBCollection) {
-//        QueryResult result = cacheManager.get();
-        QueryResult result = null;
-        if (result == null) {
-            result = mongoDBCollection.count(query);
-//            cacheManager.set(result);
+    protected QueryResult<Long> count(Bson bsonQuery, Query query, MongoDBCollection mongoDBCollection) {
+        String key = cacheManager.createKey(this.species, this.subCategory, query, new QueryOptions("cache", true));
+        QueryResult<Long> queryResult = cacheManager.get(key);
+        if (queryResult.getResult() != null && queryResult.getResult().size() != 0) {
+            return queryResult;
+        } else {
+            queryResult = mongoDBCollection.count(bsonQuery);
+            cacheManager.set(key, query, queryResult);
+            return queryResult;
         }
-        return result;
     }
 
 
-    protected QueryResult distinct(String field, Bson query, MongoDBCollection mongoDBCollection) {
-//        QueryResult result = cacheManager.get();
-        QueryResult result = null;
-        if (result == null) {
-            result = mongoDBCollection.distinct(field, query);
-//            cacheManager.set(result);
+    protected QueryResult distinct(String field, Bson bsonQuery, Query query, MongoDBCollection mongoDBCollection) {
+        query.put("field", field);
+        String key = cacheManager.createKey(this.species, this.subCategory, query, new QueryOptions("cache", true));
+        QueryResult queryResult = cacheManager.get(key);
+        if (queryResult.getResult() != null && queryResult.getResult().size() != 0) {
+            return queryResult;
+        } else {
+            queryResult = mongoDBCollection.distinct(field, bsonQuery);
+            cacheManager.set(key, query, queryResult);
+            return queryResult;
         }
-        return result;
     }
 
     protected <T> QueryResult<T> executeBsonQuery(Bson bsonQuery, Bson projection, Query query, QueryOptions options,
