@@ -41,6 +41,7 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
                                                    CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("variation");
+        subCategory = "protein";
 
         logger.debug("ProteinProteinInteractionMongoDBAdaptor: in 'constructor'");
     }

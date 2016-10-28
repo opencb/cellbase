@@ -76,6 +76,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
+        subCategory = "protein";
 
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
     }

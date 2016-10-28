@@ -42,6 +42,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
                                     CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
+        subCategory = "regulatory";
 
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
     }

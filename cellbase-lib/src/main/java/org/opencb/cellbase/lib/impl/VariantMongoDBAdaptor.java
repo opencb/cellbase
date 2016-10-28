@@ -58,6 +58,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
+        subCategory = "variation";
 
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }

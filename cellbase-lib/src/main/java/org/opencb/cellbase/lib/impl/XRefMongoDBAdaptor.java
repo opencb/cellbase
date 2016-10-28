@@ -44,6 +44,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
                               CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("gene");
+        subCategory = "id";
 
         logger.debug("XRefMongoDBAdaptor: in 'constructor'");
     }

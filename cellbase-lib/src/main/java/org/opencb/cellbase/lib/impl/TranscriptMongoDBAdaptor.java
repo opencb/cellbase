@@ -28,6 +28,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
                                     CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("gene");
+        subCategory = "transcript";
 
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }

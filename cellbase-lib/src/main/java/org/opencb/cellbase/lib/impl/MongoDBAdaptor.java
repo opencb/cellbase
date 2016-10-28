@@ -52,6 +52,8 @@ public class MongoDBAdaptor {
     protected String species;
     protected String assembly;
 
+    protected String subCategory;
+
     protected MongoDataStoreManager mongoDataStoreManager;
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
@@ -542,8 +544,7 @@ public class MongoDBAdaptor {
         QueryResult<T> result;
 
         if (options.getBoolean("cache")) {
-            //TODO: replace hardcoded sub category <gene>
-            String key = cacheManager.createKey(this.species, "gene", query, options);
+            String key = cacheManager.createKey(this.species, this.subCategory, query, options);
             result = cacheManager.get(key);
             if (result.getResult() != null && result.getResult().size() != 0) {
                 return result;

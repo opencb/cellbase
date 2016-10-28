@@ -45,6 +45,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                                   CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("clinical");
+        subCategory = "clinical";
 
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }

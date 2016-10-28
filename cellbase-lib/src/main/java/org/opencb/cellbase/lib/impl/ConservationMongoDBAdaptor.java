@@ -44,6 +44,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                                       CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("conservation");
+        subCategory = "conservation";
 
         logger.debug("ConservationMongoDBAdaptor: in 'constructor'");
     }
