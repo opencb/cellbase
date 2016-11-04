@@ -93,7 +93,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public QueryResult<Gene> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return executeBsonQuery(bson, null, query , options, mongoDBCollection, Gene.class);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Gene.class);
     }
 
     @Override
