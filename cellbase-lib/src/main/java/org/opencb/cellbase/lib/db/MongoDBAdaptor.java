@@ -490,9 +490,9 @@ public class MongoDBAdaptor {
         int end = start + interval;
         for (int i = 0, j = 0; i < numIntervals; i++) {
             if (j < objectList.size() && ((BigInteger) objectList.get(j)[0]).intValue() == i) {
-                intervalFeatureFrequenciesList.add(new IntervalFeatureFrequency(start, end, ((BigInteger) objectList.get(j)[0]).intValue()
-                        , ((BigInteger) objectList.get(j)[1]).intValue()
-                        , ((BigInteger) objectList.get(j)[1]).floatValue() / max.floatValue()));
+                intervalFeatureFrequenciesList.add(new IntervalFeatureFrequency(start, end, ((BigInteger) objectList.get(j)[0]).intValue(),
+                        ((BigInteger) objectList.get(j)[1]).intValue(),
+                        ((BigInteger) objectList.get(j)[1]).floatValue() / max.floatValue()));
                 j++;
             } else {
                 intervalFeatureFrequenciesList.add(new IntervalFeatureFrequency(start, end, i, 0, 0.0f));

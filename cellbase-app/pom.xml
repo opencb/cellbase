@@ -21,16 +21,6 @@
     <dependencies>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-core</artifactId>
-        </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.opencb.cellbase</groupId>-->
-        <!--<artifactId>cellbase-server</artifactId>-->
-        <!--<version>${cellbase.version}</version>-->
-        <!--<type>jar</type>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-server</artifactId>
             <version>${cellbase.version}</version>
             <!--<type>war</type>-->
@@ -55,19 +45,7 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
+         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
         </dependency>
@@ -80,11 +58,6 @@
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
