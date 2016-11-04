@@ -39,7 +39,7 @@ import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
-import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
+import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
 import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkDataWriter;
 import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkTask;
