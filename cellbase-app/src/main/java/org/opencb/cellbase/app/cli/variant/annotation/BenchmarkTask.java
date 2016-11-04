@@ -5,7 +5,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
+import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.rocksdb.RocksDBException;

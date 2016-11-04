@@ -26,7 +26,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
+import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;

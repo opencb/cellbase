@@ -274,7 +274,7 @@ public class ClinVarParser extends CellBaseParser {
         private final String name;
         private final String url;
 
-        public EFO(String id, String name, String url) {
+        EFO(String id, String name, String url) {
             this.id = id;
             this.name = name;
             this.url = url;

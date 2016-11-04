@@ -27,12 +27,11 @@
         <biodata.version>0.9.0-SNAPSHOT</biodata.version>
         <java-common-libs.version>3.4.0-SNAPSHOT</java-common-libs.version>
         <bionetdb.version>0.1.0</bionetdb.version>
-
-        <jackson.version>2.6.4</jackson.version>
-        <jersey.version>2.22.1</jersey.version>
-        <protobuf.version>3.0.0</protobuf.version>
+        <jackson.version>2.8.4</jackson.version>
+        <protobuf.version>3.1.0</protobuf.version>
+        <grpc.version>1.0.1</grpc.version>
+        <jersey.version>2.23.2</jersey.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
-        <grpc.version>1.0.0-pre2</grpc.version>
     </properties>
 
     <scm>
@@ -63,6 +62,11 @@
             <id>pabarcgar</id>
             <name>Pablo</name>
             <email>pablo.arce.garcia@gmail.com</email>
+        </developer>
+        <developer>
+            <id>Swaathik</id>
+            <name>Swaathi</name>
+            <email>swaathik@gmail.com</email>
         </developer>
         <developer>
             <id>mbleda</id>
@@ -121,26 +125,6 @@
                 <version>${protobuf.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-all</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.7.13</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>1.7.13</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jsonSchema</artifactId>
                 <version>${jackson.version}</version>
@@ -156,13 +140,13 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jersey.containers</groupId>
-                <artifactId>jersey-container-servlet</artifactId>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-client</artifactId>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>
@@ -199,7 +183,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.6.0</version>
                 <configuration>
                     <source>${compileSource}</source>
                     <target>${compileSource}</target>
@@ -207,6 +191,25 @@
                     <showWarnings>true</showWarnings>
                     <encoding>UTF-8</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.17</version>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <configLocation>checkstyle.xml</configLocation>
+                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java,
+                                org/opencb/cellbase/client/rest/models/GroupByFields.java,org/opencb/cellbase/client/rest/models/GroupCount.java</excludes>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.gmaven</groupId>
@@ -235,38 +238,8 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.16</version>
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <configuration>
-                            <configLocation>checkstyle.xml</configLocation>
-                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java,
-                                org/opencb/cellbase/client/rest/models/GroupByFields.java,org/opencb/cellbase/client/rest/models/GroupCount.java</excludes>
-                        </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <profiles>
         <profile>
@@ -289,9 +262,9 @@
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
 
                 <CELLBASE.DB.NEO4J.HOST>localhost:27017</CELLBASE.DB.NEO4J.HOST>
-
             </properties>
         </profile>
+
         <profile>
             <id>deploy</id>
             <build>
@@ -299,7 +272,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.4</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -312,7 +285,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.1</version>
+                        <version>2.10.4</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -354,5 +327,16 @@
             </build>
         </profile>
     </profiles>
+
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>
