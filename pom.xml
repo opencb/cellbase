@@ -244,12 +244,12 @@
 
     <profiles>
         <profile>
-            <id>war-dev</id>
+            <id>prod-war</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <cellbase.war.name>cellbase-${cellbase.version}</cellbase.war.name>
+                <cellbase.war.name>cellbase</cellbase.war.name>
             </properties>
         </profile>
         <profile>
@@ -258,6 +258,8 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <cellbase.war.name>cellbase-4.5.0-rc</cellbase.war.name>
+                
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
