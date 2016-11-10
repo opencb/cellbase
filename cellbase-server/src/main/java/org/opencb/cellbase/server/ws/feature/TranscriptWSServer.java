@@ -320,7 +320,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseQueryParams();
             ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
             query.put("transcript", id);
-            QueryResult queryResults = mutationAdaptor.getSubstitutionScores(query, queryOptions);
+            QueryResult queryResults = mutationAdaptor.getSubstitutionScores(id, query.getInt("position"),
+                    query.getString("aa"), queryOptions);
             queryResults.setId(id);
             return createOkResponse(queryResults);
         } catch (Exception e) {

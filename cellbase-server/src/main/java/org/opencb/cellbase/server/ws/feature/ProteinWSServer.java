@@ -172,11 +172,13 @@ public class ProteinWSServer extends GenericRestWSServer {
 
             // Get substitution scores for fetched transcript
             if (queryResult.getNumResults() > 0) {
-                query.put("transcript", ((Map) queryResult.getResult().get(0)).get("id"));
+//                query.put("transcript", ((Map) queryResult.getResult().get(0)).get("id"));
+                String transcriptId = (String) ((Map) queryResult.getResult().get(0)).get("id");
                 logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
                 logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
                 ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
-                QueryResult scoresQueryResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
+                QueryResult scoresQueryResult = proteinDBAdaptor.getSubstitutionScores(transcriptId,
+                        query.getInt("position"), query.getString("aa"), queryOptions);
                 scoresQueryResult.setId(id);
                 return createOkResponse(scoresQueryResult);
             } else {

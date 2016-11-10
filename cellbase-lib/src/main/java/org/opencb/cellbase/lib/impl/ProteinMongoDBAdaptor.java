@@ -81,23 +81,23 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
 
     @Override
-    public QueryResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
+    public QueryResult<Score> getSubstitutionScores(String transcriptId, int aaPosition, String aa, QueryOptions options) {
         QueryResult result = null;
 
         // Ensembl transcript id is needed for this collection
-        if (query.getString("transcript") != null) {
-            Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
+        if (transcriptId != null) {
+            Bson transcript = Filters.eq("transcriptId", transcriptId);
 
             int position = -1;
             String aaShortName = null;
             // If position and aa change are provided we create a 'projection' to return only the required data from the database
-            if (query.get("position") != null && !query.getString("position").isEmpty() && query.getInt("position", 0) != 0) {
-                position = query.getInt("position");
+            if (aaPosition != 0) {
+                position = aaPosition;
                 String projectionString = "aaPositions." + position;
 
                 // If aa change is provided we only return that information
-                if (query.getString("aa") != null && !query.getString("aa").isEmpty()) {
-                    aaShortName = aaShortNameMap.get(query.getString("aa").toUpperCase());
+                if (aa != null && !aa.isEmpty()) {
+                    aaShortName = aaShortNameMap.get(aa.toUpperCase());
                     projectionString += "." + aaShortName;
                 }
 
@@ -178,14 +178,14 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         proteinVariantAnnotation.setReference(aaReference);
         proteinVariantAnnotation.setAlternate(aaAlternate);
 //        proteinVariantAnnotation.setSubstitutionScores(getProteinSubstitutionScores(ensemblTranscriptId, position, aaAlternate));
-        Query query = new Query("transcript", ensemblTranscriptId).append("position", position).append("aa", aaAlternate);
 //        try {
 //            if (ensemblTranscriptId.equals("ENST00000383037") || ensemblTranscriptId.equals("ENST00000428666")) {
 //                int a = 1;
 //            }
         // Stop_gain/lost variants do not have SIFT/POLYPHEN scores
         if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
-            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(ensemblTranscriptId,
+                    position, aaAlternate, null).getResult());
         }
 //        } catch (Exception e) {
 //            int a = 1;

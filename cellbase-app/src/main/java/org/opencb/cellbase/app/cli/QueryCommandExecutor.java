@@ -208,8 +208,9 @@ public class QueryCommandExecutor extends CommandExecutor {
                     }
                     break;
                 case "substitution-scores":
-                    QueryResult substitutionScores = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
-                    output.println(objectMapper.writeValueAsString(substitutionScores));
+                    QueryResult substitutionScores = proteinDBAdaptor.getSubstitutionScores(query.getString("transcript"),
+                            query.getInt("position", 0), query.getString("aa"), queryOptions);
+                    output.println(substitutionScores);
                     break;
                 default:
                     break;
