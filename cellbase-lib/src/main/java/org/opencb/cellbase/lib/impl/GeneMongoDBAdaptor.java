@@ -49,7 +49,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public QueryResult<Gene> next(Query query, QueryOptions options) {
-        return null;
+        QueryResult<Gene> geneQueryResult = get(query, new QueryOptions("include", "chromosome,start,end"));
+        Gene gene = geneQueryResult.getResult().get(0);
+        Bson eq = Filters.eq("chromosome", gene.getChromosome());
+        Bson gt = Filters.gt("start", gene.getStart());
+        options.put("limit", 1);
+        return mongoDBCollection.find(Filters.and(eq, gt), null, Gene.class, options);
     }
 
     @Override

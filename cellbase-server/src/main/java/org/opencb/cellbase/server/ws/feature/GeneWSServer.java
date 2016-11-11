@@ -497,6 +497,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
             QueryResult genes = geneDBAdaptor.next(query, queryOptions);
             return createOkResponse(genes);
         } catch (Exception e) {
