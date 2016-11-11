@@ -145,17 +145,17 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         }
     }
 
-//    @GET
-//    @Path("/{chromosomeName}/cytoband")
-//    public Response getByChromosomeName(@PathParam("chromosomeName") String query) {
-//        try {
-//            parseQueryParams();
-//            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
+    @GET
+    @Path("/{chromosomeName}/cytoband")
+    public Response getByChromosomeName(@PathParam("chromosomeName") String query) {
+        try {
+            parseQueryParams();
+            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+            return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 
 
     @GET

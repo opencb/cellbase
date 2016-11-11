@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.biodata.models.core.Cytoband;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
@@ -97,5 +98,13 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
 
 //    List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regions, QueryOptions queryOptions);
     List<QueryResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regions, QueryOptions queryOptions);
+
+    QueryResult<Cytoband> getAllCytobandsById(String id, QueryOptions options);
+
+    default List<QueryResult<Cytoband>> getAllCytobandsByIdList(List<String> idList, QueryOptions options) {
+        List<QueryResult<Cytoband>> queryResults = new ArrayList<>(idList.size());
+        queryResults.addAll(idList.stream().map(id -> getAllCytobandsById(id, options)).collect(Collectors.toList()));
+        return queryResults;
+    }
 
 }

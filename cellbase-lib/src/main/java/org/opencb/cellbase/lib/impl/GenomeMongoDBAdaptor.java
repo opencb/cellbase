@@ -20,11 +20,12 @@ import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Cytoband;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -255,6 +256,28 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         }
 
         return conservationQueryResults;
+    }
+
+    @Override
+    public QueryResult<Cytoband> getAllCytobandsById(String id, QueryOptions options) {
+        QueryResult<Document> queryResult = genomeInfoMongoDBCollection.find(new Document(), options);
+        Document document = queryResult.getResult().get(0);
+        ArrayList<Document> chromosomes = document.get("chromosomes", ArrayList.class);
+        List<Cytoband> resultList = new ArrayList<>();
+        QueryResult<Cytoband> cytobandQueryResult = new QueryResult<>();
+        for (Document chromosome : chromosomes) {
+            if (chromosome.getString("name").equals(id)) {
+                ArrayList<Document> cytobands = chromosome.get("cytobands", ArrayList.class);
+                for (Document cytoband : cytobands) {
+                    resultList.add(new Cytoband(cytoband.getString("name"), cytoband.getString("stain"),
+                            cytoband.getInteger("start"), cytoband.getInteger("end")));
+                }
+                cytobandQueryResult.setId(id);
+                cytobandQueryResult.setResult(resultList);
+                break;
+            }
+        }
+        return cytobandQueryResult;
     }
 
     @Override

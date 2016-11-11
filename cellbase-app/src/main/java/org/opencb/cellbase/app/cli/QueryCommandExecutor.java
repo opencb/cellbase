@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.cli;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opencb.biodata.models.core.Cytoband;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.commons.datastore.core.Query;
@@ -29,7 +30,9 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by imedina on 20/02/15.
@@ -121,6 +124,11 @@ public class QueryCommandExecutor extends CommandExecutor {
                 case "sequence":
                     QueryResult<GenomeSequenceFeature> genomicSequence = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
                     output.println(objectMapper.writeValueAsString(genomicSequence));
+                    break;
+                case "cytoband":
+                    List<QueryResult<Cytoband>> allCytobandsByIdList =
+                            genomeDBAdaptor.getAllCytobandsByIdList(Arrays.asList(queryCommandOptions.id.split(",")), queryOptions);
+                    output.println(objectMapper.writeValueAsString(allCytobandsByIdList));
                     break;
                 default:
                     break;
