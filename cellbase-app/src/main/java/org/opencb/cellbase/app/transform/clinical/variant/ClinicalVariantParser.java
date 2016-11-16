@@ -1,12 +1,16 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.app.transform.CellBaseParser;
-import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,10 +73,11 @@ public class ClinicalVariantParser extends CellBaseParser {
                 CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, rdb);
                 cosmicIndexer.index();
             }
-            if (this.gwasFile != null) {
-                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
-                cosmicIndexer.index();
-            }
+            // TODO: write GWAS indexer as soon as it's needed (GRCh38 update)
+//            if (this.gwasFile != null) {
+//                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
+//                cosmicIndexer.index();
+//            }
             serializeRDB(rdb);
             closeIndex(rdb, dbOption, dbLocation);
             serializer.close();
@@ -82,6 +87,37 @@ public class ClinicalVariantParser extends CellBaseParser {
             throw e;
         }
 
+    }
+
+    private void serializeRDB(RocksDB rdb) throws IOException {
+        // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
+        // named "iterator"
+        RocksIterator rocksIterator = rdb.newIterator();
+
+        ObjectMapper mapper = new ObjectMapper();
+        logger.info("Reading from RoocksDB index and serializing to {}.json.gz",
+                serializer.getOutdir().resolve(serializer.getFileName()));
+        int counter = 0;
+        for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+            VariantTraitAssociation variantTraitAssociation
+                    = mapper.readValue(rocksIterator.value(), VariantTraitAssociation.class);
+            Variant variant = parseVariantFromVariantId(new String(rocksIterator.value()));
+            VariantAnnotation variantAnnotation = new VariantAnnotation();
+            variantAnnotation.setVariantTraitAssociation(variantTraitAssociation);
+            variant.setAnnotation(variantAnnotation);
+            serializer.serialize(variant);
+            counter++;
+            if (counter % 10000 == 0) {
+                logger.info("{} written", counter);
+            }
+        }
+        serializer.close();
+        logger.info("Done.");
+    }
+
+    private Variant parseVariantFromVariantId(String variantId) {
+        String[] parts = variantId.split(":");
+        return new Variant(parts[0], Integer.valueOf(parts[1]), parts[2], parts[3]);
     }
 
     private void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {

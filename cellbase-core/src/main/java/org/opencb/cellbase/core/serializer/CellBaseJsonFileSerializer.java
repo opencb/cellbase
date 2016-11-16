@@ -111,4 +111,12 @@ public class CellBaseJsonFileSerializer implements CellBaseFileSerializer {
         // TODO: receive class object?
         return null;
     }
+
+    public Path getOutdir() {
+        return outdir;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
 }

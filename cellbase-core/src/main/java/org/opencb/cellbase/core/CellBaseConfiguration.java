@@ -229,6 +229,14 @@ public class CellBaseConfiguration {
             this.clinvar = clinvar;
         }
 
+        public URLProperties getIarctp53() {
+            return iarctp53;
+        }
+
+        public void setIarctp53(URLProperties iarctp53) {
+            this.iarctp53 = iarctp53;
+        }
+
         public URLProperties getClinvarSummary() {
             return clinvarSummary;
         }

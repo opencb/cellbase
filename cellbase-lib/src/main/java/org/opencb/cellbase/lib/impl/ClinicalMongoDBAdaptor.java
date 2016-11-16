@@ -379,7 +379,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //            if(clinvarList!=null && clinvarList.size()>0) {
 //                clinicalData.put("clinvar", clinvarList);
 //            }
-            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(clinvarList, gwasList, cosmicList);
+            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(clinvarList, gwasList,
+                    cosmicList, null, null);
             if (!(variantTraitAssociation.getCosmic().isEmpty() && variantTraitAssociation.getGwas().isEmpty()
                     && variantTraitAssociation.getClinvar().isEmpty())) {
 

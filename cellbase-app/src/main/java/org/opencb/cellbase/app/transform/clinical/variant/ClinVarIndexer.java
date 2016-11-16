@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
-import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.biodata.models.variant.avro.Germline;
+import org.opencb.biodata.models.variant.avro.Somatic;
+import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -19,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -125,10 +123,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
         String clinicalSignificance = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getDescription();
         String reviewStatus = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getReviewStatus().name();
         List<String> geneNames = getGeneNames(publicSet);
-        List<String> germlineBibliography = null;
-        List<String> somaticBibliography = null;
+        List<String> germlineBibliography = new ArrayList<>();
+        List<String> somaticBibliography = new ArrayList<>();
         Germline germline = null;
         Somatic somatic = null;
+        boolean hasGermlineAnnotation = false;
+        boolean hasSomaticAnnotation = false;
         for (ObservationSet observationSet : publicSet.getReferenceClinVarAssertion().getObservedIn()) {
             // Origin for a number of the variants may not be clear, values found in the database for this field are:
             // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
@@ -136,14 +136,17 @@ public class ClinVarIndexer extends ClinicalIndexer {
             // For the sake of simplicity and since it's not clear what to do with the rest of tags, we'll classify
             // as somatic only those with the "somatic" tag and the rest will be stored as germline
             if (observationSet.getSample().getOrigin().equalsIgnoreCase("somatic")) {
+                hasSomaticAnnotation = true;
                 somaticBibliography = addBibliographyFromObservationSet(somaticBibliography, observationSet);
             } else {
+                hasGermlineAnnotation = true;
                 germlineBibliography = addBibliographyFromObservationSet(germlineBibliography, observationSet);
             }
 
         }
 
-        if (somaticBibliography != null) {
+        if (hasSomaticAnnotation) {
+            somatic = new Somatic();
             somatic.setBibliography(germlineBibliography);
             somatic.setSource(CLINVAR_NAME);
             somatic.setReviewStatus(reviewStatus);
@@ -151,9 +154,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
             somatic.setBibliography(somaticBibliography);
             somatic.setAccession(accession);
             somatic.setPrimaryHistology(getPreferredTraitName(publicSet, traitsToEfoTermsMap));
+            variantTraitAssociation.getSomatic().add(somatic);
             numberSomaticRecords++;
         }
-        if (germlineBibliography != null) {
+        if (hasGermlineAnnotation) {
+            germline = new Germline();
             germline.setAccession(accession);
             germline.setClinicalSignificance(clinicalSignificance);
             germline.setDisease(getDisease(publicSet, traitsToEfoTermsMap));
@@ -162,6 +167,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             germline.setBibliography(germlineBibliography);
             germline.setInheritanceModel(getInheritanceModel(publicSet));
             germline.setGeneNames(geneNames);
+            variantTraitAssociation.getGermline().add(germline);
             numberGermlineRecords++;
         }
 
@@ -272,12 +278,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         logger.info("Loading ClinVar {} genomic coordinates, reference and alternate strings from {}...",
                 assembly, clinvarSummaryFile);
         BufferedReader bufferedReader;
-        if (clinvarSummaryFile.toFile().getName().endsWith(".gz")) {
-            bufferedReader =
-                    new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(clinvarSummaryFile.toFile()))));
-        } else {
-            bufferedReader = Files.newBufferedReader(clinvarSummaryFile, Charset.defaultCharset());
-        }
+        bufferedReader = FileUtils.newBufferedReader(clinvarSummaryFile);
 
         Map<String, SequenceLocation> rcvToSequenceLocation = new HashMap<>();
         // Skip header, read first data line

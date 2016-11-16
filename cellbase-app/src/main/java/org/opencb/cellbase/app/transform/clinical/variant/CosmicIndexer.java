@@ -2,25 +2,18 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.biodata.formats.variant.clinvar.v24jaxb.PublicSetType;
-import org.opencb.biodata.models.variant.avro.Germline;
 import org.opencb.biodata.models.variant.avro.Somatic;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
-import org.opencb.cellbase.core.common.clinical.Cosmic;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,7 +58,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         logger.info("Parsing cosmic file ...");
 
         try {
-            BufferedReader cosmicReader = new BufferedReader(new InputStreamReader(new FileInputStream(cosmicFile.toFile())));
+            BufferedReader cosmicReader = FileUtils.newBufferedReader(cosmicFile);
             String line;
             cosmicReader.readLine(); // First line is the header -> ignore it
             while ((line = cosmicReader.readLine()) != null) {

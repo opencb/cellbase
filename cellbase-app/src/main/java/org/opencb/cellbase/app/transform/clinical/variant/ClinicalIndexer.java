@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class ClinicalIndexer {
 
-    protected static final Logger logger
+    protected static Logger logger
             = LoggerFactory.getLogger("org.opencb.cellbase.app.transform.clinical.variant.ClinicalIndexer");
 
     protected int numberNewVariants = 0;

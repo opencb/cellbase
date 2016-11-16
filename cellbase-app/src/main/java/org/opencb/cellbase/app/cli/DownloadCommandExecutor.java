@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
 import org.opencb.commons.utils.FileUtils;
@@ -33,6 +34,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Created by imedina on 03/02/15.
@@ -88,6 +91,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String PHASTCONS_NAME = "PhastCons";
     private static final String PHYLOP_NAME = "PhyloP";
     private static final String CLINVAR_NAME = "ClinVar";
+    private static final String IARCTP53_NAME = "IARC TP53 Database";
     private static final String GWAS_NAME = "Gwas Catalog";
     private static final String DBSNP_NAME = "dbSNP";
 
@@ -473,19 +477,22 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadFile(host, geneFolder.resolve(fileName).toString());
         downloadFile(readme, geneFolder.resolve("disgenetReadme.txt").toString());
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
-                getDisgenetVersion(geneFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
+                getVersionFromVersionLine(geneFolder.resolve("disgenetReadme.txt"), "(version"), getTimeStamp(),
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
-    private String getDisgenetVersion(Path path) {
+    private String getVersionFromVersionLine(Path path, String tag) {
         Files.exists(path);
         try {
             BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
             String line = reader.readLine();
             // There shall be a line at the README.txt containing the version.
-            // e.g. The files in the current directory contain the data corresponding to the latest release (version 4.0, April 2016). ...
+            // e.g. The files in the current directory contain the data corresponding to the latest release
+            // (version 4.0, April 2016). ...
             while (line != null) {
-                if (line.contains("(version")) {
+                // tag specifies a certain string that must be found within the line supposed to contain the version
+                // info
+                if (line.contains(tag)) {
                     String version = line.split("\\(")[1].split("\\)")[0];
                     reader.close();
                     return version;
@@ -879,10 +886,29 @@ public class DownloadCommandExecutor extends CommandExecutor {
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
                     clinicalFolder.resolve("dbsnpVersion.json"));
 
-            url = configuration.getDownload().getIARCTP53().getHost();
+            url = configuration.getDownload().getIarctp53().getHost();
             downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
                     Collections.singletonList("--post-data=\"dataset-somaticMutationData=somaticMutationData\""));
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME, getIARCTP53Version(), getTimeStamp(),
+
+            ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                File entryDestination = new File(clinicalFolder.toFile(),  entry.getName());
+                if (entry.isDirectory()) {
+                    entryDestination.mkdirs();
+                } else {
+                    entryDestination.getParentFile().mkdirs();
+                    InputStream in = zipFile.getInputStream(entry);
+                    OutputStream out = new FileOutputStream(entryDestination);
+                    IOUtils.copy(in, out);
+                    IOUtils.closeQuietly(in);
+                    out.close();
+                }
+            }
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
+                    getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
+                            "The version of the database should be identified"), getTimeStamp(),
                     Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
 
         }
@@ -917,8 +943,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(url, gene2diseaseFolder.resolve("all_gene_disease_associations.txt.gz").toString());
             downloadFile(readmeUrl, gene2diseaseFolder.resolve("disgenetReadme.txt").toString());
             saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
-                    getDisgenetVersion(gene2diseaseFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
-                    Collections.singletonList(url), gene2diseaseFolder.resolve("disgenetVersion.json"));
+                    getVersionFromVersionLine(gene2diseaseFolder.resolve("disgenetReadme.txt"), "(version"),
+                    getTimeStamp(), Collections.singletonList(url), gene2diseaseFolder.resolve("disgenetVersion.json"));
 
             // Downloads HPO
             url = configuration.getDownload().getHpo().getHost();
@@ -943,9 +969,18 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
+        downloadFile(url, outputFileName, null);
+    }
+
+    private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
+            throws IOException, InterruptedException {
+
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
+        if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
+            wgetArgs.addAll(wgetAdditionalArgs);
+        }
+
         boolean downloaded = runCommandLineProcess(null, "wget", wgetArgs, null);
 
         if (downloaded) {

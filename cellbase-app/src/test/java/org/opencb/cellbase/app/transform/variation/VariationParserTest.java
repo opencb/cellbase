@@ -174,5 +174,13 @@ public class VariationParserTest {
             serializedVariants.put(fileName, fileNameList);
         }
 
+        public Path getOutdir() {
+            return null;
+        }
+
+        public String getFileName() {
+            return null;
+        }
+
     }
 }
