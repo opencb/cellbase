@@ -19,6 +19,7 @@ import java.util.List;
 public class VariationClient extends FeatureClient<Variant> {
 
     private static final int VARIANT_ANNOTATION_BATCH_SIZE = 200;
+    private final VariationClient.VariantClient variantClient;
 
     public VariationClient(String species, ClientConfiguration configuration) {
         super(species, configuration);
@@ -26,6 +27,25 @@ public class VariationClient extends FeatureClient<Variant> {
 
         this.category = "feature";
         this.subcategory = "variation";
+        variantClient = new VariationClient.VariantClient(species, configuration);
+    }
+
+    /**
+     * Internal class to call to the separated endpoint for annotation.
+     * Do not modify category or subcategory! Concurrent calls may cause unexpected behaviour
+     */
+    private static final class VariantClient extends FeatureClient<Variant> {
+        private VariantClient(String species, ClientConfiguration configuration) {
+            super(species, configuration);
+            this.clazz = Variant.class;
+
+            this.category = "genomic";
+            this.subcategory = "variant";
+        }
+
+        private QueryResponse<VariantAnnotation> getAnnotations(List<String> ids, QueryOptions options, boolean post) throws IOException {
+            return execute(ids, "annotation", options, VariantAnnotation.class, post);
+        }
     }
 
     public QueryResponse<String> getAllConsequenceTypes(Query query) throws IOException {
@@ -69,13 +89,16 @@ public class VariationClient extends FeatureClient<Variant> {
     }
 
     public QueryResponse<VariantAnnotation> getAnnotations(List<String> ids, QueryOptions options, boolean post) throws IOException {
-        this.category = "genomic";
-        this.subcategory = "variant";
-        QueryResponse<VariantAnnotation> annotation = execute(ids, "annotation", options, VariantAnnotation.class, post);
-
-        this.category = "feature";
-        this.subcategory = "variation";
-        return annotation;
+//        //Do not modify this variables! Will fail with concurrent queries!
+//        this.category = "genomic";
+//        this.subcategory = "variant";
+//        try {
+//            return execute(ids, "annotation", options, VariantAnnotation.class, post);
+//        } finally {
+//            this.category = "feature";
+//            this.subcategory = "variation";
+//        }
+        return variantClient.getAnnotations(ids, options, post);
 
 //        if (options == null) {
 //            options = new QueryOptions();

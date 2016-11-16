@@ -46,15 +46,16 @@ import java.util.concurrent.Future;
  */
 public class ParentRestClient<T> {
 
-    protected String species;
-    protected Client client;
+    protected final String species;
+    protected final Client client;
 
+    // TODO: Should this be final?
     protected String category;
     protected String subcategory;
 
     protected Class<T> clazz;
 
-    protected ClientConfiguration configuration;
+    protected final ClientConfiguration configuration;
 
     protected static ObjectMapper jsonObjectMapper;
     protected static Logger logger;
@@ -231,7 +232,10 @@ public class ParentRestClient<T> {
             throws IOException {
 
         String ids = "";
-        if (idList != null && !idList.isEmpty()) {
+        if (idList == null) {
+            idList = Collections.emptyList();
+        }
+        if (!idList.isEmpty()) {
             ids = StringUtils.join(idList, ',');
         }
 
@@ -241,15 +245,18 @@ public class ParentRestClient<T> {
             queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(),
                     ids, resource, queryOptions, clazz, post);
             if (queryResponse == null) {
-                logger.warn("CellBase REST fail. Returned null. {} for ids {}. hosts: {}, version: {}, resource: {}, "
-                        + "queryOptions: {}", ids, StringUtils.join(configuration.getRest().getHosts(), ","),
-                        configuration.getVersion(), resource, queryOptions.toJson());
+                logger.warn("CellBase REST fail. Returned null for ids {}. hosts: {}, version: {}, "
+                                + "category: {}, subcategory: {}, resource: {}, queryOptions: {}",
+                        ids, StringUtils.join(configuration.getRest().getHosts(), ","), configuration.getVersion(),
+                        category, subcategory, resource, queryOptions.toJson());
                 queryError = true;
             }
         } catch (JsonProcessingException | javax.ws.rs.ProcessingException e) {
             logger.warn("CellBase REST fail. Error parsing query result for ids {}. hosts: {}, version: {}, "
-                    + "resource: {}, queryOptions: {}", ids, StringUtils.join(configuration.getRest().getHosts(), ","),
-                    configuration.getVersion(), resource, queryOptions.toJson());
+                            + "category: {}, subcategory: {}, resource: {}, queryOptions: {}. Exception message: {}",
+                    ids, StringUtils.join(configuration.getRest().getHosts(), ","), configuration.getVersion(),
+                    category, subcategory, resource, queryOptions.toJson(), e.getMessage());
+            logger.debug("CellBase REST exception.", e);
             queryError = true;
             queryResponse = null;
         }
@@ -271,7 +278,7 @@ public class ParentRestClient<T> {
             List<QueryResult<U>> queryResultList = new LinkedList<>();
             queryResponse = new QueryResponse<U>(configuration.getVersion(), -1, null, null, queryOptions,
                     queryResultList);
-            logger.warn("Re-attempting to solve the query - trying to identify any problematic id to skip it");
+            logger.info("Re-attempting to solve the query - trying to identify any problematic id to skip it");
             List<String> idList1 = idList.subList(0, idList.size() / 2);
             if (!idList1.isEmpty()) {
                 queryResultList.addAll(robustRestCall(idList1, resource, queryOptions, clazz, post).getResponse());
