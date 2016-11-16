@@ -29,10 +29,12 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -251,7 +253,7 @@ public class ParentRestClient<T> {
                         category, subcategory, resource, queryOptions.toJson());
                 queryError = true;
             }
-        } catch (JsonProcessingException | javax.ws.rs.ProcessingException e) {
+        } catch (JsonProcessingException | javax.ws.rs.ProcessingException | WebApplicationException e) {
             logger.warn("CellBase REST fail. Error parsing query result for ids {}. hosts: {}, version: {}, "
                             + "category: {}, subcategory: {}, resource: {}, queryOptions: {}. Exception message: {}",
                     ids, StringUtils.join(configuration.getRest().getHosts(), ","), configuration.getVersion(),
@@ -259,6 +261,17 @@ public class ParentRestClient<T> {
             logger.debug("CellBase REST exception.", e);
             queryError = true;
             queryResponse = null;
+            if (e instanceof WebApplicationException) {
+                Response.Status status = Response.Status.fromStatusCode(((WebApplicationException) e).getResponse().getStatus());
+                switch (status) {
+                    case GATEWAY_TIMEOUT:
+                        // Do not propagate this error
+                        // TODO: Add a counter?
+                        break;
+                    default:
+                        throw e;
+                }
+            }
         }
 
         if (queryResponse != null && queryResponse.getResponse().size() != idList.size()) {
