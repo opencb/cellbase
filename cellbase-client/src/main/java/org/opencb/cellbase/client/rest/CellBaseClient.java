@@ -20,6 +20,7 @@ import org.opencb.cellbase.client.config.ClientConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Created by imedina on 12/05/16.
@@ -29,7 +30,7 @@ public class CellBaseClient {
     private String species;
     private ClientConfiguration clientConfiguration;
 
-    private Map<String, ParentRestClient> clients;
+    private final Map<String, ParentRestClient> clients;
 
 
     public CellBaseClient(ClientConfiguration clientConfiguration) {
@@ -45,28 +46,40 @@ public class CellBaseClient {
 
 
     public GeneClient getGeneClient() {
-        clients.putIfAbsent("GENE", new GeneClient(species, clientConfiguration));
-        return (GeneClient) clients.get("GENE");
+        return getClient("GENE", () -> new GeneClient(species, clientConfiguration));
     }
 
     public TranscriptClient getTranscriptClient() {
-        clients.putIfAbsent("TRANSCRIPT", new TranscriptClient(species, clientConfiguration));
-        return (TranscriptClient) clients.get("TRANSCRIPT");
+        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, clientConfiguration));
     }
 
     public VariationClient getVariationClient() {
-        clients.putIfAbsent("VARIATION", new VariationClient(species, clientConfiguration));
-        return (VariationClient) clients.get("VARIATION");
+        return getClient("VARIATION", () -> new VariationClient(species, clientConfiguration));
+    }
+
+    public VariantClient getVariantClient() {
+        return getClient("VARIANT", () -> new VariantClient(species, clientConfiguration));
     }
 
     public ProteinClient getProteinClient() {
-        clients.putIfAbsent("PROTEIN", new ProteinClient(species, clientConfiguration));
-        return (ProteinClient) clients.get("PROTEIN");
+        return getClient("PROTEIN", () -> new ProteinClient(species, clientConfiguration));
     }
 
     public GenomicRegionClient getGenomicRegionClient() {
-        clients.putIfAbsent("GENOME_REGION", new GenomicRegionClient(species, clientConfiguration));
-        return (GenomicRegionClient) clients.get("GENOME_REGION");
+        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, clientConfiguration));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends ParentRestClient> T getClient(String key, Supplier<T> constructorIfAbsent) {
+        // Avoid concurrent modifications
+        if (!clients.containsKey(key)) {
+            synchronized (clients) {
+                if (!clients.containsKey(key)) {
+                    clients.put(key, constructorIfAbsent.get());
+                }
+            }
+        }
+        return (T) clients.get(key);
     }
 
 
