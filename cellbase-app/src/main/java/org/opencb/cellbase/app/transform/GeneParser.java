@@ -534,14 +534,6 @@ public class GeneParser extends CellBaseParser {
             for (String transcript : gtfMap.get(gene).keySet()) {
                 List<Gtf> exonList = (List<Gtf>) gtfMap.get(gene).get(transcript).get("exon");
                 Collections.sort(exonList, (e1, e2) -> Integer.valueOf(e1.getStart()).compareTo(e2.getStart()));
-
-//
-//                List<String> sortedExons = ((List<Gtf>) gtfMap.get(gene).get(transcript).get("exon"))
-//                        .stream()
-//                        .sorted((e1, e2) -> Integer.valueOf(e2.getStart()).compareTo(e1.getStart())) // custom Comparator
-////                        .map(e -> e.getKey())
-//                        .collect(Collectors.toList());
-
                 if (exonList.get(0).getStrand().equals("+")) {
                     int exonNumber = 1;
                     for (Gtf gtf : exonList) {

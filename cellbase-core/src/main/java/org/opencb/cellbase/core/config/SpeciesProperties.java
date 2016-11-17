@@ -28,6 +28,7 @@ public class SpeciesProperties {
     private List<Species> fungi;
     private List<Species> protist;
     private List<Species> plants;
+    private List<Species> virus;
 
 
     public SpeciesProperties() {
@@ -95,4 +96,11 @@ public class SpeciesProperties {
         this.plants = plants;
     }
 
+    public List<Species> getVirus() {
+        return virus;
+    }
+
+    public void setVirus(List<Species> virus) {
+        this.virus = virus;
+    }
 }
