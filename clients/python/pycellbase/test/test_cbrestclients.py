@@ -115,7 +115,7 @@ class VariationClientTest(unittest.TestCase):
         """Checks retrieval of consequence types with and without specific ID"""
         # Without ID
         res = self._vc.get_consequence_types()
-        assert len(res[0]['result']) == 38
+        assert len(res[0]['result']) == 39
         assert 'coding_sequence_variant' in res[0]['result']
 
         # With ID # TODO Currently not working. Is this deprecated?
@@ -197,9 +197,9 @@ class VariantTest(unittest.TestCase):
         assert len(res[0]['result']) == 2
         assert res[0]['result'][0]['score'] == -1.1800003051757812
 
-    def test_annotate(self):
-        """Annotates specific variants from a file"""
-        self._vc.annotate('../resources/annot_example.tsv')
+    # def test_annotate(self):
+    #     """Annotates specific variants from a file"""
+    #     self._vc.annotate('../resources/annot_example.tsv')
 
 
 if __name__ == '__main__':
