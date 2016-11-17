@@ -1,4 +1,4 @@
-import pycellbase.cbfeatures as fts
+import pycellbase.cbrestclients as fts
 from pycellbase.cbconfig import ConfigClient
 from pycellbase.commons import get
 
@@ -30,7 +30,6 @@ class CellBaseClient(object):
     def get(self, category, subcategory, resource, query_id=None, **options):
         """Creates the URL for querying the REST service"""
         response = get(host=self._configuration.host,
-                       port=self._configuration.port,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=category,
@@ -73,3 +72,9 @@ class CellBaseClient(object):
             self._clients['GENOMIC_REGION'] = \
                 fts.GenomicRegionClient(self._configuration)
         return self._clients['GENOMIC_REGION']
+
+    def get_variant_client(self):
+        """Creates the variant client"""
+        if 'VARIANT' not in self._clients:
+            self._clients['VARIANT'] = fts.VariantClient(self._configuration)
+        return self._clients['VARIANT']

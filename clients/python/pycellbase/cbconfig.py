@@ -7,12 +7,11 @@ class ConfigClient(object):
     """Sets up the default configuration for the CellBase client"""
     def __init__(self, config_fpath=None):
         # Default config params
-        # self._hosts = ['bioinfodev.hpc.cam.ac.uk', 'bioinfo.hpc.cam.ac.uk']
-        self._hosts = ['bioinfo.hpc.cam.ac.uk', 'bioinfodev.hpc.cam.ac.uk']
+        self._hosts = ['bioinfo.hpc.cam.ac.uk:80/cellbase',
+                       'bioinfodev.hpc.cam.ac.uk:80/cellbase-4.5.0-beta']
         self._config = {
             'host': self._get_available_host(),
-            'port': '80',
-            'version': 'latest',
+            'version': 'v4',
             'species': 'hsapiens',
         }
 
@@ -32,11 +31,9 @@ class ConfigClient(object):
             config_dict = json.loads(config_fhand.read())
 
         if config_dict is not None:
-            if 'host' in config_dict['rest']:
+            if 'hosts' in config_dict['rest']:
                 self._hosts = config_dict['rest']['hosts']
                 self._config['host'] = self._get_available_host()
-            if 'port' in config_dict['rest']:
-                self._config['port'] = config_dict['rest']['port']
             if 'version' in config_dict:
                 self._config['version'] = config_dict['version']
             if 'species' in config_dict:
@@ -50,10 +47,10 @@ class ConfigClient(object):
         for host in self._hosts:
             try:
                 r = requests.head('http://' + host)
-                if r.status_code == 200:  # Successful HTTP request
+                if r.status_code == 302:  # Found
                     available_host = host
                     break
-            except requests.ConnectionError:
+            except ConnectionError:
                 pass
 
         if available_host is None:
@@ -77,14 +74,6 @@ class ConfigClient(object):
     @host.setter
     def host(self, new_host):
             self._config['host'] = new_host
-
-    @property
-    def port(self):
-        return self._config['port']
-
-    @port.setter
-    def port(self, new_port):
-            self._config['port'] = new_port
 
     @property
     def species(self):

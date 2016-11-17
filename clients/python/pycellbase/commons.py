@@ -5,21 +5,19 @@ try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+from simplejson import JSONDecodeError
 
 _CALL_BATCH_SIZE = 2000
 _NUM_THREADS_DEFAULT = 4
 
 
-def _create_rest_url(host, port, version, species, category, subcategory,
+def _create_rest_url(host, version, species, category, subcategory,
                      resource, query_id, options):
     """Creates the URL for querying the REST service"""
 
-    cellbase_rest = 'cellbase/webservices/rest'
-    # cellbase_rest = 'cellbase-4.5.0-rc/webservices/rest'
-
     # Creating the basic URL
-    url = ('http://' + '/'.join([host + ':' + port,
-                                 cellbase_rest,
+    url = ('http://' + '/'.join([host,
+                                 'webservices/rest',
                                  version,
                                  species,
                                  category,
@@ -28,9 +26,8 @@ def _create_rest_url(host, port, version, species, category, subcategory,
 
     # If subcategory is queried, query_id can be absent
     if query_id is not None:
-        url += '/' + '/'.join([query_id, resource])
-    else:
-        url += '/' + resource
+        url += '/' + query_id
+    url += '/' + resource
 
     # Checking optional params
     if options is not None:
@@ -43,76 +40,7 @@ def _create_rest_url(host, port, version, species, category, subcategory,
     return url
 
 
-def _worker(queue, results, host, port, version, species, category,
-            subcategory, resource, options=None):
-    """Manages the queue system for the threads"""
-    while True:
-        # Fetching new element from the queue
-        index, query_id = queue.get()
-        response = _fetch(host, port, version, species, category, subcategory,
-                          resource, query_id, options)
-        # Store data in results at correct index
-        results[index] = response
-        # Signaling to the queue that task has been processed
-        queue.task_done()
-
-
-def get(host, port, version, species, category, subcategory, resource,
-        query_id=None, options=None):
-    """Queries the REST service using multiple threads if needed"""
-
-    if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
-        response = _fetch(host, port, version, species, category, subcategory,
-                          resource, query_id, options)
-        return response
-    else:
-        if options is not None and 'num_threads' in options:
-            num_threads = options['num_threads']
-        else:
-            num_threads = _NUM_THREADS_DEFAULT
-
-        # Splitting query_id into batches depending on the call batch size
-        id_list = query_id.split(',')
-        id_batches = [','.join(id_list[x:x+_CALL_BATCH_SIZE])
-                      for x in range(0, len(id_list), _CALL_BATCH_SIZE)]
-
-        # Setting up the queue to hold all the id batches
-        q = Queue(maxsize=0)
-        # Creating a size defined list to store thread results
-        res = [''] * len(id_batches)
-
-        # Setting up the threads
-        for thread in range(num_threads):
-            t = threading.Thread(target=_worker,
-                                 kwargs={'queue': q,
-                                         'results': res,
-                                         'host': host,
-                                         'port': port,
-                                         'version': version,
-                                         'species': species,
-                                         'category': category,
-                                         'subcategory': subcategory,
-                                         'resource': resource,
-                                         'options': options})
-            # Setting threads as "daemon" allows main program to exit eventually
-            # even if these dont finish correctly
-            t.setDaemon(True)
-            t.start()
-
-        # Loading up the queue with index and id batches for each job
-        for index, batch in enumerate(id_batches):
-            q.put((index, batch))  # Notice this is a tuple
-
-        # Waiting until the queue has been processed
-        q.join()
-
-    # Joining all the responses into a one final response
-    final_response = list(itertools.chain.from_iterable(res))
-
-    return final_response
-
-
-def _fetch(host, port, version, species, category, subcategory, resource,
+def _fetch(host, version, species, category, subcategory, resource,
            query_id=None, options=None):
     """Queries the REST service retrieving results until exhaustion or limit"""
     # HERE BE DRAGONS
@@ -137,6 +65,7 @@ def _fetch(host, port, version, species, category, subcategory, resource,
     # If there is a query_id, the next variables will be used
     total_id_list = []  # All initial ids
     next_id_list = []  # Ids which should be queried again for more results
+    next_id_indexes = []  # Ids position in the final response
     if query_id is not None:
         total_id_list = query_id.split(',')
 
@@ -144,6 +73,8 @@ def _fetch(host, port, version, species, category, subcategory, resource,
     # queried again to retrieve the next 'call_limit results'
     call = True
     current_query_id = None  # Current REST query
+    current_id_list = None  # Current list of ids
+    time_out_counter = 0  # Number of times a query is repeated due to time-out
     while call:
         # Check 'limit' parameter if there is a maximum limit of results
         if max_limit is not None and max_limit <= call_limit:
@@ -154,13 +85,14 @@ def _fetch(host, port, version, species, category, subcategory, resource,
             if current_query_id is None:
                 current_query_id = query_id
                 current_id_list = total_id_list
+                current_id_indexes = range(len(total_id_list))
             else:
                 current_query_id = ','.join(next_id_list)
                 current_id_list = next_id_list
+                current_id_indexes = next_id_indexes
 
         # Retrieving url
         url = _create_rest_url(host=host,
-                               port=port,
                                version=version,
                                species=species,
                                category=category,
@@ -172,7 +104,18 @@ def _fetch(host, port, version, species, category, subcategory, resource,
 
         # Getting REST response
         r = requests.get(url, headers={"Accept-Encoding": "gzip"})
-        response = r.json()['response']
+        if r.status_code == 504:  # Gateway Time-out
+            if time_out_counter == 99:
+                msg = 'Server not responding in time'
+                raise ConnectionError(msg)
+            time_out_counter += 1
+            continue
+        time_out_counter = 0
+        try:
+            response = r.json()['response']
+        except JSONDecodeError:
+            msg = 'Bad JSON format retrieved from server'
+            raise ValueError(msg)
 
         # Setting up final_response
         if final_response is None:
@@ -181,8 +124,7 @@ def _fetch(host, port, version, species, category, subcategory, resource,
         else:
             if query_id is not None:
                 for index, res in enumerate(response):
-                    id_name = current_id_list[index]
-                    id_index = total_id_list.index(id_name)
+                    id_index = current_id_indexes[index]
                     final_response[id_index]['result'] += res['result']
             else:
                 final_response[0]['result'] += response[0]['result']
@@ -190,9 +132,11 @@ def _fetch(host, port, version, species, category, subcategory, resource,
         if query_id is not None:
             # Checking which ids are completely retrieved
             next_id_list = []
+            next_id_indexes = []
             for index, res in enumerate(response):
                 if res['numResults'] == call_limit:
                     next_id_list.append(current_id_list[index])
+                    next_id_indexes.append(current_id_indexes[index])
             # Ending REST calling when there are no more ids to retrieve
             if not next_id_list:
                 call = False
@@ -210,5 +154,78 @@ def _fetch(host, port, version, species, category, subcategory, resource,
             # When 'limit' is 0 returns all the results. So, break the loop if 0
             if max_limit == 0:
                 break
+
+    return final_response
+
+
+def _worker(queue, results, host, version, species, category,
+            subcategory, resource, options=None):
+    """Manages the queue system for the threads"""
+    while True:
+        # Fetching new element from the queue
+        index, query_id = queue.get()
+        response = _fetch(host, version, species, category, subcategory,
+                          resource, query_id, options)
+        # Store data in results at correct index
+        results[index] = response
+        # Signaling to the queue that task has been processed
+        queue.task_done()
+
+
+def get(host, version, species, category, subcategory, resource,
+        query_id=None, options=None):
+    """Queries the REST service using multiple threads if needed"""
+
+    # If query_id is an array, convert to comma-separated string
+    if query_id is not None and isinstance(query_id, list):
+        query_id = ','.join(query_id)
+
+    # Multithread if the number of queries is greater than _CALL_BATCH_SIZE
+    if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
+        response = _fetch(host, version, species, category, subcategory,
+                          resource, query_id, options)
+        return response
+    else:
+        if options is not None and 'num_threads' in options:
+            num_threads = options['num_threads']
+        else:
+            num_threads = _NUM_THREADS_DEFAULT
+
+        # Splitting query_id into batches depending on the call batch size
+        id_list = query_id.split(',')
+        id_batches = [','.join(id_list[x:x+_CALL_BATCH_SIZE])
+                      for x in range(0, len(id_list), _CALL_BATCH_SIZE)]
+
+        # Setting up the queue to hold all the id batches
+        q = Queue(maxsize=0)
+        # Creating a size defined list to store thread results
+        res = [''] * len(id_batches)
+
+        # Setting up the threads
+        for thread in range(num_threads):
+            t = threading.Thread(target=_worker,
+                                 kwargs={'queue': q,
+                                         'results': res,
+                                         'host': host,
+                                         'version': version,
+                                         'species': species,
+                                         'category': category,
+                                         'subcategory': subcategory,
+                                         'resource': resource,
+                                         'options': options})
+            # Setting threads as "daemon" allows main program to exit eventually
+            # even if these do not finish correctly
+            t.setDaemon(True)
+            t.start()
+
+        # Loading up the queue with index and id batches for each job
+        for index, batch in enumerate(id_batches):
+            q.put((index, batch))  # Notice this is a tuple
+
+        # Waiting until the queue has been processed
+        q.join()
+
+    # Joining all the responses into a one final response
+    final_response = list(itertools.chain.from_iterable(res))
 
     return final_response

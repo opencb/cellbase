@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.transform
 
 import org.junit.Ignore
 import org.opencb.biodata.models.core.Gene
-import org.opencb.cellbase.core.CellBaseConfiguration
+import org.opencb.cellbase.core.config.Species
 import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -44,18 +44,19 @@ class GeneParserTest extends Specification {
         serializedGenes = new ArrayList<Gene>()
         serializer.serialize(_) >> { Gene arg -> serializedGenes.add(arg) }
 
-        def species = new CellBaseConfiguration.SpeciesProperties.Species()
-        def geneParser = new GeneParser(geneTestDir, genomeSequenceFasta, species, false, serializer)
+        def species = new Species()
+        def geneParser = new GeneParser(geneTestDir, genomeSequenceFasta, species, serializer)
         geneParser.parse()
 
         def ebolaGeneTestDir = Paths.get(GeneParserTest.class.getResource("/ebolaGenome").toURI())
         def ebolaGenomeSequenceFasta = Paths.get(GeneParserTest.class.getResource("/ebolaGenome/Ebola_virus.KM034562v1.fa.gz").toURI())
 
         // custom test serializer that adds the serialized variants to a list
+        def ebolaSerializer = Mock(CellBaseSerializer)
         ebolaSerializedGenes = new ArrayList<Gene>()
-        serializer.serialize(_) >> { Gene arg -> ebolaSerializedGenes.add(arg) }
+        ebolaSerializer.serialize(_) >> { Gene arg -> ebolaSerializedGenes.add(arg) }
 
-        def flexibleGeneParser = new GeneParser(ebolaGeneTestDir, ebolaGenomeSequenceFasta, species, true, serializer)
+        def flexibleGeneParser = new GeneParser(ebolaGeneTestDir, ebolaGenomeSequenceFasta, species, true, ebolaSerializer)
         flexibleGeneParser.parse()
     }
 
@@ -156,9 +157,9 @@ class GeneParserTest extends Specification {
     @Unroll
     def "gene #geneId flexible parsing"() {
         expect:
-        ebolaSerializedGenes.size() == 9
+        ebolaSerializedGenes.findAll().size() == 4
         ebolaSerializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
-        def gene = ebolaSerializedGenes.findAll({gene -> gene.getId().equals(geneId)}).first()
+        def gene = ebolaSerializedGenes.find({gene -> gene.getId().equals(geneId)})
         gene.chromosome == chromosome
         gene.start == start
         gene.end == end
@@ -172,10 +173,10 @@ class GeneParserTest extends Specification {
 
         where:
         geneId || chromosome   | start | end   | strand | transcriptsNumber | cdnaCodingStart | cdnaCodingEnd | genomicCodingStart | genomicCodingEnd
-        "NP"   || "KM034562v1" | 56    | 3026  | "+"    | 1                 | 415             | 2631          | 470                | 2686
-        "ssGP" || "KM034562v1" | 5900  | 8305  | "+"    | 1                 | 140             | 1031          | 6039               | 6930
-        "VP35" || "KM034562v1" | 3032  | 4407  | "+"    | 1                 | 98              | 1117          | 3129               | 4148
-        "L"    || "KM034562v1" | 11501 | 18282 | "+"    | 1                 | 1               | 6717          | 11581              | 18216
+        "NP"   || "KM034562v1" | 56    | 3026  | "+"    | 1                 | 415             | 2634          | 470                | 2689
+        "ssGP" || "KM034562v1" | 5900  | 8305  | "+"    | 1                 | 140             | 1033          | 6039               | 6933
+        "VP35" || "KM034562v1" | 3032  | 4407  | "+"    | 1                 | 98              | 1120          | 3129               | 4151
+        "L"    || "KM034562v1" | 11501 | 18282 | "+"    | 1                 | 81              | 6719          | 11581              | 18219
     }
 
     def cleanupSpec() {

@@ -67,7 +67,10 @@ public class VariationParser extends CellBaseParser {
         super(serializer);
         fileSerializer = serializer;
         this.variationDirectoryPath = variationDirectoryPath;
-        cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))+");
+        //cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))+");
+        // Avoid patterns alleles like "(AG)15(TG)16" to be procesed as CNVs - just one occurrence like "(AG)15"
+        // will be accepted
+        cnvPattern = Pattern.compile("((?<" + SEQUENCE_GROUP + ">\\(\\w+\\))" + "(?<" + COUNT_GROUP + ">\\d*))");
         outputFileNames = new HashMap<>();
         // create files
         variationFile = new VariationFile(variationDirectoryPath);
@@ -323,8 +326,7 @@ public class VariationParser extends CellBaseParser {
         Matcher alternateMatcher = cnvPattern.matcher(alternate);
         if (referenceMatcher.matches() && alternateMatcher.matches()) {
             if (referenceMatcher.group(SEQUENCE_GROUP).equals(alternateMatcher.group(SEQUENCE_GROUP))
-                    && !referenceMatcher.group(COUNT_GROUP).equals(alternateMatcher.group(COUNT_GROUP)))
-            {
+                    && !referenceMatcher.group(COUNT_GROUP).equals(alternateMatcher.group(COUNT_GROUP))) {
                 return VariantType.CNV;
             }
         } else if (referenceMatcher.matches()) {
@@ -492,26 +494,26 @@ public class VariationParser extends CellBaseParser {
 
     private TranscriptVariation buildTranscriptVariation(String[] transVarFields) {
         return new TranscriptVariation(
-                (transVarFields[2] != null && !transVarFields[2].equals("\\N")) ? transVarFields[2] : null
-                , (transVarFields[3] != null && !transVarFields[3].equals("\\N")) ? transVarFields[3] : null
-                , (transVarFields[4] != null && !transVarFields[4].equals("\\N")) ? transVarFields[4] : null
-                , Arrays.asList(transVarFields[5].split(","))
-                , (transVarFields[6] != null && !transVarFields[6].equals("\\N")) ? Integer.parseInt(transVarFields[6]) : 0
-                , (transVarFields[7] != null && !transVarFields[7].equals("\\N")) ? Integer.parseInt(transVarFields[7]) : 0
-                , (transVarFields[8] != null && !transVarFields[8].equals("\\N")) ? Integer.parseInt(transVarFields[8]) : 0
-                , (transVarFields[9] != null && !transVarFields[9].equals("\\N")) ? Integer.parseInt(transVarFields[9]) : 0
-                , (transVarFields[10] != null && !transVarFields[10].equals("\\N")) ? Integer.parseInt(transVarFields[10]) : 0
-                , (transVarFields[11] != null && !transVarFields[11].equals("\\N")) ? Integer.parseInt(transVarFields[11]) : 0
-                , (transVarFields[12] != null && !transVarFields[12].equals("\\N")) ? Integer.parseInt(transVarFields[12]) : 0
-                , (transVarFields[13] != null && !transVarFields[13].equals("\\N")) ? transVarFields[13] : null
-                , (transVarFields[14] != null && !transVarFields[14].equals("\\N")) ? transVarFields[14] : null
-                , (transVarFields[15] != null && !transVarFields[15].equals("\\N")) ? transVarFields[15] : null
-                , (transVarFields[16] != null && !transVarFields[16].equals("\\N")) ? transVarFields[16] : null
-                , (transVarFields[17] != null && !transVarFields[17].equals("\\N")) ? transVarFields[17] : null
-                , (transVarFields[18] != null && !transVarFields[18].equals("\\N")) ? transVarFields[18] : null
-                , (transVarFields[19] != null && !transVarFields[19].equals("\\N")) ? Float.parseFloat(transVarFields[19]) : null
-                , (transVarFields[20] != null && !transVarFields[20].equals("\\N")) ? transVarFields[20] : null
-                , (transVarFields[21] != null && !transVarFields[21].equals("\\N")) ? Float.parseFloat(transVarFields[21]) : null);
+                (transVarFields[2] != null && !transVarFields[2].equals("\\N")) ? transVarFields[2] : null,
+                (transVarFields[3] != null && !transVarFields[3].equals("\\N")) ? transVarFields[3] : null,
+                (transVarFields[4] != null && !transVarFields[4].equals("\\N")) ? transVarFields[4] : null,
+                Arrays.asList(transVarFields[5].split(",")),
+                (transVarFields[6] != null && !transVarFields[6].equals("\\N")) ? Integer.parseInt(transVarFields[6]) : 0,
+                (transVarFields[7] != null && !transVarFields[7].equals("\\N")) ? Integer.parseInt(transVarFields[7]) : 0,
+                (transVarFields[8] != null && !transVarFields[8].equals("\\N")) ? Integer.parseInt(transVarFields[8]) : 0,
+                (transVarFields[9] != null && !transVarFields[9].equals("\\N")) ? Integer.parseInt(transVarFields[9]) : 0,
+                (transVarFields[10] != null && !transVarFields[10].equals("\\N")) ? Integer.parseInt(transVarFields[10]) : 0,
+                (transVarFields[11] != null && !transVarFields[11].equals("\\N")) ? Integer.parseInt(transVarFields[11]) : 0,
+                (transVarFields[12] != null && !transVarFields[12].equals("\\N")) ? Integer.parseInt(transVarFields[12]) : 0,
+                (transVarFields[13] != null && !transVarFields[13].equals("\\N")) ? transVarFields[13] : null,
+                (transVarFields[14] != null && !transVarFields[14].equals("\\N")) ? transVarFields[14] : null,
+                (transVarFields[15] != null && !transVarFields[15].equals("\\N")) ? transVarFields[15] : null,
+                (transVarFields[16] != null && !transVarFields[16].equals("\\N")) ? transVarFields[16] : null,
+                (transVarFields[17] != null && !transVarFields[17].equals("\\N")) ? transVarFields[17] : null,
+                (transVarFields[18] != null && !transVarFields[18].equals("\\N")) ? transVarFields[18] : null,
+                (transVarFields[19] != null && !transVarFields[19].equals("\\N")) ? Float.parseFloat(transVarFields[19]) : null,
+                (transVarFields[20] != null && !transVarFields[20].equals("\\N")) ? transVarFields[20] : null,
+                (transVarFields[21] != null && !transVarFields[21].equals("\\N")) ? Float.parseFloat(transVarFields[21]) : null);
     }
 
     private void gunzipVariationInputFiles() throws IOException, InterruptedException {

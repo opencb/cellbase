@@ -19,7 +19,7 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.variation.VariationParser;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -56,8 +56,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private File proteinScriptsFolder;
 
     private boolean flexibleGTFParsing;
-
-    private CellBaseConfiguration.SpeciesProperties.Species species;
+    private Species species;
 
     public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
@@ -97,7 +96,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
-            for (CellBaseConfiguration.SpeciesProperties.Species sp : configuration.getAllSpecies()) {
+            for (Species sp : configuration.getAllSpecies()) {
                 if (buildCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getId())) {
@@ -304,7 +303,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
     }
 
-    private void getProteinFunctionPredictionMatrices(CellBaseConfiguration.SpeciesProperties.Species sp, Path geneFolder)
+    private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
 
@@ -380,7 +379,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "cosmic", true);
-        return new CosmicParser(cosmicFilePath, serializer);
+        String assembly = buildCommandOptions.assembly;
+        return new CosmicParser(cosmicFilePath, serializer, assembly);
     }
 
     private CellBaseParser buildGwas() throws IOException {

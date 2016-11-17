@@ -17,12 +17,14 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.*;
-import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.common.GitRepositoryState;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.utils.CommandLineUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 03/02/15.
