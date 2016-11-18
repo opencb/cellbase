@@ -1,7 +1,9 @@
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.app.cli.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;

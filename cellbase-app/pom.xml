@@ -25,6 +25,12 @@
             <version>${cellbase.version}</version>
             <!--<type>war</type>-->
         </dependency>
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-client</artifactId>
+            <version>${cellbase.version}</version>
+            <!--<type>war</type>-->
+        </dependency>
 
         <dependency>
             <groupId>com.beust</groupId>
