@@ -642,7 +642,13 @@ public class GeneWSServer extends GenericRestWSServer {
                                            value = "Comma separated list of gene names/ids. Can use HGNC gene symbols,"
                                                    + "ENSEMBL gene ids and even ENSEMBL transcript ids, e.g.: "
                                                    + "BRCA2,ENSG00000243485,ENSG00000269981."
-                                                   + " Exact text matches will be returned") String geneId) {
+                                                   + " Exact text matches will be returned") String geneId,
+                                   @DefaultValue("false")
+                                   @QueryParam("merge")
+                                   @ApiParam(name = "merge",
+                                           value = "Return variants for a gene per QueryResult or all of them merged"
+                                                   + " into the same QueryResult object.",
+                                           defaultValue = "false") boolean merge) {
 //    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
 
 //        try {
@@ -670,13 +676,21 @@ public class GeneWSServer extends GenericRestWSServer {
 //        }
 
 
-        // FIXME: replace the above try/catch by this block below as soon as annotation is ready at variation collection.
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
-            query.put(VariantDBAdaptor.QueryParams.GENE.key(), geneId);
-            QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
-            return createOkResponse(queryResult);
+            if (merge) {
+                query.put(VariantDBAdaptor.QueryParams.GENE.key(), geneId);
+                QueryResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
+                return createOkResponse(queryResult);
+            } else {
+                List<Query> queries = createQueries(geneId, VariantDBAdaptor.QueryParams.GENE.key());
+                List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+                for (int i = 0; i < queries.size(); i++) {
+                    queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.GENE.key()));
+                }
+                return createOkResponse(queryResults);
+            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }
