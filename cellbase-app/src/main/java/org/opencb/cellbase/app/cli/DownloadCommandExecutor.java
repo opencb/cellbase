@@ -274,6 +274,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
             return "protists";
         } else if (configuration.getSpecies().getPlants().contains(sp)) {
             return "plants";
+        } else if (configuration.getSpecies().getVirus().contains(sp)) {
+            return "virus";
+        } else if (configuration.getSpecies().getBacteria().contains(sp)) {
+            return "bacteria";
         } else {
             throw new ParameterException("Species " + sp.getScientificName() + " not associated to any phylo in the configuration file");
         }

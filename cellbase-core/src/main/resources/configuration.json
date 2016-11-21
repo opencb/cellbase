@@ -913,6 +913,46 @@
 					"gene"
 				]
 			}
+		],
+		"bacteria": [
+			{
+				"id": "mpneumoniae",
+				"scientificName": "Mycoplasma pneumoniae M129",
+				"assemblies": [
+					{
+						"ensemblVersion":"29_82_1",
+						"ensemblCollection":"bacteria_0_collection",
+						"name":"ASM2734v1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"regulation",
+					"protein"
+				]
+			},
+			{
+				"id": "ecoli",
+				"scientificName": "Mycoplasma pneumoniae M129",
+				"assemblies": [
+					{
+						"ensemblVersion":"29_82_1",
+						"ensemblCollection":"bacteria_91_collection",
+						"name":"HUSEC2011CHR1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"regulation",
+					"protein"
+				]
+			}
 		]
 	}
 }
