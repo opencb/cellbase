@@ -5,6 +5,7 @@ import yaml
 
 class ConfigClient(object):
     """Sets up the default configuration for the CellBase client"""
+
     def __init__(self, config_fpath=None):
         # Default config params
         self._hosts = ['bioinfo.hpc.cam.ac.uk:80/cellbase',
@@ -45,17 +46,19 @@ class ConfigClient(object):
         """Returns the first available host"""
         available_host = None
         for host in self._hosts:
+            if not (host.startswith('http://') or host.startswith('https://')):
+                host = 'http://' + host
             try:
-                r = requests.head('http://' + host)
+                r = requests.head(host)
                 if r.status_code == 302:  # Found
                     available_host = host
                     break
-            except ConnectionError:
+            except requests.ConnectionError:
                 pass
 
         if available_host is None:
             msg = 'No available host found'
-            raise ConnectionError(msg)
+            raise requests.ConnectionError(msg)
         else:
             return available_host
 
@@ -73,7 +76,10 @@ class ConfigClient(object):
 
     @host.setter
     def host(self, new_host):
-            self._config['host'] = new_host
+        if not (new_host.startswith('http://') or
+                    new_host.startswith('https://')):
+            new_host = 'http://' + new_host
+        self._config['host'] = new_host
 
     @property
     def species(self):
@@ -81,7 +87,7 @@ class ConfigClient(object):
 
     @species.setter
     def species(self, new_species):
-            self._config['species'] = new_species
+        self._config['species'] = new_species
 
     @property
     def configuration(self):

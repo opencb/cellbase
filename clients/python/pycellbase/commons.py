@@ -15,13 +15,13 @@ def _create_rest_url(host, version, species, category, subcategory,
     """Creates the URL for querying the REST service"""
 
     # Creating the basic URL
-    url = ('http://' + '/'.join([host,
-                                 'webservices/rest',
-                                 version,
-                                 species,
-                                 category,
-                                 subcategory
-                                 ]))
+    url = ('/'.join([host,
+                     'webservices/rest',
+                     version,
+                     species,
+                     category,
+                     subcategory
+                     ]))
 
     # If subcategory is queried, query_id can be absent
     if query_id is not None:
@@ -99,7 +99,7 @@ def _fetch(host, version, species, category, subcategory, resource,
                                query_id=current_query_id,
                                resource=resource,
                                options=opts)
-        # print(url)  # DEBUG
+        print(url)  # DEBUG
 
         # Getting REST response
         r = requests.get(url, headers={"Accept-Encoding": "gzip"})
