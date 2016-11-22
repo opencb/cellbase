@@ -5,7 +5,6 @@ try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
-from simplejson import JSONDecodeError
 
 _CALL_BATCH_SIZE = 2000
 _NUM_THREADS_DEFAULT = 4
@@ -107,13 +106,13 @@ def _fetch(host, version, species, category, subcategory, resource,
         if r.status_code == 504:  # Gateway Time-out
             if time_out_counter == 99:
                 msg = 'Server not responding in time'
-                raise ConnectionError(msg)
+                raise requests.ConnectionError(msg)
             time_out_counter += 1
             continue
         time_out_counter = 0
         try:
             response = r.json()['response']
-        except JSONDecodeError:
+        except ValueError:
             msg = 'Bad JSON format retrieved from server'
             raise ValueError(msg)
 
