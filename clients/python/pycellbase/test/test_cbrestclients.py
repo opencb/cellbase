@@ -52,6 +52,16 @@ class GeneClientTest(unittest.TestCase):
         assert len(res[0]['result']) == 1
         assert res[0]['id'] == 'BRCA1'
 
+    def test_search(self):
+        """Checks retrieval of gene info given a set of filters"""
+        res = self._gc.search(name='BRCA1')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['id'] == 'ENSG00000012048'
+
+        res = self._gc.search(name='BRCA1', include='chromosome')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['chromosome'] == '17'
+
 
 class ProteinClientTest(unittest.TestCase):
     """Tests the ProteinClient class"""

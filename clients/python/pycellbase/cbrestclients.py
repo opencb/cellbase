@@ -48,9 +48,9 @@ class _Feature(_ParentRestClient):
         """Returns general information"""
         return self._get("info", query_id, options)
 
-    def search(self, query_id, **options):
+    def search(self, **options):
         """Searches for specific entries given a set of filters"""
-        return self._get('search', query_id, options)
+        return self._get('search', None, options)
 
 
 class GeneClient(_Feature):
