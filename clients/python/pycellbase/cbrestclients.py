@@ -131,9 +131,13 @@ class VariationClient(_Feature):
         _subcategory = 'variation'
         super(VariationClient, self).__init__(configuration, _subcategory)
 
-    def get_consequence_types(self, query_id=None, **options):
-        """Returns the different gene biotypes"""
-        return self._get('consequence_types', query_id, options)
+    def get_consequence_type(self, query_id, **options):
+        """Returns the different consequences for a variation"""
+        return self._get('consequence_type', query_id, options)
+
+    def get_consequence_types(self, **options):
+        """Returns a variation consequence list"""
+        return self._get('consequence_types', None, options)
 
 
 class GenomicRegionClient(_ParentRestClient):

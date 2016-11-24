@@ -128,15 +128,15 @@ class VariationClientTest(unittest.TestCase):
         self._vc = cbfts.VariationClient(ConfigClient())
 
     def test_get_consequence_types(self):
-        """Checks retrieval of consequence types with and without specific ID"""
-        # Without ID
+        """Checks retrieval of consequence types list"""
         res = self._vc.get_consequence_types()
         assert 'coding_sequence_variant' in res[0]['result']
 
-        # With ID # TODO Currently not working. Is this deprecated?
-        res = self._vc.get_consequence_types('rs6025')
-        assert len(res[0]['result']) == 0
-        assert res[0]['result'] == []
+    def test_get_consequence_type(self):
+        """Checks retrieval of consequence types for a variation"""
+        res = self._vc.get_consequence_type('rs6025')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0] == 'missense_variant'
 
 
 class GenomicRegionTest(unittest.TestCase):
