@@ -32,7 +32,10 @@ def _create_rest_url(host, version, species, category, subcategory,
     if options is not None:
         opts = []
         for k, v in options.items():
-            opts.append(k + '=' + str(v))
+            if isinstance(v, list):
+                opts.append(k + '=' + ','.join(map(str, v)))
+            else:
+                opts.append(k + '=' + str(v))
         if opts:
             url += '?' + '&'.join(opts)
 
