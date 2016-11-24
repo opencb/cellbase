@@ -22,6 +22,12 @@ class GeneClientTest(unittest.TestCase):
         assert len(res[0]['result']) == 6412
         assert res[0]['result'][0]['source'] == 'clinvar'
 
+    def test_get_list(self):
+        """Checks retrieval of gene list"""
+        res = self._gc.get_list(include="id", limit=10000)
+        assert len(res[0]['result']) == 10000
+        assert res[0]['result'][0]['id'] == 'ENSG00000223972'
+
     def test_get_protein(self):
         """Checks retrieval of protein"""
         res = self._gc.get_protein('BRCA1')
