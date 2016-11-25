@@ -6,7 +6,7 @@ try:
 except ImportError:
     from queue import Queue
 
-_CALL_BATCH_SIZE = 2000
+_CALL_BATCH_SIZE = 200
 _NUM_THREADS_DEFAULT = 4
 
 
