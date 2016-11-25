@@ -249,7 +249,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         }
                         break;
                     default:
-                        System.out.println("This data parameter is not allowed");
+                        System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
+                                + " are: {genome, gene, gene_disease_association, variation, variation_functional_score,"
+                                + " regulation, protein, conservation, clinical_variants}");
                         break;
                 }
             }
@@ -857,6 +859,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             makeDir(clinicalFolder);
             List<String> clinvarUrls = new ArrayList<>(3);
             String url = configuration.getDownload().getClinvar().getHost();
+
             downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString());
             clinvarUrls.add(url);
 
@@ -888,7 +891,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
             url = configuration.getDownload().getIarctp53().getHost();
             downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
-                    Collections.singletonList("--post-data=\"dataset-somaticMutationData=somaticMutationData\""));
+                    Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
+                            + "&dataset-germlineMutationData=germlineMutationData"
+                            + "&dataset-somaticMutationReference=somaticMutationReference"
+                            + "&dataset-germlineMutationReference=germlineMutationReference"));
 
             ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -976,7 +982,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
 
-        List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
+                outputFileName + ".log"));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }

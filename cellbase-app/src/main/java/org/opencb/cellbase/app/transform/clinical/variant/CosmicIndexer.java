@@ -13,6 +13,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +24,7 @@ import java.util.regex.Pattern;
  */
 public class CosmicIndexer extends ClinicalIndexer {
 
+    private static final String COSMIC_NAME = "cosmic";
     private final RocksDB rdb;
     private final Path cosmicFile;
     private Pattern mutationGRCh37GenomePositionPattern;
@@ -87,9 +90,9 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private void printSummary() {
         logger.info("Total number of parsed Cosmic records: {}", totalNumberRecords);
-        logger.info("Number of indexed Clinvar records: {}", numberIndexedRecords);
-        logger.info("Number of new variants in ClinVar not previously indexed in RocksDB: {}", numberNewVariants);
-        logger.info("Number of updated variants during ClinVar indexing: {}", numberVariantUpdates);
+        logger.info("Number of indexed Cosmic records: {}", numberIndexedRecords);
+        logger.info("Number of new variants in Cosmic not previously indexed in RocksDB: {}", numberNewVariants);
+        logger.info("Number of updated variants during Cosmic indexing: {}", numberVariantUpdates);
 
         NumberFormat formatter = NumberFormat.getInstance();
         logger.info(formatter.format(ignoredCosmicLines) + " cosmic lines ignored: ");
@@ -121,7 +124,6 @@ public class CosmicIndexer extends ClinicalIndexer {
                 sequenceLocation.getAlternate()).getBytes();
         byte[] dbContent = rdb.get(key);
         VariantTraitAssociation variantTraitAssociation;
-        ObjectMapper mapper = new ObjectMapper();
         if (dbContent == null) {
             variantTraitAssociation = new VariantTraitAssociation();
             variantTraitAssociation.setGermline(Collections.emptyList());
@@ -132,7 +134,6 @@ public class CosmicIndexer extends ClinicalIndexer {
             variantTraitAssociation.getSomatic().add(somatic);
             numberVariantUpdates++;
         }
-        ObjectWriter jsonObjectWriter = mapper.writer();
         rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
     }
 
@@ -144,7 +145,7 @@ public class CosmicIndexer extends ClinicalIndexer {
     private boolean parseVariant(SequenceLocation sequenceLocation, String line) {
         boolean validVariant;
         String[] fields = line.split("\t", -1);
-        String mutationCds = fields[27];
+        String mutationCds = fields[17];
 
         if (mutationCds.contains(">")) {
             validVariant = parseSnv(mutationCds, sequenceLocation);
@@ -251,38 +252,46 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private Somatic buildCosmic(String line) {
         // COSMIC file is a tab-delimited file with the following fields (columns)
-        // 0 Gene name
-        // 1 Accession Number
-        // 2 Gene CDS length
-        // 3 HGNC ID
-        // 4 Sample name
-        // 5 ID sample
-        // 6 ID tumour
-        // 7 Primary site
-        // 8 Site subtype
-        // 11 Primary histology
-        // 12 Histology subtype
-        // 15 Genome-wide screen
-        // 16 Mutation ID
-        // 17 Mutation CDS
-        // 18 Mutation AA
-        // 19 Mutation Description
-        // 29 Mutation zygosity
-        // 23 Mutation GRCh37 genome position
-        // 24 Mutation GRCh37 strand
-        // 25 Snp
-        // 26 FATHMM Prediction
-        // 28 Mutation somatic status
-        // 29 PubMed PMID
-        // 30 ID STUDY
-        // 31 Sample source
-        // 32 Tumour origin
-        // 33 Age
-        // 34 Comments
+//        1 Gene name
+//        2 Accession Number
+//        3 Gene CDS length
+//        4 HGNC ID
+//        5 Sample name
+//        6 ID_sample
+//        7 ID_tumour
+//        8 Primary site
+//        9 Site subtype 1
+//        10 Site subtype 2
+//        11 Site subtype 3
+//        12 Primary histology
+//        13 Histology subtype 1
+//        14 Histology subtype 2
+//        15 Histology subtype 3
+//        16 Genome-wide screen
+//        17 Mutation ID
+//        18 Mutation CDS
+//        19 Mutation AA
+//        20 Mutation Description
+//        21 Mutation zygosity
+//        22 LOH
+//        23 GRCh
+//        24 Mutation genome position
+//        25 Mutation strand
+//        26 SNP
+//        27 Resistance Mutation
+//        28 FATHMM prediction
+//        29 FATHMM score
+//        30 Mutation somatic status
+//        31 Pubmed_PMID
+//        32 ID_STUDY
+//        33 Sample source
+//        34 Tumour origin
+//        35 Age
         String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
         Somatic cosmic = new Somatic();
-        cosmic.setGeneNames(Collections.singletonList(fields[0]));
-        cosmic.setAccession(fields[1]);
+        cosmic.setSource(COSMIC_NAME);
+        cosmic.setGeneNames(new ArrayList<>(Arrays.asList(fields[0])));
+        cosmic.setAccession(fields[16]);
         if (!fields[3].equalsIgnoreCase(fields[0])) {
             cosmic.getGeneNames().add(fields[3]);
         }
@@ -290,13 +299,10 @@ public class CosmicIndexer extends ClinicalIndexer {
         cosmic.setSiteSubtype(fields[8]);
         cosmic.setPrimaryHistology(fields[11]);
         cosmic.setHistologySubtype(fields[12]);
-        cosmic.setAccession(fields[16]);
-//        cosmic.setMutationGRCh37GenomePosition(fields[23]);
-//        cosmic.setMutationGRCh37Strand(fields[24]);
-        cosmic.setMutationSomaticStatus(fields[28]);
-        cosmic.setBibliography(Collections.singletonList(fields[29]));
-        cosmic.setSampleSource(fields[31]);
-        cosmic.setTumourOrigin(fields[32]);
+        cosmic.setMutationSomaticStatus(fields[29]);
+        cosmic.setBibliography(Collections.singletonList("PMID:" + fields[30]));
+        cosmic.setSampleSource(fields[32]);
+        cosmic.setTumourOrigin(fields[33]);
 
         return cosmic;
     }

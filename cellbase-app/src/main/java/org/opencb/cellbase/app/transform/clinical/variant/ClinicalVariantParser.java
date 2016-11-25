@@ -30,6 +30,10 @@ public class ClinicalVariantParser extends CellBaseParser {
     private final Path gwasFile;
     private final Path dbsnpFile;
     private final String assembly;
+    private final Path iarctp53GermlineFile;
+    private final Path iarctp53SomaticFile;
+    private final Path iarctp53GermlineReferencesFile;
+    private final Path iarctp53SomaticReferencesFile;
 
     public ClinicalVariantParser(Path clinicalVariantFolder, String assembly, CellBaseSerializer serializer) {
         this(clinicalVariantFolder.resolve(EtlCommons.CLINVAR_XML_FILE),
@@ -37,12 +41,17 @@ public class ClinicalVariantParser extends CellBaseParser {
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_EFO_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.COSMIC_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.GWAS_FILE),
-                clinicalVariantFolder.resolve(EtlCommons.DBSNP_FILE), assembly, serializer);
+                clinicalVariantFolder.resolve(EtlCommons.DBSNP_FILE),
+                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_GERMLINE_FILE),
+                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_GERMLINE_REFERENCES_FILE),
+                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_FILE),
+                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_REFERENCES_FILE), assembly, serializer);
     }
 
     public ClinicalVariantParser(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarEFOFile,
-                                 Path cosmicFile, Path gwasFile, Path dbsnpFile, String assembly,
-                                 CellBaseSerializer serializer) {
+                                 Path cosmicFile, Path gwasFile, Path dbsnpFile, Path iarctp53GermlineFile,
+                                 Path iarctp53GermlineReferencesFile, Path iarctp53SomaticFile,
+                                 Path iarctp53SomaticReferencesFile, String assembly, CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;
@@ -50,6 +59,10 @@ public class ClinicalVariantParser extends CellBaseParser {
         this.cosmicFile = cosmicFile;
         this.gwasFile = gwasFile;
         this.dbsnpFile = dbsnpFile;
+        this.iarctp53GermlineFile = iarctp53GermlineFile;
+        this.iarctp53GermlineReferencesFile = iarctp53GermlineReferencesFile;
+        this.iarctp53SomaticFile = iarctp53SomaticFile;
+        this.iarctp53SomaticReferencesFile = iarctp53SomaticReferencesFile;
         this.assembly = assembly;
     }
 
@@ -78,6 +91,13 @@ public class ClinicalVariantParser extends CellBaseParser {
 //                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
 //                cosmicIndexer.index();
 //            }
+            if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null) {
+                IARCTP53Indexer iarctp53Indexer = new IARCTP53Indexer(iarctp53GermlineFile,
+                        iarctp53GermlineReferencesFile, iarctp53SomaticFile, iarctp53SomaticReferencesFile, assembly,
+                        rdb);
+                iarctp53Indexer.index();
+            }
+
             serializeRDB(rdb);
             closeIndex(rdb, dbOption, dbLocation);
             serializer.close();

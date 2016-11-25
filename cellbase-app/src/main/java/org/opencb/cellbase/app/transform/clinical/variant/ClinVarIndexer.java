@@ -1,5 +1,6 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
@@ -15,15 +16,11 @@ import org.rocksdb.RocksDBException;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by fjlopez on 28/09/16.
@@ -99,7 +96,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
         VariantTraitAssociation variantTraitAssociation;
         List<Germline> germline;
         List<Somatic> somatic;
-        ObjectMapper mapper = new ObjectMapper();
         if (dbContent == null) {
             variantTraitAssociation = new VariantTraitAssociation();
             germline = new ArrayList<>();
@@ -112,7 +108,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
             numberVariantUpdates++;
         }
         addNewEntries(variantTraitAssociation, publicSet, traitsToEfoTermsMap);
-        ObjectWriter jsonObjectWriter = mapper.writer();
         rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
     }
 
@@ -151,10 +146,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
             somatic.setSource(CLINVAR_NAME);
             somatic.setReviewStatus(reviewStatus);
             somatic.setGeneNames(geneNames);
-            somatic.setBibliography(somaticBibliography);
             somatic.setAccession(accession);
             somatic.setPrimaryHistology(getPreferredTraitName(publicSet, traitsToEfoTermsMap));
             variantTraitAssociation.getSomatic().add(somatic);
+            if (somaticBibliography.size() > 0) {
+                somatic.setBibliography(somaticBibliography);
+            }
             numberSomaticRecords++;
         }
         if (hasGermlineAnnotation) {
@@ -164,10 +161,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
             germline.setDisease(getDisease(publicSet, traitsToEfoTermsMap));
             germline.setReviewStatus(reviewStatus);
             germline.setSource(CLINVAR_NAME);
-            germline.setBibliography(germlineBibliography);
             germline.setInheritanceModel(getInheritanceModel(publicSet));
             germline.setGeneNames(geneNames);
             variantTraitAssociation.getGermline().add(germline);
+            if (germlineBibliography.size() > 0) {
+                germline.setBibliography(germlineBibliography);
+            }
             numberGermlineRecords++;
         }
 
@@ -210,7 +209,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
             System.exit(1);
         }
 
-        return inheritanceModelSet.iterator().next();
+        if (inheritanceModelSet.size() == 0) {
+            return null;
+        } else {
+            return inheritanceModelSet.iterator().next();
+        }
     }
 
     private List<String> getGeneNames(PublicSetType publicSet) {
@@ -247,7 +250,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 for (SetElementSetType setElementSet : trait.getName()) {
                     diseaseList.add(setElementSet.getElementValue().getValue());
                     if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
-                        if (traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
+                        if (traitsToEfoTermsMap != null  // May be null if no traits -> EFO file is provided
+                                && traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
                             diseaseList.add(traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name);
                         }
                     }

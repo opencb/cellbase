@@ -1,5 +1,8 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +18,15 @@ public abstract class ClinicalIndexer {
     protected int numberVariantUpdates = 0;
     protected int totalNumberRecords = 0;
     protected int numberIndexedRecords = 0;
+
+    protected static ObjectMapper mapper;
+    protected static ObjectWriter jsonObjectWriter;
+
+    static {
+        mapper = new ObjectMapper();
+        mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectWriter = mapper.writer();
+    }
 
     public ClinicalIndexer() {
     }
