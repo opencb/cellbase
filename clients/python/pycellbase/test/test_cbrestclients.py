@@ -22,6 +22,12 @@ class GeneClientTest(unittest.TestCase):
         assert len(res[0]['result']) == 6412
         assert res[0]['result'][0]['source'] == 'clinvar'
 
+    def test_get_list(self):
+        """Checks retrieval of gene list"""
+        res = self._gc.get_list(include="id", limit=10000)
+        assert len(res[0]['result']) == 10000
+        assert res[0]['result'][0]['id'] == 'ENSG00000223972'
+
     def test_get_protein(self):
         """Checks retrieval of protein"""
         res = self._gc.get_protein('BRCA1')
@@ -51,6 +57,16 @@ class GeneClientTest(unittest.TestCase):
         res = self._gc.get_info('BRCA1')
         assert len(res[0]['result']) == 1
         assert res[0]['id'] == 'BRCA1'
+
+    def test_search(self):
+        """Checks retrieval of gene info given a set of filters"""
+        res = self._gc.search(name='BRCA1')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['id'] == 'ENSG00000012048'
+
+        res = self._gc.search(name='BRCA1', include='chromosome')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['chromosome'] == '17'
 
 
 class ProteinClientTest(unittest.TestCase):
@@ -112,15 +128,15 @@ class VariationClientTest(unittest.TestCase):
         self._vc = cbfts.VariationClient(ConfigClient())
 
     def test_get_consequence_types(self):
-        """Checks retrieval of consequence types with and without specific ID"""
-        # Without ID
+        """Checks retrieval of consequence types list"""
         res = self._vc.get_consequence_types()
         assert 'coding_sequence_variant' in res[0]['result']
 
-        # With ID # TODO Currently not working. Is this deprecated?
-        res = self._vc.get_consequence_types('rs6025')
-        assert len(res[0]['result']) == 0
-        assert res[0]['result'] == []
+    def test_get_consequence_type(self):
+        """Checks retrieval of consequence types for a variation"""
+        res = self._vc.get_consequence_type('rs6025')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0] == 'missense_variant'
 
 
 class GenomicRegionTest(unittest.TestCase):

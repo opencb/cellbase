@@ -13,9 +13,23 @@ class CommonsTest(unittest.TestCase):
         self._version = cc.version
         self._species = cc.species
 
+    def test_url_creation(self):
+        """Tests the correct creation of the url"""
+        # Normal query
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1', options={'limit': 200})
+        assert len(res[0]['result']) == 200
+
+        # Query with a dict option
+        res = get(host=self._host, version=self._version,
+                  species=self._species, category='feature', subcategory='gene',
+                  resource='snp', query_id='BRCA1',
+                  options={'limit': 200, 'include': ['chromosome', 'start']})
+        assert len(res[0]['result']) == 200
+
     def test_get_single_id(self):
         """Tests the retrieval of information for one ID"""
-
         # Normal query
         res = get(host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
