@@ -29,18 +29,21 @@ public class SpeciesProperties {
     private List<Species> protist;
     private List<Species> plants;
     private List<Species> virus;
+    private List<Species> bacteria;
 
 
     public SpeciesProperties() {
     }
 
     public SpeciesProperties(List<Species> vertebrates, List<Species> metazoa, List<Species> fungi, List<Species> protist,
-                             List<Species> plants) {
+                             List<Species> plants, List<Species> virus, List<Species> bacteria) {
         this.vertebrates = vertebrates;
         this.metazoa = metazoa;
         this.fungi = fungi;
         this.protist = protist;
         this.plants = plants;
+        this.virus = virus;
+        this.bacteria = bacteria;
     }
 
 
@@ -102,5 +105,13 @@ public class SpeciesProperties {
 
     public void setVirus(List<Species> virus) {
         this.virus = virus;
+    }
+
+    public List<Species> getBacteria() {
+        return bacteria;
+    }
+
+    public void setBacteria(List<Species> bacteria) {
+        this.bacteria = bacteria;
     }
 }
