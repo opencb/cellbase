@@ -929,14 +929,12 @@
 					"genome",
 					"genome_info",
 					"gene",
-					"variation",
-					"regulation",
 					"protein"
 				]
 			},
 			{
 				"id": "ecoli",
-				"scientificName": "Mycoplasma pneumoniae M129",
+				"scientificName": "Escherichia coli",
 				"assemblies": [
 					{
 						"ensemblVersion":"29_82_1",
@@ -948,8 +946,6 @@
 					"genome",
 					"genome_info",
 					"gene",
-					"variation",
-					"regulation",
 					"protein"
 				]
 			}

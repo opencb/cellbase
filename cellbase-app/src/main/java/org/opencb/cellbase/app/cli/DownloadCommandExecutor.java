@@ -301,7 +301,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
             if (!configuration.getSpecies().getVertebrates().contains(sp)) {
                 url = host + "/" + ensemblRelease + "/" + getPhylo(sp);
             }
-            url = url + "/fasta/" + shortName + "/dna/*.dna.toplevel.fa.gz";
+            url = url + "/fasta/";
+            if (configuration.getSpecies().getBacteria().contains(sp)) {
+                // WARN: assuming there's just one assembly
+                url = url + sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+            }
+            url = url + shortName + "/dna/*.dna.toplevel.fa.gz";
         }
 
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
@@ -381,20 +386,26 @@ public class DownloadCommandExecutor extends CommandExecutor {
             ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
 
+        String bacteriaCollectionPath = "";
+        if (configuration.getSpecies().getBacteria().contains(sp)) {
+            // WARN: assuming there's just one assembly
+            bacteriaCollectionPath =  sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+        }
+
         // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
         // to download the correct GTF file.
         String version = ensemblRelease.split("-")[1];
-        String url = ensemblHost + "/gtf/" + spShortName + "/*" + version + ".gtf.gz";
+        String url = ensemblHost + "/gtf/" + bacteriaCollectionPath + spShortName + "/*" + version + ".gtf.gz";
         String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + spShortName + "/pep/*.pep.all.fa.gz";
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/pep/*.pep.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".pep.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + spShortName + "/cdna/*.cdna.all.fa.gz";
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/cdna/*.cdna.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".cdna.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
