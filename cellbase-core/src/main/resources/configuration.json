@@ -2,7 +2,7 @@
 	"version": "v4",
 	"apiVersion": "${cellbase.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
-	"filePath": "${CELLBASE.FILE.PATH}",
+	"filePath": "${CELLBASE.FILES.PATH}",
 	"databases": {
 		"mongodb": {
 			"host": "${CELLBASE.DB.MONGODB.HOST}",
