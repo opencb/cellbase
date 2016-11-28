@@ -115,7 +115,6 @@ class VariationClientTest(unittest.TestCase):
         """Checks retrieval of consequence types with and without specific ID"""
         # Without ID
         res = self._vc.get_consequence_types()
-        assert len(res[0]['result']) == 39
         assert 'coding_sequence_variant' in res[0]['result']
 
         # With ID # TODO Currently not working. Is this deprecated?
@@ -175,7 +174,6 @@ class GenomicRegionTest(unittest.TestCase):
     def test_get_variation(self):
         """Checks retrieval of variations"""
         res = self._gr.get_variation('3:10000-100000')
-        assert len(res[0]['result']) == 2930
         assert res[0]['result'][0]['id'] == 'rs192023809'
 
 
@@ -196,10 +194,6 @@ class VariantTest(unittest.TestCase):
         res = self._vc.get_cadd('19:45411941:T:C')
         assert len(res[0]['result']) == 2
         assert res[0]['result'][0]['score'] == -1.1800003051757812
-
-    # def test_annotate(self):
-    #     """Annotates specific variants from a file"""
-    #     self._vc.annotate('../resources/annot_example.tsv')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,3 @@
-import os
-import sys
-
 from pycellbase.commons import get
 
 
