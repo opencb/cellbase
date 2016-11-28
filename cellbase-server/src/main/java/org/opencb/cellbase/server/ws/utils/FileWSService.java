@@ -83,8 +83,8 @@ public class FileWSService extends GenericRestWSServer {
             List<ReadAlignment> readAlignmentList = new ArrayList<>();
             String regionString = query.getString("region");
             if (regionString != null && !regionString.isEmpty()) {
-                readAlignmentList = alignmentManager.query(new Region(regionString), new AlignmentOptions(),
-                        samRecordFilters, ReadAlignment.class);
+                readAlignmentList = alignmentManager.query(new Region(regionString), samRecordFilters,
+                        new AlignmentOptions(), ReadAlignment.class);
                 queryResultId = regionString;
             }
             watch.stop();
@@ -114,12 +114,17 @@ public class FileWSService extends GenericRestWSServer {
         try {
             parseQueryParams();
             File folder = new File(cellBaseConfiguration.getFilePath() + "/" + folderId);
-            ArrayList<File> files = new ArrayList<>(Arrays.asList(folder.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File folder, String name) {
-                    return name.endsWith("." + query.getString("format"));
-                }
-            })));
+            ArrayList<File> files;
+            if (query.get("format") != null) {
+                files = new ArrayList<>(Arrays.asList(folder.listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File folder, String name) {
+                        return name.endsWith("." + query.getString("format"));
+                    }
+                })));
+            } else {
+                files = new ArrayList<>(Arrays.asList(folder.listFiles()));
+            }
             QueryResult queryResult = new QueryResult(folderId, 0, files.size(), files.size(), null,
                     null, files);
             return createOkResponse(queryResult);
