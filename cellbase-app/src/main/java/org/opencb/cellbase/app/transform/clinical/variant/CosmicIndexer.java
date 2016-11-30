@@ -1,7 +1,5 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.avro.Somatic;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;

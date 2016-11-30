@@ -34,8 +34,10 @@ public class ClinicalVariantParser extends CellBaseParser {
     private final Path iarctp53SomaticFile;
     private final Path iarctp53GermlineReferencesFile;
     private final Path iarctp53SomaticReferencesFile;
+    private final Path genomeSequenceFilePath;
 
-    public ClinicalVariantParser(Path clinicalVariantFolder, String assembly, CellBaseSerializer serializer) {
+    public ClinicalVariantParser(Path clinicalVariantFolder, Path genomeSequenceFilePath, String assembly,
+                                 CellBaseSerializer serializer) {
         this(clinicalVariantFolder.resolve(EtlCommons.CLINVAR_XML_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_EFO_FILE),
@@ -45,13 +47,15 @@ public class ClinicalVariantParser extends CellBaseParser {
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_GERMLINE_FILE),
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_GERMLINE_REFERENCES_FILE),
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_FILE),
-                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_REFERENCES_FILE), assembly, serializer);
+                clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_REFERENCES_FILE),
+                genomeSequenceFilePath, assembly, serializer);
     }
 
     public ClinicalVariantParser(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarEFOFile,
                                  Path cosmicFile, Path gwasFile, Path dbsnpFile, Path iarctp53GermlineFile,
                                  Path iarctp53GermlineReferencesFile, Path iarctp53SomaticFile,
-                                 Path iarctp53SomaticReferencesFile, String assembly, CellBaseSerializer serializer) {
+                                 Path iarctp53SomaticReferencesFile, Path genomeSequenceFilePath, String assembly,
+                                 CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;
@@ -63,6 +67,7 @@ public class ClinicalVariantParser extends CellBaseParser {
         this.iarctp53GermlineReferencesFile = iarctp53GermlineReferencesFile;
         this.iarctp53SomaticFile = iarctp53SomaticFile;
         this.iarctp53SomaticReferencesFile = iarctp53SomaticReferencesFile;
+        this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
     }
 
@@ -93,8 +98,8 @@ public class ClinicalVariantParser extends CellBaseParser {
 //            }
             if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null) {
                 IARCTP53Indexer iarctp53Indexer = new IARCTP53Indexer(iarctp53GermlineFile,
-                        iarctp53GermlineReferencesFile, iarctp53SomaticFile, iarctp53SomaticReferencesFile, assembly,
-                        rdb);
+                        iarctp53GermlineReferencesFile, iarctp53SomaticFile, iarctp53SomaticReferencesFile,
+                        genomeSequenceFilePath, assembly, rdb);
                 iarctp53Indexer.index();
             }
 
@@ -121,7 +126,7 @@ public class ClinicalVariantParser extends CellBaseParser {
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
             VariantTraitAssociation variantTraitAssociation
                     = mapper.readValue(rocksIterator.value(), VariantTraitAssociation.class);
-            Variant variant = parseVariantFromVariantId(new String(rocksIterator.value()));
+            Variant variant = parseVariantFromVariantId(new String(rocksIterator.key()));
             VariantAnnotation variantAnnotation = new VariantAnnotation();
             variantAnnotation.setVariantTraitAssociation(variantTraitAssociation);
             variant.setAnnotation(variantAnnotation);
@@ -136,8 +141,8 @@ public class ClinicalVariantParser extends CellBaseParser {
     }
 
     private Variant parseVariantFromVariantId(String variantId) {
-        String[] parts = variantId.split(":");
-        return new Variant(parts[0], Integer.valueOf(parts[1]), parts[2], parts[3]);
+        String[] parts = variantId.split(":", -1); // -1 to include empty fields
+        return new Variant(parts[0].trim(), Integer.valueOf(parts[1].trim()), parts[2], parts[3]);
     }
 
     private void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {

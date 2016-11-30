@@ -1,10 +1,9 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.avro.Germline;
 import org.opencb.biodata.models.variant.avro.Somatic;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
+import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
@@ -15,9 +14,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.InvalidParameterException;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +36,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private final Pattern snvPattern;
     private final Path germlineReferencesFile;
     private final Path somaticReferencesFile;
+    private final Path genomeSequenceFilePath;
     private int ignoredRecords = 0;
     private int invalidSubstitutionLines = 0;
     private int invalidDeletionLines = 0;
@@ -46,7 +44,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private int invalidgDescriptionOtherReason = 0;
 
     public IARCTP53Indexer(Path germlineFile, Path germlineReferencesFile, Path somaticFile,
-                           Path somaticReferencesFile, String assembly, RocksDB rdb) {
+                           Path somaticReferencesFile, Path genomeSequenceFilePath, String assembly, RocksDB rdb) {
         super();
         this.rdb = rdb;
         this.assembly = assembly;
@@ -54,7 +52,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         this.germlineReferencesFile = germlineReferencesFile;
         this.somaticFile = somaticFile;
         this.somaticReferencesFile = somaticReferencesFile;
-        snvPattern = Pattern.compile("c\\.\\d+(_\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
+        this.genomeSequenceFilePath = genomeSequenceFilePath;
+        snvPattern = Pattern.compile("g\\.\\d+(_\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
     }
 
     public void index() throws RocksDBException {
@@ -64,7 +63,20 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
     private void index(Path filePath, Path referencesFilePath, boolean isGermline) throws RocksDBException {
 
+        // Preparing the fasta file for fast accessing
+        FastaIndexManager fastaIndexManager = null;
+        try {
+            fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
+            if (!fastaIndexManager.isConnected()) {
+                fastaIndexManager.index();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
         logger.info("Parsing {} ...", filePath.toString());
+        int variantIdColumnIndex = isGermline ? 9 : 1;
 
         try {
             BufferedReader reader = FileUtils.newBufferedReader(filePath);
@@ -73,21 +85,21 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             String previousVariantId = null;
             SequenceLocation sequenceLocation = null;
             VariantTraitAssociation variantTraitAssociation = null;
-            List<String> references = loadReferences(referencesFilePath, isGermline);
+            Map<String, String> references = loadReferences(referencesFilePath, isGermline);
             boolean skip = false;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\t", -1);  // -1 argument make split return also empty fields
                 logger.debug(line);
                 // One variant may appear in multiple lines - one for each individual in which was observed. fields[9]
                 // contains MUT_ID
-                if (!previousVariantId.equals(fields[9])) {
+                if (!fields[variantIdColumnIndex].equals(previousVariantId)) {
                     totalNumberRecords++;
                     // Do not update RocksDB on first iteration
                     if (previousVariantId != null && !skip) {
                         updateRocksDB(sequenceLocation, variantTraitAssociation);
                         numberIndexedRecords++;
                     }
-                    sequenceLocation = parseVariant(fields);
+                    sequenceLocation = parseVariant(fields, fastaIndexManager, isGermline);
                     if (sequenceLocation != null) {
                         variantTraitAssociation = new VariantTraitAssociation();
                         variantTraitAssociation.setGermline(new ArrayList<>());
@@ -97,12 +109,12 @@ public class IARCTP53Indexer extends ClinicalIndexer {
                         skip = true;
                         ignoredRecords++;
                     }
-                    previousVariantId = fields[9];
+                    previousVariantId = fields[variantIdColumnIndex];
 
                 }
 
                 if (!skip) {
-                    List<String> bibliography = parseBibliography(fields, references);
+                    List<String> bibliography = parseBibliography(fields, references, isGermline);
                     if (isGermline) {
                         Germline germlineObject = buildGermline(fields);
                         if (bibliography != null) {
@@ -120,11 +132,13 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             }
 
             // Write last variant
-            updateRocksDB(sequenceLocation, variantTraitAssociation);
-            numberIndexedRecords++;
-
+            // Do not update RocksDB on first iteration
+            if (previousVariantId != null && !skip) {
+                updateRocksDB(sequenceLocation, variantTraitAssociation);
+                numberIndexedRecords++;
+            }
         } catch (RocksDBException e) {
-            logger.error("Error reading/writing from/to the RocksDB index while indexing Cosmic");
+            logger.error("Error reading/writing from/to the RocksDB index while indexing IARCTP53");
             throw e;
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -135,29 +149,31 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
     }
 
-    private List<String> parseBibliography(String[] fields, List<String> references) {
+    private List<String> parseBibliography(String[] fields, Map<String, String> references, boolean isGermline) {
         List<String> bibliography = null;
+        int bibliographyColumnIndex = isGermline ? 53 : 64;
         // fields[53] may contain bibliography ids
-        if (!fields[53].isEmpty() && !fields[53].equalsIgnoreCase("na")) {
+        if (!fields[bibliographyColumnIndex].isEmpty() && !fields[bibliographyColumnIndex].equalsIgnoreCase("na")) {
             bibliography = new ArrayList<>();
             // - 1 since ids in the file are assigned 1-based while indexing in the references array is
             // 0 based
-            bibliography.add(references.get(Integer.valueOf(fields[53]) - 1));
+            bibliography.add(references.get(fields[bibliographyColumnIndex]));
         }
 
         return bibliography;
     }
 
-    private List<String> loadReferences(Path filePath, boolean isGermline) throws IOException {
+    private Map<String, String> loadReferences(Path filePath, boolean isGermline) throws IOException {
         BufferedReader reader = FileUtils.newBufferedReader(filePath);
 
+        reader.readLine(); // Skip header on the first line
         logger.info("Loading references from {} ", filePath.toString());
-        List<String> references = new ArrayList<>(300);
+        Map<String, String> references = new HashMap<>(300);
         int pubmedIdPosition = isGermline ? 8 : 9;
         String line;
         while ((line = reader.readLine()) != null) {
             String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
-            references.add("PMID:" + fields[pubmedIdPosition]);
+            references.put(fields[0], "PMID:" + fields[pubmedIdPosition]);
 
         }
         logger.info("{} references loaded", references.size());
@@ -189,7 +205,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         }
     }
 
-    private void updateRocksDB(SequenceLocation sequenceLocation, VariantTraitAssociation variantTraitAssociation) throws RocksDBException, IOException {
+    private void updateRocksDB(SequenceLocation sequenceLocation, VariantTraitAssociation variantTraitAssociation)
+            throws RocksDBException, IOException {
 
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
@@ -213,10 +230,12 @@ public class IARCTP53Indexer extends ClinicalIndexer {
      *
      * @return true if valid mutation, false otherwise
      */
-    private SequenceLocation parseVariant(String[] fields) {
+    private SequenceLocation parseVariant(String[] fields, FastaIndexManager fastaIndexManager,
+                                          boolean isGermline) throws RocksDBException {
 
-        SequenceLocation sequenceLocation = parsePosition(fields);
-        String gDescription = fields[19];
+        SequenceLocation sequenceLocation = parsePosition(fields, isGermline);
+        int gDescriptionColumnIndex = isGermline ? 19 : 10;
+        String gDescription = fields[gDescriptionColumnIndex];
 
         boolean validVariant = true;
         if (gDescription.contains(">")) {
@@ -225,7 +244,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
                 invalidSubstitutionLines++;
             }
         } else if (gDescription.contains("del")) {
-            validVariant = parseDeletion(gDescription, sequenceLocation);
+            validVariant = parseDeletion(gDescription, sequenceLocation, fastaIndexManager);
             if (!validVariant) {
                 invalidDeletionLines++;
             }
@@ -264,7 +283,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         return validVariant;
     }
 
-    private boolean parseDeletion(String gDescription, SequenceLocation sequenceLocation) {
+    private boolean parseDeletion(String gDescription, SequenceLocation sequenceLocation,
+                                  FastaIndexManager fastaIndexManager) throws RocksDBException {
         boolean validVariant = true;
         String[] gDescriptionArray = gDescription.split("del");
 
@@ -272,12 +292,12 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         if (gDescriptionArray.length < 2) { // c.503_508del (usually, deletions of several nucleotides)
             // TODO: allow these variants
             validVariant = false;
-        } else if (gDescriptionArray[1].matches("\\d+")
-                || !gDescriptionArray[1].matches(VARIANT_STRING_PATTERN)) { // Avoid allele strings containing Ns, for example
-            validVariant = false;
-        } else {
-            sequenceLocation.setReference(gDescriptionArray[1]);
+        } else if (gDescriptionArray[1].matches("\\d+")) { // Expecting number of deleted nts here
+            sequenceLocation.setReference(fastaIndexManager.query("17", sequenceLocation.getStart(),
+                    sequenceLocation.getEnd()));
             sequenceLocation.setAlternate("");
+        } else {
+            validVariant = false;
         }
 
         return validVariant;
@@ -476,19 +496,22 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         return somatic;
     }
 
-    public SequenceLocation parsePosition(String[] fields) {
+    public SequenceLocation parsePosition(String[] fields, boolean isGermline) {
         SequenceLocation sequenceLocation = new SequenceLocation();
         sequenceLocation.setChromosome("17"); // all variants in this database appear in the same gene
 
+        int grch37ColumnPosition = isGermline ? 11 : 3;
+        int grch38ColumnPosition = isGermline ? 12 : 4;
         if ("grch37".equalsIgnoreCase(assembly)) {
-            sequenceLocation.setStart(Integer.valueOf(fields[11]));
+            sequenceLocation.setStart(Integer.valueOf(fields[grch37ColumnPosition]));
         } else if ("grch38".equalsIgnoreCase(assembly)) {
-            sequenceLocation.setStart(Integer.valueOf(fields[12]));
+            sequenceLocation.setStart(Integer.valueOf(fields[grch38ColumnPosition]));
         }
 
-        if(fields[17].contains("del")) {
-            sequenceLocation.setEnd(sequenceLocation.getStart() + Integer.valueOf(fields[17].split("del")[1]) - 1);
-        } else if(fields[17].contains("ins")) {
+        int hgvsColumnPosition = isGermline ? 17 : 10;
+        if (fields[hgvsColumnPosition].contains("del")) {
+            sequenceLocation.setEnd(sequenceLocation.getStart() + Integer.valueOf(fields[hgvsColumnPosition].split("del")[1]) - 1);
+        } else if (fields[hgvsColumnPosition].contains("ins")) {
             sequenceLocation.setEnd(sequenceLocation.getStart() - 1);
         } else {
             sequenceLocation.setEnd(sequenceLocation.getStart());
