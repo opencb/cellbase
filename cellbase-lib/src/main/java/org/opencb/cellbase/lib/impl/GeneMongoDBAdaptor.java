@@ -25,6 +25,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -34,6 +35,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 25/11/15.
@@ -93,14 +95,27 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public QueryResult<Gene> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         options = addPrivateExcludeOptions(options);
-        return mongoDBCollection.find(bson, null, Gene.class, options);
+
+        if (postDBFilteringParametersEnabled(query)) {
+            QueryResult<Document> nativeQueryResult = postDBFiltering(mongoDBCollection.find(bson, options));
+            QueryResult<Gene> queryResult = new QueryResult<Gene>(nativeQueryResult.getId(),
+                    nativeQueryResult.getDbTime(), nativeQueryResult.getNumResults(),
+                    nativeQueryResult.getNumTotalResults(), nativeQueryResult.getWarningMsg(),
+                    nativeQueryResult.getErrorMsg(), null);
+            queryResult.setResult(nativeQueryResult.getResult().stream()
+                    .map(document -> this.objectMapper.readValue(objectWriter.writeValueAsString(document),
+                            Gene.class)).collect(Collectors.toList()));
+            return queryResult;
+        } else {
+            mongoDBCollection.find(bson, null, Gene.class, options);
+        }
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return mongoDBCollection.find(bson, options);
+        return postDBFiltering(mongoDBCollection.find(bson, options));
     }
 
     @Override
@@ -211,6 +226,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         createOrQuery(query, QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
         createOrQuery(query, QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
         createOrQuery(query, QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
+        createOrQuery(query, QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
 
         createOrQuery(query, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
