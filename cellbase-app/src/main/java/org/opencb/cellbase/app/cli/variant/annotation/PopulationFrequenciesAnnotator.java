@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.app.cli.variant.annotation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -8,6 +8,8 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 

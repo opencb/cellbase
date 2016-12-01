@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.transform;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
@@ -26,8 +27,8 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.biodata.tools.sequence.FastaIndexManager;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDBException;
@@ -60,8 +61,9 @@ public class GeneParser extends CellBaseParser {
     private Path hpoFile;
     private Path disgenetFile;
     private Path genomeSequenceFilePath;
+    private boolean flexibleGTFParsing;
 
-    private CellBaseConfiguration.SpeciesProperties.Species species;
+    private Species species;
 
     private Connection sqlConn;
     private PreparedStatement sqlQuery;
@@ -70,8 +72,30 @@ public class GeneParser extends CellBaseParser {
     private String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
     private Set<String> indexedSequences;
 
+    private int featureCounter = -1; // initialize to -1 so that first +1 sets it to 0
+    private String[] featureTypes = {"exon", "cds", "start_codon", "stop_codon"};
+    private String currentFeature = "";
+    private Map<String, Object> currentTranscriptMap;
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile, CellBaseConfiguration.SpeciesProperties.Species species,
+    private int geneCounter;
+    private ArrayList<String> geneList;
+    private String geneName;
+    private int transcriptCounter;
+    private ArrayList<String> transcriptList;
+    private String transcriptName;
+    private int exonCounter;
+    private String feature;
+    private Gtf nextGtfToReturn;
+
+
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
+                      Species species,
+                      CellBaseSerializer serializer) {
+        this(geneDirectoryPath, genomeSequenceFastaFile, species, false, serializer);
+    }
+
+    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
+                      Species species, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
@@ -80,7 +104,7 @@ public class GeneParser extends CellBaseParser {
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
-                genomeSequenceFastaFile, species, serializer);
+                genomeSequenceFastaFile, species, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -88,7 +112,8 @@ public class GeneParser extends CellBaseParser {
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path genomeSequenceFilePath,
-                      CellBaseConfiguration.SpeciesProperties.Species species, CellBaseSerializer serializer) {
+                      Species species, boolean flexibleGTFParsing,
+                      CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -102,6 +127,7 @@ public class GeneParser extends CellBaseParser {
         this.disgenetFile = disgenetFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.species = species;
+        this.flexibleGTFParsing = flexibleGTFParsing;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
@@ -111,10 +137,8 @@ public class GeneParser extends CellBaseParser {
         Gene gene = null;
         Transcript transcript;
         Exon exon = null;
-
         int cdna = 1;
         int cds = 1;
-
         Map<String, String> geneDescriptionMap = getGeneDescriptionMap();
         Map<String, ArrayList<Xref>> xrefMap = GeneParserUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
@@ -143,11 +167,18 @@ public class GeneParser extends CellBaseParser {
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
         exonDict.clear();
-
         logger.info("Parsing gtf...");
         GtfReader gtfReader = new GtfReader(gtfFile);
+
+        // Gene->Transcript->Feature->GTF line
+        Map<String, Map<String, Map<String, Object>>> gtfMap = null;
+        if (flexibleGTFParsing) {
+            gtfMap = loadGTFMap(gtfReader);
+            initializePointers(gtfMap);
+        }
+
         Gtf gtf;
-        while ((gtf = gtfReader.read()) != null) {
+        while ((gtf = getGTFEntry(gtfReader, gtfMap)) != null) {
 
             if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
                     || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
@@ -156,7 +187,6 @@ public class GeneParser extends CellBaseParser {
 
             String geneId = gtf.getAttributes().get("gene_id");
             String transcriptId = gtf.getAttributes().get("transcript_id");
-
             if (newGene(gene, geneId)) {
                 // If new geneId is different from the current then we must serialize before data new gene
                 if (gene != null) {
@@ -273,7 +303,6 @@ public class GeneParser extends CellBaseParser {
                         // CDS states the beginning of coding start
                         exon.setGenomicCodingStart(gtf.getStart());
                         exon.setGenomicCodingEnd(gtf.getEnd());
-
                         // cDNA coordinates
                         // cdnaCodingStart points to the same base position than genomicCodingEnd
                         exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
@@ -281,14 +310,12 @@ public class GeneParser extends CellBaseParser {
                         exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
                         // Set cdnaCodingEnd to prevent those cases without stop_codon
                         transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-
                         exon.setCdsStart(cds);
                         exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
 
                         // increment in the coding length
                         cds += gtf.getEnd() - gtf.getStart() + 1;
                         transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-
                         exon.setPhase(Integer.valueOf(gtf.getFrame()));
 
                         if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
@@ -306,15 +333,13 @@ public class GeneParser extends CellBaseParser {
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
-
                 if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
                     // nothing to do
                     System.out.println("Empty block, this should be redesigned");
                 }
-
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
-//                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
-//                      no need to set it at the beginning of next feature
+                    //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
+                    //                      no need to set it at the beginning of next feature
                     if (exon.getStrand().equals("+")) {
                         // we need to increment 3 nts, the stop_codon length.
                         exon.setGenomicCodingEnd(gtf.getEnd());
@@ -351,6 +376,202 @@ public class GeneParser extends CellBaseParser {
         gtfReader.close();
         serializer.close();
         fastaIndexManager.close();
+    }
+
+    private void initializePointers(Map<String, Map<String, Map<String, Object>>> gtfMap) {
+        geneCounter = 0;
+        geneList = new ArrayList<>(gtfMap.keySet());
+        geneName = geneList.get(geneCounter);
+        transcriptCounter = 0;
+        transcriptList = new ArrayList<>(gtfMap.get(geneName).keySet());
+        transcriptName = transcriptList.get(transcriptCounter);
+        exonCounter = 0;
+        feature = "exon";
+        nextGtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+    }
+
+    private Gtf getGTFEntry(GtfReader gtfReader, Map<String, Map<String, Map<String, Object>>> gtfMap) throws FileFormatException {
+        // Flexible parsing is deactivated, return next line
+        if (gtfMap == null) {
+            return gtfReader.read();
+        // Flexible parsing activated, carefully select next line to return
+        } else {
+            // No more genes/features to return
+            if (nextGtfToReturn == null) {
+                return null;
+            }
+            Gtf gtfToReturn = nextGtfToReturn;
+            if (feature.equals("exon")) {
+//                gtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+                if (gtfMap.get(geneName).get(transcriptName).containsKey("cds")) {
+                    nextGtfToReturn = getExonCDSLine(((Gtf) ((List) gtfMap.get(geneName)
+                                    .get(transcriptName).get("exon")).get(exonCounter)).getStart(),
+                            ((Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter)).getEnd(),
+                            (List) gtfMap.get(geneName).get(transcriptName).get("cds"));
+                    if (nextGtfToReturn != null) {
+                        feature = "cds";
+                        return gtfToReturn;
+                    }
+                }
+                // if no cds was found for this exon, get next exon
+                getFeatureFollowsExon(gtfMap);
+                return gtfToReturn;
+            }
+            if (feature.equals("cds") || feature.equals("stop_codon")) {
+                getFeatureFollowsExon(gtfMap);
+                return gtfToReturn;
+            }
+            if (feature.equals("start_codon")) {
+                feature = "stop_codon";
+                nextGtfToReturn = (Gtf) gtfMap.get(geneName).get(transcriptName).get("stop_codon");
+                return gtfToReturn;
+            }
+            // The only accepted features that should appear in the gtfMap are exon, cds, start_codon and stop_codon
+            throw new FileFormatException("Execution cannot reach this point");
+        }
+    }
+
+    private Gtf getExonCDSLine(Integer exonStart, Integer exonEnd, List cdsList) {
+        for (Object cdsObject : cdsList) {
+            Integer cdsStart = ((Gtf) cdsObject).getStart();
+            Integer cdsEnd = ((Gtf) cdsObject).getEnd();
+            if (cdsStart <= exonEnd && cdsEnd >= exonStart) {
+                return (Gtf) cdsObject;
+            }
+        }
+        return null;
+    }
+
+    private void getFeatureFollowsExon(Map<String, Map<String, Map<String, Object>>> gtfMap) {
+        exonCounter++;
+        if (exonCounter == ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).size()
+                || feature.equals("stop_codon")) {
+            // If last returned feature was a stop_codon or no start_codon is provided for this transcript,
+            // next transcript must be selected
+            if (!feature.equals("stop_codon") && gtfMap.get(geneName).get(transcriptName).containsKey("start_codon")) {
+                feature = "start_codon";
+                nextGtfToReturn = (Gtf) gtfMap.get(geneName).get(transcriptName).get("start_codon");
+            } else {
+                transcriptCounter++;
+                // No more transcripts in this gene, check if there are more genes
+                if (transcriptCounter == gtfMap.get(geneName).size()) {
+                    geneCounter++;
+                    // No more genes available, end parsing
+                    if (geneCounter == gtfMap.size()) {
+                        nextGtfToReturn = null;
+                        feature = null;
+                    // Still more genes to parse, select next one
+                    } else {
+                        geneName = geneList.get(geneCounter);
+                        transcriptCounter = 0;
+                        transcriptList = new ArrayList<>(gtfMap.get(geneName).keySet());
+                    }
+                }
+                // Check if a new gene was selected - null would indicate there're no more genes
+                if (nextGtfToReturn != null) {
+                    transcriptName = transcriptList.get(transcriptCounter);
+                    exonCounter = 0;
+                    feature = "exon";
+                    nextGtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+                }
+            }
+        } else {
+            feature = "exon";
+            nextGtfToReturn = (Gtf) ((List) gtfMap.get(geneName).get(transcriptName).get("exon")).get(exonCounter);
+        }
+    }
+
+    private Map<String, Map<String, Map<String, Object>>> loadGTFMap(GtfReader gtfReader) throws FileFormatException {
+        Map<String, Map<String, Map<String, Object>>> gtfMap = new HashedMap();
+        Gtf gtf;
+        while ((gtf = gtfReader.read()) != null) {
+            if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
+                    || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
+                continue;
+            }
+
+            // Get GTF lines associated with this gene - create a new Map of GTF entries if it's a new gene
+            String geneId = gtf.getAttributes().get("gene_id");
+            // Transcript -> feature -> GTF line
+            Map<String, Map<String, Object>> gtfMapGeneEntry;
+            if (gtfMap.containsKey(geneId)) {
+                gtfMapGeneEntry =  gtfMap.get(geneId);
+            } else {
+                gtfMapGeneEntry = new HashedMap();
+                gtfMap.put(geneId, gtfMapGeneEntry);
+            }
+
+            // Get GTF lines associated with this transcript - create a new Map of GTF entries if it's a new gene
+            String transcriptId = gtf.getAttributes().get("transcript_id");
+            Map<String, Object> gtfMapTranscriptEntry;
+            if (gtfMapGeneEntry.containsKey(transcriptId)) {
+                gtfMapTranscriptEntry =  gtfMapGeneEntry.get(transcriptId);
+            } else {
+                gtfMapTranscriptEntry = new HashedMap();
+                gtfMapGeneEntry.put(transcriptId, gtfMapTranscriptEntry);
+            }
+
+            addGTFLineToGTFMap(gtfMapTranscriptEntry, gtf);
+
+        }
+
+        // Exon number is mandatory for the parser to be able to properly generate the gene data model
+        if (!exonNumberPresent(gtfMap)) {
+            setExonNumber(gtfMap);
+        }
+
+        return gtfMap;
+    }
+
+    private boolean exonNumberPresent(Map<String, Map<String, Map<String, Object>>> gtfMap) {
+        Map<String, Map<String, Object>> geneGtfMap = gtfMap.get(gtfMap.keySet().iterator().next());
+        return ((Gtf) ((List) geneGtfMap.get(geneGtfMap.keySet().iterator().next()).get("exon")).get(0))
+                .getAttributes().containsKey("exon_number");
+    }
+
+    private void setExonNumber(Map<String, Map<String, Map<String, Object>>> gtfMap) {
+        for (String gene : gtfMap.keySet()) {
+            for (String transcript : gtfMap.get(gene).keySet()) {
+                List<Gtf> exonList = (List<Gtf>) gtfMap.get(gene).get(transcript).get("exon");
+                Collections.sort(exonList, (e1, e2) -> Integer.valueOf(e1.getStart()).compareTo(e2.getStart()));
+                if (exonList.get(0).getStrand().equals("+")) {
+                    int exonNumber = 1;
+                    for (Gtf gtf : exonList) {
+                        gtf.getAttributes().put("exon_number", String.valueOf(exonNumber));
+                        exonNumber++;
+                    }
+                } else {
+                    int exonNumber = exonList.size();
+                    for (Gtf gtf : exonList) {
+                        gtf.getAttributes().put("exon_number", String.valueOf(exonNumber));
+                        exonNumber--;
+                    }
+                }
+            }
+        }
+    }
+
+    private void addGTFLineToGTFMap(Map<String, Object> gtfMapTranscriptEntry, Gtf gtf) {
+
+        String featureType = gtf.getFeature().toLowerCase();
+
+        // Add exon/cds GTF line to the corresponding gene entry in the map
+        if (featureType.equals("exon") || featureType.equals("cds")) {
+            List gtfList = null;
+            // Check if there were exons already stored
+            if (gtfMapTranscriptEntry.containsKey(featureType)) {
+                gtfList =  (List) gtfMapTranscriptEntry.get(featureType);
+            } else {
+                gtfList = new ArrayList<>();
+                gtfMapTranscriptEntry.put(featureType, gtfList);
+            }
+            gtfList.add(gtf);
+        // Only one start/stop codon can be stored per transcript - no need to check if the "start_codon"/"stop_codon"
+        // keys are already there
+        } else if (featureType.equals("start_codon") || featureType.equals("stop_codon")) {
+            gtfMapTranscriptEntry.put(featureType, gtf);
+        }
+
     }
 
     private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {

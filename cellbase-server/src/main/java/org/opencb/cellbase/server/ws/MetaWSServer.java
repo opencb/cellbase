@@ -19,9 +19,10 @@ package org.opencb.cellbase.server.ws;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.opencb.cellbase.core.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.common.GitRepositoryState;
+import org.opencb.cellbase.core.config.DownloadProperties;
+import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Query;
@@ -63,7 +64,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @Path("/{species}/versions")
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
             + "data files were downloaded.",
-            response = CellBaseConfiguration.DownloadProperties.class, responseContainer = "QueryResponse")
+            response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
                                @ApiParam(name = "species",
                                        value = "Name of the species, e.g.: hsapiens. For a full list of potentially"
@@ -78,7 +79,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @Path("/species")
     @ApiOperation(httpMethod = "GET", value = "Returns all potentially available species. Please note that not all of "
             + " them may be available in this particular CellBase installation.",
-            response = CellBaseConfiguration.SpeciesProperties.class, responseContainer = "QueryResponse")
+            response = SpeciesProperties.class, responseContainer = "QueryResponse")
     public Response getSpecies() {
         return getAllSpecies();
     }
@@ -112,7 +113,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/{category}/{subcategory}")
     @ApiOperation(httpMethod = "GET", value = "To be fixed",
-            response = CellBaseConfiguration.SpeciesProperties.class, responseContainer = "QueryResponse", hidden = true)
+            response = SpeciesProperties.class, responseContainer = "QueryResponse", hidden = true)
     public Response getSubcategory(@PathParam("category") String category,
                                    @PathParam("subcategory") String subcategory) {
         return getCategory(category);
@@ -134,7 +135,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/about")
     @ApiOperation(httpMethod = "GET", value = "Returns info about current CellBase code.",
-            response = CellBaseConfiguration.SpeciesProperties.class, responseContainer = "QueryResponse")
+            response = SpeciesProperties.class, responseContainer = "QueryResponse")
     public Response getAbout() {
         Map<String, String> info = new HashMap<>(3);
         info.put("Program: ", "CellBase (OpenCB)");

@@ -1,4 +1,4 @@
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.app.cli.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;

@@ -23,7 +23,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.opencb.cellbase.core.CellBaseConfiguration.SpeciesProperties.Species;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
@@ -94,6 +94,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String IARCTP53_NAME = "IARC TP53 Database";
     private static final String GWAS_NAME = "Gwas Catalog";
     private static final String DBSNP_NAME = "dbSNP";
+    private static final String REACTOME_NAME = "Reactome";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -279,6 +280,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
             return "protists";
         } else if (configuration.getSpecies().getPlants().contains(sp)) {
             return "plants";
+        } else if (configuration.getSpecies().getVirus().contains(sp)) {
+            return "virus";
+        } else if (configuration.getSpecies().getBacteria().contains(sp)) {
+            return "bacteria";
         } else {
             throw new ParameterException("Species " + sp.getScientificName() + " not associated to any phylo in the configuration file");
         }
@@ -302,7 +307,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
             if (!configuration.getSpecies().getVertebrates().contains(sp)) {
                 url = host + "/" + ensemblRelease + "/" + getPhylo(sp);
             }
-            url = url + "/fasta/" + shortName + "/dna/*.dna.toplevel.fa.gz";
+            url = url + "/fasta/";
+            if (configuration.getSpecies().getBacteria().contains(sp)) {
+                // WARN: assuming there's just one assembly
+                url = url + sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+            }
+            url = url + shortName + "/dna/*.dna.toplevel.fa.gz";
         }
 
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
@@ -382,20 +392,26 @@ public class DownloadCommandExecutor extends CommandExecutor {
             ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
 
+        String bacteriaCollectionPath = "";
+        if (configuration.getSpecies().getBacteria().contains(sp)) {
+            // WARN: assuming there's just one assembly
+            bacteriaCollectionPath =  sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+        }
+
         // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
         // to download the correct GTF file.
         String version = ensemblRelease.split("-")[1];
-        String url = ensemblHost + "/gtf/" + spShortName + "/*" + version + ".gtf.gz";
+        String url = ensemblHost + "/gtf/" + bacteriaCollectionPath + spShortName + "/*" + version + ".gtf.gz";
         String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + spShortName + "/pep/*.pep.all.fa.gz";
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/pep/*.pep.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".pep.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + spShortName + "/cdna/*.cdna.all.fa.gz";
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/cdna/*.cdna.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".cdna.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
@@ -973,6 +989,15 @@ public class DownloadCommandExecutor extends CommandExecutor {
             saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
                     Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
         }
+    }
+
+    private void downloadReactomeData() throws IOException, InterruptedException {
+        Path proteinFolder = common.resolve("protein");
+
+        String url = configuration.getDownload().getReactome().getHost();
+        downloadFile(url, proteinFolder.resolve("biopax.zip").toString());
+        saveVersionData(EtlCommons.PROTEIN_DATA, REACTOME_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                proteinFolder.resolve("reactomeVersion.json"));
     }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {

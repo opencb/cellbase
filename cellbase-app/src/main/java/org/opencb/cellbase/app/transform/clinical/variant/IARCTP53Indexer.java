@@ -3,7 +3,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import org.opencb.biodata.models.variant.avro.Germline;
 import org.opencb.biodata.models.variant.avro.Somatic;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
-import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
+import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;

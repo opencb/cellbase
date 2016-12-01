@@ -39,9 +39,9 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
     public void parse() {
 
         try {
-            String sequenceName = "";
+            String sequenceName = null;
             String sequenceType = "";
-            String sequenceAssembly = "";
+            String sequenceAssembly = null;
             String line;
             StringBuilder sequenceStringBuilder = new StringBuilder();
 
@@ -63,9 +63,14 @@ public class GenomeSequenceFastaParser extends CellBaseParser {
                     }
 
                     // initialize data structures
-                    sequenceName = line.replace(">", "").split(" ")[0];
-                    sequenceType = line.replace(">", "").split(" ")[2].split(":")[0];
-                    sequenceAssembly = line.replace(">", "").split(" ")[2].split(":")[1];
+                    String[] lineParts = line.replace(">", "").split(" ");
+                    sequenceName = lineParts[0];
+                    // Non ENSEMBL fasta files may not contain this extra info in the sequence header, e.g. the Ebola
+                    // virus file: >KM034562v1
+                    if (lineParts.length > 1) {
+                        sequenceType = lineParts[2].split(":")[0];
+                        sequenceAssembly = lineParts[2].split(":")[1];
+                    }
                     sequenceStringBuilder.delete(0, sequenceStringBuilder.length());
                 }
             }

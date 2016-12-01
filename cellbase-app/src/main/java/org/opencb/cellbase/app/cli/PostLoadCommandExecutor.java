@@ -95,11 +95,13 @@ public class PostLoadCommandExecutor extends CommandExecutor {
          * Prepare clinical adaptor
          */
         logger.info("Initializing adaptor, connecting to the database...");
+        logger.error("Implementation of this functionality  is outdated and must be re-written if needed");
 
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getUser());
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getHost());
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getPassword());
         // TODO: this shall be done in a different way - old Java API was deprecated and removed
+
+//        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getUser());
+//        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getHost());
+//        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getPassword());
 //        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
 //        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", assembly);
 //

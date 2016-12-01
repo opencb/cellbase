@@ -39,15 +39,16 @@ import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
-import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
+import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
-import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkDataWriter;
-import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkTask;
-import org.opencb.cellbase.app.cli.variant.annotation.VariantAnnotationDiff;
+import org.opencb.cellbase.app.cli.variant.annotation.*;
+import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.variant.annotation.*;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -63,7 +64,6 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -445,14 +445,20 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     dbAdaptorFactory), queryOptions);
         } else {
             try {
+                ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()
+                        .getResourceAsStream("/client-configuration.yml"));
+                if (url != null) {
+                    clientConfiguration.getRest().setHosts(Collections.singletonList(url));
+                }
+                clientConfiguration.setDefaultSpecies(species);
                 CellBaseClient cellBaseClient;
-                cellBaseClient = new CellBaseClient(url, configuration.getVersion(), species);
-                logger.debug("URL set to: {}", url + ":" + port);
+                cellBaseClient = new CellBaseClient(clientConfiguration);
+                logger.debug("URL set to: {}", url);
 
                 // TODO: normalization must be carried out in the client - phase set must be sent together with the
                 // TODO: variant string to the server for proper phase annotation by REST
-                return new CellBaseWSVariantAnnotator(cellBaseClient, queryOptions);
-            } catch (URISyntaxException e) {
+                return new CellBaseWSVariantAnnotator(cellBaseClient.getVariantClient(), queryOptions);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

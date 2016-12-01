@@ -16,8 +16,10 @@
 
 package org.opencb.cellbase.core;
 
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 
 import static org.junit.Assert.*;
 
@@ -28,6 +30,12 @@ public class CellBaseConfigurationTest {
     @Before
     public void setUp() throws Exception {
         cellBaseConfiguration = CellBaseConfiguration.load(CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"));
+    }
+
+    @Test
+    public void load() throws Exception {
+        cellBaseConfiguration = CellBaseConfiguration.load(CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"));
+        System.out.println(new ObjectMapper().writer().withDefaultPrettyPrinter().writeValueAsString(cellBaseConfiguration));
     }
 
     @Test

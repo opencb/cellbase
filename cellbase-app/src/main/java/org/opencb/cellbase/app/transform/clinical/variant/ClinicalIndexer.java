@@ -39,14 +39,14 @@ public abstract class ClinicalIndexer {
         private String alternate;
         private String strand;
 
-        public SequenceLocation() {
+        SequenceLocation() {
         }
 
-        public SequenceLocation(String chromosome, int start, int end, String reference, String alternate) {
+        SequenceLocation(String chromosome, int start, int end, String reference, String alternate) {
             this(chromosome, start, end, reference, alternate, "+");
         }
 
-        public SequenceLocation(String chromosome, int start, int end, String reference, String alternate, String strand) {
+        SequenceLocation(String chromosome, int start, int end, String reference, String alternate, String strand) {
             this.chromosome = chromosome;
             this.start = start;
             this.end = end;

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.app.cli.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.client.CellBaseClient;
+import org.opencb.cellbase.client.rest.VariantClient;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -28,22 +29,22 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by fjlopez on 02/03/15.
  */
 public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
-    private CellBaseClient cellBaseClient;
+    private VariantClient variantClient;
 
     private QueryOptions queryOptions;
 
     private Logger logger;
 
-    public CellBaseWSVariantAnnotator(CellBaseClient cellBaseClient, QueryOptions queryOptions) {
-        this.cellBaseClient = cellBaseClient;
+    public CellBaseWSVariantAnnotator(VariantClient variantClient, QueryOptions queryOptions) {
+        this.variantClient = variantClient;
         this.queryOptions = new QueryOptions(queryOptions);
-        this.queryOptions.put("post", true);
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
@@ -59,8 +60,8 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
         logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
         QueryResponse<VariantAnnotation> response;
         try {
-            response = cellBaseClient.getAnnotation(CellBaseClient.Category.genomic,
-                    CellBaseClient.SubCategory.variant, variantList, queryOptions);
+            response = variantClient.getAnnotations(variantList.stream().map(Variant::toString).collect(Collectors.toList()),
+                    queryOptions, true);
         } catch (IOException e) {
             e.printStackTrace();
             return;

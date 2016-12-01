@@ -23,7 +23,7 @@ import org.opencb.cellbase.app.transform.clinical.variant.ClinicalVariantParser;
 import org.opencb.cellbase.app.transform.clinical.variant.CosmicParser;
 import org.opencb.cellbase.app.transform.clinical.variant.GwasParser;
 import org.opencb.cellbase.app.transform.variation.VariationParser;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -59,7 +59,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     private File ensemblScriptsFolder;
     private File proteinScriptsFolder;
 
-    private CellBaseConfiguration.SpeciesProperties.Species species;
+    private boolean flexibleGTFParsing;
+    private Species species;
 
     public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
@@ -81,6 +82,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
         this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
+        this.flexibleGTFParsing = buildCommandOptions.flexibleGTFParsing;
     }
 
 
@@ -98,7 +100,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
-            for (CellBaseConfiguration.SpeciesProperties.Species sp : configuration.getAllSpecies()) {
+            for (Species sp : configuration.getAllSpecies()) {
                 if (buildCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getId())) {
@@ -269,8 +271,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
-
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, serializer);
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, flexibleGTFParsing, serializer);
     }
 
 
@@ -309,7 +310,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
     }
 
-    private void getProteinFunctionPredictionMatrices(CellBaseConfiguration.SpeciesProperties.Species sp, Path geneFolder)
+    private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
 
@@ -370,7 +371,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private String getDefaultHumanAssembly() {
-        for (CellBaseConfiguration.SpeciesProperties.Species species : configuration.getSpecies().getVertebrates()) {
+        for (Species species : configuration.getSpecies().getVertebrates()) {
             if (species.getId().equals("hsapiens")) {
                 return species.getAssemblies().get(0).getName();
             }
@@ -410,7 +411,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "cosmic", true);
-        return new CosmicParser(cosmicFilePath, serializer);
+        String assembly = buildCommandOptions.assembly;
+        return new CosmicParser(cosmicFilePath, serializer, assembly);
     }
 
     @Deprecated

@@ -80,12 +80,12 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (loadCommandOptions.data != null) {
 
             if (loadCommandOptions.loaderParams.containsKey("mongodb-index-folder")) {
-                configuration.getDatabase().getOptions().put("mongodb-index-folder",
+                configuration.getDatabases().getMongodb().getOptions().put("mongodb-index-folder",
                         loadCommandOptions.loaderParams.get("mongodb-index-folder"));
             }
             // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
             if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
-                configuration.getDatabase().getOptions().put("authenticationDatabase",
+                configuration.getDatabases().getMongodb().getOptions().put("authenticationDatabase",
                         loadCommandOptions.loaderParams.get("authenticationDatabase"));
             }
 

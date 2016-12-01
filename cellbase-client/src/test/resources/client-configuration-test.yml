@@ -5,7 +5,7 @@ logLevel: "info"
 logFile: ""
 rest:
   hosts:
-  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"
+  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-beta1.1"
   - "http://localhost:8080/cellbase-4.5.0-rc"
   timeout: 2000
 grpc:
