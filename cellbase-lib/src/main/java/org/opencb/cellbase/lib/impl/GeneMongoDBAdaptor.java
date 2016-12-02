@@ -16,16 +16,21 @@
 
 package org.opencb.cellbase.lib.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -33,6 +38,8 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
+import javax.print.Doc;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -97,17 +104,28 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         options = addPrivateExcludeOptions(options);
 
         if (postDBFilteringParametersEnabled(query)) {
-            QueryResult<Document> nativeQueryResult = postDBFiltering(mongoDBCollection.find(bson, options));
+            QueryResult<Document> nativeQueryResult = postDBFiltering(query, mongoDBCollection.find(bson, options));
             QueryResult<Gene> queryResult = new QueryResult<Gene>(nativeQueryResult.getId(),
                     nativeQueryResult.getDbTime(), nativeQueryResult.getNumResults(),
                     nativeQueryResult.getNumTotalResults(), nativeQueryResult.getWarningMsg(),
                     nativeQueryResult.getErrorMsg(), null);
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+            ObjectWriter objectWriter = jsonObjectMapper.writer();
             queryResult.setResult(nativeQueryResult.getResult().stream()
-                    .map(document -> this.objectMapper.readValue(objectWriter.writeValueAsString(document),
-                            Gene.class)).collect(Collectors.toList()));
+                    .map(document -> {
+                        try {
+                            return this.objectMapper.readValue(objectWriter.writeValueAsString(document),
+                                    Gene.class);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    }).collect(Collectors.toList()));
             return queryResult;
         } else {
-            mongoDBCollection.find(bson, null, Gene.class, options);
+            return mongoDBCollection.find(bson, null, Gene.class, options);
         }
     }
 
@@ -115,7 +133,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return postDBFiltering(mongoDBCollection.find(bson, options));
+        return postDBFiltering(query, mongoDBCollection.find(bson, options));
     }
 
     @Override
@@ -243,4 +261,30 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         }
     }
 
+
+    private Boolean postDBFilteringParametersEnabled(Query query) {
+        return StringUtils.isNotEmpty(query.getString("transcripts.annotationFlags"));
+    }
+
+    private QueryResult<Document> postDBFiltering(Query query, QueryResult<Document> documentQueryResult) {
+        if (StringUtils.isNotEmpty(query.getString("transcripts.annotationFlags"))) {
+            Set<String> flags = new HashSet<>(Arrays.asList(query.getString("transcripts.annotationFlags").split(",")));
+            List<Document> documents = documentQueryResult.getResult();
+            for (Document document : documents) {
+                ArrayList<Document> transcripts = document.get("transcripts", ArrayList.class);
+                ArrayList<Document> matchedTranscripts = new ArrayList<>();
+                for (Document transcript : transcripts) {
+                    ArrayList annotationFlags = transcript.get("annotationFlags", ArrayList.class);
+                    if (annotationFlags != null && annotationFlags.size() > 0) {
+                        if (CollectionUtils.containsAny(annotationFlags, flags)) {
+                            matchedTranscripts.add(transcript);
+                        }
+                    }
+                }
+                document.put("transcripts", matchedTranscripts);
+            }
+            documentQueryResult.setResult(documents);
+        }
+        return documentQueryResult;
+    }
 }
