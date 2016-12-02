@@ -134,7 +134,7 @@ public class FilesWSService extends GenericRestWSServer {
 
             BamManager alignmentManager = new BamManager(filePath);
             AlignmentFilters<SAMRecord> filters = SamRecordFilters.create().addMappingQualityFilter(query.getInt("mapQ", 0));
-            AlignmentOptions options = new AlignmentOptions(false, false, false, AlignmentOptions.DEFAULT_LIMIT);
+            AlignmentOptions options = new AlignmentOptions();
 
             String queryResultId = null;
             List<ReadAlignment> readAlignmentList = new ArrayList<>();

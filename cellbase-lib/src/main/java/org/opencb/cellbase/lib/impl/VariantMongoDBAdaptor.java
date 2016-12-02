@@ -28,13 +28,13 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -53,10 +53,12 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public VariantMongoDBAdaptor(String species, String assembly,
+                                 CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
+        subCategory = "variation";
 
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }
@@ -108,13 +110,13 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        return count(document, query, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson document = parseQuery(query);
-        return mongoDBCollection.distinct(field, document);
+        return distinct(field, document, query, mongoDBCollection);
     }
 
     @Override
@@ -134,7 +136,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //        options = addPrivateExcludeOptions(options);
 
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return mongoDBCollection.find(bson, null, Variant.class, options);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Variant.class);
     }
 
     // FIXME: patch to exclude annotation.additionalAttributes from the results - to remove as soon as the variation
@@ -158,7 +160,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return mongoDBCollection.find(bson, options);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

@@ -87,6 +87,13 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/count")
     @ApiOperation(httpMethod = "GET", value = "Get the number of transcripts in the database", response = Integer.class,
         responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
+    })
     public Response count(@DefaultValue("")
                           @QueryParam("region")
                           @ApiParam(name = "region",
@@ -122,6 +129,13 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/{transcriptId}/info")
     @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
+    })
     public Response getByEnsemblId(@PathParam("transcriptId") String id) {
         try {
             parseQueryParams();

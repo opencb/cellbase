@@ -62,7 +62,12 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                             + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
                             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureClass",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
     })
     public Response getFeatureTypes() {
         try {
@@ -87,7 +92,12 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                             + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
                             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
     })
     public Response getFeatureClasses() {
         try {

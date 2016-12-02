@@ -188,6 +188,13 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @GET
     @Path("/clinvar-significance")
     @ApiOperation(httpMethod = "GET", value = "Get the list of clinical significances for ClinVar")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
+    })
     public Response getAllClinicalSignificances() {
         try {
             parseQueryParams();

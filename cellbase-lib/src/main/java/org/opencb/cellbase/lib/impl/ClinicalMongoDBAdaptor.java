@@ -27,10 +27,10 @@ import org.opencb.biodata.models.variant.avro.Gwas;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -41,9 +41,11 @@ import java.util.stream.Collectors;
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public ClinicalMongoDBAdaptor(String species, String assembly,
+                                  CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("clinical");
+        subCategory = "clinical";
 
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
@@ -88,13 +90,13 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        return count(bson, query, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        return distinct(field, bson, query, mongoDBCollection);
     }
 
     @Override
@@ -111,7 +113,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options);
-        return mongoDBCollection.find(bson, parsedOptions);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

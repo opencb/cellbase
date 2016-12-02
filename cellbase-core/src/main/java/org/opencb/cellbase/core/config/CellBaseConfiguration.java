@@ -34,6 +34,7 @@ public class CellBaseConfiguration {
     private String filePath;
     private String defaultOutdir;
     private Databases databases;
+    private CacheProperties cache;
     private DownloadProperties download;
     private SpeciesProperties species;
 
@@ -43,28 +44,77 @@ public class CellBaseConfiguration {
         return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
     }
 
+
+    public List<Species> getAllSpecies() {
+        List<Species> allSpecies = new ArrayList<>();
+        if (species.getVertebrates() != null && !species.getVertebrates().isEmpty()) {
+            allSpecies.addAll(species.getVertebrates());
+        }
+        if (species.getMetazoa() != null && !species.getMetazoa().isEmpty()) {
+            allSpecies.addAll(species.getMetazoa());
+        }
+        if (species.getFungi() != null && !species.getFungi().isEmpty()) {
+            allSpecies.addAll(species.getFungi());
+        }
+        if (species.getProtist() != null && !species.getProtist().isEmpty()) {
+            allSpecies.addAll(species.getProtist());
+        }
+        if (species.getPlants() != null && !species.getPlants().isEmpty()) {
+            allSpecies.addAll(species.getPlants());
+        }
+
+        return allSpecies;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CellBaseConfiguration{");
+        sb.append("version='").append(version).append('\'');
+        sb.append(", apiVersion='").append(apiVersion).append('\'');
+        sb.append(", wiki='").append(wiki).append('\'');
+        sb.append(", defaultOutdir='").append(defaultOutdir).append('\'');
+        sb.append(", databases=").append(databases);
+        sb.append(", cache=").append(cache);
+        sb.append(", download=").append(download);
+        sb.append(", species=").append(species);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public CellBaseConfiguration setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     public String getApiVersion() {
         return apiVersion;
     }
 
-    public void setApiVersion(String apiVersion) {
+    public CellBaseConfiguration setApiVersion(String apiVersion) {
         this.apiVersion = apiVersion;
+        return this;
     }
 
     public String getWiki() {
         return wiki;
     }
 
-    public void setWiki(String wiki) {
+    public CellBaseConfiguration setWiki(String wiki) {
         this.wiki = wiki;
+        return this;
+    }
+
+    public String getDefaultOutdir() {
+        return defaultOutdir;
+    }
+
+    public CellBaseConfiguration setDefaultOutdir(String defaultOutdir) {
+        this.defaultOutdir = defaultOutdir;
+        return this;
     }
 
     public String getFilePath() {
@@ -84,55 +134,31 @@ public class CellBaseConfiguration {
         return this;
     }
 
-    public String getDefaultOutdir() {
-        return defaultOutdir;
+    public CacheProperties getCache() {
+        return cache;
     }
 
-    public void setDefaultOutdir(String defaultOutdir) {
-        this.defaultOutdir = defaultOutdir;
+    public CellBaseConfiguration setCache(CacheProperties cache) {
+        this.cache = cache;
+        return this;
     }
 
     public DownloadProperties getDownload() {
         return download;
     }
 
-    public void setDownload(DownloadProperties download) {
+    public CellBaseConfiguration setDownload(DownloadProperties download) {
         this.download = download;
+        return this;
     }
 
     public SpeciesProperties getSpecies() {
         return species;
     }
 
-    public void setSpecies(SpeciesProperties species) {
+    public CellBaseConfiguration setSpecies(SpeciesProperties species) {
         this.species = species;
-    }
-
-    public List<Species> getAllSpecies() {
-        List<Species> allSpecies = new ArrayList<>();
-        if (species.getVertebrates() != null && !species.getVertebrates().isEmpty()) {
-            allSpecies.addAll(species.getVertebrates());
-        }
-        if (species.getMetazoa() != null && !species.getMetazoa().isEmpty()) {
-            allSpecies.addAll(species.getMetazoa());
-        }
-        if (species.getFungi() != null && !species.getFungi().isEmpty()) {
-            allSpecies.addAll(species.getFungi());
-        }
-        if (species.getProtist() != null && !species.getProtist().isEmpty()) {
-            allSpecies.addAll(species.getProtist());
-        }
-        if (species.getPlants() != null && !species.getPlants().isEmpty()) {
-            allSpecies.addAll(species.getPlants());
-        }
-        if (species.getVirus() != null && !species.getVirus().isEmpty()) {
-            allSpecies.addAll(species.getVirus());
-        }
-        if (species.getBacteria() != null && !species.getBacteria().isEmpty()) {
-            allSpecies.addAll(species.getBacteria());
-        }
-
-        return allSpecies;
+        return this;
     }
 
 }

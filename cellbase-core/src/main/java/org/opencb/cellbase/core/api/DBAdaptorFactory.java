@@ -17,7 +17,6 @@
 package org.opencb.cellbase.core.api;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.Species;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +98,7 @@ public abstract class DBAdaptorFactory {
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly);
 
 
-    protected Species getSpecies(String speciesName) {
+/*    protected Species getSpecies(String speciesName) {
         Species species = null;
         for (Species sp : cellBaseConfiguration.getAllSpecies()) {
             if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
@@ -122,6 +121,6 @@ public abstract class DBAdaptorFactory {
             }
         }
         return assembly;
-    }
+    }*/
 
 }

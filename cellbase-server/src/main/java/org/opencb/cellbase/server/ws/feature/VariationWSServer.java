@@ -89,7 +89,12 @@ public class VariationWSServer extends GenericRestWSServer {
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "alternate",
                     value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
     })
     public Response count() {
 //    public Response count(@DefaultValue("")
@@ -137,7 +142,12 @@ public class VariationWSServer extends GenericRestWSServer {
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "alternate",
                     value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cache",
+                    value = "true or false, Indicate whether the server should use the cache if available, this "
+                            + "can improve the performance by fetching the results from cache when same query is "
+                            + "made next time",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("id")
                                    @ApiParam(name = "id",
