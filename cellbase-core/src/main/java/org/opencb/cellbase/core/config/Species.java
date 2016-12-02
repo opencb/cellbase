@@ -97,6 +97,7 @@ public class Species {
     public static class Assembly {
         private String name;
         private String ensemblVersion;
+        private String ensemblCollection;  // Only for bacteria
 
         public String getName() {
             return name;
@@ -112,6 +113,14 @@ public class Species {
 
         public void setEnsemblVersion(String ensemblVersion) {
             this.ensemblVersion = ensemblVersion;
+        }
+
+        public String getEnsemblCollection() {
+            return ensemblCollection;
+        }
+
+        public void setEnsemblCollection(String ensemblCollection) {
+            this.ensemblCollection = ensemblCollection;
         }
     }
 }

@@ -6,7 +6,7 @@ try:
 except ImportError:
     from queue import Queue
 
-_CALL_BATCH_SIZE = 2000
+_CALL_BATCH_SIZE = 200
 _NUM_THREADS_DEFAULT = 4
 
 
@@ -32,7 +32,10 @@ def _create_rest_url(host, version, species, category, subcategory,
     if options is not None:
         opts = []
         for k, v in options.items():
-            opts.append(k + '=' + str(v))
+            if isinstance(v, list):
+                opts.append(k + '=' + ','.join(map(str, v)))
+            else:
+                opts.append(k + '=' + str(v))
         if opts:
             url += '?' + '&'.join(opts)
 
