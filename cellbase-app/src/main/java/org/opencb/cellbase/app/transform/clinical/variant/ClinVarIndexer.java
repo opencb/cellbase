@@ -32,6 +32,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private RocksDB rdb;
     private int numberSomaticRecords = 0;
     private int numberGermlineRecords = 0;
+    private int numberNoDiseaseTrait = 0;
+    private int numberMultipleInheritanceModels = 0;
 
     public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarEFOFile, String assembly,
                           RocksDB rdb) {
@@ -81,6 +83,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
         logger.info("Number of updated variants during ClinVar indexing: {}", numberVariantUpdates);
         logger.info("Number of ClinVar germline variants: {}", numberGermlineRecords);
         logger.info("Number of ClinVar somatic variants: {}", numberSomaticRecords);
+        logger.info("Number of ClinVar records without a \"disease\" trait: {}", numberNoDiseaseTrait);
+        logger.info("Number of ClinVar records with multiple inheritance models: {}", numberMultipleInheritanceModels);
     }
 
     private void updateRocksDB(SequenceLocation sequenceLocation, PublicSetType publicSet,
@@ -171,25 +175,30 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
     private String getPreferredTraitName(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
-            if (!trait.getType().equalsIgnoreCase("disease")) {
-                logger.error("Trait type != disease - no action defined for these traits");
-                System.exit(1);
-            } else {
-                for (SetElementSetType setElementSet : trait.getName()) {
-                    if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
-                        if (traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
-                            return traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name;
-                        } else {
-                            return setElementSet.getElementValue().getValue();
-                        }
+//            if (!trait.getType().equalsIgnoreCase("disease")) {
+//                logger.warn("Entry {}. trait type = {}. No action defined for these traits. Skipping entry",
+//                        publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc(), trait.getType());
+////                System.exit(1);
+//            } else {
+            for (SetElementSetType setElementSet : trait.getName()) {
+                if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
+                    if (traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
+                        return traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name;
+                    } else {
+                        return setElementSet.getElementValue().getValue();
                     }
                 }
             }
+//            }
         }
+        logger.warn("Entry {}. No \"disease\" entry found among the traits",
+                        publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+        numberNoDiseaseTrait++;
+
         return null;
     }
 
-    private String getInheritanceModel(PublicSetType publicSet) {
+    private List<String> getInheritanceModel(PublicSetType publicSet) {
         Set<String> inheritanceModelSet = new HashSet<>();
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
             if (trait.getAttributeSet() != null) {
@@ -201,15 +210,14 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 }
             }
         }
-        if (inheritanceModelSet.size() > 1) {
-            logger.error("More than one inheritance model was found within an RCV record - code is not ready for this");
-            System.exit(1);
-        }
 
         if (inheritanceModelSet.size() == 0) {
             return null;
+        } else if (inheritanceModelSet.size() > 1) {
+            numberMultipleInheritanceModels++;
+            return new ArrayList<>(inheritanceModelSet);
         } else {
-            return inheritanceModelSet.iterator().next();
+            return new ArrayList<>(inheritanceModelSet);
         }
     }
 
@@ -240,20 +248,27 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private List<String> getDisease(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
         Set<String> diseaseList = new HashSet<>();
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
-            if (!trait.getType().equalsIgnoreCase("disease")) {
-                logger.error("Trait type != disease - no action defined for these traits");
-                System.exit(1);
-            } else {
-                for (SetElementSetType setElementSet : trait.getName()) {
-                    diseaseList.add(setElementSet.getElementValue().getValue());
-                    if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
-                        if (traitsToEfoTermsMap != null  // May be null if no traits -> EFO file is provided
-                                && traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
-                            diseaseList.add(traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name);
-                        }
+//            if (!trait.getType().equalsIgnoreCase("disease")) {
+//                logger.warn("Entry {}. trait type = {}. No action defined for these traits. Skipping entry",
+//                        publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc(), trait.getType());
+////                System.exit(1);
+//            } else {
+            for (SetElementSetType setElementSet : trait.getName()) {
+                diseaseList.add(setElementSet.getElementValue().getValue());
+                if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
+                    if (traitsToEfoTermsMap != null  // May be null if no traits -> EFO file is provided
+                            && traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
+                        diseaseList.add(traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name);
                     }
                 }
             }
+//            }
+        }
+
+        if (diseaseList.size() == 0) {
+            logger.warn("Entry {}. No \"disease\" entry found among the traits",
+                    publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+            numberNoDiseaseTrait++;
         }
 
         return new ArrayList<>(diseaseList);
@@ -288,11 +303,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
         while (line != null) {
             String[] parts = line.split("\t");
             // Check assembly
-            if (parts[12].equals(assembly)) {
-                SequenceLocation sequenceLocation = new SequenceLocation(parts[13], Integer.valueOf(parts[14]),
-                        Integer.valueOf(parts[15]), parts[25], parts[26]);
+            if (parts[16].equals(assembly)) {
+                SequenceLocation sequenceLocation = new SequenceLocation(parts[18], Integer.valueOf(parts[19]),
+                        Integer.valueOf(parts[20]), parts[21], parts[22]);
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
-                String[] rcvArray = parts[8].split(";");
+                String[] rcvArray = parts[11].split(";");
                 for (String rcv : rcvArray) {
                     rcvToSequenceLocation.put(rcv, sequenceLocation);
                 }

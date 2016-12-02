@@ -125,7 +125,9 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, clinical and . 'all' to download everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
+                + "gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, "
+                + "clinical_variants and 'all' to download everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -150,7 +152,9 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinical. 'all' build everything.", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, genome_info, "
+                + "gene, variation, variation_functional_score, regulation, protein, ppi, conservation, drug, "
+                + "clinical_variants. 'all' builds everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)

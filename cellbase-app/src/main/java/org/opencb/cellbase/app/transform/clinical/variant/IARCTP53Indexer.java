@@ -29,6 +29,16 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private static final String REF = "REF";
     private static final String ALT = "ALT";
 
+    private static final Map<String, String> INHERITANCE_TAGS_MAP = new HashMap<>(4);
+
+    static {
+        INHERITANCE_TAGS_MAP.put("P", "paternal");
+        INHERITANCE_TAGS_MAP.put("M", "maternal");
+        INHERITANCE_TAGS_MAP.put("P&M", "maternal and paternal");
+        INHERITANCE_TAGS_MAP.put("de novo", "de novo");
+        INHERITANCE_TAGS_MAP.put("na", "not known");
+    }
+
     private final RocksDB rdb;
     private final Path germlineFile;
     private final Path somaticFile;
@@ -37,6 +47,9 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private final Path germlineReferencesFile;
     private final Path somaticReferencesFile;
     private final Path genomeSequenceFilePath;
+    private final Pattern kbSizePattern;
+    private final Pattern mbSizePattern;
+    private final Pattern smallSizePattern;
     private int ignoredRecords = 0;
     private int invalidSubstitutionLines = 0;
     private int invalidDeletionLines = 0;
@@ -54,6 +67,9 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         this.somaticReferencesFile = somaticReferencesFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         snvPattern = Pattern.compile("g\\.\\d+(_\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
+        kbSizePattern = Pattern.compile("\\d+((kb)|(Kb)|(KB))");
+        mbSizePattern = Pattern.compile("\\d+((mb)|(Mb)|(MB))");
+        smallSizePattern = Pattern.compile("\\d+");
     }
 
     public void index() throws RocksDBException {
@@ -406,6 +422,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         germline.setPhenotype(Collections.singletonList(fields[49]));
         germline.setDisease(Collections.singletonList(fields[51]));
         germline.setGeneNames(Collections.singletonList("TP53"));
+        germline.setInheritanceModel(Collections.singletonList(INHERITANCE_TAGS_MAP.get(fields[44])));
 
 
         return germline;
@@ -510,7 +527,13 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
         int hgvsColumnPosition = isGermline ? 17 : 10;
         if (fields[hgvsColumnPosition].contains("del")) {
-            sequenceLocation.setEnd(sequenceLocation.getStart() + Integer.valueOf(fields[hgvsColumnPosition].split("del")[1]) - 1);
+            Integer deletionSize = parseDeletionSize(fields[hgvsColumnPosition].split("del")[1]);
+            if (deletionSize != null) {
+                sequenceLocation.setEnd(sequenceLocation.getStart() + deletionSize - 1);
+            } else {
+                logger.warn("Deletion format not recognized: \"{}\"", fields[hgvsColumnPosition].split("del")[1]);
+                sequenceLocation = null;
+            }
         } else if (fields[hgvsColumnPosition].contains("ins")) {
             sequenceLocation.setEnd(sequenceLocation.getStart() - 1);
         } else {
@@ -518,6 +541,24 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         }
 
         return sequenceLocation;
+    }
+
+    private Integer parseDeletionSize(String sizeString) {
+        // Size of the deletion may be provided as 45kb for example
+        if (smallSizePattern.matcher(sizeString).matches()) {
+            return Integer.valueOf(sizeString);
+        } else if (kbSizePattern.matcher(sizeString).matches()) {
+//            return Integer.valueOf(sizeString.substring(0, sizeString.length() - 2)) * 1000;
+            // TODO: appropriately parse big deletions
+            return null;
+        } else if (mbSizePattern.matcher(sizeString).matches()) {
+//            return Integer.valueOf(sizeString.substring(0, sizeString.length() - 2)) * 1000000;
+            // TODO: appropriately parse big deletions
+            return null;
+        } else {
+            logger.warn("Deletion size string format not recognized: \"{}\"", sizeString);
+            return null;
+        }
     }
 
     private Integer getStart(Integer readPosition, String mutationCDS) {

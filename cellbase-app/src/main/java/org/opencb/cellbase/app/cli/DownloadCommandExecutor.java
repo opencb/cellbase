@@ -889,21 +889,22 @@ public class DownloadCommandExecutor extends CommandExecutor {
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
 
-            url = configuration.getDownload().getGwasCatalog().getHost();
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString());
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(), Collections.singletonList(url),
-                    clinicalFolder.resolve("gwasVersion.json"));
+            // TODO: Fix and enable when needed
+//            url = configuration.getDownload().getGwasCatalog().getHost();
+//            downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString());
+//            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(),
+//                     Collections.singletonList(url), clinicalFolder.resolve("gwasVersion.json"));
 
-            List<String> dbsnpUrls = new ArrayList<>(2);
-            url = configuration.getDownload().getDbsnp().getHost();
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE).toString());
-            dbsnpUrls.add(url);
-
-            url = url + ".tbi";
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE + ".tbi").toString());
-            dbsnpUrls.add(url);
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
-                    clinicalFolder.resolve("dbsnpVersion.json"));
+//            List<String> dbsnpUrls = new ArrayList<>(2);
+//            url = configuration.getDownload().getDbsnp().getHost();
+//            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE).toString());
+//            dbsnpUrls.add(url);
+//
+//            url = url + ".tbi";
+//            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE + ".tbi").toString());
+//            dbsnpUrls.add(url);
+//            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
+//                    clinicalFolder.resolve("dbsnpVersion.json"));
 
             url = configuration.getDownload().getIarctp53().getHost();
             downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),

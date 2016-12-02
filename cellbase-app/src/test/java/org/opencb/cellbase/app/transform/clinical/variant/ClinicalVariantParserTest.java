@@ -42,7 +42,7 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> variantList = loadSerializedVariants("/tmp/clinical_variant.json.gz");
-        assertEquals(9, variantList.size());
+        assertEquals(8, variantList.size());
 
         Variant variant = getVariantByAccession(variantList, "COSM1193237");
         assertNotNull(variant);
@@ -55,9 +55,6 @@ public class ClinicalVariantParserTest {
         assertThat(variant.getAnnotation().getVariantTraitAssociation().getSomatic().stream()
                         .map(somatic -> somatic.getAccession()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("COSM5745645"));
-
-        variant = getVariantByAccession(variantList, "RCV000148484");
-        assertNotNull(variant);
 
         variant = getVariantByAccession(variantList, "COSM4059225");
         assertNotNull(variant);

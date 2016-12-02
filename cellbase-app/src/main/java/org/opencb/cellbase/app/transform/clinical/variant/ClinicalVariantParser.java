@@ -88,7 +88,7 @@ public class ClinicalVariantParser extends CellBaseParser {
                 clinvarIndexer.index();
             }
             if (this.cosmicFile != null) {
-                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, rdb);
+                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, assembly, rdb);
                 cosmicIndexer.index();
             }
             // TODO: write GWAS indexer as soon as it's needed (GRCh38 update)

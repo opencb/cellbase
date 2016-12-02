@@ -25,6 +25,10 @@ public class CosmicIndexer extends ClinicalIndexer {
     private static final String COSMIC_NAME = "cosmic";
     private final RocksDB rdb;
     private final Path cosmicFile;
+    private final int mutationSomaticStatusColumn;
+    private final int pubmedPMIDColumn;
+    private final int sampleSourceColumn;
+    private final int tumourOriginColumn;
     private Pattern mutationGRCh37GenomePositionPattern;
     private Pattern snvPattern;
     private static final String CHROMOSOME = "CHR";
@@ -42,11 +46,25 @@ public class CosmicIndexer extends ClinicalIndexer {
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
     private int ignoredCosmicLines = 0;
 
-    public CosmicIndexer(Path cosmicFile, RocksDB rdb) {
+    public CosmicIndexer(Path cosmicFile, String assembly, RocksDB rdb) {
         super();
         this.rdb = rdb;
         this.cosmicFile = cosmicFile;
         this.compileRegularExpressionPatterns();
+
+        // COSMIC v78 GRCh38 includes one more column at position 27 (1-based) "Resistance Mutation" which is not
+        // provided in the GRCh37 file
+        if (assembly.equalsIgnoreCase("grch37")) {
+            this.mutationSomaticStatusColumn = 28;
+            this.pubmedPMIDColumn = 29;
+            this.sampleSourceColumn = 31;
+            this.tumourOriginColumn = 32;
+        } else {
+            this.mutationSomaticStatusColumn = 29;
+            this.pubmedPMIDColumn = 30;
+            this.sampleSourceColumn = 32;
+            this.tumourOriginColumn = 33;
+        }
     }
 
     private void compileRegularExpressionPatterns() {
@@ -73,6 +91,10 @@ public class CosmicIndexer extends ClinicalIndexer {
                     ignoredCosmicLines++;
                 }
                 totalNumberRecords++;
+
+                if (totalNumberRecords % 1000 == 0) {
+                    logger.info("{} records parsed", totalNumberRecords);
+                }
             }
         } catch (RocksDBException e) {
             logger.error("Error reading/writing from/to the RocksDB index while indexing Cosmic");
@@ -249,42 +271,6 @@ public class CosmicIndexer extends ClinicalIndexer {
     }
 
     private Somatic buildCosmic(String line) {
-        // COSMIC file is a tab-delimited file with the following fields (columns)
-//        1 Gene name
-//        2 Accession Number
-//        3 Gene CDS length
-//        4 HGNC ID
-//        5 Sample name
-//        6 ID_sample
-//        7 ID_tumour
-//        8 Primary site
-//        9 Site subtype 1
-//        10 Site subtype 2
-//        11 Site subtype 3
-//        12 Primary histology
-//        13 Histology subtype 1
-//        14 Histology subtype 2
-//        15 Histology subtype 3
-//        16 Genome-wide screen
-//        17 Mutation ID
-//        18 Mutation CDS
-//        19 Mutation AA
-//        20 Mutation Description
-//        21 Mutation zygosity
-//        22 LOH
-//        23 GRCh
-//        24 Mutation genome position
-//        25 Mutation strand
-//        26 SNP
-//        27 Resistance Mutation
-//        28 FATHMM prediction
-//        29 FATHMM score
-//        30 Mutation somatic status
-//        31 Pubmed_PMID
-//        32 ID_STUDY
-//        33 Sample source
-//        34 Tumour origin
-//        35 Age
         String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
         Somatic cosmic = new Somatic();
         cosmic.setSource(COSMIC_NAME);
@@ -297,10 +283,10 @@ public class CosmicIndexer extends ClinicalIndexer {
         cosmic.setSiteSubtype(fields[8]);
         cosmic.setPrimaryHistology(fields[11]);
         cosmic.setHistologySubtype(fields[12]);
-        cosmic.setMutationSomaticStatus(fields[29]);
-        cosmic.setBibliography(Collections.singletonList("PMID:" + fields[30]));
-        cosmic.setSampleSource(fields[32]);
-        cosmic.setTumourOrigin(fields[33]);
+        cosmic.setMutationSomaticStatus(fields[mutationSomaticStatusColumn]);
+        cosmic.setBibliography(Collections.singletonList("PMID:" + fields[pubmedPMIDColumn]));
+        cosmic.setSampleSource(fields[sampleSourceColumn]);
+        cosmic.setTumourOrigin(fields[tumourOriginColumn]);
 
         return cosmic;
     }
