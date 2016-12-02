@@ -64,7 +64,7 @@ class ConfigClient(object):
             if not (host.startswith('http://') or host.startswith('https://')):
                 host = 'http://' + host
             try:
-                r = requests.head(host)
+                r = requests.head(host, timeout=1)
                 if r.status_code == 302:  # Found
                     available_host = host
                     break
