@@ -49,7 +49,7 @@ import java.util.Map;
 public class ProteinWSServer extends GenericRestWSServer {
 
     public ProteinWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                           @ApiParam(name = "version", value = "Possible values: v3, v4",
                                    defaultValue = "latest") String version,
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
