@@ -304,7 +304,7 @@ public class CliOptionsParser {
         public boolean local;
 
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
-        public String url = "bioinfodev.hpc.cam.ac.uk:80/cellbase/webservices/rest";
+        public String url = "bioinfo.hpc.cam.ac.uk:80/cellbase/webservices/rest";
 
         @Parameter(names = {"--include"}, description = "Comma separated list of annotators to be included", required = false)
         public String include;

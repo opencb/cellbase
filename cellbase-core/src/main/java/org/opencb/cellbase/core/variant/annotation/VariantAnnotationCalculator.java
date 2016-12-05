@@ -358,13 +358,20 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     private void adjustPhasedConsequenceTypes(Object[] variantArray) {
         Variant variant0 = (Variant) variantArray[0];
+        Variant variant1 = null;
+        Variant variant2 = null;
+
+        boolean variant0DisplayCTNeedsUpdate = false;
+        boolean variant1DisplayCTNeedsUpdate = false;
+        boolean variant2DisplayCTNeedsUpdate = false;
+
         for (ConsequenceType consequenceType1 : variant0.getAnnotation().getConsequenceTypes()) {
             ProteinVariantAnnotation newProteinVariantAnnotation = null;
             // Check if this is a coding consequence type. Also this consequence type may have been already
             // updated if there are 3 consecutive phased SNVs affecting the same codon.
             if (isCoding(consequenceType1)
                     && !transcriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId())) {
-                Variant variant1 = (Variant) variantArray[1];
+                variant1 = (Variant) variantArray[1];
                 ConsequenceType consequenceType2
                         = findCodingOverlappingConsequenceType(consequenceType1, variant1.getAnnotation().getConsequenceTypes());
                 // The two first variants affect the same codon
@@ -376,7 +383,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //                    String alternateAA = null;
                     List<SequenceOntologyTerm> soTerms = null;
                     ConsequenceType consequenceType3 = null;
-                    Variant variant2 = null;
+                    variant2 = null;
                     // Check if the third variant also affects the same codon
                     if (variantArray.length > 2) {
                         variant2 = (Variant) variantArray[2];
@@ -406,6 +413,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
                         // Flag these transcripts as already updated for this variant
                         flagTranscriptAnnotationUpdated(variant2, consequenceType1.getEnsemblTranscriptId());
+
+                        variant2DisplayCTNeedsUpdate = true;
 
                         // Only the two first SNVs affect the same codon
                     } else {
@@ -444,8 +453,27 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                     // Flag these transcripts as already updated for this variant
                     flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId());
                     flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId());
+
+                    variant0DisplayCTNeedsUpdate = true;
+                    variant1DisplayCTNeedsUpdate = true;
                 }
             }
+        }
+
+        if (variant0DisplayCTNeedsUpdate) {
+            variant0.getAnnotation()
+                    .setDisplayConsequenceType(getMostSevereConsequenceType(variant0.getAnnotation()
+                            .getConsequenceTypes()));
+        }
+        if (variant1DisplayCTNeedsUpdate) {
+            variant1.getAnnotation()
+                    .setDisplayConsequenceType(getMostSevereConsequenceType(variant1.getAnnotation()
+                            .getConsequenceTypes()));
+        }
+        if (variant2DisplayCTNeedsUpdate) {
+            variant2.getAnnotation()
+                    .setDisplayConsequenceType(getMostSevereConsequenceType(variant2.getAnnotation()
+                            .getConsequenceTypes()));
         }
     }
 
