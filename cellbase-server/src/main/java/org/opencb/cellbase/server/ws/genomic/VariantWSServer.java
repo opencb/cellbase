@@ -50,7 +50,7 @@ public class VariantWSServer extends GenericRestWSServer {
     protected static final HashMap<String, List<Transcript>> CACHE_TRANSCRIPT = new HashMap<>();
 
     public VariantWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
+                           @ApiParam(name = "version", value = "Possible values: v3, v4",
                                    defaultValue = "latest") String version,
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
