@@ -650,7 +650,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                    @DefaultValue("false")
                                    @QueryParam("merge")
                                    @ApiParam(name = "merge",
-                                           value = "Return varaints for a gene per QueryResult or all of them merged"
+                                           value = "Return variants for a gene per QueryResult or all of them merged"
                                                    + " into the same QueryResult object.",
                                            defaultValue = "false") boolean merge) {
 //    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
@@ -679,7 +679,6 @@ public class GeneWSServer extends GenericRestWSServer {
 //        }
 
 
-        // FIXME: replace the above try/catch by this block below as soon as annotation is ready at variation collection.
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
