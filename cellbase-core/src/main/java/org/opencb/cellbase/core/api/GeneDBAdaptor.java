@@ -37,6 +37,7 @@ public interface GeneDBAdaptor<T> extends FeatureDBAdaptor<T> {
         TRANSCRIPT_ID("transcripts.id", TEXT_ARRAY, ""),
         TRANSCRIPT_NAME("transcripts.name", TEXT_ARRAY, ""),
         TRANSCRIPT_BIOTYPE("transcripts.biotype", TEXT_ARRAY, ""),
+        TRANSCRIPT_ANNOTATION_FLAGS("transcripts.annotationFlags", TEXT_ARRAY, ""),
         TFBS_NAME("transcripts.tfbs.name", TEXT_ARRAY, ""),
         ANNOTATION_DISEASE_ID("annotation.diseases.id", TEXT_ARRAY, ""),
         ANNOTATION_DISEASE_NAME("annotation.diseases.name", TEXT_ARRAY, ""),
