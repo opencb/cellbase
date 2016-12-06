@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.lib.impl;
 
 import com.mongodb.QueryBuilder;
@@ -21,15 +37,16 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Created by fjlopez on 06/12/16.
+ * Created by imedina on 01/12/15.
  */
-public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
+@Deprecated
+public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public ClinicalLegacyMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
+        mongoDBCollection = mongoDataStore.getCollection("clinical");
 
-        logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
+        logger.debug("ClinicalLegacyMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
@@ -49,16 +66,14 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult groupBy(Query query, String field, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, field, "name", options);
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
     public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, fields, "name", options);
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        return groupBy(bsonQuery, fields, "name", options);
     }
 
     @Override

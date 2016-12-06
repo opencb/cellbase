@@ -36,18 +36,19 @@ import java.util.Arrays;
  */
 @Path("/{version}/{species}/feature/clinical")
 @Produces("application/json")
-@Api(value = "Clinical", description = "Clinical RESTful Web Services API")
-public class ClinicalWSServer extends GenericRestWSServer {
+@Api(value = "Clinical (Deprecated)", description = "Clinical RESTful Web Services API")
+@Deprecated
+public class ClinicalLegacyWSServer extends GenericRestWSServer {
 
 
-    public ClinicalWSServer(@PathParam("version")
+    public ClinicalLegacyWSServer(@PathParam("version")
                             @ApiParam(name = "version", value = "Possible values: v3, v4",
-                                    defaultValue = "latest") String version,
-                            @PathParam("species")
+                                    defaultValue = "v4") String version,
+                                  @PathParam("species")
                             @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                     + "of potentially available species ids, please refer to: "
-                                    + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
-                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+                                    + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                                  @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
@@ -104,7 +105,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
         try {
             logger.info("VERSION: {}", this.version);
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalLegacyDBAdaptor(this.species, this.assembly);
             if (!queryOptions.containsKey("limit") || ((int) queryOptions.get("limit")) > 1000) {
                 queryOptions.put("limit", 1000);
             }
@@ -165,7 +166,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     + "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus", required = true) String fields) {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalLegacyDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -178,7 +179,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getPhenotypeGeneRelations() {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalLegacyDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -191,7 +192,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAllClinicalSignificances() {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalLegacyDBAdaptor(this.species, this.assembly);
             query.put("source", "clinvar");
             return createOkResponse(clinicalDBAdaptor.distinct(query,
                     "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description"));
@@ -206,7 +207,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
 //    public Response getAllListAccessions() {
 //        try {
 //            parseQueryParams();
-//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(this.species, this.assembly);
 //            return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
 //        } catch (Exception e) {
 //            return createErrorResponse(e);

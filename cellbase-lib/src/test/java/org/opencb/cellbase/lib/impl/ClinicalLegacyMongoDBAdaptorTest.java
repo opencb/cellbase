@@ -1,7 +1,6 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
@@ -11,21 +10,20 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 /**
  * Created by fjlopez on 09/12/15.
  */
-public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+public class ClinicalLegacyMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
-    public ClinicalMongoDBAdaptorTest() { super(); }
+    public ClinicalLegacyMongoDBAdaptorTest() { super(); }
 
     @Test
     public void testNativeGet() throws Exception {
 
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions1 = new QueryOptions();
 
         Query query1 = new Query();

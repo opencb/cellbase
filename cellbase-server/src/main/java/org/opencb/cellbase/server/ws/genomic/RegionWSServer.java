@@ -557,7 +557,7 @@ public class RegionWSServer extends GenericRestWSServer {
 //                                        @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalLegacyDBAdaptor(this.species, this.assembly);
             query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), chrRegionId);
 //            List<Region> regions = Region.parseRegions(query);
             if (hasHistogramQueryParam()) {

@@ -96,7 +96,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         this.regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
         this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
-        this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+        this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species, assembly);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }

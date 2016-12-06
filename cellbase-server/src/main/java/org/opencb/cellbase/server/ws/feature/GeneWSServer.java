@@ -934,7 +934,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                                 + " BRCA2", required = true) String geneId) {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalLegacyDBAdaptor(this.species, this.assembly);
             query.put("gene", geneId);
             QueryResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
             queryResult.setId(geneId);

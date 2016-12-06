@@ -62,8 +62,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private int[] chunkSizes;
     private String clinicalVariantSource;
 
+    @Deprecated
     private static final String CLINVARVARIANTSOURCE = "clinvar";
+    @Deprecated
     private static final String COSMICVARIANTSOURCE = "cosmic";
+    @Deprecated
     private static final String GWASVARIANTSOURCE = "gwas";
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
@@ -187,7 +190,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "cosmic":
                 clinicalVariantSource = "cosmic";
-//                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species, assembly);
                 dbAdaptor = null;
                 break;
             case "clinvar":
@@ -195,20 +198,20 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
                 // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
                 // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
+                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
                 break;
             case "gwas":
                 clinicalVariantSource = "gwas";
                 // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
                 // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
                 // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
+                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
                 break;
             case "clinical":
                 // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
                 // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
                 // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
+                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
                 break;
             case "metadata":
                 dbAdaptor = null;
@@ -269,6 +272,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "clinical":
                 collectionName = "clinical";
+                break;
+            case "clinical_variants":
+                collectionName = "clinical_variants";
                 break;
             case "metadata":
                 collectionName = "metadata";
@@ -383,6 +389,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //        }
 //    }
 
+    @Deprecated
     private void addClinicalPrivateFields(Document document) {
         if (clinicalVariantSource != null) {
             List<String> geneIdList = null;
