@@ -82,25 +82,35 @@ public class ClinicalVariantParser extends CellBaseParser {
             rdb = (RocksDB) dbConnection[0];
             dbOption = (Options) dbConnection[1];
             dbLocation = (String) dbConnection[2];
-            if (this.clinvarXMLFile != null) {
+
+            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null && Files.exists(clinvarXMLFile)
+                    && Files.exists(clinvarSummaryFile)) {
                 ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile, clinvarSummaryFile,
                         clinvarEFOFile, assembly, rdb);
                 clinvarIndexer.index();
+            } else {
+                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.");
             }
-            if (this.cosmicFile != null) {
+
+            if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
                 CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, assembly, rdb);
                 cosmicIndexer.index();
+            } else {
+                logger.warn("Cosmic file {} missing. Skipping Cosmic data", cosmicFile);
             }
             // TODO: write GWAS indexer as soon as it's needed (GRCh38 update)
 //            if (this.gwasFile != null) {
 //                GwasIndexer cosmicIndexer = new GwasIndexer(gwasFile, rdb);
 //                cosmicIndexer.index();
 //            }
-            if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null) {
+            if (this.iarctp53GermlineFile != null && this.iarctp53SomaticFile != null
+                    && Files.exists(iarctp53GermlineFile) && Files.exists(iarctp53SomaticFile)) {
                 IARCTP53Indexer iarctp53Indexer = new IARCTP53Indexer(iarctp53GermlineFile,
                         iarctp53GermlineReferencesFile, iarctp53SomaticFile, iarctp53SomaticReferencesFile,
                         genomeSequenceFilePath, assembly, rdb);
                 iarctp53Indexer.index();
+            } else {
+                logger.warn("One or more of required IARCTP53 files are missing. Skipping IARCTP53 data.");
             }
 
             serializeRDB(rdb);

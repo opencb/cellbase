@@ -12,7 +12,6 @@ import org.rocksdb.RocksDBException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.security.InvalidParameterException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -55,6 +54,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private int invalidDeletionLines = 0;
     private int invalidInsertionLines = 0;
     private int invalidgDescriptionOtherReason = 0;
+    private int nDuplications = 0;
 
     public IARCTP53Indexer(Path germlineFile, Path germlineReferencesFile, Path somaticFile,
                            Path somaticReferencesFile, Path genomeSequenceFilePath, String assembly, RocksDB rdb) {
@@ -75,6 +75,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     public void index() throws RocksDBException {
         index(germlineFile, germlineReferencesFile, true);
         index(somaticFile, somaticReferencesFile, false);
+        this.printSummary();
     }
 
     private void index(Path filePath, Path referencesFilePath, boolean isGermline) throws RocksDBException {
@@ -160,7 +161,6 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             ex.printStackTrace();
         } finally {
             logger.info("Done");
-            this.printSummary();
         }
 
     }
@@ -214,6 +214,9 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         }
         if (invalidDeletionLines > 0) {
             logger.info("\t-" + formatter.format(invalidDeletionLines) + " lines by invalid deletion");
+        }
+        if (nDuplications > 0) {
+            logger.info("\t-" + formatter.format(nDuplications) + " lines by duplication");
         }
         if (invalidgDescriptionOtherReason > 0) {
             logger.info("\t-" + formatter.format(invalidgDescriptionOtherReason)
@@ -271,6 +274,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             }
         } else if (gDescription.contains("dup")) {
             parseDuplication(gDescription);
+            nDuplications++;
+            validVariant = false;
         } else {
             validVariant = false;
             invalidgDescriptionOtherReason++;
@@ -281,8 +286,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
     private void parseDuplication(String dup) {
         // TODO: No duplications seen so far
-        throw new InvalidParameterException("Duplication found when parsing the IARC TP53 file. No action currently "
-                + "implemented. PLease check.");
+        logger.warn("Duplication found when parsing the IARC TP53 file: {}. No action currently "
+                + "implemented. Variant will be skipped.", dup);
     }
 
     private boolean parseInsertion(String mutationCds, SequenceLocation sequenceLocation) {
@@ -312,6 +317,9 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             sequenceLocation.setReference(fastaIndexManager.query("17", sequenceLocation.getStart(),
                     sequenceLocation.getEnd()));
             sequenceLocation.setAlternate("");
+        } else if (gDescriptionArray[1].matches(VARIANT_STRING_PATTERN)) { // Avoid allele strings containing Ns, for example
+            sequenceLocation.setReference(gDescriptionArray[1]);
+            validVariant = true;
         } else {
             validVariant = false;
         }
@@ -527,11 +535,17 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
         int hgvsColumnPosition = isGermline ? 17 : 10;
         if (fields[hgvsColumnPosition].contains("del")) {
-            Integer deletionSize = parseDeletionSize(fields[hgvsColumnPosition].split("del")[1]);
-            if (deletionSize != null) {
-                sequenceLocation.setEnd(sequenceLocation.getStart() + deletionSize - 1);
+            String[] deletionParts = fields[hgvsColumnPosition].split("del");
+            if (deletionParts.length == 2) {
+                Integer deletionSize = parseDeletionSize(fields[hgvsColumnPosition].split("del")[1]);
+                if (deletionSize != null) {
+                    sequenceLocation.setEnd(sequenceLocation.getStart() + deletionSize - 1);
+                } else {
+                    logger.warn("Deletion size format not recognized: \"{}\"", fields[hgvsColumnPosition].split("del")[1]);
+                    sequenceLocation = null;
+                }
             } else {
-                logger.warn("Deletion format not recognized: \"{}\"", fields[hgvsColumnPosition].split("del")[1]);
+                logger.warn("Deletion format not recognized: \"{}\"", fields[hgvsColumnPosition]);
                 sequenceLocation = null;
             }
         } else if (fields[hgvsColumnPosition].contains("ins")) {
@@ -555,6 +569,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 //            return Integer.valueOf(sizeString.substring(0, sizeString.length() - 2)) * 1000000;
             // TODO: appropriately parse big deletions
             return null;
+        } else if (sizeString.matches(VARIANT_STRING_PATTERN)) {
+            return sizeString.length();
         } else {
             logger.warn("Deletion size string format not recognized: \"{}\"", sizeString);
             return null;
