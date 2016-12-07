@@ -38,7 +38,6 @@ import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;

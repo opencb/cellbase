@@ -197,6 +197,46 @@ public class TranscriptWSServer extends GenericRestWSServer {
         }
     }
 
+    @GET
+    @Path("/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Retrieves all transcript objects", response = Transcript.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "id",
+                    value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992"
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "name",
+                    value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "biotype",
+                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+
+            @ApiImplicitParam(name = "xrefs",
+                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "tfbs.name",
+                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotationFlags",
+                    value = "Comma separated list of annotation flags that must be present in the transcripts returned "
+                            + "within the gene model, e.g.: basic,CCDS. Exact text matches will be returned",
+                    dataType = "string", paramType = "query"),
+    })
+    public Response getAll() {
+        try {
+            parseQueryParams();
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
     // FIXME: 28/04/16 must look for the transcript id within the consequence type object. Requires previous loading of
     // the annoation into th evariation collection
     @GET
