@@ -231,7 +231,11 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
-            return createOkResponse(transcriptDBAdaptor.nativeGet(query, queryOptions));
+            QueryResult queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
+            // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
+            // properly fixed
+            queryResult.setNumTotalResults(-1);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
