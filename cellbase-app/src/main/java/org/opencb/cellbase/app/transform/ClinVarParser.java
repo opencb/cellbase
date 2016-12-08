@@ -122,15 +122,15 @@ public class ClinVarParser extends CellBaseParser {
         while (line != null) {
             String[] parts = line.split("\t");
             // Check assembly
-            if (parts[12].equals(selectedAssembly)) {
+            if (parts[16].equals(selectedAssembly)) {
                 SequenceLocationType sequenceLocation = new SequenceLocationType();
-                sequenceLocation.setChr(parts[13]);
-                sequenceLocation.setStart(new BigInteger(parts[14]));
-                sequenceLocation.setStop(new BigInteger(parts[15]));
-                sequenceLocation.setReferenceAllele(parts[25]);
-                sequenceLocation.setAlternateAllele(parts[26]);
+                sequenceLocation.setChr(parts[18]);
+                sequenceLocation.setStart(new BigInteger(parts[19]));
+                sequenceLocation.setStop(new BigInteger(parts[20]));
+                sequenceLocation.setReferenceAllele(parts[21]);
+                sequenceLocation.setAlternateAllele(parts[22]);
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
-                String[] rcvArray = parts[8].split(";");
+                String[] rcvArray = parts[11].split(";");
                 for (String rcv : rcvArray) {
                     rcvToSequenceLocation.put(rcv, sequenceLocation);
                 }
@@ -274,7 +274,7 @@ public class ClinVarParser extends CellBaseParser {
         private final String name;
         private final String url;
 
-        public EFO(String id, String name, String url) {
+        EFO(String id, String name, String url) {
             this.id = id;
             this.name = name;
             this.url = url;

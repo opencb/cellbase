@@ -18,7 +18,7 @@ package org.opencb.cellbase.server.grpc;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import org.opencb.cellbase.core.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

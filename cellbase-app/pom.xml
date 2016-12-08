@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>4.5.0-beta</version>
+        <version>4.5.0-rc-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -21,17 +21,13 @@
     <dependencies>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-core</artifactId>
+            <artifactId>cellbase-server</artifactId>
+            <version>${cellbase.version}</version>
+            <!--<type>war</type>-->
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.opencb.cellbase</groupId>-->
-        <!--<artifactId>cellbase-server</artifactId>-->
-        <!--<version>${cellbase.version}</version>-->
-        <!--<type>jar</type>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-server</artifactId>
+            <artifactId>cellbase-client</artifactId>
             <version>${cellbase.version}</version>
             <!--<type>war</type>-->
         </dependency>
@@ -39,7 +35,7 @@
         <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
-            <version>1.47</version>
+            <version>1.58</version>
         </dependency>
         <!--<dependency>-->
             <!--<groupId>psidev.psi.mi</groupId>-->
@@ -52,22 +48,6 @@
             <version>2.4</version>
         </dependency>
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
             <scope>test</scope>
@@ -76,11 +56,6 @@
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

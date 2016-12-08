@@ -1,6 +1,6 @@
 import unittest
 
-import pycellbase.cbfeatures as cbfts
+import pycellbase.cbrestclients as cbfts
 from pycellbase.cbconfig import ConfigClient
 
 
@@ -21,6 +21,12 @@ class GeneClientTest(unittest.TestCase):
         res = self._gc.get_clinical('BRCA1')
         assert len(res[0]['result']) == 6412
         assert res[0]['result'][0]['source'] == 'clinvar'
+
+    def test_get_list(self):
+        """Checks retrieval of gene list"""
+        res = self._gc.get_list(include="id", limit=10000)
+        assert len(res[0]['result']) == 10000
+        assert res[0]['result'][0]['id'] == 'ENSG00000223972'
 
     def test_get_protein(self):
         """Checks retrieval of protein"""
@@ -43,7 +49,7 @@ class GeneClientTest(unittest.TestCase):
     def test_get_snp(self):
         """Checks retrieval of snp"""
         res = self._gc.get_snp('LDLR')
-        assert len(res[0]['result']) == 4113
+        assert len(res[0]['result']) == 4108
         assert res[0]['result'][0]['id'] == 'rs191244119'
 
     def test_get_info(self):
@@ -51,6 +57,16 @@ class GeneClientTest(unittest.TestCase):
         res = self._gc.get_info('BRCA1')
         assert len(res[0]['result']) == 1
         assert res[0]['id'] == 'BRCA1'
+
+    def test_search(self):
+        """Checks retrieval of gene info given a set of filters"""
+        res = self._gc.search(name='BRCA1')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['id'] == 'ENSG00000012048'
+
+        res = self._gc.search(name='BRCA1', include='chromosome')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['chromosome'] == '17'
 
 
 class ProteinClientTest(unittest.TestCase):
@@ -112,16 +128,15 @@ class VariationClientTest(unittest.TestCase):
         self._vc = cbfts.VariationClient(ConfigClient())
 
     def test_get_consequence_types(self):
-        """Checks retrieval of consequence types with and without specific ID"""
-        # Without ID
+        """Checks retrieval of consequence types list"""
         res = self._vc.get_consequence_types()
-        assert len(res[0]['result']) == 38
         assert 'coding_sequence_variant' in res[0]['result']
 
-        # With ID # TODO Currently not working. Is this deprecated?
-        res = self._vc.get_consequence_types('rs6025')
-        assert len(res[0]['result']) == 0
-        assert res[0]['result'] == []
+    def test_get_consequence_type(self):
+        """Checks retrieval of consequence types for a variation"""
+        res = self._vc.get_consequence_type('rs6025')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0] == 'missense_variant'
 
 
 class GenomicRegionTest(unittest.TestCase):
@@ -175,8 +190,26 @@ class GenomicRegionTest(unittest.TestCase):
     def test_get_variation(self):
         """Checks retrieval of variations"""
         res = self._gr.get_variation('3:10000-100000')
-        assert len(res[0]['result']) == 2937
         assert res[0]['result'][0]['id'] == 'rs192023809'
+
+
+class VariantTest(unittest.TestCase):
+    """Tests the Variant class"""
+    def setUp(self):
+        """Initializes the variation client"""
+        self._vc = cbfts.VariantClient(ConfigClient())
+
+    def test_get_annotation(self):
+        """Checks retrieval of annotation data"""
+        res = self._vc.get_annotation('19:45411941:T:C')
+        assert len(res[0]['result']) == 1
+        assert res[0]['result'][0]['id'] == 'rs429358'
+
+    def test_get_cadd(self):
+        """Checks retrieval of cadd"""
+        res = self._vc.get_cadd('19:45411941:T:C')
+        assert len(res[0]['result']) == 2
+        assert res[0]['result'][0]['score'] == -1.1800003051757812
 
 
 if __name__ == '__main__':

@@ -1,9 +1,10 @@
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.app.cli.variant.annotation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.AdditionalAttribute;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 

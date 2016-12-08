@@ -409,7 +409,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
-        public FutureVariationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureVariationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
@@ -490,7 +490,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         private QueryOptions queryOptions;
 
-        public FutureConservationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureConservationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
@@ -530,7 +530,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
 
         private QueryOptions queryOptions;
 
-        public FutureVariantFunctionalScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureVariantFunctionalScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
@@ -570,7 +570,7 @@ public class VariantAnnotationMongoDBAdaptor extends MongoDBAdaptor implements V
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
-        public FutureClinicalAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureClinicalAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }

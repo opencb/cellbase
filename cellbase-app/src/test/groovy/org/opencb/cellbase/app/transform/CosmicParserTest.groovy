@@ -28,6 +28,7 @@ import java.nio.file.Paths
 /**
  * Created by lcruz on 23/10/14.
  */
+@Ignore
 class CosmicParserTest extends Specification {
 
     @Shared
