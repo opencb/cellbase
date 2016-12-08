@@ -162,88 +162,57 @@
                 this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=cosmic';
                 this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/regulatory';
                 let _this = this;
-                let geneSuccess = function (response) {
-                    _this.genes = response.response[0].result;
-                    _this.geneCount = _this.genes.length;
 
-                    // Gene grid definition
-                    $('#geneTable').bootstrapTable('destroy');
-                    $('#geneTable').bootstrapTable({
-                        data: _this.genes,
-                        columns: [
-                            [
-                                {
-                                    title: 'Name',
-                                    field: 'name',
-                                    sortable: true
-                                },
-                                {
-                                    title: 'Ensembl ID',
-                                    formatter: _this.idFormatter
-                                },
-                                {
-                                    title: 'Biotype',
-                                    field: 'biotype',
-                                    sortable: true
-                                },
-                                {
-                                    title: 'Location',
-                                    formatter: _this.locationFormatter
-                                },
-                                {
-                                    title: 'Strand',
-                                    field: 'strand'
-                                },
-                                {
-                                    title: 'Description',
-                                    field: 'description'
-                                }
-                            ]
-                        ],
-                        onClickRow: function (row, $element) {
-                            $('.success').removeClass('success');
-                            $($element).addClass('success');
-                            _this.selectedGene = row.name;
-                            _this.transcripts = row.transcripts;
-                            _this.expression = row.annotation.expression;
-                            _this.phenotype = row.annotation.diseases;
-                            _this.drugs = row.annotation.drugs;
-                        }
+                this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {})
+                    .then(function (response) {
+                        _this.genes = response.response[0].result;
+                        _this.geneCount = _this.genes.length;
+
+                        // Gene grid definition
+                        $('#geneTable').bootstrapTable('destroy');
+                        $('#geneTable').bootstrapTable({
+                            data: _this.genes,
+                            columns: [
+                                [
+                                    {
+                                        title: 'Name',
+                                        field: 'name',
+                                        sortable: true
+                                    },
+                                    {
+                                        title: 'Ensembl ID',
+                                        formatter: _this.idFormatter
+                                    },
+                                    {
+                                        title: 'Biotype',
+                                        field: 'biotype',
+                                        sortable: true
+                                    },
+                                    {
+                                        title: 'Location',
+                                        formatter: _this.locationFormatter
+                                    },
+                                    {
+                                        title: 'Strand',
+                                        field: 'strand'
+                                    },
+                                    {
+                                        title: 'Description',
+                                        field: 'description'
+                                    }
+                                ]
+                            ],
+                            onClickRow: function (row, $element) {
+                                $('.success').removeClass('success');
+                                $($element).addClass('success');
+                                _this.selectedGene = row.name;
+                                _this.transcripts = row.transcripts;
+                                _this.expression = row.annotation.expression;
+                                _this.phenotype = row.annotation.diseases;
+                                _this.drugs = row.annotation.drugs;
+                            }
+                        });
                     });
-                };
-//                let regSuccess = function (response) {
-//                    let reg = [];
-//                    for (let i in response.response) {
-//                        for (let j in response.response[i].result) {
-//                            reg.push(response.response[i].result[j]);
-//                        }
-//                    }
-//                    _this.regulatory = reg;
-//                    _this.regulationCount = reg.length;
-//                };
-//                let clinicalSuccess = function (response) {
-//                    let clinical = response.response[0].result;
-//                    _this.clinicalCount = clinical.length;
-//                    let clinivarArray = [];
-//                    let cosmicArray = [];
-//                    for (let i in clinical) {
-//                        if (clinical[i].source == "clinvar") {
-//                            clinivarArray.push(clinical[i]);
-//                        }
-//                        if (clinical[i].source == "cosmic") {
-//                            cosmicArray.push(clinical[i]);
-//                        }
-//                    }
-//                    _this.clinvar = clinivarArray;
-//                    _this.cosmic = cosmicArray;
-//                };
-                let error = function (response) {
-                    alert("Genomic Region not valid: " + _this.region)
-                };
-
-                this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {success: geneSuccess, error: error, async: true});
-//                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: regSuccess, error: error, async: true});
-//                this.cellbaseClient.get('genomic', 'region', this.region, 'clinical', {}, {success: clinicalSuccess, error: error, async: true});
             },
             onVariantSelected: function(e) {
                 this.variant = e.detail.variant;

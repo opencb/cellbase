@@ -287,27 +287,44 @@
 
                 this.result= [];
                 let _this = this;
-                let success = function (response) {
-                    for(let i in response.response) {
-                        if (response.response[i].result.length > 0) {
-                            for(let j in response.response[i].result) {
-                                response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
-                                + response.response[i].result[j].end;
-                                _this.push('result',response.response[i].result[j]);
-                            }
-                        } else {
-                            let obj = {};
-                            obj.name = "No results found";
-                            _this.push('result', obj);
-                        }
-                    }
-                    // remove the GIF
-                    $('#geneSpinImg').hide();
-                };
+//                let success = function (response) {
+//                    for(let i in response.response) {
+//                        if (response.response[i].result.length > 0) {
+//                            for(let j in response.response[i].result) {
+//                                response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
+//                                + response.response[i].result[j].end;
+//                                _this.push('result',response.response[i].result[j]);
+//                            }
+//                        } else {
+//                            let obj = {};
+//                            obj.name = "No results found";
+//                            _this.push('result', obj);
+//                        }
+//                    }
+//                    // remove the GIF
+//                    $('#geneSpinImg').hide();
+//                };
 
                 if (Object.keys(queryParams).length > 0) {
                     queryParams.include = "id,name,biotype,chromosome,start,end";
-                    this.cellbaseClient.get('feature', 'gene', null, 'search', queryParams, {success: success, async: true});
+                    this.cellbaseClient.get('feature', 'gene', null, 'search', queryParams, {})
+                        .then(function (response) {
+                            for(let i in response.response) {
+                                if (response.response[i].result.length > 0) {
+                                    for(let j in response.response[i].result) {
+                                        response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
+                                            + response.response[i].result[j].end;
+                                        _this.push('result',response.response[i].result[j]);
+                                    }
+                                } else {
+                                    let obj = {};
+                                    obj.name = "No results found";
+                                    _this.push('result', obj);
+                                }
+                            }
+                            // remove the GIF
+                            $('#geneSpinImg').hide();
+                        });
                 } else {
                     $('#geneSpinImg').hide();
                     let obj = {};
@@ -340,10 +357,10 @@
             callAutocomplete: function(e) {
                 if (this.$.geneIDText.value.length > 2) {
                     let _this = this;
-                    let success = function (response) {
-                        _this.autocompleteData = response.response[0].result;
-                    };
-                    _this.cellbaseClient.get('feature', 'id', this.$.geneIDText.value, 'starts_with', {}, {success: success, async: true});
+                    _this.cellbaseClient.get('feature', 'id', this.$.geneIDText.value, 'starts_with', {}, {})
+                        .then(function (response) {
+                            _this.autocompleteData = response.response[0].result;
+                        });
                 }
 
             }

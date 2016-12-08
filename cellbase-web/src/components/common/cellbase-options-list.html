@@ -86,21 +86,36 @@
                         // we used the dataType param to fill the options
                         switch (this.dataType) {
                             case "biotype":
-                                this.cellbaseClient.getGeneClient(null, this.dataType, {}, {success: success, async: true});
+                                this.cellbaseClient.getGeneClient(null, this.dataType, {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "consequence_types":
                             case "consequence-types":
-                                this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {success: success, async: true});
+                                this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "featureType":
-                                this.cellbaseClient.get('regulatory', 'featureType', null, "", {}, {success: success, async: true});
+                                this.cellbaseClient.get('regulatory', 'featureType', null, "", {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "featureClass":
-                                this.cellbaseClient.get('regulatory', 'featureClass', null, "", {}, {success: success, async: true});
+                                this.cellbaseClient.get('regulatory', 'featureClass', null, "", {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "clinvar-significance":
                             case "clinvar_significance":
-                                this.cellbaseClient.get('feature', 'clinical', null, 'clinvar-significance', {}, {success: success, async: true});
+                                this.cellbaseClient.get('feature', 'clinical', null, 'clinvar-significance', {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             default:
                                 console.error("No valid 'dataType'provided, select one of: biotype, consequence_type, ...")
