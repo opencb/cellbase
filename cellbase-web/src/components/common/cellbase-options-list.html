@@ -22,7 +22,9 @@
             <label class="control-label">{{title}}</label><br>
         </template>
         <template is="dom-repeat" items="{{data}}">
-            <input type="checkbox" name="{{dataType}}" value="{{item}}" on-change="addSelected" id="{{removeWhiteSpace(item)}}"> {{item}}<br>
+            <div style="white-space: nowrap; display:inline">
+                <input type="checkbox" name="{{dataType}}" value="{{item}}" on-change="addSelected" id="{{removeWhiteSpace(item)}}"> {{item}}<br>
+            </div>
         </template>
 
     </template>
@@ -61,7 +63,7 @@
             },
             ready: function () {
                 if (typeof this.prefix === "undefined" || this.prefix == "" || this.prefix == null) {
-                    this.prefix = Utils.randomString(6);
+                    this.prefix = "options" + Utils.randomString(6);
                 }
             },
             prefixChanged: function () {
@@ -145,7 +147,7 @@
                 }
             },
             removeWhiteSpace: function (str) {
-                return this.prefix + "_" + str.replace(/\s/g, "_"); // HTML ids shouldn't contain white space
+                return this.prefix + "_" + str.replace(/\s|\//g, "_"); // HTML ids shouldn't contain white space
             }
         });
     </script>

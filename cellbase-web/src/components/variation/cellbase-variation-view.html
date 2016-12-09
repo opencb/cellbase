@@ -64,7 +64,6 @@
                 },
                 variationId: {
                     type: String,
-                    notify: true,
                     observer: '_variationIdChanged'
                 },
                 variationObj: {
@@ -78,23 +77,20 @@
             _variationIdChanged: function(newValue, oldValue) {
                 let _this = this;
                 if (typeof this.cellbaseClient !== "undefined") {
-                    let success = function (response) {
-                        let firstVariation = response.response[0].result[0];
-                        if (typeof firstVariation !== "undefined") {
-                            let region = new Region({chromosome: firstVariation.chromosome, start: firstVariation.start, end: firstVariation.end});
-                            if (typeof _this.genomeViewer !== "undefined") {
-                                _this.genomeViewer.setRegion(region);
+                    this.cellbaseClient.getVariationClient(this.variationId, 'info', {}, {})
+                        .then(function (response) {
+                            let firstVariation = response.response[0].result[0];
+                            if (typeof firstVariation !== "undefined") {
+                                let region = new Region({chromosome: firstVariation.chromosome, start: firstVariation.start, end: firstVariation.end});
+                                if (typeof _this.genomeViewer !== "undefined") {
+                                    _this.genomeViewer.setRegion(region);
+                                }
+                            } else {
+                                alert("Variation ID not valid: " + _this.variationId);
                             }
-                        } else {
-                            alert("Variation ID not valid: " + _this.variationId);
-                        }
-                        _this.variationObj = firstVariation;
-                        _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
-                    };
-                    let error = function (response) {
-                        alert("Variation ID not valid: " + _this.variationId)
-                    };
-                    this.cellbaseClient.getVariationClient(this.variationId, 'info', {}, {success: success, error: error, async: true});
+                            _this.variationObj = firstVariation;
+                            _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
+                        });
                 }
             },
             attached: function() {

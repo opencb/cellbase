@@ -251,18 +251,18 @@
                 }
 
                 this.result = [];
-                let success = function (response) {
-                    for (let i in response.response) {
-                        for (let j in response.response[i].result) {
-                            _this.push('result', response.response[i].result[j]);
-                        }
-                    }
-                    // remove the GIF
-                    $('#clinicalSpinImg').hide();
-                };
 
                 if (Object.keys(queryParams).length > 0) {
-                    this.cellbaseClient.get('feature', 'clinical', null, 'search', queryParams, {success: success, async: true});
+                    this.cellbaseClient.get('feature', 'clinical', null, 'search', queryParams, {})
+                        .then(function (response) {
+                            for (let i in response.response) {
+                                for (let j in response.response[i].result) {
+                                    _this.push('result', response.response[i].result[j]);
+                                }
+                            }
+                            // remove the GIF
+                            $('#clinicalSpinImg').hide();
+                        });
                 } else {
                     $('#clinicalSpinImg').hide();
                 }

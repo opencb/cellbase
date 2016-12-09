@@ -150,169 +150,152 @@
                 let clinicalAssertion = [];
                 if (this.clinicalId.startsWith('RCV')) {
                     if (typeof this.cellbaseClient !== "undefined") {
-                        let success = function (response) {
-                            let clinicalResult = response.response[0].result[0];
-                            if (typeof clinicalResult !== "undefined") {
-                                // Setting the region for genome viewer
-                                let region = new Region({
-                                    chromosome: clinicalResult.chromosome,
-                                    start: clinicalResult.start,
-                                    end: clinicalResult.end
-                                });
-                                if (typeof _this.genomeViewer !== "undefined") {
-                                    _this.genomeViewer.setRegion(region);
-                                }
-                                _this.clinicalObj = clinicalResult;
-                                _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
-                                // Converting the timestamp to UTC format
-                                _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
-
-                                // Getting the SOTerms and counting how many times each SOterm occurs
-                                let names = [];
-                                for (let i in clinicalResult.annot.consequenceTypes) {
-                                    let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
-                                    for (let j in terms) {
-                                        names.push(terms[j].name);
+                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {clinvarId: _this.clinicalId}, {})
+                            .then(function (response) {
+                                let clinicalResult = response.response[0].result[0];
+                                if (typeof clinicalResult !== "undefined") {
+                                    // Setting the region for genome viewer
+                                    let region = new Region({
+                                        chromosome: clinicalResult.chromosome,
+                                        start: clinicalResult.start,
+                                        end: clinicalResult.end
+                                    });
+                                    if (typeof _this.genomeViewer !== "undefined") {
+                                        _this.genomeViewer.setRegion(region);
                                     }
-                                }
-                                var count = {};
-                                for (let i in names) {
-                                    let x = names[i];
-                                    count[x] = count[x] ? count[x] + 1 : 1;
-                                }
-                                for (let x in count) {
-                                    soterms.push({name: x, total: count[x]});
-                                }
-                                _this.soterms = soterms;
+                                    _this.clinicalObj = clinicalResult;
+                                    _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
+                                    // Converting the timestamp to UTC format
+                                    _this.updatedDate = (new Date(clinicalResult.clinvarSet.referenceClinVarAssertion.clinicalSignificance.dateLastEvaluated)).toUTCString();
 
-                                //Getting the submitted Gene which is enclosed in array of arrays
-                                let geneName = [];
-                                let measures = clinicalResult.clinvarSet.referenceClinVarAssertion.measureSet.measure;
-                                for (let measure in measures) {
-                                    let measureRelationships = measures[measure].measureRelationship;
-                                    for (let i in measureRelationships) {
-                                        let symbols = measureRelationships[i].symbol;
-                                        for (let j in symbols) {
-                                            geneName.push(symbols[j].elementValue.value);
+                                    // Getting the SOTerms and counting how many times each SOterm occurs
+                                    let names = [];
+                                    for (let i in clinicalResult.annot.consequenceTypes) {
+                                        let terms = clinicalResult.annot.consequenceTypes[i].sequenceOntologyTerms;
+                                        for (let j in terms) {
+                                            names.push(terms[j].name);
                                         }
                                     }
-                                }
-                                _this.submittedGene = geneName;
+                                    var count = {};
+                                    for (let i in names) {
+                                        let x = names[i];
+                                        count[x] = count[x] ? count[x] + 1 : 1;
+                                    }
+                                    for (let x in count) {
+                                        soterms.push({name: x, total: count[x]});
+                                    }
+                                    _this.soterms = soterms;
 
-                                // Getting the Publication IDs that are from source PubMed
-                                let pubIds = [];
-                                let traits = clinicalResult.clinvarSet.referenceClinVarAssertion.traitSet.trait;
-                                for (let i in traits) {
-                                    let citations = traits[i].citation;
-                                    for (let j in citations) {
-                                        let ids = citations[j].id;
-                                        for (let k in ids) {
-                                            if (ids[k].source == "PubMed") {
-                                                pubIds.push(ids[k].value);
+                                    //Getting the submitted Gene which is enclosed in array of arrays
+                                    let geneName = [];
+                                    let measures = clinicalResult.clinvarSet.referenceClinVarAssertion.measureSet.measure;
+                                    for (let measure in measures) {
+                                        let measureRelationships = measures[measure].measureRelationship;
+                                        for (let i in measureRelationships) {
+                                            let symbols = measureRelationships[i].symbol;
+                                            for (let j in symbols) {
+                                                geneName.push(symbols[j].elementValue.value);
                                             }
                                         }
                                     }
-                                }
-                                let observedIns = clinicalResult.clinvarSet.referenceClinVarAssertion.observedIn;
-                                for (let i in observedIns) {
-                                    let observedData = observedIns[i].observedData;
-                                    for (let j in observedData) {
-                                        let citations = observedData[j].citation;
-                                        for (let k in citations) {
-                                            let ids = citations[k].id;
-                                            for (let l in ids) {
-                                                if (ids[l].source == "PubMed") {
-                                                    pubIds.push(ids[l].value);
+                                    _this.submittedGene = geneName;
+
+                                    // Getting the Publication IDs that are from source PubMed
+                                    let pubIds = [];
+                                    let traits = clinicalResult.clinvarSet.referenceClinVarAssertion.traitSet.trait;
+                                    for (let i in traits) {
+                                        let citations = traits[i].citation;
+                                        for (let j in citations) {
+                                            let ids = citations[j].id;
+                                            for (let k in ids) {
+                                                if (ids[k].source == "PubMed") {
+                                                    pubIds.push(ids[k].value);
                                                 }
                                             }
                                         }
                                     }
-                                }
-                                _this.publication = pubIds;
-
-                                //Clinical Assertion
-                                let clinVarAssertion = clinicalResult.clinvarSet.clinVarAssertion;
-                                for (let i in clinVarAssertion) {
-                                    let assertionObj = {};
-                                    assertionObj.SubAccession = clinVarAssertion[i].clinVarAccession.acc;
-                                    let significance = clinVarAssertion[i].clinicalSignificance.description;
-                                    let description = [];
-                                    for (let j in significance) {
-                                        description.push(significance[j]);
-                                    }
-                                    assertionObj.clinicalSignificance = description.join();
-                                    assertionObj.reviewStatus = clinVarAssertion[i].clinicalSignificance.reviewStatus;
-                                    assertionObj.submittedDate = (new Date(clinVarAssertion[i].submitterDate)).toUTCString();
-                                    assertionObj.submitter = clinVarAssertion[i].clinVarSubmissionID.submitter;
-                                    let observedIns = clinVarAssertion[i].observedIn;
-                                    let methodTypes = [];
-                                    let origins = [];
-                                    for (let k in observedIns) {
-                                        let methods = observedIns[k].method;
-                                        for (let l in methods) {
-                                            methodTypes.push(methods[l].methodType);
+                                    let observedIns = clinicalResult.clinvarSet.referenceClinVarAssertion.observedIn;
+                                    for (let i in observedIns) {
+                                        let observedData = observedIns[i].observedData;
+                                        for (let j in observedData) {
+                                            let citations = observedData[j].citation;
+                                            for (let k in citations) {
+                                                let ids = citations[k].id;
+                                                for (let l in ids) {
+                                                    if (ids[l].source == "PubMed") {
+                                                        pubIds.push(ids[l].value);
+                                                    }
+                                                }
+                                            }
                                         }
-                                        origins.push(observedIns[k].sample.origin)
                                     }
-                                    assertionObj.methodType = methodTypes.join();
-                                    assertionObj.alleleOrigin = origins.join();
-                                    assertionObj.type = clinVarAssertion[i].assertion.type;
-                                    clinicalAssertion.push(assertionObj);
-                                }
-                                _this.clinicalAssertion = clinicalAssertion;
+                                    _this.publication = pubIds;
 
-                            } else {
-                                alert("Clinical ID not valid: " + _this.clinicalId);
-                            }
-                        };
-                        let error = function (response) {
-                            alert("Clinical ID not valid: " + _this.clinicalId);
-                        };
-                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {clinvarId: _this.clinicalId}, {
-                            success: success,
-                            error: error,
-                            async: true
-                        });
+                                    //Clinical Assertion
+                                    let clinVarAssertion = clinicalResult.clinvarSet.clinVarAssertion;
+                                    for (let i in clinVarAssertion) {
+                                        let assertionObj = {};
+                                        assertionObj.SubAccession = clinVarAssertion[i].clinVarAccession.acc;
+                                        let significance = clinVarAssertion[i].clinicalSignificance.description;
+                                        let description = [];
+                                        for (let j in significance) {
+                                            description.push(significance[j]);
+                                        }
+                                        assertionObj.clinicalSignificance = description.join();
+                                        assertionObj.reviewStatus = clinVarAssertion[i].clinicalSignificance.reviewStatus;
+                                        assertionObj.submittedDate = (new Date(clinVarAssertion[i].submitterDate)).toUTCString();
+                                        assertionObj.submitter = clinVarAssertion[i].clinVarSubmissionID.submitter;
+                                        let observedIns = clinVarAssertion[i].observedIn;
+                                        let methodTypes = [];
+                                        let origins = [];
+                                        for (let k in observedIns) {
+                                            let methods = observedIns[k].method;
+                                            for (let l in methods) {
+                                                methodTypes.push(methods[l].methodType);
+                                            }
+                                            origins.push(observedIns[k].sample.origin)
+                                        }
+                                        assertionObj.methodType = methodTypes.join();
+                                        assertionObj.alleleOrigin = origins.join();
+                                        assertionObj.type = clinVarAssertion[i].assertion.type;
+                                        clinicalAssertion.push(assertionObj);
+                                    }
+                                    _this.clinicalAssertion = clinicalAssertion;
+
+                                } else {
+                                    alert("Clinical ID not valid: " + _this.clinicalId);
+                                }
+                            });
                     }
                 }
                 if (this.clinicalId.startsWith('COSM')) {
                     if (typeof this.cellbaseClient !== "undefined") {
-                        let success = function (response) {
-                            // TODO check number of results per cosmicId (COSM1748562)
-                            let clinicalResult = response.response[0].result[0];
-                            if (typeof clinicalResult !== "undefined") {
-                                let region = new Region({
-                                    chromosome: clinicalResult.chromosome,
-                                    start: clinicalResult.start,
-                                    end: clinicalResult.end
-                                });
-                                if (typeof _this.genomeViewer !== "undefined") {
-                                    _this.genomeViewer.setRegion(region);
+                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {cosmicId: _this.clinicalId}, {})
+                            .then(function (response) {
+                                // TODO check number of results per cosmicId (COSM1748562)
+                                let clinicalResult = response.response[0].result[0];
+                                if (typeof clinicalResult !== "undefined") {
+                                    let region = new Region({
+                                        chromosome: clinicalResult.chromosome,
+                                        start: clinicalResult.start,
+                                        end: clinicalResult.end
+                                    });
+                                    if (typeof _this.genomeViewer !== "undefined") {
+                                        _this.genomeViewer.setRegion(region);
+                                    }
+                                    _this.clinicalObj = clinicalResult;
+                                    _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
                                 }
-                                _this.clinicalObj = clinicalResult;
-                                _this.variant = clinicalResult.chromosome + ":" + clinicalResult.start + ":" + clinicalResult.reference + ":" + clinicalResult.alternate;
-                            }
-                        };
-                        let error = function (response) {
-                            alert("Clinical ID not valid: " + _this.clinicalId);
-                        };
-                        this.cellbaseClient.get('feature', 'clinical', null, 'search', {cosmicId: _this.clinicalId}, {
-                            success: success,
-                            error: error,
-                            asyc: true
-                        });
+                            });
                     }
                 }
             },
             _variantChanged: function (newValue, oldValue) {
                 let _this = this;
-                let variationSuccess = function (response) {
-                    _this.variantAnnotation = response.response[0].result[0];
-                };
-                this.cellbaseClient.get('genomic', 'variant', this.variant, 'annotation', {}, {
-                    success: variationSuccess,
-                    async: true
-                });
+                this.cellbaseClient.get('genomic', 'variant', this.variant, 'annotation', {}, {})
+                    .then(function (response) {
+                        _this.variantAnnotation = response.response[0].result[0];
+                    });
             },
             checkClinvar: function (clinicalObj) {
                 return clinicalObj.source === 'clinvar';

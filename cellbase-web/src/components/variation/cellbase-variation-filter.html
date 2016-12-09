@@ -217,27 +217,26 @@
 
                 this.result= [];
                 let _this = this;
-                let success = function (response) {
-                    for(let i in response.response) {
-                        if (response.response[i].result.length > 0) {
-                            for(let j in response.response[i].result) {
-                                response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
-                                        + response.response[i].result[j].end;
-                                _this.push('result',response.response[i].result[j]);
-                            }
-                        } else {
-                            let obj = {};
-                            obj.id = "No results found";
-                            _this.push('result', obj);
-                        }
-                    }
-                    // remove the GIF
-                    $('#variationSpinImg').hide();
-                };
-
                 if (Object.keys(queryParams).length > 0) {
                     queryParams.include = "id,chromosome,start,end,annotation.displayConsequenceType";
-                    this.cellbaseClient.get('feature', 'variation', null, 'search', queryParams, {success: success, async: true});
+                    this.cellbaseClient.get('feature', 'variation', null, 'search', queryParams, {})
+                        .then(function (response) {
+                            for(let i in response.response) {
+                                if (response.response[i].result.length > 0) {
+                                    for(let j in response.response[i].result) {
+                                        response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
+                                            + response.response[i].result[j].end;
+                                        _this.push('result',response.response[i].result[j]);
+                                    }
+                                } else {
+                                    let obj = {};
+                                    obj.id = "No results found";
+                                    _this.push('result', obj);
+                                }
+                            }
+                            // remove the GIF
+                            $('#variationSpinImg').hide();
+                        });
                 } else {
                     $('#variationSpinImg').hide();
                     let obj = {};
@@ -270,10 +269,10 @@
             callVariationAutocomplete: function(e) {
                 if (this.$.variationIdText.value.length > 6) {
                     let _this = this;
-                    let success = function (response) {
-                        _this.autocompleteData = response.response[0].result;
-                    };
-                    _this.cellbaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
+                    _this.cellbaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {})
+                        .then(function (response) {
+                            _this.autocompleteData = response.response[0].result;
+                        });
                 }
             }
         });
