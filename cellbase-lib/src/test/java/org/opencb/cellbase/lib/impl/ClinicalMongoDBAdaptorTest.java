@@ -34,8 +34,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         queryOptions1.add("include", "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc");
         QueryResult queryResult1 = clinicalDBAdaptor.nativeGet(query1, queryOptions1);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult1.getNumTotalResults(), 85);
-        assertEquals(queryResult1.getNumResults(), 30);
+        assertEquals(89, queryResult1.getNumTotalResults());
+        assertEquals(30, queryResult1.getNumResults());
         boolean found = false;
         for (Object resultObject : queryResult1.getResult()) {
             if (((String) ((Document)((Document) ((Document) ((Document) resultObject).get("clinvarSet"))
@@ -52,14 +52,14 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         queryOptions2.add("limit", 30);
         QueryResult queryResult2 = clinicalDBAdaptor.nativeGet(query2, queryOptions2);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult2.getNumTotalResults(), 7066);
-        assertEquals(queryResult2.getNumResults(), 30);
+        assertEquals(7739, queryResult2.getNumTotalResults());
+        assertEquals(30, queryResult2.getNumResults());
 
         query2.put("source", "cosmic");
         queryOptions2.put("include", "mutationID");
         QueryResult queryResult3 = clinicalDBAdaptor.nativeGet(query2, queryOptions2);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult3.getNumTotalResults(), 7062);
+        assertEquals(7733, queryResult3.getNumTotalResults());
         found = false;
         for (Object resultObject : queryResult3.getResult()) {
             String mutationID = (String) ((Document) resultObject).get("mutationID");
@@ -78,7 +78,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         queryOptions4.add("include", "mutationID,clinvarSet.referenceClinVarAssertion.clinVarAccession.acc");
         QueryResult queryResult4 = clinicalDBAdaptor.nativeGet(query4, queryOptions4);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult4.getNumTotalResults(), 10);
+        assertEquals(23, queryResult4.getNumTotalResults());
         for (Object resultObject : queryResult4.getResult()) {
             String mutationID = (String) ((Document) resultObject).get("mutationID");
             if (mutationID != null && mutationID.equals("COSM4624460")) {
@@ -110,7 +110,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions5.add("include", "mutationID,clinvarSet.referenceClinVarAssertion.clinVarAccession.acc");
         QueryResult queryResult5 = clinicalDBAdaptor.nativeGet(query5, queryOptions5);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult5.getNumTotalResults(), 7097);
+        assertEquals(10048, queryResult5.getNumTotalResults());
 
         Query query6 = new Query();
         query6.put("gene", "APOE");
@@ -125,16 +125,16 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
             System.out.println("document = " + document.get("chromosome") + ", " + document.get("start"));
         }
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(queryResult6.getNumTotalResults(), 85);
+        assertEquals(103, queryResult6.getNumTotalResults());
 
         queryOptions6.remove("sort");
         query6.put("source", "clinvar");
         QueryResult queryResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
-        assertEquals(queryResult7.getNumTotalResults(), 38);
+        assertEquals(43, queryResult7.getNumTotalResults());
 
         query6.put("source", "cosmic");
         QueryResult queryResult8 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
-        assertEquals(queryResult8.getNumTotalResults(), 47);
+        assertEquals(60, queryResult8.getNumTotalResults());
         assertEquals(((Document) queryResult8.getResult().get(0)).get("geneName"), "APOE");
 
         Query query7 = new Query();
