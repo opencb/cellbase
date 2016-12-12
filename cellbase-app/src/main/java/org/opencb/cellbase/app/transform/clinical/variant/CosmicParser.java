@@ -70,12 +70,12 @@ public class CosmicParser extends CellBaseParser {
         // COSMIC v78 GRCh38 includes one more column at position 27 (1-based) "Resistance Mutation" which is not
         // provided in the GRCh37 file
         if (assembly.equalsIgnoreCase("grch37")) {
-            this.mutationSomaticStatusColumn = 28;
-            this.pubmedPMIDColumn = 29;
-            this.idStudyColumn = 30;
-            this.sampleSourceColumn = 31;
-            this.tumourOriginColumn = 32;
-            this.ageColumn = 33;
+            this.mutationSomaticStatusColumn = 29;
+            this.pubmedPMIDColumn = 30;
+            this.idStudyColumn = 31;
+            this.sampleSourceColumn = 32;
+            this.tumourOriginColumn = 33;
+            this.ageColumn = 34;
         } else {
             this.mutationSomaticStatusColumn = 29;
             this.pubmedPMIDColumn = 30;
@@ -175,7 +175,7 @@ public class CosmicParser extends CellBaseParser {
         if (!fields[25].isEmpty() && fields[25].equalsIgnoreCase("y")) {
             cosmic.setSnp(true);
         }
-        cosmic.setFathmmPrediction(fields[26]);
+        cosmic.setFathmmPrediction(fields[27]);
         cosmic.setMutationSomaticStatus(fields[mutationSomaticStatusColumn]);
         cosmic.setPubmedPMID(fields[pubmedPMIDColumn]);
         if (!fields[idStudyColumn].isEmpty() && !fields[idStudyColumn].equals("NS")) {

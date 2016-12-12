@@ -51,11 +51,11 @@ public class IdWSServer extends GenericRestWSServer {
 
     public IdWSServer(@PathParam("version")
                       @ApiParam(name = "version", value = "Possible values: v3, v4",
-                              defaultValue = "latest") String version,
+                              defaultValue = "v4") String version,
                       @PathParam("species")
                       @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                               + "of potentially available species ids, please refer to: "
-                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
