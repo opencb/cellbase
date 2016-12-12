@@ -96,13 +96,13 @@
 
                             <!-- Controls aligned to the right: version, species, search, settings and about-->
                             <ul class="nav navbar-nav navbar-right">
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Version <span class="caret"></span></a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="#">v3</a></li>
-                                        <li><a href="#">v4</a></li>
-                                    </ul>
-                                </li>
+                                <!--<li class="dropdown">-->
+                                    <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Version <span class="caret"></span></a>-->
+                                    <!--<ul class="dropdown-menu">-->
+                                        <!--<li><a href="#">v3</a></li>-->
+                                        <!--<li><a href="#">v4</a></li>-->
+                                    <!--</ul>-->
+                                <!--</li>-->
 
                                 <div class="navbar-form navbar-left" style="padding-top: 7px">
                                     <cellbase-species-menu cellbase-client={{cellbaseClient}}></cellbase-species-menu>
@@ -143,8 +143,34 @@
 
             <!-- This is where main application is rendered -->
             <div class="center">
-                <div class="collapse content" id="home">
-                    <h2>Welcome to CellBase data portal tool!</h2>
+                <div class="collapse content" id="home" style="width: 60%; text-align: justify; margin-left: 20%;">
+                    <div style="text-align: center">
+                        <br>
+                        <span style="font-size:50px;">Welcome to CellBase data portal tool!</span>
+                        <br>
+                        <br>
+                        <div style="font-size: 14px; text-align: justify">
+                            <p>
+                                CellBase is a scalable and high-performance NoSQL database that integrates relevantbiological information from well-known data sources such as
+                                Ensembl, Uniprot, IntAct or ClinVar among others. All this data can be queried through acomprehensive RESTful web services API.This tool allows
+                                to query CellBase data through web interface thus making it easier and also serves as avisualization tool.
+                            </p>
+
+                        </div>
+                        <br>
+                        <br>
+                        <input type="text" class="form-control" id="welcomeSearchTextBox" style="text-align: center;"
+                               placeholder="Search for a gene, transcript, variant, multi-allelic variant or region">
+                        <p>Example: BRCA2, ENST00000342992, rs666, 10:15097577:G:C, 3:4444-6666</p>
+
+                    </div>
+
+                    <div class="col-sm-12"><br><br>Note:
+                        <span style="font-size:13px">
+                            <br> CellBase web application makes an intensive use of the HTML5 standard and other cutting-edge web technologies such as Web Components,
+                            so only modern web browsers are fully supported, these include Chrome 36+, Firefox 32+, IE 10+, Safari 7+ and Opera 24+.
+                        </span>
+                    </div>
                 </div>
                 <div class="collapse content" id="genomicPanel">
                     <h2>Genomic Region</h2>
@@ -169,7 +195,8 @@
                 <!--</div>-->
                 <div class="collapse content" id="variationPanel">
                     <h2>Variation</h2>
-                    <cellbase-variation-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variation-panel>
+                    <cellbase-variation-panel cellbase-client="{{cellbaseClient}}" population-frequencies="{{populationFrequencies}}"
+                                              protein-substitution-scores="{{proteinSubstitutionScores}}" consequence-types="{{consequenceTypes}}"></cellbase-variation-panel>
                 </div>
                 <div class="collapse content" id="clinicalPanel">
                     <h2>Clinical Data</h2>
@@ -203,14 +230,20 @@
                         <h4 class="modal-title" id="myModalLabel">Settings</h4>
                     </div>
                     <div class="modal-body">
-                        <!--<div class="input-group">-->
-                        <!--<span class="input-group-addon" id="basic-addon">Select Species</span>-->
-                        <!--<cellbase-species-menu class="btn btn-default"></cellbase-species-menu>-->
-                        <!--</div>-->
-                        <p></p>
-                        <div class="input-group">
-                            <span class="input-group-addon" id="basic-addon1">Hosts</span>
-                            <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1" value="bioinfo.hpc.cam.ac.uk/cellbase, www.ebi.ac.uk/cellbase">
+                        <div class="form-group row">
+                            <label for="cellbaseHost" class="col-sm-2 col-form-label">Hosts</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="cellbaseHost" value="bioinfo.hpc.cam.ac.uk/cellbase, www.ebi.ac.uk/cellbase">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="cellbaseVersion" class="col-sm-2 col-form-label">Version</label>
+                            <div class="col-sm-2">
+                                <select name="version" class="form-control" id="cellbaseVersion">
+                                    <option>v3</option>
+                                    <option selected>v4</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -239,12 +272,19 @@
                 }
             },
             ready: function () {
-                this.cellbaseClient = new CellBaseClient();
+                this.cellBaseClientConfig = new CellBaseClientConfig(hosts = cellbase.hosts, version = cellbase.version, species = cellbase.species);
+                this.cellbaseClient = new CellBaseClient(this.cellBaseClientConfig);
 
-                this.cellbaseClient.setHosts(CELLBASE_HOSTS);
-                this.cellbaseClient.setVersion(CELLBASE_VERSION);
-                if (typeof this.cellbaseClient === "undefined" || this.cellbaseClient == null) {
-                    console.log("Creating CellBaseClient")
+                if (typeof populationFrequencies !== "undefined") {
+                    this.populationFrequencies = populationFrequencies;
+                }
+
+                if (typeof proteinSubstitutionScores !== "undefined") {
+                    this.proteinSubstitutionScores = proteinSubstitutionScores;
+                }
+
+                if (typeof consequenceTypes !== "undefined") {
+                    this.consequenceTypes = consequenceTypes;
                 }
 
                 $(".cellbase-menu a").on('click', function(e) {

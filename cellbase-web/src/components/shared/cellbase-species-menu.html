@@ -25,24 +25,43 @@
                 color: white;
                 text-decoration: none;
             }
+
+            .species-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
+            }
         </style>
 
         <div class="dropdown" style="background-color: transparent">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 {{title}} <span class="caret"></span>
             </a>
-            <ul class="dropdown-menu cellbase-species-menu">
-                <template is="dom-repeat" items="{{keys}}" as="taxon">
-                    <li class="dropdown-submenu">
-                        <a href="#">{{taxon}}</a>
-                        <ul class="dropdown-menu">
-                            <template is="dom-repeat" items="{{_getSpeciesArrayByTaxon(taxon)}}" as="species">
-                                <li><a href="#">{{species}}</a></li>
-                            </template>
-                        </ul>
-                    </li>
+            <!--<ul class="dropdown-menu cellbase-species-menu">-->
+                <!--<template is="dom-repeat" items="{{keys}}" as="taxon">-->
+                    <!--<li class="dropdown-submenu">-->
+                        <!--<a href="#">{{taxon}}</a>-->
+                        <!--<ul class="dropdown-menu">-->
+                            <!--<template is="dom-repeat" items="{{_getSpeciesArrayByTaxon(taxon)}}" as="species">-->
+                                <!--<li><a href="#">{{species}}</a></li>-->
+                            <!--</template>-->
+                        <!--</ul>-->
+                    <!--</li>-->
+                <!--</template>-->
+            <!--</ul>-->
+
+            <ul class="dropdown-menu cellbase-species-menu species-scroll">
+                <li><a href="#"><b>Favourite Species</b></a></li>
+                <li><a href="#">Human GRCh38</a></li>
+                <li><a href="#">Human GRCh37</a></li>
+                <li><a href="#">Mouse</a></li>
+                <li><a href="#">Zebrafish</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#"><b>All Species</b></a></li>
+                <template is="dom-repeat" items="{{allSpecies}}">
+                    <li><a href="#">{{item}}</a></li>
                 </template>
             </ul>
+
         </div>
 
     </template>
@@ -58,14 +77,14 @@
                     type: String,
                     value: "Select species"
                 },
-                speciesList: {
+                allSpecies: {
                     type: Array,
                     value: []
                 },
-                class: {
-                    type: String,
-                    value: ""
-                },
+//                class: {
+//                    type: String,
+//                    value: ""
+//                },
                 keys: {
                     type: Array,
                     value: []
@@ -73,21 +92,24 @@
             },
             attached: function () {
                 let _this = this;
-                var success = function (response) {
-                    console.log("OMG!!!!")
+
+                this.cellbaseClient.getMeta("species", {async: true}).then(function (response) {
                     _this.speciesList = response.response[0].result[0];
                     _this.keys = Object.keys(_this.speciesList);
-                };
-
-                this.cellbaseClient.getMeta("species", {async: true}).then(success);
+                    let allSpecies = [];
+                    for (let key in _this.speciesList) {
+                        let speciesArray = _this._getSpeciesArrayByTaxon(key);
+                        allSpecies = allSpecies.concat(speciesArray);
+                    }
+                    _this.allSpecies = allSpecies;
+                });
 
                 $(document).on('click', '.cellbase-species-menu li a', function() {
-                    console.log("event")
                     _this.title = $(this).text();
                 });
             },
             _getSpeciesArrayByTaxon: function(taxon) {
-                var speciesArray = [];
+                let speciesArray = [];
                 let taxonSpecies = this.speciesList[taxon];
                 for (let speciesIdx in taxonSpecies) {
                     let assemblies = taxonSpecies[speciesIdx].assemblies;

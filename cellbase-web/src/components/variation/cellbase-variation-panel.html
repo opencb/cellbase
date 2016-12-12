@@ -23,10 +23,12 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-variation-filter id="filter" cellbase-client="{{cellbaseClient}}" variation-id={{variationId}}></cellbase-variation-filter>
+                <cellbase-variation-filter cellbase-client="{{cellbaseClient}}" variation-id="{{variationId}}" population-frequencies="{{populationFrequencies}}"
+                                           consequence-types="{{consequenceTypes}}"></cellbase-variation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-variation-view id="view" cellbase-client="{{cellbaseClient}}" variation-id={{variationId}}></cellbase-variation-view>
+                <cellbase-variation-view cellbase-client="{{cellbaseClient}}" variation-id="{{variationId}}" population-frequencies="{{populationFrequencies}}"
+                                         protein-substitution-scores="{{proteinSubstitutionScores}}" consequence-types="{{consequenceTypes}}"></cellbase-variation-view>
             </div>
         </div>
     </template>
@@ -39,6 +41,15 @@
                 },
                 variationId: {
                     type: String
+                },
+                populationFrequencies: {
+                    type: Object
+                },
+                consequenceTypes: {
+                    type: Object
+                },
+                proteinSubstitutionScores: {
+                    type: Object
                 }
             },
             ready: function() {

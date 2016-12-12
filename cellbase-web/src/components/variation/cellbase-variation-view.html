@@ -15,6 +15,7 @@
   -->
 
 <link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variantannotation-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/opencga/variant/variant-browser-grid.html">
 
 <dom-module id="cellbase-variation-view">
     <template>
@@ -44,6 +45,9 @@
 
                     <h3>Annotation</h3>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="variation"></cellbase-variantannotation-view>
+                    <variant-browser-grid cellbase-client="{{cellbaseClient}}" population-frequencies="{{populationFrequencies}}" protein-substitution-scores="{{proteinSubstitutionScores}}"
+                                          consequence-types="{{consequenceTypes}}" query="[[query]]" search="[[search]]" variant="{{variant}}" style="font-size: 12px">
+                    </variant-browser-grid>
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="variationViewGenomeContext">
@@ -72,6 +76,15 @@
                 variant: {
                     type: String,
                     notify: true
+                },
+                populationFrequencies: {
+                    type: Object
+                },
+                consequenceTypes: {
+                    type: Object
+                },
+                proteinSubstitutionScores: {
+                    type: Object
                 }
             },
             _variationIdChanged: function(newValue, oldValue) {
