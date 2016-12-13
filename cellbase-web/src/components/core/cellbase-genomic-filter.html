@@ -37,6 +37,7 @@
                 },
                 region: {
                     type: String,
+                    observer: 'regionChanged',
                     notify: true
                 }
             },
@@ -46,6 +47,9 @@
             },
             loadExample: function (e) {
                 this.$.genomicRegionTextarea.value = "1:6635137-6835325";
+            },
+            regionChanged: function () {
+                this.$.genomicRegionTextarea.value = this.region;
             },
             executeQuery: function (e) {
                 this.region = this.$.genomicRegionTextarea.value;

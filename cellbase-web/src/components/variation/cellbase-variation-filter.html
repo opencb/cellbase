@@ -424,6 +424,7 @@
             properties: {
                 variationId: {
                     type: String,
+                    observer: 'variationIdChanged',
                     notify: true
                 },
                 cellbaseClient: {
@@ -458,7 +459,6 @@
                     e.target.className = "fa fa-minus";
                 }
             },
-
             checkScore: function (e) {
                 if (e.target.value == "score") {
                     $("#" + e.target.name +"Input").prop("disabled", false);
@@ -495,6 +495,10 @@
             loadExample: function() {
                 this.clear();
                 this.$.variationFilterIdsTextarea.value = "rs666";
+            },
+            variationIdChanged: function () {
+                this.$.variationFilterIdsTextarea.value = this.variationId;
+                this.executeQuery();
             },
             executeQuery: function() {
                 // activate the GIF

@@ -37,6 +37,7 @@
                 },
                 variant: {
                     type: String,
+                    observer: 'variantChanged',
                     notify: true
                 }
             },
@@ -45,6 +46,9 @@
             },
             loadExample: function (e) {
                 this.$.variantAnnotationTextarea.value = "19:45411941:T:C";
+            },
+            variantChanged: function () {
+                this.$.variantAnnotationTextarea.value = this.variant;
             },
             executeQuery: function (e) {
                 let _this = this;

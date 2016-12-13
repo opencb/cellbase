@@ -45,25 +45,25 @@
                                 <span class="icon-bar"></span>
                                 <span class="icon-bar"></span>
                             </button>
-                            <a class="navbar-brand" href="#home">CellBase Data Portal</a>
+                            <a class="navbar-brand" href="#home" on-click="changeView">CellBase Data Portal</a>
                         </div>
 
                         <!-- Collect the nav links, forms, and other content for toggling -->
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav">
                                 <li class="dropdown cellbase-menu">
-                                    <a href="#home"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
+                                    <a href="#home" on-click="changeView"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
                                 </li>
 
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Core <span class="caret"></span></a>
 
                                     <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#genomicPanel">Genomic Region</a></li>
-                                        <li><a href="#genePanel">Gene/Transcript</a></li>
+                                        <li><a href="#genomic" on-click="changeView">Genomic Region</a></li>
+                                        <li><a href="#gene" on-click="changeView">Gene/Transcript</a></li>
                                         <!--<li><a href="#transcriptPanel">Transcript</a></li>-->
                                         <!--<li><a href="#proteinPanel">Protein</a></li>-->
-                                        <li><a href="#regulationPanel">Regulation</a></li>
+                                        <li><a href="#regulation" on-click="changeView">Regulation</a></li>
                                         <!--<li><a href="#xrefsPanel">XRefs</a></li>-->
                                     </ul>
                                 </li>
@@ -71,10 +71,10 @@
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Variation <span class="caret"></span></a>
                                     <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#variationPanel">Variation (SNV)</a></li>
-                                        <li><a href="#clinicalPanel">Clinical</a></li>
+                                        <li><a href="#variation" on-click="changeView">Variation (SNV)</a></li>
+                                        <li><a href="#clinical" on-click="changeView">Clinical</a></li>
                                         <li role="separator" class="divider"></li>
-                                        <li><a href="#variationAnnotationPanel">Variant Annotation</a></li>
+                                        <li><a href="#variantAnnotation" on-click="changeView">Variant Annotation</a></li>
                                     </ul>
                                 </li>
 
@@ -88,7 +88,7 @@
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualization <span class="caret"></span></a>
                                     <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#genomeMap">Genome Browser (Genome Maps)</a></li>
+                                        <li><a href="#genomeMap" on-click="changeView">Genome Browser (Genome Maps)</a></li>
                                         <!--<li><a href="#cellMap">Network viewer (Cell Maps)</a></li>-->
                                     </ul>
                                 </li>
@@ -110,18 +110,17 @@
 
                                 <form class="navbar-form navbar-left" role="search">
                                     <div class="form-group">
-                                        <input type="text" class="form-control" placeholder="BRCA2,rs666,3:4444-6666">
-                                        <a href="#">
-                                            <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                                        <input type="text" class="form-control" id="mainSearchBox" placeholder="BRCA2,rs666,3:4444-6666"
+                                               on-keyup="triggerSearch">
+                                        <a style="cursor: pointer">
+                                            <span class="glyphicon glyphicon-search" aria-hidden="true" on-click="triggerSearch"></span>
                                         </a>
                                     </div>
-                                    <!--<button type="submit" class="btn btn-default">Submit</button>-->
                                 </form>
 
                                 <li>
                                     <a href="#" data-toggle="modal" role="button" data-placement="bottom" data-target="#myModal" title="Settings ...">
                                         <i class="fa fa-cog"></i>
-                                        <!--<span class="glyphicon glyphicon-cog" aria-hidden="true"></span>-->
                                     </a>
                                 </li>
 
@@ -160,8 +159,8 @@
                         <br>
                         <br>
                         <input type="text" class="form-control" id="welcomeSearchTextBox" style="text-align: center;"
-                               placeholder="Search for a gene, transcript, variant, multi-allelic variant or region">
-                        <p>Example: BRCA2, ENST00000342992, rs666, 10:15097577:G:C, 3:4444-6666</p>
+                               placeholder="Search for a gene, transcript, variant, multi-allelic variant or region" on-keyup="triggerSearch">
+                        <p>Example: BRCA2, ENST00000342992, rs666, 10:15097577:G:C, 1:1-100000</p>
 
                     </div>
 
@@ -172,13 +171,13 @@
                         </span>
                     </div>
                 </div>
-                <div class="collapse content" id="genomicPanel">
+                <div class="collapse content" id="genomic">
                     <h2>Genomic Region</h2>
-                    <cellbase-genomic-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-genomic-panel>
+                    <cellbase-genomic-panel cellbase-client="{{cellbaseClient}}" region="{{region}}"></cellbase-genomic-panel>
                 </div>
-                <div class="collapse content" id="genePanel">
+                <div class="collapse content" id="gene">
                     <h2>Gene/Transcript</h2>
-                    <cellbase-gene-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-gene-panel>
+                    <cellbase-gene-panel cellbase-client="{{cellbaseClient}}" gene-id="{{geneId}}"></cellbase-gene-panel>
                 </div>
                 <!--<div class="collapse content" id="transcriptPanel">-->
                     <!--Transcript-->
@@ -186,25 +185,25 @@
                 <!--<div class="collapse content" id="proteinPanel">-->
                     <!--NOT YET READY FOR BETA VERSION-->
                 <!--</div>-->
-                <div class="collapse content" id="regulationPanel">
+                <div class="collapse content" id="regulation">
                     <h2>Regulation</h2>
-                    <cellbase-regulation-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-regulation-panel>
+                    <cellbase-regulation-panel cellbase-client="{{cellbaseClient}}"></cellbase-regulation-panel>
                 </div>
                 <!--<div class="collapse content" id="xrefsPanel">-->
                     <!--NOT YET READY FOR BETA VERSION-->
                 <!--</div>-->
-                <div class="collapse content" id="variationPanel">
+                <div class="collapse content" id="variation">
                     <h2>Variation</h2>
-                    <cellbase-variation-panel cellbase-client="{{cellbaseClient}}" population-frequencies="{{populationFrequencies}}"
+                    <cellbase-variation-panel cellbase-client="{{cellbaseClient}}" variation-id="{{variationId}}" population-frequencies="{{populationFrequencies}}"
                                               protein-substitution-scores="{{proteinSubstitutionScores}}" consequence-types="{{consequenceTypes}}"></cellbase-variation-panel>
                 </div>
-                <div class="collapse content" id="clinicalPanel">
+                <div class="collapse content" id="clinical">
                     <h2>Clinical Data</h2>
-                    <cellbase-clinical-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-clinical-panel>
+                    <cellbase-clinical-panel cellbase-client="{{cellbaseClient}}"></cellbase-clinical-panel>
                 </div>
-                <div class="collapse content" id="variationAnnotationPanel">
+                <div class="collapse content" id="variantAnnotation">
                     <h2>Variant Annotation</h2>
-                    <cellbase-variantannotation-panel cellbase-client={{cellbaseClient}} cellbase="http://bioinfo.hpc.cam.ac.uk/cellbase"></cellbase-variantannotation-panel>
+                    <cellbase-variantannotation-panel cellbase-client="{{cellbaseClient}}" variant="{{variant}}"></cellbase-variantannotation-panel>
                 </div>
                 <!--<div class="collapse content" id="ppiPanel">-->
                     <!--NOT YET READY FOR BETA VERSION-->
@@ -287,12 +286,62 @@
                     this.consequenceTypes = consequenceTypes;
                 }
 
-                $(".cellbase-menu a").on('click', function(e) {
-                    e.preventDefault(); // stops link form loading
-                    $('.content').hide(); // hides all content divs
-                    $( $(this).attr('href') ).show(); //get the href and use it find which div to show
-                });
+                let _this = this;
+                window.onhashchange = function () {
+                    _this.hashFragmentListener(_this);
+                };
+
                 $('#home').show();
+                this.tool = "home";
+                this.renderHashFragments();
+            },
+            changeView: function (e) {
+                e.preventDefault(); // prevents the hash change to "#" and allows to manipulate the hash fragment as needed
+                $('.content').hide(); // hides all content divs
+                if (typeof e.target !== "undefined" && typeof e.target.attributes.href !== "undefined") {
+                    $(e.target.attributes.href.value).show(); // get the href and use it find which div to show
+                    this.tool = e.target.attributes.href.value;
+                } else {
+                    $("#home").show();
+                    this.tool = "home";
+                }
+                this.renderHashFragments();
+            },
+            hashFragmentListener: function(ctx) {
+                this.tool = window.location.hash;
+                $('.content').hide();
+                $(this.tool).show();
+            },
+            renderHashFragments: function() {
+                window.location.hash = this.tool;
+            },
+            triggerSearch: function (e) {
+                let value = "";
+                if (typeof e !== "undefined" && e.keyCode == '13') {
+                    value = e.target.value;  // When enter key is pressed , it takes the value entered and assign it
+                } else if (typeof e !== "undefined" && e.type == "click") {
+                    value = this.$.mainSearchBox.value; // It handles the search icon click
+                }
+
+                if (value != "") {
+                    if (value.startsWith("rs")) {
+                        this.variationId = value;
+                        this.tool = "variation";
+                    } else if (value.indexOf(':') > -1 && value.indexOf('-') > -1) {
+                        this.region = value;
+                        this.tool = "genomic";
+                    } else if (value.split(':').length > 2) {
+                        this.variant = value;
+                        this.tool = "variantAnnotation";
+                    } else {
+                        this.geneId = value;
+                        this.tool = "gene";
+                    }
+
+                    $('.content').hide();
+                    $("#" + this.tool).show();
+                    this.renderHashFragments();
+                }
             }
         });
     </script>

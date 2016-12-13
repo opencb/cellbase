@@ -210,6 +210,7 @@
                 },
                 geneId: {
                     type: String,
+                    observer: 'geneIdChanged',
                     notify: true
                 },
                 result: {
@@ -238,6 +239,10 @@
             loadExample: function () {
                 this.clear();
                 this.$.geneFilterIdsTextarea.value = "BRCA2";
+            },
+            geneIdChanged: function () {
+                this.$.geneFilterIdsTextarea.value = this.geneId;
+                this.executeQuery();
             },
             executeQuery: function () {
                 // activate the GIF
@@ -287,23 +292,6 @@
 
                 this.result= [];
                 let _this = this;
-//                let success = function (response) {
-//                    for(let i in response.response) {
-//                        if (response.response[i].result.length > 0) {
-//                            for(let j in response.response[i].result) {
-//                                response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
-//                                + response.response[i].result[j].end;
-//                                _this.push('result',response.response[i].result[j]);
-//                            }
-//                        } else {
-//                            let obj = {};
-//                            obj.name = "No results found";
-//                            _this.push('result', obj);
-//                        }
-//                    }
-//                    // remove the GIF
-//                    $('#geneSpinImg').hide();
-//                };
 
                 if (Object.keys(queryParams).length > 0) {
                     queryParams.include = "id,name,biotype,chromosome,start,end";
