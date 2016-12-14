@@ -15,9 +15,143 @@
  */
 
 var cellbase = {
-    hosts: ["localhost:8080/cellbase-4.5.0-rc"], //"bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
+
     version: "v4",
     species: "hsapiens"
+};
+var application = {
+    title: "CellBase Data Portal",
+    hosts: ["localhost:8080/cellbase-4.5.0-rc"], //"bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
+    version: "v4",
+    defaultSpecies: "Homo sapiens GRCh37",
+    favouriteSpecies: [
+        "Homo sapiens GRCh37", "Homo sapiens GRCh38", "Mus musculus GRCm38", "Danio rerio GRCz10"
+    ],
+    menu: [
+        {
+            id: "core",
+            title: "Core",
+            visibility: "public",
+            submenu: [
+                {
+                    id: "genomic",
+                    title: "Genomic Region",
+                    visibility: "public",
+                    // Allows to provide default filters for the browser
+                    filters: [
+                        {
+                            name: "Example",
+                            query: {
+                                region: "1:6635137-6835325"
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: "gene",
+                    title: "Gene / Transcript",
+                    visibility: "public",
+                    filters: [
+                        {
+                            name: "Example",
+                            query: {
+                                gene: "BRCA2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: "regulation",
+                    title: "Regulation",
+                    visibility: "public",
+                    filters: [
+                        {
+                            name: "Example",
+                            query: {
+                                region: "10:555-666666"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "variation",
+            title: "Variation",
+            visibility: "public",
+            submenu: [
+                {
+                    id: "variation-snv",
+                    title: "Variation (SNV)",
+                    visibility: "public",
+                    filters: [
+                        {
+                            name: "Example",
+                            query: {
+                                id: "rs666",
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: "clinical",
+                    title: "Clinical",
+                    visibility: "public",
+                    filters: [
+                        {
+                            name: "Example",
+                            query: {
+                                region: "13:32889611-32890000"
+                            }
+                        }
+                    ]
+                },
+                {
+                    separator: true,
+                    visibility: "public"
+                },
+                {
+                    id: "variantAnnotation",
+                    title: "Variant Annotation",
+                    visibility: "public",
+                    filters: [
+                        {
+                            name: "Example",
+                            query: {
+                                variant: "19:45411941:T:C"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "visualization",
+            title: "Visualization",
+            visibility: "public",
+            submenu: [
+                {
+                    id: "genomeMap",
+                    title: "Genome Browser (Genome Maps)",
+                    visibility: "public"
+                }
+            ]
+        }
+    ],
+    search: {
+        placeholder: "Search",
+        visibility: "public"
+    },
+    settings: {
+        visibility: "public"
+    },
+    about: [
+        {name: "About", url: "https://github.com/opencb/cellbase/wiki/About", icon: ""},
+        {name: "Documentation",  url: "https://github.com/opencb/cellbase/wiki", icon: "fa fa-book"},
+        {name: "Source code", url: "https://github.com/opencb/cellbase", icon: "fa fa-github"},
+        {name: "Contact",  url: "", icon: "fa fa-envelope"},
+        {name: "FAQ",  url: "", icon: ""}
+    ]
 };
 
 var populationFrequencies = {
