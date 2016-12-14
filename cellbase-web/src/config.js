@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-var cellbase = {
-
-    version: "v4",
-    species: "hsapiens"
-};
 var application = {
     title: "CellBase Data Portal",
     hosts: ["localhost:8080/cellbase-4.5.0-rc"], //"bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
@@ -73,6 +68,7 @@ var application = {
                         }
                     ]
                 }
+                // Transcript, protein, xrefs to be added in future
             ]
         },
         {
@@ -125,6 +121,7 @@ var application = {
                 }
             ]
         },
+        // networks => Protein protein interaction to be added in future
         {
             id: "visualization",
             title: "Visualization",
@@ -135,6 +132,7 @@ var application = {
                     title: "Genome Browser (Genome Maps)",
                     visibility: "public"
                 }
+                // Network viewer (cell maps) to be added in future
             ]
         }
     ],

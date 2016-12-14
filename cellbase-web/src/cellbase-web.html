@@ -45,7 +45,7 @@
                                 <span class="icon-bar"></span>
                                 <span class="icon-bar"></span>
                             </button>
-                            <a class="navbar-brand" href="#home" on-click="changeView">CellBase Data Portal</a>
+                            <a class="navbar-brand" href="#home" on-click="changeView">{{config.title}}</a>
                         </div>
 
                         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -55,65 +55,42 @@
                                     <a href="#home" on-click="changeView"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a>
                                 </li>
 
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Core <span class="caret"></span></a>
-
-                                    <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#genomic" on-click="changeView">Genomic Region</a></li>
-                                        <li><a href="#gene" on-click="changeView">Gene/Transcript</a></li>
-                                        <!--<li><a href="#transcriptPanel">Transcript</a></li>-->
-                                        <!--<li><a href="#proteinPanel">Protein</a></li>-->
-                                        <li><a href="#regulation" on-click="changeView">Regulation</a></li>
-                                        <!--<li><a href="#xrefsPanel">XRefs</a></li>-->
-                                    </ul>
-                                </li>
-
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Variation <span class="caret"></span></a>
-                                    <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#variation" on-click="changeView">Variation (SNV)</a></li>
-                                        <li><a href="#clinical" on-click="changeView">Clinical</a></li>
-                                        <li role="separator" class="divider"></li>
-                                        <li><a href="#variantAnnotation" on-click="changeView">Variant Annotation</a></li>
-                                    </ul>
-                                </li>
-
-                                <!--<li class="dropdown">-->
-                                    <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Networks <span class="caret"></span></a>-->
-                                    <!--<ul class="dropdown-menu cellbase-menu">-->
-                                        <!--<li><a href="#ppiPanel">Protein Protein Interaction</a></li>-->
-                                    <!--</ul>-->
-                                <!--</li>-->
-
-                                <li class="dropdown">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Visualization <span class="caret"></span></a>
-                                    <ul class="dropdown-menu cellbase-menu">
-                                        <li><a href="#genomeMap" on-click="changeView">Genome Browser (Genome Maps)</a></li>
-                                        <!--<li><a href="#cellMap">Network viewer (Cell Maps)</a></li>-->
-                                    </ul>
-                                </li>
+                                <template is="dom-repeat" items="{{config.menu}}" filter="_isMenuItemVisible" as="menuItem">
+                                    <!-- If there is not submenu we just display a button -->
+                                    <template is="dom-if" if="{{!menuItem.submenu}}">
+                                        <li on-click="changeView"><a href="#{{menuItem.id}}" role="button">{{menuItem.title}}</a></li>
+                                    </template>
+                                    <!-- If there is a submenu we create a dropdown menu item -->
+                                    <template is="dom-if" if="{{menuItem.submenu}}">
+                                        <li class="dropdown">
+                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{menuItem.title}} <span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <template is="dom-repeat" items="{{menuItem.submenu}}" filter="_isMenuItemVisible" >
+                                                    <template is="dom-if" if="{{!item.separator}}">
+                                                        <li on-click="changeView"><a href="#{{item.id}}" data-id="{{item.id}}">{{item.title}}</a></li>
+                                                    </template>
+                                                    <template is="dom-if" if="{{item.separator}}">
+                                                        <li role="separator" class="divider"></li>
+                                                    </template>
+                                                </template>
+                                            </ul>
+                                        </li>
+                                    </template>
+                                </template>
                             </ul>
 
                             <!-- Controls aligned to the right: version, species, search, settings and about-->
                             <ul class="nav navbar-nav navbar-right">
-                                <!--<li class="dropdown">-->
-                                    <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Version <span class="caret"></span></a>-->
-                                    <!--<ul class="dropdown-menu">-->
-                                        <!--<li><a href="#">v3</a></li>-->
-                                        <!--<li><a href="#">v4</a></li>-->
-                                    <!--</ul>-->
-                                <!--</li>-->
-
                                 <div class="navbar-form navbar-left" style="padding-top: 7px">
-                                    <cellbase-species-menu cellbase-client={{cellbaseClient}}></cellbase-species-menu>
+                                    <cellbase-species-menu cellbase-client="{{cellbaseClient}}" favourites="{{config.favouriteSpecies}}"></cellbase-species-menu>
                                 </div>
 
                                 <form class="navbar-form navbar-left" role="search">
                                     <div class="form-group">
-                                        <input type="text" class="form-control" id="mainSearchBox" placeholder="BRCA2,rs666,3:4444-6666"
+                                        <input type="text" class="form-control" id="mainSearchBox" placeholder="{{config.search.placeholder}}"
                                                on-keyup="triggerSearch">
                                         <a style="cursor: pointer">
-                                            <span class="glyphicon glyphicon-search" aria-hidden="true" on-click="triggerSearch"></span>
+                                            <span class="fa fa-search" aria-hidden="true" on-click="triggerSearch"></span>
                                         </a>
                                     </div>
                                 </form>
@@ -127,11 +104,9 @@
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">About <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
-                                        <li><a href="https://github.com/opencb/cellbase/wiki/About" target="_blank">About</a></li>
-                                        <li><a href="https://github.com/opencb/cellbase" target="_blank">GitHub</a></li>
-                                        <li><a href="https://github.com/opencb/cellbase/wiki" target="_blank">Documentation</a></li>
-                                        <li><a href="#">Contact</a></li>
-                                        <li><a href="#">FAQ</a></li>
+                                        <template is="dom-repeat" items="{{config.about}}">
+                                            <li><a href="{{item.url}}" target="_blank"><i class$="{{item.icon}}" aria-hidden="true"></i> {{item.name}}</a></li>
+                                        </template>
                                     </ul>
                                 </li>
                             </ul>
@@ -192,7 +167,7 @@
                 <!--<div class="collapse content" id="xrefsPanel">-->
                     <!--NOT YET READY FOR BETA VERSION-->
                 <!--</div>-->
-                <div class="collapse content" id="variation">
+                <div class="collapse content" id="variation-snv">
                     <h2>Variation</h2>
                     <cellbase-variation-panel cellbase-client="{{cellbaseClient}}" variation-id="{{variationId}}" population-frequencies="{{populationFrequencies}}"
                                               protein-substitution-scores="{{proteinSubstitutionScores}}" consequence-types="{{consequenceTypes}}"></cellbase-variation-panel>
@@ -217,8 +192,6 @@
             </div>
 
         </div>
-
-
 
         <!-- Modal dialog for Settings -->
         <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -271,8 +244,8 @@
                 }
             },
             ready: function () {
-                this.cellBaseClientConfig = new CellBaseClientConfig(hosts = cellbase.hosts, version = cellbase.version, species = cellbase.species);
-                this.cellbaseClient = new CellBaseClient(this.cellBaseClientConfig);
+                // Copy 'application' object from config.js file
+                this.config = application;
 
                 if (typeof populationFrequencies !== "undefined") {
                     this.populationFrequencies = populationFrequencies;
@@ -285,6 +258,9 @@
                 if (typeof consequenceTypes !== "undefined") {
                     this.consequenceTypes = consequenceTypes;
                 }
+
+                this.cellBaseClientConfig = new CellBaseClientConfig(hosts = this.config.hosts, version = this.config.version, species = this.config.defaultSpecies);
+                this.cellbaseClient = new CellBaseClient(this.cellBaseClientConfig);
 
                 let _this = this;
                 window.onhashchange = function () {
@@ -326,7 +302,7 @@
                 if (value != "") {
                     if (value.startsWith("rs")) {
                         this.variationId = value;
-                        this.tool = "variation";
+                        this.tool = "variation-snv";
                     } else if (value.indexOf(':') > -1 && value.indexOf('-') > -1) {
                         this.region = value;
                         this.tool = "genomic";
@@ -342,7 +318,16 @@
                     $("#" + this.tool).show();
                     this.renderHashFragments();
                 }
-            }
+            },
+            _isMenuItemVisible: function(item) {
+                switch(item.visibility) {
+                    case 'public':
+                        return true;
+                    case 'none':
+                    default:
+                        return false;
+                }
+            },
         });
     </script>
 </dom-module>
