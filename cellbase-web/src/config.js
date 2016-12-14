@@ -15,7 +15,7 @@
  */
 
 var cellbase = {
-    hosts: ["bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"], //"localhost:8080/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
+    hosts: ["localhost:8080/cellbase-4.5.0-rc"], //"bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
     version: "v4",
     species: "hsapiens"
 };
