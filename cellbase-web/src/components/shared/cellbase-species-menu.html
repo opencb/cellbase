@@ -24,6 +24,7 @@
             a.cellbase-species-menu:hover {
                 color: white;
                 text-decoration: none;
+                /*cursor: pointer;*/
             }
 
             .species-scroll{
@@ -38,14 +39,14 @@
             </a>
 
             <ul class="dropdown-menu cellbase-species-menu species-scroll">
-                <li><a href="#"><b>Favourite Species</b></a></li>
+                <li><a href="#home"><b>Favourite Species</b></a></li>
                 <template is="dom-repeat" items="{{favourites}}">
-                    <li><a href="#">{{item}}</a></li>
+                    <li><a href="#home">{{item}}</a></li>
                 </template>
                 <li role="separator" class="divider"></li>
-                <li><a href="#"><b>All Species</b></a></li>
+                <li><a href="#home"><b>All Species</b></a></li>
                 <template is="dom-repeat" items="{{allSpecies}}">
-                    <li><a href="#">{{item}}</a></li>
+                    <li><a href="#home">{{item}}</a></li>
                 </template>
             </ul>
 
@@ -69,7 +70,13 @@
                     value: []
                 },
                 favourites: {
-                    type: Array
+                    type: Array,
+                    value: [],
+                    observer: "favouritesAvailable"
+                },
+                species: {
+                    type: String,
+                    notify: true
                 },
                 keys: {
                     type: Array,
@@ -91,17 +98,27 @@
                 });
 
                 $(document).on('click', '.cellbase-species-menu li a', function() {
-                    _this.title = $(this).text();
+                    if ($(this).text() != "Favourite Species" && $(this).text() != "All Species") {
+                        _this.title = $(this).text();
+                        _this.species = $(this).text();
+                    } else {
+                        _this.title = "Select species";
+                    }
                 });
+            },
+            favouritesAvailable: function () {
+                this.title = this.favourites[0];
+                this.species = this.favourites[0];
             },
             _getSpeciesArrayByTaxon: function(taxon) {
                 let speciesArray = [];
                 let taxonSpecies = this.speciesList[taxon];
                 for (let speciesIdx in taxonSpecies) {
-                    let assemblies = taxonSpecies[speciesIdx].assemblies;
-                    for (let assemblyIdx in assemblies) {
-                        speciesArray.push(taxonSpecies[speciesIdx].scientificName + " " + assemblies[assemblyIdx].name)
-                    }
+//                    let assemblies = taxonSpecies[speciesIdx].assemblies;
+//                    for (let assemblyIdx in assemblies) {
+//                        speciesArray.push(taxonSpecies[speciesIdx].scientificName + " " + assemblies[assemblyIdx].name);
+//                    }
+                    speciesArray.push(taxonSpecies[speciesIdx].scientificName);
                 }
                 return speciesArray;
             }
