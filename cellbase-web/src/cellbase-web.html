@@ -29,7 +29,9 @@
         <style>
             .center {
                 margin: auto;
-                width: 98%;
+                text-align: justify;
+                font-size: 18px;
+                color: #797979;
             }
         </style>
 
@@ -118,24 +120,44 @@
             <!-- This is where main application is rendered -->
             <div class="center">
                 <div class="collapse content" id="home" style="width: 60%; text-align: justify; margin-left: 20%;">
-                    <div style="text-align: center">
+                    <!--<div style="text-align: center">-->
+                    <div class="center">
                         <br>
-                        <span style="font-size:50px;">Welcome to CellBase data portal tool!</span>
-                        <br>
-                        <br>
-                        <div style="font-size: 14px; text-align: justify">
-                            <p>
-                                CellBase is a scalable and high-performance NoSQL database that integrates relevantbiological information from well-known data sources such as
-                                Ensembl, Uniprot, IntAct or ClinVar among others. All this data can be queried through acomprehensive RESTful web services API.This tool allows
-                                to query CellBase data through web interface thus making it easier and also serves as avisualization tool.
-                            </p>
-
-                        </div>
-                        <br>
-                        <br>
+                        <span style="font-size:50px">CellBase Web</span>
+                        <br><br><br>
                         <input type="text" class="form-control" id="welcomeSearchTextBox" style="text-align: center;"
-                               placeholder="Search for a gene, transcript, variant, multi-allelic variant or region" on-keyup="triggerSearch">
+                               placeholder="Search for a gene, transcript, variant, variant or region" on-keyup="triggerSearch">
                         <p>Example: BRCA2, ENST00000342992, rs666, 10:15097577:G:C, 1:1-100000</p>
+                        <br>
+                        <p>
+                        During the last years the advances of high-throughput technologies in biology have
+                        produced an unprecedented growth of repositories and databases storing relevant
+                        biological data. Today there is more biological information than ever but unfortunately
+                        the current status of many of these repositories is far from being optimal many times.
+                        Some of the most common problems are: a) information is spread out in many small
+                        repositories and databases, b) lack of standards between different repositories,
+                        c) unsupported databases, d) specific and unconnected information, etc.
+                        <br><br>
+                        All these problems make very difficult: a) to integrate or join many different sources
+                        into only one database to work or analyze experiments; b) to access and query this
+                        information in programmatically way.
+                        <br><br>
+                        To cope with all these problems we have designed and developed a NoSQL database that
+                        integrates the most relevant biological information about genomic features and proteins,
+                        gene expression regulation, functional annotation, genomic variation and systems biology
+                        information. We use the most relevant repositories such as Ensembl, Uniprot, ClinVar,
+                        COSMIC or IntAct among many others.
+                        <br><br>
+                        To make this entire database accessible to researchers, an exhaustive web interface and
+                        RESTful Web service API has been implemented. This Web contains many methods that will
+                        facilitate researchers to query and obtain different biological information from a
+                        single database saving a lot of time. Researchers can easily make queries about
+                        different biological topics and link all this information together as all information
+                        is integrated.
+                        <br><br>
+                        Currently Homo sapiens, Mus musculus and other 20 species are available and many others
+                        will be included soon
+                        </p>
 
                     </div>
 
