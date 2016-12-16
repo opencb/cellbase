@@ -16,12 +16,29 @@
 
 var application = {
     title: "CellBase Data Portal",
-    hosts: ["bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"], //"bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
+    hosts: ["localhost:8080/cellbase-4.5.0-rc"], //"bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
     version: "v4",
-    defaultSpecies: "Homo sapiens", // "Homo sapiens GRCh37"
+    defaultSpecies: {
+        name: "Homo sapiens",
+        assembly: "GRCh37"
+    },
     favouriteSpecies: [
-        // "Homo sapiens GRCh37", "Homo sapiens GRCh38", "Mus musculus GRCm38", "Danio rerio GRCz10"
-        "Homo sapiens", "Mus musculus", "Danio rerio"
+        {
+            name: "Homo sapiens",
+            assembly: "GRCh37"
+        },
+        {
+            name: "Homo sapiens",
+            assembly: "GRCh38"
+        },
+        {
+            name: "Mus musculus",
+            assembly: "GRCm38"
+        },
+        {
+            name: "Danio rerio",
+            assembly: "GRCz10"
+        }
     ],
     menu: [
         {
@@ -124,17 +141,17 @@ var application = {
         },
         // networks => Protein protein interaction to be added in future
         {
-            id: "visualization",
-            title: "Visualization",
-            visibility: "public",
-            submenu: [
-                {
+            // id: "visualization",
+            // title: "Visualization",
+            // visibility: "public",
+            // submenu: [
+            //     {
                     id: "genomeMap",
-                    title: "Genome Browser (Genome Maps)",
+                    title: "Genome Browser",
                     visibility: "public"
-                }
+                // }
                 // Network viewer (cell maps) to be added in future
-            ]
+            // ]
         }
     ],
     search: {

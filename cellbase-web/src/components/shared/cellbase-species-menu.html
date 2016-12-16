@@ -41,12 +41,12 @@
             <ul class="dropdown-menu cellbase-species-menu species-scroll">
                 <li><a href="#home"><b>Favourite Species</b></a></li>
                 <template is="dom-repeat" items="{{favourites}}">
-                    <li><a href="#home">{{item}}</a></li>
+                    <li><a href="#home" data-species="{{item.name}}" on-click="speciesClicked">{{item.name}} {{item.assembly}}</a></li>
                 </template>
                 <li role="separator" class="divider"></li>
                 <li><a href="#home"><b>All Species</b></a></li>
                 <template is="dom-repeat" items="{{allSpecies}}">
-                    <li><a href="#home">{{item}}</a></li>
+                    <li><a href="#home" data-species="{{item.name}}" on-click="speciesClicked">{{item.name}} {{item.assembly}}</a></li>
                 </template>
             </ul>
 
@@ -96,29 +96,25 @@
                     }
                     _this.allSpecies = allSpecies;
                 });
-
-                $(document).on('click', '.cellbase-species-menu li a', function() {
-                    if ($(this).text() != "Favourite Species" && $(this).text() != "All Species") {
-                        _this.title = $(this).text();
-                        _this.species = $(this).text();
-                    } else {
-                        _this.title = "Select species";
-                    }
-                });
+            },
+            speciesClicked: function (e) {
+                this.title = e.target.innerHTML;
+                this.species = e.target.dataSpecies;
             },
             favouritesAvailable: function () {
-                this.title = this.favourites[0];
-                this.species = this.favourites[0];
+                if (typeof this.favourites[0] !== "undefined") {
+                    this.title = this.favourites[0].name + " " + this.favourites[0].assembly;
+                    this.species = this.favourites[0].name;
+                }
             },
             _getSpeciesArrayByTaxon: function(taxon) {
                 let speciesArray = [];
                 let taxonSpecies = this.speciesList[taxon];
                 for (let speciesIdx in taxonSpecies) {
-//                    let assemblies = taxonSpecies[speciesIdx].assemblies;
-//                    for (let assemblyIdx in assemblies) {
-//                        speciesArray.push(taxonSpecies[speciesIdx].scientificName + " " + assemblies[assemblyIdx].name);
-//                    }
-                    speciesArray.push(taxonSpecies[speciesIdx].scientificName);
+                    let assemblies = taxonSpecies[speciesIdx].assemblies;
+                    for (let assemblyIdx in assemblies) {
+                        speciesArray.push({ name: taxonSpecies[speciesIdx].scientificName, assembly: assemblies[assemblyIdx].name});
+                    }
                 }
                 return speciesArray;
             }

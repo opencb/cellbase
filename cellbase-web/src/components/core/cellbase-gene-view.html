@@ -31,6 +31,10 @@
 
         <div style="width: 90%">
 
+            <div hidden$="{{!checkGene(geneId)}}">
+                <h3>Please provide a gene</h3>
+            </div>
+
             <h3>{{geneId}}</h3>
             <ul id="myTabs" class="nav nav-tabs" role="tablist" hidden$="{{checkGene(geneId)}}">
                 <li role="presentation" class="active"><a href="#geneViewInfo" role="tab" data-toggle="tab">{{geneId}} Summary</a></li>

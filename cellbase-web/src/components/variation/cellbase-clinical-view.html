@@ -21,14 +21,19 @@
         <style is="custom-style" include="jso-styles"></style>
 
         <div style="width: 90%">
-            <ul id="myTabs" class="nav nav-tabs" role="tablist">
+
+            <div hidden$="{{!checkData(clinicalId)}}">
+                <h3>Please provide an appropriate filter</h3>
+            </div>
+
+            <ul id="myTabs" class="nav nav-tabs" role="tablist" hidden$="{{checkData(clinicalId)}}">
                 <li role="presentation" class="active"><a href="#clinicalViewInfo" role="tab"
                                                           data-toggle="tab">Summary</a></li>
                 <li role="presentation"><a href="#clinicalViewGenomeContext" role="tab" data-toggle="tab">Genome
                     Context</a></li>
             </ul>
 
-            <div class="tab-content" style="width: 90%">
+            <div class="tab-content" style="width: 90%" hidden$="{{checkData(clinicalId)}}">
                 <div id="clinicalViewInfo" role="tabpanel" class="tab-pane active">
                     <h3>{{clinicalId}}</h3><br>
                     <b>Chromosome:</b> {{clinicalObj.chromosome}} <br>
@@ -134,6 +139,7 @@
                 },
                 clinicalId: {
                     type: String,
+                    value: "",
                     observer: '_clinicalIdChanged'
                 },
                 variant: {
@@ -143,6 +149,9 @@
                 clinicalObj: {
                     type: Object
                 }
+            },
+            checkData: function(clinicalId) {
+                return this.clinicalId == "";
             },
             _clinicalIdChanged: function (newValue, oldValue) {
                 let _this = this;

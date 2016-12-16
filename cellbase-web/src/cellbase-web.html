@@ -120,16 +120,17 @@
             <!-- This is where main application is rendered -->
             <div class="center">
                 <div class="collapse content" id="home" style="width: 60%; text-align: justify; margin-left: 20%;">
-                    <!--<div style="text-align: center">-->
-                    <div class="center">
+                    <div style="text-align: center">
                         <br>
-                        <span style="font-size:50px">CellBase Web</span>
+                        <span style="font-size:50px; text-align: center">CellBase Web</span>
                         <br><br><br>
-                        <input type="text" class="form-control" id="welcomeSearchTextBox" style="text-align: center;"
-                               placeholder="Search for a gene, transcript, variant, variant or region" on-keyup="triggerSearch">
+                        <input type="text" class="form-control" id="welcomeSearchTextBox" style="text-align: center; height: 45px"
+                               placeholder="Search for a gene, transcript, variant, variant or region"
+                               on-keyup="triggerSearch">
                         <p>Example: BRCA2, ENST00000342992, rs666, 10:15097577:G:C, 1:1-100000</p>
-                        <br>
-                        <p>
+                    </div>
+                    <br>
+                    <p>
                         During the last years the advances of high-throughput technologies in biology have
                         produced an unprecedented growth of repositories and databases storing relevant
                         biological data. Today there is more biological information than ever but unfortunately
@@ -157,9 +158,8 @@
                         <br><br>
                         Currently Homo sapiens, Mus musculus and other 20 species are available and many others
                         will be included soon
-                        </p>
+                    </p>
 
-                    </div>
 
                     <div class="col-sm-12"><br><br>Note:
                         <span style="font-size:13px">
@@ -168,6 +168,7 @@
                         </span>
                     </div>
                 </div>
+            </div>
                 <div class="collapse content" id="genomic">
                     <h2>Genomic Region</h2>
                     <cellbase-genomic-panel cellbase-client="{{cellbaseClient}}" region="{{region}}"></cellbase-genomic-panel>
@@ -285,7 +286,7 @@
                     this.consequenceTypes = consequenceTypes;
                 }
 
-                this.cellBaseClientConfig = new CellBaseClientConfig(hosts = this.config.hosts, version = this.config.version, species = this.config.defaultSpecies);
+                this.cellBaseClientConfig = new CellBaseClientConfig(hosts = this.config.hosts, version = this.config.version, species = this.config.defaultSpecies.name);
                 this.cellbaseClient = new CellBaseClient(this.cellBaseClientConfig);
 
                 let _this = this;

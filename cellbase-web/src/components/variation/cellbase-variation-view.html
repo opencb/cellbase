@@ -30,24 +30,13 @@
 
             <div class="tab-content" style="width: 90%">
                 <div id="variationViewInfo" role="tabpanel" class="tab-pane active">
-                    <h3>Summary</h3>
-                    <b>ID:</b> <a href="http://www.ensembl.org/Homo_sapiens/Variation/Explore?v={{variationObj.id}}" target="_blank">{{variationObj.id}}</a><br>
-                    <b>Alleles:</b> {{variationObj.reference}}/{{variationObj.alternate}}<br>
-                    <b>Location:</b> {{variationObj.chromosome}}:{{variationObj.start}}-{{variationObj.end}}<br>
-                    <b>Type:</b> {{variationObj.type}}<br>
-                    <b>HGVS:</b><br>
-                    <template is="dom-repeat" items="{{variationObj.annotation.hgvs}}">
-                        {{item}}<br>
-                    </template>
-                    <b>Display Consequence Type:</b> {{variationObj.annotation.displayConsequenceType}}<br>
-                    <b>Ancestral Allele:</b> {{variationObj.annotation.ancestralAllele}}<br>
-                    <b>MAF:</b> {{variationObj.annotation.minorAlleleFreq}} ({{variationObj.annotation.minorAllele}})<br>
-
-                    <h3>Annotation</h3>
-                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="variation"></cellbase-variantannotation-view>
                     <variant-browser-grid cellbase-client="{{cellbaseClient}}" population-frequencies="{{populationFrequencies}}" protein-substitution-scores="{{proteinSubstitutionScores}}"
                                           consequence-types="{{consequenceTypes}}" query="[[query]]" search="[[search]]" variant="{{variant}}" style="font-size: 12px">
                     </variant-browser-grid>
+
+                    <h3>Annotation</h3>
+                    <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="variation"></cellbase-variantannotation-view>
+
                 </div>
 
                 <div role="tabpanel" class="tab-pane" id="variationViewGenomeContext">

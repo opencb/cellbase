@@ -103,6 +103,7 @@
                 },
                 url: {
                     type: String,
+                    value: "",
                     notify: true
                 },
                 featureTypes: {
@@ -134,24 +135,24 @@
                 this.$.regFilterRegionTextarea.value = "10:555-666666";
             },
             executeQuery: function () {
-                let url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/regulatory/search?';
-
-                let queryParams = [];
                 if (this.$.regFilterRegionTextarea.value != "") {
+                    let url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/regulatory/search?';
+
+                    let queryParams = [];
                     queryParams.push('region=' + this.$.regFilterRegionTextarea.value);
-                }
-                if (this.featureTypes.length > 0) {
-                    queryParams.push('featureType=' + this.featureTypes.join(","));
-                }
-                if (this.featureClasses.length > 0) {
-                    queryParams.push('featureClass=' + this.featureClasses.join(","));
-                }
+                    if (this.featureTypes.length > 0) {
+                        queryParams.push('featureType=' + this.featureTypes.join(","));
+                    }
+                    if (this.featureClasses.length > 0) {
+                        queryParams.push('featureClass=' + this.featureClasses.join(","));
+                    }
 
-                if (queryParams.length > 0) {
-                    url += queryParams.join('&');
-                }
+                    if (queryParams.length > 0) {
+                        url += queryParams.join('&');
+                    }
 
-                this.url = url;
+                    this.url = url;
+                }
             }
             });
     </script>
