@@ -35,34 +35,61 @@
                 cellBaseClient: {
                     type: Object
                 },
+                data: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                },
                 variant: {
                     type: String,
-                    observer: 'variantChanged',
-                    notify: true
+                    observer: 'variantChanged'
                 }
             },
             clear: function (e) {
                 this.$.variantAnnotationTextarea.value = "";
             },
             loadExample: function (e) {
-                this.$.variantAnnotationTextarea.value = "19:45411941:T:C";
+                this.$.variantAnnotationTextarea.value = "19:45411941:T:C,14:38679764:-:GATCTG";
+//                this.$.variantAnnotationTextarea.value = "rs666,rs429358";
             },
             variantChanged: function () {
                 this.$.variantAnnotationTextarea.value = this.variant;
+                this.executeQuery();
             },
-            executeQuery: function (e) {
+            executeQuery: function () {
                 let _this = this;
                 if (this.$.variantAnnotationTextarea.value !== "") {
                     // Executes if the given value is variation ID
+                    let results = [];
                     if (this.$.variantAnnotationTextarea.value.indexOf(':') == -1) {
-                        this.cellbaseClient.get('feature', 'snp', this.$.variantAnnotationTextarea.value, 'info', {}, {})
+                        let rsIds = this.$.variantAnnotationTextarea.value;
+                        this.cellbaseClient.getVariationClient(rsIds, 'info', {}, {})
                             .then(function (response) {
-                                let firstVariation = response.response[0].result[0];
-                                _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
+                                let responses = response.response;
+                                for (let i = 0; i < responses.length; i++) {
+                                    results.push(responses[i].result[0]);
+                                }
+                                _this.data = results;
                             });
                     } else {
                         // Assigns the input value directly to the variant (if given like 10:15097577:G:C)
-                        _this.variant = this.$.variantAnnotationTextarea.value;
+                        let variants = this.$.variantAnnotationTextarea.value;
+                        this.cellbaseClient.get('genomic', 'variant', variants, 'annotation', {}, {})
+                            .then(function (response) {
+                                let responses = response.response;
+                                for (let i = 0; i < responses.length; i++) {
+                                    let variant = {
+                                        chromosome: responses[i].result[0].chromosome,
+                                        start: responses[i].result[0].start,
+                                        reference: responses[i].result[0].reference,
+                                        alternate: responses[i].result[0].alternate,
+                                        id: responses[i].result[0].id,
+                                        annotation: responses[i].result[0]
+                                    };
+                                    results.push(variant);
+                                }
+                                _this.data = results;
+                            });
                     }
                 }
             }

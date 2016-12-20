@@ -16,7 +16,7 @@
 
 var application = {
     title: "CellBase Data Portal",
-    hosts: ["localhost:8080/cellbase-4.5.0-rc"], //"bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
+    hosts: ["bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"], //"localhost:8080/cellbase-4.5.0-rc", "www.ebi.ac.uk/cellbase"
     version: "v4",
     defaultSpecies: {
         name: "Homo sapiens",
@@ -181,7 +181,7 @@ var populationFrequencies = {
     },
     studies: [
         {
-            id: "1KG_PHASE3",
+            id: "1kG_phase3",
             title: "1000 Genomes",
             populations: [
                 {

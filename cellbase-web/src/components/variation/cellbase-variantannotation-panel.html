@@ -16,6 +16,7 @@
 
 <link rel="import" href="cellbase-variantannotation-filter.html">
 <link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variantannotation-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/opencga/variant/variant-browser-grid.html">
 
 <dom-module id="cellbase-variantannotation-panel">
     <template>
@@ -23,10 +24,13 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-variantannotation-filter variant={{variant}} cellbase-client="{{cellbaseClient}}"></cellbase-variantannotation-filter>
+                <cellbase-variantannotation-filter cellbase-client="{{cellbaseClient}}" data="{{data}}" variant="{{variantSearch}}"></cellbase-variantannotation-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-variantannotation-view data={{variant}} cellbase-client="{{cellbaseClient}}" prefix="variantPanel"></cellbase-variantannotation-view>
+                <variant-browser-grid data="{{data}}" variant="{{variant}}" population-frequencies="{{populationFrequencies}}" protein-substitution-scores="{{proteinSubstitutionScores}}"
+                                      consequence-types="{{consequenceTypes}}"></variant-browser-grid>
+                <h3>Annotation</h3>
+                <cellbase-variantannotation-view data="{{variant}}" cellbase-client="{{cellbaseClient}}" prefix="variantPanel"></cellbase-variantannotation-view>
             </div>
         </div>
     </template>
@@ -37,13 +41,24 @@
                 cellbaseClient: {
                     type: Object
                 },
+                data: {
+                    type: Array
+                },
                 variant: {
-                    type: String,
-                    notify: true
+                    type: String
+                },
+                variantSearch: {
+                    type: String
+                },
+                populationFrequencies: {
+                    type: Object
+                },
+                proteinSubstitutionScores: {
+                    type: Object
+                },
+                consequenceTypes: {
+                    type: Object
                 }
-            },
-            ready: function () {
-//                this.cellBaseClient = CELLBASE_CLIENT;
             }
         });
     </script>
