@@ -164,10 +164,10 @@
                 }
                 if (this.cellbaseClient instanceof CellBaseClient) {
 
-                    this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/variation';
-                    this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=clinvar';
-                    this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=cosmic';
-                    this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/regulatory';
+                    this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/variation';
+                    this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/clinical?source=clinvar';
+                    this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/clinical?source=cosmic';
+                    this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/regulatory';
                     let _this = this;
 
                     this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {})

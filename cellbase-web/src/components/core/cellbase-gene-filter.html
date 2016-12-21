@@ -210,8 +210,11 @@
                 },
                 geneId: {
                     type: String,
-                    observer: 'geneIdChanged',
                     notify: true
+                },
+                geneSearch: {
+                    type: String,
+                    observer: 'triggerGeneSearch'
                 },
                 result: {
                     type: Array,
@@ -240,8 +243,8 @@
                 this.clear();
                 this.$.geneFilterIdsTextarea.value = "BRCA2";
             },
-            geneIdChanged: function () {
-                this.$.geneFilterIdsTextarea.value = this.geneId;
+            triggerGeneSearch: function () {
+                this.$.geneFilterIdsTextarea.value = this.geneSearch;
                 this.executeQuery();
             },
             executeQuery: function () {
@@ -252,11 +255,13 @@
                 let queryParams = {};
 
                 if (this.$.geneFilterIdsTextarea.value != "") {
-                    queryParams["transcripts.xrefs"] = this.$.geneFilterIdsTextarea.value;
+                    let ids = this._split(this.$.geneFilterIdsTextarea.value);
+                    queryParams["transcripts.xrefs"] = ids.join(',');
                 }
 
                 if (this.$.geneFilterRegionTextarea.value != "") {
-                    queryParams.region = this.$.geneFilterRegionTextarea.value;
+                    let regions = this._split(this.$.geneFilterRegionTextarea.value);
+                    queryParams.region = regions.join(',');
                 }
 
                 if (this.biotypes.length > 0) {
@@ -264,11 +269,12 @@
                 }
 
                 if (this.$.geneFilterDrugsTextarea.value != "") {
-                    queryParams["annotation.drugs.name"] = this.$.geneFilterDrugsTextarea.value;
+                    let drugs = this._split(this.$.geneFilterDrugsTextarea.value);
+                    queryParams["annotation.drugs.name"] = drugs.join(',');
                 }
 
                 if (this.$.geneFilterPhenotypeTextarea.value != "") {
-                    let diseases = this.$.geneFilterPhenotypeTextarea.value.split(",");
+                    let diseases = this._split(this.$.geneFilterPhenotypeTextarea.value);
                     let diseaseIds = [];
                     let diseaseNames = [];
                     for (let i = 0; i < diseases.length; i++) {
@@ -351,6 +357,15 @@
                         });
                 }
 
+            },
+            _split: function (value) {
+                let ids = value.split(/,?\s+/);
+                for (let i = 0; i < ids.length; i++) {
+                    if (ids[i] == "") {
+                        ids.splice(i, 1);
+                    }
+                }
+                return ids;
             }
         });
     </script>

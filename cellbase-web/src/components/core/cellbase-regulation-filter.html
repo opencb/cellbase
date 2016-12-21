@@ -28,7 +28,6 @@
 
         <div>
             <div>
-                <br>
                 <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br> <br>
 
@@ -136,7 +135,7 @@
             },
             executeQuery: function () {
                 if (this.$.regFilterRegionTextarea.value != "") {
-                    let url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/regulatory/search?';
+                    let url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/regulatory/search?';
 
                     let queryParams = [];
                     queryParams.push('region=' + this.$.regFilterRegionTextarea.value);

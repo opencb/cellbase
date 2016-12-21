@@ -41,7 +41,9 @@
                 <li role="presentation"><a href="#geneViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
                 <!--<li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>-->
                 <li role="presentation"><a href="#geneViewVariation" role="tab" data-toggle="tab">Variation</a></li>
-                <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                <template is="dom-if" if="{{showTfbs}}">
+                    <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                </template>
                 <li role="presentation"><a href="#geneViewExpression" role="tab" data-toggle="tab">Expression</a></li>
                 <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
                 <li role="presentation"><a href="#geneViewClinicalVariants" role="tab" data-toggle="tab">Clinical Variants</a></li>
@@ -79,10 +81,12 @@
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
-                    <br>
-                    <cellbase-transcritps-tfbs-view cellbase="{{cellbaseClient}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
-                </div>
+                <template is="dom-if" if="{{showTfbs}}">
+                    <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
+                        <br>
+                        <cellbase-transcritps-tfbs-view cellbase="{{cellbaseClient}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
+                    </div>
+                </template>
 
                 <div id="geneViewExpression" role="tabpanel" class="tab-pane">
                     <br>
@@ -155,6 +159,9 @@
                     type: String
                 }
             },
+            ready: function () {
+                this.showTfbs = false;
+            },
             iconChangeClinvar: function () {
                 $('#geneClinvarToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
@@ -163,10 +170,12 @@
             },
             _geneIdChanged: function(newValue, oldValue) {
                 if (typeof this.geneId !== "undefined" &&this.geneId != "") {
-                    this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/'
-                            + this.geneId + '/snp?exclude=annotation.additionalAttributes,annotation.populationFrequencies';
-                    this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=clinvar';
-                    this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=cosmic';
+                    this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species
+                        + '/feature/gene/' + this.geneId + '/snp?exclude=annotation.additionalAttributes,annotation.populationFrequencies';
+                    this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species
+                        + '/feature/gene/' + this.geneId + '/clinical?source=clinvar';
+                    this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species
+                        + '/feature/gene/' + this.geneId + '/clinical?source=cosmic';
                     let _this = this;
                     if (typeof this.cellbaseClient !== "undefined") {
                         this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {})
@@ -176,6 +185,14 @@
                                     let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
                                     if (typeof _this.genomeViewer !== "undefined") {
                                         _this.genomeViewer.setRegion(region);
+                                    }
+                                    // Checking if the gene's transcripts have tfbs. If not present, hide the tfbs tab
+                                    for (let i = 0; i < firstGene.transcripts.length; i++) {
+                                        if (typeof firstGene.transcripts[i].tfbs !== "undefined" && firstGene.transcripts[i].tfbs.length > 0) {
+                                            _this.showTfbs = true;
+                                            break;
+                                        }
+                                        _this.showTfbs = false;
                                     }
                                 } else {
                                     alert("Gene ID not valid: " + _this.geneId);

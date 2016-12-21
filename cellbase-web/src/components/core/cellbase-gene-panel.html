@@ -23,7 +23,8 @@
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-gene-filter gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-filter>
+                <br>
+                <cellbase-gene-filter gene-id="{{geneId}}" cellbase-client="{{cellbaseClient}}" gene-search="{{geneSearch}}"></cellbase-gene-filter>
             </div>
             <div class="col-md-10">
                 <cellbase-gene-view gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-view>
@@ -38,6 +39,9 @@
                     type: Object
                 },
                 geneId: {
+                    type: String
+                },
+                geneSearch: {
                     type: String
                 }
             }

@@ -225,17 +225,35 @@
                 let _this = this;
 
                 if (this.$.clinicalIdTextarea.value != "") {
-                    if (_this.$.clinicalIdTextarea.value.startsWith('RCV')) {
-                        queryParams.clinvarId = _this.$.clinicalIdTextarea.value;
-                    } else if (_this.$.clinicalIdTextarea.value.startsWith('COSM')) {
-                        queryParams.cosmicId = _this.$.clinicalIdTextarea.value;
-                    } else if (_this.$.clinicalIdTextarea.value.startsWith('rs')) {
-                        queryParams.rs = _this.$.clinicalIdTextarea.value;
+                    let ids = this._split(this.$.clinicalIdTextarea.value);
+                    let clinvarIds = [];
+                    let cosmicIds = [];
+                    let rsIds = [];
+                    for (let i = 0; i < ids.length; i++) {
+                        if (ids[i].startsWith("RCV")) {
+                            clinvarIds.push(ids[i]);
+                        } else if (ids[i].startsWith("COSM")) {
+                            cosmicIds.push(ids[i]);
+                        } else if (ids[i].startsWith("rs")){
+                            rsIds.push(ids[i]);
+                        }
+                    }
+                    if (clinvarIds.length > 0) {
+                        queryParams.clinvarId = clinvarIds.join(",");
+                    }
+
+                    if (cosmicIds.length > 0) {
+                        queryParams.cosmicId = cosmicIds.join(",");
+                    }
+
+                    if (rsIds.length > 0) {
+                        queryParams.rs = rsIds.join(",");
                     }
                 }
 
                 if (this.$.clinicalRegionList.value != "") {
-                    queryParams.region = _this.$.clinicalRegionList.value;
+                    let regions = this._split(this.$.clinicalRegionList.value);
+                    queryParams.region = regions.join(',');
                 }
 
                 if (this.consequenceTypes.length > 0) {
@@ -243,7 +261,8 @@
                 }
 
                 if (this.$.clinicalTraitTextArea.value != "") {
-                    queryParams.phenotype = _this.$.clinicalTraitTextArea.value;
+                    let phenotypes = this._split(this.$.clinicalTraitTextArea.value);
+                    queryParams.phenotype = phenotypes.join(',');
                 }
 
                 if (this.clinicalSignificance.length > 0) {
@@ -282,6 +301,15 @@
                     $('.clinicalResultDiv').removeClass(highlightColor);
                     $("#" + e.currentTarget.id).addClass(highlightColor);
                 }
+            },
+            _split: function (value) {
+                let ids = value.split(/,?\s+/);
+                for (let i = 0; i < ids.length; i++) {
+                    if (ids[i] == "") {
+                        ids.splice(i, 1);
+                    }
+                }
+                return ids;
             }
         });
     </script>

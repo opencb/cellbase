@@ -89,8 +89,13 @@
 
                                 <form class="navbar-form navbar-left" role="search">
                                     <div class="form-group">
-                                        <input type="text" class="form-control" id="mainSearchBox" placeholder="{{config.search.placeholder}}"
+                                        <input type="text" class="form-control" id="mainSearchBox" list="datalist" placeholder="{{config.search.placeholder}}"
                                                on-keyup="triggerSearch">
+                                        <datalist id="datalist">
+                                            <template is="dom-repeat" items="{{autocompleteData}}">
+                                                <option value="{{item.name}}">
+                                            </template>
+                                        </datalist>
                                         <a style="cursor: pointer">
                                             <span class="fa fa-search" aria-hidden="true" on-click="triggerSearch"></span>
                                         </a>
@@ -124,9 +129,13 @@
                         <br>
                         <span style="font-size:50px; text-align: center">CellBase Web</span>
                         <br><br><br>
-                        <input type="text" class="form-control" id="welcomeSearchTextBox" style="text-align: center; height: 45px"
-                               placeholder="Search for a gene, transcript, variant, variant or region"
-                               on-keyup="triggerSearch">
+                        <input type="text" class="form-control" id="welcomeSearchTextBox" list="json-datalist" style="text-align: center; height: 45px"
+                               placeholder="Search for a gene, transcript, variant, variant or region" on-keyup="triggerSearch">
+                        <datalist id="json-datalist">
+                            <template is="dom-repeat" items="{{autocompleteData}}">
+                                <option value="{{item.name}}">
+                            </template>
+                        </datalist>
                         <p>Example: BRCA2, ENST00000342992, rs666, 10:15097577:G:C, 1:1-100000</p>
                     </div>
                     <br>
@@ -170,12 +179,12 @@
                 </div>
             </div>
                 <div class="collapse content" id="genomic">
-                    <h2>Genomic Region</h2>
+                    <h2 style="margin-left: 15px;">Genomic Region</h2>
                     <cellbase-genomic-panel cellbase-client="{{cellbaseClient}}" region="{{region}}"></cellbase-genomic-panel>
                 </div>
                 <div class="collapse content" id="gene">
-                    <h2>Gene/Transcript</h2>
-                    <cellbase-gene-panel cellbase-client="{{cellbaseClient}}" gene-id="{{geneId}}"></cellbase-gene-panel>
+                    <h2 style="margin-left: 15px;">Gene/Transcript</h2>
+                    <cellbase-gene-panel cellbase-client="{{cellbaseClient}}" gene-search="{{geneId}}"></cellbase-gene-panel>
                 </div>
                 <!--<div class="collapse content" id="transcriptPanel">-->
                     <!--Transcript-->
@@ -184,23 +193,23 @@
                     <!--NOT YET READY FOR BETA VERSION-->
                 <!--</div>-->
                 <div class="collapse content" id="regulation">
-                    <h2>Regulation</h2>
+                    <h2 style="margin-left: 15px;">Regulation</h2>
                     <cellbase-regulation-panel cellbase-client="{{cellbaseClient}}"></cellbase-regulation-panel>
                 </div>
                 <!--<div class="collapse content" id="xrefsPanel">-->
                     <!--NOT YET READY FOR BETA VERSION-->
                 <!--</div>-->
                 <div class="collapse content" id="variation-snv">
-                    <h2>Variation</h2>
+                    <h2 style="margin-left: 15px;">Variation</h2>
                     <cellbase-variation-panel cellbase-client="{{cellbaseClient}}" variation-id="{{variationId}}" population-frequencies="{{populationFrequencies}}"
                                               protein-substitution-scores="{{proteinSubstitutionScores}}" consequence-types="{{consequenceTypes}}"></cellbase-variation-panel>
                 </div>
                 <div class="collapse content" id="clinical">
-                    <h2>Clinical Data</h2>
+                    <h2 style="margin-left: 15px;">Clinical Data</h2>
                     <cellbase-clinical-panel cellbase-client="{{cellbaseClient}}"></cellbase-clinical-panel>
                 </div>
                 <div class="collapse content" id="variantAnnotation">
-                    <h2>Variant Annotation</h2>
+                    <h2 style="margin-left: 15px;">Variant Annotation</h2>
                     <cellbase-variantannotation-panel cellbase-client="{{cellbaseClient}}" variant-search="{{variant}}" population-frequencies="{{populationFrequencies}}"
                                                       protein-substitution-scores="{{proteinSubstitutionScores}}" consequence-types="{{consequenceTypes}}"></cellbase-variantannotation-panel>
                 </div>
@@ -229,7 +238,7 @@
                         <div class="form-group row">
                             <label for="cellbaseHost" class="col-sm-2 col-form-label">Hosts</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" id="cellbaseHost" value="bioinfo.hpc.cam.ac.uk/cellbase, www.ebi.ac.uk/cellbase">
+                                <input type="text" class="form-control" id="cellbaseHost" value="bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -243,8 +252,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">OK</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
                     </div>
                 </div>
             </div>
@@ -325,6 +333,18 @@
             },
             triggerSearch: function (e) {
                 let value = "";
+
+                // Autocomplete for gene
+                let _this = this;
+                if (typeof e !== "undefined" && typeof e.target.value !== "undefined") {
+                    if (e.target.value.length > 2) {
+                        _this.cellbaseClient.get('feature', 'id', e.target.value, 'starts_with', {}, {})
+                            .then(function (response) {
+                                _this.autocompleteData = response.response[0].result;
+                            });
+                    }
+                }
+
                 if (typeof e !== "undefined" && e.keyCode == '13') {
                     value = e.target.value;  // When enter key is pressed , it takes the value entered and assign it
                 } else if (typeof e !== "undefined" && e.type == "click") {
@@ -349,6 +369,8 @@
                     $('.content').hide();
                     $("#" + this.tool).show();
                     this.renderHashFragments();
+                    this.$.welcomeSearchTextBox.value = "";
+                    this.$.mainSearchBox.value = "";
                 }
             },
             _isMenuItemVisible: function(item) {

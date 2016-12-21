@@ -21,7 +21,6 @@
         <style is="custom-style" include="jso-styles"></style>
 
         <div>
-            <br>
             <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
             <br> <br>
             <textarea id="variantAnnotationTextarea" class="form-control" rows="3" placeholder="rs666 or 10:15097577:G:C"></textarea>
@@ -49,7 +48,7 @@
                 this.$.variantAnnotationTextarea.value = "";
             },
             loadExample: function (e) {
-                this.$.variantAnnotationTextarea.value = "19:45411941:T:C,14:38679764:-:GATCTG";
+                this.$.variantAnnotationTextarea.value = "19:45411941:T:C, 14:38679764:-:GATCTG";
 //                this.$.variantAnnotationTextarea.value = "rs666,rs429358";
             },
             variantChanged: function () {
@@ -62,8 +61,9 @@
                     // Executes if the given value is variation ID
                     let results = [];
                     if (this.$.variantAnnotationTextarea.value.indexOf(':') == -1) {
-                        let rsIds = this.$.variantAnnotationTextarea.value;
-                        this.cellbaseClient.getVariationClient(rsIds, 'info', {}, {})
+                        let rsIds = this._split(this.$.variantAnnotationTextarea.value);
+                        let searchString = rsIds.join(',');
+                        this.cellbaseClient.getVariationClient(searchString, 'info', {}, {})
                             .then(function (response) {
                                 let responses = response.response;
                                 for (let i = 0; i < responses.length; i++) {
@@ -73,8 +73,9 @@
                             });
                     } else {
                         // Assigns the input value directly to the variant (if given like 10:15097577:G:C)
-                        let variants = this.$.variantAnnotationTextarea.value;
-                        this.cellbaseClient.get('genomic', 'variant', variants, 'annotation', {}, {})
+                        let variants = this._split(this.$.variantAnnotationTextarea.value);
+                        let searchString = variants.join(',');
+                        this.cellbaseClient.get('genomic', 'variant', searchString, 'annotation', {}, {})
                             .then(function (response) {
                                 let responses = response.response;
                                 for (let i = 0; i < responses.length; i++) {
@@ -92,6 +93,15 @@
                             });
                     }
                 }
+            },
+            _split: function (value) {
+                let ids = value.split(/,?\s+/);
+                for (let i = 0; i < ids.length; i++) {
+                    if (ids[i] == "") {
+                        ids.splice(i, 1);
+                    }
+                }
+                return ids;
             }
         });
     </script>
