@@ -33,6 +33,35 @@
             .highlight {
                 background-color: lightblue;
             }
+
+            .ct-tree-view,
+            .ct-tree-view * {
+                padding: 0;
+                margin: 0;
+                list-style: none;
+            }
+
+            .ct-tree-view li ul {
+                margin: 0 0 0 22px;
+            }
+
+            .ct-tree-view * {
+                vertical-align: middle;
+            }
+
+            .ct-tree-view {
+                font-size: 14px;
+            }
+
+            .ct-tree-view input[type="checkbox"] {
+                cursor: pointer;
+            }
+
+            .ct-item {
+                white-space: nowrap;
+                display:inline
+            }
+
         </style>
 
         <div>
@@ -95,8 +124,26 @@
                             <div id="clinicalConsequenceTypes" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="headingThree">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client="{{cellbaseClient}}" data-type="consequence_types" selected="{{consequenceTypes}}"
-                                                           clear="{{clearConsequenceType}}"></cellbase-options-list>
+                                    <div class="ct-tree-view ct-item">
+                                        <ul id="consequenceTypeFilter">
+                                            <template is="dom-repeat" items="{{consequenceTypes.categories}}" as="category">
+                                                <li id="{{category.title}}">
+                                                    <template is="dom-if" if="{{checkTitle(category)}}">
+                                                        <input type="checkbox" on-change="updateConsequenceTypeFilter"> {{category.title}}
+                                                    </template>
+                                                    <template is="dom-if" if="{{!checkTitle(category)}}">
+                                                        <input type="checkbox" on-change="updateConsequenceTypeFilter"> {{category.name}}
+                                                    </template>
+                                                    <ul>
+                                                        <template is="dom-repeat" items="{{category.terms}}">
+                                                            <li><input type="checkbox" id="{{item.id}}" on-change="updateConsequenceTypeFilter" class="soTermCheckBox"> <span title="{{item.description}}">
+                                                        {{item.name}} (<a href="http://www.sequenceontology.org/browser/current_svn/term/{{item.id}}" target="_blank">{{item.id}}</a>)</span></li>
+                                                        </template>
+                                                    </ul>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -184,8 +231,7 @@
                     notify: true
                 },
                 consequenceTypes: {
-                    type: Array,
-                    value: []
+                    type: Object
                 },
                 clinicalSignificance: {
                     type: Array,
@@ -199,6 +245,21 @@
                     type: String,
                     value: ""
                 }
+            },
+            checkTitle: function(consequenceType) {
+                return typeof consequenceType.title !== "undefined" && consequenceType.title != null;
+            },
+            updateConsequenceTypeFilter: function(e) {
+                let soTerms = [];
+                if (e.target.parentNode.id != "") {
+                    $("#" + e.target.parentNode.id).children('ul').children('li').children('input').prop("checked", e.target.checked);
+                }
+                let selected = $('.soTermCheckBox:checked');
+                for (let i = 0; i < selected.length; i++) {
+                    let node = selected[i];
+                    soTerms.push($(node).attr('id'));
+                }
+                this.set('ct', soTerms);
             },
             clear: function () {
                 this.$.clinicalIdTextarea.value = "";
@@ -256,8 +317,8 @@
                     queryParams.region = regions.join(',');
                 }
 
-                if (this.consequenceTypes.length > 0) {
-                    queryParams.so = this.consequenceTypes.join(",");
+                if (this.ct.length > 0) {
+                    queryParams.so = this.ct.join(",");
                 }
 
                 if (this.$.clinicalTraitTextArea.value != "") {
