@@ -51,6 +51,7 @@ public class VariantAnnotationCalculatorTest {
 
     ObjectMapper jsonObjectMapper;
     VariantAnnotationCalculator variantAnnotationCalculator;
+    private VariantAnnotationCalculator variantAnnotationCalculatorGrch38;
 
     @Before
     public void setUp() {
@@ -67,6 +68,7 @@ public class VariantAnnotationCalculatorTest {
         }
         MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
+        variantAnnotationCalculatorGrch38 = new VariantAnnotationCalculator("hsapiens", "GRCh38", dbAdaptorFactory);
 
 
     }
@@ -78,6 +80,9 @@ public class VariantAnnotationCalculatorTest {
 
         String[] variantArray = {"2:114210741:TGATGCT:AGATGGC", "1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC",
                 "19:45411941:T:C"};
+//        List<QueryResult<VariantAnnotation>> variantAnnotationQueryResultList = variantAnnotationCalculatorGrch38.getAnnotationByVariantList(Variant.parseVariants("9:81710637:-:G"),
+//                new QueryOptions());
+
         String line = reader.readLine();
         int i = 0;
         while (line !=null ) {
