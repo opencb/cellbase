@@ -325,9 +325,9 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
                             valuesList.set(pos + chunk.getInteger("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
                         }
                     } else {
-                        logger.error("values field not present in conservation chunk document. This " +
-                                "should not be happening - every conservation chunk must have a list of values." +
-                                " Please check. Chunk id: " + chunk.get("_chunkIds"));
+                        logger.error("values field not present in conservation chunk document. This "
+                                + "should not be happening - every conservation chunk must have a list of values."
+                                + " Please check. Chunk id: " + chunk.get("_chunkIds"));
                         continue;
                     }
 
