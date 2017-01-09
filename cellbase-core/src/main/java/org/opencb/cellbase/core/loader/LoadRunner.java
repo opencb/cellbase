@@ -37,6 +37,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class LoadRunner {
 
+    private static final String PROTEIN_FUNCTIONAL_PREDICTION = "protein_functional_prediction";
     private String database;
     private String loader;
 
@@ -48,7 +49,7 @@ public class LoadRunner {
     private final Logger logger;
 
     private static final int QUEUE_CAPACITY = 10;
-    private static final int BATCH_SIZE = 1000;
+    private int batchSize;
     public static final List<String> POISON_PILL = new ArrayList<>();
 
 
@@ -74,6 +75,15 @@ public class LoadRunner {
 
             if (filePath == null || !Files.exists(filePath) || Files.isDirectory(filePath)) {
                 throw new IOException("File '" + filePath + "' does not exist or is a directory");
+            }
+
+            // protein_functional_prediction documents are extremely big. Increasing the batch size will probably
+            // lead to an OutOfMemory error for this collection. Batch size can be much higher for the rest of
+            // collections though
+            if (data.equals(PROTEIN_FUNCTIONAL_PREDICTION)) {
+                batchSize = 50;
+            } else {
+                batchSize = 1000;
             }
 
             // One CellBaseLoader is created for each thread in 'numThreads' variable
@@ -140,14 +150,14 @@ public class LoadRunner {
                 br = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile.toFile())));
             }
 
-            List<String> batch = new ArrayList<>(BATCH_SIZE);
+            List<String> batch = new ArrayList<>(batchSize);
             String jsonLine;
             while ((jsonLine = br.readLine()) != null) {
                 batch.add(jsonLine);
                 inputFileRecords++;
-                if (inputFileRecords % BATCH_SIZE == 0) {
+                if (inputFileRecords % batchSize == 0) {
                     blockingQueue.put(batch);
-                    batch = new ArrayList<>(BATCH_SIZE);
+                    batch = new ArrayList<>(batchSize);
                 }
                 if (inputFileRecords % 1000 == 0) {
                     logger.info("{} records read from {}", inputFileRecords, inputFile.toString());
