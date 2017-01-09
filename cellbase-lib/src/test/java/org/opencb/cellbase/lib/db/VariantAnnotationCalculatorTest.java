@@ -51,6 +51,7 @@ public class VariantAnnotationCalculatorTest {
 
     ObjectMapper jsonObjectMapper;
     VariantAnnotationCalculator variantAnnotationCalculator;
+    private VariantAnnotationCalculator variantAnnotationCalculatorGrch38;
 
     @Before
     public void setUp() {
@@ -67,6 +68,7 @@ public class VariantAnnotationCalculatorTest {
         }
         MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
+        variantAnnotationCalculatorGrch38 = new VariantAnnotationCalculator("hsapiens", "GRCh38", dbAdaptorFactory);
 
 
     }
