@@ -53,12 +53,12 @@ public class GeneWSServer extends GenericRestWSServer {
 
 
     public GeneWSServer(@PathParam("version")
-                        @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                                defaultValue = "latest") String version,
+                        @ApiParam(name = "version", value = "Possible values: v3, v4",
+                                defaultValue = "v4") String version,
                         @PathParam("species")
                         @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                 + "of potentially available species ids, please refer to: "
-                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
@@ -439,6 +439,10 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
                             + " Exact text matches will be returned",
                     required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.annotationFlags",
+                    value = "Comma separated list of annotation flags that must be present in the transcripts returned "
+                            + "within the gene model, e.g.: basic,CCDS. Exact text matches will be returned",
+                    required = false, dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.tfbs.name",
                     value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
                             + " Exact text matches will be returned",
@@ -649,7 +653,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                    @DefaultValue("false")
                                    @QueryParam("merge")
                                    @ApiParam(name = "merge",
-                                           value = "Return varaints for a gene per QueryResult or all of them merged"
+                                           value = "Return variants for a gene per QueryResult or all of them merged"
                                                    + " into the same QueryResult object.",
                                            defaultValue = "false") boolean merge) {
 //    public Response getSNPByGeneId(@PathParam("geneId") String geneId, @DefaultValue("5000") @QueryParam("offset") int offset) {
@@ -678,7 +682,6 @@ public class GeneWSServer extends GenericRestWSServer {
 //        }
 
 
-        // FIXME: replace the above try/catch by this block below as soon as annotation is ready at variation collection.
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
