@@ -17,6 +17,9 @@
 package org.opencb.cellbase.app.cli;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +78,12 @@ public abstract class CommandExecutor {
     public void setLogLevel(String logLevel) {
         // This small hack allow to configure the appropriate Logger level from the command line, this is done
         // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel);
+//        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel);
+
+        org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
+        ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
+        stderr.setThreshold(Level.toLevel(logLevel));
+
         logger = LoggerFactory.getLogger(this.getClass().toString());
         this.logLevel = logLevel;
     }

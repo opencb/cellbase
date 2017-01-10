@@ -32,6 +32,7 @@
         <grpc.version>1.0.1</grpc.version>
         <jersey.version>2.23.2</jersey.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
+        <slf4j.version>1.7.21</slf4j.version>
     </properties>
 
     <scm>
@@ -106,6 +107,12 @@
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>slf4j-simple</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.opencb.commons</groupId>
@@ -138,6 +145,11 @@
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet</artifactId>
                 <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
