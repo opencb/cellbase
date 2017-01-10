@@ -14,21 +14,59 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
 <link rel="import" href="cellbase-variation-filter.html">
 <link rel="import" href="cellbase-variation-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/opencga/variant/variant-browser-filter.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/opencga/variant/variant-browser-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variantannotation-view.html">
+<link rel="import" href="../common/cellbase-active-filters.html">
 
 <dom-module id="cellbase-variation-panel">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-variation-filter id="filter" cellbase-client="{{cellbaseClient}}" variation-id={{variationId}}></cellbase-variation-filter>
+                <br>
+                <!--<cellbase-variation-filter cellbase-client="{{cellbaseClient}}" variation-id="{{variationId}}" population-frequencies="{{populationFrequencies}}"-->
+                                           <!--consequence-types="{{consequenceTypes}}"></cellbase-variation-filter>-->
+
+                <variant-browser-filter cellbase-client="{{cellbaseClient}}" population-frequencies="{{populationFrequencies}}" consequence-types="{{consequenceTypes}}"
+                                        query="{{query}}" search="{{search}}" style="font-size: 12px">
+                </variant-browser-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-variation-view id="view" cellbase-client="{{cellbaseClient}}" variation-id={{variationId}}></cellbase-variation-view>
+                <!--<cellbase-variation-view cellbase-client="{{cellbaseClient}}" variation-id="{{variationId}}" population-frequencies="{{populationFrequencies}}"-->
+                                         <!--protein-substitution-scores="{{proteinSubstitutionScores}}" consequence-types="{{consequenceTypes}}"></cellbase-variation-view>-->
+
+                <cellbase-active-filters query="{{query}}"></cellbase-active-filters>
+
+                <!--Variant-browser-grid-->
+                <variant-browser-grid cellbase-client="{{cellbaseClient}}" population-frequencies="{{populationFrequencies}}" protein-substitution-scores="{{proteinSubstitutionScores}}"
+                                      consequence-types="{{consequenceTypes}}" query="[[query]]" search="[[search]]" variant="{{variant}}" style="font-size: 12px">
+                </variant-browser-grid>
+
+                <h3>Variant: {{variant}}</h3>
+                <div style="padding-top: 20px">
+                    <ul id="{{prefix}}ViewTabs" class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#{{prefix}}Annotation" role="tab" data-toggle="tab" class="variant-tab-title">Advanced Annotation</a></li>
+                        <li role="presentation"><a href="#{{prefix}}GenomeView" role="tab" data-toggle="tab" class="variant-tab-title">Genome Context</a></li>
+                    </ul>
+
+                    <div class="tab-content" style="height: 680px">
+
+                        <!--Annotation Tab-->
+                        <div role="tabpanel" class="tab-pane active" id="{{prefix}}Annotation">
+                            <cellbase-variantannotation-view data="{{variant}}" prefix="{{prefix}}" cellbase-client="{{cellbaseClient}}" mode="vertical" style="font-size: 12px"></cellbase-variantannotation-view>
+                        </div>
+
+                        <!--Genome Context Tab-->
+                        <div role="tabpanel" class="tab-pane" id="{{prefix}}GenomeView">
+                            <!--<br>-->
+                            <!--<genome-context></genome-context>-->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </template>
@@ -41,11 +79,32 @@
                 },
                 variationId: {
                     type: String
+                },
+                populationFrequencies: {
+                    type: Object
+                },
+                consequenceTypes: {
+                    type: Object
+                },
+                proteinSubstitutionScores: {
+                    type: Object
+                },
+                query: {
+                    type: Object
+                },
+                search: {
+                    type: Object
+                },
+                variant: {
+                    type: String,
+                    value: "No variant selected"
                 }
             },
-            ready: function() {
-//                this.cellBaseClient = CELLBASE_CLIENT;
-            }
+            ready: function () {
+                if (typeof this.prefix === "undefined" || this.prefix == "") {
+                    this.prefix = "variation" + Utils.randomString(6);
+                }
+            },
         });
     </script>
 </dom-module>

@@ -32,7 +32,6 @@ parameters  and  additional filters of this function refer to https://github.com
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbProteinClient(object=cb, ids="O15350", resource="info")
 }

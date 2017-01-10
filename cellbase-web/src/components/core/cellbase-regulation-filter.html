@@ -14,15 +14,12 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
 <link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-regulation-filter">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles">
+        <style is="custom-style" include="jso-styles">
             .menu-scroll{
                 max-height: 300px;
                 overflow-y: scroll;
@@ -31,7 +28,6 @@
 
         <div>
             <div>
-                <br>
                 <cellbase-filter-toolbar on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
                     <br> <br>
 
@@ -68,7 +64,8 @@
                             <div id="featureType" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hTwo">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureType" selected={{featureTypes}}></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client="{{cellbaseClient}}" data-type="featureType" selected="{{featureTypes}}"
+                                                           clear="{{clearFeatureType}}"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +83,8 @@
                             <div id="featureClass" class="panel-collapse collapse" role="tabpanel"
                                  aria-labelledby="hThree">
                                 <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="featureClass" selected={{featureClasses}}></cellbase-options-list>
+                                    <cellbase-options-list cellbase-client="{{cellbaseClient}}" data-type="featureClass" selected="{{featureClasses}}"
+                                                           clear="{{clearFeatureClass}}"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -104,6 +102,7 @@
                 },
                 url: {
                     type: String,
+                    value: "",
                     notify: true
                 },
                 featureTypes: {
@@ -113,50 +112,47 @@
                 featureClasses: {
                     type: Array,
                     value: []
+                },
+                clearFeatureType: {
+                    type: String,
+                    value: ""
+                },
+                clearFeatureClass: {
+                    type: String,
+                    value: ""
                 }
             },
+            clear: function () {
+                this.$.regFilterRegionTextarea.value = "";
+                this.featureTypes = [];
+                this.featureClasses = [];
+                this.clearFeatureType = Utils.randomString(6); // Unchecking the checkboxes
+                this.clearFeatureClass = Utils.randomString(6); // Unchecking the checkboxes
+            },
+            loadExample: function () {
+                this.clear();
+                this.$.regFilterRegionTextarea.value = "10:555-666666";
+            },
+            executeQuery: function () {
+                if (this.$.regFilterRegionTextarea.value != "") {
+                    let url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/regulatory/search?';
 
-                clear: function (e) {
-                    // we empty the textareas
-                    this.$.regFilterRegionTextarea.value = "";
-
-                },
-                loadExample: function (e) {
-                    this.$.regFilterRegionTextarea.value = "10:555-66666";
-                },
-                executeQuery: function (e) {
-                    // We first build the query params object
-//                    let queryParams = {};
-                    let featureType = [];
-                    let featureClass = [];
-                if (this.featureTypes.length > 0) {
-                    featureType = this.featureTypes.join(",");
-                }
-                if (this.featureClasses.length > 0) {
-                    featureClass = this.featureClasses.join(",");
-                }
-
-//                    let result = [];
-//                    let _this = this;
-//                    let success = function (response) {
-//                        for (let i in response.response) {
-//                            for (let j in response.response[i].result) {
-//                                result.push(response.response[i].result[j]);
-//                            }
-//                        }
-//                        _this.data = result;
-//                    };
-
-                    //TODO add queryParams to the url
-
-                    if (this.$.regFilterRegionTextarea.value !== "") {
-                        this.url = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.$.regFilterRegionTextarea.value
-                                + '/regulatory?featureType=' + featureType + '&featureClass=' + featureClass;
-
-//                        this.cellbaseClient.get('genomic', 'region', this.$.regFilterRegionTextarea.value, 'regulatory', queryParams, {success: success, async: true});
-                        console.log(this.url)
+                    let queryParams = [];
+                    queryParams.push('region=' + this.$.regFilterRegionTextarea.value);
+                    if (this.featureTypes.length > 0) {
+                        queryParams.push('featureType=' + this.featureTypes.join(","));
                     }
+                    if (this.featureClasses.length > 0) {
+                        queryParams.push('featureClass=' + this.featureClasses.join(","));
+                    }
+
+                    if (queryParams.length > 0) {
+                        url += queryParams.join('&');
+                    }
+
+                    this.url = url;
                 }
+            }
             });
     </script>
 </dom-module>

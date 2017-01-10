@@ -14,30 +14,42 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="cellbase-shared-styles.html">
-
 <dom-module id="cellbase-species-menu">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
+        <style>
+            a.cellbase-species-menu {
+                color: #9d9d9d;
+            }
+            a.cellbase-species-menu:hover {
+                color: white;
+                text-decoration: none;
+                /*cursor: pointer;*/
+            }
+
+            .species-scroll{
+                max-height: 300px;
+                overflow-y: scroll;
+            }
+        </style>
 
         <div class="dropdown" style="background-color: transparent">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                 {{title}} <span class="caret"></span>
             </a>
-            <ul class="dropdown-menu cellbase-species-menu">
-                <template is="dom-repeat" items="{{keys}}" as="taxon">
-                    <li class="dropdown-submenu">
-                        <a href="#">{{taxon}}</a>
-                        <ul class="dropdown-menu">
-                            <template is="dom-repeat" items="{{_getSpeciesArrayByTaxon(taxon)}}" as="species">
-                                <li><a href="#">{{species}}</a></li>
-                            </template>
-                        </ul>
-                    </li>
+
+            <ul class="dropdown-menu cellbase-species-menu species-scroll">
+                <li><a href="#home"><b>Favourite Species</b></a></li>
+                <template is="dom-repeat" items="{{favourites}}">
+                    <li><a href="#home" data-species="{{item.name}}" on-click="speciesClicked">{{item.name}} {{item.assembly}}</a></li>
+                </template>
+                <li role="separator" class="divider"></li>
+                <li><a href="#home"><b>All Species</b></a></li>
+                <template is="dom-repeat" items="{{allSpecies}}">
+                    <li><a href="#home" data-species="{{item.name}}" on-click="speciesClicked">{{item.name}} {{item.assembly}}</a></li>
                 </template>
             </ul>
+
         </div>
 
     </template>
@@ -53,13 +65,18 @@
                     type: String,
                     value: "Select species"
                 },
-                speciesList: {
+                allSpecies: {
                     type: Array,
                     value: []
                 },
-                class: {
+                favourites: {
+                    type: Array,
+                    value: [],
+                    observer: "favouritesAvailable"
+                },
+                species: {
                     type: String,
-                    value: ""
+                    notify: true
                 },
                 keys: {
                     type: Array,
@@ -68,26 +85,35 @@
             },
             attached: function () {
                 let _this = this;
-                var success = function (response) {
-                    console.log("OMG!!!!")
+
+                this.cellbaseClient.getMeta("species", {async: true}).then(function (response) {
                     _this.speciesList = response.response[0].result[0];
                     _this.keys = Object.keys(_this.speciesList);
-                };
-
-                this.cellbaseClient.getMeta("species", {async: true}).then(success);
-
-                $(document).on('click', '.cellbase-species-menu li a', function() {
-                    console.log("event")
-                    _this.title = $(this).text();
+                    let allSpecies = [];
+                    for (let key in _this.speciesList) {
+                        let speciesArray = _this._getSpeciesArrayByTaxon(key);
+                        allSpecies = allSpecies.concat(speciesArray);
+                    }
+                    _this.allSpecies = allSpecies;
                 });
             },
+            speciesClicked: function (e) {
+                this.title = e.target.innerHTML;
+                this.species = e.target.dataSpecies;
+            },
+            favouritesAvailable: function () {
+                if (typeof this.favourites[0] !== "undefined") {
+                    this.title = this.favourites[0].name + " " + this.favourites[0].assembly;
+                    this.species = this.favourites[0].name;
+                }
+            },
             _getSpeciesArrayByTaxon: function(taxon) {
-                var speciesArray = [];
+                let speciesArray = [];
                 let taxonSpecies = this.speciesList[taxon];
                 for (let speciesIdx in taxonSpecies) {
                     let assemblies = taxonSpecies[speciesIdx].assemblies;
                     for (let assemblyIdx in assemblies) {
-                        speciesArray.push(taxonSpecies[speciesIdx].scientificName + " " + assemblies[assemblyIdx].name)
+                        speciesArray.push({ name: taxonSpecies[speciesIdx].scientificName, assembly: assemblies[assemblyIdx].name});
                     }
                 }
                 return speciesArray;

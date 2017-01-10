@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
 import io.swagger.annotations.*;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -94,6 +95,38 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
             return createOkResponse(regulationDBAdaptor.distinct(query, "featureClass"));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Retrieves all regulatory elements", response = RegulatoryFeature.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "featureType",
+                    value = "Comma separated list of regulatory region types, e.g.: "
+                            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
+                            + "list of available regulatory types: "
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "featureClass",
+                    value = "Comma separated list of regulatory region classes, e.g.: "
+                            + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
+                            + "list of available regulatory types: "
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureClass",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
+    public Response getAll() {
+        try {
+            parseQueryParams();
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+            return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

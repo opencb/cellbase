@@ -14,18 +14,17 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
 <link rel="import" href="cellbase-gene-filter.html">
 <link rel="import" href="cellbase-gene-view.html">
 
 <dom-module id="cellbase-gene-panel">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-gene-filter gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-filter>
+                <br>
+                <cellbase-gene-filter gene-id="{{geneId}}" cellbase-client="{{cellbaseClient}}" gene-search="{{geneSearch}}"></cellbase-gene-filter>
             </div>
             <div class="col-md-10">
                 <cellbase-gene-view gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-view>
@@ -40,6 +39,9 @@
                     type: Object
                 },
                 geneId: {
+                    type: String
+                },
+                geneSearch: {
                     type: String
                 }
             }

@@ -13,16 +13,12 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
 <link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-gene-filter">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles">
+        <style is="custom-style" include="jso-styles">
             .biotype-scroll{
                 max-height: 300px;
                 overflow-y: scroll;
@@ -30,6 +26,15 @@
             .gene-names-display{
                 max-height: 800px;
                 overflow: auto;
+            }
+            .custom-sixed-input {
+                max-width: 150px;
+            }
+            span + span {
+                margin-left: 10px;
+            }
+            .highlight {
+                background-color: lightblue;
             }
         </style>
 
@@ -106,7 +111,8 @@
                             </div>
                             <div id="biotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                 <div class="panel-body biotype-scroll">
-                                    <cellbase-options-list id="biotypeOptions" cellbase-client={{cellbaseClient}} data-type="biotype" selected={{biotypes}}></cellbase-options-list>
+                                    <cellbase-options-list id="biotypeOptions" cellbase-client="{{cellbaseClient}}" data-type="biotype" selected="{{biotypes}}"
+                                                           clear="{{clearBiotype}}"></cellbase-options-list>
                                 </div>
                             </div>
                         </div>
@@ -140,7 +146,7 @@
                             </div>
                             <div id="phenotype" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
                                 <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                    <textarea id="geneFilterPhenotypeTextarea" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -156,8 +162,16 @@
                                 </h4>
                             </div>
                             <div id="expression" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
-                                <div class="panel-body">
-                                    <textarea class="form-control" rows="3"></textarea>
+                                <div class="panel-body horizontal layout">
+                                    <span>
+                                        <input type="text" value="" id="geneFilterExpressionText" class="custom-sixed-input">
+                                    </span>
+                                    <span>
+                                        <select name="expressionValue" id="geneExpressionValue">
+                                            <option value="UP" selected>UP</option>
+                                            <option value="DOWN">DOWN</option>
+                                        </select>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -170,12 +184,12 @@
                         <i id="geneSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
-                            <div>
-                                <b on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer">{{item.name}}</b>
+                            <div on-click="_updateGeneView" id="{{item.name}}" style="cursor: pointer" class="geneResultDiv">
+                                <b>{{item.name}}</b>
                                 <i>{{item.biotype}}</i><br>
-                                {{item.chromosome}}:{{item.start}}-{{item.end}}
-                                <hr>
+                                {{item.location}}
                             </div>
+                            <hr>
                         </template>
                     </div>
                 </div>
@@ -198,6 +212,10 @@
                     type: String,
                     notify: true
                 },
+                geneSearch: {
+                    type: String,
+                    observer: 'triggerGeneSearch'
+                },
                 result: {
                     type: Array,
                     value: []
@@ -205,62 +223,124 @@
                 autocompleteData: {
                     type:Array,
                     value: []
+                },
+                clearBiotype: {
+                    type: String,
+                    value: ""
                 }
             },
-            ready: function() {
-//                this.cellbaseClient = CELLBASE_CLIENT;
-            },
-            clear: function (e) {
-                // we empty the textareas
+            clear: function () {
                 this.$.geneFilterIdsTextarea.value = "";
                 this.$.geneFilterRegionTextarea.value = "";
                 this.$.geneFilterDrugsTextarea.value = "";
+                this.$.geneFilterPhenotypeTextarea.value = "";
+                this.$.geneFilterExpressionText.value = "";
+                this.biotypes = [];
+                this.clearBiotype = Utils.randomString(6); // Unchecking the checkboxes
+                this.geneId = "";
             },
-            loadExample: function (e) {
+            loadExample: function () {
+                this.clear();
                 this.$.geneFilterIdsTextarea.value = "BRCA2";
             },
-            executeQuery: function (e) {
+            triggerGeneSearch: function () {
+                this.$.geneFilterIdsTextarea.value = this.geneSearch;
+                this.executeQuery();
+            },
+            executeQuery: function () {
                 // activate the GIF
                 $('#geneSpinImg').show();
 
                 // We first build the query params object
-                let queryParams = {include: "id,name,biotype,chromosome,start,end"};
+                let queryParams = {};
+
+                if (this.$.geneFilterIdsTextarea.value != "") {
+                    let ids = this._split(this.$.geneFilterIdsTextarea.value);
+                    queryParams["transcripts.xrefs"] = ids.join(',');
+                }
+
+                if (this.$.geneFilterRegionTextarea.value != "") {
+                    let regions = this._split(this.$.geneFilterRegionTextarea.value);
+                    queryParams.region = regions.join(',');
+                }
+
                 if (this.biotypes.length > 0) {
                     queryParams.biotype = this.biotypes.join(",");
                 }
+
                 if (this.$.geneFilterDrugsTextarea.value != "") {
-                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
+                    let drugs = this._split(this.$.geneFilterDrugsTextarea.value);
+                    queryParams["annotation.drugs.name"] = drugs.join(',');
                 }
 
-                //
-                this.result= [];
-                let _this = this;
-                let success = function (response) {
-                    for(let i in response.response) {
-                        for(let j in response.response[i].result) {
-                            _this.push('result',response.response[i].result[j]);
+                if (this.$.geneFilterPhenotypeTextarea.value != "") {
+                    let diseases = this._split(this.$.geneFilterPhenotypeTextarea.value);
+                    let diseaseIds = [];
+                    let diseaseNames = [];
+                    for (let i = 0; i < diseases.length; i++) {
+                        if (diseases[i].startsWith("umls:") || diseases[i].startsWith("OMIM:")) {
+                            diseaseIds.push(diseases[i]);
+                        } else {
+                            diseaseNames.push(diseases[i]);
                         }
                     }
-                    // remove the GIF
-                    $('#geneSpinImg').hide();
-                };
-
-                // Now we execute the query. Note that ID are preferred
-                if (this.$.geneFilterIdsTextarea.value !== "") {
-                    this.cellbaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
-//                    this.cellbaseClient.get('feature','gene', this.$.geneFilterIdsTextarea.value, 'info', queryParams).then(success, error);
-                } else {
-                    if (this.$.geneFilterRegionTextarea.value !== "") {
-                        this.cellbaseClient.get('genomic','region', this.$.geneFilterRegionTextarea.value, 'gene', queryParams, {success: success, async: true});
+                    if (diseaseIds.length > 0) {
+                        queryParams["annotation.diseases.id"] = diseaseIds.join(",");
+                    } else if (diseaseNames.length > 0) {
+                        queryParams["annotation.diseases.name"] = diseaseNames.join(",");
                     }
                 }
+
+                if (this.$.geneFilterExpressionText.value != "") {
+                    queryParams["annotation.expression.tissue"] = this.$.geneFilterExpressionText.value;
+                    queryParams["annotation.expression.value"] = this.$.geneExpressionValue.value;
+                }
+
+                this.result= [];
+                let _this = this;
+
+                if (Object.keys(queryParams).length > 0) {
+                    queryParams.include = "id,name,biotype,chromosome,start,end";
+                    this.cellbaseClient.get('feature', 'gene', null, 'search', queryParams, {})
+                        .then(function (response) {
+                            for(let i in response.response) {
+                                if (response.response[i].result.length > 0) {
+                                    for(let j in response.response[i].result) {
+                                        response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
+                                            + response.response[i].result[j].end;
+                                        _this.push('result',response.response[i].result[j]);
+                                    }
+                                } else {
+                                    let obj = {};
+                                    obj.name = "No results found";
+                                    _this.push('result', obj);
+                                }
+                            }
+                            // remove the GIF
+                            $('#geneSpinImg').hide();
+                        });
+                } else {
+                    $('#geneSpinImg').hide();
+                    let obj = {};
+                    obj.name = "Please fill in the filters";
+                    _this.push('result', obj);
+                }
+
                 $('.nav-tabs a[href="#result1"]').tab('show');
             },
             _updateGeneView: function(e) {
-                this.geneId = e.srcElement.id;
+                if (typeof e.currentTarget.id !== "undefined" && e.currentTarget.id != "Please fill in the filters" && e.currentTarget.id != "No results found") {
+                    let highlightColor = 'highlight';
+                    this.geneId = e.currentTarget.id;
+                    $('.geneResultDiv').removeClass(highlightColor);
+                    $("#" + e.currentTarget.id).addClass(highlightColor);
+                }
             },
             addGeneId: function(e) {
-                let allIds = this.$.geneFilterIdsTextarea.value.split(',');
+                let allIds = [];
+                if (this.$.geneFilterIdsTextarea.value != "") {
+                    allIds = this.$.geneFilterIdsTextarea.value.split(',');
+                }
                 var temp = this.$.geneIDText.value;
                 if (allIds.indexOf(temp) == -1){
                     allIds.push(temp);
@@ -271,12 +351,21 @@
             callAutocomplete: function(e) {
                 if (this.$.geneIDText.value.length > 2) {
                     let _this = this;
-                    let success = function (response) {
-                        _this.autocompleteData = response.response[0].result;
-                    };
-                    _this.cellbaseClient.get('feature', 'id', this.$.geneIDText.value, 'starts_with', {}, {success: success, async: true});
+                    _this.cellbaseClient.get('feature', 'id', this.$.geneIDText.value, 'starts_with', {}, {})
+                        .then(function (response) {
+                            _this.autocompleteData = response.response[0].result;
+                        });
                 }
 
+            },
+            _split: function (value) {
+                let ids = value.split(/,?\s+/);
+                for (let i = 0; i < ids.length; i++) {
+                    if (ids[i] == "") {
+                        ids.splice(i, 1);
+                    }
+                }
+                return ids;
             }
         });
     </script>

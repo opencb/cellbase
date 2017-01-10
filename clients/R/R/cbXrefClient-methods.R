@@ -12,7 +12,6 @@
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbXrefClient(object=cb, ids="ENST00000373644", resource="xref")
 #' @export

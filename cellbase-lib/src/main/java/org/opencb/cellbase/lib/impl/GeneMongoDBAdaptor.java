@@ -249,9 +249,15 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         createOrQuery(query, QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
-        createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "annotation.expression.factorValue", andBsonList);
+
+//        createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "annotation.expression.factorValue", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
+
+  //      createExpressionTissueQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), andBsonList);
+        //      createExpressionValueQuery(query, QueryParams.ANNOTATION_EXPRESSION_VALUE.key(), andBsonList);
+
+        createExpressionQuery(query, andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -260,6 +266,55 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         }
     }
 
+    private void createExpressionQuery(Query query, List<Bson> andBsonList) {
+        if (query != null) {
+            String tissue = query.getString(QueryParams.ANNOTATION_EXPRESSION_TISSUE.key());
+            if (tissue != null && !tissue.isEmpty()) {
+                String value = query.getString(QueryParams.ANNOTATION_EXPRESSION_VALUE.key());
+                if (value != null && !value.isEmpty()) {
+                    Document elemMatchDocument = new Document();
+                    andBsonList.add(Filters.elemMatch("annotation.expression",
+                            Filters.and(Filters.regex("factorValue", "(.)*" + tissue + "(.)*", "i"), Filters.eq("expression", value))));
+                }
+
+//                if (tissueList.size() == 1) {
+//                    andBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissueList.get(0) + "(.)*", "i"));
+//                } else {
+//                    List<Bson> orBsonList = new ArrayList<>(tissueList.size());
+//                    for (String tissue : tissueList) {
+//                        orBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissue + "(.)*", "i"));
+//                    }
+//                    andBsonList.add(Filters.or(orBsonList));
+//                }
+            }
+        }
+    }
+
+    private void createExpressionTissueQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null) {
+            List<String> tissueList = query.getAsStringList(queryParam);
+            if (tissueList != null && !tissueList.isEmpty()) {
+                if (tissueList.size() == 1) {
+                    andBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissueList.get(0) + "(.)*", "i"));
+                } else {
+                    List<Bson> orBsonList = new ArrayList<>(tissueList.size());
+                    for (String tissue : tissueList) {
+                        orBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissue + "(.)*", "i"));
+                    }
+                    andBsonList.add(Filters.or(orBsonList));
+                }
+            }
+        }
+    }
+
+    private void createExpressionValueQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null) {
+            String value = query.getString(queryParam).toUpperCase();
+            if (value != null && !value.isEmpty()) {
+                andBsonList.add(Filters.eq("annotation.expression.expression", value));
+            }
+        }
+    }
 
     private Boolean postDBFilteringParametersEnabled(Query query) {
         return StringUtils.isNotEmpty(query.getString("transcripts.annotationFlags"));
@@ -286,4 +341,5 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         }
         return documentQueryResult;
     }
+
 }

@@ -1,6 +1,5 @@
 #' A constructor function for CellBaseParam
-#'
-#' @details
+#' 
 #'use the CellBaseParam object to control what results are returned from the
 #'CellBaseR methods
 #' @param genome A character denoting the genome build to query,eg, GRCh37
@@ -15,7 +14,6 @@
 #' @param exclude A character vector denoting the fields to be excluded
 #' @param limit A number limiting the number of results to be returned
 #' @examples
-#' library(cellbaseR)
 #' cbParam <- CellBaseParam(genome="GRCh38",gene=c("TP73","TET1"))
 #' print(cbParam)
 #' @seealso for more information about the cellbase webservices see

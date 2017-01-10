@@ -12,12 +12,10 @@
 #' @param ... any extra arguments
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples
-#'    library(cellbaseR)
 #'    cb <- CellBaseR()
 #'    res <- cbVariantClient(object=cb, ids="19:45411941:T:C", resource="annotation")
 #' @export
-setMethod("cbVariantClient", "CellBaseR",    definition = function(object, ids,
-resource, filters=NULL,...) {
+setMethod("cbVariantClient", "CellBaseR", definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
     species <- object@species
     version <- object@version
@@ -25,8 +23,10 @@ resource, filters=NULL,...) {
     subcateg<- "variant"
     ids <- ids
     resource <- resource
-    result <- fetchCellbase(file=NULL, host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
-                            filters=NULL,...)
+    result <- fetchCellbase(file=NULL, host=host, version=version, meta=NULL, 
+                            species=species, categ=categ,  subcateg=subcateg,
+                            ids=ids, resource=resource, filters=NULL,...)
+
     data <- CellBaseResponse(cbData=result)
     return(data)
 })

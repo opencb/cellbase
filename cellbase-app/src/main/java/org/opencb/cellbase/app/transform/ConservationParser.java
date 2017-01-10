@@ -160,7 +160,8 @@ public class ConservationParser extends CellBaseParser {
 
         String line;
         String chromosome = "";
-        int start = 0, end = 0;
+//        int start = 0, end = 0;
+        int start = 0;
         float value;
         Map<String, String> attributes = new HashMap<>();
 //        ConservedRegion conservedRegion =  null;
@@ -172,9 +173,10 @@ public class ConservationParser extends CellBaseParser {
             if (line.startsWith("fixedStep")) {
                 //new group, save last
                 if (conservedRegion != null) {
-                    conservedRegion.setEnd(end);
+//                    conservedRegion.setEnd(end);
 //                    conservedRegion = new ConservationScoreRegion(chromosome, start, end, conservationSource, values);
-                    conservedRegion = new GenomicScoreRegion<>(chromosome, start, end, conservationSource, values);
+                    conservedRegion = new GenomicScoreRegion<>(chromosome, start, start + values.size() - 1,
+                            conservationSource, values);
                     fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
                 }
 
@@ -190,20 +192,30 @@ public class ConservationParser extends CellBaseParser {
                 }
                 chromosome = attributes.get("chrom").replace("chr", "");
                 start = Integer.parseInt(attributes.get("start"));
-                end = Integer.parseInt(attributes.get("start"));
+//                end = Integer.parseInt(attributes.get("start"));
 
                 values = new ArrayList<>(2000);
             } else {
                 int startChunk = start / CHUNK_SIZE;
-                end++;
-                int endChunk = end / CHUNK_SIZE;
-
+//                end++;
+                int endChunk = (start + values.size()) / CHUNK_SIZE; // This is the endChunk if current read score is
+                                                                     // appended to the array (otherwise it would be
+                                                                     // start + values.size() - 1). If this endChunk is
+                                                                     // different from the startChunk means that current
+                                                                     // conserved region must be dumped and current
+                                                                     // score must be associated to next chunk. Main
+                                                                     // difference to what there was before is that if
+                                                                     // the fixedStep starts on the last position of a
+                                                                     // chunk e.g. 1999, the chunk must be created with
+                                                                     // just that score - the chunk was left empty with
+                                                                     // the old code
                 if (startChunk != endChunk) {
 //                    conservedRegion = new ConservationScoreRegion(chromosome, start, end - 1, conservationSource, values);
-                    conservedRegion = new GenomicScoreRegion<>(chromosome, start, end - 1, conservationSource, values);
+                    conservedRegion = new GenomicScoreRegion<>(chromosome, start, start + values.size() - 1,
+                            conservationSource, values);
                     fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
+                    start = start + values.size();
                     values.clear();
-                    start = end;
                 }
 
                 value = Float.parseFloat(line.trim());
@@ -212,7 +224,8 @@ public class ConservationParser extends CellBaseParser {
         }
         //write last
 //        conservedRegion = new ConservationScoreRegion(chromosome, start, end, conservationSource, values);
-        conservedRegion = new GenomicScoreRegion<>(chromosome, start, end, conservationSource, values);
+        conservedRegion = new GenomicScoreRegion<>(chromosome, start, start + values.size() - 1, conservationSource,
+                values);
         fileSerializer.serialize(conservedRegion, getOutputFileName(chromosome));
         bufferedReader.close();
     }

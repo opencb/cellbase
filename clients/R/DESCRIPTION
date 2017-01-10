@@ -3,32 +3,48 @@ Type: Package
 Date: 2016-04-17
 Title: Querying annotation data from the high performance Cellbase web
     services
-Version: 0.6.0
+Version: 0.99.0
 Author: Mohammed OE Abdallah
 Maintainer: Mohammed OE Abdallah <melsiddieg@gmail.com>
-Description: Classes and methods for querying cellbase web services
-License: Apache Licence v2
+Description: 
+    This R package makes use of the exhaustive RESTful Web service API that has been
+    implemented for the Cellabase database. It enable researchers to query and 
+    obtain a wealth of biological information from a single database saving a lot 
+    of time. Another benefit is that researchers can easily make  queries about 
+    different biological topics and link all this information together as all 
+    information is integrated.
+License: Apache License (== 2.0)
 Depends:
     R(>= 3.3),
-    RCurl,
-    jsonlite,methods,R.utils,BiocParallel,
+    RCurl
+Imports: 
+    methods,
+    jsonlite,
+    data.table,
     pbapply,
-    doMC,
-    parallel,
-    Rsamtools, data.table, tidyr
-RoxygenNote: 5.0.1
+    tidyr,
+    R.utils,
+    Rsamtools,
+    BiocParallel,
+    Gviz,
+    foreach,
+    utils,
+    parallel, doMC, doParallel
+RoxygenNote: 5.0.1.9000
 biocViews: Annotation
 Lazy: TRUE
 Collate:
-    'cellbase.R'
     'commons.R'
     'AllClasses.R'
     'AllGenerics.R'
+    'CellBaseParam-methods.R'
+    'CellBaseR-methods.R'
     'cbAnnotateVcf-methods.R'
     'cbChromosomeInfoClient-methods.R'
     'cbClinicalClient-methods.R'
     'cbData-methods.R'
     'cbGeneClient-methods.R'
+    'cbGet-methods.R'
     'cbProteinClient-methods.R'
     'cbRegionClient-methods.R'
     'cbSnpClient-methods.R'
@@ -37,10 +53,9 @@ Collate:
     'cbTranscriptClient-methods.R'
     'cbVariantClient-methods.R'
     'cbXrefClient-methods.R'
-    'CellBaseParam-methods.R'
-    'CellBaseR-methods.R'
-    'getCellbase-methods.R'
+    'cellbase.R'
     'show-methods.R'
+    'tools.R'
 VignetteBuilder: knitr
 Suggests:
     BiocStyle,
