@@ -535,7 +535,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
 
         // run gene_extra_info.pl
-        boolean geneExtraInfoDownloaded = runCommandLineProcess(ensemblScriptsFolder,
+        boolean geneExtraInfoDownloaded = EtlCommons.runCommandLineProcess(ensemblScriptsFolder,
                 "./gene_extra_info.pl",
                 args,
                 geneExtraInfoLogFile);
@@ -774,7 +774,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             if (assembly.equalsIgnoreCase("GRCh37")) {
                 logger.debug("Downloading GERP++ ...");
                 downloadFile(configuration.getDownload().getGerp().getHost(),
-                        conservationFolder.resolve("gerp/hg19.GERP_scores.tar.gz").toAbsolutePath().toString());
+                        conservationFolder.resolve(EtlCommons.GERP_SUBDIRECTORY + "/" + EtlCommons.GERP_FILE).toAbsolutePath().toString());
                 saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(),
                         Collections.singletonList(configuration.getDownload().getGerp().getHost()),
                         conservationFolder.resolve("gerpVersion.json"));
@@ -964,7 +964,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
-        boolean downloaded = runCommandLineProcess(null, "wget", wgetArgs, null);
+        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
 
         if (downloaded) {
             logger.info(outputFileName + " created OK");

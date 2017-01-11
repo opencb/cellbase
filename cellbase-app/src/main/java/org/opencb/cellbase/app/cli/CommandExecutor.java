@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.app.cli;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -31,8 +30,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by imedina on 03/02/15.
@@ -136,40 +133,40 @@ public abstract class CommandExecutor {
         }
     }
 
-    protected boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
-            throws IOException, InterruptedException {
-        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
-
-        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
-        Process process = builder.start();
-        process.waitFor();
-
-        // Check process output
-        boolean executedWithoutErrors = true;
-        int genomeInfoExitValue = process.exitValue();
-        if (genomeInfoExitValue != 0) {
-            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-            executedWithoutErrors = false;
-        }
-        return executedWithoutErrors;
-    }
-
-    private ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
-        List<String> commandArgs = new ArrayList<>();
-        commandArgs.add(binPath);
-        commandArgs.addAll(args);
-        ProcessBuilder builder = new ProcessBuilder(commandArgs);
-
-        // working directoy and error and output log outputs
-        if (workingDirectory != null) {
-            builder.directory(workingDirectory);
-        }
-        builder.redirectErrorStream(true);
-        if (logFilePath != null) {
-            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
-        }
-
-        return builder;
-    }
+//    protected boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
+//            throws IOException, InterruptedException {
+//        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
+//
+//        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
+//        Process process = builder.start();
+//        process.waitFor();
+//
+//        // Check process output
+//        boolean executedWithoutErrors = true;
+//        int genomeInfoExitValue = process.exitValue();
+//        if (genomeInfoExitValue != 0) {
+//            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
+//            executedWithoutErrors = false;
+//        }
+//        return executedWithoutErrors;
+//    }
+//
+//    private ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
+//        List<String> commandArgs = new ArrayList<>();
+//        commandArgs.add(binPath);
+//        commandArgs.addAll(args);
+//        ProcessBuilder builder = new ProcessBuilder(commandArgs);
+//
+//        // working directoy and error and output log outputs
+//        if (workingDirectory != null) {
+//            builder.directory(workingDirectory);
+//        }
+//        builder.redirectErrorStream(true);
+//        if (logFilePath != null) {
+//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
+//        }
+//
+//        return builder;
+//    }
 
 }

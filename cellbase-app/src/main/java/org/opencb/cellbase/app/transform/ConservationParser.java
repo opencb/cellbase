@@ -17,6 +17,7 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class ConservationParser extends CellBaseParser {
     }
 
     @Override
-    public void parse() throws IOException {
+    public void parse() throws IOException, InterruptedException {
         System.out.println("conservedRegionPath = " + conservedRegionPath.toString());
         if (conservedRegionPath == null || !Files.exists(conservedRegionPath) || !Files.isDirectory(conservedRegionPath)) {
             throw new IOException("Conservation directory whether does not exist, is not a directory or cannot be read");
@@ -70,7 +71,7 @@ public class ConservationParser extends CellBaseParser {
         /*
          * GERP is stored in a particular format
          */
-        Path gerpFolderPath = conservedRegionPath.resolve("gerp");
+        Path gerpFolderPath = conservedRegionPath.resolve(EtlCommons.GERP_SUBDIRECTORY);
         if (gerpFolderPath.toFile().exists()) {
             logger.debug("Parsing GERP data ...");
             gerpParser(gerpFolderPath);
@@ -114,10 +115,17 @@ public class ConservationParser extends CellBaseParser {
     }
 
 
-    private void gerpParser(Path gerpFolderPath) throws IOException {
+    private void gerpParser(Path gerpFolderPath) throws IOException, InterruptedException {
+        logger.info("Uncompressing {}", gerpFolderPath.resolve(EtlCommons.GERP_FILE));
+        List<String> tarArgs = Arrays.asList("-xvzf", gerpFolderPath.resolve(EtlCommons.GERP_FILE).toString(),
+                "--overwrite", "-C", gerpFolderPath.toString());
+        EtlCommons.runCommandLineProcess(null, "tar", tarArgs, null);
+
         DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
+        boolean filesFound = false;
         for (Path path : pathDirectoryStream) {
-            logger.debug("Processing file '{}'", path.getFileName().toString());
+            filesFound = true;
+            logger.info("Processing file '{}'", path.getFileName().toString());
             String[] chromosome = path.getFileName().toString().replaceFirst("chr", "").split("\\.");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
             String line;
@@ -152,6 +160,12 @@ public class ConservationParser extends CellBaseParser {
             fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome[0]));
 
             bufferedReader.close();
+        }
+
+        if (!filesFound) {
+            logger.warn("No GERP++ files were found. Please check that the original file {} is there, that it was"
+                    + " properly decompressed and that the *.rates files are present",
+                    gerpFolderPath.resolve(EtlCommons.GERP_FILE));
         }
     }
 
