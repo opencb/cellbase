@@ -214,7 +214,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         createOrQuery(query, QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
         createOrQuery(query, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
-
+        createOrQuery(query, QueryParams.ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
@@ -231,6 +231,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         createOrQuery(query, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "xrefs.id", andBsonList);
         createOrQuery(query, QueryParams.TFBS_NAME.key(), "tfbs.name", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_FLAGS.key(), "annotationFlags", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

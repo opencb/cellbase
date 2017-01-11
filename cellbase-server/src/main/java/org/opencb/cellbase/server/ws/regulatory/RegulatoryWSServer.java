@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.ws.regulatory;
 
 import io.swagger.annotations.*;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -38,12 +39,12 @@ import java.io.IOException;
 public class RegulatoryWSServer extends GenericRestWSServer {
 
     public RegulatoryWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                                      defaultValue = "latest") String version,
+                              @ApiParam(name = "version", value = "Possible values: v3, v4",
+                                      defaultValue = "v4") String version,
                               @PathParam("species")
                               @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                       + "of potentially available species ids, please refer to: "
-                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -61,7 +62,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     value = "Comma separated list of regulatory region classes, e.g.: "
                             + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureClass",
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureClass",
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getFeatureTypes() {
@@ -86,7 +87,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     value = "Comma separated list of regulatory region types, e.g.: "
                             + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getFeatureClasses() {
@@ -94,6 +95,38 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
             return createOkResponse(regulationDBAdaptor.distinct(query, "featureClass"));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Retrieves all regulatory elements", response = RegulatoryFeature.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "featureType",
+                    value = "Comma separated list of regulatory region types, e.g.: "
+                            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
+                            + "list of available regulatory types: "
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "featureClass",
+                    value = "Comma separated list of regulatory region classes, e.g.: "
+                            + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
+                            + "list of available regulatory types: "
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureClass",
+                    required = false, dataType = "list of strings", paramType = "query")
+    })
+    public Response getAll() {
+        try {
+            parseQueryParams();
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+            return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

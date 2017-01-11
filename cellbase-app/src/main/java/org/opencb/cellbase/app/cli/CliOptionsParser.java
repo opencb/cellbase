@@ -168,6 +168,13 @@ public class CliOptionsParser {
         @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
         public String common;
 
+        @Parameter(names = {"--flexible-gtf-parsing"}, description = "By default, ENSEMBL GTF format is expected. "
+                + " Nevertheless, GTF specification is quite loose and other GTFs may be provided in which the order "
+                + "of the features is not as systematic as within the ENSEMBL's GTFs. Use this option to enable a more "
+                + "flexible parsing of the GTF if it does not strictly follow ENSEMBL's GTFs format. Flexible GTF "
+                + "requires more memory and is less efficient.", required = false, arity = 0)
+        public boolean flexibleGTFParsing = false;
+
     }
 
 
@@ -314,7 +321,7 @@ public class CliOptionsParser {
         public boolean local;
 
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
-        public String url = "bioinfodev.hpc.cam.ac.uk:80/cellbase/webservices/rest";
+        public String url = "http://bioinfo.hpc.cam.ac.uk:80/cellbase";
 
         @Parameter(names = {"--include"}, description = "Comma separated list of annotators to be included", required = false)
         public String include;

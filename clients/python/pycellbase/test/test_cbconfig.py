@@ -6,7 +6,7 @@ from pycellbase.cbconfig import ConfigClient
 
 class ConfigClientTest(unittest.TestCase):
     """Tests the ConfigClient class"""
-    def test_init_config(self):
+    def test_init_config_file(self):
         """Checks retrieval of configuration params from config files"""
         # Default parameters
         cc = ConfigClient()
@@ -21,6 +21,22 @@ class ConfigClientTest(unittest.TestCase):
         # Retrieving config params from JSON config file
         cc = ConfigClient('../resources/config.json')
         assert cc.species == 'celegans'
+        assert cc.version == 'v3'
+
+    def test_init_config_dict(self):
+        """Checks retrieval of configuration params from config files"""
+        # Default parameters
+        cc = ConfigClient()
+        assert cc.species == 'hsapiens'
+        assert cc.version == 'v4'
+
+        # Retrieving config params from config dict
+        cc = ConfigClient({'species': 'mmusculus'})
+        assert cc.species == 'mmusculus'
+        assert cc.version == 'v4'
+        cc = ConfigClient({'species': 'mmusculus',
+                           'version': 'v3'})
+        assert cc.species == 'mmusculus'
         assert cc.version == 'v3'
 
     def test_change_config(self):

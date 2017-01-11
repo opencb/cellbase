@@ -24,15 +24,15 @@
     <properties>
         <cellbase.version>4.5.0-beta.1</cellbase.version>
         <compileSource>1.8</compileSource>
-        <biodata.version>0.8.5</biodata.version>
-        <java-common-libs.version>3.3.2</java-common-libs.version>
+        <biodata.version>0.9.0</biodata.version>
+        <java-common-libs.version>3.4.0</java-common-libs.version>
         <bionetdb.version>0.1.0</bionetdb.version>
-
-        <jackson.version>2.6.4</jackson.version>
-        <jersey.version>2.22.1</jersey.version>
-        <protobuf.version>3.0.0</protobuf.version>
+        <jackson.version>2.8.4</jackson.version>
+        <protobuf.version>3.1.0</protobuf.version>
+        <grpc.version>1.0.1</grpc.version>
+        <jersey.version>2.23.2</jersey.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
-        <grpc.version>1.0.0-pre2</grpc.version>
+        <slf4j.version>1.7.21</slf4j.version>
     </properties>
 
     <scm>
@@ -60,14 +60,19 @@
             <email>javild@gmail.com</email>
         </developer>
         <developer>
-            <id>pabarcgar</id>
-            <name>Pablo</name>
-            <email>pablo.arce.garcia@gmail.com</email>
+            <id>Swaathik</id>
+            <name>Swaathi</name>
+            <email>swaathik@gmail.com</email>
         </developer>
         <developer>
             <id>mbleda</id>
             <name>Marta</name>
             <email>martableda@gmail.com</email>
+        </developer>
+        <developer>
+            <id>pabarcgar</id>
+            <name>Pablo</name>
+            <email>pablo.arce.garcia@gmail.com</email>
         </developer>
     </developers>
 
@@ -102,6 +107,12 @@
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>slf4j-simple</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.opencb.commons</groupId>
@@ -110,36 +121,6 @@
             </dependency>
 
             <!-- General dependencies -->
-            <dependency>
-                <groupId>org.xerial</groupId>
-                <artifactId>sqlite-jdbc</artifactId>
-                <version>3.8.7</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java-util</artifactId>
-                <version>${protobuf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-all</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.7.13</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>1.7.13</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jsonSchema</artifactId>
@@ -156,14 +137,19 @@
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-client</artifactId>
-                <version>${jersey.version}</version>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.spockframework</groupId>
@@ -200,7 +186,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.6.0</version>
                 <configuration>
                     <source>${compileSource}</source>
                     <target>${compileSource}</target>
@@ -208,6 +194,25 @@
                     <showWarnings>true</showWarnings>
                     <encoding>UTF-8</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.17</version>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <configuration>
+                            <configLocation>checkstyle.xml</configLocation>
+                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java,
+                                org/opencb/cellbase/client/rest/models/GroupByFields.java,org/opencb/cellbase/client/rest/models/GroupCount.java</excludes>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.gmaven</groupId>
@@ -236,47 +241,17 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.16</version>
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <configuration>
-                            <configLocation>checkstyle.xml</configLocation>
-                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java,
-                                org/opencb/cellbase/client/rest/models/GroupByFields.java,org/opencb/cellbase/client/rest/models/GroupCount.java</excludes>
-                        </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <profiles>
         <profile>
-            <id>war-dev</id>
+            <id>prod-war</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <cellbase.war.name>cellbase-${cellbase.version}</cellbase.war.name>
+                <cellbase.war.name>cellbase</cellbase.war.name>
             </properties>
         </profile>
         <profile>
@@ -285,14 +260,16 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <cellbase.war.name>cellbase-4.5.0-rc</cellbase.war.name>
+                
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
 
                 <CELLBASE.DB.NEO4J.HOST>localhost:27017</CELLBASE.DB.NEO4J.HOST>
-
             </properties>
         </profile>
+
         <profile>
             <id>deploy</id>
             <build>
@@ -300,7 +277,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.4</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -313,7 +290,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.1</version>
+                        <version>2.10.4</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -355,5 +332,16 @@
             </build>
         </profile>
     </profiles>
+
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>

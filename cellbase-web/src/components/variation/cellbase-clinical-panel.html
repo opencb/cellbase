@@ -14,18 +14,17 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
 <link rel="import" href="cellbase-clinical-filter.html">
 <link rel="import" href="cellbase-clinical-view.html">
 
 <dom-module id="cellbase-clinical-panel">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
 
         <div class="panel">
             <div class="col-md-2">
-                <cellbase-clinical-filter id="filter" clinical-id="{{clinicalId}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-filter>
+                <br>
+                <cellbase-clinical-filter id="filter" clinical-id="{{clinicalId}}" cellbase-client="{{cellbaseClient}}" consequence-types="{{consequenceTypes}}"></cellbase-clinical-filter>
             </div>
             <div class="col-md-10">
                 <cellbase-clinical-view id="view" clinical-id="{{clinicalId}}" cellbase-client="{{cellbaseClient}}"></cellbase-clinical-view>
@@ -41,6 +40,9 @@
                 },
                 clinicalId: {
                     type: String
+                },
+                consequenceTypes: {
+                    type: Object
                 }
             },
             ready: function () {

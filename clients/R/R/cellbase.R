@@ -14,4 +14,18 @@
 #' many others will be included soon. Results returned from the cellbase queries
 #' are parsed into R data.frames and other common R data strctures so users can 
 #' readily get into downstream anaysis.
+#' @import methods
+#' @import  jsonlite 
+#' @import RCurl
+#' @import pbapply
+#' @import data.table
+#' @import BiocParallel
+#' @importFrom tidyr unnest
+#' @importFrom R.utils countLines
+#' @importFrom Gviz GeneRegionTrack
+#' @import Rsamtools
+#' @import foreach 
+#' @import parallel
+#' @import doParallel
+#' @import doMC
 "_PACKAGE"

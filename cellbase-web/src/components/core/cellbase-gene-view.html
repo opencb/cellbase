@@ -14,42 +14,47 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../shared/cellbase-shared-styles.html">
-
-<link rel="import" href="cellbase-variation-grid.html">
-<link rel="import" href="cellbase-transcripts-view.html">
-<link rel="import" href="cellbase-transcripts-tfbs-view.html">
-<link rel="import" href="cellbase-drugs-view.html">
-<link rel="import" href="cellbase-phenotype-grid.html">
-<link rel="import" href="cellbase-expression-grid.html">
-<link rel="import" href="cellbase-clinvar-grid.html">
-<link rel="import" href="cellbase-cosmic-grid.html">
-<link rel="import" href="../variation/cellbase-variantannotation-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variation-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-transcripts-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-transcripts-tfbs-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-drugs-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-phenotype-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-expression-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-clinvar-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-cosmic-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variantannotation-view.html">
 
 
 <dom-module id="cellbase-gene-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
 
         <div style="width: 90%">
 
-            <ul id="myTabs" class="nav nav-tabs" role="tablist">
+            <div hidden$="{{!checkGene(geneId)}}" style="text-align: center;">
+                <br>
+                <h4>Get all genes that fulfil <b>all</b> filters. Please, provide one filter at least before submitting
+                    the query.</h4>
+            </div>
+
+            <h3>{{geneId}}</h3>
+            <ul id="myTabs" class="nav nav-tabs" role="tablist" hidden$="{{checkGene(geneId)}}">
                 <li role="presentation" class="active"><a href="#geneViewInfo" role="tab" data-toggle="tab">{{geneId}} Summary</a></li>
                 <li role="presentation"><a href="#geneViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
                 <!--<li role="presentation"><a href="#geneViewTranscripts" role="tab" data-toggle="tab">Transcripts</a></li>-->
                 <li role="presentation"><a href="#geneViewVariation" role="tab" data-toggle="tab">Variation</a></li>
-                <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                <template is="dom-if" if="{{showTfbs}}">
+                    <li role="presentation"><a href="#geneViewTfbs" role="tab" data-toggle="tab">TFBS</a></li>
+                </template>
                 <li role="presentation"><a href="#geneViewExpression" role="tab" data-toggle="tab">Expression</a></li>
                 <li role="presentation"><a href="#geneViewPhenotype" role="tab" data-toggle="tab">Phenotype</a></li>
                 <li role="presentation"><a href="#geneViewClinicalVariants" role="tab" data-toggle="tab">Clinical Variants</a></li>
                 <li role="presentation"><a href="#geneViewDrugs" role="tab" data-toggle="tab">Drugs</a></li>
-                <li role="presentation"><a href="#geneViewPpi" role="tab" data-toggle="tab">PPI</a></li>
-                <li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>
+                <!--<li role="presentation"><a href="#geneViewPpi" role="tab" data-toggle="tab">PPI</a></li>-->
+                <!--<li role="presentation"><a href="#geneViewPdb" role="tab" data-toggle="tab">PDB</a></li>-->
             </ul>
 
-            <div class="tab-content" style="width: 90%">
+            <div class="tab-content" style="width: 90%" hidden$="{{checkGene(geneId)}}">
                 <div id="geneViewInfo" role="tabpanel" class="tab-pane active">
                     <h4>{{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)</a></h4>
                     <!--Name: {{geneObj.name}} (<a href="http://www.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g={{geneObj.id}}" target="_blank">{{geneObj.id}}</a>)<br>-->
@@ -74,14 +79,16 @@
                 <div id="geneViewVariation" role="tabpanel" class="tab-pane">
                     <cellbase-variation-grid cellbase-client="{{cellbaseClient}}" url="{{variationUrl}}"
                                              on-selected="onVariantSelected" prefix="geneView"></cellbase-variation-grid>
-                    <h4>Annotation of {{variant}}</h4>
+                    <h4>Annotation: {{variant}}</h4>
                     <cellbase-variantannotation-view cellbase-client="{{cellbaseClient}}" data="{{variant}}" prefix="geneView"></cellbase-variantannotation-view>
                 </div>
 
-                <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
-                    <br>
-                    <cellbase-transcritps-tfbs-view cellbase="{{cellbaseClient}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
-                </div>
+                <template is="dom-if" if="{{showTfbs}}">
+                    <div role="tabpanel" class="tab-pane" id="geneViewTfbs">
+                        <br>
+                        <cellbase-transcritps-tfbs-view cellbase="{{cellbaseClient}}" data="{{geneObj.transcripts}}"></cellbase-transcritps-tfbs-view>
+                    </div>
+                </template>
 
                 <div id="geneViewExpression" role="tabpanel" class="tab-pane">
                     <br>
@@ -118,17 +125,17 @@
                 </div>
 
 
-                <div id="geneViewPpi" role="tabpanel" class="tab-pane">
-                    NOT YET READY FOR BETA VERSION
-                    <!--<cell-maps-element></cell-maps-element>-->
-                </div>
+                <!--<div id="geneViewPpi" role="tabpanel" class="tab-pane">-->
+                    <!--NOT YET READY FOR BETA VERSION-->
+                    <!--&lt;!&ndash;<cell-maps-element></cell-maps-element>&ndash;&gt;-->
+                <!--</div>-->
 
-                <div role="tabpanel" class="tab-pane" id="geneViewPdb">
-                    PDB
-                    <canvas class="ChemDoodleWebComponent" id="pdb_canvas" width="600" height="600" style="width: 800px; height: 800px; ">
-                        This browser does not support HTML5/Canvas.
-                    </canvas>
-                </div>
+                <!--<div role="tabpanel" class="tab-pane" id="geneViewPdb">-->
+                    <!--PDB-->
+                    <!--<canvas class="ChemDoodleWebComponent" id="pdb_canvas" width="600" height="600" style="width: 800px; height: 800px; ">-->
+                        <!--This browser does not support HTML5/Canvas.-->
+                    <!--</canvas>-->
+                <!--</div>-->
             </div>
         </div>
 
@@ -143,6 +150,7 @@
                 },
                 geneId: {
                     type: String,
+                    value: "",
                     notify: true,
                     observer: '_geneIdChanged'
                 },
@@ -153,6 +161,9 @@
                     type: String
                 }
             },
+            ready: function () {
+                this.showTfbs = false;
+            },
             iconChangeClinvar: function () {
                 $('#geneClinvarToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
@@ -160,63 +171,48 @@
                 $('#geneCosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
             _geneIdChanged: function(newValue, oldValue) {
-                this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/'
-                        + this.geneId + '/snp?exclude=annotation.additionalAttributes,annotation.populationFrequencies';
-                this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=clinvar';
-                this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/feature/gene/' + this.geneId + '/clinical?source=cosmic';
-                let _this = this;
-                if (typeof this.genomeViewer !== "undefined") {
-                    let success = function (response) {
-                        let firstGene = response.response[0].result[0];
-                        if (typeof firstGene !== "undefined") {
-                            let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
-                            _this.genomeViewer.setRegion(region);
-                        } else {
-                            alert("Gene ID not valid: " + _this.geneId);
-                        }
-                        _this.geneObj = firstGene;
-                        // testing 3D
-                        _this.display3D();
-                        _this.displayNetworkViewer();
-                    };
-                    let error = function (response) {
-                        alert("Gene ID not valid: " + _this.geneId)
-                    };
-                    this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {success: success, error: error, async: true});
+                if (typeof this.geneId !== "undefined" &&this.geneId != "") {
+                    this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species
+                        + '/feature/gene/' + this.geneId + '/snp?exclude=annotation.additionalAttributes,annotation.populationFrequencies';
+                    this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species
+                        + '/feature/gene/' + this.geneId + '/clinical?source=clinvar';
+                    this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species
+                        + '/feature/gene/' + this.geneId + '/clinical?source=cosmic';
+                    let _this = this;
+                    if (typeof this.cellbaseClient !== "undefined") {
+                        this.cellbaseClient.getGeneClient(this.geneId, 'info', {}, {})
+                            .then(function (response) {
+                                let firstGene = response.response[0].result[0];
+                                if (typeof firstGene !== "undefined") {
+                                    let region = new Region({chromosome: firstGene.chromosome, start: firstGene.start, end: firstGene.end});
+                                    if (typeof _this.genomeViewer !== "undefined") {
+                                        _this.genomeViewer.setRegion(region);
+                                    }
+                                    // Checking if the gene's transcripts have tfbs. If not present, hide the tfbs tab
+                                    for (let i = 0; i < firstGene.transcripts.length; i++) {
+                                        if (typeof firstGene.transcripts[i].tfbs !== "undefined" && firstGene.transcripts[i].tfbs.length > 0) {
+                                            _this.showTfbs = true;
+                                            break;
+                                        }
+                                        _this.showTfbs = false;
+                                    }
+                                } else {
+                                    alert("Gene ID not valid: " + _this.geneId);
+                                }
+                                _this.geneObj = firstGene;
+                                // testing 3D
+//                        _this.display3D();
+//                        _this.displayNetworkViewer();
+                            });
+                    }
                 }
-//
-//                // Variation
-//                let success = function (response) {
-//                    let variations = response.response[0].result;
-//                    _this.variations = variations;
-//                };
-//                let error = function (response) {
-//                    alert("Gene ID not valid: " + _this.geneId)
-//                };
-//                this.cellbaseClient.getGeneClient(this.geneId, 'snp', {exclude: 'annotation.additionalAttributes,annotation.populationFrequencies'}, {success: success, error: error, async: true});
-
-//                // Clinvar
-//                let successClinvar = function (response) {
-//                    let clinvar = response.response[0].result;
-//                    _this.clinvar = clinvar;
-//                };
-//                let errorClinvar = function (response) {
-//                    alert("Gene ID not valid: " + _this.geneId)
-//                };
-//                // Cosmic
-//                let successCosmic = function (response) {
-//                    let cosmic = response.response[0].result;
-//                    _this.cosmic = cosmic;
-//                };
-//                let errorCosmic = function (response) {
-//                    alert("Gene ID not valid: " + _this.geneId)
-//                };
-//                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'clinvar'}, {success: successClinvar, error: errorClinvar, async: true});
-//                this.cellbaseClient.getGeneClient(this.geneId, 'clinical', {source: 'cosmic'}, {success: successCosmic, error: errorCosmic, async: true});
             },
             attached: function() {
-                this.genomeViewer;
-                this.renderGenomeViewer();
+//                this.genomeViewer;
+//                this.renderGenomeViewer();
+            },
+            checkGene: function(geneId) {
+                return this.geneId == "";
             },
             onVariantSelected: function(e) {
                 this.variant = e.detail.variant;

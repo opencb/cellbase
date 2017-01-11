@@ -15,12 +15,13 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transcript> {
 
     enum QueryParams implements QueryParam {
-        ID("transcripts.id", TEXT_ARRAY, ""),
-        NAME("transcripts.name", TEXT_ARRAY, ""),
-        REGION("transcripts.region", TEXT_ARRAY, ""),
-        BIOTYPE("transcripts.biotype", TEXT_ARRAY, ""),
-        TFBS_NAME("transcripts.tfbs.name", TEXT_ARRAY, ""),
-        XREFS("transcripts.xrefs", TEXT_ARRAY, "");
+        ID("id", TEXT_ARRAY, ""),
+        NAME("name", TEXT_ARRAY, ""),
+        REGION("region", TEXT_ARRAY, ""),
+        BIOTYPE("biotype", TEXT_ARRAY, ""),
+        TFBS_NAME("tfbs.name", TEXT_ARRAY, ""),
+        XREFS("xrefs", TEXT_ARRAY, ""),
+        ANNOTATION_FLAGS("annotationFlags", TEXT_ARRAY, "");
 
 
         QueryParams(String key, Type type, String description) {

@@ -274,6 +274,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
             return "protists";
         } else if (configuration.getSpecies().getPlants().contains(sp)) {
             return "plants";
+        } else if (configuration.getSpecies().getVirus().contains(sp)) {
+            return "virus";
+        } else if (configuration.getSpecies().getBacteria().contains(sp)) {
+            return "bacteria";
         } else {
             throw new ParameterException("Species " + sp.getScientificName() + " not associated to any phylo in the configuration file");
         }
@@ -297,7 +301,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
             if (!configuration.getSpecies().getVertebrates().contains(sp)) {
                 url = host + "/" + ensemblRelease + "/" + getPhylo(sp);
             }
-            url = url + "/fasta/" + shortName + "/dna/*.dna.toplevel.fa.gz";
+            url = url + "/fasta/";
+            if (configuration.getSpecies().getBacteria().contains(sp)) {
+                // WARN: assuming there's just one assembly
+                url = url + sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+            }
+            url = url + shortName + "/dna/*.dna.toplevel.fa.gz";
         }
 
         String outputFileName = StringUtils.capitalize(shortName) + "." + assembly + ".fa.gz";
@@ -377,20 +386,26 @@ public class DownloadCommandExecutor extends CommandExecutor {
             ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(sp);
         }
 
+        String bacteriaCollectionPath = "";
+        if (configuration.getSpecies().getBacteria().contains(sp)) {
+            // WARN: assuming there's just one assembly
+            bacteriaCollectionPath =  sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+        }
+
         // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
         // to download the correct GTF file.
         String version = ensemblRelease.split("-")[1];
-        String url = ensemblHost + "/gtf/" + spShortName + "/*" + version + ".gtf.gz";
+        String url = ensemblHost + "/gtf/" + bacteriaCollectionPath + spShortName + "/*" + version + ".gtf.gz";
         String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + spShortName + "/pep/*.pep.all.fa.gz";
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/pep/*.pep.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".pep.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + spShortName + "/cdna/*.cdna.all.fa.gz";
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/cdna/*.cdna.all.fa.gz";
         fileName = geneFolder.resolve(spShortName + ".cdna.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
@@ -520,7 +535,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
 
         // run gene_extra_info.pl
-        boolean geneExtraInfoDownloaded = runCommandLineProcess(ensemblScriptsFolder,
+        boolean geneExtraInfoDownloaded = EtlCommons.runCommandLineProcess(ensemblScriptsFolder,
                 "./gene_extra_info.pl",
                 args,
                 geneExtraInfoLogFile);
@@ -759,7 +774,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             if (assembly.equalsIgnoreCase("GRCh37")) {
                 logger.debug("Downloading GERP++ ...");
                 downloadFile(configuration.getDownload().getGerp().getHost(),
-                        conservationFolder.resolve("gerp/hg19.GERP_scores.tar.gz").toAbsolutePath().toString());
+                        conservationFolder.resolve(EtlCommons.GERP_SUBDIRECTORY + "/" + EtlCommons.GERP_FILE).toAbsolutePath().toString());
                 saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(),
                         Collections.singletonList(configuration.getDownload().getGerp().getHost()),
                         conservationFolder.resolve("gerpVersion.json"));
@@ -949,7 +964,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
-        boolean downloaded = runCommandLineProcess(null, "wget", wgetArgs, null);
+        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
 
         if (downloaded) {
             logger.info(outputFileName + " created OK");

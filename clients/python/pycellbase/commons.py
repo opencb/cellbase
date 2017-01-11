@@ -6,7 +6,7 @@ try:
 except ImportError:
     from queue import Queue
 
-_CALL_BATCH_SIZE = 2000
+_CALL_BATCH_SIZE = 200
 _NUM_THREADS_DEFAULT = 4
 
 
@@ -15,13 +15,13 @@ def _create_rest_url(host, version, species, category, subcategory,
     """Creates the URL for querying the REST service"""
 
     # Creating the basic URL
-    url = ('http://' + '/'.join([host,
-                                 'webservices/rest',
-                                 version,
-                                 species,
-                                 category,
-                                 subcategory
-                                 ]))
+    url = ('/'.join([host,
+                     'webservices/rest',
+                     version,
+                     species,
+                     category,
+                     subcategory
+                     ]))
 
     # If subcategory is queried, query_id can be absent
     if query_id is not None:
@@ -32,7 +32,10 @@ def _create_rest_url(host, version, species, category, subcategory,
     if options is not None:
         opts = []
         for k, v in options.items():
-            opts.append(k + '=' + str(v))
+            if isinstance(v, list):
+                opts.append(k + '=' + ','.join(map(str, v)))
+            else:
+                opts.append(k + '=' + str(v))
         if opts:
             url += '?' + '&'.join(opts)
 
@@ -64,6 +67,7 @@ def _fetch(host, version, species, category, subcategory, resource,
     # If there is a query_id, the next variables will be used
     total_id_list = []  # All initial ids
     next_id_list = []  # Ids which should be queried again for more results
+    next_id_indexes = []  # Ids position in the final response
     if query_id is not None:
         total_id_list = query_id.split(',')
 
@@ -71,6 +75,8 @@ def _fetch(host, version, species, category, subcategory, resource,
     # queried again to retrieve the next 'call_limit results'
     call = True
     current_query_id = None  # Current REST query
+    current_id_list = None  # Current list of ids
+    time_out_counter = 0  # Number of times a query is repeated due to time-out
     while call:
         # Check 'limit' parameter if there is a maximum limit of results
         if max_limit is not None and max_limit <= call_limit:
@@ -81,9 +87,11 @@ def _fetch(host, version, species, category, subcategory, resource,
             if current_query_id is None:
                 current_query_id = query_id
                 current_id_list = total_id_list
+                current_id_indexes = range(len(total_id_list))
             else:
                 current_query_id = ','.join(next_id_list)
                 current_id_list = next_id_list
+                current_id_indexes = next_id_indexes
 
         # Retrieving url
         url = _create_rest_url(host=host,
@@ -98,7 +106,18 @@ def _fetch(host, version, species, category, subcategory, resource,
 
         # Getting REST response
         r = requests.get(url, headers={"Accept-Encoding": "gzip"})
-        response = r.json()['response']
+        if r.status_code == 504:  # Gateway Time-out
+            if time_out_counter == 99:
+                msg = 'Server not responding in time'
+                raise requests.ConnectionError(msg)
+            time_out_counter += 1
+            continue
+        time_out_counter = 0
+        try:
+            response = r.json()['response']
+        except ValueError:
+            msg = 'Bad JSON format retrieved from server'
+            raise ValueError(msg)
 
         # Setting up final_response
         if final_response is None:
@@ -107,8 +126,7 @@ def _fetch(host, version, species, category, subcategory, resource,
         else:
             if query_id is not None:
                 for index, res in enumerate(response):
-                    id_name = current_id_list[index]
-                    id_index = total_id_list.index(id_name)
+                    id_index = current_id_indexes[index]
                     final_response[id_index]['result'] += res['result']
             else:
                 final_response[0]['result'] += response[0]['result']
@@ -116,9 +134,11 @@ def _fetch(host, version, species, category, subcategory, resource,
         if query_id is not None:
             # Checking which ids are completely retrieved
             next_id_list = []
+            next_id_indexes = []
             for index, res in enumerate(response):
                 if res['numResults'] == call_limit:
                     next_id_list.append(current_id_list[index])
+                    next_id_indexes.append(current_id_indexes[index])
             # Ending REST calling when there are no more ids to retrieve
             if not next_id_list:
                 call = False
@@ -196,7 +216,7 @@ def get(host, version, species, category, subcategory, resource,
                                          'resource': resource,
                                          'options': options})
             # Setting threads as "daemon" allows main program to exit eventually
-            # even if these dont finish correctly
+            # even if these do not finish correctly
             t.setDaemon(True)
             t.start()
 

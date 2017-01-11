@@ -14,7 +14,7 @@ class CellBaseClientTest(unittest.TestCase):
 
         # Checking some default config params
         assert cbc.get_config()['species'] == 'hsapiens'
-        assert cbc.get_config()['version'] == 'latest'
+        assert cbc.get_config()['version'] == 'v4'
 
         # Checking some setters for config params
         cc.species = 'mmusculus'

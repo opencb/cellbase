@@ -33,7 +33,6 @@ parameters  and  additional filters of this function refer to https://github.com
 http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
-   library(cellbaseR)
    cb <- CellBaseR()
    res <- cbTranscriptClient(object=cb, ids="ENST00000373644", resource="info")
 }

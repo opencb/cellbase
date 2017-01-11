@@ -55,6 +55,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private File ensemblScriptsFolder;
     private File proteinScriptsFolder;
 
+    private boolean flexibleGTFParsing;
     private Species species;
 
     public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
@@ -77,6 +78,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
         this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
+        this.flexibleGTFParsing = buildCommandOptions.flexibleGTFParsing;
     }
 
 
@@ -235,7 +237,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             String geneInfoLogFileName = output.resolve("genome_info.log").toAbsolutePath().toString();
 
             boolean downloadedGenomeInfo;
-            downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
+            downloadedGenomeInfo = EtlCommons.runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
 
             if (downloadedGenomeInfo) {
                 logger.info(outputFileName + " created OK");
@@ -262,8 +264,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
-
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, serializer);
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, flexibleGTFParsing, serializer);
     }
 
 
@@ -311,7 +312,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
                 "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
 
-        boolean proteinFunctionPredictionMatricesObtaines = runCommandLineProcess(ensemblScriptsFolder,
+        boolean proteinFunctionPredictionMatricesObtaines = EtlCommons.runCommandLineProcess(ensemblScriptsFolder,
                 "./protein_function_prediction_matrices.pl",
                 args,
                 proteinFunctionProcessLogFile);

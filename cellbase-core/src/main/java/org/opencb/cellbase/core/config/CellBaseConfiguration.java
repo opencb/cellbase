@@ -116,6 +116,12 @@ public class CellBaseConfiguration {
         if (species.getPlants() != null && !species.getPlants().isEmpty()) {
             allSpecies.addAll(species.getPlants());
         }
+        if (species.getVirus() != null && !species.getVirus().isEmpty()) {
+            allSpecies.addAll(species.getVirus());
+        }
+        if (species.getBacteria() != null && !species.getBacteria().isEmpty()) {
+            allSpecies.addAll(species.getBacteria());
+        }
 
         return allSpecies;
     }

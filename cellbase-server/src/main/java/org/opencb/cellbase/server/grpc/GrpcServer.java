@@ -71,6 +71,8 @@ public class GrpcServer {
                 .addService(new TranscriptGrpcService(dbAdaptorFactory))
                 .addService(new VariantGrpcService(dbAdaptorFactory))
                 .addService(new RegulatoryGrpcService(dbAdaptorFactory))
+                .addService(new VariantAnnotationGrpcService(dbAdaptorFactory))
+                .addService(new GenomicRegionGrpcService(dbAdaptorFactory))
                 .build()
                 .start();
 

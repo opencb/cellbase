@@ -90,13 +90,13 @@
 			"host": "http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz"
 		},
 		"clinvar": {
-			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2016-10.xml.gz"
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2016-12.xml.gz"
 		},
 		"clinvarSummary": {
 			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"
 		},
 		"clinvarEfoTerms": {
-			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/ClinVar_Traits_EFO_Names_260615.csv"
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv"
 		},
 		"gwasCatalog": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"
@@ -896,6 +896,57 @@
 					"genome",
 					"genome_info",
 					"gene"
+				]
+			}
+		],
+		"virus" : [
+			{
+				"id":"evirus",
+				"scientificName":"Ebola virus",
+				"assemblies":[
+					{
+						"name":"KM034562v1"
+					}
+				],
+				"data":[
+					"genome",
+					"gene"
+				]
+			}
+		],
+		"bacteria": [
+			{
+				"id": "mpneumoniae",
+				"scientificName": "Mycoplasma pneumoniae M129",
+				"assemblies": [
+					{
+						"ensemblVersion":"29_82_1",
+						"ensemblCollection":"bacteria_0_collection",
+						"name":"ASM2734v1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"protein"
+				]
+			},
+			{
+				"id": "ecoli",
+				"scientificName": "Escherichia coli",
+				"assemblies": [
+					{
+						"ensemblVersion":"29_82_1",
+						"ensemblCollection":"bacteria_91_collection",
+						"name":"HUSEC2011CHR1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"protein"
 				]
 			}
 		]
