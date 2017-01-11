@@ -1,5 +1,14 @@
 package org.opencb.cellbase.app.cli;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by fjlopez on 03/06/16.
  */
@@ -28,5 +37,51 @@ public class EtlCommons {
 
     // Load specific data options
     public static final String PROTEIN_FUNCTIONAL_PREDICTION_DATA = "protein_functional_prediction";
+
+    // Path and file names
+    public static final String GERP_SUBDIRECTORY = "gerp";
+    public static final String GERP_FILE = "hg19.GERP_scores.tar.gz";
+
+    public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
+            throws IOException, InterruptedException {
+        // This small hack allow to configure the appropriate Logger level from the command line, this is done
+        // by setting the DEFAULT_LOG_LEVEL_KEY before the logger object is created.
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
+        Logger logger = LoggerFactory.getLogger("EtlCommons");
+
+        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
+
+        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
+        Process process = builder.start();
+        process.waitFor();
+
+        // Check process output
+        boolean executedWithoutErrors = true;
+        int genomeInfoExitValue = process.exitValue();
+        if (genomeInfoExitValue != 0) {
+            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
+            executedWithoutErrors = false;
+        }
+        return executedWithoutErrors;
+    }
+
+    private static ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
+        List<String> commandArgs = new ArrayList<>();
+        commandArgs.add(binPath);
+        commandArgs.addAll(args);
+        ProcessBuilder builder = new ProcessBuilder(commandArgs);
+
+        // working directoy and error and output log outputs
+        if (workingDirectory != null) {
+            builder.directory(workingDirectory);
+        }
+        builder.redirectErrorStream(true);
+        if (logFilePath != null) {
+            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
+        }
+
+        return builder;
+    }
+
 
 }
