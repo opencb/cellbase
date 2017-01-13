@@ -10,7 +10,6 @@ import org.opencb.biodata.models.variant.avro.Cosmic;
 import org.opencb.biodata.models.variant.avro.Gwas;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Created by fjlopez on 06/12/16.
  */
-public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
+public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<Variant> {
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -33,7 +32,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult<ClinicalVariant> next(Query query, QueryOptions options) {
+    public QueryResult<Variant> next(Query query, QueryOptions options) {
         return null;
     }
 
@@ -89,7 +88,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult<ClinicalVariant> get(Query query, QueryOptions options) {
+    public QueryResult<Variant> get(Query query, QueryOptions options) {
         return null;
     }
 
@@ -101,7 +100,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public Iterator<ClinicalVariant> iterator(Query query, QueryOptions options) {
+    public Iterator<Variant> iterator(Query query, QueryOptions options) {
         return null;
     }
 
@@ -133,166 +132,23 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private Bson parseQuery(Query query) {
-        logger.debug("Parsing query...");
-        Bson filtersBson = null;
-
-        // No filtering parameters mean all records
-        if (query.size() > 0) {
-            Bson commonFiltersBson = getCommonFilters(query);
-            Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
-                    ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
-            List<Bson> sourceSpecificFilterList = new ArrayList<>();
-            getClinvarFilters(query, sourceContent, sourceSpecificFilterList);
-            getCosmicFilters(query, sourceContent, sourceSpecificFilterList);
-            getGwasFilters(query, sourceContent, sourceSpecificFilterList);
-
-            if (sourceSpecificFilterList.size() > 0 && commonFiltersBson != null) {
-                List<Bson> filtersBsonList = new ArrayList<>();
-                filtersBsonList.add(commonFiltersBson);
-                filtersBsonList.add(Filters.or(sourceSpecificFilterList));
-                filtersBson = Filters.and(filtersBsonList);
-            } else if (commonFiltersBson != null) {
-                filtersBson = commonFiltersBson;
-            } else if (sourceSpecificFilterList.size() > 0) {
-                filtersBson = Filters.or(sourceSpecificFilterList);
-            }
-        }
-
-        if (filtersBson != null) {
-            return filtersBson;
-        } else {
-            return new Document();
-        }
-    }
-
-    private void getGwasFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
-        // If only clinvar-specific filters are provided it must be avoided to include the source=gwas condition since
-        // sourceBson is going to be an OR list
-        if (!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
-                || query.containsKey(QueryParams.CLINVARREVIEW.key())
-                || query.containsKey(QueryParams.CLINVARTYPE.key())
-                || query.containsKey(QueryParams.CLINVARRS.key()))) {
-            if (sourceContent != null && sourceContent.contains("gwas")) {
-                sourceBson.add(Filters.eq("source", "gwas"));
-            }
-        }
-    }
-
-    private void getCosmicFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
-        // If only clinvar-specific filters are provided it must be avoided to include the source=cosmic condition since
-        // sourceBson is going to be an OR list
-        List<Bson> andBson = new ArrayList<>();
-        if (!(query.containsKey(QueryParams.CLINVARRCV.key()) || query.containsKey(QueryParams.CLINVARCLINSIG.key())
-                || query.containsKey(QueryParams.CLINVARREVIEW.key())
-                || query.containsKey(QueryParams.CLINVARTYPE.key())
-                || query.containsKey(QueryParams.CLINVARRS.key()))) {
-            if (sourceContent != null && sourceContent.contains("cosmic")) {
-                andBson.add(Filters.eq("source", "cosmic"));
-            }
-
-            createOrQuery(query, QueryParams.COSMICID.key(), "mutationID", andBson);
-            if (andBson.size() == 1) {
-                sourceBson.add(andBson.get(0));
-            } else if (andBson.size() > 0) {
-                sourceBson.add(Filters.and(andBson));
-            }
-        }
-    }
-
-    private void getClinvarFilters(Query query, Set<String> sourceContent, List<Bson> sourceBson) {
-        List<Bson> andBsonList = new ArrayList<>();
-
-        if (sourceContent != null && sourceContent.contains("clinvar")) {
-            andBsonList.add(Filters.eq("source", "clinvar"));
-        }
-
-        createOrQuery(query, QueryParams.CLINVARRCV.key(), "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-                andBsonList);
-        createClinvarRsQuery(query, andBsonList);
-        createClinvarTypeQuery(query, andBsonList);
-        createClinvarReviewQuery(query, andBsonList);
-        createClinvarClinicalSignificanceQuery(query, andBsonList);
-
-        if (andBsonList.size() == 1) {
-            sourceBson.add(andBsonList.get(0));
-        } else if (andBsonList.size() > 0) {
-            sourceBson.add(Filters.and(andBsonList));
-        }
-    }
-
-    private void createClinvarClinicalSignificanceQuery(Query query, List<Bson> andBsonList) {
-        if (query != null && query.getString(QueryParams.CLINVARCLINSIG.key()) != null
-                && !query.getString(QueryParams.CLINVARCLINSIG.key()).isEmpty()) {
-            createOrQuery(query.getAsStringList(QueryParams.CLINVARCLINSIG.key()).stream()
-                            .map((clinicalSignificanceString) -> clinicalSignificanceString.replace("_", " "))
-                            .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description", andBsonList);
-        }
-    }
-
-    private void createClinvarReviewQuery(Query query, List<Bson> andBsonList) {
-        if (query != null && query.getString(QueryParams.CLINVARREVIEW.key()) != null
-                && !query.getString(QueryParams.CLINVARREVIEW.key()).isEmpty()) {
-            createOrQuery(query.getAsStringList(QueryParams.CLINVARREVIEW.key()).stream()
-                            .map(String::toUpperCase)
-                            .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus", andBsonList);
-        }
-    }
-
-    private void createClinvarTypeQuery(Query query, List<Bson> andBsonList) {
-        if (query != null && query.getString(QueryParams.CLINVARTYPE.key()) != null
-                && !query.getString(QueryParams.CLINVARTYPE.key()).isEmpty()) {
-            createOrQuery(query.getAsStringList(QueryParams.CLINVARTYPE.key()).stream()
-                            .map((typeString) -> typeString.replace("_", " "))
-                            .collect(Collectors.toList()),
-                    "clinvarSet.referenceClinVarAssertion.measureSet.measure.type", andBsonList);
-        }
-    }
-
-    private void createClinvarRsQuery(Query query, List<Bson> andBsonList) {
-        if (query != null && query.getString(QueryParams.CLINVARRS.key()) != null
-                && !query.getString(QueryParams.CLINVARRS.key()).isEmpty()) {
-            List<String> queryList = query.getAsStringList(QueryParams.CLINVARRS.key());
-            if (queryList.size() == 1) {
-                andBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
-                        queryList.get(0).substring(2)));
-                andBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type", "rs"));
-            } else {
-                List<Bson> orBsonList = new ArrayList<>(queryList.size());
-                for (String queryItem : queryList) {
-                    List<Bson> innerAndBsonList = new ArrayList<>();
-                    innerAndBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id",
-                            queryList.get(0).substring(2)));
-                    innerAndBsonList.add(Filters.eq("clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.type", "rs"));
-                    orBsonList.add(Filters.and(innerAndBsonList));
-                }
-                andBsonList.add(Filters.or(orBsonList));
-            }
-        }
-    }
-
-    private Bson getCommonFilters(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
 
-        createOrQuery(query, QueryParams.SO.key(), "annot.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
         createOrQuery(query, QueryParams.GENE.key(), "_geneIds", andBsonList);
-        createPhenotypeQuery(query, andBsonList);
+        createOrQuery(query, QueryParams.SO.key(), "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
+        andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPEDISEASE.key())));
+        createOrQuery(query, QueryParams.SOURCE.key(), "_sources", andBsonList);
+        createOrQuery(query, QueryParams.ACCESSION.key(), "_accessions", andBsonList);
+        createOrQuery(query, QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
+        createOrQuery(query, QueryParams.REVIEWSTATUS.key(), "_reviewStatus", andBsonList);
+        createOrQuery(query, QueryParams.CLINICALSIGNIFICANCE.key(), "_clinicalSignificance", andBsonList);
 
-        if (andBsonList.size() == 1) {
-            return andBsonList.get(0);
-        } else if (andBsonList.size() > 1) {
+        if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
-            return null;
-        }
-    }
-
-    private void createPhenotypeQuery(Query query, List<Bson> andBsonList) {
-        if (query != null && query.getString(QueryParams.PHENOTYPE.key()) != null
-                && !query.getString(QueryParams.PHENOTYPE.key()).isEmpty()) {
-            andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPE.key())));
+            return new Document();
         }
     }
 

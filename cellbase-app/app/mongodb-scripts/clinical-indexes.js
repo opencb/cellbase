@@ -17,6 +17,7 @@
 
 db.getCollection('clinical_variants').createIndex({'id': 1})
 db.getCollection('clinical_variants').createIndex({'chromosome': 1, 'start': 1, 'end': 1})
+db.getCollection('clinical_variants').createIndex({'annotation.consequenceTypes.sequenceOntologyTerms.name': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.accession': 1, 'annotation.VariantTraitAssociation.Somatic.accession': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.geneNames': 1, 'annotation.VariantTraitAssociation.Somatic.geneNames': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.source': 1,'annotation.VariantTraitAssociation.Somatic.source': 1})

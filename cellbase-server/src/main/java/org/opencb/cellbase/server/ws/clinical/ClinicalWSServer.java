@@ -2,6 +2,7 @@ package org.opencb.cellbase.server.ws.clinical;
 
 import io.swagger.annotations.*;
 import org.bson.Document;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -20,10 +21,9 @@ import java.io.IOException;
 /**
  * Created by fjlopez on 06/12/16.
  */
-@Path("/{version}/{species}/feature/clinical")
+@Path("/{version}/{species}/clinical")
 @Produces("application/json")
-@Api(value = "Clinical (Deprecated)", description = "Clinical RESTful Web Services API")
-@Deprecated
+@Api(value = "Clinical", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
 
 
@@ -40,12 +40,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/search")
-    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
-            + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
-            + "a look at "
-            + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
-            value = "Retrieves all the clinical objects", response = Document.class, responseContainer = "QueryResponse")
+    @Path("/variant/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. ",
+            value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "source",
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "
@@ -62,29 +59,23 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
                             + " ENSEMBL gene ids. Exact text matches will be returned.",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "phenotype",
-                    value = "String to indicate the phenotypes to query. A text search will be run.",
-                    required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "clinvarId",
-                    value = "Comma separated list of rcv ids, e.g.: RCV000033215",
+            @ApiImplicitParam(name = "phenotype-disease",
+                    value = "String to indicate the phenotypes/diseases to query. A text search will be run.",
+                    required = false, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "accession",
+                    value = "Comma separated list of database accesions, e.g.: RCV000033215,COSM306824",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "rs",
                     value = "Comma separated list of rs ids, e.g.: rs6025",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "cosmicId",
-                    value = "Comma separated list of cosmic ids, e.g.: COSM306824",
-                    required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "type",
-                    value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
-                            + "variants, e.g. \"single nucleotide variant\" ",
+                    value = "Comma separated list of variant types, e.g. \"SNV\" ",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "review",
-                    value = "Comma separated list of review lables (only enabled for ClinVar variants), "
-                            + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
+                    value = "Comma separated list of review labels, e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "clinvar-significance",
-                    value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
-                            + "for ClinVar variants), e.g.: Benign",
+                    value = "Comma separated list of clinical significance labels, e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAll() {
