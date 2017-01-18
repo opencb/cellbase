@@ -17,7 +17,6 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Created by fjlopez on 06/12/16.
@@ -135,7 +134,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
 
-        createOrQuery(query, QueryParams.GENE.key(), "_geneIds", andBsonList);
+        createOrQuery(query, QueryParams.FEATURE.key(), "_featureXrefs", andBsonList);
         createOrQuery(query, QueryParams.SO.key(), "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
         andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPEDISEASE.key())));
         createOrQuery(query, QueryParams.SOURCE.key(), "_sources", andBsonList);

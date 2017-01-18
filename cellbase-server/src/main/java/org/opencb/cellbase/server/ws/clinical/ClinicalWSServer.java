@@ -1,7 +1,6 @@
 package org.opencb.cellbase.server.ws.clinical;
 
 import io.swagger.annotations.*;
-import org.bson.Document;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -55,9 +54,10 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
                             + "matches will be returned.",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "gene",
-                    value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
-                            + " ENSEMBL gene ids. Exact text matches will be returned.",
+            @ApiImplicitParam(name = "feature",
+                    value = "Comma separated list of feature ids, which can be either ENSEMBL gene ids, HGNC gene symbols,"
+                            + " transcript symbols or ENSEMBL transcript ids, e.g.: BRCA2, ENST00000409047. Exact text"
+                            + " matches will be returned.",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "phenotype-disease",
                     value = "String to indicate the phenotypes/diseases to query. A text search will be run.",
@@ -65,16 +65,16 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "accession",
                     value = "Comma separated list of database accesions, e.g.: RCV000033215,COSM306824",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "rs",
-                    value = "Comma separated list of rs ids, e.g.: rs6025",
+            @ApiImplicitParam(name = "id",
+                    value = "Comma separated list of ids, e.g.: rs6025",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "type",
                     value = "Comma separated list of variant types, e.g. \"SNV\" ",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "review",
+            @ApiImplicitParam(name = "reviewStatus",
                     value = "Comma separated list of review labels, e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "clinvar-significance",
+            @ApiImplicitParam(name = "clinicalSignificance",
                     value = "Comma separated list of clinical significance labels, e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query")
     })

@@ -33,16 +33,32 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, ""),
-        GENE("gene", TEXT_ARRAY, ""),
         PHENOTYPEDISEASE("phenotype-disease", TEXT_ARRAY, ""),
+        FEATURE("feature", TEXT_ARRAY, ""),
         SO("so", TEXT_ARRAY, ""),
         SOURCE("source", TEXT_ARRAY, ""),
+        ID("id", TEXT_ARRAY, ""),
+        TYPE("type", TEXT_ARRAY, ""),
+        REVIEWSTATUS("reviewStatus", TEXT_ARRAY, ""),
+        CLINICALSIGNIFICANCE("clinicalSignificance", TEXT_ARRAY, ""),
+        ACCESSION("accession", TEXT_ARRAY, ""),
+
+        @Deprecated
+        GENE("gene", TEXT_ARRAY, ""),
+        @Deprecated
         CLINVARRCV("clinvarId", TEXT_ARRAY, ""),
+        @Deprecated
         CLINVARCLINSIG("clinvar-significance", TEXT_ARRAY, ""),
+        @Deprecated
         CLINVARREVIEW("review", TEXT_ARRAY, ""),
+        @Deprecated
         CLINVARTYPE("type", TEXT_ARRAY, ""),
+        @Deprecated
         CLINVARRS("rs", TEXT_ARRAY, ""),
+        @Deprecated
         COSMICID("cosmicId", TEXT_ARRAY, "");
+
+
 
         QueryParams(String key, Type type, String description) {
             this.key = key;

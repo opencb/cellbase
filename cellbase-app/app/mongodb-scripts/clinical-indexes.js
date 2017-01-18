@@ -16,15 +16,19 @@
  */
 
 db.getCollection('clinical_variants').createIndex({'id': 1})
+db.getCollection('clinical_variants').createIndex({'type': 1})
 db.getCollection('clinical_variants').createIndex({'chromosome': 1, 'start': 1, 'end': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.consequenceTypes.sequenceOntologyTerms.name': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.accession': 1, 'annotation.VariantTraitAssociation.Somatic.accession': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.geneNames': 1, 'annotation.VariantTraitAssociation.Somatic.geneNames': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.source': 1,'annotation.VariantTraitAssociation.Somatic.source': 1})
-db.getCollection('clinical_variants').createIndex({'_phenotypesDiseases': 'text'})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.reviewStatus': 1,'annotation.VariantTraitAssociation.Somatic.reviewStatus': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.clinicalSignificance': 1,'annotation.VariantTraitAssociation.Somatic.clinicalSignificance': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Somatic.primarySite': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Somatic.siteSubtype': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Somatic.primaryHistology': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Somatic.histologySubtype': 1})
+db.getCollection('clinical_variants').createIndex({'_featureXrefs': 1})
+db.getCollection('clinical_variants').createIndex({'_sources': 1})
+db.getCollection('clinical_variants').createIndex({'_accessions': 1})
+db.getCollection('clinical_variants').createIndex({'_reviewStatus': 1})
+db.getCollection('clinical_variants').createIndex({'_clinicalSignificance': 1})
+db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.phenotype':'text',
+    'annotation.VariantTraitAssociation.Germline.disease':'text',
+    'annotation.VariantTraitAssociation.Somatic.primarySite': 'text',
+    'annotation.VariantTraitAssociation.Somatic.siteSubtype': 'text',
+    'annotation.VariantTraitAssociation.Somatic.primaryHistology': 'text',
+    'annotation.VariantTraitAssociation.Somatic.histologySubtype': 'text',
+    'annotation.VariantTraitAssociation.Somatic.sampleSource': 'text',
+    'annotation.VariantTraitAssociation.Somatic.tumourOrigin': 'text'})

@@ -364,7 +364,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
         copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinical_variant", true);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output,
+                EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
         return new ClinicalVariantParser(clinicalVariantFolder, getFastaReferenceGenome(),
                 buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
                 serializer);

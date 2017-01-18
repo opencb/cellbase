@@ -276,7 +276,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         cosmic.setSource(COSMIC_NAME);
         cosmic.setGeneNames(new ArrayList<>(Arrays.asList(fields[0])));
         cosmic.setAccession(fields[16]);
-        if (!fields[3].equalsIgnoreCase(fields[0])) {
+        if (!fields[3].equalsIgnoreCase(fields[0]) && !fields[3].isEmpty()) {
             cosmic.getGeneNames().add(fields[3]);
         }
         cosmic.setPrimarySite(fields[7]);
