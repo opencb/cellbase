@@ -89,7 +89,10 @@ public class ClinicalVariantParser extends CellBaseParser {
                         clinvarEFOFile, assembly, rdb);
                 clinvarIndexer.index();
             } else {
-                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.");
+                logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
+                        + "Please, ensure that these two files exist:\n"
+                        + "{}\n"
+                        + "{}", this.clinvarXMLFile.toString(), this.clinvarSummaryFile.toString());
             }
 
             if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
