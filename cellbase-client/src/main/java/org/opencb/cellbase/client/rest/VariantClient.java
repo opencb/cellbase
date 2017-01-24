@@ -13,8 +13,8 @@ import java.util.List;
 
 public final class VariantClient extends FeatureClient<Variant> {
 
-    public VariantClient(String species, ClientConfiguration configuration) {
-        super(species, configuration);
+    public VariantClient(String species, String assembly, ClientConfiguration configuration) {
+        super(species, assembly, configuration);
         this.clazz = Variant.class;
 
         this.category = "genomic";

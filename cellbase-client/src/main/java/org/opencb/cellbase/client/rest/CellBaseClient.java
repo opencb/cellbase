@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import java.util.function.Supplier;
 public class CellBaseClient {
 
     private String species;
+    private String assembly;
     private ClientConfiguration clientConfiguration;
 
     private final Map<String, ParentRestClient> clients;
@@ -38,7 +40,12 @@ public class CellBaseClient {
     }
 
     public CellBaseClient(String species, ClientConfiguration clientConfiguration) {
+        this(species, null, clientConfiguration);
+    }
+
+    public CellBaseClient(String species, String assembly, ClientConfiguration clientConfiguration) {
         this.species = species;
+        this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
         this.clientConfiguration = clientConfiguration;
 
         clients = new HashMap<>();
@@ -46,27 +53,27 @@ public class CellBaseClient {
 
 
     public GeneClient getGeneClient() {
-        return getClient("GENE", () -> new GeneClient(species, clientConfiguration));
+        return getClient("GENE", () -> new GeneClient(species, assembly, clientConfiguration));
     }
 
     public TranscriptClient getTranscriptClient() {
-        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, clientConfiguration));
+        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, clientConfiguration));
     }
 
     public VariationClient getVariationClient() {
-        return getClient("VARIATION", () -> new VariationClient(species, clientConfiguration));
+        return getClient("VARIATION", () -> new VariationClient(species, assembly, clientConfiguration));
     }
 
     public VariantClient getVariantClient() {
-        return getClient("VARIANT", () -> new VariantClient(species, clientConfiguration));
+        return getClient("VARIANT", () -> new VariantClient(species, assembly, clientConfiguration));
     }
 
     public ProteinClient getProteinClient() {
-        return getClient("PROTEIN", () -> new ProteinClient(species, clientConfiguration));
+        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, clientConfiguration));
     }
 
     public GenomicRegionClient getGenomicRegionClient() {
-        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, clientConfiguration));
+        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, clientConfiguration));
     }
 
     @SuppressWarnings("unchecked")

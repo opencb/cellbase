@@ -15,8 +15,8 @@ import java.io.IOException;
  */
 public class VariationClient extends FeatureClient<Variant> {
 
-    public VariationClient(String species, ClientConfiguration configuration) {
-        super(species, configuration);
+    public VariationClient(String species, String assembly, ClientConfiguration configuration) {
+        super(species, assembly, configuration);
         this.clazz = Variant.class;
 
         this.category = "feature";
