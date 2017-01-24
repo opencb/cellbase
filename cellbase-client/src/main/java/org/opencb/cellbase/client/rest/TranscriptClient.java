@@ -16,8 +16,8 @@ import java.util.List;
  */
 public class TranscriptClient extends ParentRestClient<Transcript> {
 
-    public TranscriptClient(String species, ClientConfiguration configuration) {
-        super(species, configuration);
+    public TranscriptClient(String species, String assembly, ClientConfiguration configuration) {
+        super(species, assembly, configuration);
         this.clazz = Transcript.class;
 
         this.category = "feature";

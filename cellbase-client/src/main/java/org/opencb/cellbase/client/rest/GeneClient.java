@@ -34,8 +34,8 @@ import java.util.List;
  */
 public class GeneClient extends FeatureClient<Gene> {
 
-    public GeneClient(String species, ClientConfiguration clientConfiguration) {
-        super(species, clientConfiguration);
+    public GeneClient(String species, String assembly, ClientConfiguration clientConfiguration) {
+        super(species, assembly, clientConfiguration);
 
         this.clazz = Gene.class;
 

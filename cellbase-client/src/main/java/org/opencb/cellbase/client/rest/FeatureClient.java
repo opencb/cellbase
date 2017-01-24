@@ -14,8 +14,8 @@ import java.io.IOException;
  */
 public class FeatureClient<T> extends ParentRestClient<T> {
 
-    public FeatureClient(String species, ClientConfiguration configuration) {
-        super(species, configuration);
+    public FeatureClient(String species, String assembly, ClientConfiguration configuration) {
+        super(species, assembly, configuration);
     }
 
 
