@@ -41,6 +41,8 @@ public class DownloadProperties {
     private URLProperties clinvarSummary;
     private URLProperties clinvarEfoTerms;
     private URLProperties iarctp53;
+    private URLProperties docm;
+    private URLProperties docmVersion;
     private URLProperties hpo;
     private URLProperties disgenet;
     private URLProperties disgenetReadme;
@@ -221,6 +223,21 @@ public class DownloadProperties {
         this.iarctp53 = iarctp53;
     }
 
+    public URLProperties getDocm() {
+        return docm;
+    }
+
+    public void setDocm(URLProperties docm) {
+        this.docm = docm;
+    }
+
+    public URLProperties getDocmVersion() {
+        return docmVersion;
+    }
+
+    public void setDocmVersion(URLProperties docmVersion) {
+        this.docmVersion = docmVersion;
+    }
     public URLProperties getHpo() {
         return hpo;
     }

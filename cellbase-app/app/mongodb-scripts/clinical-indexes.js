@@ -24,11 +24,11 @@ db.getCollection('clinical_variants').createIndex({'_sources': 1})
 db.getCollection('clinical_variants').createIndex({'_accessions': 1})
 db.getCollection('clinical_variants').createIndex({'_reviewStatus': 1})
 db.getCollection('clinical_variants').createIndex({'_clinicalSignificance': 1})
-db.getCollection('clinical_variants').createIndex({'annotation.VariantTraitAssociation.Germline.phenotype':'text',
-    'annotation.VariantTraitAssociation.Germline.disease':'text',
-    'annotation.VariantTraitAssociation.Somatic.primarySite': 'text',
-    'annotation.VariantTraitAssociation.Somatic.siteSubtype': 'text',
-    'annotation.VariantTraitAssociation.Somatic.primaryHistology': 'text',
-    'annotation.VariantTraitAssociation.Somatic.histologySubtype': 'text',
-    'annotation.VariantTraitAssociation.Somatic.sampleSource': 'text',
-    'annotation.VariantTraitAssociation.Somatic.tumourOrigin': 'text'})
+db.getCollection('clinical_variants').createIndex({'annotation.variantTraitAssociation.germline.phenotype':'text',
+    'annotation.variantTraitAssociation.germline.disease':'text',
+    'annotation.variantTraitAssociation.somatic.primarySite': 'text',
+    'annotation.variantTraitAssociation.somatic.siteSubtype': 'text',
+    'annotation.variantTraitAssociation.somatic.primaryHistology': 'text',
+    'annotation.variantTraitAssociation.somatic.histologySubtype': 'text',
+    'annotation.variantTraitAssociation.somatic.sampleSource': 'text',
+    'annotation.variantTraitAssociation.somatic.tumourOrigin': 'text'}, {name: "_diseasePhenotype"})

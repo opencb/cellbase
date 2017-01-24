@@ -17,7 +17,9 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
@@ -26,6 +28,9 @@ import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -934,7 +939,74 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             "The version of the database should be identified"), getTimeStamp(),
                     Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
 
+            List<String> hgvsList = getDocmHgvsList();
+            downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
+            downloadFile(configuration.getDownload().getDocmVersion().getHost(),
+                    clinicalFolder.resolve("docmIndex.html").toString());
+//            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
+//                    getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
+//                    Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
+//                                    configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
+//                    clinicalFolder.resolve("clinvarVersion.json"));
+
+
         }
+    }
+
+//    private String getDocmVersion() {
+//
+//    }
+
+    private void downloadDocm(List<String> hgvsList, Path path) throws IOException, InterruptedException {
+        BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(path);
+        Client client = ClientBuilder.newClient();
+        WebTarget restUrlBase = client
+                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants"));
+
+        logger.info("Querying DOCM REST API to get detailed data for all their variants");
+        int counter = 0;
+        for (String hgvs : hgvsList) {
+            WebTarget callUrl = restUrlBase.path(hgvs + ".json");
+            String jsonString = callUrl.request().get(String.class);
+            bufferedWriter.write(jsonString);
+
+            if (counter % 10 == 0) {
+                logger.info("{} DOCM variants saved", counter);
+            }
+            // Wait half a second to avoid saturating their REST server - also avoid getting banned
+            wait(500);
+
+            counter++;
+        }
+        bufferedWriter.close();
+    }
+
+    private List<String> getDocmHgvsList() throws IOException {
+        Client client = ClientBuilder.newClient();
+        WebTarget restUrl = client
+                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants.json"));
+
+        String jsonString;
+        logger.info("Getting full list of DOCM hgvs from: {}", restUrl.getUri().toURL());
+        jsonString = restUrl.request().get(String.class);
+
+        List<Map<String, String>> responseMap = parseResult(jsonString);
+        List<String> hgvsList = new ArrayList<>(responseMap.size());
+        for (Map<String, String> document : responseMap) {
+            hgvsList.add(document.get("hgvs"));
+        }
+        logger.info("{} hgvs found", hgvsList.size());
+
+        return hgvsList;
+    }
+
+    private List<Map<String, String>> parseResult(String json) throws IOException {
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectReader reader = jsonObjectMapper
+                .readerFor(jsonObjectMapper.getTypeFactory()
+                        .constructParametrizedType(List.class, Map.class, String.class));
+        return reader.readValue(json);
     }
 
     private String getDbsnpVersion() {

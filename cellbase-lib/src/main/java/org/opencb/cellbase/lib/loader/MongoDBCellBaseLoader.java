@@ -415,7 +415,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             getValuesFromClinicalObject(germlineList, "accession", accessionList);
             getValuesFromClinicalObject(somaticList, "accession", accessionList);
             if (!accessionList.isEmpty()) {
-                document.put("_accessions", new ArrayList<String>(accessionList));
+                document.put("_accessions", new ArrayList<String>(accessionList
+                ));
             }
 
             Set<String> reviewStatusList = new HashSet<>();

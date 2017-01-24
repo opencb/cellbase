@@ -1,5 +1,6 @@
 package org.opencb.cellbase.lib.impl;
 
+import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
@@ -95,6 +96,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options);
+        options = addPrivateExcludeOptions(options);
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, parsedOptions);
     }
 
@@ -136,13 +139,17 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         createOrQuery(query, QueryParams.FEATURE.key(), "_featureXrefs", andBsonList);
         createOrQuery(query, QueryParams.SO.key(), "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-        andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPEDISEASE.key())));
         createOrQuery(query, QueryParams.SOURCE.key(), "_sources", andBsonList);
         createOrQuery(query, QueryParams.ACCESSION.key(), "_accessions", andBsonList);
         createOrQuery(query, QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
         createOrQuery(query, QueryParams.REVIEWSTATUS.key(), "_reviewStatus", andBsonList);
         createOrQuery(query, QueryParams.CLINICALSIGNIFICANCE.key(), "_clinicalSignificance", andBsonList);
+
+        // Avoid creating a text empty query, otherwise results will never be returned
+        if (query.containsKey(QueryParams.PHENOTYPEDISEASE.key())) {
+            andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPEDISEASE.key())));
+        }
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

@@ -101,6 +101,12 @@
 		"iarctp53": {
 			"host": "http://p53.iarc.fr/ajax/Zipper.ashx"
 		},
+		"docm": {
+			"host": "http://docm.genome.wustl.edu/api/"
+		},
+		"docmVersion": {
+			"host": "http://docm.genome.wustl.edu/index.html"
+		},
 		"gwasCatalog": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"
 		},
