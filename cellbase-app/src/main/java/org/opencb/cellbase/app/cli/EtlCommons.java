@@ -58,7 +58,7 @@ public class EtlCommons {
     // Path and file names
     public static final String GERP_SUBDIRECTORY = "gerp";
     public static final String GERP_FILE = "hg19.GERP_scores.tar.gz";
-    public static final String CLINICAL_VARIANTS_JSON_FILE = "clinical_variants.json.gz";
+    public static final String CLINICAL_VARIANTS_JSON_FILE = "clinical_variants.full.json.gz";
     public static final String DOCM_FILE = "docm.json.gz";
     public static final String DOCM_NAME = "DOCM";
 
