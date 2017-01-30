@@ -5,7 +5,7 @@
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbXrefClient
 #' @param object an object of class CellBaseR
-#' @param ids a character vector of the ids to be queried, any crossrefereable ID, gene names, transcript ids, 
+#' @param ids a character vector of the ids to be queried, any crossrefereable ID, geneId names, transcriptId ids,
 #' uniprot ids,etc.
 #' @param resource a character vector to specify the resource to be queried
 #' @param filters a object of class CellBaseParam specifying additional filters for the query

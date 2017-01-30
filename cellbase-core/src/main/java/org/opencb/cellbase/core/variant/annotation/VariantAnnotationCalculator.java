@@ -24,6 +24,7 @@ import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -71,6 +72,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     private boolean phased = false;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static HgvsCalculator hgvsCalculator;
 
 //    public VariantAnnotationCalculator(String species, String assembly, MongoDataStore mongoDataStore) {
 ////        super(species, assembly, mongoDataStore);
@@ -97,6 +99,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
         this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+
+         hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -426,6 +430,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
 
             geneList = setGeneAnnotation(normalizedVariantList.get(i));
+
+            // No need to carry out normalization if it has already been done
+            variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
@@ -937,7 +944,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
-        switch (getVariantType(variant)) {
+        switch (VariantAnnotationUtils.getVariantType(variant)) {
             case INSERTION:
                 return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
             case DELETION:
@@ -949,25 +956,6 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             default:
                 throw new UnsupportedURLVariantFormat();
         }
-    }
-
-    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
-        if (variant.getType() == null) {
-            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()));
-        }
-        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
-        // FIXME: insertions and deletions
-        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
-            if (variant.getReference().isEmpty()) {
-//                variant.setType(VariantType.INSERTION);
-                return VariantType.INSERTION;
-            } else {
-//                variant.setType(VariantType.DELETION);
-                return VariantType.DELETION;
-            }
-        }
-        return variant.getType();
-//        return getVariantType(variant.getReference(), variant.getAlternate());
     }
 
 //    private VariantType getVariantType(String reference, String alternate) {

@@ -14,26 +14,26 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="cellbase-gene-filter.html">
-<link rel="import" href="cellbase-gene-view.html">
+<link rel="import" href="cellbase-geneId-filter.html">
+<link rel="import" href="cellbase-geneId-view.html">
 
-<dom-module id="cellbase-gene-panel">
+<dom-module id="cellbase-geneId-panel">
     <template>
         <style is="custom-style" include="jso-styles"></style>
 
         <div class="panel">
             <div class="col-md-2">
                 <br>
-                <cellbase-gene-filter gene-id="{{geneId}}" cellbase-client="{{cellbaseClient}}" gene-search="{{geneSearch}}"></cellbase-gene-filter>
+                <cellbase-geneId-filter geneId-id="{{geneId}}" cellbase-client="{{cellbaseClient}}" geneId-search="{{geneSearch}}"></cellbase-geneId-filter>
             </div>
             <div class="col-md-10">
-                <cellbase-gene-view gene-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-gene-view>
+                <cellbase-geneId-view geneId-id={{geneId}} cellbase-client="{{cellbaseClient}}"></cellbase-geneId-view>
             </div>
         </div>
     </template>
     <script>
         Polymer({
-            is: 'cellbase-gene-panel',
+            is: 'cellbase-geneId-panel',
             properties: {
                 cellbaseClient: {
                     type: Object

@@ -16,14 +16,14 @@
 <link rel="import" href="../common/cellbase-options-list.html">
 <link rel="import" href="../common/cellbase-filter-toolbar.html">
 
-<dom-module id="cellbase-gene-filter">
+<dom-module id="cellbase-geneId-filter">
     <template>
         <style is="custom-style" include="jso-styles">
             .biotype-scroll{
                 max-height: 300px;
                 overflow-y: scroll;
             }
-            .gene-names-display{
+            .geneId-names-display{
                 max-height: 800px;
                 overflow: auto;
             }
@@ -180,7 +180,7 @@
 
                 <!-- Result tab content -->
                 <div role="tabpanel" class="tab-pane" id="result1">
-                    <div class="gene-names-display">
+                    <div class="geneId-names-display">
                         <i id="geneSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
@@ -199,7 +199,7 @@
     </template>
     <script>
         Polymer({
-            is: 'cellbase-gene-filter',
+            is: 'cellbase-geneId-filter',
             properties: {
                 cellbaseClient: {
                     type: Object
@@ -301,7 +301,7 @@
 
                 if (Object.keys(queryParams).length > 0) {
                     queryParams.include = "id,name,biotype,chromosome,start,end";
-                    this.cellbaseClient.get('feature', 'gene', null, 'search', queryParams, {})
+                    this.cellbaseClient.get('feature', 'geneId', null, 'search', queryParams, {})
                         .then(function (response) {
                             for(let i in response.response) {
                                 if (response.response[i].result.length > 0) {

@@ -19,7 +19,7 @@ Reference Manual for more information.
 \describe{
 \item{\code{genome}}{A character the genome build to query, e.g.GRCh37(default)}
 
-\item{\code{gene}}{A character vector denoting the gene/s to be queried}
+\item{\code{geneId}}{A character vector denoting the geneId/s to be queried}
 
 \item{\code{region}}{A character vector denoting the region/s to be queried must be 
 in the form 1:100000-1500000}

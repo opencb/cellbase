@@ -13,7 +13,7 @@
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples
 #'    cb <- CellBaseR()
-#'    res <- cbTfbsClient(object=cb, ids="PAX1", resource="gene")
+#'    res <- cbTfbsClient(object=cb, ids="PAX1", resource="geneId")
 #' @export
 setMethod("cbTfbsClient", "CellBaseR",    definition = function(object, ids, resource, filters=NULL,...) {
     host <- object@host
