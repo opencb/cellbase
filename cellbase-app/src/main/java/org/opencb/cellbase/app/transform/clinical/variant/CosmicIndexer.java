@@ -55,10 +55,10 @@ public class CosmicIndexer extends ClinicalIndexer {
         // COSMIC v78 GRCh38 includes one more column at position 27 (1-based) "Resistance Mutation" which is not
         // provided in the GRCh37 file
         if (assembly.equalsIgnoreCase("grch37")) {
-            this.mutationSomaticStatusColumn = 28;
-            this.pubmedPMIDColumn = 29;
-            this.sampleSourceColumn = 31;
-            this.tumourOriginColumn = 32;
+            this.mutationSomaticStatusColumn = 29;
+            this.pubmedPMIDColumn = 30;
+            this.sampleSourceColumn = 32;
+            this.tumourOriginColumn = 33;
         } else {
             this.mutationSomaticStatusColumn = 29;
             this.pubmedPMIDColumn = 30;
