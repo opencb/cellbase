@@ -33,7 +33,7 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, ""),
-        PHENOTYPEDISEASE("phenotype-disease", TEXT_ARRAY, ""),
+        PHENOTYPEDISEASE("phenotypeDisease", TEXT_ARRAY, ""),
         FEATURE("feature", TEXT_ARRAY, ""),
         SO("so", TEXT_ARRAY, ""),
         SOURCE("source", TEXT_ARRAY, ""),

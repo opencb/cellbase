@@ -59,7 +59,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                             + " transcript symbols or ENSEMBL transcript ids, e.g.: BRCA2, ENST00000409047. Exact text"
                             + " matches will be returned.",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "phenotype-disease",
+            @ApiImplicitParam(name = "phenotypeDisease",
                     value = "String to indicate the phenotypes/diseases to query. A text search will be run.",
                     required = false, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "accession",
