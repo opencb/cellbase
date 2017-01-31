@@ -36,7 +36,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = variant.getStart() + variant.getReference().length() - 1;
+        variantEnd = variant.getEnd();
+//        variantEnd = variant.getStart() + variant.getReference().length() - 1;
         variantStart = variant.getStart();
         isBigDeletion = ((variantEnd - variantStart) > BIG_VARIANT_SIZE_THRESHOLD);
         boolean isIntergenic = true;
@@ -399,7 +400,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
             if (!splicing && cdnaVariantStart != -1) {
                 codingAnnotationAdded = true;
-                if (variant.getReference().length() % 3 == 0) {
+                if (variant.getLength() % 3 == 0) {
+//                if (variant.getReference().length() % 3 == 0) {
                     SoNames.add(VariantAnnotationUtils.INFRAME_DELETION);
                 } else {
                     SoNames.add(VariantAnnotationUtils.FRAMESHIFT_VARIANT);
@@ -743,7 +745,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
             if (!splicing && cdnaVariantStart != -1) {
                 codingAnnotationAdded = true;
-                if (variant.getReference().length() % 3 == 0) {
+                if (variant.getLength() % 3 == 0) {
+//                if (variant.getReference().length() % 3 == 0) {
                     SoNames.add(VariantAnnotationUtils.INFRAME_DELETION);
                 } else {
                     SoNames.add(VariantAnnotationUtils.FRAMESHIFT_VARIANT);
