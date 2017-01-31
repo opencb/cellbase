@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
 import org.junit.Test;
+import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
@@ -42,6 +43,13 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(((Document) queryResult.getResult().get(0)).size(), 1);
         assertEquals(((Document) queryResult.getResult().get(1)).size(), 1);
         assertTrue(transcriptIdEquals(queryResult, Arrays.asList("ENST00000278314", "ENST00000536068")));
+
+        query = new Query(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "protein_coding");
+        query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), "BRCA2");
+        queryOptions = new QueryOptions("include", "transcripts.id");
+        queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
+        assertEquals("Number of transcripts with biotype protein_coding", 3, queryResult.getNumTotalResults());
+
     }
 
     private boolean transcriptIdEquals(QueryResult queryResult, List<String> transcriptIdList) {

@@ -133,7 +133,7 @@ public class GeneClientTest {
         QueryResponse<Transcript> transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", null);
         assertNotNull("Transcripts of the given gene must be returned", transcript.firstResult());
 
-        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", new QueryOptions("transcripts.biotype", "protein_coding"));
+        transcript = cellBaseClient.getGeneClient().getTranscript("BRCA2", new QueryOptions("biotype", "protein_coding"));
         assertNotNull(transcript.firstResult());
         assertEquals("Number of transcripts with biotype protein_coding", 3, transcript.getResponse().get(0).getNumTotalResults());
     }
