@@ -44,11 +44,23 @@ public class CellBaseClient {
     }
 
     public CellBaseClient(String species, String assembly, ClientConfiguration clientConfiguration) {
+
+        if (StringUtils.isBlank(species)) {
+            throw new IllegalArgumentException("Species parameter cannot be empty when building a CellBaseClient");
+        }
         this.species = species;
         this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
-        this.clientConfiguration = clientConfiguration;
-
+        if (clientConfiguration != null && clientConfiguration.getRest() != null
+                && clientConfiguration.getRest().getHosts() != null
+                && !clientConfiguration.getRest().getHosts().isEmpty()
+                && StringUtils.isNotBlank(clientConfiguration.getVersion())) {
+            this.clientConfiguration = clientConfiguration;
+        } else {
+            throw new IllegalArgumentException("version and host must be provided in a ClienConfiguration object"
+                    + " when building a CellBase client and cannot be empty");
+        }
         clients = new HashMap<>();
+
     }
 
 
