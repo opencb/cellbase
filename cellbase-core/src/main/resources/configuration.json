@@ -105,7 +105,7 @@
 			"host": "http://docm.genome.wustl.edu/api/"
 		},
 		"docmVersion": {
-			"host": "http://docm.genome.wustl.edu/index.html"
+			"host": "http://docm.genome.wustl.edu"
 		},
 		"gwasCatalog": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"

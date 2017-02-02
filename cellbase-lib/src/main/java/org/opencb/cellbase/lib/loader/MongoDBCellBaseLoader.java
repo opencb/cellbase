@@ -16,9 +16,15 @@
 
 package org.opencb.cellbase.lib.loader;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
+import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -393,7 +399,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //        }
 //    }
 
-    private void addClinicalPrivateFields(Document document) {
+    private void addClinicalPrivateFields(Document document) throws JsonProcessingException, FileFormatException {
         if (collectionName.equals(CLINICAL_VARIANTS_COLLECTION)) {
             Document annotationDocument = (Document) document.get("annotation");
             List<String> featureXrefs = getFeatureXrefsFromClinicalVariants(annotationDocument);
@@ -479,13 +485,25 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-    private List<String> getFeatureXrefsFromClinicalVariants(Document document) {
-        List germlineList = (List) ((Document) document.get("variantTraitAssociation")).get("germline");
-        List somaticList = (List) ((Document) document.get("variantTraitAssociation")).get("somatic");
+    private List<String> getFeatureXrefsFromClinicalVariants(Document document) throws JsonProcessingException, FileFormatException {
         Set<String> values = new HashSet<>();
-        getFeatureXrefsFromClinicalObject(germlineList, values);
-        getFeatureXrefsFromClinicalObject(somaticList, values);
-        getFeatureXrefsFromConsequenceTypes((List) document.get("consequenceTypes"), values);
+        if (document.containsKey("variantTraitAssociation")) {
+            List germlineList = (List) ((Document) document.get("variantTraitAssociation")).get("germline");
+            List somaticList = (List) ((Document) document.get("variantTraitAssociation")).get("somatic");
+            getFeatureXrefsFromClinicalObject(germlineList, values);
+            getFeatureXrefsFromClinicalObject(somaticList, values);
+            getFeatureXrefsFromConsequenceTypes((List) document.get("consequenceTypes"), values);
+        } else {
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+            ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+
+            throw new FileFormatException("variantTraitAssociation field missing in input objects. Please, ensure" +
+                    " that input file contains variants with appropriate clinical annotation: "
+                    + jsonObjectWriter.writeValueAsString(document));
+        }
 
         return new ArrayList<>(values);
 

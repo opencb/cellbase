@@ -278,7 +278,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
 //        files.keySet().forEach(entry -> {
 //            Path path = input.resolve(files.get(entry));
-        Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_ANNOTATED_JSON_FILE);
         if (Files.exists(path)) {
             try {
                 logger.info("Loading '{}' ...", path.toString());

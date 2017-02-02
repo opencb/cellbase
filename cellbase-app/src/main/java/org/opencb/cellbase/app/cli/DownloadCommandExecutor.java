@@ -874,6 +874,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
             throws IOException, InterruptedException {
 
         if (species.getScientificName().equals("Homo sapiens")) {
+            if (downloadCommandOptions.assembly == null) {
+                throw new ParameterException("Assembly must be provided for downloading clinical variants data."
+                        + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
+            }
+
             logger.info("Downloading clinical information ...");
 
             Path clinicalFolder = speciesFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
@@ -940,22 +945,25 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
 
             List<String> hgvsList = getDocmHgvsList();
-            downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
-            downloadFile(configuration.getDownload().getDocmVersion().getHost(),
-                    clinicalFolder.resolve("docmIndex.html").toString());
-//            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
-//                    getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
-//                    Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
-//                                    configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
-//                    clinicalFolder.resolve("clinvarVersion.json"));
-
-
+            if (!hgvsList.isEmpty()) {
+                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
+                downloadFile(configuration.getDownload().getDocmVersion().getHost(),
+                        clinicalFolder.resolve("docmIndex.html").toString());
+                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
+                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
+                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
+                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
+                        clinicalFolder.resolve("docmVersion.json"));
+            } else {
+                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
+                        + "assembly");
+            }
         }
     }
 
-//    private String getDocmVersion() {
-//
-//    }
+    private String getDocmVersion(Path docmIndexHtml) {
+        return getVersionFromVersionLine(docmIndexHtml, "<select name=\"version\" id=\"version\"");
+    }
 
     private void downloadDocm(List<String> hgvsList, Path path) throws IOException, InterruptedException {
         BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(path);
@@ -968,16 +976,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
         for (String hgvs : hgvsList) {
             WebTarget callUrl = restUrlBase.path(hgvs + ".json");
             String jsonString = callUrl.request().get(String.class);
-            bufferedWriter.write(jsonString);
+            bufferedWriter.write(jsonString + "\n");
 
             if (counter % 10 == 0) {
                 logger.info("{} DOCM variants saved", counter);
             }
-            // Wait half a second to avoid saturating their REST server - also avoid getting banned
-            wait(500);
+            // Wait 1/3 of a second to avoid saturating their REST server - also avoid getting banned
+            Thread.sleep(300);
 
             counter++;
         }
+        logger.info("Finished. {} DOCM variants saved at {}", counter, path.toString());
         bufferedWriter.close();
     }
 
@@ -993,7 +1002,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
         List<Map<String, String>> responseMap = parseResult(jsonString);
         List<String> hgvsList = new ArrayList<>(responseMap.size());
         for (Map<String, String> document : responseMap) {
-            hgvsList.add(document.get("hgvs"));
+            if (document.containsKey("reference_version")
+                    && document.get("reference_version").equalsIgnoreCase(downloadCommandOptions.assembly)) {
+                hgvsList.add(document.get("hgvs"));
+            }
         }
         logger.info("{} hgvs found", hgvsList.size());
 
@@ -1005,7 +1017,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ObjectReader reader = jsonObjectMapper
                 .readerFor(jsonObjectMapper.getTypeFactory()
-                        .constructParametrizedType(List.class, Map.class, String.class));
+                        .constructCollectionType(List.class, Map.class));
         return reader.readValue(json);
     }
 
