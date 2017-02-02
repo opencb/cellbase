@@ -500,8 +500,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
             ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
 
-            throw new FileFormatException("variantTraitAssociation field missing in input objects. Please, ensure" +
-                    " that input file contains variants with appropriate clinical annotation: "
+            throw new FileFormatException("variantTraitAssociation field missing in input objects. Please, ensure"
+                    + " that input file contains variants with appropriate clinical annotation: "
                     + jsonObjectWriter.writeValueAsString(document));
         }
 

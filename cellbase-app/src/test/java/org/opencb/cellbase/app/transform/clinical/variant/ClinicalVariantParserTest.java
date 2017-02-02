@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.variant.Variant;
@@ -31,6 +32,7 @@ import static org.junit.Assert.*;
 /**
  * Created by fjlopez on 07/10/16.
  */
+@Ignore
 public class ClinicalVariantParserTest {
     @Test
     public void parse() throws Exception {

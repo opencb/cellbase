@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
@@ -16,6 +17,7 @@ import static org.junit.Assert.*;
 /**
  * Created by fjlopez on 09/12/15.
  */
+@Ignore
 public class ClinicalLegacyMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public ClinicalLegacyMongoDBAdaptorTest() { super(); }
