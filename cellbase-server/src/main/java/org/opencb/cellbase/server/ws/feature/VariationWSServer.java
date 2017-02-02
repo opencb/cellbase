@@ -164,20 +164,25 @@ public class VariationWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of ENSEMBL gene ids, e.g.: ENST00000380152,ENSG00000155657."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    value = "Comma separated list of rs ids, e.g.: rs6025, rs666"
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "consequence_type",
-                    value = "Comma separated list of  consequence types."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.gene",
-                    value = "Comma separated list of gene names for which drug data is available, "
-                            + "e.g.: BRCA2,TTN."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list ENSEMBL gene ids, e.g.: ENSG00000161905. Exact text matches will be "
+                            + "returned.", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "chromosome",
+                    value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
+                    dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "reference",
+                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+                    dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "alternate",
+                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+                    dataType = "list of strings", paramType = "query")
     })
     public Response search() {
         try {

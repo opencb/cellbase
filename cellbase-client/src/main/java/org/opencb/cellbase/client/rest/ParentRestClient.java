@@ -49,6 +49,7 @@ import java.util.concurrent.Future;
 public class ParentRestClient<T> {
 
     protected final String species;
+    protected final String assembly;
     protected final Client client;
 
     // TODO: Should this be final?
@@ -69,11 +70,12 @@ public class ParentRestClient<T> {
 
     @Deprecated
     public ParentRestClient(ClientConfiguration configuration) {
-        this(configuration.getDefaultSpecies(), configuration);
+        this(configuration.getDefaultSpecies(), null, configuration);
     }
 
-    public ParentRestClient(String species, ClientConfiguration configuration) {
+    public ParentRestClient(String species, String assembly, ClientConfiguration configuration) {
         this.species = species;
+        this.assembly = assembly;
         this.configuration = configuration;
 
         this.client = ClientBuilder.newClient();
@@ -325,6 +327,13 @@ public class ParentRestClient<T> {
         if (queryOptions != null) {
             for (String s : queryOptions.keySet()) {
                 callUrl = callUrl.queryParam(s, queryOptions.get(s));
+            }
+            if (assembly != null && StringUtils.isEmpty(queryOptions.getString("assembly"))) {
+                callUrl.queryParam("assembly", assembly);
+            }
+        } else {
+            if (assembly != null) {
+                callUrl.queryParam("assembly", assembly);
             }
         }
 

@@ -338,15 +338,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         if (annotatorSet.contains("consequenceType")) {
             stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
         }
-        if (annotatorSet.contains("expression")) {
-            stringBuilder.append(",annotation.geneExpression");
-        }
-        if (annotatorSet.contains("geneDisease")) {
-            stringBuilder.append(",annotation.geneTraitAssociation");
-        }
-        if (annotatorSet.contains("drugInteraction")) {
-            stringBuilder.append(",annotation.geneDrugInteraction");
-        }
+//        if (annotatorSet.contains("expression")) {
+//            stringBuilder.append(",annotation.geneExpression");
+//        }
+//        if (annotatorSet.contains("geneDisease")) {
+//            stringBuilder.append(",annotation.geneTraitAssociation");
+//        }
+//        if (annotatorSet.contains("drugInteraction")) {
+//            stringBuilder.append(",annotation.geneDrugInteraction");
+//        }
         if (annotatorSet.contains("populationFrequencies")) {
             stringBuilder.append(",annotation.populationFrequencies");
         }
@@ -515,20 +515,33 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
 
     private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
-        destination.setId(origin.getId());
         destination.setChromosome(origin.getChromosome());
         destination.setStart(origin.getStart());
         destination.setReference(origin.getReference());
         destination.setAlternate(origin.getAlternate());
-        destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
-        destination.setConsequenceTypes(origin.getConsequenceTypes());
-        destination.setConservation(origin.getConservation());
+
+        if (annotatorSet.contains("variation")) {
+            destination.setId(origin.getId());
+        }
+        if (annotatorSet.contains("consequenceType")) {
+            destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
+            destination.setConsequenceTypes(origin.getConsequenceTypes());
+        }
+        if (annotatorSet.contains("conservation")) {
+            destination.setConservation(origin.getConservation());
+        }
 //        destination.setGeneExpression(origin.getGeneExpression());
 //        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
-        destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+        if (annotatorSet.contains("populationFrequencies")) {
+            destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+        }
 //        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
-        destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
-        destination.setFunctionalScore(origin.getFunctionalScore());
+        if (annotatorSet.contains("clinical")) {
+            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+        }
+        if (annotatorSet.contains("functionalScore")) {
+            destination.setFunctionalScore(origin.getFunctionalScore());
+        }
     }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer) {
