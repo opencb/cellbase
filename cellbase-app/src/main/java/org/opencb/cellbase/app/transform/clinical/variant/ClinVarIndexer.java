@@ -4,6 +4,7 @@ import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.biodata.models.variant.avro.Germline;
 import org.opencb.biodata.models.variant.avro.Somatic;
+import org.opencb.biodata.models.variant.avro.Submission;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
@@ -16,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -119,6 +121,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         String clinicalSignificance = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getDescription();
         String reviewStatus = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getReviewStatus().name();
         List<String> geneNames = getGeneNames(publicSet);
+        List<Submission> submissions = getSubmissionList(publicSet);
         List<String> germlineBibliography = new ArrayList<>();
         List<String> somaticBibliography = new ArrayList<>();
         Germline germline = null;
@@ -147,6 +150,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             somatic.setSource(CLINVAR_NAME);
             somatic.setReviewStatus(reviewStatus);
             somatic.setGeneNames(geneNames);
+            somatic.setSubmissions(submissions);
             somatic.setAccession(accession);
             somatic.setPrimaryHistology(getPreferredTraitName(publicSet, traitsToEfoTermsMap));
             variantTraitAssociation.getSomatic().add(somatic);
@@ -164,6 +168,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             germline.setSource(CLINVAR_NAME);
             germline.setInheritanceModel(getInheritanceModel(publicSet));
             germline.setGeneNames(geneNames);
+            germline.setSubmissions(submissions);
             variantTraitAssociation.getGermline().add(germline);
             if (germlineBibliography.size() > 0) {
                 germline.setBibliography(germlineBibliography);
@@ -171,6 +176,26 @@ public class ClinVarIndexer extends ClinicalIndexer {
             numberGermlineRecords++;
         }
 
+    }
+
+    private List<Submission> getSubmissionList(PublicSetType publicSet) {
+        List<Submission> submissionList = new ArrayList<>(publicSet.getClinVarAssertion().size());
+        for (MeasureTraitType measureTraitType : publicSet.getClinVarAssertion()) {
+            String date;
+            // Try to provide the clinVarAssertion.clinicalSignificance.dateLastUpdated date. If does not exist, provide
+            // the clinVarAccession.dateUpdated one. We are assuming thate clinVarAccession and
+            // clinVarAccession.dateUpdated fields do always exist
+            if (measureTraitType.getClinicalSignificance() != null
+                    && measureTraitType.getClinicalSignificance().getDateLastEvaluated() != null) {
+                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinicalSignificance()
+                        .getDateLastEvaluated().getMillisecond());
+            } else {
+                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinVarAccession()
+                        .getDateUpdated().getMillisecond());
+            }
+            submissionList.add(new Submission(measureTraitType.getClinVarSubmissionID().getSubmitter(), date));
+        }
+        return submissionList;
     }
 
     private String getPreferredTraitName(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
