@@ -10,8 +10,8 @@ public class CdnaCoord {
         CDNA_START_CODON, CDNA_STOP_CODON
     }
 
-    private int cdsPosition = -1;
-    private int startStopCodonOffset = -1;
+    private int cdsPosition = 0;
+    private int startStopCodonOffset = 0;
     private Landmark landmark;
 
     public CdnaCoord() {
@@ -44,11 +44,23 @@ public class CdnaCoord {
 
     @Override
     public String toString() {
-        return "CdnaCoord{" +
-                "cdsPosition=" + cdsPosition +
-                ", startStopCodonOffset=" + startStopCodonOffset +
-                ", landmark=" + landmark +
-                '}';
+        StringBuilder stringBuilder = new StringBuilder();
+        if (landmark.equals(Landmark.CDNA_STOP_CODON)) {
+            stringBuilder.append("*");
+        }
+
+        if (cdsPosition != 0) {
+            stringBuilder.append(cdsPosition);
+        }
+
+        if (startStopCodonOffset < 0) {
+            stringBuilder.append(startStopCodonOffset);
+        } else if (startStopCodonOffset > 0) {
+            stringBuilder.append("+");
+            stringBuilder.append(startStopCodonOffset);
+        }
+
+        return stringBuilder.toString();
     }
 
     @Override

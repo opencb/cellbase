@@ -202,12 +202,17 @@ public class HgvsStringBuilder {
             // example:
             // 112_117d elAGGTCAinsTG, 112_117d elinsTG
             return "del" + reference + "ins" + alternate;
-        } else if ("del".equals(mutationType) || "dup".equals(mutationType)) {
+        } else if ("del".equals(mutationType)) {
             // Delete, duplication.
             // example:
             // 1000_1003d elATG, 1000_1003d upATG
             return mutationType + reference;
-        } else if("ins".equals(mutationType)) {
+        } else if ("dup".equals(mutationType)) {
+            // Insertion normalized as duplication
+            // example:
+            // "ENST00000382869.3:c.1735+32dupA"
+            return mutationType + alternate;
+        } else if ("ins".equals(mutationType)) {
             // Insert.
             // example:
             // 1000_1001 insATG
@@ -222,7 +227,14 @@ public class HgvsStringBuilder {
      */
     private String formatCdnaCoords() {
         // Format coordinates.
-        if (cdnaStart.equals(cdnaEnd)) {
+//        if (cdnaStart.equals(cdnaEnd)
+//                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
+//                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
+//                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
+        if (cdnaStart.equals(cdnaEnd)
+                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
+                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
+                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
             return cdnaStart.toString();
         } else {
             return cdnaStart.toString() + "_" + cdnaEnd.toString();

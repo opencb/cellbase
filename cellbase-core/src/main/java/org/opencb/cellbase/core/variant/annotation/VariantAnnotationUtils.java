@@ -342,6 +342,7 @@ public class VariantAnnotationUtils {
         COMPLEMENTARY_NT.put('C', 'G');
         COMPLEMENTARY_NT.put('G', 'C');
         COMPLEMENTARY_NT.put('T', 'A');
+        COMPLEMENTARY_NT.put('N', 'N');
 
         POLYPHEN_DESCRIPTIONS.put(0, "probably damaging");
         POLYPHEN_DESCRIPTIONS.put(1, "possibly damaging");
