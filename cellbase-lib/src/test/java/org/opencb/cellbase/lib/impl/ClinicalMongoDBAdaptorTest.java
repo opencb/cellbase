@@ -4,12 +4,15 @@ import org.bson.Document;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,6 +147,18 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult queryResult9 = clinicalDBAdaptor.nativeGet(query7, options);
         assertNotNull("Should return the queryResult of id=COSM306824", queryResult9.getResult());
         assertEquals(((Document)queryResult9.getResult().get(0)).get("geneName"), "FMN2");
+
+    }
+
+    @Test
+    public void testGetAllByGenomicVariantList() throws Exception {
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh38");
+        QueryOptions queryOptions = new QueryOptions();
+        List<QueryResult> queryResult = clinicalDBAdaptor
+                .getAllByGenomicVariantList(Collections.singletonList(new Variant("2:47414420:T:-")), queryOptions);
+
+        assertEquals("RCV000076755",
+                ((VariantTraitAssociation) queryResult.get(0).getResult().get(0)).getClinvar().get(0).getAccession());
 
     }
 }

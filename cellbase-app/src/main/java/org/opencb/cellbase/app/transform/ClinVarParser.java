@@ -127,8 +127,8 @@ public class ClinVarParser extends CellBaseParser {
                 sequenceLocation.setChr(parts[18]);
                 sequenceLocation.setStart(new BigInteger(parts[19]));
                 sequenceLocation.setStop(new BigInteger(parts[20]));
-                sequenceLocation.setReferenceAllele(parts[21]);
-                sequenceLocation.setAlternateAllele(parts[22]);
+                sequenceLocation.setReferenceAllele(parseEmptyAllele(parts[21]));
+                sequenceLocation.setAlternateAllele(parseEmptyAllele(parts[22]));
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
                 String[] rcvArray = parts[11].split(";");
                 for (String rcv : rcvArray) {
@@ -138,6 +138,16 @@ public class ClinVarParser extends CellBaseParser {
             line = bufferedReader.readLine();
         }
         return rcvToSequenceLocation;
+    }
+
+    private String parseEmptyAllele(String allele) {
+        if (allele.replace("-", "").isEmpty()
+                || (allele.replace(" ", "").isEmpty())
+                || (allele.replace("\t", "").isEmpty())
+                || (allele.replace("", "").isEmpty())) {
+            return "";
+        }
+        return allele;
     }
 
     private Map<String, EFO> loadEFOTerms() {
