@@ -232,9 +232,10 @@ public class HgvsStringBuilder {
 //                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
 //                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
         if (cdnaStart.equals(cdnaEnd)
-                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
-                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
-                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
+            || "dup".equals(mutationType)) {
+//                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
+//                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
+//                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
             return cdnaStart.toString();
         } else {
             return cdnaStart.toString() + "_" + cdnaEnd.toString();
