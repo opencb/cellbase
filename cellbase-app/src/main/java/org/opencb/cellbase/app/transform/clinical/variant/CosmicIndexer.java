@@ -284,7 +284,11 @@ public class CosmicIndexer extends ClinicalIndexer {
         cosmic.setPrimaryHistology(fields[11]);
         cosmic.setHistologySubtype(fields[12]);
         cosmic.setMutationSomaticStatus(fields[mutationSomaticStatusColumn]);
-        cosmic.setBibliography(Collections.singletonList("PMID:" + fields[pubmedPMIDColumn]));
+        if(!fields[pubmedPMIDColumn].isEmpty()
+                && !fields[pubmedPMIDColumn].replace(" ", "").replace("NA", "").replace("NULL", "").replace("\t", "")
+                .replace(".", "").replace("-", "").isEmpty()) {
+            cosmic.setBibliography(Collections.singletonList("PMID:" + fields[pubmedPMIDColumn]));
+        }
         cosmic.setSampleSource(fields[sampleSourceColumn]);
         cosmic.setTumourOrigin(fields[tumourOriginColumn]);
 

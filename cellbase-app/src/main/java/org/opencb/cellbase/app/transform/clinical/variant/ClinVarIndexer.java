@@ -187,11 +187,17 @@ public class ClinVarIndexer extends ClinicalIndexer {
             // clinVarAccession.dateUpdated fields do always exist
             if (measureTraitType.getClinicalSignificance() != null
                     && measureTraitType.getClinicalSignificance().getDateLastEvaluated() != null) {
-                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinicalSignificance()
-                        .getDateLastEvaluated().getMillisecond());
+                date = String.valueOf(measureTraitType.getClinicalSignificance().getDateLastEvaluated().getYear())
+                        + String.valueOf(measureTraitType.getClinicalSignificance().getDateLastEvaluated().getMonth())
+                        + String.valueOf(measureTraitType.getClinicalSignificance().getDateLastEvaluated().getDay());
+//                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinicalSignificance()
+//                        .getDateLastEvaluated().getMillisecond());
             } else {
-                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinVarAccession()
-                        .getDateUpdated().getMillisecond());
+                date = String.valueOf(measureTraitType.getClinVarAccession().getDateUpdated().getYear())
+                        + String.valueOf(measureTraitType.getClinVarAccession().getDateUpdated().getMonth())
+                        + String.valueOf(measureTraitType.getClinVarAccession().getDateUpdated().getDay());
+//                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinVarAccession()
+//                        .getDateUpdated().getMillisecond());
             }
             submissionList.add(new Submission(measureTraitType.getClinVarSubmissionID().getSubmitter(), date));
         }
