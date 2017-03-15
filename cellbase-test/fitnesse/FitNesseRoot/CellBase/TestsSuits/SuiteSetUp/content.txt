@@ -1,0 +1,16 @@
+!define TEST_SYSTEM {slim}
+!path target/appassembler/dependencies/*.jar
+!define CELLBASE_VERSION {cellbase}
+!define TEST_HOST {bioinfo.hpc.cam.ac.uk}
+
+!|import|
+|smartrics.rest.fitnesse.fixture|
+
+!|Table: Rest Fixture Config|
+|restfixture.display.toggle.for.cells.larger.than|200|
+|restfixture.display.actual.on.right | false |
+|http.client.connection.timeout| 100000|
+
+!3 Generate Random Variables 
+!|Table: Rest Fixture | http://bioinfoint.hpc.cam.ac.uk/|
+|let|baseURL|const|http://${TEST_HOST}/${CELLBASE_VERSION}/webservices/rest/||

@@ -130,6 +130,7 @@
                                 </exec>
                                 <exec executable="mkdir">
                                     <arg value="${build.dir}"/>
+                                    <arg value="${build.dir}/test"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}</echo>
@@ -151,6 +152,25 @@
                                 <exec executable="cp">
                                     <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>
                                     <arg value="${build.dir}"/>
+                                </exec>
+                                <echo>Coping Acceptance testing files</echo>
+                                <exec executable="mvn">
+                                    <arg value="-f"/>
+                                    <arg value="${project.basedir}/../cellbase-test/pom.xml"/>
+                                    <arg value="install"/>
+                                </exec>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../cellbase-test/target/appassembler/bin"/>
+                                    <arg value="${project.basedir}/../cellbase-test/target/appassembler/dependencies"/>
+                                    <arg value="${project.basedir}/../cellbase-test/README.md"/>
+                                    <arg value="${project.basedir}/../cellbase-test/fitnesse"/>
+                                    <arg value="${build.dir}/test"/>
+                                </exec>
+                                <exec executable="sed">
+                                    <arg value="-i"/>
+                                    <arg value="s/target\/appassembler\/dependencies/dependencies/"/>
+                                    <arg value="${build.dir}/test/fitnesse/FitNesseRoot/CellBase/TestsSuits/SuiteSetUp/content.txt"/>
                                 </exec>
                             </target>
                         </configuration>
