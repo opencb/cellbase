@@ -1,4 +1,4 @@
-function deepCompare () {
+function compareJSON () {
     var i, l, leftChain, rightChain;
 
     function compare2Objects (x, y) {

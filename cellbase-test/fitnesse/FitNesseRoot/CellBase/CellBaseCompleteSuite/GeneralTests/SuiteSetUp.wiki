@@ -1,3 +1,6 @@
+---
+Test
+---
 !define TEST_SYSTEM {slim}
 
 !define CELLBASE_WAR {cellbase}
@@ -10,10 +13,10 @@
 |smartrics.rest.fitnesse.fixture|
 
 !|Table: Rest Fixture | http://bioinfoint.hpc.cam.ac.uk/|
-|let|baseURL|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}||
+|let|baseURL|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}|http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4|
 
-| Table: Rest Fixture Config |  with-deepCompare.js |
-| restfixture.javascript.imports.map | !- deepCompare=fitnesse/FitNesseRoot/files/javascript/deepCompare.js-! |
+| Table: Rest Fixture Config |  with-compareJSON.js |
+| restfixture.javascript.imports.map | !- compareJSON=fitnesse/FitNesseRoot/files/javascript/compareJSON.js-! |
 | restfixture.display.toggle.for.cells.larger.than|200|
 | restfixture.display.actual.on.right | false |
 | http.client.connection.timeout| 100000|

@@ -4,6 +4,7 @@
 !3 Notes
 Change the following variables in Suite Set Up page to run tests against own installtion:
 
+ * CELLBASE_WAR 
  * CELLBASE_VERSION 
  * TEST_HOST 
 
