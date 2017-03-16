@@ -946,6 +946,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 return new ConsequenceTypeSNVCalculator();
             case CNV:
                 return new ConsequenceTypeCNVCalculator();
+            case MNV:
+                return new ConsequenceTypeMNVCalculator(genomeDBAdaptor);
             default:
                 throw new UnsupportedURLVariantFormat();
         }
