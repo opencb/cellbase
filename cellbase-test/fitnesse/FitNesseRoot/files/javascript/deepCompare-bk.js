@@ -25,10 +25,7 @@ function deepCompare () {
             (x instanceof RegExp && y instanceof RegExp) ||
             (x instanceof String && y instanceof String) ||
             (x instanceof Number && y instanceof Number)) {
-	if (x instanceof Number || y instanceof Number){
-		return true;	
-		}
- 	 return x.toString() === y.toString();
+		return x.toString() === y.toString();
         }
 
         // At last checking prototypes as good a we can

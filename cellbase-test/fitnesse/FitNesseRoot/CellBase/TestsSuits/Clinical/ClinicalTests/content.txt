@@ -1,6 +1,0 @@
-!define TEST_SYSTEM {slim}
-
-!3 Clinical Search 
-!|Table: Rest Fixture | $baseURL |
-| GET |/v4/hsapiens/feature/clinical/search?limit=1 |200|  Content-Type: application/json | |
-
