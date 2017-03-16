@@ -963,9 +963,11 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             if (variant.getReference().isEmpty()) {
 //                variant.setType(VariantType.INSERTION);
                 return VariantType.INSERTION;
-            } else {
+            } else if (variant.getAlternate().isEmpty()) {
 //                variant.setType(VariantType.DELETION);
                 return VariantType.DELETION;
+            } else {
+                return VariantType.MNV;
             }
         }
         return variant.getType();
