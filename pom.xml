@@ -261,7 +261,6 @@
             </activation>
             <properties>
                 <cellbase.war.name>cellbase-4.5.0-SNAPSHOT</cellbase.war.name>
-                
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
