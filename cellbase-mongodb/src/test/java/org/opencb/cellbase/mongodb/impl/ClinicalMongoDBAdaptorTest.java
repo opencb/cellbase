@@ -3,12 +3,15 @@ package org.opencb.cellbase.mongodb.impl;
 import org.bson.Document;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.mongodb.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -87,6 +90,18 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult queryResult8 = clinicalDBAdaptor.nativeGet(query6, queryOptions);
         assertEquals(queryResult8.getNumTotalResults(), 47);
         assertEquals(((Document) queryResult8.getResult().get(0)).get("geneName"), "APOE");
+
+    }
+
+    @Test
+    public void testGetAllByGenomicVariantList() throws Exception {
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh38");
+        QueryOptions queryOptions = new QueryOptions();
+        List<QueryResult> queryResult = clinicalDBAdaptor
+                .getAllByGenomicVariantList(Collections.singletonList(new Variant("2:47414420:T:-")), queryOptions);
+
+        assertEquals("RCV000076755",
+                ((VariantTraitAssociation) queryResult.get(0).getResult().get(0)).getClinvar().get(0).getAccession());
 
     }
 }
