@@ -170,7 +170,7 @@
                                 <exec executable="sed">
                                     <arg value="-i"/>
                                     <arg value="s/target\/appassembler\/dependencies/dependencies/"/>
-                                    <arg value="${build.dir}/test/fitnesse/FitNesseRoot/CellBase/TestsSuits/SuiteSetUp/content.txt"/>
+                                    <arg value="${build.dir}/test/fitnesse/FitNesseRoot/CellBase/CellBaseCompleteSuite/SuiteSetUp.wiki"/>
                                 </exec>
                             </target>
                         </configuration>
