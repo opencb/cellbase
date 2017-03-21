@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>4.5.0-rc.1</version>
+    <version>4.5.0-rc.1.1</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -22,7 +22,7 @@
     </modules>
 
     <properties>
-        <cellbase.version>4.5.0-rc.1</cellbase.version>
+        <cellbase.version>4.5.0-rc.1.1</cellbase.version>
         <compileSource>1.8</compileSource>
         <biodata.version>0.9.1</biodata.version>
         <java-common-libs.version>3.4.0</java-common-libs.version>
@@ -260,7 +260,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <cellbase.war.name>cellbase-4.5.0-rc.1</cellbase.war.name>
+                <cellbase.war.name>cellbase-4.5.0-rc.1.1</cellbase.war.name>
                 
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
