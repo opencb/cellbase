@@ -7,6 +7,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.slf4j.Logger;
@@ -28,8 +29,114 @@ public abstract class ConsequenceTypeCalculator {
 
     public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList);
 
+    protected void solvePositiveTranscript(List<ConsequenceType> consequenceTypeList) {
+        switch (transcript.getBiotype()) {
+            /**
+             * Coding biotypes
+             */
+            case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
+                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
+            case VariantAnnotationUtils.IG_C_GENE:
+            case VariantAnnotationUtils.IG_D_GENE:
+            case VariantAnnotationUtils.IG_J_GENE:
+            case VariantAnnotationUtils.IG_V_GENE:
+            case VariantAnnotationUtils.TR_C_GENE:  // TR_C_gene
+            case VariantAnnotationUtils.TR_D_GENE:  // TR_D_gene
+            case VariantAnnotationUtils.TR_J_GENE:  // TR_J_gene
+            case VariantAnnotationUtils.TR_V_GENE:  // TR_V_gene
+            case VariantAnnotationUtils.POLYMORPHIC_PSEUDOGENE:
+            case VariantAnnotationUtils.PROTEIN_CODING:    // protein_coding
+            case VariantAnnotationUtils.NON_STOP_DECAY:    // non_stop_decay
+            case VariantAnnotationUtils.TRANSLATED_PROCESSED_PSEUDOGENE:
+            case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
+            case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
+                solveCodingPositiveTranscript();
+                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                consequenceTypeList.add(consequenceType);
+                break;
+            /**
+             * Non-coding biotypes
+             */
+            default:
+                solveNonCodingPositiveTranscript();
+                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                consequenceTypeList.add(consequenceType);
+                break;
+        }
+    }
+
+    protected void solveNegativeTranscript(List<ConsequenceType> consequenceTypeList) {
+        switch (transcript.getBiotype()) {
+            /**
+             * Coding biotypes
+             */
+            case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
+                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
+            case VariantAnnotationUtils.IG_C_GENE:
+            case VariantAnnotationUtils.IG_D_GENE:
+            case VariantAnnotationUtils.IG_J_GENE:
+            case VariantAnnotationUtils.IG_V_GENE:
+            case VariantAnnotationUtils.TR_C_GENE:  // TR_C_gene
+            case VariantAnnotationUtils.TR_D_GENE:  // TR_D_gene
+            case VariantAnnotationUtils.TR_J_GENE:  // TR_J_gene
+            case VariantAnnotationUtils.TR_V_GENE:  // TR_V_gene
+            case VariantAnnotationUtils.POLYMORPHIC_PSEUDOGENE:
+            case VariantAnnotationUtils.PROTEIN_CODING:    // protein_coding
+            case VariantAnnotationUtils.NON_STOP_DECAY:    // non_stop_decay
+            case VariantAnnotationUtils.TRANSLATED_PROCESSED_PSEUDOGENE:
+            case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
+            case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
+                solveCodingNegativeTranscript();
+                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                consequenceTypeList.add(consequenceType);
+                break;
+            /**
+             * Non-coding biotypes
+             */
+            default:
+                solveNonCodingNegativeTranscript();
+                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                consequenceTypeList.add(consequenceType);
+                break;
+        }
+    }
+
+    protected abstract void solveNonCodingNegativeTranscript();
+
+    protected abstract void solveCodingNegativeTranscript();
+
+    protected abstract void solveNonCodingPositiveTranscript();
+
+    protected abstract void solveCodingPositiveTranscript();
+
+    protected int setCdsAndProteinPosition(int cdnaVariantPosition, int firstCdsPhase, int cdnaCodingStart) {
+        if (cdnaVariantPosition != -1) {  // cdnaVariantStart may be null if variantEnd falls in an intron
+            if (transcript.unconfirmedStart()) {
+                cdnaCodingStart -= ((3 - firstCdsPhase) % 3);
+            }
+            int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
+            consequenceType.setCdsPosition(cdsVariantStart);
+            // First place where protein variant annotation is added to the Consequence type,
+            // must create the ProteinVariantAnnotation object
+            ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+            proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
+            consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
+        }
+        return cdnaCodingStart;
+    }
+
     protected Boolean regionsOverlap(Integer region1Start, Integer region1End, Integer region2Start, Integer region2End) {
         return (region2Start <= region1End && region2End >= region1Start);
+    }
+
+    protected void solveIntergenic(List<ConsequenceType> consequenceTypeList, boolean isIntergenic) {
+        if (consequenceTypeList.size() == 0 && isIntergenic) {
+            HashSet<String> intergenicName = new HashSet<>();
+            intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);
+            ConsequenceType consequenceType = new ConsequenceType();
+            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(intergenicName));
+            consequenceTypeList.add(consequenceType);
+        }
     }
 
     protected void solveRegulatoryRegions(List<RegulatoryFeature> regulatoryRegionList, List<ConsequenceType> consequenceTypeList) {

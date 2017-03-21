@@ -2,17 +2,15 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 //import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -67,41 +65,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                         if (isBigDeletion) {  // Big deletion
                             SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
                         }
-                        switch (transcript.getBiotype()) {
-                            /**
-                             * Coding biotypes
-                             */
-                            case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
-                                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
-                            case VariantAnnotationUtils.IG_C_GENE:
-                            case VariantAnnotationUtils.IG_D_GENE:
-                            case VariantAnnotationUtils.IG_J_GENE:
-                            case VariantAnnotationUtils.IG_V_GENE:
-                            case VariantAnnotationUtils.TR_C_GENE:  // TR_C_gene
-                            case VariantAnnotationUtils.TR_D_GENE:  // TR_D_gene
-                            case VariantAnnotationUtils.TR_J_GENE:  // TR_J_gene
-                            case VariantAnnotationUtils.TR_V_GENE:  // TR_V_gene
-                            case VariantAnnotationUtils.POLYMORPHIC_PSEUDOGENE:
-                            case VariantAnnotationUtils.PROTEIN_CODING:    // protein_coding
-                            case VariantAnnotationUtils.NON_STOP_DECAY:    // non_stop_decay
-                            case VariantAnnotationUtils.TRANSLATED_PROCESSED_PSEUDOGENE:
-                            case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
-                            case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
-                                solveCodingPositiveTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                            /**
-                             * Non-coding biotypes
-                             */
-                            default:
-                                solveNonCodingPositiveTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                        }
+                        solvePositiveTranscript(consequenceTypeList);
                     } else {
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
@@ -121,41 +85,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
                         if (isBigDeletion) {  // Big deletion
                             SoNames.add(VariantAnnotationUtils.FEATURE_TRUNCATION);
                         }
-                        switch (transcript.getBiotype()) {
-                            /**
-                             * Coding biotypes
-                             */
-                            case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
-                                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
-                            case VariantAnnotationUtils.IG_C_GENE:
-                            case VariantAnnotationUtils.IG_D_GENE:
-                            case VariantAnnotationUtils.IG_J_GENE:
-                            case VariantAnnotationUtils.IG_V_GENE:
-                            case VariantAnnotationUtils.TR_C_GENE:  // TR_C_gene
-                            case VariantAnnotationUtils.TR_D_GENE:  // TR_D_gene
-                            case VariantAnnotationUtils.TR_J_GENE:  // TR_J_gene
-                            case VariantAnnotationUtils.TR_V_GENE:  // TR_V_gene
-                            case VariantAnnotationUtils.POLYMORPHIC_PSEUDOGENE:
-                            case VariantAnnotationUtils.PROTEIN_CODING:    // protein_coding
-                            case VariantAnnotationUtils.NON_STOP_DECAY:    // non_stop_decay
-                            case VariantAnnotationUtils.TRANSLATED_PROCESSED_PSEUDOGENE:
-                            case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:  // translated_unprocessed_pseudogene
-                            case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
-                                solveCodingNegativeTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                            /**
-                             * Non-coding biotypes
-                             */
-                            default:
-                                solveNonCodingNegativeTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                        }
+                        solveNegativeTranscript(consequenceTypeList);
                     } else {
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
@@ -169,21 +99,12 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
             }
         }
 
-        if (consequenceTypeList.size() == 0 && isIntergenic) {
-//        if (isIntegernic) {
-//            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
-            HashSet<String> intergenicName = new HashSet<>();
-            intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);
-            ConsequenceType consequenceType = new ConsequenceType();
-            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(intergenicName));
-            consequenceTypeList.add(consequenceType);
-        }
-
+        solveIntergenic(consequenceTypeList, isIntergenic);
         solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
         return consequenceTypeList;
     }
 
-    private void solveNonCodingNegativeTranscript() {
+    protected void solveNonCodingNegativeTranscript() {
         Exon exon = transcript.getExons().get(0);
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);
@@ -253,7 +174,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
-    private void solveCodingNegativeTranscript() {
+    protected void solveCodingNegativeTranscript() {
         Exon exon = transcript.getExons().get(0);
         String transcriptSequence = exon.getSequence();
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
@@ -355,18 +276,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         } else if (variantEnd >= transcript.getGenomicCodingStart()) {
             // Need to define a local cdnaCodingStart because may modified in two lines below
             int cdnaCodingStart = transcript.getCdnaCodingStart();
-            if (cdnaVariantStart != -1) {  // cdnaVariantStart may be null if variantEnd falls in an intron
-                if (transcript.unconfirmedStart()) {
-                    cdnaCodingStart -= ((3 - firstCdsPhase) % 3);
-                }
-                int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
-                consequenceType.setCdsPosition(cdsVariantStart);
-                // First place where protein variant annotation is added to the Consequence type,
-                // must create the ProteinVariantAnnotation object
-                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
-                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
-                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
-            }
+            cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantStart, firstCdsPhase, cdnaCodingStart);
             if (variantStart >= transcript.getGenomicCodingStart()) {  // Variant start also within coding region
                 solveCodingExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaCodingStart, cdnaVariantStart,
                         cdnaVariantEnd);
@@ -525,7 +435,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         }
     }
 
-    private void solveCodingPositiveTranscript() {
+    protected void solveCodingPositiveTranscript() {
         Exon exon = transcript.getExons().get(0);
         String transcriptSequence = exon.getSequence();
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
@@ -603,7 +513,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
 
     }
 
-    private void solveNonCodingPositiveTranscript() {
+    protected void solveNonCodingPositiveTranscript() {
         Exon exon = transcript.getExons().get(0);
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);
@@ -700,18 +610,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeCalculator
         } else if (variantStart <= transcript.getGenomicCodingEnd()) {  // Variant start within coding region
             // Need to define a local cdnaCodingStart because may modified in two lines below
             int cdnaCodingStart = transcript.getCdnaCodingStart();
-            if (cdnaVariantStart != -1) {  // cdnaVariantStart may be null if variantStart falls in an intron
-                if (transcript.unconfirmedStart()) {
-                    cdnaCodingStart -= ((3 - firstCdsPhase) % 3);
-                }
-                int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
-                consequenceType.setCdsPosition(cdsVariantStart);
-                // First place where protein variant annotation is added to the Consequence type,
-                // must create the ProteinVariantAnnotation object
-                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
-                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
-                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
-            }
+            cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantStart, firstCdsPhase, cdnaCodingStart);
             if (variantEnd <= transcript.getGenomicCodingEnd()) {  // Variant end also within coding region
                 solveCodingExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaCodingStart,
                         cdnaVariantStart, cdnaVariantEnd);
