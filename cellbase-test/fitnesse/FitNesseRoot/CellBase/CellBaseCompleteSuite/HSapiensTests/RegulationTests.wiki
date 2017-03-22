@@ -6,18 +6,14 @@ Test
 !3 Get Regulatory Feature Types
 | Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
 |GET|/regulatory/featureType|200|Content-Type : application/json| !- /* javascript */
-var desiredResult = {"apiVersion":"$JSONVersion","warning":"","error":"","queryOptions":{"exclude":["_id","_chunkIds"],"metadata":true,"include":null,"limit":1000,"skip":-1,"count":false},"response":[{"time":0,"dbTime":0,"numResults":27,"numTotalResults":27,"resultType":"java.lang.String","result":["CTCF_binding_site","ChIP_seq_region","H3K14_acetylation_site","H3K18_acetylation_site","H3K23_acylation_site","H3K27_acylation_site","H3K27_trimethylation_site","H3K36_trimethylation_site","H3K4_dimethylation_site","H3K4_monomethylation_site","H3K4_trimethylation_site","H3K79_dimethylation_site","H3K79_monomethylation_site","H3K9_acetylation_site","H3K9_monomethylation_site","H3K9_trimethylation_site","H4K20_monomethylation_site","H4K5_acylation_site","TF_binding_site","TF_binding_site_motif","enhancer","histone_acetylation_site","histone_binding_site","histone_methylation_site","open_chromatin_region","promoter","promoter_flanking_region"]}]};
-var RESTResult = jsonbody;
-RESTResult.response[0].dbTime = 0;
-compareJSON(RESTResult,desiredResult);
+var desiredResult = ["CTCF_binding_site","ChIP_seq_region","H3K14_acetylation_site","H3K18_acetylation_site","H3K23_acylation_site","H3K27_acylation_site","H3K27_trimethylation_site","H3K36_trimethylation_site","H3K4_dimethylation_site","H3K4_monomethylation_site","H3K4_trimethylation_site","H3K79_dimethylation_site","H3K79_monomethylation_site","H3K9_acetylation_site","H3K9_monomethylation_site","H3K9_trimethylation_site","H4K20_monomethylation_site","H4K5_acylation_site","TF_binding_site","TF_binding_site_motif","enhancer","histone_acetylation_site","histone_binding_site","histone_methylation_site","open_chromatin_region","promoter","promoter_flanking_region"];
+compareJSON(jsonbody.response[0].result,desiredResult);
 -!|
 
 !3 Get Regulatory Feature Classes
 | Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
 |GET|/regulatory/featureClass|200|Content-Type : application/json| !- /* javascript */
-var desiredResult = {"apiVersion":"$JSONVersion","warning":"","error":"","queryOptions":{"exclude":["_id","_chunkIds"],"metadata":true,"include":null,"limit":1000,"skip":-1,"count":false},"response":[{"time":0,"dbTime":0,"numResults":5,"numTotalResults":5,"resultType":"","result":[null,"Histone","Open Chromatin","Polymerase","Transcription Factor"]}]};
-var RESTResult = jsonbody;
-RESTResult.response[0].dbTime = 0;
-compareJSON(RESTResult,desiredResult);
+var desiredResult = [null,"Histone","Open Chromatin","Polymerase","Transcription Factor"];
+compareJSON(jsonbody.response[0].result,desiredResult);
 -!|
 

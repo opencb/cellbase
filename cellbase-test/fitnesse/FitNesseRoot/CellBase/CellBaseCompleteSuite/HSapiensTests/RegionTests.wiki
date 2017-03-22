@@ -6,8 +6,8 @@ Test
 !3 Get Region Model
 | Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
 |GET|/genomic/region/model|200|Content-Type : application/json| !- /* javascript */
-var desiredResult = {"apiVersion":"$JSONVersion","warning":"","error":"","queryOptions":{"exclude":["_id","_chunkIds"]},"response":[{"id":"urn:jsonschema:org:opencb:biodata:models:core:Region","properties":{"chromosome":{"type":"string"},"start":{"type":"integer"},"end":{"type":"integer"}}}]};
-compareJSON(jsonbody,desiredResult);
+var desiredResult = [{"id":"urn:jsonschema:org:opencb:biodata:models:core:Region","properties":{"chromosome":{"type":"string"},"start":{"type":"integer"},"end":{"type":"integer"}}}];
+compareJSON(jsonbody.response,desiredResult);
 -!|
 
 
