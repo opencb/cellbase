@@ -1,0 +1,12 @@
+---
+Test
+---
+!define TEST_SYSTEM {slim}
+!3 Get Chromosome List
+| Table: Rest Fixture | $baseURL_hsapiens | with-compareJSON.js |
+| GET | /genomic/chromosome/list | 200 | Content-Type : application/json | !- /* javascript */
+var desiredResult = {"apiVersion":"$JSONVersion","warning":"","error":"","queryOptions":{"exclude":["_id","_chunkIds"],"metadata":true,"include":null,"limit":1000,"skip":-1,"count":false},"response":[{"time":0,"dbTime":0,"numResults":1,"numTotalResults":1,"resultType":"org.bson.Document","result":[{"_id":{"timestamp":1469894120,"machineIdentifier":13834652,"processIdentifier":-13535,"counter":5699679},"chromosomes":[{"name":"19"},{"name":"20"},{"name":"X"},{"name":"9"},{"name":"13"},{"name":"5"},{"name":"21"},{"name":"10"},{"name":"2"},{"name":"12"},{"name":"14"},{"name":"18"},{"name":"16"},{"name":"1"},{"name":"3"},{"name":"4"},{"name":"Y"},{"name":"Y"},{"name":"Y"},{"name":"17"},{"name":"6"},{"name":"11"},{"name":"22"},{"name":"15"},{"name":"7"},{"name":"8"},{"name":"MT"}]}]}]};
+var restResult = jsonbody;
+restResult.response[0].dbTime = 0;
+compareJSON(restResult,desiredResult);
+-! |
