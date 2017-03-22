@@ -896,6 +896,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
             url = configuration.getDownload().getClinvarSummary().getHost();
             downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE).toString());
             clinvarUrls.add(url);
+
+            url = configuration.getDownload().getClinvarVariationAllele().getHost();
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString());
+            clinvarUrls.add(url);
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
 

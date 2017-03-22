@@ -25,6 +25,7 @@ public class ClinicalVariantParser extends CellBaseParser {
 
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
+    private final Path clinvarVariationAlleleFile;
     private final Path clinvarEFOFile;
     private final Path cosmicFile;
     private final Path gwasFile;
@@ -36,10 +37,12 @@ public class ClinicalVariantParser extends CellBaseParser {
     private final Path iarctp53SomaticReferencesFile;
     private final Path genomeSequenceFilePath;
 
+
     public ClinicalVariantParser(Path clinicalVariantFolder, Path genomeSequenceFilePath, String assembly,
                                  CellBaseSerializer serializer) {
         this(clinicalVariantFolder.resolve(EtlCommons.CLINVAR_XML_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE),
+                clinicalVariantFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_EFO_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.COSMIC_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.GWAS_FILE),
@@ -51,14 +54,15 @@ public class ClinicalVariantParser extends CellBaseParser {
                 genomeSequenceFilePath, assembly, serializer);
     }
 
-    public ClinicalVariantParser(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarEFOFile,
-                                 Path cosmicFile, Path gwasFile, Path dbsnpFile, Path iarctp53GermlineFile,
-                                 Path iarctp53GermlineReferencesFile, Path iarctp53SomaticFile,
-                                 Path iarctp53SomaticReferencesFile, Path genomeSequenceFilePath, String assembly,
-                                 CellBaseSerializer serializer) {
+    public ClinicalVariantParser(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
+                                 Path clinvarEFOFile, Path cosmicFile, Path gwasFile, Path dbsnpFile,
+                                 Path iarctp53GermlineFile, Path iarctp53GermlineReferencesFile,
+                                 Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile,
+                                 Path genomeSequenceFilePath, String assembly, CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;
+        this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
         this.clinvarEFOFile = clinvarEFOFile;
         this.cosmicFile = cosmicFile;
         this.gwasFile = gwasFile;
@@ -83,10 +87,11 @@ public class ClinicalVariantParser extends CellBaseParser {
             dbOption = (Options) dbConnection[1];
             dbLocation = (String) dbConnection[2];
 
-            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null && Files.exists(clinvarXMLFile)
-                    && Files.exists(clinvarSummaryFile)) {
+            if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
+                    && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
+                    && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
                 ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile, clinvarSummaryFile,
-                        clinvarEFOFile, assembly, rdb);
+                        clinvarVariationAlleleFile, clinvarEFOFile, assembly, rdb);
                 clinvarIndexer.index();
             } else {
                 logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"

@@ -39,6 +39,7 @@ public class DownloadProperties {
     private URLProperties gerp;
     private URLProperties clinvar;
     private URLProperties clinvarSummary;
+    private URLProperties clinvarVariationAllele;
     private URLProperties clinvarEfoTerms;
     private URLProperties iarctp53;
     private URLProperties docm;
@@ -204,6 +205,14 @@ public class DownloadProperties {
     public DownloadProperties setClinvarSummary(URLProperties clinvarSummary) {
         this.clinvarSummary = clinvarSummary;
         return this;
+    }
+
+    public URLProperties getClinvarVariationAllele() {
+        return clinvarVariationAllele;
+    }
+
+    public void setClinvarVariationAllele(URLProperties clinvarVariationAllele) {
+        this.clinvarVariationAllele = clinvarVariationAllele;
     }
 
     public URLProperties getClinvarEfoTerms() {

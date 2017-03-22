@@ -6,6 +6,7 @@ import org.opencb.biodata.models.variant.avro.Germline;
 import org.opencb.biodata.models.variant.avro.Somatic;
 import org.opencb.biodata.models.variant.avro.Submission;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
+import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
@@ -17,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -27,8 +27,17 @@ import java.util.stream.Stream;
 public class ClinVarIndexer extends ClinicalIndexer {
 
     private static final String CLINVAR_NAME = "clinvar";
+    private static final int VARIANT_SUMMARY_CLINSIG_COLUMN = 6;
+    private static final int VARIANT_SUMMARY_GENE_COLUMN = 4;
+    private static final int VARIANT_SUMMARY_REVIEW_COLUMN = 24;
+    private static final int VARIANT_SUMMARY_ORIGIN_COLUMN = 14;
+    private static final int VARIANT_SUMMARY_PHENOTYPE_COLUMN = 13;
+    private static final int VARIATION_ALLELE_ALLELE_COLUMN = 2;
+    private static final int VARIATION_ALLELE_VARIATION_COLUMN = 0;
+    private static final String SOMATIC = "somatic";
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
+    private final Path clinvarVariationAlleleFile;
     private final Path clinvarEFOFile;
     private final String assembly;
     private RocksDB rdb;
@@ -37,24 +46,25 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private int numberNoDiseaseTrait = 0;
     private int numberMultipleInheritanceModels = 0;
 
-    public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarEFOFile, String assembly,
-                          RocksDB rdb) {
+    public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
+                          Path clinvarEFOFile, String assembly, RocksDB rdb) {
         super();
         this.rdb = rdb;
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;
+        this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
         this.clinvarEFOFile = clinvarEFOFile;
         this.assembly = assembly;
     }
 
     public void index() throws RocksDBException {
         try {
+            Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
+            Map<String, SequenceLocation> rcvTo37SequenceLocation = parseVariantSummary(traitsToEfoTermsMap);
+
             logger.info("Unmarshalling clinvar file " + clinvarXMLFile + " ...");
             JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile);
             logger.info("Done");
-
-            Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
-            Map<String, SequenceLocation> rcvTo37SequenceLocation = loadSequenceLocation();
 
             logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
@@ -89,12 +99,28 @@ public class ClinVarIndexer extends ClinicalIndexer {
         logger.info("Number of ClinVar records with multiple inheritance models: {}", numberMultipleInheritanceModels);
     }
 
+    private void updateRocksDB(SequenceLocation sequenceLocation, String variationId, String[] lineFields,
+                               Map<String, EFO> traitsToEfoTermsMap) throws RocksDBException, IOException {
+        byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
+                sequenceLocation.getStart(), sequenceLocation.getReference(),
+                sequenceLocation.getAlternate()).getBytes();
+        VariantTraitAssociation variantTraitAssociation = getVariantTraitAssociation(key);
+        addNewEntries(variantTraitAssociation, variationId, lineFields, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
+    }
+
     private void updateRocksDB(SequenceLocation sequenceLocation, PublicSetType publicSet,
                                Map<String, EFO> traitsToEfoTermsMap) throws RocksDBException, IOException {
 
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
+        VariantTraitAssociation variantTraitAssociation = getVariantTraitAssociation(key);
+        addNewEntries(variantTraitAssociation, publicSet, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
+    }
+
+    private VariantTraitAssociation getVariantTraitAssociation(byte[] key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key);
         VariantTraitAssociation variantTraitAssociation;
         List<Germline> germline;
@@ -110,8 +136,62 @@ public class ClinVarIndexer extends ClinicalIndexer {
             variantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
             numberVariantUpdates++;
         }
-        addNewEntries(variantTraitAssociation, publicSet, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
+        return variantTraitAssociation;
+    }
+
+    private void addNewEntries(VariantTraitAssociation variantTraitAssociation, String variationId, String[] lineFields,
+                               Map<String, EFO> traitsToEfoTermsMap) {
+
+        String clinicalSignificance = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])
+                ? null : lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN];
+        List<String> geneNames = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])
+                ? null: Arrays.asList(lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(","));
+        String reviewStatus = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_REVIEW_COLUMN])
+                ? null : lineFields[VARIANT_SUMMARY_REVIEW_COLUMN];
+
+        Germline germline = null;
+        Somatic somatic = null;
+
+//        if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
+        // Create a set to avoid situations like germline;germline;germline
+        Set<String> originSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN]
+                .toLowerCase().split(";")));
+        boolean addGermline = true;
+        if (originSet.contains(SOMATIC)) {
+            somatic = new Somatic();
+            somatic.setSource(CLINVAR_NAME);
+            somatic.setReviewStatus(reviewStatus);
+            somatic.setGeneNames(geneNames);
+            somatic.setAccession(variationId);
+            somatic.setPrimaryHistology(EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])
+                    ? null : lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]);
+            variantTraitAssociation.getSomatic().add(somatic);
+
+            // Origin for a number of the variants may not be clear, values found in the database for this field are:
+            // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
+            // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
+            // For the sake of simplicity and since it's not clear what to do with the rest of tags, we'll classify
+            // as somatic only those with the "somatic" tag and the rest will be stored as germline
+            addGermline = originSet.size() > 1;
+        }
+
+        // Origin for a number of the variants may not be clear, values found in the database for this field are:
+        // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
+        // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
+        // For the sake of simplicity and since it's not clear what to do with the rest of tags, we'll classify
+        // as somatic only those with the "somatic" tag and the rest will be stored as germline
+        if (addGermline) {
+            germline = new Germline();
+            germline.setAccession(variationId);
+            germline.setClinicalSignificance(clinicalSignificance);
+            germline.setDisease(EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])
+                    ? null : Arrays.asList(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]));
+            germline.setReviewStatus(reviewStatus);
+            germline.setSource(CLINVAR_NAME);
+            germline.setGeneNames(geneNames);
+            variantTraitAssociation.getGermline().add(germline);
+        }
+//        }
     }
 
     private void addNewEntries(VariantTraitAssociation variantTraitAssociation, PublicSetType publicSet,
@@ -187,15 +267,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
             // clinVarAccession.dateUpdated fields do always exist
             if (measureTraitType.getClinicalSignificance() != null
                     && measureTraitType.getClinicalSignificance().getDateLastEvaluated() != null) {
-                date = String.valueOf(measureTraitType.getClinicalSignificance().getDateLastEvaluated().getYear())
-                        + String.valueOf(measureTraitType.getClinicalSignificance().getDateLastEvaluated().getMonth())
-                        + String.valueOf(measureTraitType.getClinicalSignificance().getDateLastEvaluated().getDay());
+                date = String.format("%04d", measureTraitType.getClinicalSignificance().getDateLastEvaluated().getYear())
+                        + String.format("%02d", measureTraitType.getClinicalSignificance().getDateLastEvaluated().getMonth())
+                        + String.format("%02d", measureTraitType.getClinicalSignificance().getDateLastEvaluated().getDay());
 //                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinicalSignificance()
 //                        .getDateLastEvaluated().getMillisecond());
             } else {
-                date = String.valueOf(measureTraitType.getClinVarAccession().getDateUpdated().getYear())
-                        + String.valueOf(measureTraitType.getClinVarAccession().getDateUpdated().getMonth())
-                        + String.valueOf(measureTraitType.getClinVarAccession().getDateUpdated().getDay());
+                date = String.format("%04d", measureTraitType.getClinVarAccession().getDateUpdated().getYear())
+                        + String.format("%02d", measureTraitType.getClinVarAccession().getDateUpdated().getMonth())
+                        + String.format("%02d", measureTraitType.getClinVarAccession().getDateUpdated().getDay());
 //                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinVarAccession()
 //                        .getDateUpdated().getMillisecond());
             }
@@ -321,9 +401,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
         return germlineBibliography;
     }
 
-    private Map<String, SequenceLocation> loadSequenceLocation() throws IOException {
-        logger.info("Loading ClinVar {} genomic coordinates, reference and alternate strings from {}...",
-                assembly, clinvarSummaryFile);
+    private Map<String, SequenceLocation> parseVariantSummary(Map<String, EFO> traitsToEfoTermsMap) throws IOException, RocksDBException {
+
+        logger.info("Loading AlleleID -> variation ID map...");
+        Map<String, String> alleleIdToVariationId = loadAlleleIdToVariationId();
+
+        logger.info("Parsing {}...", clinvarSummaryFile);
         BufferedReader bufferedReader;
         bufferedReader = FileUtils.newBufferedReader(clinvarSummaryFile);
 
@@ -342,10 +425,39 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 for (String rcv : rcvArray) {
                     rcvToSequenceLocation.put(rcv, sequenceLocation);
                 }
+
+                // Index the Germline/Somatic documents corresponding to the aggregated variation object
+                if (!EtlCommons.isMissing(parts[0]) && alleleIdToVariationId.containsKey(parts[0])) {
+                    updateRocksDB(sequenceLocation, alleleIdToVariationId.get(parts[0]), parts, traitsToEfoTermsMap);
+                }
+
             }
             line = bufferedReader.readLine();
         }
+
+        bufferedReader.close();
+
         return rcvToSequenceLocation;
+    }
+
+    private Map<String, String> loadAlleleIdToVariationId() throws IOException {
+        Map<String, String> alleleIdToVariationId = new HashMap<>();
+        BufferedReader bufferedReader = FileUtils.newBufferedReader(clinvarVariationAlleleFile);
+
+        String line = bufferedReader.readLine();
+        while (line != null && line.startsWith("#")) {
+            line = bufferedReader.readLine();
+        }
+
+        while (line != null) {
+            String[] parts = line.split("\t");
+            alleleIdToVariationId.put(parts[VARIATION_ALLELE_ALLELE_COLUMN], parts[VARIATION_ALLELE_VARIATION_COLUMN]);
+            line = bufferedReader.readLine();
+        }
+
+        bufferedReader.close();
+
+        return alleleIdToVariationId;
     }
 
     private Map<String, EFO> loadEFOTerms() {
