@@ -3,10 +3,11 @@ Test
 ---
 !define TEST_SYSTEM {slim}
 
+#!define CELLBASE_WAR {cellbase}
 !define CELLBASE_WAR {cellbase-4.5.0-SNAPSHOT}
 !define CELLBASE_VERSION {v4}
+#!define TEST_HOST {bioinfo.hpc.cam.ac.uk}
 !define TEST_HOST {bioinfodev.hpc.cam.ac.uk}
-
 !path target/appassembler/dependencies/*.jar
 
 !|import|
@@ -15,7 +16,6 @@ Test
 !|Table: Rest Fixture | http://bioinfoint.hpc.cam.ac.uk/|
 |let|baseURL|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-SNAPSHOT/webservices/rest/v4|
 |let|baseURL_hsapiens|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}/hsapiens|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-SNAPSHOT/webservices/rest/v4/hsapiens|
-|let|JSONVersion|const|${CELLBASE_VERSION}|v4|
 |let|useCache|const|false|false|
 
 | Table: Rest Fixture Config |  with-compareJSON.js |

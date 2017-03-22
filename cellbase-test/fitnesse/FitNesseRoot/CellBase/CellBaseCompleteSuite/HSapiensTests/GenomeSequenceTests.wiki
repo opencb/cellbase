@@ -5,6 +5,6 @@ Test
 !3 Get Chromosome List
 | Table: Rest Fixture | $baseURL_hsapiens | with-compareJSON.js |
 | GET | /genomic/chromosome/list | 200 | Content-Type : application/json | !- /* javascript */
-var desiredResult = [{"_id":{"timestamp":1466783257,"machineIdentifier":2281429,"processIdentifier":14435,"counter":125856},"chromosomes":[{"name":"19"},{"name":"20"},{"name":"X"},{"name":"9"},{"name":"13"},{"name":"5"},{"name":"21"},{"name":"10"},{"name":"2"},{"name":"12"},{"name":"14"},{"name":"18"},{"name":"16"},{"name":"1"},{"name":"3"},{"name":"4"},{"name":"Y"},{"name":"Y"},{"name":"Y"},{"name":"17"},{"name":"6"},{"name":"11"},{"name":"22"},{"name":"15"},{"name":"7"},{"name":"8"},{"name":"MT"}]}];
-compareJSON(jsonbody.response[0].result,desiredResult);
+var desiredResult = [{"name":"19"},{"name":"20"},{"name":"X"},{"name":"9"},{"name":"13"},{"name":"5"},{"name":"21"},{"name":"10"},{"name":"2"},{"name":"12"},{"name":"14"},{"name":"18"},{"name":"16"},{"name":"1"},{"name":"3"},{"name":"4"},{"name":"Y"},{"name":"Y"},{"name":"Y"},{"name":"17"},{"name":"6"},{"name":"11"},{"name":"22"},{"name":"15"},{"name":"7"},{"name":"8"},{"name":"MT"}];
+compareJSON(jsonbody.response[0].result[0].chromosomes,desiredResult);
 -! |
