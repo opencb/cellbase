@@ -401,7 +401,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                     + ", " + ClinVarParser.GRCH38_ASSEMBLY);
         }
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar", true);
         return new ClinVarParser(clinvarFile, clinvarSummaryFile, efosFilePath, assembly, serializer);
     }
 
