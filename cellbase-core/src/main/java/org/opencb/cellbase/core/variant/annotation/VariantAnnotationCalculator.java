@@ -973,27 +973,6 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
     }
 
-    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
-        if (variant.getType() == null) {
-            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()));
-        }
-        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
-        // FIXME: insertions and deletions
-        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
-            if (variant.getReference().isEmpty()) {
-//                variant.setType(VariantType.INSERTION);
-                return VariantType.INSERTION;
-            } else if (variant.getAlternate().isEmpty()) {
-//                variant.setType(VariantType.DELETION);
-                return VariantType.DELETION;
-            } else {
-                return VariantType.MNV;
-            }
-        }
-        return variant.getType();
-//        return getVariantType(variant.getReference(), variant.getAlternate());
-    }
-
 //    private VariantType getVariantType(String reference, String alternate) {
 //        if (reference.isEmpty()) {
 //            return VariantType.INSERTION;
