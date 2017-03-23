@@ -342,15 +342,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         if (annotatorSet.contains("consequenceType")) {
             stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
         }
-        if (annotatorSet.contains("expression")) {
-            stringBuilder.append(",annotation.geneExpression");
-        }
-        if (annotatorSet.contains("geneDisease")) {
-            stringBuilder.append(",annotation.geneTraitAssociation");
-        }
-        if (annotatorSet.contains("drugInteraction")) {
-            stringBuilder.append(",annotation.geneDrugInteraction");
-        }
+//        if (annotatorSet.contains("expression")) {
+//            stringBuilder.append(",annotation.geneExpression");
+//        }
+//        if (annotatorSet.contains("geneDisease")) {
+//            stringBuilder.append(",annotation.geneTraitAssociation");
+//        }
+//        if (annotatorSet.contains("drugInteraction")) {
+//            stringBuilder.append(",annotation.geneDrugInteraction");
+//        }
         if (annotatorSet.contains("populationFrequencies")) {
             stringBuilder.append(",annotation.populationFrequencies");
         }
@@ -522,20 +522,33 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
 
     private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
-        destination.setId(origin.getId());
         destination.setChromosome(origin.getChromosome());
         destination.setStart(origin.getStart());
         destination.setReference(origin.getReference());
         destination.setAlternate(origin.getAlternate());
-        destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
-        destination.setConsequenceTypes(origin.getConsequenceTypes());
-        destination.setConservation(origin.getConservation());
+
+        if (annotatorSet.contains("variation")) {
+            destination.setId(origin.getId());
+        }
+        if (annotatorSet.contains("consequenceType")) {
+            destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
+            destination.setConsequenceTypes(origin.getConsequenceTypes());
+        }
+        if (annotatorSet.contains("conservation")) {
+            destination.setConservation(origin.getConservation());
+        }
 //        destination.setGeneExpression(origin.getGeneExpression());
 //        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
-        destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+        if (annotatorSet.contains("populationFrequencies")) {
+            destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+        }
 //        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
-        destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
-        destination.setFunctionalScore(origin.getFunctionalScore());
+        if (annotatorSet.contains("clinical")) {
+            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+        }
+        if (annotatorSet.contains("functionalScore")) {
+            destination.setFunctionalScore(origin.getFunctionalScore());
+        }
     }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer) {
@@ -953,9 +966,32 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 return new ConsequenceTypeSNVCalculator();
             case CNV:
                 return new ConsequenceTypeCNVCalculator();
+            case MNV:
+                return new ConsequenceTypeMNVCalculator(genomeDBAdaptor);
             default:
                 throw new UnsupportedURLVariantFormat();
         }
+    }
+
+    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
+        if (variant.getType() == null) {
+            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()));
+        }
+        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
+        // FIXME: insertions and deletions
+        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+            if (variant.getReference().isEmpty()) {
+//                variant.setType(VariantType.INSERTION);
+                return VariantType.INSERTION;
+            } else if (variant.getAlternate().isEmpty()) {
+//                variant.setType(VariantType.DELETION);
+                return VariantType.DELETION;
+            } else {
+                return VariantType.MNV;
+            }
+        }
+        return variant.getType();
+//        return getVariantType(variant.getReference(), variant.getAlternate());
     }
 
 //    private VariantType getVariantType(String reference, String alternate) {

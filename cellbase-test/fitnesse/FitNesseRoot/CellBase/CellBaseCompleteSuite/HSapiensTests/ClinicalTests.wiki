@@ -1,0 +1,8 @@
+---
+Test
+---
+!define TEST_SYSTEM {slim}
+
+!3 Get All Clinical Objects 
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?limit=1|200|Content-Type : application/json|jsonbody.response[0].numTotalResults == '4597100'|

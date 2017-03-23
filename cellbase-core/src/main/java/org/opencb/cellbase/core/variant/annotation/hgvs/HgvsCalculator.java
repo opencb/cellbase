@@ -5,7 +5,6 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
-import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -16,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils.PROTEIN_CODING;
 
 /**
  * Created by fjlopez on 26/01/17.
@@ -37,7 +34,7 @@ public class HgvsCalculator {
     // If allele is greater than this use allele length.
     private static final int MAX_ALLELE_LENGTH = 4;
 
-    private static final VariantNormalizer normalizer = new VariantNormalizer(false, false, true);
+    private static final VariantNormalizer NORMALIZER = new VariantNormalizer(false, false, true);
 
 
     public List<String> run(Variant variant, List<Gene> geneList) {
@@ -75,7 +72,7 @@ public class HgvsCalculator {
             Variant normalizedVariant;
             // Convert VCF-style variant to HGVS-style.
             if (normalize) {
-                List<Variant> normalizedVariantList = normalizer.apply(Collections.singletonList(variant));
+                List<Variant> normalizedVariantList = NORMALIZER.apply(Collections.singletonList(variant));
                 if (normalizedVariantList != null && !normalizedVariantList.isEmpty()) {
                     normalizedVariant = normalizedVariantList.get(0);
                 } else {
@@ -124,7 +121,7 @@ public class HgvsCalculator {
 
     }
 
-    private String hgvsNormalizeDeletion(Variant variant, Transcript transcript, Variant normalizedVariant){
+    private String hgvsNormalizeDeletion(Variant variant, Transcript transcript, Variant normalizedVariant) {
         // Get genomic sequence around the lesion.
         int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
         int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
@@ -538,13 +535,13 @@ public class HgvsCalculator {
 
         // Sum the part that corresponds to the exon where genomicPosition is located
         if ("+".equals(transcript.getStrand())) {
-            while(i < exonList.size() && genomicPosition < exonList.get(i).getEnd()) {
+            while (i < exonList.size() && genomicPosition < exonList.get(i).getEnd()) {
                 cdnaPosition += (exonList.get(i).getEnd() - exonList.get(i).getStart() + 1);
                 i++;
             }
             return cdnaPosition + genomicPosition - exonList.get(i).getStart() + 1;
         } else {
-            while(i < exonList.size() && genomicPosition < exonList.get(i).getStart()) {
+            while (i < exonList.size() && genomicPosition < exonList.get(i).getStart()) {
                 cdnaPosition += (exonList.get(i).getEnd() - exonList.get(i).getStart() + 1);
                 i++;
             }

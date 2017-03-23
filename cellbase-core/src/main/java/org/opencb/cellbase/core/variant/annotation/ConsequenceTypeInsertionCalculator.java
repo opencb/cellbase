@@ -437,8 +437,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     } else {
                         modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
                                 reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
-                        reverseTranscriptSequencePosition++;
                     }
+                    reverseTranscriptSequencePosition++;
 
                     // Edit modified nt to make it upper-case in the formatted strings
                     formattedReferenceCodonArray[modifiedCodonPosition]

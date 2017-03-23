@@ -7,7 +7,7 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import org.apache.commons.lang.NotImplementedException;
 
 /**
- * Builder to get the hgvs identifier properly formatted
+ * Builder to get the hgvs identifier properly formatted.
  */
 public class HgvsStringBuilder {
 

@@ -15,6 +15,7 @@ private
 *.so.*
 *.out
 *.log
+*.zip
 sonar-project.properties
 git.properties
 
@@ -69,3 +70,7 @@ R.Rproj
 clients/R/vignettes/*.html
 clients/cellbaseR*.tar.gz
 clients/cellbaseR.Rcheck
+# FitNesse
+cellbase-test/fitnesse/FitNesseRoot/files/testResults
+cellbase-test/fitnesse/FitNesseRoot/RecentChanges/*
+cellbase-test/fitnesse/FitNesseRoot/FitNesse/*

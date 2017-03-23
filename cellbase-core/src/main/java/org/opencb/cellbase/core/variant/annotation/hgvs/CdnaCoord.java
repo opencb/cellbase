@@ -65,13 +65,21 @@ public class CdnaCoord {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         CdnaCoord cdnaCoord = (CdnaCoord) o;
 
-        if (cdsPosition != cdnaCoord.cdsPosition) return false;
-        if (startStopCodonOffset != cdnaCoord.startStopCodonOffset) return false;
+        if (cdsPosition != cdnaCoord.cdsPosition) {
+            return false;
+        }
+        if (startStopCodonOffset != cdnaCoord.startStopCodonOffset) {
+            return false;
+        }
         return landmark == cdnaCoord.landmark;
 
     }
