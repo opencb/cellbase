@@ -231,8 +231,8 @@ public class HgvsStringBuilder {
 //                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
 //                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
 //                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
-        if (cdnaStart.equals(cdnaEnd)
-            || "dup".equals(mutationType)) {
+        if (cdnaStart.equals(cdnaEnd)) {
+//            || "dup".equals(mutationType)) {
 //                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
 //                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
 //                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {

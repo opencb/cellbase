@@ -111,7 +111,9 @@ public class HgvsCalculator {
         hgvsStringBuilder.setKind("c");
 
         // Use a range of coordinates. - Calculate start/end, reference/alternate alleles as appropriate
-        setRangeCoordsAndAlleles(normalizedVariant, transcript, hgvsStringBuilder);
+//        setRangeCoordsAndAlleles(normalizedVariant, transcript, hgvsStringBuilder);
+        setRangeCoordsAndAlleles(normalizedVariant.getStart(), normalizedVariant.getEnd(),
+                normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
 
         hgvsStringBuilder.setMutationType(mutationType);
         hgvsStringBuilder.setTranscriptId(transcript.getId());
@@ -136,9 +138,16 @@ public class HgvsCalculator {
         normalizedVariant.setEnd(variant.getEnd());
         normalizedVariant.setReference(variant.getReference());
         normalizedVariant.setAlternate(variant.getAlternate());
+        normalizedVariant.resetLength();
+        // startOffset must point to the position right before the actual variant start, since that's the position that
+        // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
+        // the position right after the actual variant end.
         justify(normalizedVariant, variant.getStart() - start,
                 variant.getStart() - start + normalizedVariant.getReference().length() - 1,
                 normalizedVariant.getReference(), genomicSequence, transcript.getStrand());
+//        justify(normalizedVariant, variant.getStart() - start - 1,
+//                variant.getStart() - start + normalizedVariant.getReference().length(),
+//                normalizedVariant.getReference(), genomicSequence, transcript.getStrand());
 
         return DEL;
     }
@@ -166,34 +175,44 @@ public class HgvsCalculator {
         int end;
         String reference;
         String alternate;
-        // Use a range of coordinates. - Calculate start/end, reference/alternate alleles as appropriate
+        // Use a range of coordinates. - Calculate start/end, reference/alternate alleles as appropriate.
         if (INS.equals(mutationType)) {
-            reference = "";
-            if ("+".equals(transcript.getStrand())) {
-                // Insert uses coordinates around the insert point.
-                start = normalizedVariant.getStart() - 1;
-                end = normalizedVariant.getEnd();
-                alternate = normalizedVariant.getAlternate().length() > MAX_ALLELE_LENGTH
-                        ? String.valueOf(normalizedVariant.getAlternate().length()) : normalizedVariant.getAlternate();
-            } else {
-                // Insert uses coordinates around the insert point.
-                end = normalizedVariant.getStart() - 1;
-                start = normalizedVariant.getEnd();
-                alternate = normalizedVariant.getAlternate().length() > MAX_ALLELE_LENGTH
-                        ? String.valueOf(normalizedVariant.getAlternate().length())
-                        : reverseComplementary(normalizedVariant.getAlternate());
-            }
-            hgvsStringBuilder.setReference(reference);
-            hgvsStringBuilder.setAlternate(alternate);
-            hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, start));
-            hgvsStringBuilder.setCdnaEnd(genomicToCdnaCoord(transcript, end));
-        // dup
+//            reference = "";
+//            if ("+".equals(transcript.getStrand())) {
+//                // Insert uses coordinates around the insert point.
+//                start = normalizedVariant.getStart() - 1;
+//                end = start + 1;
+//                alternate = normalizedVariant.getAlternate().length() > MAX_ALLELE_LENGTH
+//                        ? String.valueOf(normalizedVariant.getAlternate().length()) : normalizedVariant.getAlternate();
+//            } else {
+//                // Insert uses coordinates around the insert point.
+//                end = normalizedVariant.getStart() - 1;
+//                start = end + 1;
+//                alternate = normalizedVariant.getAlternate().length() > MAX_ALLELE_LENGTH
+//                        ? String.valueOf(normalizedVariant.getAlternate().length())
+//                        : reverseComplementary(normalizedVariant.getAlternate());
+//            }
+//            hgvsStringBuilder.setReference(reference);
+//            hgvsStringBuilder.setAlternate(alternate);
+//            hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, start));
+//            hgvsStringBuilder.setCdnaEnd(genomicToCdnaCoord(transcript, end));
+            setRangeCoordsAndAlleles(normalizedVariant.getStart() - 1, normalizedVariant.getStart(),
+                    normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
+
+        // dup of just one nt use only one coordinate
+        } else if (normalizedVariant.getLength() == 1) {
+            setRangeCoordsAndAlleles(normalizedVariant.getStart() - 1, normalizedVariant.getStart() - 1,
+                    normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
+        // dup of more than 1nt
         } else {
             // WARNING: -1 to fit the HGVS specification so that setRangeCoordsAndAlleles appropriately calculates
             // the offset to the nearest exon limit. This normalizedVariant object is not used after this line
             // and therefore has no other effect. Be careful
-            normalizedVariant.setStart(normalizedVariant.getStart() - 1);
-            setRangeCoordsAndAlleles(normalizedVariant, transcript, hgvsStringBuilder);
+//            normalizedVariant.setStart(normalizedVariant.getStart() - 1);
+//            setRangeCoordsAndAlleles(normalizedVariant, transcript, hgvsStringBuilder);
+            setRangeCoordsAndAlleles(normalizedVariant.getStart(),
+                    normalizedVariant.getStart() + normalizedVariant.getLength() - 1,
+                    normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
         }
 
         hgvsStringBuilder.setMutationType(mutationType);
@@ -203,34 +222,69 @@ public class HgvsCalculator {
         return Collections.singletonList(hgvsStringBuilder.format());
     }
 
-    private void setRangeCoordsAndAlleles(Variant variant, Transcript transcript, HgvsStringBuilder hgvsStringBuilder) {
+    private void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
+                                          String genomicAlternate, Transcript transcript,
+                                          HgvsStringBuilder hgvsStringBuilder) {
         int start;
         int end;
         String reference;
         String alternate;
         if ("+".equals(transcript.getStrand())) {
-            start = variant.getStart();
+            start = genomicStart;
             // TODO: probably needs +-1 bp adjust
-            end = variant.getStart() + variant.getReference().length() - 1;
-            reference = variant.getReference().length() > MAX_ALLELE_LENGTH
-                    ? String.valueOf(variant.getReference().length()) : variant.getReference();
-            alternate = variant.getAlternate().length() > MAX_ALLELE_LENGTH
-                    ? String.valueOf(variant.getAlternate().length()) : variant.getAlternate();
+//            end = variant.getStart() + variant.getReference().length() - 1;
+            end = genomicEnd;
+            reference = genomicReference.length() > MAX_ALLELE_LENGTH
+                    ? String.valueOf(genomicReference.length()) : genomicReference;
+            alternate = genomicAlternate.length() > MAX_ALLELE_LENGTH
+                    ? String.valueOf(genomicAlternate.length()) : genomicAlternate;
         } else {
-            end = variant.getStart();
+            end = genomicStart;
             // TODO: probably needs +-1 bp adjust
-            start = variant.getStart() + variant.getReference().length() - 1;
-            reference = variant.getReference().length() > MAX_ALLELE_LENGTH
-                    ? String.valueOf(variant.getReference().length())
-                    : reverseComplementary(variant.getReference());
-            alternate = variant.getAlternate().length() > MAX_ALLELE_LENGTH
-                    ? String.valueOf(variant.getAlternate().length())
-                    : reverseComplementary(variant.getAlternate());
+            start = genomicEnd;
+//            start = variant.getStart() + variant.getReference().length() - 1;
+            reference = genomicReference.length() > MAX_ALLELE_LENGTH
+                    ? String.valueOf(genomicReference.length())
+                    : reverseComplementary(genomicReference);
+            alternate = genomicAlternate.length() > MAX_ALLELE_LENGTH
+                    ? String.valueOf(genomicAlternate.length())
+                    : reverseComplementary(genomicAlternate);
         }
         hgvsStringBuilder.setReference(reference);
         hgvsStringBuilder.setAlternate(alternate);
         hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, start));
         hgvsStringBuilder.setCdnaEnd(genomicToCdnaCoord(transcript, end));
+
+
+//        int start;
+//        int end;
+//        String reference;
+//        String alternate;
+//        if ("+".equals(transcript.getStrand())) {
+//            start = variant.getStart();
+//            // TODO: probably needs +-1 bp adjust
+////            end = variant.getStart() + variant.getReference().length() - 1;
+//            end = variant.getStart() + variant.getLength() - 1;
+//            reference = variant.getReference().length() > MAX_ALLELE_LENGTH
+//                    ? String.valueOf(variant.getReference().length()) : variant.getReference();
+//            alternate = variant.getAlternate().length() > MAX_ALLELE_LENGTH
+//                    ? String.valueOf(variant.getAlternate().length()) : variant.getAlternate();
+//        } else {
+//            end = variant.getStart();
+//            // TODO: probably needs +-1 bp adjust
+//            start = variant.getStart() + variant.getLength() - 1;
+////            start = variant.getStart() + variant.getReference().length() - 1;
+//            reference = variant.getReference().length() > MAX_ALLELE_LENGTH
+//                    ? String.valueOf(variant.getReference().length())
+//                    : reverseComplementary(variant.getReference());
+//            alternate = variant.getAlternate().length() > MAX_ALLELE_LENGTH
+//                    ? String.valueOf(variant.getAlternate().length())
+//                    : reverseComplementary(variant.getAlternate());
+//        }
+//        hgvsStringBuilder.setReference(reference);
+//        hgvsStringBuilder.setAlternate(alternate);
+//        hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, start));
+//        hgvsStringBuilder.setCdnaEnd(genomicToCdnaCoord(transcript, end));
 
     }
 
@@ -256,7 +310,8 @@ public class HgvsCalculator {
         normalizedVariant.setEnd(variant.getEnd());
         normalizedVariant.setReference(variant.getReference());
         normalizedVariant.setAlternate(variant.getAlternate());
-        justify(normalizedVariant, variant.getStart() - start, variant.getEnd() + 1 - start,
+        normalizedVariant.resetLength();
+        justify(normalizedVariant, variant.getStart() - 1 - start, variant.getStart() - 1 - start,
                 normalizedVariant.getAlternate(), genomicSequence, transcript.getStrand());
 
         // Check duplication
@@ -310,8 +365,8 @@ public class HgvsCalculator {
         StringBuilder stringBuilder = new StringBuilder(allele);
         // Justify to the left
         if ("-".equals(strand)) {
-            while (startOffset > 0 && genomicSequence.charAt(startOffset - 1) == allele.charAt(allele.length() - 1)) {
-                stringBuilder.deleteCharAt(allele.length() - 1);
+            while (startOffset > 0 && genomicSequence.charAt(startOffset - 1) == stringBuilder.charAt(stringBuilder.length() - 1)) {
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                 stringBuilder.insert(0, genomicSequence.charAt(startOffset - 1));
                 startOffset--;
                 endOffset--;
@@ -320,9 +375,9 @@ public class HgvsCalculator {
             }
         // Justify to the right
         } else {
-            while (endOffset < genomicSequence.length() && genomicSequence.charAt(endOffset) == allele.charAt(0)) {
+            while ((endOffset + 1) < genomicSequence.length() && genomicSequence.charAt(endOffset + 1) == stringBuilder.charAt(0)) {
                 stringBuilder.deleteCharAt(0);
-                stringBuilder.append(genomicSequence.charAt(endOffset));
+                stringBuilder.append(genomicSequence.charAt(endOffset + 1));
                 startOffset++;
                 endOffset++;
                 variant.setStart(variant.getStart() + 1);
@@ -480,7 +535,7 @@ public class HgvsCalculator {
                 // Within coding start and end
                 } else {
                     // offset must be positive
-                    cdnaCoord.setStartStopCodonOffset(nearestExon.getEnd() - genomicPosition); // TODO: probably needs +-1 bp adjust
+                    cdnaCoord.setStartStopCodonOffset(nearestExon.getStart() - genomicPosition); // TODO: probably needs +-1 bp adjust
                     cdnaCoord.setCdsPosition(nearestExon.getCdsEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
