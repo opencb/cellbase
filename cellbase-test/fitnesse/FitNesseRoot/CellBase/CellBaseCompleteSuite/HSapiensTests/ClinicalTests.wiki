@@ -6,3 +6,48 @@ Test
 !3 Get All Clinical Objects 
 | Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
 |GET|/feature/clinical/search?limit=1|200|Content-Type : application/json|jsonbody.response[0].numTotalResults == '4597100'|
+
+!3 Get Clinical Var Set (Phenotype Alzheimer)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=clinvarSet.referenceClinVarAssertion.clinVarAccession.acc&limit=30&phenotype=alzheimer|200|Content-Type : application/json| !- /* javascript */
+var isPresent = false;
+  for(count = 0; count < jsonbody.response[0].numResults; count++){
+    if ('RCV000019769' == jsonbody.response[0].result[count].clinvarSet.referenceClinVarAssertion.clinVarAccession.acc){
+		isPresent = true;
+    	break;
+    }
+  }
+isPresent && jsonbody.response[0].numTotalResults == 89 && jsonbody.response[0].numResults == 30;
+-!|
+
+!3 Get Clinical Var Set (Phenotype Alzheimer)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=clinvarSet.referenceClinVarAssertion.clinVarAccession.acc&limit=30&phenotype=myelofibrosis|200|Content-Type : application/json| jsonbody.response[0].numTotalResults == 7739 && jsonbody.response[0].numResults == 30|
+
+!3 Get Clinical Var Set (Phenotype Myelofibrosis)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=mutationID&limit=30&source=cosmic&phenotype=myelofibrosis|200|Content-Type : application/json| !- /* javascript */
+isPresent(jsonbody,"COSM12600","mutationID") && jsonbody.response[0].numTotalResults == 7733 && jsonbody.response[0].numResults == 30;
+-!|
+
+!3 Get Clinical Var Set (Region=2:3A170360030-170362030)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=mutationID%2CclinvarSet.referenceClinVarAssertion.clinVarAccession.acc&limit=30&region=2%3A170360030-170362030|200|Content-Type : application/json| !- /* javascript */
+isPresent(jsonbody,"COSM4624460","mutationID") && jsonbody.response[0].numTotalResults == 23;
+-!|
+
+!3 Get Clinical Var Set (clinvar-significance - Likely_pathogenic)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=clinvarSet.referenceClinVarAssertion.clinVarAccession.acc&limit=30&clinvar-significance=Likely_pathogenic|200|Content-Type : application/json| jsonbody.response[0].numTotalResults == 10048 && jsonbody.response[0].numResults == 30|
+
+!3 Get Clinical Var Set (Gene - APOE)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=mutationID%2CclinvarSet.referenceClinVarAssertion.clinVarAccession.acc&limit=30&gene=APOE|200|Content-Type : application/json| jsonbody.response[0].numTotalResults == 103|
+
+!3 Get Clinical Var Set (Gene - APOE ,Source - Clinvar)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=mutationID%2CclinvarSet.referenceClinVarAssertion.clinVarAccession.acc&limit=30&gene=APOE&source=clinvar|200|Content-Type : application/json| jsonbody.response[0].numTotalResults == 43|
+
+!3 Get Clinical Var Set (Cosmic ID - COSM306824, Source - Cosmic)
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/clinical/search?include=mutationID,geneName&cosmicId=COSM306824&source=cosmic|200|Content-Type : application/json| jsonbody.response[0].numTotalResults == 2 && jsonbody.response[0].result[0].geneName == 'FMN2'|
