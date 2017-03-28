@@ -20,7 +20,9 @@ Test
 
 | Table: Rest Fixture Config |  with-compareJSON.js |
 | restfixture.javascript.imports.map | !- compareJSON=fitnesse/FitNesseRoot/files/javascript/compareJSON.js-! |
-| restfixture.javascript.imports.map | !- isPresent=fitnesse/FitNesseRoot/files/javascript/isPresent.js-! |
 | restfixture.display.toggle.for.cells.larger.than|200|
 | restfixture.display.actual.on.right | false |
 | http.client.connection.timeout| 200000|
+
+| Table: Rest Fixture Config |  isPresent.js |
+| restfixture.javascript.imports.map | !- compareJSON=fitnesse/FitNesseRoot/files/javascript/isPresent.js-! |
