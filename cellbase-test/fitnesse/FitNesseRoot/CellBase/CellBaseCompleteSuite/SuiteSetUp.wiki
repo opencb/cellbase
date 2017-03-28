@@ -25,4 +25,6 @@ Test
 | http.client.connection.timeout| 200000|
 
 | Table: Rest Fixture Config |  isPresent.js |
-| restfixture.javascript.imports.map | !- compareJSON=fitnesse/FitNesseRoot/files/javascript/isPresent.js-! |
+| restfixture.javascript.imports.map | !- isPresent=fitnesse/FitNesseRoot/files/javascript/isPresent.js-! |
+
+
