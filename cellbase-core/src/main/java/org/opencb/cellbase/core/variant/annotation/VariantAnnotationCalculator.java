@@ -1248,7 +1248,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         @Override
         public List<QueryResult> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+//            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalQueryResultList;
         }

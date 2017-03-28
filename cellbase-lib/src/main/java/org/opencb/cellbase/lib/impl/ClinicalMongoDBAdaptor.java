@@ -1,15 +1,10 @@
 package org.opencb.cellbase.lib.impl;
 
 import com.mongodb.MongoClient;
-import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.ClinVar;
-import org.opencb.biodata.models.variant.avro.Cosmic;
-import org.opencb.biodata.models.variant.avro.Gwas;
-import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -89,14 +84,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public QueryResult<Variant> get(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        QueryOptions parsedOptions = parseQueryOptions(options);
+        parsedOptions = addPrivateExcludeOptions(parsedOptions,
+                "_featureXrefs,_sources,_accessions,_reviewStatus,_clinicalSignificance");
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options);
-        options = addPrivateExcludeOptions(options);
+        parsedOptions = addPrivateExcludeOptions(parsedOptions,
+                "_featureXrefs,_sources,_accessions,_reviewStatus,_clinicalSignificance");
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, parsedOptions);
     }
@@ -136,12 +137,24 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
+        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
+                "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
+        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
+                "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
+        createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
+        if (query.containsKey(QueryParams.REFERENCE.key())) {
+            createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
+        }
+        if (query.containsKey(QueryParams.ALTERNATE.key())) {
+            createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+        }
 
         createOrQuery(query, QueryParams.FEATURE.key(), "_featureXrefs", andBsonList);
         createOrQuery(query, QueryParams.SO.key(), "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
         createOrQuery(query, QueryParams.SOURCE.key(), "_sources", andBsonList);
         createOrQuery(query, QueryParams.ACCESSION.key(), "_accessions", andBsonList);
-        createOrQuery(query, QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
         createOrQuery(query, QueryParams.REVIEWSTATUS.key(), "_reviewStatus", andBsonList);
         createOrQuery(query, QueryParams.CLINICALSIGNIFICANCE.key(), "_clinicalSignificance", andBsonList);
@@ -155,6 +168,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             return Filters.and(andBsonList);
         } else {
             return new Document();
+        }
+    }
+
+    private void createImprecisePositionQuery(Query query, String leftQueryParam, String rightQueryParam,
+                                              String leftLimitMongoField, String righLimitMongoField,
+                                              List<Bson> andBsonList) {
+        if (query != null && query.getString(leftQueryParam) != null && !query.getString(leftQueryParam).isEmpty()
+                && query.getString(rightQueryParam) != null && !query.getString(rightQueryParam).isEmpty()) {
+            int leftQueryValue = query.getInt(leftQueryParam);
+            int rightQueryValue = query.getInt(rightQueryParam);
+            andBsonList.add(Filters.lte(leftLimitMongoField, rightQueryValue));
+            andBsonList.add(Filters.gte(righLimitMongoField, leftQueryValue));
         }
     }
 
@@ -174,176 +199,176 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return queryResultList;
     }
 
-    @Override
-    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
-        List<Document> queries = new ArrayList<>();
-        List<String> ids = new ArrayList<>(variantList.size());
-        List<QueryResult> queryResultList;
-        for (Variant genomicVariant : variantList) {
-            QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
-                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
-            if (genomicVariant.getReference() != null) {
-                builder = builder.and("reference").is(genomicVariant.getReference());
-            }
-            queries.add(new Document(builder.get().toMap()));
-            logger.debug(new Document(builder.get().toMap()).toJson());
-            ids.add(genomicVariant.toString());
-        }
+//    @Override
+//    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
+//        List<Document> queries = new ArrayList<>();
+//        List<String> ids = new ArrayList<>(variantList.size());
+//        List<QueryResult> queryResultList;
+//        for (Variant genomicVariant : variantList) {
+//            QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
+//                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
+//            if (genomicVariant.getReference() != null) {
+//                builder = builder.and("reference").is(genomicVariant.getReference());
+//            }
+//            queries.add(new Document(builder.get().toMap()));
+//            logger.debug(new Document(builder.get().toMap()).toJson());
+//            ids.add(genomicVariant.toString());
+//        }
+//
+//        queryResultList = executeQueryList2(ids, queries, options);
+//
+//        for (QueryResult queryResult : queryResultList) {
+//            List<Document> clinicalList = (List<Document>) queryResult.getResult();
+//
+//            List<Cosmic> cosmicList = new ArrayList<>();
+//            List<Gwas> gwasList = new ArrayList<>();
+//            List<ClinVar> clinvarList = new ArrayList<>();
+//
+//            for (Object clinicalObject : clinicalList) {
+//                Document clinical = (Document) clinicalObject;
+//
+//                if (isCosmic(clinical)) {
+//                    Cosmic cosmic = getCosmic(clinical);
+//                    cosmicList.add(cosmic);
+//                } else if (isGwas(clinical)) {
+//                    Gwas gwas = getGwas(clinical);
+//                    gwasList.add(gwas);
+//
+//                } else if (isClinvar(clinical)) {
+//                    ClinVar clinvar = getClinvar(clinical);
+////                    if (clinvarList == null) {
+////                        clinvarList = new ArrayList<>();
+////                    }
+//                    clinvarList.add(clinvar);
+//                }
+//            }
+////            Map<String, Object> clinicalData = new HashMap<>();
+////            if(cosmicList!=null && cosmicList.size()>0) {
+////                clinicalData.put("cosmic", cosmicList);
+////            }
+////            if(gwasList!=null && gwasList.size()>0) {
+////                clinicalData.put("gwas", gwasList);
+////            }
+////            if(clinvarList!=null && clinvarList.size()>0) {
+////                clinicalData.put("clinvar", clinvarList);
+////            }
+//            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(clinvarList, gwasList,
+//                    cosmicList, null, null);
+//            if (!(variantTraitAssociation.getCosmic().isEmpty() && variantTraitAssociation.getGwas().isEmpty()
+//                    && variantTraitAssociation.getClinvar().isEmpty())) {
+//
+//                // FIXME quick solution to compile
+//                // queryResult.setResult(clinicalData);
+//                queryResult.setResult(Collections.singletonList(variantTraitAssociation));
+//                queryResult.setNumResults(variantTraitAssociation.getCosmic().size()
+//                        + variantTraitAssociation.getGwas().size()
+//                        + variantTraitAssociation.getClinvar().size());
+//            } else {
+//                queryResult.setResult(null);
+//                queryResult.setNumResults(0);
+//            }
+//        }
+//
+//        return queryResultList;
+//    }
 
-        queryResultList = executeQueryList2(ids, queries, options);
-
-        for (QueryResult queryResult : queryResultList) {
-            List<Document> clinicalList = (List<Document>) queryResult.getResult();
-
-            List<Cosmic> cosmicList = new ArrayList<>();
-            List<Gwas> gwasList = new ArrayList<>();
-            List<ClinVar> clinvarList = new ArrayList<>();
-
-            for (Object clinicalObject : clinicalList) {
-                Document clinical = (Document) clinicalObject;
-
-                if (isCosmic(clinical)) {
-                    Cosmic cosmic = getCosmic(clinical);
-                    cosmicList.add(cosmic);
-                } else if (isGwas(clinical)) {
-                    Gwas gwas = getGwas(clinical);
-                    gwasList.add(gwas);
-
-                } else if (isClinvar(clinical)) {
-                    ClinVar clinvar = getClinvar(clinical);
-//                    if (clinvarList == null) {
-//                        clinvarList = new ArrayList<>();
+//    private boolean isClinvar(Document clinical) {
+//        return clinical.get("clinvarSet") != null;
+//    }
+//
+//    private boolean isGwas(Document clinical) {
+//        return clinical.get("snpIdCurrent") != null;
+//    }
+//
+//    private boolean isCosmic(Document clinical) {
+//        return clinical.get("mutationID") != null;
+//    }
+//
+//    private Cosmic getCosmic(Document clinical) {
+//        String mutationID = (String) clinical.get("mutationID");
+//        String primarySite = (String) clinical.get("primarySite");
+//        String siteSubtype = (String) clinical.get("siteSubtype");
+//        String primaryHistology = (String) clinical.get("primaryHistology");
+//        String histologySubtype = (String) clinical.get("histologySubtype");
+//        String sampleSource = (String) clinical.get("sampleSource");
+//        String tumourOrigin = (String) clinical.get("tumourOrigin");
+//        String geneName = (String) clinical.get("geneName");
+//        String mutationSomaticStatus = (String) clinical.get("mutationSomaticStatus");
+//
+//        return new Cosmic(mutationID, primarySite, siteSubtype, primaryHistology,
+//                histologySubtype, sampleSource, tumourOrigin, geneName, mutationSomaticStatus);
+//    }
+//
+//    private Gwas getGwas(Document clinical) {
+//        String snpIdCurrent = (String) clinical.get("snpIdCurrent");
+//        Double riskAlleleFrequency = clinical.getDouble("riskAlleleFrequency");
+//        String reportedGenes = (String) clinical.get("reportedGenes");
+//        List<Document> studiesObj = (List<Document>) clinical.get("studies");
+//        Set<String> traitsSet = new HashSet<>();
+//
+//        for (Document studieObj : studiesObj) {
+//            List<Document> traitsObj = (List<Document>) studieObj.get("traits");
+//            for (Document traitObj : traitsObj) {
+//                String trait = (String) traitObj.get("diseaseTrait");
+//                traitsSet.add(trait);
+//            }
+//        }
+//
+//        List<String> traits = new ArrayList<>();
+//        traits.addAll(traitsSet);
+//        return new Gwas(snpIdCurrent, traits, riskAlleleFrequency, reportedGenes);
+//    }
+//
+//    private ClinVar getClinvar(Document clinical) {
+//        Document clinvarSet = (Document) clinical.get("clinvarSet");
+//        Document referenceClinVarAssertion = (Document) clinvarSet.get("referenceClinVarAssertion");
+//        Document clinVarAccession = (Document) referenceClinVarAssertion.get("clinVarAccession");
+//        Document clinicalSignificance = (Document) referenceClinVarAssertion.get("clinicalSignificance");
+//        Document measureSet = (Document) referenceClinVarAssertion.get("measureSet");
+//        List<Document> measures = (List<Document>) measureSet.get("measure");
+//        Document traitSet = (Document) referenceClinVarAssertion.get("traitSet");
+//        List<Document> traits = (List<Document>) traitSet.get("trait");
+//
+//        String acc = null;
+//        if (clinVarAccession != null) {
+//            acc = (String) clinVarAccession.get("acc");
+//        }
+//        String clinicalSignificanceName = null;
+//        String reviewStatus = null;
+//        if (clinicalSignificance != null) {
+//            clinicalSignificanceName = (String) clinicalSignificance.get("description");
+//            reviewStatus = (String) clinicalSignificance.get("reviewStatus");
+//        }
+//        List<String> traitNames = new ArrayList<>();
+//        Set<String> geneNameSet = new HashSet<>();
+//
+//        for (Document measure : measures) {
+//            List<Document> measureRelationships = (List<Document>) measure.get("measureRelationship");
+//            if (measureRelationships != null) {
+//                for (Document measureRelationship : measureRelationships) {
+//                    List<Document> symbols = (List<Document>) measureRelationship.get("symbol");
+//                    if (symbols != null) {
+//                        for (Document symbol : symbols) {
+//                            Document elementValue = (Document) symbol.get("elementValue");
+//                            geneNameSet.add((String) elementValue.get("value"));
+//                        }
 //                    }
-                    clinvarList.add(clinvar);
-                }
-            }
-//            Map<String, Object> clinicalData = new HashMap<>();
-//            if(cosmicList!=null && cosmicList.size()>0) {
-//                clinicalData.put("cosmic", cosmicList);
+//                }
 //            }
-//            if(gwasList!=null && gwasList.size()>0) {
-//                clinicalData.put("gwas", gwasList);
+//        }
+//
+//        for (Document trait : traits) {
+//            List<Document> names = (List<Document>) trait.get("name");
+//            for (Document name : names) {
+//                Document elementValue = (Document) name.get("elementValue");
+//                traitNames.add((String) elementValue.get("value"));
 //            }
-//            if(clinvarList!=null && clinvarList.size()>0) {
-//                clinicalData.put("clinvar", clinvarList);
-//            }
-            VariantTraitAssociation variantTraitAssociation = new VariantTraitAssociation(clinvarList, gwasList,
-                    cosmicList, null, null);
-            if (!(variantTraitAssociation.getCosmic().isEmpty() && variantTraitAssociation.getGwas().isEmpty()
-                    && variantTraitAssociation.getClinvar().isEmpty())) {
-
-                // FIXME quick solution to compile
-                // queryResult.setResult(clinicalData);
-                queryResult.setResult(Collections.singletonList(variantTraitAssociation));
-                queryResult.setNumResults(variantTraitAssociation.getCosmic().size()
-                        + variantTraitAssociation.getGwas().size()
-                        + variantTraitAssociation.getClinvar().size());
-            } else {
-                queryResult.setResult(null);
-                queryResult.setNumResults(0);
-            }
-        }
-
-        return queryResultList;
-    }
-
-    private boolean isClinvar(Document clinical) {
-        return clinical.get("clinvarSet") != null;
-    }
-
-    private boolean isGwas(Document clinical) {
-        return clinical.get("snpIdCurrent") != null;
-    }
-
-    private boolean isCosmic(Document clinical) {
-        return clinical.get("mutationID") != null;
-    }
-
-    private Cosmic getCosmic(Document clinical) {
-        String mutationID = (String) clinical.get("mutationID");
-        String primarySite = (String) clinical.get("primarySite");
-        String siteSubtype = (String) clinical.get("siteSubtype");
-        String primaryHistology = (String) clinical.get("primaryHistology");
-        String histologySubtype = (String) clinical.get("histologySubtype");
-        String sampleSource = (String) clinical.get("sampleSource");
-        String tumourOrigin = (String) clinical.get("tumourOrigin");
-        String geneName = (String) clinical.get("geneName");
-        String mutationSomaticStatus = (String) clinical.get("mutationSomaticStatus");
-
-        return new Cosmic(mutationID, primarySite, siteSubtype, primaryHistology,
-                histologySubtype, sampleSource, tumourOrigin, geneName, mutationSomaticStatus);
-    }
-
-    private Gwas getGwas(Document clinical) {
-        String snpIdCurrent = (String) clinical.get("snpIdCurrent");
-        Double riskAlleleFrequency = clinical.getDouble("riskAlleleFrequency");
-        String reportedGenes = (String) clinical.get("reportedGenes");
-        List<Document> studiesObj = (List<Document>) clinical.get("studies");
-        Set<String> traitsSet = new HashSet<>();
-
-        for (Document studieObj : studiesObj) {
-            List<Document> traitsObj = (List<Document>) studieObj.get("traits");
-            for (Document traitObj : traitsObj) {
-                String trait = (String) traitObj.get("diseaseTrait");
-                traitsSet.add(trait);
-            }
-        }
-
-        List<String> traits = new ArrayList<>();
-        traits.addAll(traitsSet);
-        return new Gwas(snpIdCurrent, traits, riskAlleleFrequency, reportedGenes);
-    }
-
-    private ClinVar getClinvar(Document clinical) {
-        Document clinvarSet = (Document) clinical.get("clinvarSet");
-        Document referenceClinVarAssertion = (Document) clinvarSet.get("referenceClinVarAssertion");
-        Document clinVarAccession = (Document) referenceClinVarAssertion.get("clinVarAccession");
-        Document clinicalSignificance = (Document) referenceClinVarAssertion.get("clinicalSignificance");
-        Document measureSet = (Document) referenceClinVarAssertion.get("measureSet");
-        List<Document> measures = (List<Document>) measureSet.get("measure");
-        Document traitSet = (Document) referenceClinVarAssertion.get("traitSet");
-        List<Document> traits = (List<Document>) traitSet.get("trait");
-
-        String acc = null;
-        if (clinVarAccession != null) {
-            acc = (String) clinVarAccession.get("acc");
-        }
-        String clinicalSignificanceName = null;
-        String reviewStatus = null;
-        if (clinicalSignificance != null) {
-            clinicalSignificanceName = (String) clinicalSignificance.get("description");
-            reviewStatus = (String) clinicalSignificance.get("reviewStatus");
-        }
-        List<String> traitNames = new ArrayList<>();
-        Set<String> geneNameSet = new HashSet<>();
-
-        for (Document measure : measures) {
-            List<Document> measureRelationships = (List<Document>) measure.get("measureRelationship");
-            if (measureRelationships != null) {
-                for (Document measureRelationship : measureRelationships) {
-                    List<Document> symbols = (List<Document>) measureRelationship.get("symbol");
-                    if (symbols != null) {
-                        for (Document symbol : symbols) {
-                            Document elementValue = (Document) symbol.get("elementValue");
-                            geneNameSet.add((String) elementValue.get("value"));
-                        }
-                    }
-                }
-            }
-        }
-
-        for (Document trait : traits) {
-            List<Document> names = (List<Document>) trait.get("name");
-            for (Document name : names) {
-                Document elementValue = (Document) name.get("elementValue");
-                traitNames.add((String) elementValue.get("value"));
-            }
-        }
-
-        List<String> geneNameList = new ArrayList<>();
-        geneNameList.addAll(geneNameSet);
-        return new ClinVar(acc, clinicalSignificanceName, traitNames, geneNameList, reviewStatus);
-    }
+//        }
+//
+//        List<String> geneNameList = new ArrayList<>();
+//        geneNameList.addAll(geneNameSet);
+//        return new ClinVar(acc, clinicalSignificanceName, traitNames, geneNameList, reviewStatus);
+//    }
 
     private QueryResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
 

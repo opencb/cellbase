@@ -11,9 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -151,10 +149,95 @@ public class CosmicIndexer extends ClinicalIndexer {
             numberNewVariants++;
         } else {
             variantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
-            variantTraitAssociation.getSomatic().add(somatic);
+            // There are cosmic records which share all the fields but the bibliography. In some occassions (COSM12600)
+            // the redundancy is such that the document becomes much bigger than 16MB and cannot be loaded into MongoDB.
+            // This merge reduces redundancy.
+            mergeSomaticDocument(variantTraitAssociation.getSomatic(), somatic);
             numberVariantUpdates++;
         }
         rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
+    }
+
+    private void mergeSomaticDocument(List<Somatic> somaticList, Somatic somatic) {
+        int i = 0;
+        boolean merged = false;
+        while (i < somaticList.size() && !merged) {
+            if (sameSomaticDocument(somaticList.get(i), somatic)) {
+                if (somaticList.get(i).getBibliography() != null) {
+                    if (somatic.getBibliography() != null) {
+                        Set<String> bibliographySet = new HashSet<>(somaticList.get(i).getBibliography());
+                        bibliographySet.addAll(new HashSet<>(somatic.getBibliography()));
+                        somaticList.get(i).setBibliography(new ArrayList<>(bibliographySet));
+                    }
+                } else {
+                    somaticList.get(i).setBibliography(somatic.getBibliography());
+                }
+                merged = true;
+            }
+            i++;
+        }
+        if (!merged) {
+            somaticList.add(somatic);
+        }
+    }
+
+    /**
+     * Checks whether all fields but the bibliography list, are exactly the same in two somatic records.
+     * @param somatic1 Somatic object
+     * @param somatic2 Somatic object
+     * @return true if all fields but the bibliography are exaclty the same in both records. false otherwise
+     */
+    private boolean sameSomaticDocument(Somatic somatic1, Somatic somatic2) {
+        // Check gene name list
+        boolean equalSource = (somatic1.getSource() == null
+                && somatic2.getSource() == null)
+                || (somatic1.getSource().equalsIgnoreCase(somatic2.getSource()));
+
+        if (equalSource) {
+            boolean equalAccession = (somatic1.getAccession() == null && somatic2.getAccession() == null)
+                    || (somatic1.getAccession().equals(somatic2.getAccession()));
+            if (equalAccession) {
+                boolean equalGeneList = (somatic1.getGeneNames() == null && somatic2.getGeneNames() == null)
+                        || (new HashSet<>(somatic1.getGeneNames()).equals(new HashSet<>(somatic2.getGeneNames())));
+                if (equalGeneList) {
+                    boolean equalMutationSomaticStatus = (somatic1.getMutationSomaticStatus() == null
+                            && somatic2.getMutationSomaticStatus() == null)
+                            || (somatic1.getMutationSomaticStatus().equalsIgnoreCase(somatic2.getMutationSomaticStatus()));
+                    if (equalMutationSomaticStatus) {
+                        boolean equalPrimarySite = (somatic1.getPrimarySite() == null
+                                && somatic2.getPrimarySite() == null)
+                                || (somatic1.getPrimarySite().equalsIgnoreCase(somatic2.getPrimarySite()));
+                        if (equalPrimarySite) {
+                            boolean equalSiteSubtype = (somatic1.getSiteSubtype() == null
+                                    && somatic2.getSiteSubtype() == null)
+                                    || (somatic1.getSiteSubtype().equalsIgnoreCase(somatic2.getSiteSubtype()));
+                            if (equalSiteSubtype) {
+                                boolean equalPrimaryHistology = (somatic1.getPrimaryHistology() == null
+                                        && somatic2.getPrimaryHistology() == null)
+                                        || (somatic1.getPrimaryHistology().equalsIgnoreCase(somatic2.getPrimaryHistology()));
+                                if (equalPrimaryHistology) {
+                                    boolean equalHistologySubtype = (somatic1.getHistologySubtype() == null
+                                            && somatic2.getHistologySubtype() == null)
+                                            || (somatic1.getHistologySubtype().equalsIgnoreCase(somatic2.getHistologySubtype()));
+                                    if (equalHistologySubtype) {
+                                        boolean equalSampleSource = (somatic1.getSampleSource() == null
+                                                && somatic2.getSampleSource() == null)
+                                                || (somatic1.getSampleSource().equalsIgnoreCase(somatic2.getSampleSource()));
+                                        if (equalSampleSource) {
+                                            boolean equalTumourOrigin = (somatic1.getTumourOrigin() == null
+                                                    && somatic2.getTumourOrigin() == null)
+                                                    || (somatic1.getTumourOrigin().equalsIgnoreCase(somatic2.getTumourOrigin()));
+                                            return equalTumourOrigin;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

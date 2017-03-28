@@ -19,7 +19,6 @@ package org.opencb.cellbase.core.api;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -79,33 +78,6 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
     }
 
     QueryResult startsWith(String id, QueryOptions options);
-
-    default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
-        Query query;
-        if (VariantType.CNV.equals(variant.getType())) {
-            query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
-                    .append(QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())
-                    .append(QueryParams.CI_END_LEFT.key(), variant.getSv().getCiEndLeft())
-                    .append(QueryParams.CI_END_RIGHT.key(), variant.getSv().getCiEndRight())
-                    .append(QueryParams.REFERENCE.key(), variant.getReference())
-                    .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
-        } else {
-            query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(QueryParams.START.key(), variant.getStart())
-                    .append(QueryParams.REFERENCE.key(), variant.getReference())
-                    .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
-        }
-        return get(query, options);
-    }
-
-    default List<QueryResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {
-        List<QueryResult<T>> results = new ArrayList<>(variants.size());
-        for (Variant variant: variants) {
-            results.add(getByVariant(variant, options));
-        }
-        return results;
-    }
 
     QueryResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions options);
 

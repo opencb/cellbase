@@ -1,76 +1,83 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.junit.Ignore;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
+import org.opencb.biodata.models.variant.avro.Germline;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 /**
- * Created by fjlopez on 09/12/15.
+ * Created by fjlopez on 24/03/17.
  */
-@Ignore
-public class ClinicalLegacyMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
-
-    public ClinicalLegacyMongoDBAdaptorTest() { super(); }
-
+public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
-    public void testNativeGet() throws Exception {
-
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor("hsapiens", "GRCh37");
+    public void nativeGet() throws Exception {
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions1 = new QueryOptions();
 
         Query query1 = new Query();
-        query1.put("phenotype", "alzheimer");
+        query1.put("phenotypeDisease", "alzheimer");
         queryOptions1.add("limit", 30);
-        queryOptions1.add("include", "clinvarSet.referenceClinVarAssertion.clinVarAccession.acc");
-        QueryResult queryResult1 = clinicalDBAdaptor.nativeGet(query1, queryOptions1);
+        queryOptions1.add("include", "annotation.variantTraitAssociation.germline.accession,"
+                + "annotation.variantTraitAssociation.somatic.accession");
+        QueryResult<Variant> queryResult1 = clinicalDBAdaptor.get(query1, queryOptions1);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(89, queryResult1.getNumTotalResults());
+        assertEquals(79, queryResult1.getNumTotalResults());
         assertEquals(30, queryResult1.getNumResults());
         boolean found = false;
-        for (Object resultObject : queryResult1.getResult()) {
-            if (((String) ((Document)((Document) ((Document) ((Document) resultObject).get("clinvarSet"))
-                    .get("referenceClinVarAssertion")).get("clinVarAccession")).get("acc")).equals("RCV000019769")) {
-                found = true;
-                break;
+        int i = 0;
+        while (i < queryResult1.getNumResults() && !found) {
+            int j = 0;
+            while (j < queryResult1.getResult().get(i).getAnnotation().getVariantTraitAssociation().getGermline().size()
+                    && !found) {
+                found = queryResult1.getResult().get(i).getAnnotation().getVariantTraitAssociation().getGermline()
+                        .get(j).getAccession().equals("RCV000019769");
+                j++;
             }
+            i++;
         }
         assertEquals(found, true);
 
         Query query2 = new Query();
-        query2.put("phenotype", "myelofibrosis");
+        query2.put("phenotypeDisease", "myelofibrosis");
         QueryOptions queryOptions2 = new QueryOptions();
         queryOptions2.add("limit", 30);
+        queryOptions2.add("include", "annotation.variantTraitAssociation.germline.accession,"
+                + "annotation.variantTraitAssociation.somatic.accession");
         QueryResult queryResult2 = clinicalDBAdaptor.nativeGet(query2, queryOptions2);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(7739, queryResult2.getNumTotalResults());
+        assertEquals(693, queryResult2.getNumTotalResults());
         assertEquals(30, queryResult2.getNumResults());
 
         query2.put("source", "cosmic");
-        queryOptions2.put("include", "mutationID");
-        QueryResult queryResult3 = clinicalDBAdaptor.nativeGet(query2, queryOptions2);
+        queryOptions2.put("include", "annotation.variantTraitAssociation.somatic.accession");
+        QueryResult queryResult3 = clinicalDBAdaptor.get(query2, queryOptions2);
         // WARNING: these values may change from one ClinVar version to another
-        assertEquals(7733, queryResult3.getNumTotalResults());
+        assertEquals(692, queryResult3.getNumTotalResults());
         found = false;
-        for (Object resultObject : queryResult3.getResult()) {
-            String mutationID = (String) ((Document) resultObject).get("mutationID");
-            if (mutationID != null && mutationID.equals("COSM12600")) {
-                found = true;
-                break;
+        i = 0;
+        while (i < queryResult1.getNumResults() && !found) {
+            int j = 0;
+            while (j < queryResult1.getResult().get(i).getAnnotation().getVariantTraitAssociation().getGermline().size()
+                    && !found) {
+                found = queryResult1.getResult().get(i).getAnnotation().getVariantTraitAssociation().getGermline()
+                        .get(j).getAccession().equals("COSM12600");
+                j++;
             }
+            i++;
         }
+
         assertEquals(found, true);
 //        assertEquals(((Document) queryResult3.getResult().get(14)).get("mutationID"), "COSM12600");
 
@@ -150,15 +157,4 @@ public class ClinicalLegacyMongoDBAdaptorTest extends GenericMongoDBAdaptorTest 
 
     }
 
-//    @Test
-//    public void testGetAllByGenomicVariantList() throws Exception {
-//        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh38");
-//        QueryOptions queryOptions = new QueryOptions();
-//        List<QueryResult> queryResult = clinicalDBAdaptor
-//                .getAllByGenomicVariantList(Collections.singletonList(new Variant("2:47414420:T:-")), queryOptions);
-//
-//        assertEquals("RCV000076755",
-//                ((VariantTraitAssociation) queryResult.get(0).getResult().get(0)).getClinvar().get(0).getAccession());
-//
-//    }
 }
