@@ -96,7 +96,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         this.regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
         this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
-        this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species, assembly);
+        this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -396,7 +396,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
-        Future<List<QueryResult>> clinicalFuture = null;
+        Future<List<QueryResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, queryOptions);
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
@@ -1236,7 +1236,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     }
 
-    class FutureClinicalAnnotator implements Callable<List<QueryResult>> {
+    class FutureClinicalAnnotator implements Callable<List<QueryResult<Variant>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
@@ -1246,15 +1246,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         @Override
-        public List<QueryResult> call() throws Exception {
+        public List<QueryResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
 //            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
-            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
+            List<QueryResult<Variant>> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> clinicalFuture,
+        public void processResults(Future<List<QueryResult<Variant>>> clinicalFuture,
                                    List<QueryResult<VariantAnnotation>> variantAnnotationResults)
                 throws InterruptedException, ExecutionException {
 //            try {
@@ -1262,13 +1262,14 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 Thread.sleep(1);
             }
 
-            List<QueryResult> clinicalQueryResults = clinicalFuture.get();
+            List<QueryResult<Variant>> clinicalQueryResults = clinicalFuture.get();
             if (clinicalQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResults.size(); i++) {
-                    QueryResult clinicalQueryResult = clinicalQueryResults.get(i);
+                    QueryResult<Variant> clinicalQueryResult = clinicalQueryResults.get(i);
                     if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
                         variantAnnotationResults.get(i).getResult().get(0)
-                                .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
+                                .setVariantTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
+                                        .getVariantTraitAssociation());
                     }
                 }
             }

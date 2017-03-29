@@ -83,6 +83,7 @@ public class VariantAnnotationCalculatorTest {
         String line = reader.readLine();
         QueryOptions queryOptions = new QueryOptions("normalize", true);
         queryOptions.put("phased", true);
+        queryOptions.put("useCache", false);
         int i = 0;
         while (line !=null ) {
             assertVariantAnnotationQueryResultEquals(variantAnnotationCalculator
