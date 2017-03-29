@@ -251,7 +251,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                     case EtlCommons.CLINICAL_VARIANTS_DATA:
                         if (speciesHasInfoToDownload(sp, "clinical_variants")) {
-                            downloadClinical(sp, spFolder);
+                            downloadClinical(sp, assembly.getName(), spFolder);
                         }
                         break;
                     default:
@@ -870,7 +870,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadClinical(Species species, Path speciesFolder)
+    private void downloadClinical(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
 
         if (species.getScientificName().equals("Homo sapiens")) {
@@ -920,34 +920,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
 //            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
 //                    clinicalFolder.resolve("dbsnpVersion.json"));
 
-            url = configuration.getDownload().getIarctp53().getHost();
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
-                    Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
-                            + "&dataset-germlineMutationData=germlineMutationData"
-                            + "&dataset-somaticMutationReference=somaticMutationReference"
-                            + "&dataset-germlineMutationReference=germlineMutationReference"));
-
-            ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                File entryDestination = new File(clinicalFolder.toFile(),  entry.getName());
-                if (entry.isDirectory()) {
-                    entryDestination.mkdirs();
-                } else {
-                    entryDestination.getParentFile().mkdirs();
-                    InputStream in = zipFile.getInputStream(entry);
-                    OutputStream out = new FileOutputStream(entryDestination);
-                    IOUtils.copy(in, out);
-                    IOUtils.closeQuietly(in);
-                    out.close();
-                }
-            }
-            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
-                    getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
-                            "The version of the database should be identified"), getTimeStamp(),
-                    Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
-
             List<String> hgvsList = getDocmHgvsList();
             if (!hgvsList.isEmpty()) {
                 downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
@@ -961,6 +933,36 @@ public class DownloadCommandExecutor extends CommandExecutor {
             } else {
                 logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
                         + "assembly");
+            }
+
+            if (assembly.equalsIgnoreCase("grch37")) {
+                url = configuration.getDownload().getIarctp53().getHost();
+                downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
+                        Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
+                                + "&dataset-germlineMutationData=germlineMutationData"
+                                + "&dataset-somaticMutationReference=somaticMutationReference"
+                                + "&dataset-germlineMutationReference=germlineMutationReference"));
+
+                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
+                    if (entry.isDirectory()) {
+                        entryDestination.mkdirs();
+                    } else {
+                        entryDestination.getParentFile().mkdirs();
+                        InputStream in = zipFile.getInputStream(entry);
+                        OutputStream out = new FileOutputStream(entryDestination);
+                        IOUtils.copy(in, out);
+                        IOUtils.closeQuietly(in);
+                        out.close();
+                    }
+                }
+                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
+                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
+                                "The version of the database should be identified"), getTimeStamp(),
+                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
             }
         }
     }

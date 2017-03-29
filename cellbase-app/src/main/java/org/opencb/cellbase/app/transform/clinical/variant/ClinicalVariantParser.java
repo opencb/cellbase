@@ -36,6 +36,7 @@ public class ClinicalVariantParser extends CellBaseParser {
     private final Path iarctp53GermlineReferencesFile;
     private final Path iarctp53SomaticReferencesFile;
     private final Path genomeSequenceFilePath;
+    private final Path docmFile;
 
 
     public ClinicalVariantParser(Path clinicalVariantFolder, Path genomeSequenceFilePath, String assembly,
@@ -51,13 +52,14 @@ public class ClinicalVariantParser extends CellBaseParser {
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_GERMLINE_REFERENCES_FILE),
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_FILE),
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_REFERENCES_FILE),
+                clinicalVariantFolder.resolve(EtlCommons.DOCM_FILE),
                 genomeSequenceFilePath, assembly, serializer);
     }
 
     public ClinicalVariantParser(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
                                  Path clinvarEFOFile, Path cosmicFile, Path gwasFile, Path dbsnpFile,
                                  Path iarctp53GermlineFile, Path iarctp53GermlineReferencesFile,
-                                 Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile,
+                                 Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile, Path docmFile,
                                  Path genomeSequenceFilePath, String assembly, CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXMLFile = clinvarXMLFile;
@@ -71,6 +73,7 @@ public class ClinicalVariantParser extends CellBaseParser {
         this.iarctp53GermlineReferencesFile = iarctp53GermlineReferencesFile;
         this.iarctp53SomaticFile = iarctp53SomaticFile;
         this.iarctp53SomaticReferencesFile = iarctp53SomaticReferencesFile;
+        this.docmFile = docmFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
     }
@@ -119,6 +122,13 @@ public class ClinicalVariantParser extends CellBaseParser {
                 iarctp53Indexer.index();
             } else {
                 logger.warn("One or more of required IARCTP53 files are missing. Skipping IARCTP53 data.");
+            }
+
+            if (this.docmFile != null && Files.exists(docmFile)) {
+                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, assembly, rdb);
+                docmIndexer.index();
+            } else {
+                logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);
             }
 
             serializeRDB(rdb);
