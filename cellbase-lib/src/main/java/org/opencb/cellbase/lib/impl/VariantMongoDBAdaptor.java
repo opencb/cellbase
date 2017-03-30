@@ -133,7 +133,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         options = addVariantPrivateExcludeOptions(options);
 //        options = addPrivateExcludeOptions(options);
 
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
 

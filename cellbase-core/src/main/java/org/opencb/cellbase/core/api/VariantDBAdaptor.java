@@ -82,7 +82,10 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
     default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
         Query query;
-        if (VariantType.CNV.equals(variant.getType())) {
+        if (VariantType.CNV.equals(variant.getType()) && variant.getSv().getCiStartLeft() != null
+                && variant.getSv().getCiStartRight() != null
+                && variant.getSv().getCiEndLeft() != null
+                && variant.getSv().getCiEndRight() != null) {
             query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
                     .append(QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
                     .append(QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())

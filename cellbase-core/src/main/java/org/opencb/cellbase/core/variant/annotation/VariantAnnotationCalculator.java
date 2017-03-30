@@ -958,7 +958,11 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             case SNV:
                 return new ConsequenceTypeSNVCalculator();
             case CNV:
-                return new ConsequenceTypeCNVCalculator();
+                if (variant.getSv().getCopyNumber() > 2) {
+                    return new ConsequenceTypeCNVGainCalculator();
+                } else {
+                    return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+                }
             case MNV:
                 return new ConsequenceTypeMNVCalculator(genomeDBAdaptor);
             default:

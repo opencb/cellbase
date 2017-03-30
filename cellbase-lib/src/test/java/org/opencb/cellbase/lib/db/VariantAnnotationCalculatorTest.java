@@ -78,11 +78,12 @@ public class VariantAnnotationCalculatorTest {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(getClass().getResource("/variant-annotation-test.json.gz").getFile()))));
         String[] variantArray = {"2:114210741:TGATGCT:AGATGGC", "1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC",
-                "19:45411941:T:C", "1:819287-820859:<CNV>"};
+                "19:45411941:T:C", "1:819287-820859:<CN12>"};
 
         String line = reader.readLine();
         QueryOptions queryOptions = new QueryOptions("normalize", true);
         queryOptions.put("phased", true);
+        queryOptions.put("useCache", false);
         int i = 0;
         while (line !=null ) {
             assertVariantAnnotationQueryResultEquals(variantAnnotationCalculator
@@ -364,19 +365,19 @@ public class VariantAnnotationCalculatorTest {
                 consequenceTypeResult.getResult(), ConsequenceType.class);
 
         consequenceTypeResult =
-                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:818401-819973:<CNV>"),
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:818401-819973:<CN10>"),
                         new QueryOptions());
         assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":3,\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
 
         consequenceTypeResult =
-                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:819287-820859:<CNV>"),
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:819287-820859:<CN3>"),
                         new QueryOptions());
-        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001590\",\"name\":\"terminator_codon_variant\"},{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
+        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001578\",\"name\":\"stop_lost\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
 
         consequenceTypeResult =
-                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:816505-825225:<CNV>"),
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:816505-825225:<CN4>"),
                         new QueryOptions());
         assertObjectListEquals("[{\"geneName\":\"FAM41C\",\"ensemblGeneId\":\"ENSG00000230368\",\"ensemblTranscriptId\":\"ENST00000446136\",\"strand\":\"-\",\"biotype\":\"lincRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001631\",\"name\":\"upstream_gene_variant\"}]},{\"geneName\":\"FAM41C\",\"ensemblGeneId\":\"ENSG00000230368\",\"ensemblTranscriptId\":\"ENST00000427857\",\"strand\":\"-\",\"biotype\":\"lincRNA\",\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001631\",\"name\":\"upstream_gene_variant\"}]},{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001563\",\"name\":\"copy_number_change\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
