@@ -590,7 +590,7 @@ public class HgvsCalculator {
 
         // Sum the part that corresponds to the exon where genomicPosition is located
         if ("+".equals(transcript.getStrand())) {
-            while (i < exonList.size() && genomicPosition < exonList.get(i).getEnd()) {
+            while (i < exonList.size() && genomicPosition > exonList.get(i).getEnd()) {
                 cdnaPosition += (exonList.get(i).getEnd() - exonList.get(i).getStart() + 1);
                 i++;
             }

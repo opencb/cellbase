@@ -93,14 +93,12 @@ public class HgvsCalculatorTest {
                 "ENST00000360870(ENSG00000155657):c.10303+1467_10303+1472del6"));
 
         hgvsList = getVariantHgvs(new Variant("14", 24607040, "GTCAAACCATT", "-"));
-        assertEquals(7, hgvsList.size());
-        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000342992(ENSG00000155657):c.10303+1467_10303+1472del6",
-                "ENST00000<460472(ENSG00000155657):c.10165+1467_10165+1472del6",
-                "ENST00000589042(ENSG00000155657):c.10678+25_10678+30del6",
-                "ENST00000591111(ENSG00000155657):c.10303+1467_10303+1472del6",
-                "ENST00000342175(ENSG00000155657):c.10166-720_10166-715del6",
-                "ENST00000359218(ENSG00000155657):c.10540+25_10540+30del6",
-                "ENST00000360870(ENSG00000155657):c.10303+1467_10303+1472del6"));
+        assertEquals(5, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000206451(ENSG00000092010):c.390+37_390+47del11",
+                "ENST00000559123(ENSG00000092010):c.-88+37_-88+47del11",
+                "ENST00000382708(ENSG00000092010):c.390+37_390+47del11",
+                "ENST00000561435(ENSG00000092010):c.390+37_390+47del11",
+                "ENST00000558112(ENSG00000092010):c.144+37_144+47del11"));
 
 
 
