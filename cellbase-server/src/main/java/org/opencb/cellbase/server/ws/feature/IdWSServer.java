@@ -123,11 +123,12 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
-            if (dbname != null && !dbname.isEmpty()) {
-                queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
-            }
+
             Query query = new Query();
             query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
+            if (dbname != null && !dbname.isEmpty()) {
+                query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
+            }
 //            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
             QueryResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
             queryResult.setId(ids);
