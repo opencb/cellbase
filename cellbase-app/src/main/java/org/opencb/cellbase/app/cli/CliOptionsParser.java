@@ -347,7 +347,7 @@ public class CliOptionsParser {
         @Parameter(names = {"--custom-file-fields"}, description = "String containing a colon separated list (no spaces in between) of field lists which indicate the info fields to be taken from each VCF file. For example: field1File1,field2File1:field1File2,field3File2", required = false, arity = 1)
         public String customFileFields;
 
-        @Parameter(names = {"--output-format"}, description = "Variant annotation output format. Values: JSON, PB, VEP", required = false, arity = 1)
+        @Parameter(names = {"--output-format"}, description = "Variant annotation output format. Values: JSON, Avro, VEP", required = false, arity = 1)
         public String outputFormat = "JSON";
 
         @Parameter(names = {"--gzip"}, description = "Whether the output file is gzipped", required = false, arity = 0)

@@ -30,6 +30,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
+import org.opencb.biodata.formats.variant.annotation.io.VariantAvroDataWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.io.JsonVariantReader;
@@ -50,6 +51,7 @@ import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
+import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -78,7 +80,7 @@ import static java.nio.file.StandardOpenOption.APPEND;
  */
 public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
-    public enum FileFormat {VCF, JSON, VEP};
+    public enum FileFormat {VCF, JSON, AVRO, VEP};
 
     private CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions;
 
@@ -154,7 +156,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 return entry.getFileName().toString().endsWith(".vep");
             });
 
-            DataWriter dataWriter = getDataWriter(output.toString());
+            DataWriter<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
             List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                     variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndexManager);
@@ -231,10 +233,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // expensive to parse, i.e.: multisample vcf with thousands of samples. A specific task is created to enable
         // parallel parsing of these lines
         if (input != null) {
-            DataReader dataReader = new StringDataReader(input);
+            DataReader<String> dataReader = new StringDataReader(input);
             List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList
                     = getStringTaskList();
-            DataWriter dataWriter = getDataWriter(output.toString());
+            DataWriter<Variant> dataWriter = getVariantDataWriter(output.toString());
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
             ParallelTaskRunner<String, Variant> runner =
@@ -257,9 +259,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 for (String chromosome : chromosomeList) {
                     logger.info("Annotating chromosome {}", chromosome);
                     Query query = new Query("chromosome", chromosome);
-                    DataReader dataReader =
+                    DataReader<Variant> dataReader =
                             new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
-                    DataWriter dataWriter = getDataWriter(output.toString() + "/"
+                    DataWriter<Variant> dataWriter = getVariantDataWriter(output.toString() + "/"
                             + VARIATION_ANNOTATION_FILE_PREFIX + chromosome + ".json.gz");
                     ParallelTaskRunner<Variant, Variant> runner =
                             new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
@@ -334,17 +336,18 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private DataWriter getDataWriter(String filename) {
-        DataWriter dataWriter = null;
-        if (benchmark) {
-            dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
-        } else {
-            if (outputFormat.equals(FileFormat.JSON)) {
-                dataWriter = new JsonAnnotationWriter(filename);
-            } else if (outputFormat.equals(FileFormat.VEP)) {
-                dataWriter = new VepFormatWriter(filename);
-            }
+    private DataWriter<Variant> getVariantDataWriter(String filename) {
+        DataWriter<Variant> dataWriter = null;
+        if (outputFormat.equals(FileFormat.JSON)) {
+            dataWriter = new JsonAnnotationWriter(filename);
+        } else if (outputFormat.equals(FileFormat.AVRO)) {
+            ProgressLogger progressLogger = new ProgressLogger("Num written variants:");
+            dataWriter = new VariantAvroDataWriter(Paths.get(filename), true)
+                    .setProgressLogger(progressLogger);
+        } else if (outputFormat.equals(FileFormat.VEP)) {
+            dataWriter = new VepFormatWriter(filename);
         }
+
         return dataWriter;
     }
 
@@ -724,6 +727,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             switch (variantAnnotationCommandOptions.outputFormat.toLowerCase()) {
                 case "json":
                     outputFormat = FileFormat.JSON;
+                    break;
+                case "avro":
+                    outputFormat = FileFormat.AVRO;
                     break;
                 case "vep":
                     outputFormat = FileFormat.VEP;
