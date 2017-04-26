@@ -1,13 +1,12 @@
 ################################################################################
-#' This class defines the CellBaseR object
+#' CellBaseR Class
 #' @include commons.R
-#' This is an S4 class  which defines the CellBaseR object
+#' 
+#' @description This is an S4 class  which defines the CellBaseR object
 #' @details This S4 class holds the default configuration required by CellBaseR 
 #' methods to connect to the cellbase web 
 #' services. By default it is configured to query human data based on the GRCh37
-#' genome assembly. Please, visit https://github.com/opencb/cellbase/wiki and 
-#' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ for more details on
-#' following parameters.
+#' genome assembly. 
 #' @slot host a character specifying the host url. Default 
 #' "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/"
 #' @slot version a character specifying the API version. Default "v4"
@@ -18,35 +17,27 @@
 #' queries will be sent to the server in batches. This slot indicates the size 
 #' of these batches. Default 200
 #' @slot num_threads the number of threads. Default 8
+#' @seealso  \url{https://github.com/opencb/cellbase/wiki} 
+#' and the RESTful API documentation 
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setClass("CellBaseR", 
-         slots = c(host="character", version="character", species="character", 
-                   batch_size="numeric", num_threads="numeric"),
-         prototype = prototype(host="http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0/webservices/rest/",
-                               version = "v4/",species="hsapiens/", batch_size=200, num_threads=8)
+    slots = c(host="character", version="character", species="character", 
+              batch_size="numeric", num_threads="numeric"),
+    prototype = prototype(
+    host="http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/webservices/rest/",
+    version = "v4/",species="hsapiens/", batch_size=200L, num_threads=8L)
 )
 
-################################################################################
-#' The CellBaseResponse class defintion
-#'  
-#' This class holds the response data from CellBaseR Methods
-#' @details This class stores a response of CellBaseR query methods. An object 
-#' of class CellBaseResponse is automatically generated when you call any of 
-#' CellbaseR methods.
-#' @slot cbData an R dataframe which contains the result field within the 
-#' response object returned by CellBase web services.
-#' @export
-CellBaseResponse <-setClass("CellBaseResponse", slots=c(cbData="data.frame"))
 
 ###############################################################################
-#' This Class defines a CellBaseParam object
+#' CellBaseParam Class
 #' 
-#' This class  defines a CellBaseParam object to hold filtering parameters
-#' @details This class stores filtering parameters to be used by CellBaseR query
-#'  methods. Not all the slots will be
-#' used by all query methods, please have a look at 
-#' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ and the 
-#' Reference Manual for more information.
+#' @description  This class  defines a CellBaseParam object to hold filtering 
+#' parameters.
+#' @details This class stores parameters used for filtering the CellBaseR query
+#' and is avaialable for all query methods. CellBaseParam object is used to
+#' control what results are returned from the' CellBaseR methods
 #' @slot genome A character the genome build to query, e.g.GRCh37(default)
 #' @slot gene A character vector denoting the gene/s to be queried
 #' @slot region A character vector denoting the region/s to be queried must be 
@@ -57,6 +48,9 @@ CellBaseResponse <-setClass("CellBaseResponse", slots=c(cbData="data.frame"))
 #' @slot include A character vector denoting the fields to be returned
 #' @slot exclude A character vector denoting the fields to be excluded
 #' @slot limit A number limiting the number of results to be returned
+#' @seealso  \url{https://github.com/opencb/cellbase/wiki} 
+#' and the RESTful API documentation 
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 setClass("CellBaseParam",slots = c(genome="character", gene="character", 
                                    region="character", rs="character", 

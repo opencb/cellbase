@@ -1,36 +1,28 @@
 utils::globalVariables(c("k", "transcripts", "exons"))
 
-#' A convience fubction to directly annotate variants from a vcf file
-#' 
-#' This is a function to annotate variants from a vcf file
-#' @param object an object of class CellBaseR
-#' @param file Path to a bgzipped and tabix indexed vcf file
-#' @param  batch_size intger if multiple queries are raised by a single method 
-#' call, e.g. getting annotation info for several genes,
-#' queries will be sent to the server in batches. This slot indicates the size
-#'  of each batch, e.g. 200
-#' @param num_threads integer number of asynchronus batches to be sent to the 
-#' server
-#' @param ... any extra arguments
-#' @return a dataframe
-Annovcf <- function(object, file, batch_size, num_threads){
-  num_cores <-parallel::detectCores()-2
+# Annovcf
+Annovcf <- function(object, file, batch_size, num_threads, BPPARAM=bpparam()){
+  num_cores <-2
+  register(BPPARAM, default=TRUE)
   registerDoParallel(num_cores) 
-  p <- DoparParam()
+  p <- bpparam()
   host <- object@host
   species <- object@species
   version <- object@version
   batch_size <- object@batch_size
   num_threads <- object@num_threads
   ids <- readIds(file, batch_size, num_threads)
+  #filter out multiallelic sites
+  ids2 <- sapply(ids, function(x)sapply(x, function(y)filterMulti(y)))
+  names(ids2) <- NULL
   grls <- list()
   categ <- 'genomic/'
   subcateg <- "variant/"
   resource <- "/annotation"
   # get the IDs
-  gcl <- paste0(host,version,species,categ,subcateg,collapse = "")
-  for(i in seq_along(ids)){
-    hop <- paste(ids[[i]],collapse = ",")
+  gcl <- paste0(host,version,species,"/",categ,subcateg,collapse = "")
+  for(i in seq_along(ids2)){
+    hop <- paste(ids2[[i]],collapse = ",")
     tmp <- paste0(gcl,hop,resource,collapse = ",")
     grls[[i]] <- gsub("chr","",tmp)
   }
@@ -38,48 +30,56 @@ Annovcf <- function(object, file, batch_size, num_threads){
   grp <- foreach(i=1:length(prp))%do%{
     paste(prp[[i]])
   }
-  
+
   # get the data and parse in chuncks
   num <- length(prp)
   i <- 1
   container <- list()
   while(i<=num){
-    content <- getURIAsynchronous(grp[[i]],perform = Inf)#  alist of responses
+    resp <- pblapply(grp[[i]], function(x)GET(x, add_headers(`Accept-Encoding`
+                                                          = "gzip, deflate")))
+    content <- pblapply(resp, function(x) content(x, as="text",
+                                                  encoding = "utf-8"))
     js <- bplapply(content, function(x)fromJSON(x),BPPARAM = p)
     res <- bplapply(js, function(x)x$response$result, BPPARAM = p)
     names(res) <- NULL
     ind <- sapply(res, function(x)length(x)!=1)
     res <- res[ind]
     ds <- bplapply(res, function(x)rbind.pages(x), BPPARAM = p)
-    container[[i]] <- ds 
+    container[[i]] <- ds
     i=i+1
   }
-  
-  
-  final <- foreach(k=1:length(container),.options.multicore=list(preschedule=TRUE),
-                            .combine=function(...)rbind.pages(list(...)),
-                            .packages='jsonlite',.multicombine=TRUE) %dopar% {
-                              rbind.pages(container[[k]])
+
+
+  final <-foreach(k=1:length(container),
+                  .options.multicore=list(preschedule=TRUE),
+                  .combine=function(...)rbind.pages(list(...)),
+                  .packages='jsonlite',.multicombine=TRUE) %dopar% {
+                  rbind.pages(container[[k]])
                             }
-  
+
   return(final)
-  
+
 }
 
 
 
-# create GeneModel
-#' A convience functon to construct a genemodel
+#' createGeneModel 
 #' 
-#' @details  This function takes cbResponse object and returns a geneRegionTrack
-#' model to be plotted by Gviz
+#' A convience functon to construct a genemodel 
+#' @details  This function create a gene model data frame, which can be then 
+#' turned into a GeneRegionTrack for visualiaztion
+#'  by \code{\link[Gviz]{GeneRegionTrack}}  
 #' @param object an object of class CellbaseResponse
 #' @param region a character 
 #' @return A geneModel
 #' @import data.table
-# @examples
-# cb <- CellBaseR()
-# test <- createGeneModel(object = cb, region = "17:1500000-1550000")
+#' @examples
+#' cb <- CellBaseR()
+#' test <- createGeneModel(object = cb, region = "17:1500000-1550000")
+#' @seealso  \url{https://github.com/opencb/cellbase/wiki} 
+#' and the RESTful API documentation 
+#' \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 #' @export
 createGeneModel <- function(object, region=NULL){
   if(!is.null(region)){
@@ -90,8 +90,9 @@ createGeneModel <- function(object, region=NULL){
     subcateg<- "region"
     ids <- region
     resource <- "gene"
-    data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
-                          ids=ids, resource=resource, filters=NULL)
+    data <- fetchCellbase(object=object, file=NULL, meta=NULL, categ=categ, 
+                          subcateg=subcateg,
+                          ids=ids, resource=resource, param=NULL)
     rt4 <- data[,c(1,2,11)]
     rt4 <- as.data.table(rt4)
     #rt4 <- as.data.table(rt4)
@@ -104,12 +105,14 @@ createGeneModel <- function(object, region=NULL){
     
     hope <- as.data.frame(hope)
     hope <- hope[!duplicated(hope),1:9]
-    chr <- paste0("chr",hope$chromosome[1])
-    from <- min(hope$start)-5000
-    to <- max(hope$end)+5000
-    hope <- Gviz::GeneRegionTrack(hope,from = from, to = to,
-                                  transcriptAnnotation='symbol')
     
   }
   hope
 }
+
+# Filter multiallelic sites
+filterMulti <- function(x){
+  res <- strsplit(x, split = ",")[[1]][1]
+  res
+}
+

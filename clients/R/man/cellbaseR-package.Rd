@@ -4,7 +4,7 @@
 \name{cellbaseR-package}
 \alias{cellbaseR}
 \alias{cellbaseR-package}
-\title{CellbaseR}
+\title{cellbaseR}
 \description{
 Querying annotation data from the high performance Cellbase web
 services
@@ -24,7 +24,13 @@ many others will be included soon. Results returned from the cellbase queries
 are parsed into R data.frames and other common R data strctures so users can 
 readily get into downstream anaysis.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/melsiddieg/cellbaseR}
+}
+
+}
 \author{
 Mohammed OE Abdallah
 }
-
