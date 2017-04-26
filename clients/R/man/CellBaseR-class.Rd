@@ -3,17 +3,15 @@
 \docType{class}
 \name{CellBaseR-class}
 \alias{CellBaseR-class}
-\title{This class defines the CellBaseR object}
+\title{CellBaseR Class}
 \description{
-This class defines the CellBaseR object
+This is an S4 class  which defines the CellBaseR object
 }
 \details{
 This S4 class holds the default configuration required by CellBaseR 
 methods to connect to the cellbase web 
 services. By default it is configured to query human data based on the GRCh37
-genome assembly. Please, visit https://github.com/opencb/cellbase/wiki and 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ for more details on
-following parameters.
+genome assembly.
 }
 \section{Slots}{
 
@@ -34,3 +32,8 @@ of these batches. Default 200}
 \item{\code{num_threads}}{the number of threads. Default 8}
 }}
 
+\seealso{
+\url{https://github.com/opencb/cellbase/wiki} 
+and the RESTful API documentation 
+\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+}

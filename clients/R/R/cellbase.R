@@ -1,5 +1,5 @@
 #' Documentation for the cellbaseR package
-#' @title CellbaseR
+#' @title cellbaseR
 #' @description  Querying annotation data from the high performance Cellbase web
 #' services
 #' @author Mohammed OE Abdallah
@@ -15,17 +15,16 @@
 #' are parsed into R data.frames and other common R data strctures so users can 
 #' readily get into downstream anaysis.
 #' @import methods
-#' @import  jsonlite 
-#' @import RCurl
+#' @import jsonlite 
 #' @import pbapply
 #' @import data.table
 #' @import BiocParallel
 #' @importFrom tidyr unnest
 #' @importFrom R.utils countLines
-#' @importFrom Gviz GeneRegionTrack
 #' @import Rsamtools
 #' @import foreach 
 #' @import parallel
 #' @import doParallel
-#' @import doMC
+#' @import httr
+#' @import utils
 "_PACKAGE"

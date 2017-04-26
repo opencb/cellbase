@@ -3,16 +3,15 @@
 \docType{class}
 \name{CellBaseParam-class}
 \alias{CellBaseParam-class}
-\title{This Class defines a CellBaseParam object}
+\title{CellBaseParam Class}
 \description{
-This class  defines a CellBaseParam object to hold filtering parameters
+This class  defines a CellBaseParam object to hold filtering 
+parameters.
 }
 \details{
-This class stores filtering parameters to be used by CellBaseR query
- methods. Not all the slots will be
-used by all query methods, please have a look at 
-http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ and the 
-Reference Manual for more information.
+This class stores parameters used for filtering the CellBaseR query
+and is avaialable for all query methods. CellBaseParam object is used to
+control what results are returned from the' CellBaseR methods
 }
 \section{Slots}{
 
@@ -37,3 +36,8 @@ in the form 1:100000-1500000}
 \item{\code{limit}}{A number limiting the number of results to be returned}
 }}
 
+\seealso{
+\url{https://github.com/opencb/cellbase/wiki} 
+and the RESTful API documentation 
+\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+}

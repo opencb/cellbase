@@ -2,7 +2,7 @@
 % Please edit documentation in R/CellBaseParam-methods.R
 \name{CellBaseParam}
 \alias{CellBaseParam}
-\title{A constructor function for CellBaseParam}
+\title{A Constructor for the CellBaseParam Object}
 \usage{
 CellBaseParam(genome = character(), gene = character(),
   region = character(), rs = character(), so = character(),
@@ -30,8 +30,11 @@ in the form 1:100000-1500000 not chr1:100000-1500000}
 
 \item{limit}{A number limiting the number of results to be returned}
 }
+\value{
+an object of class CellBaseParam
+}
 \description{
-use the CellBaseParam object to control what results are returned from the
+CellBaseParam object is used to control what results are returned from the
 CellBaseR methods
 }
 \examples{
@@ -39,7 +42,7 @@ cbParam <- CellBaseParam(genome="GRCh38",gene=c("TP73","TET1"))
 print(cbParam)
 }
 \seealso{
-for more information about the cellbase webservices see
+\url{https://github.com/opencb/cellbase/wiki} 
+and the RESTful API documentation 
 \url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
 }
-

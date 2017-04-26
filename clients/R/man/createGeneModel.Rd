@@ -2,7 +2,7 @@
 % Please edit documentation in R/tools.R
 \name{createGeneModel}
 \alias{createGeneModel}
-\title{A convience functon to construct a genemodel}
+\title{createGeneModel}
 \usage{
 createGeneModel(object, region = NULL)
 }
@@ -18,7 +18,16 @@ A geneModel
 A convience functon to construct a genemodel
 }
 \details{
-This function takes cbResponse object and returns a geneRegionTrack
-model to be plotted by Gviz
+This function create a gene model data frame, which can be then 
+turned into a GeneRegionTrack for visualiaztion
+ by \code{\link[Gviz]{GeneRegionTrack}}
 }
-
+\examples{
+cb <- CellBaseR()
+test <- createGeneModel(object = cb, region = "17:1500000-1550000")
+}
+\seealso{
+\url{https://github.com/opencb/cellbase/wiki} 
+and the RESTful API documentation 
+\url{http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/}
+}
