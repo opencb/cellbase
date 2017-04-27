@@ -465,6 +465,12 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             adjustPhasedConsequenceTypes(variantBuffer.toArray());
         }
 
+        /**
+         * Get cytoband - no asynchronous call is made since cytobands are located in memory and getting the list of
+         * cytobands is therefore extremely fast
+         */
+        setCytoband(normalizedVariantList);
+
         logger.debug("Main loop iteration annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - startTime, normalizedVariantList.size());
 
@@ -490,6 +496,16 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
         return variantAnnotationResultList;
+    }
+
+    private void setCytoband(List<Variant> normalizedVariantList) {
+        List<QueryResult<Cytoband>> queryResultList = genomeDBAdaptor
+                .getCytoband(variantListToRegionList(normalizedVariantList));
+
+        // Cytoband lists are returned in the same order in which variants are queried
+        for (int i = 0; i < normalizedVariantList.size(); i++) {
+            normalizedVariantList.get(i).getAnnotation().setCytoband(queryResultList.get(i).getResult());
+        }
     }
 
     private void parseQueryParam(QueryOptions queryOptions) {

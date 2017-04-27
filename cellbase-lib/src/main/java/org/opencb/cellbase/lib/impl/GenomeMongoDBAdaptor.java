@@ -21,6 +21,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
@@ -42,11 +43,19 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     private MongoDBCollection genomeInfoMongoDBCollection;
     private MongoDBCollection conservationMongoDBCollection;
+    private static final Object CYTOBANDS = "cytobands";
+    private static final Object START = "start";
+    private static final String END = "end";
+    private static final String STAIN = "stain";
+    private static final String NAME = "name";
+    private static final Object CHROMOSOMES = "chromosomes";
+    private final Document genomeInfo;
 
     public GenomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
 
         genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
+        initGenomeInfo();
         mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
         conservationMongoDBCollection = mongoDataStore.getCollection("conservation");
 
@@ -68,6 +77,35 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         }
         Document dbObject = new Document("chromosomes", new Document("$elemMatch", new Document("name", chromosomeId)));
         return executeQuery(chromosomeId, dbObject, queryOptions, genomeInfoMongoDBCollection);
+    }
+
+    @Override
+    public QueryResult<Cytoband> getCytoband(Region region, QueryOptions queryOptions) {
+
+        List<Cytoband> cytobandList = new ArrayList<>();
+        List<Document> cytobandDocumentList = (List<Document>) getOneChromosomeInfo(region.getChromosome()).get(CYTOBANDS);
+        int i = 0;
+        while(i < cytobandDocumentList.size() && ((int) cytobandDocumentList.get(i).get(START)) <= region.getEnd()) {
+            if (((int) cytobandDocumentList.get(i).get(END)) >= region.getStart()) {
+                cytobandList.add(new Cytoband((String) cytobandDocumentList.get(i).get(STAIN),
+                        (String) cytobandDocumentList.get(i).get(NAME), (Integer) cytobandDocumentList.get(i).get(START),
+                        (Integer) cytobandDocumentList.get(i).get(END)));
+            }
+        }
+        QueryResult queryResult = new QueryResult(region.toString(), 0, cytobandDocumentList.size(),
+                cytobandDocumentList.size(), null, null, cytobandList);
+
+        return queryResult;
+
+    }
+
+    private Document getOneChromosomeInfo(String chromosome) {
+        for (Document document : genomeInfo.get(CHROMOSOMES)) {
+            if (((String) document.get(NAME)).equals(chromosome)) {
+                return document;
+            }
+        }
+        return null;
     }
 
     @Deprecated
