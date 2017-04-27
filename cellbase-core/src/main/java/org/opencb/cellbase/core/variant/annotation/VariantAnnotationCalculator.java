@@ -955,6 +955,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
             case DELETION:
                 return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+            case INVERSION:
+                return new ConsequenceTypeGenericRegionCalculator();
             case SNV:
                 return new ConsequenceTypeSNVCalculator();
             case CNV:
