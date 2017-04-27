@@ -22,7 +22,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
     private int variantStart;
     private int variantEnd;
-    private GenomeDBAdaptor genomeDBAdaptor;
+//    private GenomeDBAdaptor genomeDBAdaptor;
 
     public ConsequenceTypeInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         this.genomeDBAdaptor = genomeDBAdaptor;
@@ -358,20 +358,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 }
 
                 // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
-                if (firstCodon) {
-                    firstCodon = false;
-                    // Only the exact codon where the deletion starts is set
-                    consequenceType.setCodon(String.valueOf(formattedReferenceCodonArray) + "/"
-                            + String.valueOf(formattedModifiedCodonArray));
-                    // Assumes proteinVariantAnnotation attribute is already initialized
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon));
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode,
-                                    String.valueOf(modifiedCodonArray)));
-                }
+                firstCodon = setPositiveInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray, formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray),
                         String.valueOf(modifiedCodonArray), variant.getChromosome().equals("MT"));
@@ -642,45 +629,12 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
                     i++;
                 }
-                for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                    if (transcriptSequencePosition >= transcriptSequence.length()) {
-                        int genomicCoordinate = transcript.getEnd() + (transcriptSequencePosition - transcriptSequence.length()) + 1;
-//                        modifiedCodonArray[modifiedCodonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(
-//                                variant.getChromosome(), genomicCoordinate, genomicCoordinate + 1,
-//                                new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
-                        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                                + ":" + genomicCoordinate
-                                + "-" + (genomicCoordinate + 1));
-                        modifiedCodonArray[modifiedCodonPosition] = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
-                                .getResult().get(0).getSequence().charAt(0);
-                    } else {
-                        modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
-                    }
-                    transcriptSequencePosition++;
+                transcriptSequencePosition = updatePositiveInsertionCodonArrays(transcriptSequence, modifiedCodonArray,
+                        transcriptSequencePosition, modifiedCodonPosition, formattedReferenceCodonArray,
+                        formattedModifiedCodonArray);
 
-                    // Edit modified nt to make it upper-case in the formatted strings
-                    formattedReferenceCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(formattedReferenceCodonArray[modifiedCodonPosition]);
-                    formattedModifiedCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
-
-                }
-
-                // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
-                if (firstCodon) {
-                    firstCodon = false;
-                    // Only the exact codon where the deletion starts is set
-                    consequenceType.setCodon(String.valueOf(formattedReferenceCodonArray) + "/"
-                            + String.valueOf(formattedModifiedCodonArray));
-                    // Assumes proteinVariantAnnotation attribute is already initialized
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon));
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode,
-                                    String.valueOf(modifiedCodonArray)));
-                }
+                firstCodon = setPositiveInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray,
+                        formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames, referenceCodon, String.valueOf(modifiedCodonArray),
                         useMitochondrialCode);

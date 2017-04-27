@@ -60,7 +60,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                     }
                 } else {
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // whole trans. affected
-                        SoNames.add(VariantAnnotationUtils.COPY_NUMBER_CHANGE);
+                        SoNames.add(VariantAnnotationUtils.FEATURE_VARIANT);
 //                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                         consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                         consequenceTypeList.add(consequenceType);

@@ -9,7 +9,10 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,7 @@ public abstract class ConsequenceTypeCalculator {
     protected Gene gene;
     protected Transcript transcript;
     protected Variant variant;
+    protected GenomeDBAdaptor genomeDBAdaptor;
 
     public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList);
 
@@ -236,6 +240,53 @@ public abstract class ConsequenceTypeCalculator {
     private SequenceOntologyTerm newSequenceOntologyTerm(String name) {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
+
+    protected int updatePositiveInsertionCodonArrays(String transcriptSequence, char[] modifiedCodonArray, int transcriptSequencePosition, int modifiedCodonPosition, char[] formattedReferenceCodonArray, char[] formattedModifiedCodonArray) {
+        for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
+            if (transcriptSequencePosition >= transcriptSequence.length()) {
+                int genomicCoordinate = transcript.getEnd() + (transcriptSequencePosition - transcriptSequence.length()) + 1;
+//                        modifiedCodonArray[modifiedCodonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(
+//                                variant.getChromosome(), genomicCoordinate, genomicCoordinate + 1,
+//                                new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
+                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                        + ":" + genomicCoordinate
+                        + "-" + (genomicCoordinate + 1));
+                modifiedCodonArray[modifiedCodonPosition] = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
+                        .getResult().get(0).getSequence().charAt(0);
+            } else {
+                modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
+            }
+            transcriptSequencePosition++;
+
+            // Edit modified nt to make it upper-case in the formatted strings
+            formattedReferenceCodonArray[modifiedCodonPosition]
+                    = Character.toUpperCase(formattedReferenceCodonArray[modifiedCodonPosition]);
+            formattedModifiedCodonArray[modifiedCodonPosition]
+                    = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
+
+        }
+        return transcriptSequencePosition;
+    }
+
+    protected boolean setPositiveInsertionAlleleAminoacidChange(String referenceCodon, char[] modifiedCodonArray, char[] formattedReferenceCodonArray, char[] formattedModifiedCodonArray, boolean useMitochondrialCode, boolean firstCodon) {
+        // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
+        if (firstCodon) {
+            firstCodon = false;
+            // Only the exact codon where the deletion starts is set
+            consequenceType.setCodon(String.valueOf(formattedReferenceCodonArray) + "/"
+                    + String.valueOf(formattedModifiedCodonArray));
+            // Assumes proteinVariantAnnotation attribute is already initialized
+            consequenceType
+                    .getProteinVariantAnnotation()
+                    .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon));
+            consequenceType
+                    .getProteinVariantAnnotation()
+                    .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode,
+                            String.valueOf(modifiedCodonArray)));
+        }
+        return firstCodon;
+    }
+
 
 
 }
