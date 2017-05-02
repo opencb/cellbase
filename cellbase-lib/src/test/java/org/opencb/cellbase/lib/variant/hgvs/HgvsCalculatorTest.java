@@ -100,6 +100,15 @@ public class HgvsCalculatorTest {
                 "ENST00000561435(ENSG00000092010):c.390+37_390+47del11",
                 "ENST00000558112(ENSG00000092010):c.144+37_144+47del11"));
 
+        hgvsList = getVariantHgvs(new Variant("10", 82122881, "-", "ACACA"));
+        assertEquals(6, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000372199(ENSG00000133665):c.270+51_270+52ins5",
+                "ENST00000372198(ENSG00000133665):c.312+51_312+52ins5",
+                "ENST00000372197(ENSG00000133665):c.270+51_270+52ins5",
+                "ENST00000444807(ENSG00000133665):c.270+51_270+52ins5",
+                "ENST00000256039(ENSG00000133665):c.270+51_270+52ins5",
+                "ENST00000444807(ENSG00000133665):c.270+51_270+52ins5"));
+
 
 
     }
