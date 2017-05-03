@@ -402,6 +402,13 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
 
+        FutureCytobandAnnotator futureCytobandAnnotator = null;
+        Future<List<QueryResult<Cytoband>>> cytobandFuture = null;
+        if (annotatorSet.contains("cytoband")) {
+            futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, queryOptions);
+            cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
+        }
+
         /*
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
          */
@@ -465,12 +472,6 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             adjustPhasedConsequenceTypes(variantBuffer.toArray());
         }
 
-        /**
-         * Get cytoband - no asynchronous call is made since cytobands are located in memory and getting the list of
-         * cytobands is therefore extremely fast
-         */
-        setCytoband(normalizedVariantList);
-
         logger.debug("Main loop iteration annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - startTime, normalizedVariantList.size());
 
@@ -490,22 +491,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         if (futureClinicalAnnotator != null) {
             futureClinicalAnnotator.processResults(clinicalFuture, variantAnnotationResultList);
         }
+        if (futureCytobandAnnotator != null) {
+            futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationResultList);
+        }
         fixedThreadPool.shutdown();
 
 
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
         return variantAnnotationResultList;
-    }
-
-    private void setCytoband(List<Variant> normalizedVariantList) {
-        List<QueryResult<Cytoband>> queryResultList = genomeDBAdaptor
-                .getCytoband(variantListToRegionList(normalizedVariantList));
-
-        // Cytoband lists are returned in the same order in which variants are queried
-        for (int i = 0; i < normalizedVariantList.size(); i++) {
-            normalizedVariantList.get(i).getAnnotation().setCytoband(queryResultList.get(i).getResult());
-        }
     }
 
     private void parseQueryParam(QueryOptions queryOptions) {
@@ -1068,7 +1062,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             if (variant.getSv() != null) {
                 regionList.add(new Region(variant.getChromosome(),
                         variant.getSv().getCiStartLeft() != null ? variant.getSv().getCiStartLeft() : variant.getStart(),
-                        variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() : variant.getEnd());
+                        variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() : variant.getEnd()));
             } else {
                 regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
             }
@@ -1297,6 +1291,47 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 ////            } catch (InterruptedException | ExecutionException e) {
 //                e.printStackTrace();
 //            }
+        }
+    }
+
+    class FutureCytobandAnnotator implements Callable<List<QueryResult<Cytoband>>> {
+        private List<Variant> variantList;
+        private QueryOptions queryOptions;
+
+        FutureCytobandAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+            this.variantList = variantList;
+            this.queryOptions = queryOptions;
+        }
+
+        @Override
+        public List<QueryResult<Cytoband>> call() throws Exception {
+            long startTime = System.currentTimeMillis();
+            List<QueryResult<Cytoband>> queryResultList = genomeDBAdaptor
+                    .getCytoband(variantListToRegionList(variantList));
+
+            logger.debug("Cytoband query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+                    variantList.size());
+            return queryResultList;
+        }
+
+        public void processResults(Future<List<QueryResult<Cytoband>>> cytobandFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+                throws InterruptedException, ExecutionException {
+            while (!cytobandFuture.isDone()) {
+                Thread.sleep(1);
+            }
+
+            List<QueryResult<Cytoband>> queryResultList = cytobandFuture.get();
+            if (queryResultList != null) {
+                // Cytoband lists are returned in the same order in which variants are queried
+                for (int i = 0; i < variantAnnotationResults.size(); i++) {
+                    QueryResult queryResult = queryResultList.get(i);
+                    if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+                        variantAnnotationResults.get(i).getResult().get(0)
+                                .setCytoband(queryResult.getResult());
+                    }
+                }
+            }
         }
     }
 
