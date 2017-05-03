@@ -1065,7 +1065,13 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     private List<Region> variantListToRegionList(List<Variant> variantList) {
         List<Region> regionList = new ArrayList<>(variantList.size());
         for (Variant variant : variantList) {
-            regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+            if (variant.getSv() != null) {
+                regionList.add(new Region(variant.getChromosome(),
+                        variant.getSv().getCiStartLeft() != null ? variant.getSv().getCiStartLeft() : variant.getStart(),
+                        variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() : variant.getEnd());
+            } else {
+                regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+            }
         }
         return regionList;
     }
