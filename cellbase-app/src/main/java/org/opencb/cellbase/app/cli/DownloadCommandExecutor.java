@@ -39,6 +39,7 @@ import java.util.*;
  */
 public class DownloadCommandExecutor extends CommandExecutor {
 
+    private static final String TRF_NAME = "Tandem repeats finder";
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
     private Path output = null;
@@ -243,6 +244,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case EtlCommons.CLINICAL_DATA:
                         if (speciesHasInfoToDownload(sp, "clinical")) {
                             downloadClinical(sp, spFolder);
+                        }
+                        break;
+                    case EtlCommons.REPEATS_DATA:
+                        if (speciesHasInfoToDownload(sp, "repeats")) {
+                            downloadRepeats(sp, spFolder);
                         }
                         break;
                     default:
@@ -961,6 +967,21 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 proteinFolder.resolve("reactomeVersion.json"));
     }
 
+    private void downloadRepeats(Species species, Path speciesFolder)
+            throws IOException, InterruptedException {
+
+        if (species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading repeats data ...");
+
+            Path repeatsFolder = speciesFolder.resolve("repeats");
+            makeDir(repeatsFolder);
+            String url = configuration.getDownload().getSimpleRepeats().getHost();
+            downloadFile(url, repeatsFolder.resolve("simpleRepeat.txt.gz").toString());
+            saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    repeatsFolder.resolve("clinvarVersion.json"));
+
+        }
+    }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");

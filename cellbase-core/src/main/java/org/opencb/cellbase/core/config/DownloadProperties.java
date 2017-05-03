@@ -40,6 +40,7 @@ public class DownloadProperties {
     private URLProperties clinvar;
     private URLProperties clinvarSummary;
     private URLProperties clinvarEfoTerms;
+    private URLProperties simpleRepeats;
     private URLProperties hpo;
     private URLProperties disgenet;
     private URLProperties disgenetReadme;
@@ -210,6 +211,14 @@ public class DownloadProperties {
     public DownloadProperties setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
         this.clinvarEfoTerms = clinvarEfoTerms;
         return this;
+    }
+
+    public URLProperties getSimpleRepeats() {
+        return simpleRepeats;
+    }
+
+    public void setSimpleRepeats(URLProperties simpleRepeats) {
+        this.simpleRepeats = simpleRepeats;
     }
 
     public URLProperties getHpo() {

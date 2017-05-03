@@ -26,6 +26,7 @@ public class EtlCommons {
     public static final String PROTEIN_DATA = "protein";
     public static final String CONSERVATION_DATA = "conservation";
     public static final String CLINICAL_DATA = "clinical";
+    public static final String REPEATS_DATA = "repeats";
 
     // Build specific data options
     public static final String GENOME_INFO_DATA = "genome_info";
@@ -44,6 +45,7 @@ public class EtlCommons {
     // Path and file names
     public static final String GERP_SUBDIRECTORY = "gerp";
     public static final String GERP_FILE = "hg19.GERP_scores.tar.gz";
+
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {
