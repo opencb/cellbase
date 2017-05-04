@@ -266,10 +266,10 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart < 1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                    SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
                 }
                 if (variantStart < (transcript.getGenomicCodingStart() + 3)) {
-                    SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                    SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
                     if (variantStart < transcript.getGenomicCodingStart()) {
                         if (transcript.getStart() < transcript.getGenomicCodingStart()
                                 || transcript.unconfirmedEnd()) { // Check transcript has 3 UTR)
@@ -291,7 +291,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                     SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
                 }
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
-                SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
             }
             // Check transcript has 3 UTR)
         } else if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedEnd()) {
@@ -306,7 +306,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
         if (cdnaVariantStart != -1 && cdnaVariantStart < (cdnaCodingStart + 3) && (cdnaCodingStart > 0
                 || !transcript.unconfirmedStart())) {
-            SoNames.add(VariantAnnotationUtils.START_LOST);
+            SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             codingAnnotationAdded = true;
         }
         if (cdnaVariantEnd != -1) {
@@ -523,10 +523,10 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart<1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                    SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
                 }
                 if (variantEnd > (transcript.getGenomicCodingEnd() - 3)) {
-                    SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                    SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
                     if (variantEnd > transcript.getGenomicCodingEnd()) {
                         // Check transcript has 3 UTR)
                         if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedStart()) {
@@ -548,7 +548,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                     SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
                 }
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
-                SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
             }
             // Check transcript has 3 UTR)
         } else if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedEnd()) {
@@ -563,7 +563,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
 
         // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
         if (cdnaVariantStart != -1 && cdnaVariantStart < (cdnaCodingStart + 3) && (cdnaCodingStart > 0 || !transcript.unconfirmedStart())) {
-            SoNames.add(VariantAnnotationUtils.START_LOST);
+            SoNames.add(VariantAnnotationUtils.INITIATOR_CODON_VARIANT);
             codingAnnotationAdded = true;
         }
         if (cdnaVariantEnd != -1) {
