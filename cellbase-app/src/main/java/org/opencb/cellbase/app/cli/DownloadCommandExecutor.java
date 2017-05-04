@@ -88,6 +88,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String PHASTCONS_NAME = "PhastCons";
     private static final String PHYLOP_NAME = "PhyloP";
     private static final String CLINVAR_NAME = "ClinVar";
+    private static final String DGV_NAME = "DGV";
     private static final String GWAS_NAME = "Gwas Catalog";
 //    private static final String DBSNP_NAME = "dbSNP";
     private static final String REACTOME_NAME = "Reactome";
@@ -245,12 +246,38 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadClinical(sp, spFolder);
                         }
                         break;
+                    case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+                        if (speciesHasInfoToDownload(sp, "svs")) {
+                            downloadStructuralVariants(sp, assembly.getName(), spFolder);
+                        }
+                        break;
                     default:
                         System.out.println("This data parameter is not allowed");
                         break;
                 }
             }
         }
+    }
+
+    private void downloadStructuralVariants(Species species, String assembly, Path speciesFolder) throws IOException, InterruptedException {
+        if (species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading DGV data ...");
+
+            Path structuralVariantsFolder = speciesFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
+            makeDir(structuralVariantsFolder);
+            String sourceFilename = (assembly.equalsIgnoreCase("grch37") ? "GRCh37_hg19" : "GRCh38_hg38")
+                    + "_variants_2016-05-15.txt";
+            String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
+            downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
+
+            saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
+                    Collections.singletonList(url), structuralVariantsFolder.resolve("dgvVersion.json"));
+
+        }
+    }
+
+    private String getDGVVersion(String sourceFilename) {
+        return sourceFilename.split("\\.")[0].split("_")[3];
     }
 
 
