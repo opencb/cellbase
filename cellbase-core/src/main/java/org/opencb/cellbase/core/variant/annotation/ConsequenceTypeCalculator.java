@@ -241,7 +241,39 @@ public abstract class ConsequenceTypeCalculator {
         return new SequenceOntologyTerm(ConsequenceTypeMappings.getSoAccessionString(name), name);
     }
 
-    protected int updatePositiveInsertionCodonArrays(String transcriptSequence, char[] modifiedCodonArray, int transcriptSequencePosition, int modifiedCodonPosition, char[] formattedReferenceCodonArray, char[] formattedModifiedCodonArray) {
+    protected int updateNegativeInsertionCodonArrays(String reverseTranscriptSequence,
+                                                     char[] formattedReferenceCodon1Array,
+                                                     int reverseTranscriptSequencePosition, int modifiedCodonPosition,
+                                                     char[] formattedModifiedCodonArray, char[] modifiedCodonArray) {
+        for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
+            if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
+                int genomicCoordinate = transcript.getStart()
+                        - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
+                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                        + ":" + genomicCoordinate
+                        + "-" + (genomicCoordinate + 1));
+                modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
+                        .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
+                                .getResult().get(0).getSequence().charAt(0));
+            } else {
+                modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
+                        reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
+            }
+            reverseTranscriptSequencePosition++;
+
+            // Edit modified nt to make it upper-case in the formatted strings
+            formattedReferenceCodon1Array[modifiedCodonPosition]
+                    = Character.toUpperCase(formattedReferenceCodon1Array[modifiedCodonPosition]);
+            formattedModifiedCodonArray[modifiedCodonPosition]
+                    = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
+        }
+        return reverseTranscriptSequencePosition;
+    }
+
+    protected int updatePositiveInsertionCodonArrays(String transcriptSequence, char[] modifiedCodonArray,
+                                                     int transcriptSequencePosition, int modifiedCodonPosition,
+                                                     char[] formattedReferenceCodonArray,
+                                                     char[] formattedModifiedCodonArray) {
         for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
             if (transcriptSequencePosition >= transcriptSequence.length()) {
                 int genomicCoordinate = transcript.getEnd() + (transcriptSequencePosition - transcriptSequence.length()) + 1;
@@ -268,7 +300,10 @@ public abstract class ConsequenceTypeCalculator {
         return transcriptSequencePosition;
     }
 
-    protected boolean setPositiveInsertionAlleleAminoacidChange(String referenceCodon, char[] modifiedCodonArray, char[] formattedReferenceCodonArray, char[] formattedModifiedCodonArray, boolean useMitochondrialCode, boolean firstCodon) {
+    protected boolean setInsertionAlleleAminoacidChange(String referenceCodon, char[] modifiedCodonArray,
+                                                        char[] formattedReferenceCodonArray,
+                                                        char[] formattedModifiedCodonArray,
+                                                        boolean useMitochondrialCode, boolean firstCodon) {
         // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
         if (firstCodon) {
             firstCodon = false;

@@ -7,8 +7,6 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -329,36 +327,14 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
                     i++;
                 }
-                for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                    if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
-                        int genomicCoordinate = transcript.getStart()
-                                - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
 
-//                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
-//                                ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
-//                                        genomicCoordinate, genomicCoordinate + 1, new QueryOptions())
-//                                        .getResult().get(0)).getSequence().charAt(0));
-                        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                                + ":" + genomicCoordinate
-                                + "-" + (genomicCoordinate + 1));
-                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
-                                .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
-                                        .getResult().get(0).getSequence().charAt(0));
-                    } else {
-                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
-                                reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
-                    }
-                    reverseTranscriptSequencePosition++;
-
-                    // Edit modified nt to make it upper-case in the formatted strings
-                    formattedReferenceCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(formattedReferenceCodonArray[modifiedCodonPosition]);
-                    formattedModifiedCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
-                }
+                reverseTranscriptSequencePosition = updateNegativeInsertionCodonArrays(reverseTranscriptSequence,
+                        formattedReferenceCodonArray, reverseTranscriptSequencePosition, modifiedCodonPosition,
+                        formattedModifiedCodonArray, modifiedCodonArray);
 
                 // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
-                firstCodon = setPositiveInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray, formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
+                firstCodon = setInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray,
+                        formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray),
                         String.valueOf(modifiedCodonArray), variant.getChromosome().equals("MT"));
@@ -633,7 +609,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                         transcriptSequencePosition, modifiedCodonPosition, formattedReferenceCodonArray,
                         formattedModifiedCodonArray);
 
-                firstCodon = setPositiveInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray,
+                firstCodon = setInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray,
                         formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames, referenceCodon, String.valueOf(modifiedCodonArray),

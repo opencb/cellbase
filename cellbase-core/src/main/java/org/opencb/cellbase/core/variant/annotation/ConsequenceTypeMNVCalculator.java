@@ -7,8 +7,6 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +17,7 @@ import java.util.List;
 public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCalculator {
     private int variantStart;
     private int variantEnd;
-    private GenomeDBAdaptor genomeDBAdaptor;
+//    private GenomeDBAdaptor genomeDBAdaptor;
 
     private static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
@@ -177,6 +175,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
             boolean useMitochondrialCode = variant.getChromosome().equals("MT");
             boolean firstCodon = true;
 
+            // Solving the stop codon is more less equivalent to dealing with a deletion followed by an insertion
             do {
                 for (modifiedCodonPosition = modifiedCodonPositionStart;
                     // Paste alternative nt in the corresponding codon position
@@ -191,44 +190,13 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
 
                     i++;
                 }
-                for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                    if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
-                        int genomicCoordinate = transcript.getStart()
-                                - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
-                        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                                + ":" + genomicCoordinate
-                                + "-" + (genomicCoordinate + 1));
-                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
-                                .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
-                                        .getResult().get(0).getSequence().charAt(0));
-                    } else {
-                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
-                                reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
-                    }
-                    reverseTranscriptSequencePosition++;
-
-                    // Edit modified nt to make it upper-case in the formatted strings
-                    formattedReferenceCodon1Array[modifiedCodonPosition]
-                            = Character.toUpperCase(formattedReferenceCodon1Array[modifiedCodonPosition]);
-                    formattedModifiedCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
-                }
+                reverseTranscriptSequencePosition = updateNegativeInsertionCodonArrays(reverseTranscriptSequence,
+                        formattedReferenceCodon1Array, reverseTranscriptSequencePosition, modifiedCodonPosition,
+                        formattedModifiedCodonArray, modifiedCodonArray);
 
                 // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
-                if (firstCodon) {
-                    firstCodon = false;
-                    // Only the exact codon where the deletion starts is set
-                    consequenceType.setCodon(String.valueOf(formattedReferenceCodon1Array) + "/"
-                            + String.valueOf(formattedModifiedCodonArray));
-                    // Assumes proteinVariantAnnotation attribute is already initialized
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon1));
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode,
-                                    String.valueOf(modifiedCodonArray)));
-                }
+                firstCodon = setInsertionAlleleAminoacidChange(referenceCodon1, modifiedCodonArray,
+                        formattedReferenceCodon1Array, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames,
                         VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon2)
@@ -530,6 +498,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
             boolean firstCodon = true;
             i = 0;
 
+            // Solving the stop codon is more less equivalent to dealing with a deletion followed by an insertion
             do {
                 for (modifiedCodonPosition = modifiedCodonPositionStart;
                     // Paste alternative nt in the corresponding codon position
@@ -548,7 +517,7 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
                         transcriptSequencePosition, modifiedCodonPosition, formattedReferenceCodon1Array,
                         formattedModifiedCodonArray);
 
-                firstCodon = setPositiveInsertionAlleleAminoacidChange(referenceCodon1, modifiedCodonArray,
+                firstCodon = setInsertionAlleleAminoacidChange(referenceCodon1, modifiedCodonArray,
                         formattedReferenceCodon1Array, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames,

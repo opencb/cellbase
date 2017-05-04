@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericRegionCalculator {
     private boolean isBigDeletion;
-    private GenomeDBAdaptor genomeDBAdaptor;
+//    private GenomeDBAdaptor genomeDBAdaptor;
 
     public ConsequenceTypeDeletionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super();
