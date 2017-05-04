@@ -15,11 +15,11 @@ import java.util.List;
  * Created by fjlopez on 15/03/17.
  */
 public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCalculator {
-    private int variantStart;
-    private int variantEnd;
+//    private int variantStart;
+//    private int variantEnd;
 //    private GenomeDBAdaptor genomeDBAdaptor;
 
-    private static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
+//    private static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
 
     public ConsequenceTypeMNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {

@@ -373,7 +373,7 @@ public class VariantAnnotationCalculatorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:819287-820859:<CN3>"),
                         new QueryOptions());
-        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001578\",\"name\":\"stop_lost\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
+        assertObjectListEquals("[{\"geneName\":\"AL645608.2\",\"ensemblGeneId\":\"ENSG00000269308\",\"ensemblTranscriptId\":\"ENST00000594233\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001590\",\"name\":\"terminator_codon_variant\"},{\"accession\":\"SO:0001580\",\"name\":\"coding_sequence_variant\"},{\"accession\":\"SO:0001627\",\"name\":\"intron_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
 
         consequenceTypeResult =
@@ -736,15 +736,15 @@ public class VariantAnnotationCalculatorTest {
 //        }
     }
 
-    private <T> void assertObjectListEquals(String consequenceTypeJson, List<T> list,
+    private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,
                                             Class<T> clazz) {
-        List goldenObjectList = jsonObjectMapper.convertValue(JSON.parse(consequenceTypeJson), List.class);
-        assertEquals(goldenObjectList.size(), list.size());
-        Set<T> reference = new HashSet<>(list);
-        Set<String> set = (Set) goldenObjectList.stream()
+        List expectedObjectList = jsonObjectMapper.convertValue(JSON.parse(expectedConsequenceTypeJson), List.class);
+        assertEquals(expectedObjectList.size(), actualList.size());
+        Set<T> actual = new HashSet<>(actualList);
+        Set<String> expected = (Set) expectedObjectList.stream()
                 .map(result -> (jsonObjectMapper.convertValue(result, clazz))).collect(Collectors.toSet());
 
-        assertEquals(reference, set);
+        assertEquals(expected, actual);
 //        for (int i = 0; i < list.size(); i++) {
 //            assertEquals(list.get(i), jsonObjectMapper.convertValue(goldenObjectList.get(i), clazz));
 //        }
