@@ -29,7 +29,7 @@ public interface XRefDBAdaptor<XRef> extends CellBaseDBAdaptor<XRef> {
 
     enum QueryParams implements QueryParam {
         ID("transcripts.xrefs.id", TEXT_ARRAY, ""),
-        DBNAME("transcripts.xrefs.dbname", TEXT_ARRAY, "");
+        DBNAME("transcripts.xrefs.dbName", TEXT_ARRAY, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
