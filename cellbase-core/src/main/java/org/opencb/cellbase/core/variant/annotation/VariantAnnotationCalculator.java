@@ -877,7 +877,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             annotatorSet = new HashSet<>(includeList);
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
-                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies"));
+                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies",
+                    "cytoband"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
