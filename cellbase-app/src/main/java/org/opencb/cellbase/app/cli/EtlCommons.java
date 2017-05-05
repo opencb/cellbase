@@ -48,6 +48,7 @@ public class EtlCommons {
     public static final String TRF_FILE = "simpleRepeat.txt.gz";
     public static final String TRF_VERSION_FILE = "clinvarVersion.json";
     public static final String REPEATS_FOLDER = "repeats";
+    public static final String REPEATS_JSON = "repeats";
 
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
