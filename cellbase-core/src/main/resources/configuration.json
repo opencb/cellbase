@@ -101,6 +101,12 @@
 		"simpleRepeats": {
 			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
 		},
+		"windowMasker": {
+			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
+		},
+		"genomicSuperDups": {
+			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
+		},
 		"gwasCatalog": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"
 		},
