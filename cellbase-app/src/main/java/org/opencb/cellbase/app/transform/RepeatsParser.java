@@ -35,6 +35,21 @@ public class RepeatsParser extends CellBaseParser {
             logger.warn("Skipping TRF file parsing. TRF data models will not be built.");
         }
 
+        if (Files.exists(filesDir.resolve(EtlCommons.GSD_FILE))) {
+            parseGsdFile(filesDir.resolve(EtlCommons.GSD_FILE));
+        } else {
+            logger.warn("No Genomic Super Duplications file found {}", EtlCommons.GSD_FILE);
+            logger.warn("Skipping Genomic Super Duplications file parsing. " +
+                    "Genomic Super Duplicationsata models will not be built.");
+        }
+
+        if (Files.exists(filesDir.resolve(EtlCommons.WM_FILE))) {
+            parseWmFile(filesDir.resolve(EtlCommons.WM_FILE));
+        } else {
+            logger.warn("No WindowMasker file found {}", EtlCommons.WM_FILE);
+            logger.warn("Skipping WindowMasker file parsing. WindowMasker data models will not be built.");
+        }
+
     }
 
     private void parseTrfFile(Path filePath) throws IOException {
@@ -52,6 +67,28 @@ public class RepeatsParser extends CellBaseParser {
     }
 
     private Repeat parseTrfLine(String line) {
+        String[] parts = line.split("\t");
+
+        return new Repeat(null, parts[1], Integer.valueOf(parts[2]), Integer.valueOf(parts[3]),
+                Integer.valueOf(parts[5]), Float.valueOf(parts[6]), Float.valueOf(parts[8]), Float.valueOf(parts[10]),
+                parts[16], TRF);
+    }
+
+    private void parseGsdFile(Path filePath) throws IOException {
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
+            String line = bufferedReader.readLine();
+
+            Callable<Long> callable = () -> 200L;
+            ProgressLogger progressLogger = new ProgressLogger("Parsed GSD lines:", callable, 300);
+            while (line != null) {
+                serializer.serialize(parseGSDLine(line));
+                line = bufferedReader.readLine();
+                progressLogger.increment(1);
+            }
+        }
+    }
+
+    private Repeat parseGSDLine(String line) {
         String[] parts = line.split("\t");
 
         return new Repeat(null, parts[1], Integer.valueOf(parts[2]), Integer.valueOf(parts[3]),

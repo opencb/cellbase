@@ -46,7 +46,11 @@ public class EtlCommons {
     public static final String GERP_SUBDIRECTORY = "gerp";
     public static final String GERP_FILE = "hg19.GERP_scores.tar.gz";
     public static final String TRF_FILE = "simpleRepeat.txt.gz";
-    public static final String TRF_VERSION_FILE = "clinvarVersion.json";
+    public static final String TRF_VERSION_FILE = "simpleRepeat.json";
+    public static final String GSD_FILE = "genomicSuperDups.txt.gz";
+    public static final String GSD_VERSION_FILE = "genomicSuperDups.json";
+    public static final String WM_FILE = "windowMasker.txt.gz";
+    public static final String WM_VERSION_FILE = "windowMasker.json";
     public static final String REPEATS_FOLDER = "repeats";
 
 
