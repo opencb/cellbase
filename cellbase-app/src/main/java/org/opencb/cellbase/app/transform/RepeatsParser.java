@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
 
 /**
  * Created by fjlopez on 05/05/17.
@@ -56,14 +55,28 @@ public class RepeatsParser extends CellBaseParser {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
-            Callable<Long> callable = () -> 200L;
-            ProgressLogger progressLogger = new ProgressLogger("Parsed TRF lines:", callable, 300);
+            //            ProgressLogger progressLogger = new ProgressLogger("Parsed TRF lines:");
+            ProgressLogger progressLogger = new ProgressLogger("Parsed TRF lines:", () -> countFileLines(filePath), 200)
+                    .setBatchSize(10000);
             while (line != null) {
                 serializer.serialize(parseTrfLine(line));
                 line = bufferedReader.readLine();
                 progressLogger.increment(1);
             }
         }
+    }
+
+    private Long countFileLines(Path filePath) throws IOException {
+        try (BufferedReader bufferedReader1 = FileUtils.newBufferedReader(filePath)) {
+            long nLines = 0;
+            String line1 = bufferedReader1.readLine();
+            while (line1 != null) {
+                nLines++;
+                line1 = bufferedReader1.readLine();
+            }
+            return nLines;
+        }
+
     }
 
     private Repeat parseTrfLine(String line) {
