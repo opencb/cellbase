@@ -99,7 +99,7 @@
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv"
 		},
 		"simpleRepeats": {
-			"host": "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/simpleRepeat.txt.gz"
+			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
 		},
 		"gwasCatalog": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"

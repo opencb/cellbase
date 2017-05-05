@@ -248,7 +248,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                     case EtlCommons.REPEATS_DATA:
                         if (speciesHasInfoToDownload(sp, "repeats")) {
-                            downloadRepeats(sp, spFolder);
+                            downloadRepeats(sp, assembly.getName(), spFolder);
                         }
                         break;
                     default:
@@ -967,18 +967,28 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 proteinFolder.resolve("reactomeVersion.json"));
     }
 
-    private void downloadRepeats(Species species, Path speciesFolder)
+    private void downloadRepeats(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
 
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading repeats data ...");
-
-            Path repeatsFolder = speciesFolder.resolve("repeats");
+            Path repeatsFolder = speciesFolder.resolve(EtlCommons.REPEATS_FOLDER);
             makeDir(repeatsFolder);
-            String url = configuration.getDownload().getSimpleRepeats().getHost();
-            downloadFile(url, repeatsFolder.resolve("simpleRepeat.txt.gz").toString());
+            String pathParam;
+            if (assembly.equalsIgnoreCase("grch37")) {
+                pathParam = "hg19";
+            } else if (assembly.equalsIgnoreCase("grch38")) {
+                pathParam = "hg38";
+            } else {
+                logger.error("Please provide a valid human assembly {GRCh37, GRCh38)");
+                throw new ParameterException("Assembly '" + assembly + "' is not valid. Please provide a valid human "
+                        + "assembly {GRCh37, GRCh38)");
+            }
+            String url = configuration.getDownload().getSimpleRepeats().getHost() + "/" + pathParam
+                    + "/database/simpleRepeat.txt.gz";
+            downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString());
             saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    repeatsFolder.resolve("clinvarVersion.json"));
+                    repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILE));
 
         }
     }
