@@ -51,7 +51,10 @@ import java.util.regex.Pattern;
  *
  * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
-public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements VariantAnnotationDBAdaptor<VariantAnnotation> {
+public class VariantAnnotationCalculator {
+    //extends MongoDBAdaptor implements VariantAnnotationDBAdaptor<VariantAnnotation> {
+
+    private static final Integer CNV_PADDING = 500;
 
     private GenomeDBAdaptor genomeDBAdaptor;
     private GeneDBAdaptor geneDBAdaptor;
@@ -1060,7 +1063,10 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     private List<Region> variantListToRegionList(List<Variant> variantList) {
         List<Region> regionList = new ArrayList<>(variantList.size());
         for (Variant variant : variantList) {
-            if (variant.getSv() != null) {
+            if (VariantType.CNV.equals(variant.getType())) {
+                regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_PADDING,
+                        variant.getEnd() + CNV_PADDING));
+            } else if (variant.getSv() != null) {
                 regionList.add(new Region(variant.getChromosome(),
                         variant.getSv().getCiStartLeft() != null ? variant.getSv().getCiStartLeft() : variant.getStart(),
                         variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() : variant.getEnd()));
