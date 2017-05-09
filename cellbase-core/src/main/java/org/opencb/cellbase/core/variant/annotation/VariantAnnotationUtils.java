@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
@@ -489,6 +490,18 @@ public class VariantAnnotationUtils {
             stringBuilder.append(' ');
         }
         return stringBuilder.append(chromosome);
+    }
+
+    public static Variant parseBreakendFromAlternate(String alternate) {
+        // e.g. A]2:321681]
+        String[] parts = alternate.split(":");
+        if (parts.length == 2) {
+            String chromosome = parts[0].split("[\\[\\]]")[1];
+            chromosome = Region.normalizeChromosome(chromosome);
+            Integer start = Integer.valueOf(parts[1].split("[\\[\\]]")[0]);
+            return new Variant(chromosome, start, null, null);
+        }
+        return null;
     }
 
 

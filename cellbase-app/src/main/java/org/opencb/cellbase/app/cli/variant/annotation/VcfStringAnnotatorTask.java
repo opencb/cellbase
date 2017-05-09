@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.cli.variant.annotation;
 
+import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
@@ -28,28 +29,33 @@ import org.opencb.commons.run.ParallelTaskRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by fjlopez on 02/03/15.
  */
 public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
+    private final Set<String> breakendMates;
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
     private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
     private boolean normalize;
 
-    public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version, List<VariantAnnotator> variantAnnotatorList) {
-        this(header, version, variantAnnotatorList, true);
+    public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
+                                  List<VariantAnnotator> variantAnnotatorList, Set<String> breakendMates) {
+        this(header, version, variantAnnotatorList, breakendMates, true);
     }
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
-                                  List<VariantAnnotator> variantAnnotatorList, boolean normalize) {
+                                  List<VariantAnnotator> variantAnnotatorList, Set<String> breakendMates,
+                                  boolean normalize) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
         this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
+        this.breakendMates = breakendMates;
         this.normalize = normalize;
     }
 
@@ -76,10 +82,38 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
     private List<Variant> parseVariantList(List<String> batch) {
         List<VariantContext> variantContexts = new ArrayList<>(batch.size());
         for (String line : batch) {
-            if (line.startsWith("#") || line.trim().isEmpty()) {
-                continue;
+            // It's not a header line
+            if (!line.startsWith("#") && !line.trim().isEmpty()) {
+                VariantContext variantContext = vcfCodec.decode(line);
+                if (variantContext.getAlternateAlleles() != null && !variantContext.getAlternateAlleles().isEmpty()) {
+                    byte[] alternateBytes = variantContext.getAlternateAllele(0).toString().getBytes();
+                    // Symbolic allele: CNV, DEL, DUP, INS, INV, BND
+                    if (Allele.wouldBeSymbolicAllele(alternateBytes)) {
+                        // BND: keep just the first line of each mate pair; the second line must be skipped
+                        if (alternateBytes[0] == '.' || alternateBytes[alternateBytes.length - 1] == '.'  // single breakend
+                                || variantContext.getAlternateAllele(0).toString().contains("[")        // mated breakend
+                                || variantContext.getAlternateAllele(0).toString().contains("]")) {
+                            // Add BND only if it's mate line was not parsed before
+                            if (breakendMates.add(variantContext.getAlternateAllele(0).toString())) { // WARNING: assuming
+                                variantContexts.add(variantContext);                                  // BND positions
+                                                                                                        // cannot be
+                                                                                                        // multiallelic
+                                                                                                        // positions - there
+                                                                                                        // will always be just
+                                                                                                        // one alternate allele!
+                            }
+                            // Symbolic allele other than BND: CNV, DEL, DUP, INS, INV BND; add it
+                        } else {
+                            variantContexts.add(variantContext);
+                        }
+                        // Simple variant: SNV, short insertion, short deletion; add it
+                    } else {
+                        variantContexts.add(variantContext);
+                    }
+                } else {
+                    variantContexts.add(variantContext);
+                }
             }
-            variantContexts.add(vcfCodec.decode(line));
         }
 
         return converter.apply(variantContexts);

@@ -353,6 +353,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> getStringTaskList() throws IOException {
         List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+        Set<String> breakendMates = Collections.synchronizedSet(new HashSet<>());
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             switch (inputFormat) {
@@ -366,7 +367,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
                         variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
-                                variantAnnotatorList, normalize));
+                                variantAnnotatorList, breakendMates, normalize));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
