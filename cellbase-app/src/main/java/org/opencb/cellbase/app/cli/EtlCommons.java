@@ -47,6 +47,8 @@ public class EtlCommons {
     public static final String GERP_FILE = "hg19.GERP_scores.tar.gz";
     public static final String STRUCTURAL_VARIANTS_FOLDER = "structuralVariants";
     public static final String DGV_FILE = "dgv.txt";
+    public static final String DGV_VERSION_FILE = "dgvVersion.json";
+    public static final String STRUCTURAL_VARIANTS_JSON = "structuralVariants";
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {

@@ -175,6 +175,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.GWAS_DATA:
                             parser = buildGwas();
                             break;
+                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+                            parser = buildStructuralVariants();
+                            break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                             break;
@@ -195,6 +198,16 @@ public class BuildCommandExecutor extends CommandExecutor {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    private CellBaseParser buildStructuralVariants() {
+        Path structuralVariantsFolder = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
+        copyVersionFiles(Arrays.asList(structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE)));
+        Path structuralVariantsFile = structuralVariantsFolder.resolve(EtlCommons.DGV_FILE);
+
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.STRUCTURAL_VARIANTS_JSON, true);
+        return new DgvParser(structuralVariantsFile, serializer);
+
     }
 
     private void copyVersionFiles(List<Path> pathList) {

@@ -271,7 +271,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
 
             saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
-                    Collections.singletonList(url), structuralVariantsFolder.resolve("dgvVersion.json"));
+                    Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
 
         }
     }
