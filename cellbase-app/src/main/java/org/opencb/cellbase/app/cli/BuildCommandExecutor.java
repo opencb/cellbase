@@ -203,6 +203,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CellBaseParser buildRepeats() {
         Path repeatsFilesDir = input.resolve(EtlCommons.REPEATS_FOLDER);
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILE)));
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILE)));
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILE)));
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.REPEATS_JSON);
         return new RepeatsParser(repeatsFilesDir, serializer);
