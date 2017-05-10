@@ -39,7 +39,6 @@ import java.util.*;
  */
 public class DownloadCommandExecutor extends CommandExecutor {
 
-    private static final String TRF_NAME = "Tandem repeats finder";
     private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
     private Path output = null;
@@ -92,6 +91,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String GWAS_NAME = "Gwas Catalog";
 //    private static final String DBSNP_NAME = "dbSNP";
     private static final String REACTOME_NAME = "Reactome";
+    private static final String TRF_NAME = "Tandem repeats finder";
+    private static final String GSD_NAME = "Genomic super duplications";
+    private static final String WM_NAME = "WindowMasker";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -984,11 +986,29 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Assembly '" + assembly + "' is not valid. Please provide a valid human "
                         + "assembly {GRCh37, GRCh38)");
             }
+
+            // Download tandem repeat finder
             String url = configuration.getDownload().getSimpleRepeats().getHost() + "/" + pathParam
                     + "/database/simpleRepeat.txt.gz";
             downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString());
             saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILE));
+
+            // Download genomic super duplications
+            url = configuration.getDownload().getGenomicSuperDups().getHost() + "/" + pathParam
+                    + "/database/genomicSuperDups.txt.gz";
+            downloadFile(url, repeatsFolder.resolve(EtlCommons.GSD_FILE).toString());
+            saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILE));
+
+            // Download WindowMasker
+            if (!pathParam.equalsIgnoreCase("hg19")) {
+                url = configuration.getDownload().getWindowMasker().getHost() + "/" + pathParam
+                        + "/database/windowmaskerSdust.txt.gz";
+                downloadFile(url, repeatsFolder.resolve(EtlCommons.WM_FILE).toString());
+                saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                        repeatsFolder.resolve(EtlCommons.WM_VERSION_FILE));
+            }
 
         }
     }
