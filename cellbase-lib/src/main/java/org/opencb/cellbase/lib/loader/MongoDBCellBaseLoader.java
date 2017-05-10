@@ -306,6 +306,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
                     break;
+                case "repeats":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE};
+                    break;
                 case "conservation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
                     break;

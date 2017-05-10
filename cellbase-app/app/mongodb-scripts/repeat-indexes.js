@@ -15,4 +15,5 @@
  * limitations under the License.
  */
 
+db.getCollection('repeats').createIndex({'_chunkIds': 1})
 db.getCollection('repeats').createIndex({'chromosome': 1, "start": 1, "end": 1})
