@@ -58,6 +58,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     private RegulationDBAdaptor regulationDBAdaptor;
     private VariantDBAdaptor variantDBAdaptor;
     private ClinicalDBAdaptor clinicalDBAdaptor;
+    private RepeatsDBAdaptor repeatsDBAdaptor;
     private ProteinDBAdaptor proteinDBAdaptor;
     private ConservationDBAdaptor conservationDBAdaptor;
     private Set<String> annotatorSet;
@@ -97,6 +98,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
         this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+        this.repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -402,6 +404,13 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
 
+        FutureRepeatsAnnotator futureRepeatsAnnotator = null;
+        Future<List<QueryResult<Repeat>>> repeatsFuture = null;
+        if (annotatorSet.contains("repeats")) {
+            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, queryOptions);
+            repeatsFuture = fixedThreadPool.submit(futureRepeatsAnnotator);
+        }
+
         /*
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
          */
@@ -483,6 +492,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
         if (futureClinicalAnnotator != null) {
             futureClinicalAnnotator.processResults(clinicalFuture, variantAnnotationResultList);
+        }
+        if (futureRepeatsAnnotator != null) {
+            futureRepeatsAnnotator.processResults(repeatsFuture, variantAnnotationResultList);
         }
         fixedThreadPool.shutdown();
 
@@ -867,7 +879,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             annotatorSet = new HashSet<>(includeList);
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
-                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies"));
+                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies",
+                    "repeats"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1268,6 +1281,50 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                     if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
                         variantAnnotationResults.get(i).getResult().get(0)
                                 .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
+                    }
+                }
+            }
+//            } catch (ExecutionException e) {
+////            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
+        }
+    }
+
+    class FutureRepeatsAnnotator implements Callable<List<QueryResult<Repeat>>> {
+        private List<Variant> variantList;
+        private QueryOptions queryOptions;
+
+        FutureRepeatsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+            this.variantList = variantList;
+            this.queryOptions = queryOptions;
+        }
+
+        @Override
+        public List<QueryResult<Repeat>> call() throws Exception {
+            long startTime = System.currentTimeMillis();
+            List<QueryResult<Repeat>> queryResultList
+                    = repeatsDBAdaptor.getByRegion(variantListToRegionList(variantList), queryOptions);
+            logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+                    variantList.size());
+            return queryResultList;
+        }
+
+        public void processResults(Future<List<QueryResult<Repeat>>> repeatsFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+                throws InterruptedException, ExecutionException {
+//            try {
+            while (!repeatsFuture.isDone()) {
+                Thread.sleep(1);
+            }
+
+            List<QueryResult<Repeat>> queryResultList = repeatsFuture.get();
+            if (queryResultList != null) {
+                for (int i = 0; i < variantAnnotationResults.size(); i++) {
+                    QueryResult<Repeat> queryResult = queryResultList.get(i);
+                    if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+                        variantAnnotationResults.get(i).getResult().get(0)
+                                .setRepeat(queryResult.getResult());
                     }
                 }
             }

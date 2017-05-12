@@ -261,6 +261,12 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
+    @Override
+    public RepeatsDBAdaptor getRepeatsDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new RepeatsMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
 
 //
 //    @Override
