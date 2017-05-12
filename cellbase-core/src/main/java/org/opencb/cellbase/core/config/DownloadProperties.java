@@ -40,6 +40,9 @@ public class DownloadProperties {
     private URLProperties clinvar;
     private URLProperties clinvarSummary;
     private URLProperties clinvarEfoTerms;
+    private URLProperties simpleRepeats;
+    private URLProperties windowMasker;
+    private URLProperties genomicSuperDups;
     private URLProperties hpo;
     private URLProperties disgenet;
     private URLProperties disgenetReadme;
@@ -210,6 +213,30 @@ public class DownloadProperties {
     public DownloadProperties setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
         this.clinvarEfoTerms = clinvarEfoTerms;
         return this;
+    }
+
+    public URLProperties getSimpleRepeats() {
+        return simpleRepeats;
+    }
+
+    public void setSimpleRepeats(URLProperties simpleRepeats) {
+        this.simpleRepeats = simpleRepeats;
+    }
+
+    public URLProperties getGenomicSuperDups() {
+        return genomicSuperDups;
+    }
+
+    public void setGenomicSuperDups(URLProperties genomicSuperDups) {
+        this.genomicSuperDups = genomicSuperDups;
+    }
+
+    public URLProperties getWindowMasker() {
+        return windowMasker;
+    }
+
+    public void setWindowMasker(URLProperties windowMasker) {
+        this.windowMasker = windowMasker;
     }
 
     public URLProperties getHpo() {
