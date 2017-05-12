@@ -27,6 +27,7 @@ import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 
 public class VariantAnnotationCalculatorTest {
@@ -92,6 +94,8 @@ public class VariantAnnotationCalculatorTest {
             line = reader.readLine();
             i++;
         }
+
+
 
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
 
@@ -164,6 +168,45 @@ public class VariantAnnotationCalculatorTest {
 //        vepFormatWriter.close();
 
 
+
+    }
+
+    @Test
+    public void testCytobandAnnotation() throws Exception {
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "cytoband");
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(new Variant("19:37800050-37801000:<CN3>"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(2, queryResult.getResult().get(0).getCytoband().size());
+        assertEquals(queryResult.getResult().get(0).getCytoband().stream().collect(Collectors.toSet()),
+                new HashSet<Cytoband>(Arrays.asList(
+                        new Cytoband("gpos25", "q13.12", 35100001,37800000),
+                        new Cytoband("gneg", "q13.13", 37800001,38200000))));
+
+        List<QueryResult<VariantAnnotation>> queryResultList = variantAnnotationCalculator
+                .getAnnotationByVariantList(Arrays.asList(new Variant("19:37800050-42910001:<CN3>"),
+                        new Variant("18:63902001:T:A"),
+                        new Variant("6:148500101-148500201:<DEL>")), queryOptions);
+        assertEquals(3, queryResultList.size());
+        assertEquals(1, queryResultList.get(0).getNumTotalResults());
+        assertEquals(3, queryResultList.get(0).getResult().get(0).getCytoband().size());
+        assertEquals(queryResultList.get(0).getResult().get(0).getCytoband().stream().collect(Collectors.toSet()),
+                new HashSet<Cytoband>(Arrays.asList(
+                        new Cytoband("gpos25", "q13.12", 35100001,37800000),
+                        new Cytoband("gneg", "q13.13", 37800001,38200000),
+                        new Cytoband("gneg", "q13.31", 42900001,44700000))));
+
+        assertEquals(1, queryResultList.get(1).getNumTotalResults());
+        assertEquals(1, queryResultList.get(1).getResult().get(0).getCytoband().size());
+        assertEquals(queryResultList.get(1).getResult().get(0).getCytoband().get(0),
+                        new Cytoband("gpos100", "q22.1", 63900001,69100000));
+
+        assertEquals(1, queryResultList.get(2).getNumTotalResults());
+        assertEquals(1, queryResultList.get(2).getResult().get(0).getCytoband().size());
+        assertEquals(queryResultList.get(2).getResult().get(0).getCytoband().get(0),
+                new Cytoband("gneg", "q25.1", 148500001,152100000));
 
     }
 
