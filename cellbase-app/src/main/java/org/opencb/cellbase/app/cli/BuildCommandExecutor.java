@@ -178,6 +178,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.STRUCTURAL_VARIANTS_DATA:
                             parser = buildStructuralVariants();
                             break;
+                        case EtlCommons.REPEATS_DATA:
+                            parser = buildRepeats();
+                            break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                             break;
@@ -207,7 +210,14 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.STRUCTURAL_VARIANTS_JSON, true);
         return new DgvParser(structuralVariantsFile, serializer);
+    }
 
+    private CellBaseParser buildRepeats() {
+        Path repeatsFilesDir = input.resolve(EtlCommons.REPEATS_FOLDER);
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILE)));
+        // TODO: chunk size is not really used in ConvervedRegionParser, remove?
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.REPEATS_JSON);
+        return new RepeatsParser(repeatsFilesDir, serializer);
     }
 
     private void copyVersionFiles(List<Path> pathList) {

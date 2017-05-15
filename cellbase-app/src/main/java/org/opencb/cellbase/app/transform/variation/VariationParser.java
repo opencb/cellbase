@@ -254,17 +254,22 @@ public class VariationParser extends CellBaseParser {
         variant.setIds(ids);
         variant.setType(type);
         variant.setSv(sv);
-        VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(null, null, null, null, null, id, xrefs, hgvs,
-                displayConsequenceType, conseqTypes, null, null, null, null, null, null, null, null, null, null);
+        VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(null, null, null,
+                null, null, id, xrefs, hgvs,
+                displayConsequenceType, conseqTypes, null, null, null,
+                null, null, null, null,
+                null, null, null, null, null);
         try {
             String ensemblAnnotationJson = getEnsemblAnnotationJson(ensemblVariantAnnotation);
             additionalAttributes.get("ensemblAnnotation").getAttribute().put("annotation", ensemblAnnotationJson);
         } catch (JsonProcessingException e) {
             logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
         }
-        VariantAnnotation variantAnnotation = new VariantAnnotation(null, null, null, null, ancestralAllele, id, xrefs, hgvs,
-                displayConsequenceType, conseqTypes, null, minorAllele, minorAlleleFreq, null, null, null, null, null, null,
-                additionalAttributes);
+        VariantAnnotation variantAnnotation = new VariantAnnotation(null, null, null,
+                null, ancestralAllele, id, xrefs, hgvs,
+                displayConsequenceType, conseqTypes, null, minorAllele, minorAlleleFreq,
+                null, null, null, null,
+                null, null, null, null, additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 

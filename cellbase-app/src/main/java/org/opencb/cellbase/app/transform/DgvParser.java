@@ -29,7 +29,7 @@ public class DgvParser extends CellBaseParser {
             // Skip header
             bufferedReader.readLine();
             String line = bufferedReader.readLine();
-            while(line != null) {
+            while (line != null) {
                 List<Variant> variantList = parseVariants(line);
                 line = bufferedReader.readLine();
 
@@ -45,10 +45,12 @@ public class DgvParser extends CellBaseParser {
         String[] variantSubtypes = fields[VARIANT_SUBTYPE_COLUMN].split("\\+");
         List<Variant> variantList = new ArrayList<>(variantSubtypes.length);
 
-        for (String subtype : variantSubtypes) {
-            variantList.add(new Variant(fields[CHR_COLUMN], Integer.valueOf(fields[START_COLUMN]),
-                    Integer.valueOf(fields[END_COLUMN]), UNKNOWN_NT, ));
-        }
+//        for (String subtype : variantSubtypes) {
+//            variantList.add(new Variant(fields[CHR_COLUMN], Integer.valueOf(fields[START_COLUMN]),
+//                    Integer.valueOf(fields[END_COLUMN]), UNKNOWN_NT, ));
+//        }
+
+        return null;
 
     }
 }
