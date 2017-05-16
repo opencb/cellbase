@@ -34,6 +34,8 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.opencb.cellbase.core.api.VariantDBAdaptor.CNV_DEFAULT_PADDING;
+
 //import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 //import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 //import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -54,8 +56,6 @@ import java.util.regex.Pattern;
 public class VariantAnnotationCalculator {
     //extends MongoDBAdaptor implements VariantAnnotationDBAdaptor<VariantAnnotation> {
 
-    private static final Integer CNV_PADDING = 500;
-
     private GenomeDBAdaptor genomeDBAdaptor;
     private GeneDBAdaptor geneDBAdaptor;
     private RegulationDBAdaptor regulationDBAdaptor;
@@ -72,8 +72,10 @@ public class VariantAnnotationCalculator {
     private boolean normalize = false;
     private boolean useCache = true;
     private boolean phased = false;
+    private Boolean imprecise = true;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
 //    public VariantAnnotationCalculator(String species, String assembly, MongoDataStore mongoDataStore) {
 ////        super(species, assembly, mongoDataStore);
@@ -380,7 +382,7 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
 //        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
-                    "id,annotation.populationFrequencies"));
+                    "id,annotation.populationFrequencies").append("imprecise", imprecise));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
         }
 
@@ -524,6 +526,10 @@ public class VariantAnnotationCalculator {
         // Default behaviour - don't calculate phased annotation
         phased = (queryOptions.get("phased") != null ? (Boolean) queryOptions.get("phased") : false);
         logger.debug("phased = {}", phased);
+
+        // Default behaviour - enable imprecise searches
+        imprecise = (queryOptions.get("imprecise") != null ? (Boolean) queryOptions.get("imprecise") : true);
+        logger.debug("imprecise = {}", phased);
     }
 
 
@@ -1064,8 +1070,9 @@ public class VariantAnnotationCalculator {
         List<Region> regionList = new ArrayList<>(variantList.size());
         for (Variant variant : variantList) {
             if (VariantType.CNV.equals(variant.getType())) {
-                regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_PADDING,
-                        variant.getEnd() + CNV_PADDING));
+                regionList.add(new Region(variant.getChromosome(),
+                        variant.getStart() - CNV_DEFAULT_PADDING,
+                        variant.getEnd() + CNV_DEFAULT_PADDING));
             } else if (variant.getSv() != null) {
                 regionList.add(new Region(variant.getChromosome(),
                         variant.getSv() != null && variant.getSv().getCiStartLeft() != null
@@ -1087,10 +1094,10 @@ public class VariantAnnotationCalculator {
                 regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                 break;
             case CNV:
-                regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_PADDING,
-                        variant.getStart() + CNV_PADDING));
-                regionList.add(new Region(variant.getChromosome(), variant.getEnd() - CNV_PADDING,
-                        variant.getEnd() + CNV_PADDING));
+                regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_DEFAULT_PADDING,
+                        variant.getStart() + CNV_DEFAULT_PADDING));
+                regionList.add(new Region(variant.getChromosome(), variant.getEnd() - CNV_DEFAULT_PADDING,
+                        variant.getEnd() + CNV_DEFAULT_PADDING));
                 break;
             default:
                 regionList.add(new Region(variant.getChromosome(),

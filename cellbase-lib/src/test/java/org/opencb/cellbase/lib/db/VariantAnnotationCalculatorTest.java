@@ -26,10 +26,7 @@ import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.biodata.models.variant.avro.Cytoband;
-import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
@@ -46,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 
@@ -208,6 +206,38 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(1, queryResultList.get(2).getResult().get(0).getCytoband().size());
         assertEquals(queryResultList.get(2).getResult().get(0).getCytoband().get(0),
                 new Cytoband("gneg", "q25.1", 148500001,152100000));
+
+    }
+
+    @Test
+    public void testDGVAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "variation");
+        Variant variant = new Variant("1:10161-10291:<DEL>");
+        StructuralVariation structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
+                10291 - 100,10291 + 10, 0, null);
+        variant.setSv(structuralVariation);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals("nsv958854", queryResult.getResult().get(0).getId());
+
+        variant = new Variant("1:10401-127130:<CN10>");
+        structuralVariation = new StructuralVariation(10401, 10401, 127130,
+                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals("nsv7879", queryResult.getResult().get(0).getId());
+
+        queryOptions.put("imprecise", false);
+        variant = new Variant("1:10401-127130:<CN10>");
+        structuralVariation = new StructuralVariation(10401, 10401, 127130,
+                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertNull(queryResult.getResult().get(0).getId());
 
     }
 

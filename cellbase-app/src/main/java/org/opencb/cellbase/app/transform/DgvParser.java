@@ -107,8 +107,7 @@ public class DgvParser extends CellBaseParser {
 
         for (String subtype : variantSubtypes) {
             Variant variant;
-            StructuralVariation structuralVariation;
-
+            StructuralVariation structuralVariation = new StructuralVariation();
             switch (subtype) {
                 case DELETION:
                     variant = new Variant(fields[CHR_COLUMN], Integer.valueOf(fields[START_COLUMN]),
@@ -132,23 +131,17 @@ public class DgvParser extends CellBaseParser {
                 case TANDEM_DUPLICATION:
                     variant = new Variant(fields[CHR_COLUMN], Integer.valueOf(fields[START_COLUMN]),
                             Integer.valueOf(fields[END_COLUMN]), UNKNOWN_NT, DUPLICATION_ALTERNATE_STR);
-                    structuralVariation = new StructuralVariation();
                     structuralVariation.setType(StructuralVariantType.TANDEM_DUPLICATION);
-                    variant.setSv(structuralVariation);
                     break;
                 case GAIN:
                     variant = new Variant(fields[CHR_COLUMN], Integer.valueOf(fields[START_COLUMN]),
                             Integer.valueOf(fields[END_COLUMN]), UNKNOWN_NT, CNV_STR);
-                    structuralVariation = new StructuralVariation();
                     structuralVariation.setType(StructuralVariantType.COPY_NUMBER_GAIN);
-                    variant.setSv(structuralVariation);
                     break;
                 case LOSS:
                     variant = new Variant(fields[CHR_COLUMN], Integer.valueOf(fields[START_COLUMN]),
                             Integer.valueOf(fields[END_COLUMN]), UNKNOWN_NT, CNV_STR);
-                    structuralVariation = new StructuralVariation();
                     structuralVariation.setType(StructuralVariantType.COPY_NUMBER_LOSS);
-                    variant.setSv(structuralVariation);
                     break;
                 default:
                     logger.debug("Unexpected VariantSubtype found '{}'", subtype);
@@ -161,6 +154,15 @@ public class DgvParser extends CellBaseParser {
                     }
                     continue;
             }
+
+            // Imprecise fields are set to the same exact values variant.start variant.end in order for imprecise
+            // queries to work properly
+            structuralVariation.setCiStartLeft(variant.getStart());
+            structuralVariation.setCiStartRight(variant.getStart());
+            structuralVariation.setCiEndLeft(variant.getEnd());
+            structuralVariation.setCiEndRight(variant.getEnd());
+
+            variant.setSv(structuralVariation);
             variant.setId(fields[ACCESSION_COLUMN]);
             variant.setNames(Arrays.asList(fields[SUPPORTING_VARIANTS_COLUMN].split(",")));
             variantList.add(variant);
