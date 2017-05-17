@@ -44,7 +44,20 @@ public class HgvsCalculatorTest {
     @Test
     public void run() throws Exception {
 
-        List<String> hgvsList = getVariantHgvs(new Variant("19:45411941:T:C"));
+        List<String> hgvsList = getVariantHgvs(new Variant("11", 62543180, "A", "G"));
+        assertEquals(5, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000294168(ENSG00000162227):c.-13-63A>G",
+                "ENST00000526261(ENSG00000162227):c.-76A>G",
+                "ENST00000525405(ENSG00000162227):c.-13-63A>G",
+                "ENST00000529509(ENSG00000162227):c.-13-63A>G",
+                "ENST00000528367(ENSG00000168569):c.315-1043T>C"));
+
+        hgvsList = getVariantHgvs(new Variant("2", 191399259, "-", "CGC"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000409150(ENSG00000189362):c.97+24_97+26dupGCG",
+                "ENST00000343105(ENSG00000189362):c.97+24_97+26dupGCG"));
+
+        hgvsList = getVariantHgvs(new Variant("19:45411941:T:C"));
         assertEquals(4, hgvsList.size());
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000434152(ENSG00000130203):c.466T>C",
                 "ENST00000425718(ENSG00000130203):c.388T>C", "ENST00000252486(ENSG00000130203):c.388T>C",
@@ -108,8 +121,6 @@ public class HgvsCalculatorTest {
                 "ENST00000444807(ENSG00000133665):c.270+51_270+52ins5",
                 "ENST00000256039(ENSG00000133665):c.270+51_270+52ins5",
                 "ENST00000444807(ENSG00000133665):c.270+51_270+52ins5"));
-
-
 
     }
 

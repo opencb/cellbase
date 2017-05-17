@@ -138,6 +138,7 @@ public class HgvsCalculator {
         normalizedVariant.setEnd(variant.getEnd());
         normalizedVariant.setReference(variant.getReference());
         normalizedVariant.setAlternate(variant.getAlternate());
+        normalizedVariant.resetType();
         normalizedVariant.resetLength();
         // startOffset must point to the position right before the actual variant start, since that's the position that
         // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
@@ -310,8 +311,15 @@ public class HgvsCalculator {
         normalizedVariant.setEnd(variant.getEnd());
         normalizedVariant.setReference(variant.getReference());
         normalizedVariant.setAlternate(variant.getAlternate());
+        normalizedVariant.resetType();
         normalizedVariant.resetLength();
-        justify(normalizedVariant, variant.getStart() - 1 - start, variant.getStart() - 1 - start,
+        // WARNING: it's tricky to understand startOffset and endOffset for insertions. For - strand, the position to
+        // compare with the allele is the previous one, that is variant.getStart - 1. For + strand, the position to
+        // compare with the allele is CURRENT position and NOT the next one, since the insertion takes place between
+        // positions variant.getStart and (variant.getStart - 1). Pointing endOffset to variant.getStart-1 ensures
+        // correct behaviour of the "justify" method, since it will be comparing the allele against (endOffset+1) for
+        // + strand transcripts.
+        justify(normalizedVariant, variant.getStart() - start, variant.getStart() - start - 1,
                 normalizedVariant.getAlternate(), genomicSequence, transcript.getStrand());
 
         // Check duplication
