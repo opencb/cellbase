@@ -104,6 +104,11 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         document.put("dbDisplayName", "$transcripts.xrefs.dbDisplayName");
         Bson project1 = Aggregates.project(document);
 
+        if (query.containsKey(QueryParams.DBNAME.key())) {
+            Bson bson2 = parseQuery(new Query(QueryParams.DBNAME.key(), query.get(QueryParams.DBNAME.key())));
+            Bson match2 = Aggregates.match(bson2);
+            return mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, match2, project1), options);
+        }
         return mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), options);
     }
 

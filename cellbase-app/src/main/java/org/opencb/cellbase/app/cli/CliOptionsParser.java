@@ -124,8 +124,7 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, clinical and . 'all' to download everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, clinical, repeats, svs and . 'all' to download everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -150,7 +149,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinvar, cosmic, GWAS CAatalog, svs. 'all' build everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -323,10 +322,10 @@ public class CliOptionsParser {
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
         public String url = "http://bioinfo.hpc.cam.ac.uk:80/cellbase";
 
-        @Parameter(names = {"--include"}, description = "Comma separated list of annotators to be included", required = false)
+        @Parameter(names = {"--include"}, description = "Comma separated list of annotation types to be included. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband}", required = false)
         public String include;
 
-        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotators to be excluded", required = false)
+        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotation types to be excluded. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband}", required = false)
         public String exclude;
 
         @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used for loading", required = false, arity = 1)
@@ -347,7 +346,7 @@ public class CliOptionsParser {
         @Parameter(names = {"--custom-file-fields"}, description = "String containing a colon separated list (no spaces in between) of field lists which indicate the info fields to be taken from each VCF file. For example: field1File1,field2File1:field1File2,field3File2", required = false, arity = 1)
         public String customFileFields;
 
-        @Parameter(names = {"--output-format"}, description = "Variant annotation output format. Values: JSON, PB, VEP", required = false, arity = 1)
+        @Parameter(names = {"--output-format"}, description = "Variant annotation output format. Values: JSON, Avro, VEP", required = false, arity = 1)
         public String outputFormat = "JSON";
 
         @Parameter(names = {"--gzip"}, description = "Whether the output file is gzipped", required = false, arity = 0)

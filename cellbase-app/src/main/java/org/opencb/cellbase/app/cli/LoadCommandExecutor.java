@@ -158,6 +158,12 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.CLINICAL_DATA:
                             loadClinical();
                             break;
+                        case EtlCommons.REPEATS_DATA:
+                            loadRepeats();
+                            break;
+                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+                            loadStructuralVariants();
+                            break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");
                             break;
@@ -168,6 +174,23 @@ public class LoadCommandExecutor extends CommandExecutor {
                 }
             }
         }
+    }
+
+    private void loadStructuralVariants() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
+            LoaderException, InvocationTargetException, ClassNotFoundException {
+        Path path = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_JSON + ".json.gz");
+        if (Files.exists(path)) {
+            try {
+                logger.debug("Loading '{}' ...", path.toString());
+                loadRunner.load(path, EtlCommons.STRUCTURAL_VARIANTS_DATA);
+                loadIfExists(input.resolve(EtlCommons.DGV_VERSION_FILE), "metadata");
+            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                logger.error(e.toString());
+            }
+        }
+        // Assuming variation collection is already indexed
+//        loadRunner.index("variation");
     }
 
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
@@ -291,6 +314,32 @@ public class LoadCommandExecutor extends CommandExecutor {
             }
         });
         loadRunner.index("clinical");
+    }
+
+    private void loadRepeats() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
+            LoaderException, InvocationTargetException, ClassNotFoundException {
+
+        Map<String, String> files = new LinkedHashMap<>();
+        files.put("simpleRepeat", "simpleRepeat.json.gz");
+        files.put("genomicSuperDup", "genomicSuperDup.json.gz");
+        files.put("windowMasker", "windowMasker.json.gz");
+
+        files.keySet().forEach(entry -> {
+            Path path = input.resolve(files.get(entry));
+            if (Files.exists(path)) {
+                try {
+                    logger.debug("Loading '{}' ...", entry);
+                    loadRunner.load(path, entry);
+                    loadIfExists(input.resolve(EtlCommons.TRF_VERSION_FILE), "metadata");
+                    loadIfExists(input.resolve(EtlCommons.GSD_VERSION_FILE), "metadata");
+                    loadIfExists(input.resolve(EtlCommons.WM_VERSION_FILE), "metadata");
+                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                        | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                    logger.error(e.toString());
+                }
+            }
+        });
+        loadRunner.index("repeats");
     }
 
 }

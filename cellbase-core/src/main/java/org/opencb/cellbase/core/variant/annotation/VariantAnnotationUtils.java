@@ -493,7 +493,7 @@ public class VariantAnnotationUtils {
 
     public static VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
         if (variant.getType() == null) {
-            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()));
+            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
         }
         // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
         // FIXME: insertions and deletions

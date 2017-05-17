@@ -133,7 +133,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         options = addVariantPrivateExcludeOptions(options);
 //        options = addPrivateExcludeOptions(options);
 
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
 
@@ -203,30 +203,29 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
-                MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
-        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
-                "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
-        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
-                "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
         createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
-//        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
+        createOrQuery(query, QueryParams.END.key(), "end", andBsonList, QueryValueType.INTEGER);
         if (query.containsKey(QueryParams.REFERENCE.key())) {
             createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
         }
         if (query.containsKey(QueryParams.ALTERNATE.key())) {
             createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
         }
-//        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
+        createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
+                MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+
+        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
+                "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
+        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
+                "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
+        createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
+        createOrQuery(query, QueryParams.SV_TYPE.key(), "sv.type", andBsonList);
+
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
-//                andBsonList);
         createGeneOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), andBsonList);
-
-//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
