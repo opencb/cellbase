@@ -47,16 +47,33 @@ public class CdnaCoord {
         StringBuilder stringBuilder = new StringBuilder();
         if (landmark.equals(Landmark.CDNA_STOP_CODON)) {
             stringBuilder.append("*");
-        }
-
-        if (cdsPosition != 0) {
+            if (cdsPosition != 0) {
+                // Remove sign
+                stringBuilder.append(Math.abs(cdsPosition));
+            }
+        } else if (cdsPosition != 0) {
             stringBuilder.append(cdsPosition);
         }
+
+//        if (cdsPosition != 0) {
+//            stringBuilder.append(cdsPosition);
+//            if (startStopCodonOffset != 0) {
+//                if (startStopCodonOffset > 0) {
+//                    stringBuilder.append("+");
+//                }
+//                stringBuilder.append(startStopCodonOffset);
+//            }
+//        } else if (startStopCodonOffset != 0) {
+//            // Remove sign
+//            stringBuilder.append(Math.abs(startStopCodonOffset));
+//        }
 
         if (startStopCodonOffset < 0) {
             stringBuilder.append(startStopCodonOffset);
         } else if (startStopCodonOffset > 0) {
-            stringBuilder.append("+");
+            if (cdsPosition != 0) {
+                stringBuilder.append("+");
+            }
             stringBuilder.append(startStopCodonOffset);
         }
 

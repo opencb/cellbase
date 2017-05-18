@@ -494,7 +494,7 @@ public class HgvsCalculator {
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 // After coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
-                    cdnaCoord.setStartStopCodonOffset(getCdnaPosition(transcript, nearestExon.getStart()) - transcript.getCdnaCodingEnd());
+                    cdnaCoord.setStartStopCodonOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
                 // Within coding start and end
                 } else {
@@ -533,12 +533,12 @@ public class HgvsCalculator {
                 // Before (genomic) coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setStartStopCodonOffset(nearestExon.getStart() - genomicPosition);
-                    cdnaCoord.setCdsPosition(transcript.getCdnaCodingStart() - getCdnaPosition(transcript, nearestExon.getStart()));
+                    cdnaCoord.setCdsPosition(transcript.getCdnaCodingEnd() - getCdnaPosition(transcript, nearestExon.getStart()));
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
                 // After (genomic) coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setStartStopCodonOffset(nearestExon.getStart() - genomicPosition);
-                    cdnaCoord.setCdsPosition(transcript.getCdnaCodingStart() - getCdnaPosition(transcript, nearestExon.getStart()));
+                    cdnaCoord.setCdsPosition(getCdnaPosition(transcript, nearestExon.getStart()) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 // Within coding start and end
                 } else {
@@ -552,7 +552,7 @@ public class HgvsCalculator {
             } else if (genomicPosition - nearestExon.getEnd() < 0) {
                 // Before (genomic) coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
-                    cdnaCoord.setStartStopCodonOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingStart());
+                    cdnaCoord.setStartStopCodonOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingEnd());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_STOP_CODON);
                 // After (genomic) coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
@@ -575,7 +575,7 @@ public class HgvsCalculator {
                 // After (genomic) coding end
                 } else if (genomicPosition > transcript.getGenomicCodingEnd()) {
                     cdnaCoord.setStartStopCodonOffset(nearestExon.getEnd() - genomicPosition);
-                    cdnaCoord.setCdsPosition(transcript.getCdnaCodingEnd() - getCdnaPosition(transcript, nearestExon.getEnd()));
+                    cdnaCoord.setCdsPosition(getCdnaPosition(transcript, nearestExon.getEnd()) - transcript.getCdnaCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 // Within coding start and end
                 } else {

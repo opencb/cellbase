@@ -44,7 +44,42 @@ public class HgvsCalculatorTest {
     @Test
     public void run() throws Exception {
 
-        List<String> hgvsList = getVariantHgvs(new Variant("11", 62543180, "A", "G"));
+        List<String> hgvsList = getVariantHgvs(new Variant("13", 25457289, "G", "A"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381884(ENSG00000151849):c.*26C>T",
+                "ENST00000545981(ENSG00000151849):c.*697C>T"));
+
+        hgvsList = getVariantHgvs(new Variant("13", 25496789, "C", "G"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381884(ENSG00000151849):c.-67+110G>C",
+                "ENST00000545981(ENSG00000151849):c.-67+110G>C"));
+
+        hgvsList = getVariantHgvs(new Variant("13", 25487369, "G", "A"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381884(ENSG00000151849):c.-66-140C>T",
+                "ENST00000545981(ENSG00000151849):c.-66-140C>T"));
+
+        hgvsList = getVariantHgvs(new Variant("13", 25459270, "C", "T"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381884(ENSG00000151849):c.3477+144G>A",
+                "ENST00000545981(ENSG00000151849):c.*131+144G>A"));
+
+        hgvsList = getVariantHgvs(new Variant("13", 26967553, "A", "G"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381527(ENSG00000132964):c.696A>G",
+                "ENST00000536792(ENSG00000132964):c.*143A>G"));
+
+        hgvsList = getVariantHgvs(new Variant("13", 26966929, "G", "A"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381527(ENSG00000132964):c.647-575G>A",
+                "ENST00000536792(ENSG00000132964):c.*94-575G>A"));
+
+        hgvsList = getVariantHgvs(new Variant("13", 26962152, "T", "C"));
+        assertEquals(2, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381527(ENSG00000132964):c.646+2673T>C",
+                "ENST00000536792(ENSG00000132964):c.*93+2673T>C"));
+
+        hgvsList = getVariantHgvs(new Variant("11", 62543180, "A", "G"));
         assertEquals(5, hgvsList.size());
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000294168(ENSG00000162227):c.-13-63A>G",
                 "ENST00000526261(ENSG00000162227):c.-76A>G",
