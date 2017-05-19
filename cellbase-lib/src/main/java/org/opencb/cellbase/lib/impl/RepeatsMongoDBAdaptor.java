@@ -21,9 +21,11 @@ import java.util.function.Consumer;
  * Created by fjlopez on 10/05/17.
  */
 public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAdaptor {
+    private static final String REPEAT_COLLECTION = "repeats";
+
     public RepeatsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDatastore) {
         super(species, assembly, mongoDatastore);
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection(REPEAT_COLLECTION);
 
         logger.debug("RepeatsMongoDBAdaptor: in 'constructor'");
 

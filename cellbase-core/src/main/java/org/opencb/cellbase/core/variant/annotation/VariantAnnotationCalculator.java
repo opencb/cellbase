@@ -1080,19 +1080,35 @@ public class VariantAnnotationCalculator {
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {
         List<Region> regionList = new ArrayList<>(variantList.size());
-        for (Variant variant : variantList) {
-            if (VariantType.CNV.equals(variant.getType())) {
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getStart() - CNV_DEFAULT_PADDING,
-                        variant.getEnd() + CNV_DEFAULT_PADDING));
-            } else if (variant.getSv() != null) {
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getSv() != null && variant.getSv().getCiStartLeft() != null
-                                ? variant.getSv().getCiStartLeft() : variant.getStart(),
-                        variant.getSv() != null && variant.getSv().getCiEndRight() != null
-                                ? variant.getSv().getCiEndRight() : variant.getEnd()));
-            } else {
-                regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+        if (imprecise) {
+            for (Variant variant : variantList) {
+                if (VariantType.CNV.equals(variant.getType())) {
+                    regionList.add(new Region(variant.getChromosome(),
+                            variant.getStart() - CNV_DEFAULT_PADDING,
+                            variant.getEnd() + CNV_DEFAULT_PADDING));
+                } else if (variant.getSv() != null) {
+                    regionList.add(new Region(variant.getChromosome(),
+                            variant.getSv() != null && variant.getSv().getCiStartLeft() != null
+                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+                            variant.getSv() != null && variant.getSv().getCiEndRight() != null
+                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+                // Insertion
+                } else if (variant.getStart() > variant.getEnd()) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+                // Other but insertion
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+                }
+            }
+        } else {
+            for (Variant variant : variantList) {
+                // Insertion
+                if (variant.getStart() > variant.getEnd()) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+                // Other but insertion
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+                }
             }
         }
         return regionList;
@@ -1106,22 +1122,31 @@ public class VariantAnnotationCalculator {
                 regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                 break;
             case CNV:
-                regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_DEFAULT_PADDING,
-                        variant.getStart() + CNV_DEFAULT_PADDING));
-                regionList.add(new Region(variant.getChromosome(), variant.getEnd() - CNV_DEFAULT_PADDING,
-                        variant.getEnd() + CNV_DEFAULT_PADDING));
+                if (imprecise) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_DEFAULT_PADDING,
+                            variant.getStart() + CNV_DEFAULT_PADDING));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd() - CNV_DEFAULT_PADDING,
+                            variant.getEnd() + CNV_DEFAULT_PADDING));
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
+                }
                 break;
             default:
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getSv() != null && variant.getSv().getCiStartLeft() != null
-                                ? variant.getStart() - variant.getSv().getCiStartLeft() : variant.getStart(),
-                        variant.getSv() != null && variant.getSv().getCiStartRight() != null
-                                ? variant.getStart() + variant.getSv().getCiStartRight() : variant.getStart()));
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getSv() != null && variant.getSv().getCiEndLeft() != null
-                                ? variant.getEnd() - variant.getSv().getCiEndLeft() : variant.getEnd(),
-                        variant.getSv() != null && variant.getSv().getCiEndRight() != null
-                                ? variant.getEnd() + variant.getSv().getCiEndRight() : variant.getEnd()));
+                if (imprecise && variant.getSv() != null) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
+                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+                            variant.getSv().getCiStartRight() != null
+                                    ? variant.getSv().getCiStartRight() : variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(),
+                            variant.getSv().getCiEndLeft() != null
+                                    ? variant.getSv().getCiEndLeft() : variant.getEnd(),
+                            variant.getSv().getCiEndRight() != null
+                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
+                }
                 break;
         }
 
