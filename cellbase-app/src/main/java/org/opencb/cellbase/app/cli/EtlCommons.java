@@ -26,6 +26,7 @@ public class EtlCommons {
     public static final String PROTEIN_DATA = "protein";
     public static final String CONSERVATION_DATA = "conservation";
     public static final String CLINICAL_DATA = "clinical";
+    public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
 
     // Build specific data options
@@ -45,6 +46,10 @@ public class EtlCommons {
     // Path and file names
     public static final String GERP_SUBDIRECTORY = "gerp";
     public static final String GERP_FILE = "hg19.GERP_scores.tar.gz";
+    public static final String STRUCTURAL_VARIANTS_FOLDER = "structuralVariants";
+    public static final String DGV_FILE = "dgv.txt";
+    public static final String DGV_VERSION_FILE = "dgvVersion.json";
+    public static final String STRUCTURAL_VARIANTS_JSON = "structuralVariants";
     public static final String TRF_FILE = "simpleRepeat.txt.gz";
     public static final String TRF_VERSION_FILE = "simpleRepeat.json";
     public static final String GSD_FILE = "genomicSuperDups.txt.gz";
@@ -53,7 +58,6 @@ public class EtlCommons {
     public static final String WM_VERSION_FILE = "windowMasker.json";
     public static final String REPEATS_FOLDER = "repeats";
     public static final String REPEATS_JSON = "repeats";
-
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {

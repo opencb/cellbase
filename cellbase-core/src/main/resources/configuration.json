@@ -98,6 +98,9 @@
 		"clinvarEfoTerms": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv"
 		},
+		"dgv": {
+			"host": "http://dgv.tcag.ca/v106/docs"
+		},
 		"simpleRepeats": {
 			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
 		},
@@ -155,6 +158,7 @@
 					"protein",
 					"conservation",
 					"clinical",
+					"svs",
 					"repeats"
 				]
 			},

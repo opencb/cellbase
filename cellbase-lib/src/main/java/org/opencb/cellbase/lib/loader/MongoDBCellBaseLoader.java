@@ -159,6 +159,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
                 dbAdaptor = null;
                 break;
+            case "svs":
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
+                break;
             case "cadd":
 ////                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
                 dbAdaptor = null;
@@ -239,6 +245,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 collectionName = "gene";
                 break;
             case "variation":
+                collectionName = "variation";
+                break;
+            case "svs":
                 collectionName = "variation";
                 break;
             case "cadd":

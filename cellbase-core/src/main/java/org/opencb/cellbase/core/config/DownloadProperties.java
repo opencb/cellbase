@@ -40,6 +40,7 @@ public class DownloadProperties {
     private URLProperties clinvar;
     private URLProperties clinvarSummary;
     private URLProperties clinvarEfoTerms;
+    private URLProperties dgv;
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
     private URLProperties genomicSuperDups;
@@ -213,6 +214,14 @@ public class DownloadProperties {
     public DownloadProperties setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
         this.clinvarEfoTerms = clinvarEfoTerms;
         return this;
+    }
+
+    public URLProperties getDgv() {
+        return dgv;
+    }
+
+    public void setDgv(URLProperties dgv) {
+        this.dgv = dgv;
     }
 
     public URLProperties getSimpleRepeats() {
