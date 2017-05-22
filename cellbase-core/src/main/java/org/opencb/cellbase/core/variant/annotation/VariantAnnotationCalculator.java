@@ -62,6 +62,7 @@ public class VariantAnnotationCalculator {
     private RegulationDBAdaptor regulationDBAdaptor;
     private VariantDBAdaptor variantDBAdaptor;
     private ClinicalDBAdaptor clinicalDBAdaptor;
+    private RepeatsDBAdaptor repeatsDBAdaptor;
     private ProteinDBAdaptor proteinDBAdaptor;
     private ConservationDBAdaptor conservationDBAdaptor;
     private Set<String> annotatorSet;
@@ -104,6 +105,7 @@ public class VariantAnnotationCalculator {
         this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
         this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+        this.repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
 
          hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
 
@@ -411,6 +413,13 @@ public class VariantAnnotationCalculator {
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
 
+        FutureRepeatsAnnotator futureRepeatsAnnotator = null;
+        Future<List<QueryResult<Repeat>>> repeatsFuture = null;
+        if (annotatorSet.contains("repeats")) {
+            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, queryOptions);
+            repeatsFuture = fixedThreadPool.submit(futureRepeatsAnnotator);
+        }
+
         FutureCytobandAnnotator futureCytobandAnnotator = null;
         Future<List<QueryResult<Cytoband>>> cytobandFuture = null;
         if (annotatorSet.contains("cytoband")) {
@@ -502,6 +511,9 @@ public class VariantAnnotationCalculator {
         }
         if (futureClinicalAnnotator != null) {
             futureClinicalAnnotator.processResults(clinicalFuture, variantAnnotationResultList);
+        }
+        if (futureRepeatsAnnotator != null) {
+            futureRepeatsAnnotator.processResults(repeatsFuture, variantAnnotationResultList);
         }
         if (futureCytobandAnnotator != null) {
             futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationResultList);
@@ -894,7 +906,7 @@ public class VariantAnnotationCalculator {
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
                     "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies",
-                    "cytoband"));
+                    "repeats", "cytoband"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -1075,19 +1087,35 @@ public class VariantAnnotationCalculator {
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {
         List<Region> regionList = new ArrayList<>(variantList.size());
-        for (Variant variant : variantList) {
-            if (VariantType.CNV.equals(variant.getType())) {
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getStart() - CNV_DEFAULT_PADDING,
-                        variant.getEnd() + CNV_DEFAULT_PADDING));
-            } else if (variant.getSv() != null) {
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getSv() != null && variant.getSv().getCiStartLeft() != null
-                                ? variant.getSv().getCiStartLeft() : variant.getStart(),
-                        variant.getSv() != null && variant.getSv().getCiEndRight() != null
-                                ? variant.getSv().getCiEndRight() : variant.getEnd()));
-            } else {
-                regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+        if (imprecise) {
+            for (Variant variant : variantList) {
+                if (VariantType.CNV.equals(variant.getType())) {
+                    regionList.add(new Region(variant.getChromosome(),
+                            variant.getStart() - CNV_DEFAULT_PADDING,
+                            variant.getEnd() + CNV_DEFAULT_PADDING));
+                } else if (variant.getSv() != null) {
+                    regionList.add(new Region(variant.getChromosome(),
+                            variant.getSv() != null && variant.getSv().getCiStartLeft() != null
+                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+                            variant.getSv() != null && variant.getSv().getCiEndRight() != null
+                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+                // Insertion
+                } else if (variant.getStart() > variant.getEnd()) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+                // Other but insertion
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+                }
+            }
+        } else {
+            for (Variant variant : variantList) {
+                // Insertion
+                if (variant.getStart() > variant.getEnd()) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+                // Other but insertion
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+                }
             }
         }
         return regionList;
@@ -1101,22 +1129,31 @@ public class VariantAnnotationCalculator {
                 regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                 break;
             case CNV:
-                regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_DEFAULT_PADDING,
-                        variant.getStart() + CNV_DEFAULT_PADDING));
-                regionList.add(new Region(variant.getChromosome(), variant.getEnd() - CNV_DEFAULT_PADDING,
-                        variant.getEnd() + CNV_DEFAULT_PADDING));
+                if (imprecise) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_DEFAULT_PADDING,
+                            variant.getStart() + CNV_DEFAULT_PADDING));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd() - CNV_DEFAULT_PADDING,
+                            variant.getEnd() + CNV_DEFAULT_PADDING));
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
+                }
                 break;
             default:
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getSv() != null && variant.getSv().getCiStartLeft() != null
-                                ? variant.getStart() - variant.getSv().getCiStartLeft() : variant.getStart(),
-                        variant.getSv() != null && variant.getSv().getCiStartRight() != null
-                                ? variant.getStart() + variant.getSv().getCiStartRight() : variant.getStart()));
-                regionList.add(new Region(variant.getChromosome(),
-                        variant.getSv() != null && variant.getSv().getCiEndLeft() != null
-                                ? variant.getEnd() - variant.getSv().getCiEndLeft() : variant.getEnd(),
-                        variant.getSv() != null && variant.getSv().getCiEndRight() != null
-                                ? variant.getEnd() + variant.getSv().getCiEndRight() : variant.getEnd()));
+                if (imprecise && variant.getSv() != null) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
+                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+                            variant.getSv().getCiStartRight() != null
+                                    ? variant.getSv().getCiStartRight() : variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(),
+                            variant.getSv().getCiEndLeft() != null
+                                    ? variant.getSv().getCiEndLeft() : variant.getEnd(),
+                            variant.getSv().getCiEndRight() != null
+                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
+                }
                 break;
         }
 
@@ -1347,6 +1384,75 @@ public class VariantAnnotationCalculator {
         }
     }
 
+    class FutureRepeatsAnnotator implements Callable<List<QueryResult<Repeat>>> {
+        private List<Variant> variantList;
+        private QueryOptions queryOptions;
+
+        FutureRepeatsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+            this.variantList = variantList;
+            this.queryOptions = queryOptions;
+        }
+
+        public List<QueryResult<Repeat>> call() throws Exception {
+//            List<QueryResult<Repeat>> queryResultList
+//                    = repeatsDBAdaptor.getByRegion(variantListToRegionList(variantList), queryOptions);
+
+            long startTime = System.currentTimeMillis();
+            List<QueryResult<Repeat>> queryResultList = new ArrayList<>(variantList.size());
+
+            // Want to return only one QueryResult object per Variant
+            for (Variant variant : variantList) {
+                List<QueryResult<Repeat>> tmpQueryResultList = repeatsDBAdaptor
+                        .getByRegion(breakpointsToRegionList(variant), queryOptions);
+
+                // There may be more than one QueryResult per variant for non SNV variants since there will be
+                // two breakpoints
+                // Reuse one of the QueryResult objects returned by the adaptor
+                QueryResult newQueryResult = tmpQueryResultList.get(0);
+                if (tmpQueryResultList.size() > 1) {
+                    Set<Repeat> repeatSet = new HashSet<>(newQueryResult.getResult());
+                    // Reuse one of the QueryResult objects - new result is the set formed by the repeats corresponding
+                    // to the two breakpoints
+                    repeatSet.addAll(tmpQueryResultList.get(1).getResult());
+                    newQueryResult.setNumResults(repeatSet.size());
+                    newQueryResult.setNumTotalResults(repeatSet.size());
+                    newQueryResult.setResult(new ArrayList(repeatSet));
+                }
+                queryResultList.add(newQueryResult);
+            }
+
+            logger.debug("Repeat query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+                    variantList.size());
+
+            return queryResultList;
+
+        }
+
+        public void processResults(Future<List<QueryResult<Repeat>>> repeatsFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+                throws InterruptedException, ExecutionException {
+//            try {
+            while (!repeatsFuture.isDone()) {
+                Thread.sleep(1);
+            }
+
+            List<QueryResult<Repeat>> queryResultList = repeatsFuture.get();
+            if (queryResultList != null) {
+                for (int i = 0; i < variantAnnotationResults.size(); i++) {
+                    QueryResult<Repeat> queryResult = queryResultList.get(i);
+                    if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+                        variantAnnotationResults.get(i).getResult().get(0)
+                                .setRepeat(queryResult.getResult());
+                    }
+                }
+            }
+//            } catch (ExecutionException e) {
+////            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
+        }
+    }
+
     class FutureCytobandAnnotator implements Callable<List<QueryResult<Cytoband>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
@@ -1416,3 +1522,4 @@ public class VariantAnnotationCalculator {
     }
 
 }
+

@@ -1,5 +1,6 @@
 package org.opencb.cellbase.app.transform;
 
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -30,6 +31,7 @@ public class RepeatsParser extends CellBaseParser {
     @Override
     public void parse() throws Exception {
 
+        logger.info("Parsing repeats...");
         if (Files.exists(filesDir.resolve(EtlCommons.TRF_FILE))) {
             parseTrfFile(filesDir.resolve(EtlCommons.TRF_FILE));
         } else {
@@ -42,7 +44,7 @@ public class RepeatsParser extends CellBaseParser {
         } else {
             logger.warn("No Genomic Super Duplications file found {}", EtlCommons.GSD_FILE);
             logger.warn("Skipping Genomic Super Duplications file parsing. "
-                    + "Genomic Super Duplicationsata models will not be built.");
+                    + "Genomic Super Duplications data models will not be built.");
         }
 
         if (Files.exists(filesDir.resolve(EtlCommons.WM_FILE))) {
@@ -51,6 +53,7 @@ public class RepeatsParser extends CellBaseParser {
             logger.warn("No WindowMasker file found {}", EtlCommons.WM_FILE);
             logger.warn("Skipping WindowMasker file parsing. WindowMasker data models will not be built.");
         }
+        logger.info("Done.");
 
     }
 
@@ -84,8 +87,8 @@ public class RepeatsParser extends CellBaseParser {
     private Repeat parseTrfLine(String line) {
         String[] parts = line.split("\t");
 
-        return new Repeat(null, parts[1], Integer.valueOf(parts[2]), Integer.valueOf(parts[3]),
-                Integer.valueOf(parts[5]), Float.valueOf(parts[6]), Float.valueOf(parts[8]), Float.valueOf(parts[10]),
+        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]), Integer.valueOf(parts[3]),
+                Integer.valueOf(parts[5]), Float.valueOf(parts[6]), Float.valueOf(parts[8]) / 100, Float.valueOf(parts[10]),
                 parts[16], TRF);
     }
 
@@ -109,15 +112,13 @@ public class RepeatsParser extends CellBaseParser {
     private ArrayList<Repeat> parseGSDLine(String line) {
         String[] parts = line.split("\t");
 
-        Repeat dupFirst = new Repeat(parts[11], parts[1], Integer.valueOf(parts[2]), Integer.valueOf(parts[3]),
-                null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]),
-                null, GSD);
+        Repeat dupFirst = new Repeat(parts[11], Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]),
+                Integer.valueOf(parts[3]), null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]), null, GSD);
 
-        Repeat dupSecond = new Repeat(parts[11], parts[6], Integer.valueOf(parts[7]), Integer.valueOf(parts[8]),
-                null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]),
-                null, GSD);
+        Repeat dupSecond = new Repeat(parts[11], Region.normalizeChromosome(parts[7]), Integer.valueOf(parts[8]),
+                Integer.valueOf(parts[9]), null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]), null, GSD);
 
-        ArrayList<Repeat> dups = new ArrayList<Repeat>();
+        ArrayList<Repeat> dups = new ArrayList<Repeat>(2);
         dups.add(dupFirst);
         dups.add(dupSecond);
 
@@ -141,8 +142,7 @@ public class RepeatsParser extends CellBaseParser {
     private Repeat parseWmLine(String line) {
         String[] parts = line.split("\t");
 
-        return new Repeat(null, parts[1], Integer.valueOf(parts[2]), Integer.valueOf(parts[3]),
-                null, null, null, null,
-                null, WM);
+        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]),
+                Integer.valueOf(parts[3]), null, null, null, null, null, WM);
     }
 }

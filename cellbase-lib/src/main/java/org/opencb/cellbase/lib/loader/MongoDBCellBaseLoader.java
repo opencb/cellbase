@@ -216,6 +216,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 // method will soon be remove
                 dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
+            case "repeats":
+                dbAdaptor = null;
+//                collectionName = "protein_functional_prediction";
+                break;
             case "metadata":
                 dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
@@ -282,6 +286,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "metadata":
                 collectionName = "metadata";
                 break;
+            case "repeats":
+                collectionName = "repeats";
+                break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
         }
@@ -307,6 +314,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     break;
                 case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
+                    break;
+                case "repeats":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE};
                     break;
                 case "conservation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
@@ -606,6 +616,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "gwas":
             case "clinical":
                 indexFileName = "clinical-indexes.js";
+                break;
+            case "repeats":
+                indexFileName = "repeat-indexes.js";
                 break;
             default:
                 break;

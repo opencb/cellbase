@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2015 OpenCB
  *
@@ -14,18 +15,5 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.lib;
-
-/**
- * Created by imedina on 19/03/15.
- */
-public class MongoDBCollectionConfiguration {
-
-    public static final int GENE_CHUNK_SIZE = 5000;
-    public static final int VARIATION_CHUNK_SIZE = 2000;
-    public static final int GENOME_SEQUENCE_CHUNK_SIZE = 2000;
-    public static final int CONSERVATION_CHUNK_SIZE = 2000;
-    public static final int REGULATORY_REGION_CHUNK_SIZE = 2000;
-    public static final int VARIATION_FUNCTIONAL_SCORE_CHUNK_SIZE = 1000;
-    public static final int REPEATS_CHUNK_SIZE = 2000;
-}
+db.getCollection('repeats').createIndex({'_chunkIds': 1})
+db.getCollection('repeats').createIndex({'chromosome': 1, "start": 1, "end": 1})
