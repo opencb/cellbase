@@ -44,7 +44,11 @@ public class HgvsCalculatorTest {
     @Test
     public void run() throws Exception {
 
-        List<String> hgvsList = getVariantHgvs(new Variant("13", 25457289, "G", "A"));
+        List<String> hgvsList = getVariantHgvs(new Variant("1", 136024, "C", "T"));
+        assertEquals(1, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000423372(ENSG00000237683):c.*910-222G>A"));
+
+        hgvsList = getVariantHgvs(new Variant("13", 25457289, "G", "A"));
         assertEquals(2, hgvsList.size());
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000381884(ENSG00000151849):c.*26C>T",
                 "ENST00000545981(ENSG00000151849):c.*697C>T"));
