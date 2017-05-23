@@ -88,9 +88,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String PHASTCONS_NAME = "PhastCons";
     private static final String PHYLOP_NAME = "PhyloP";
     private static final String CLINVAR_NAME = "ClinVar";
+    private static final String DGV_NAME = "DGV";
     private static final String GWAS_NAME = "Gwas Catalog";
 //    private static final String DBSNP_NAME = "dbSNP";
     private static final String REACTOME_NAME = "Reactome";
+    private static final String TRF_NAME = "Tandem repeats finder";
+    private static final String GSD_NAME = "Genomic super duplications";
+    private static final String WM_NAME = "WindowMasker";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -245,12 +249,43 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadClinical(sp, spFolder);
                         }
                         break;
+                    case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+                        if (speciesHasInfoToDownload(sp, "svs")) {
+                            downloadStructuralVariants(sp, assembly.getName(), spFolder);
+                        }
+                        break;
+                    case EtlCommons.REPEATS_DATA:
+                        if (speciesHasInfoToDownload(sp, "repeats")) {
+                            downloadRepeats(sp, assembly.getName(), spFolder);
+                        }
+                        break;
                     default:
                         System.out.println("This data parameter is not allowed");
                         break;
                 }
             }
         }
+    }
+
+    private void downloadStructuralVariants(Species species, String assembly, Path speciesFolder) throws IOException, InterruptedException {
+        if (species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading DGV data ...");
+
+            Path structuralVariantsFolder = speciesFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
+            makeDir(structuralVariantsFolder);
+            String sourceFilename = (assembly.equalsIgnoreCase("grch37") ? "GRCh37_hg19" : "GRCh38_hg38")
+                    + "_variants_2016-05-15.txt";
+            String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
+            downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
+
+            saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
+                    Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
+
+        }
+    }
+
+    private String getDGVVersion(String sourceFilename) {
+        return sourceFilename.split("\\.")[0].split("_")[3];
     }
 
 
@@ -961,6 +996,49 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 proteinFolder.resolve("reactomeVersion.json"));
     }
 
+    private void downloadRepeats(Species species, String assembly, Path speciesFolder)
+            throws IOException, InterruptedException {
+
+        if (species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading repeats data ...");
+            Path repeatsFolder = speciesFolder.resolve(EtlCommons.REPEATS_FOLDER);
+            makeDir(repeatsFolder);
+            String pathParam;
+            if (assembly.equalsIgnoreCase("grch37")) {
+                pathParam = "hg19";
+            } else if (assembly.equalsIgnoreCase("grch38")) {
+                pathParam = "hg38";
+            } else {
+                logger.error("Please provide a valid human assembly {GRCh37, GRCh38)");
+                throw new ParameterException("Assembly '" + assembly + "' is not valid. Please provide a valid human "
+                        + "assembly {GRCh37, GRCh38)");
+            }
+
+            // Download tandem repeat finder
+            String url = configuration.getDownload().getSimpleRepeats().getHost() + "/" + pathParam
+                    + "/database/simpleRepeat.txt.gz";
+            downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString());
+            saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILE));
+
+            // Download genomic super duplications
+            url = configuration.getDownload().getGenomicSuperDups().getHost() + "/" + pathParam
+                    + "/database/genomicSuperDups.txt.gz";
+            downloadFile(url, repeatsFolder.resolve(EtlCommons.GSD_FILE).toString());
+            saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILE));
+
+            // Download WindowMasker
+            if (!pathParam.equalsIgnoreCase("hg19")) {
+                url = configuration.getDownload().getWindowMasker().getHost() + "/" + pathParam
+                        + "/database/windowmaskerSdust.txt.gz";
+                downloadFile(url, repeatsFolder.resolve(EtlCommons.WM_FILE).toString());
+                saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                        repeatsFolder.resolve(EtlCommons.WM_VERSION_FILE));
+            }
+
+        }
+    }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");

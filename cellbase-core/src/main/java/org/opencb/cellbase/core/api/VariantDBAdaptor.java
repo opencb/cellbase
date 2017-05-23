@@ -50,7 +50,10 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         GENE("gene", TEXT_ARRAY, ""),
         CONSEQUENCE_TYPE("consequenceType", TEXT_ARRAY, ""),
         TRANSCRIPT_CONSEQUENCE_TYPE("transcriptVariations.consequenceTypes", TEXT_ARRAY, ""),
-        XREFS("xrefs", TEXT_ARRAY, "");
+        XREFS("xrefs", TEXT_ARRAY, ""),
+        IMPRECISE("imprecise", BOOLEAN, ""),
+        SV_TYPE("svType", STRING, ""),
+        TYPE("type", STRING, "");
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -78,21 +81,49 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
     }
 
+    int CNV_DEFAULT_PADDING = 500;
+
     QueryResult startsWith(String id, QueryOptions options);
 
     default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
         Query query;
-        if (VariantType.CNV.equals(variant.getType()) && variant.getSv().getCiStartLeft() != null
-                && variant.getSv().getCiStartRight() != null
-                && variant.getSv().getCiEndLeft() != null
-                && variant.getSv().getCiEndRight() != null) {
-            query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
-                    .append(QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())
-                    .append(QueryParams.CI_END_LEFT.key(), variant.getSv().getCiEndLeft())
-                    .append(QueryParams.CI_END_RIGHT.key(), variant.getSv().getCiEndRight())
-                    .append(QueryParams.REFERENCE.key(), variant.getReference())
-                    .append(QueryParams.ALTERNATE.key(), variant.getAlternate());
+//        if (VariantType.CNV.equals(variant.getType())) {
+
+        // Queries for CNVs,SVs are different from simple short variants queries
+        if (variant.getSv() != null) {
+            query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome());
+            // Imprecise queries can just be enabled for structural variants providing CIPOS positions. Imprecise queries
+            // can be disabled by using the imprecise=false query option
+            if (options.get(QueryParams.IMPRECISE.key()) == null || (Boolean) options.get(QueryParams.IMPRECISE.key())) {
+                int ciStartLeft = variant.getSv().getCiStartLeft();
+                int ciStartRight = variant.getSv().getCiStartRight();
+                int ciEndLeft = variant.getSv().getCiEndLeft();
+                int ciEndRight = variant.getSv().getCiEndRight();
+                // CNVs must be considered inherently imprecise (GEL requirement), even if variant caller returned
+                // precise positions
+                if (VariantType.CNV.equals(variant.getType())
+                        && variant.getSv().getCiStartLeft().equals(variant.getSv().getCiStartRight())
+                        && variant.getSv().getCiEndLeft().equals(variant.getSv().getCiEndRight())) {
+                    ciStartLeft -= CNV_DEFAULT_PADDING;
+                    ciStartRight += CNV_DEFAULT_PADDING;
+                    ciEndLeft -= CNV_DEFAULT_PADDING;
+                    ciEndRight += CNV_DEFAULT_PADDING;
+                }
+                query.append(QueryParams.CI_START_LEFT.key(), ciStartLeft)
+                        .append(QueryParams.CI_START_RIGHT.key(), ciStartRight)
+                        .append(QueryParams.CI_END_LEFT.key(), ciEndLeft)
+                        .append(QueryParams.CI_END_RIGHT.key(), ciEndRight);
+            // Exact query for start/end
+            } else {
+                query.append(QueryParams.START.key(), variant.getStart());
+                query.append(QueryParams.END.key(), variant.getStart());
+            }
+            // CNVs must always be matched against COPY_NUMBER_GAIN/COPY_NUMBER_LOSS when searching - if provided
+            if (VariantType.CNV.equals(variant.getType()) && variant.getSv().getType() != null) {
+                query.append(QueryParams.SV_TYPE.key(), variant.getSv().getType());
+            }
+            query.append(QueryParams.TYPE.key(), variant.getType());
+        // simple short variant query; This will be the query run in more than 99% of the cases
         } else {
             query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())
                     .append(QueryParams.START.key(), variant.getStart())

@@ -159,10 +159,10 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "POST",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies}. In addition, annotation was already "
-            + "pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of variants "
-            + "will be included in that collection, meaning that the use of this cache may significantly improve "
-            + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
+            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}. In addition, annotation was "
+            + "already pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of "
+            + "variants will be included in that collection, meaning that the use of this cache may significantly "
+            + "improve performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
                                                         + "annotate, e.g. "
@@ -210,10 +210,10 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies}. In addition, annotation was already "
-            + "pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of variants "
-            + "will be included in that collection, meaning that the use of this cache may significantly improve "
-            + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
+            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}. In addition, annotation was "
+            + "already pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of "
+            + "variants will be included in that collection, meaning that the use of this cache may significantly "
+            + "improve performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     public Response getAnnotationByVariantsGET(@PathParam("variants")
                                                @ApiParam(name = "variants", value = "Comma separated list of variants to"

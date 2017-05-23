@@ -159,6 +159,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
                 dbAdaptor = null;
                 break;
+            case "svs":
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
+                break;
             case "cadd":
 ////                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
                 dbAdaptor = null;
@@ -210,6 +216,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 // method will soon be remove
                 dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
+            case "repeats":
+                dbAdaptor = null;
+//                collectionName = "protein_functional_prediction";
+                break;
             case "metadata":
                 dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
@@ -235,6 +245,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 collectionName = "gene";
                 break;
             case "variation":
+                collectionName = "variation";
+                break;
+            case "svs":
                 collectionName = "variation";
                 break;
             case "cadd":
@@ -273,6 +286,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "metadata":
                 collectionName = "metadata";
                 break;
+            case "repeats":
+                collectionName = "repeats";
+                break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
         }
@@ -298,6 +314,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     break;
                 case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
+                    break;
+                case "repeats":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE};
                     break;
                 case "conservation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
@@ -597,6 +616,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "gwas":
             case "clinical":
                 indexFileName = "clinical-indexes.js";
+                break;
+            case "repeats":
+                indexFileName = "repeat-indexes.js";
                 break;
             default:
                 break;

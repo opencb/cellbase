@@ -26,7 +26,9 @@ import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -45,6 +47,8 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 
 public class VariantAnnotationCalculatorTest {
@@ -79,20 +83,21 @@ public class VariantAnnotationCalculatorTest {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(getClass().getResource("/variant-annotation-test.json.gz").getFile()))));
         String[] variantArray = {"2:114210741:TGATGCT:AGATGGC", "1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC",
                 "19:45411941:T:C", "1:819287-820859:<CN12>"};
-
         String line = reader.readLine();
         QueryOptions queryOptions = new QueryOptions("normalize", true);
         queryOptions.put("phased", true);
         queryOptions.put("useCache", false);
         int i = 0;
         while (line !=null ) {
-            assertVariantAnnotationQueryResultEquals(variantAnnotationCalculator
+            assertVariantAnnotationQueryResultEquals(variantAnnotationCalculatorGrch38
                             .getAnnotationByVariantList((Variant.parseVariants(variantArray[i])), queryOptions),
                     jsonObjectMapper.convertValue(JSON.parse(line),
                             List.class));
             line = reader.readLine();
             i++;
         }
+
+
 
 ////        http://wwwdev.ebi.ac.uk/cellbase/webservices/rest/v3/hsapiens/genomic/variant/2:114340663:GCTGGGCATCCT:ACTGGGCATCCT/full_annotation
 
@@ -165,6 +170,168 @@ public class VariantAnnotationCalculatorTest {
 //        vepFormatWriter.close();
 
 
+
+    }
+
+    @Test
+    public void testCytobandAnnotation() throws Exception {
+
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "cytoband");
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(new Variant("19:37800050-37801000:<CN3>"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(2, queryResult.getResult().get(0).getCytoband().size());
+        assertEquals(queryResult.getResult().get(0).getCytoband().stream().collect(Collectors.toSet()),
+                new HashSet<Cytoband>(Arrays.asList(
+                        new Cytoband("gpos25", "q13.12", 35100001,37800000),
+                        new Cytoband("gneg", "q13.13", 37800001,38200000))));
+
+        List<QueryResult<VariantAnnotation>> queryResultList = variantAnnotationCalculator
+                .getAnnotationByVariantList(Arrays.asList(new Variant("19:37800050-42910001:<CN3>"),
+                        new Variant("18:63902001:T:A"),
+                        new Variant("6:148500101-148500201:<DEL>")), queryOptions);
+        assertEquals(3, queryResultList.size());
+        assertEquals(1, queryResultList.get(0).getNumTotalResults());
+        assertEquals(3, queryResultList.get(0).getResult().get(0).getCytoband().size());
+        assertEquals(queryResultList.get(0).getResult().get(0).getCytoband().stream().collect(Collectors.toSet()),
+                new HashSet<Cytoband>(Arrays.asList(
+                        new Cytoband("gpos25", "q13.12", 35100001,37800000),
+                        new Cytoband("gneg", "q13.13", 37800001,38200000),
+                        new Cytoband("gneg", "q13.31", 42900001,44700000))));
+
+        assertEquals(1, queryResultList.get(1).getNumTotalResults());
+        assertEquals(1, queryResultList.get(1).getResult().get(0).getCytoband().size());
+        assertEquals(queryResultList.get(1).getResult().get(0).getCytoband().get(0),
+                        new Cytoband("gpos100", "q22.1", 63900001,69100000));
+
+        assertEquals(1, queryResultList.get(2).getNumTotalResults());
+        assertEquals(1, queryResultList.get(2).getResult().get(0).getCytoband().size());
+        assertEquals(queryResultList.get(2).getResult().get(0).getCytoband().get(0),
+                new Cytoband("gneg", "q25.1", 148500001,152100000));
+
+    }
+
+    @Test
+    public void testDGVAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "variation");
+        Variant variant = new Variant("1:10161-10291:<DEL>");
+        StructuralVariation structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
+                10291 - 100, 10291 + 10, 0, null);
+        variant.setSv(structuralVariation);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals("nsv958854", queryResult.getResult().get(0).getId());
+
+        variant = new Variant("1:10401-127130:<CN10>");
+        structuralVariation = new StructuralVariation(10401, 10401, 127130,
+                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals("nsv7879", queryResult.getResult().get(0).getId());
+
+        queryOptions.put("imprecise", false);
+        variant = new Variant("1:10401-127130:<CN10>");
+        structuralVariation = new StructuralVariation(10401, 10401, 127130,
+                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertNull(queryResult.getResult().get(0).getId());
+    }
+
+    @Test
+    public void testRepeatAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "repeats");
+
+        Variant variant = new Variant("1:1823634-1823770:<DEL>");
+        StructuralVariation structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
+                1823770 - 20, 1823770 + 10, 0, null);
+        variant.setSv(structuralVariation);
+        queryOptions.put("imprecise", false);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertNull(queryResult.getResult().get(0).getRepeat());
+
+        variant = new Variant("1:1823634-1823770:<DEL>");
+        structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
+                1823770 - 20, 1823770 + 10, 0, null);
+        variant.setSv(structuralVariation);
+        queryOptions.remove("imprecise");
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+                new HashSet<Repeat>(Arrays.asList(
+                        new Repeat(null, "1", 1823664, 1823686, null, null,
+                                null, null, null, "windowMasker"))));
+
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(new Variant("1:1823702:T:C"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+                new HashSet<Repeat>(Arrays.asList(
+                        new Repeat(null, "1", 1823699, 1823720, null, null,
+                                null, null, null, "windowMasker"))));
+
+        queryOptions.put("imprecise", false);
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(new Variant("1:1801242-1823252:<CN3>"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(3, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+                new HashSet<Repeat>(Arrays.asList(
+                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
+                                Float.valueOf(1), Float.valueOf(50), "A", "trf"),
+                        new Repeat(null, "1", 1822940, 1823278, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1801025, 1801354, null, null,
+                                null, null, null, "windowMasker"))));
+
+        queryOptions.remove("imprecise");
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(new Variant("1:1801242-1823252:<CN3>"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(15, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+                new HashSet<Repeat>(Arrays.asList(
+                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
+                                Float.valueOf(1), Float.valueOf(50), "A", "trf"),
+                        new Repeat(null, "1", 1800743, 1800796, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1800810, 1800854, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1801025, 1801354, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1801634, 1801700, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1801704, 1801750, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1822767, 1822794, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1822871, 1822904, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1822940, 1823278, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1823332, 1823339, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1823351, 1823397, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1823460, 1823512, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1823577, 1823603, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1823664, 1823686, null, null,
+                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1823699, 1823720, null, null,
+                                null, null, null, "windowMasker"))));
 
     }
 
