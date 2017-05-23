@@ -955,7 +955,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
         if (variant.getType() == null) {
-            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()));
+            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
         }
         // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
         // FIXME: insertions and deletions
@@ -1023,7 +1023,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
         if (variant.getType() == VariantType.SNV
-                || Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()) == VariantType.SNV) {
+                || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
                 if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
                     consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
