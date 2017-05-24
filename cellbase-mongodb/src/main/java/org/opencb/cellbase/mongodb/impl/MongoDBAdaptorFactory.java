@@ -24,8 +24,10 @@ import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
@@ -71,12 +73,12 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         CellBaseConfiguration.SpeciesProperties.Species speciesObject = getSpecies(species);
         if (speciesObject != null) {
             species = speciesObject.getId();
-            assembly = getAssembly(speciesObject, assembly).toLowerCase();
+            String cellbaseAssembly = getAssembly(speciesObject, assembly);
 
-            if (species != null && !species.isEmpty() && assembly != null && !assembly.isEmpty()) {
-
+            if (species != null && !species.isEmpty() && cellbaseAssembly != null && !cellbaseAssembly.isEmpty()) {
+                cellbaseAssembly = cellbaseAssembly.toLowerCase();
                 // Database name is built following the above pattern
-                String database = "cellbase" + "_" + species + "_" + assembly.replaceAll("\\.", "").replaceAll("-", "")
+                String database = "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
                         .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
                 logger.debug("Database for the species is '{}'", database);
 
@@ -115,12 +117,24 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 // we return the MongoDataStore object
                 return mongoDatastore;
             } else {
-                logger.error("Species name or assembly are not valid, species '{}', assembly '{}'", species, assembly);
-                return null;
+                logger.error("Assembly is not valid, assembly '{}'. Valid assemblies: {}", assembly,
+                        String.join(",", speciesObject.getAssemblies().stream().map((assemblyObject)
+                                -> assemblyObject.getName()).collect(Collectors.toList())));
+                throw new InvalidParameterException("Assembly is not valid, assembly '" + assembly
+                        + "'. Please provide one of supported assemblies: {"
+                        + String.join(",", speciesObject.getAssemblies().stream().map((assemblyObject)
+                        -> assemblyObject.getName()).collect(Collectors.toList())) + "}");
             }
         } else {
-            logger.error("Species name is not valid: '{}'", species);
-            return null;
+            logger.error("Species name is not valid: '{}'. Valid species: {}", species,
+                    String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
+                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                            .collect(Collectors.toList())));
+            throw new InvalidParameterException("Species name is not valid: '" + species + "'. Please provide one"
+                    + " of supported species: {"
+                    + String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
+                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                            .collect(Collectors.toList())) + "}");
         }
     }
 
