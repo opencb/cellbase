@@ -87,7 +87,7 @@ public class RepeatsParser extends CellBaseParser {
     private Repeat parseTrfLine(String line) {
         String[] parts = line.split("\t");
 
-        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]), Integer.valueOf(parts[3]),
+        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1, Integer.valueOf(parts[3]),
                 Integer.valueOf(parts[5]), Float.valueOf(parts[6]), Float.valueOf(parts[8]) / 100, Float.valueOf(parts[10]),
                 parts[16], TRF);
     }
@@ -112,10 +112,10 @@ public class RepeatsParser extends CellBaseParser {
     private ArrayList<Repeat> parseGSDLine(String line) {
         String[] parts = line.split("\t");
 
-        Repeat dupFirst = new Repeat(parts[11], Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]),
+        Repeat dupFirst = new Repeat(parts[11], Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
                 Integer.valueOf(parts[3]), null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]), null, GSD);
 
-        Repeat dupSecond = new Repeat(parts[11], Region.normalizeChromosome(parts[7]), Integer.valueOf(parts[8]),
+        Repeat dupSecond = new Repeat(parts[11], Region.normalizeChromosome(parts[7]), Integer.valueOf(parts[8]) + 1,
                 Integer.valueOf(parts[9]), null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]), null, GSD);
 
         ArrayList<Repeat> dups = new ArrayList<Repeat>(2);
@@ -142,7 +142,7 @@ public class RepeatsParser extends CellBaseParser {
     private Repeat parseWmLine(String line) {
         String[] parts = line.split("\t");
 
-        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]),
+        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
                 Integer.valueOf(parts[3]), null, null, null, null, null, WM);
     }
 }
