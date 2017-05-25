@@ -837,6 +837,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
         }
 
+        // Parameter not expected to be very used - provide extra padding (bp) to be used for structural variant annotation
+        if (variantAnnotationCommandOptions.buildParams.get("sv-extra-padding") != null) {
+            Integer svExtraPadding = Integer.valueOf(variantAnnotationCommandOptions.buildParams.get("sv-extra-padding"));
+            if (svExtraPadding < 0) {
+                throw new ParameterException("Extra padding for SV annotation cannot be < 0, value provided: "
+                        + svExtraPadding + ". Please provide a value >= 0");
+            }
+            queryOptions.put("svExtraPadding", svExtraPadding);
+        }
+
         // Annotate variation collection in CellBase
         cellBaseAnnotation = variantAnnotationCommandOptions.cellBaseAnnotation;
 

@@ -400,6 +400,7 @@ public class CliOptionsParser {
         public VariantAnnotationCommandOptions() {
             buildParams = new HashMap<>();
             buildParams.put("population-frequencies", null);
+            buildParams.put("sv-extra-padding", "0");
         }
 
     }

@@ -74,6 +74,7 @@ public class VariantAnnotationCalculator {
     private boolean useCache = true;
     private boolean phased = false;
     private Boolean imprecise = true;
+    private Integer svExtraPadding = 0;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -541,7 +542,11 @@ public class VariantAnnotationCalculator {
 
         // Default behaviour - enable imprecise searches
         imprecise = (queryOptions.get("imprecise") != null ? (Boolean) queryOptions.get("imprecise") : true);
-        logger.debug("imprecise = {}", phased);
+        logger.debug("imprecise = {}", imprecise);
+
+        // Default behaviour - no extra padding for structural variants
+        svExtraPadding = (queryOptions.get("sv-extra-padding") != null ? (Integer) queryOptions.get("sv-extra-padding") : 0);
+        logger.debug("sv-extra-padding = {}", svExtraPadding);
     }
 
 
@@ -1135,14 +1140,14 @@ public class VariantAnnotationCalculator {
             default:
                 if (imprecise && variant.getSv() != null) {
                     regionList.add(new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
-                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+                                    ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
                             variant.getSv().getCiStartRight() != null
-                                    ? variant.getSv().getCiStartRight() : variant.getStart()));
+                                    ? variant.getSv().getCiStartRight() + svExtraPadding : variant.getStart()));
                     regionList.add(new Region(variant.getChromosome(),
                             variant.getSv().getCiEndLeft() != null
-                                    ? variant.getSv().getCiEndLeft() : variant.getEnd(),
+                                    ? variant.getSv().getCiEndLeft() - svExtraPadding : variant.getEnd(),
                             variant.getSv().getCiEndRight() != null
-                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+                                    ? variant.getSv().getCiEndRight() + svExtraPadding : variant.getEnd()));
                 } else {
                     regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                     regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
