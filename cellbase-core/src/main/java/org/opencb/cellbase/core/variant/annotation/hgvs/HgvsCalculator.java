@@ -10,7 +10,6 @@ import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,11 +37,11 @@ public class HgvsCalculator {
     private static final VariantNormalizer NORMALIZER = new VariantNormalizer(false, false, true);
 
 
-    public QueryResult<String> run(Variant variant, List<Gene> geneList) {
+    public List<String> run(Variant variant, List<Gene> geneList) {
         return this.run(variant, geneList, true);
     }
 
-    public QueryResult<String> run(Variant variant, List<Gene> geneList, boolean normalize) {
+    public List<String> run(Variant variant, List<Gene> geneList, boolean normalize) {
         List<String> hgvsList = new ArrayList<>();
         for (Gene gene : geneList) {
             hgvsList.addAll(this.run(variant, gene, normalize));
@@ -51,11 +50,11 @@ public class HgvsCalculator {
         return hgvsList;
     }
 
-    public QueryResult<String> run(Variant variant, Gene gene) {
+    public List<String> run(Variant variant, Gene gene) {
         return run(variant, gene, true);
     }
 
-    public QueryResult<String> run(Variant variant, Gene gene, boolean normalize) {
+    public List<String> run(Variant variant, Gene gene, boolean normalize) {
         List<String> hgvsList = new ArrayList<>(gene.getTranscripts().size());
         for (Transcript transcript : gene.getTranscripts()) {
             hgvsList.addAll(this.run(variant, transcript, gene.getId(), normalize));
@@ -86,12 +85,12 @@ public class HgvsCalculator {
 
             // We cannot know the type of variant before normalization has been carried out
             switch (VariantAnnotationUtils.getVariantType(normalizedVariant)) {
+                case SNV:
+                    return calculateSNVHgvs(normalizedVariant, transcript, geneId);
                 case INSERTION:
                     return calculateInsertionHgvs(normalizedVariant, transcript, geneId);
                 case DELETION:
                     return calculateDeletionHhgvs(normalizedVariant, transcript, geneId);
-                case SNV:
-                    return calculateSNVHgvs(normalizedVariant, transcript, geneId);
                 default:
                     throw new UnsupportedURLVariantFormat();
             }

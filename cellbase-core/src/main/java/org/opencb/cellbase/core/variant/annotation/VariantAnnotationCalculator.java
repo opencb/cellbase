@@ -427,12 +427,12 @@ public class VariantAnnotationCalculator {
             cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
         }
 
-        FutureHgvsAnnotator futureHgvsAnnotator = null;
-        Future<List<QueryResult<String>>> hgvsFuture = null;
-        if (annotatorSet.contains("hgvs")) {
-            futureHgvsAnnotator = new FutureHgvsAnnotator(normalizedVariantList, queryOptions);
-            hgvsFuture = fixedThreadPool.submit(futureHgvsAnnotator);
-        }
+//        FutureHgvsAnnotator futureHgvsAnnotator = null;
+//        Future<List<QueryResult<String>>> hgvsFuture = null;
+//        if (annotatorSet.contains("hgvs")) {
+//            futureHgvsAnnotator = new FutureHgvsAnnotator(normalizedVariantList, queryOptions);
+//            hgvsFuture = fixedThreadPool.submit(futureHgvsAnnotator);
+//        }
 
         /*
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
@@ -459,8 +459,20 @@ public class VariantAnnotationCalculator {
 
             geneList = setGeneAnnotation(normalizedVariantList.get(i));
 
-            // No need to carry out normalization if it has already been done
-            //variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
+            // Better not run hgvs calculation with a Future for the following reasons:
+            //   * geneList is needed in order to calculate the hgvs for ALL VARIANTS
+            //   * hgvsCalculator will raise an additional database query to get the genome sequence JUST FOR INDELS
+            //   * If a Future is used and a list of variants is provided to the hgvsCalculator, then the hgvsCalculator
+            //   will require to raise an additional query to the database (that would be performed asynchronously)
+            //   in order to get the geneList FOR ALL VARIANTS
+            //   * If no future is used, then the genome sequence query will be performed synchronously but JUST
+            //   FOR INDELS
+            // Given that the number of indels is expected to be negligible if compared to the number of SNVs, the
+            // decision is to run it synchronously
+            if (annotatorSet.contains("hgvs")) {
+                // No need to carry out normalization if it has already been done
+                variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
+            }
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
@@ -522,9 +534,9 @@ public class VariantAnnotationCalculator {
         if (futureRepeatsAnnotator != null) {
             futureRepeatsAnnotator.processResults(repeatsFuture, variantAnnotationResultList);
         }
-        if (futureHgvsAnnotator != null) {
-            futureHgvsAnnotator.processResults(hgvsFuture, variantAnnotationResultList);
-        }
+//        if (futureHgvsAnnotator != null) {
+//            futureHgvsAnnotator.processResults(hgvsFuture, variantAnnotationResultList);
+//        }
         fixedThreadPool.shutdown();
 
 
@@ -921,10 +933,11 @@ public class VariantAnnotationCalculator {
     }
 
     private String getIncludedGeneFields(Set<String> annotatorSet) {
-        String includeGeneFields = "name,id,start,end,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,"
-                + "transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,"
-                + "transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,"
-                + "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,"
+        String includeGeneFields = "name,id,start,end,transcripts.id,transcripts.start,transcripts.end,"
+                + "transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,"
+                + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
+                + "transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.cdsStart,transcripts.exons.end,"
+                + "transcripts.exons.cdsEnd,transcripts.exons.sequence,transcripts.exons.phase,"
                 + "transcripts.exons.exonNumber,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,"
                 + "mirna.matures.cdnaEnd";
 
@@ -1528,51 +1541,51 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private class FutureHgvsAnnotator implements Callable<List<QueryResult<String>>> {
-        private List<Variant> variantList;
-        private QueryOptions queryOptions;
-
-        FutureHgvsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
-            this.variantList = variantList;
-            this.queryOptions = queryOptions;
-        }
-
-        @Override
-        public List<QueryResult<String>> call() throws Exception {
-            long startTime = System.currentTimeMillis();
-            List<QueryResult<String>> queryResultList = hgvsCalculator.run(variantList);
-            logger.debug("HGVS query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
-                    variantList.size());
-            return queryResultList;
-        }
-
-        public void processResults(Future<List<QueryResult<Cytoband>>> cytobandFuture,
-                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
-                throws InterruptedException, ExecutionException {
-            while (!cytobandFuture.isDone()) {
-                Thread.sleep(1);
-            }
-
-            List<QueryResult<Cytoband>> queryResultList = cytobandFuture.get();
-            if (queryResultList != null) {
-                if (queryResultList.isEmpty()) {
-                    StringBuilder stringbuilder = new StringBuilder(variantList.get(0).toString());
-                    for (int i = 1; i < variantList.size(); i++) {
-                        stringbuilder.append(",").append(variantList.get(i).toString());
-                    }
-                    logger.warn("NO cytoband was found for any of these variants: {}", stringbuilder.toString());
-                } else {
-                    // Cytoband lists are returned in the same order in which variants are queried
-                    for (int i = 0; i < variantAnnotationResults.size(); i++) {
-                        QueryResult queryResult = queryResultList.get(i);
-                        if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
-                            variantAnnotationResults.get(i).getResult().get(0).setCytoband(queryResult.getResult());
-                        }
-                    }
-                }
-            }
-        }
-
-    }
+//    private class FutureHgvsAnnotator implements Callable<List<QueryResult<String>>> {
+//        private List<Variant> variantList;
+//        private QueryOptions queryOptions;
+//
+//        FutureHgvsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+//            this.variantList = variantList;
+//            this.queryOptions = queryOptions;
+//        }
+//
+//        @Override
+//        public List<QueryResult<String>> call() throws Exception {
+//            long startTime = System.currentTimeMillis();
+//            List<QueryResult<String>> queryResultList = hgvsCalculator.run(variantList);
+//            logger.debug("HGVS query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+//                    variantList.size());
+//            return queryResultList;
+//        }
+//
+//        public void processResults(Future<List<QueryResult<Cytoband>>> cytobandFuture,
+//                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+//                throws InterruptedException, ExecutionException {
+//            while (!cytobandFuture.isDone()) {
+//                Thread.sleep(1);
+//            }
+//
+//            List<QueryResult<Cytoband>> queryResultList = cytobandFuture.get();
+//            if (queryResultList != null) {
+//                if (queryResultList.isEmpty()) {
+//                    StringBuilder stringbuilder = new StringBuilder(variantList.get(0).toString());
+//                    for (int i = 1; i < variantList.size(); i++) {
+//                        stringbuilder.append(",").append(variantList.get(i).toString());
+//                    }
+//                    logger.warn("NO cytoband was found for any of these variants: {}", stringbuilder.toString());
+//                } else {
+//                    // Cytoband lists are returned in the same order in which variants are queried
+//                    for (int i = 0; i < variantAnnotationResults.size(); i++) {
+//                        QueryResult queryResult = queryResultList.get(i);
+//                        if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+//                            variantAnnotationResults.get(i).getResult().get(0).setCytoband(queryResult.getResult());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
 }
 
