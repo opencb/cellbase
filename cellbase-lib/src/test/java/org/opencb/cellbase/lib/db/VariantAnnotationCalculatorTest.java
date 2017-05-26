@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
@@ -249,12 +250,35 @@ public class VariantAnnotationCalculatorTest {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "repeats");
 
-        Variant variant = new Variant("1:1823634-1823770:<DEL>");
-        StructuralVariation structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
+        Variant variant = new Variant("19:78787-78807:<DEL>");
+        StructuralVariation structuralVariation = new StructuralVariation(78787, 78787,
+                78807, 78807, 0, null);
+        queryOptions.put("svExtraPadding", 150);
+        variant.setSv(structuralVariation);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(9, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.hasItems(new Repeat("21279", "19", 60000, 78757, null,
+                        2f, 0.989968f, 0f, null, "genomicSuperDup")));
+
+        queryOptions.remove("svExtraPadding");
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("21279", "19", 60000,
+                        78757, null, 2f, 0.989968f, 0f, null,
+                        "genomicSuperDup"))));
+
+        variant = new Variant("1:1823634-1823770:<DEL>");
+        structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
                 1823770 - 20, 1823770 + 10, 0, null);
         variant.setSv(structuralVariation);
         queryOptions.put("imprecise", false);
-        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculatorGrch38
+        queryResult = variantAnnotationCalculatorGrch38
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertNull(queryResult.getResult().get(0).getRepeat());

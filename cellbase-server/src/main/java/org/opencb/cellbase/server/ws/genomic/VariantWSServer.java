@@ -214,6 +214,12 @@ public class VariantWSServer extends GenericRestWSServer {
             if (phased != null) {
                 queryOptions.put("phased", phased);
             }
+            if (imprecise != null) {
+                queryOptions.put("imprecise", imprecise);
+            }
+            if (svExtraPadding != null) {
+                queryOptions.put("svExtraPadding", svExtraPadding);
+            }
             VariantAnnotationCalculator variantAnnotationCalculator =
                     new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
             List<QueryResult<VariantAnnotation>> queryResultList =
@@ -282,6 +288,12 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (phased != null) {
                 queryOptions.put("phased", phased);
+            }
+            if (imprecise != null) {
+                queryOptions.put("imprecise", imprecise);
+            }
+            if (svExtraPadding != null) {
+                queryOptions.put("svExtraPadding", svExtraPadding);
             }
             logger.debug(queryOptions.toJson());
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =

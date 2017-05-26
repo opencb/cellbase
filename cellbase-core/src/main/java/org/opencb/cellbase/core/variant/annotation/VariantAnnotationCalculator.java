@@ -545,8 +545,8 @@ public class VariantAnnotationCalculator {
         logger.debug("imprecise = {}", imprecise);
 
         // Default behaviour - no extra padding for structural variants
-        svExtraPadding = (queryOptions.get("sv-extra-padding") != null ? (Integer) queryOptions.get("sv-extra-padding") : 0);
-        logger.debug("sv-extra-padding = {}", svExtraPadding);
+        svExtraPadding = (queryOptions.get("svExtraPadding") != null ? (Integer) queryOptions.get("svExtraPadding") : 0);
+        logger.info("svExtraPadding = {}", svExtraPadding);
     }
 
 
