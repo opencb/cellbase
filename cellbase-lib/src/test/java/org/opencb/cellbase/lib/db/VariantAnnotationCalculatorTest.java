@@ -176,6 +176,19 @@ public class VariantAnnotationCalculatorTest {
     }
 
     @Test
+    public void testHgvsAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "hgvs");
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(new Variant("19:45411941:T:C"), queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(4, queryResult.getResult().get(0).getHgvs().size());
+        assertEquals(new HashSet<>(Arrays.asList("ENST00000252486(ENSG00000130203):c.388T>C",
+                "ENST00000446996(ENSG00000130203):c.388T>C", "ENST00000434152(ENSG00000130203):c.466T>C",
+                "ENST00000425718(ENSG00000130203):c.388T>C")), new HashSet<String>(queryResult.getResult().get(0).getHgvs()));
+    }
+
+    @Test
     public void testCytobandAnnotation() throws Exception {
 
         QueryOptions queryOptions = new QueryOptions("useCache", false);

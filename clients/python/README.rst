@@ -39,7 +39,7 @@ The first step is to import the module and initialize the CellBaseClient:
     >>> from pycellbase.cbclient import CellBaseClient
     >>> cbc = CellBaseClient()
 
-The second step is to create the specific client for the data we want to query (in this example we want to obtain information for a gene):
+The second step is to create the specific client for the data we want to query (in this example we want to obtain information for a geneId):
 
 .. code-block:: python
 
@@ -49,7 +49,7 @@ And now, you can start asking to the CellBase RESTful service by providing a que
 
 .. code-block:: python
 
-    >>> tfbs_responses = gc.get_tfbs('BRCA1')  # Obtaining TFBS for this gene
+    >>> tfbs_responses = gc.get_tfbs('BRCA1')  # Obtaining TFBS for this geneId
 
 Responses are retrieved as JSON formatted data. Therefore, fields can be queried by key:
 
@@ -89,7 +89,7 @@ If there is an available resource in the CellBase Webservices, but there is not 
 
 .. code-block:: python
 
-    >>> tfbs_responses = cbc.get(category='feature', subcategory='gene', query_id='BRCA1', resource='tfbs')
+    >>> tfbs_responses = cbc.get(category='feature', subcategory='geneId', query_id='BRCA1', resource='tfbs')
     >>> tfbs_responses[0]['result'][0]['tfName']
     'E2F4'
 

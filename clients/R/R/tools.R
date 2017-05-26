@@ -89,16 +89,16 @@ createGeneModel <- function(object, region=NULL){
     categ <- "genomic"
     subcateg<- "region"
     ids <- region
-    resource <- "gene"
+    resource <- "geneId"
     data <- fetchCellbase(file=NULL,host=host, version=version, meta=NULL, species=species, categ=categ, subcateg=subcateg,
                           ids=ids, resource=resource, filters=NULL)
     rt4 <- data[,c(1,2,11)]
     rt4 <- as.data.table(rt4)
     #rt4 <- as.data.table(rt4)
-    setnames(rt4,  c("id", "name"), c("gene", "symbol"))
+    setnames(rt4,  c("id", "name"), c("geneId", "symbol"))
     hope <- tidyr::unnest(rt4, transcripts) 
-    setnames(hope, c("id", "biotype"), c("transcript","feature"))
-    hope <- hope[,c("gene", "symbol","transcript", "exons"), with=FALSE]
+    setnames(hope, c("id", "biotype"), c("transcriptId","feature"))
+    hope <- hope[,c("geneId", "symbol","transcriptId", "exons"), with=FALSE]
     hope <- tidyr::unnest(hope, exons)
     setnames(hope, c("id"), c("exon"))
     

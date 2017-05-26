@@ -38,6 +38,6 @@ http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
    cb <- CellBaseR()
-   res <- cbGet(object=cb, category="feature", subcategory="gene", ids="TET1", resource="info")
+   res <- cbGet(object=cb, category="feature", subcategory="geneId", ids="TET1", resource="info")
 }
 

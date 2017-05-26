@@ -173,7 +173,7 @@
                     this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/regulatory';
                     let _this = this;
 
-                    this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {})
+                    this.cellbaseClient.get('genomic', 'region', this.region, 'geneId', {}, {})
                         .then(function (response) {
                             _this.genes = response.response[0].result;
                             _this.geneCount = _this.genes.length;
@@ -307,7 +307,7 @@
                     })
                 });
                 tracks.push(this.sequence);
-                this.gene = new GeneTrack({
+                this.geneId = new GeneTrack({
                     title: 'Gene',
                     minHistogramRegionSize: 20000000,
                     maxLabelRegionSize: 10000000,
@@ -323,7 +323,7 @@
                     dataAdapter: new CellBaseAdapter({
                         category: "genomic",
                         subCategory: "region",
-                        resource: "gene",
+                        resource: "geneId",
                         species: this.genomeViewer.species,
                         params: {
                             exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
@@ -333,15 +333,15 @@
                         }
                     })
                 });
-                tracks.push(this.gene);
-                var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
+                tracks.push(this.geneId);
+                var renderer = new FeatureRenderer(FEATURE_TYPES.geneId);
                 renderer.on({
                     'feature:click': function(event) {
                         // feature click event example
                         console.log(event)
                     }
                 });
-                var gene = new FeatureTrack({
+                var geneId = new FeatureTrack({
 //        title: 'Gene overview',
                     minHistogramRegionSize: 20000000,
                     maxLabelRegionSize: 10000000,
@@ -350,7 +350,7 @@
                     dataAdapter: new CellBaseAdapter({
                         category: "genomic",
                         subCategory: "region",
-                        resource: "gene",
+                        resource: "geneId",
                         params: {
                             exclude: 'transcripts,chunkIds'
                         },
@@ -360,7 +360,7 @@
                         }
                     })
                 });
-                this.genomeViewer.addOverviewTrack(gene);
+                this.genomeViewer.addOverviewTrack(geneId);
                 this.snp = new FeatureTrack({
                     title: 'SNP',
                     featureType: 'SNP',
@@ -392,7 +392,7 @@
 //                    dataAdapter: new FeatureTemplateAdapter({
 //                        multiRegions: true,
 //                        histogramMultiRegions: false,
-//                        uriTemplate: 'https://dcc.icgc.org/api/browser/gene?segment={region}&resource=gene',
+//                        uriTemplate: 'https://dcc.icgc.org/api/browser/geneId?segment={region}&resource=geneId',
 //                        cacheConfig: {
 //                            chunkSize: 100000
 //                        }
