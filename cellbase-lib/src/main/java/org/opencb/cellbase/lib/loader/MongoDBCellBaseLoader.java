@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.loader;
 
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
@@ -541,10 +542,47 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
+
     public int load(List<Document> batch) {
-        // TODO: queryOptions?
-        QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
-        return result.first().getInsertedCount();
+        // End recursive calls
+        if (batch.size() > 0) {
+            try {
+                // TODO: queryOptions?
+                QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
+                return result.first().getInsertedCount();
+            } catch (BsonSerializationException e) {
+                // End recursive calls
+                if (batch.size() == 1) {
+                    logger.warn("Found document raising load problems: {}...", batch.get(0).toJson().substring(0, 1000));
+                    if (data.equalsIgnoreCase("variation")) {
+                        Document annotationDocument = (Document) batch.get(0).get("annotation");
+                        if (annotationDocument.get("xrefs") != null && ((List) annotationDocument.get("xrefs")).size() > 3) {
+                            logger.warn("Truncating xrefs array");
+                            annotationDocument.put("xrefs", ((List) annotationDocument.get("xrefs")).subList(0, 3));
+                            return load(batch);
+                        } else if (annotationDocument.get("additionalAttributes") != null) {
+                            logger.warn("Removing additionalAttributes field");
+                            annotationDocument.remove("additionalAttributes");
+                            return load(batch);
+                        } else {
+                            logger.warn("Skipping and continuing with the load");
+                            return 0;
+                        }
+                    } else {
+                        logger.warn("Skipping and continuing with the load");
+                        return 0;
+                    }
+                }
+                logger.warn("Found problems loading document batch, splitting in two and trying recursive load");
+                // TODO: queryOptions?
+                int resultLeft = load(batch.subList(0, batch.size() / 2));
+                // TODO: queryOptions?
+                int resultRight = load(batch.subList(batch.size() / 2, batch.size()));
+                return resultLeft + resultRight;
+            }
+        } else {
+            return 0;
+        }
     }
 
     private void addChunkId(Document document) {

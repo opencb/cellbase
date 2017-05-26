@@ -175,11 +175,28 @@ public class VariantWSServer extends GenericRestWSServer {
                                                                 + "normalized or not. Normalization process includes "
                                                                 + "decomposing MNVs", allowableValues = "false,true",
                                                         defaultValue = "false", required = false) Boolean normalize,
+                                                @QueryParam("phased")
+                                                    @ApiParam(name = "phased",
+                                                            value = "Boolean to indicate whether phase should be considered "
+                                                                    + "during the annotation process",
+                                                            allowableValues = "false,true", defaultValue = "false",
+                                                            required = false) Boolean phased,
                                                 @QueryParam("useCache")
                                                     @ApiParam(name = "useCache",
                                                             value = "Boolean to indicate whether cached annotation should be"
                                                                     + " used or not", allowableValues = "false,true",
-                                                            defaultValue = "false", required = false) Boolean useCache) {
+                                                            defaultValue = "false", required = false) Boolean useCache,
+                                                @QueryParam("imprecise")
+                                                    @ApiParam(name = "imprecise",
+                                                            value = "Boolean to indicate whether imprecise search must be"
+                                                                    + " used or not", allowableValues = "false,true",
+                                                            defaultValue = "true", required = false) Boolean imprecise,
+                                                @QueryParam("svExtraPadding")
+                                                    @ApiParam(name = "svExtraPadding",
+                                                            value = "Integer to optionally provide the size of the extra"
+                                                                    + " padding to be used when annotating imprecise (or not)"
+                                                                    + " structural variants",
+                                                            defaultValue = "0", required = false) Boolean svExtraPadding) {
 
         try {
             parseQueryParams();
@@ -193,6 +210,15 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (useCache != null) {
                 queryOptions.put("useCache", useCache);
+            }
+            if (phased != null) {
+                queryOptions.put("phased", phased);
+            }
+            if (imprecise != null) {
+                queryOptions.put("imprecise", imprecise);
+            }
+            if (svExtraPadding != null) {
+                queryOptions.put("svExtraPadding", svExtraPadding);
             }
             VariantAnnotationCalculator variantAnnotationCalculator =
                     new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
@@ -234,10 +260,21 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        allowableValues = "false,true", defaultValue = "false",
                                                        required = false) Boolean phased,
                                                @QueryParam("useCache")
-                                               @ApiParam(name = "useCache",
-                                                       value = "Boolean to indicate whether cached annotation should be"
-                                                               + " used or not", allowableValues = "false,true",
-                                                       defaultValue = "false", required = false) Boolean useCache) {
+                                                   @ApiParam(name = "useCache",
+                                                           value = "Boolean to indicate whether cached annotation should be"
+                                                                   + " used or not", allowableValues = "false,true",
+                                                           defaultValue = "false", required = false) Boolean useCache,
+                                               @QueryParam("imprecise")
+                                                   @ApiParam(name = "imprecise",
+                                                           value = "Boolean to indicate whether imprecise search must be"
+                                                                   + " used or not", allowableValues = "false,true",
+                                                           defaultValue = "true", required = false) Boolean imprecise,
+                                               @QueryParam("svExtraPadding")
+                                                   @ApiParam(name = "svExtraPadding",
+                                                           value = "Integer to optionally provide the size of the extra"
+                                                                   + " padding to be used when annotating imprecise (or not)"
+                                                                   + " structural variants",
+                                                           defaultValue = "0", required = false) Integer svExtraPadding) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
@@ -251,6 +288,12 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (phased != null) {
                 queryOptions.put("phased", phased);
+            }
+            if (imprecise != null) {
+                queryOptions.put("imprecise", imprecise);
+            }
+            if (svExtraPadding != null) {
+                queryOptions.put("svExtraPadding", svExtraPadding);
             }
             logger.debug(queryOptions.toJson());
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =

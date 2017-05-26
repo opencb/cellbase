@@ -33,6 +33,6 @@ http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
    cb <- CellBaseR()
-   res <- cbTfbsClient(object=cb, ids="PAX1", resource="gene")
+   res <- cbTfbsClient(object=cb, ids="PAX1", resource="geneId")
 }
 

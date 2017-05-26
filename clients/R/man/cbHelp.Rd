@@ -24,6 +24,6 @@ This is a convience function to get help on cellbase methods
 }
 \examples{
 cb <- CellBaseR()
-cbHelp(cb, category="feature", subcategory="gene")
+cbHelp(cb, category="feature", subcategory="geneId")
 }
 
