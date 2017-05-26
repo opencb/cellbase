@@ -536,6 +536,9 @@ public class VariantAnnotationCalculator {
         if (futureRepeatsAnnotator != null) {
             futureRepeatsAnnotator.processResults(repeatsFuture, variantAnnotationResultList);
         }
+        if (futureCytobandAnnotator != null) {
+            futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationResultList);
+        }
 //        if (futureHgvsAnnotator != null) {
 //            futureHgvsAnnotator.processResults(hgvsFuture, variantAnnotationResultList);
 //        }
@@ -1231,15 +1234,15 @@ public class VariantAnnotationCalculator {
             return variationQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult<Variant>>> conservationFuture,
+        public void processResults(Future<List<QueryResult<Variant>>> variationFuture,
                                    List<QueryResult<VariantAnnotation>> variantAnnotationResultList,
                                    Set<String> annotatorSet) throws InterruptedException, ExecutionException {
 //            try {
-            while (!conservationFuture.isDone()) {
+            while (!variationFuture.isDone()) {
                 Thread.sleep(1);
             }
 
-            List<QueryResult<Variant>> variationQueryResults = conservationFuture.get();
+            List<QueryResult<Variant>> variationQueryResults = variationFuture.get();
             if (variationQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResultList.size(); i++) {
                     Variant preferredVariant = getPreferredVariant(variationQueryResults.get(i));

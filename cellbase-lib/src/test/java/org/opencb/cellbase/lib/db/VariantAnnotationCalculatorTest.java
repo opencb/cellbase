@@ -82,10 +82,10 @@ public class VariantAnnotationCalculatorTest {
     public void testGetAnnotationByVariantList() throws Exception {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(getClass().getResource("/variant-annotation-test.json.gz").getFile()))));
-        String[] variantArray = {"2:114210741:TGATGCT:AGATGGC", "1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC",
+        String[] variantArray = {"1:1006266-1019663:<DEL>, 2:114210741:TGATGCT:AGATGGC", "1:40768842:C:G", "2:114340663:GCTGGGCATCC:ACTGGGCATCC",
                 "19:45411941:T:C", "1:819287-820859:<CN12>"};
         String line = reader.readLine();
-        QueryOptions queryOptions = new QueryOptions("normalize", true);
+        QueryOptions queryOptions = new QueryOptions("normalize", false);
         queryOptions.put("phased", true);
         queryOptions.put("useCache", false);
         int i = 0;
