@@ -44,6 +44,10 @@ public class DownloadProperties {
     private URLProperties iarctp53;
     private URLProperties docm;
     private URLProperties docmVersion;
+    private URLProperties dgv;
+    private URLProperties simpleRepeats;
+    private URLProperties windowMasker;
+    private URLProperties genomicSuperDups;
     private URLProperties hpo;
     private URLProperties disgenet;
     private URLProperties disgenetReadme;
@@ -247,6 +251,39 @@ public class DownloadProperties {
     public void setDocmVersion(URLProperties docmVersion) {
         this.docmVersion = docmVersion;
     }
+
+    public URLProperties getDgv() {
+        return dgv;
+    }
+
+    public void setDgv(URLProperties dgv) {
+        this.dgv = dgv;
+    }
+
+    public URLProperties getSimpleRepeats() {
+        return simpleRepeats;
+    }
+
+    public void setSimpleRepeats(URLProperties simpleRepeats) {
+        this.simpleRepeats = simpleRepeats;
+    }
+
+    public URLProperties getGenomicSuperDups() {
+        return genomicSuperDups;
+    }
+
+    public void setGenomicSuperDups(URLProperties genomicSuperDups) {
+        this.genomicSuperDups = genomicSuperDups;
+    }
+
+    public URLProperties getWindowMasker() {
+        return windowMasker;
+    }
+
+    public void setWindowMasker(URLProperties windowMasker) {
+        this.windowMasker = windowMasker;
+    }
+
     public URLProperties getHpo() {
         return hpo;
     }

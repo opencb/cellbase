@@ -11,7 +11,7 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a character vector of the ids to be queried, any crossrefereable ID, gene names, transcript ids, 
+\item{ids}{a character vector of the ids to be queried, any crossrefereable ID, geneId names, transcriptId ids,
 uniprot ids,etc.}
 
 \item{resource}{a character vector to specify the resource to be queried}

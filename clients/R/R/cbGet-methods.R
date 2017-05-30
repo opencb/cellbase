@@ -14,7 +14,7 @@
 #' @return an object of class CellBaseResponse which holds a dataframe
 #' @examples
 #'    cb <- CellBaseR()
-#'    res <- cbGet(object=cb, category="feature", subcategory="gene", ids="TET1", resource="info")
+#'    res <- cbGet(object=cb, category="feature", subcategory="geneId", ids="TET1", resource="info")
 #' @export
 setMethod("cbGet", "CellBaseR", definition = function(object, category, 
                                                       subcategory, ids, resource
@@ -27,7 +27,7 @@ setMethod("cbGet", "CellBaseR", definition = function(object, category,
   ids <- ids
   resource <- resource
   if (!is.null(filters)) {
-    filters <- c(genome=filters@genome, gene=filters@gene,region=filters@region,rs=filters@rs,so=filters@so,
+    filters <- c(genome=filters@genome, geneId=filters@geneId,region=filters@region,rs=filters@rs,so=filters@so,
                  phenotype=filters@phenotype,limit=filters@limit, include=filters@include, exclude=filters@exclude,
                  limit=filters@limit)
     filters <- paste(filters, collapse = "&")

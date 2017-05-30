@@ -2,7 +2,7 @@
 
 
 !3 Notes
-Change the following variables in Suite Set Up page to run tests against own installtion:
+Change the following variables in Suite Set Up page to run tests against desired installtion:
 
  * CELLBASE_WAR 
  * CELLBASE_VERSION 

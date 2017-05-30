@@ -298,7 +298,8 @@ public class GenericRestWSServer implements IWSServer {
             mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
             JsonSchema jsonSchema = visitor.finalSchema();
 
-            return createOkResponse(jsonSchema);
+            return createOkResponse(new QueryResult<>(clazz.toString(), 0, 1, 1, null, null,
+                    Collections.singletonList(jsonSchema)));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

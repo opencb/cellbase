@@ -2,6 +2,7 @@
 Test
 ---
 !define TEST_SYSTEM {slim}
+
 !3 Get Chromosome List
 | Table: Rest Fixture | $baseURL_hsapiens | with-compareJSON.js |
 | GET | /genomic/chromosome/list | 200 | Content-Type : application/json | !- /* javascript */

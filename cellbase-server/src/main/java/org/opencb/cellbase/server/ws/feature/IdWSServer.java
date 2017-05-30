@@ -124,15 +124,16 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+
+            Query query = new Query();
+            query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
             if (dbname != null && !dbname.isEmpty()) {
-                queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
+                query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
             }
-            List<Query> queries = createQueries(ids, XRefDBAdaptor.QueryParams.ID.key());
-            List<QueryResult> queryResultList = xRefDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResultList.get(i).setId((String) queries.get(i).get(XRefDBAdaptor.QueryParams.ID.key()));
-            }
-            return createOkResponse(queryResultList);
+//            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
+            QueryResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
+            queryResult.setId(ids);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

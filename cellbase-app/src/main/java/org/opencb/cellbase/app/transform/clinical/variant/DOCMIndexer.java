@@ -58,13 +58,17 @@ public class DOCMIndexer extends ClinicalIndexer {
             ex.printStackTrace();
         } finally {
             logger.info("Done");
-            this.printSummary();
+//            this.printSummary();
         }
 
     }
 
+    private void updateRocksDB(Variant variant) throws RocksDBException {
+        int a = 1;
+    }
+
     private Variant parseVariant(String line) throws IOException {
-        Map<String, String> map = (HashMap<String,String>) new ObjectMapper().readValue(line, HashMap.class);
+        Map<String, String> map = (HashMap<String, String>) new ObjectMapper().readValue(line, HashMap.class);
         if (assembly.equalsIgnoreCase((String) map.get("reference_version"))) {
             Variant variant = new Variant((String) map.get("chromosome"), Integer.valueOf((String) map.get("start")),
                     (String) map.get("reference"), (String) map.get("alternate"));

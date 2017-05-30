@@ -58,8 +58,7 @@ public class VariationDataReader implements DataReader<Variant> {
             // New variants in the variation collection created during the update of the frequencies may not have
             // the variant type set and this might cause NPE
             if (variant.getType() == null) {
-                variant.setType(variant.inferType(variant.getReference(), variant.getAlternate(),
-                        variant.getLength()));
+                variant.setType(variant.inferType(variant.getReference(), variant.getAlternate()));
             }
             return Collections.singletonList(variant);
         } else {

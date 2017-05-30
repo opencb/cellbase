@@ -28,7 +28,7 @@ documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
    cb <- CellBaseR()
-   cbParam <- CellBaseParam(gene=c("TP73","TET1"))
+   cbParam <- CellBaseParam(geneId=c("TP73","TET1"))
    res <- cbClinicalClient(object=cb,filters=cbParam)
 }
 

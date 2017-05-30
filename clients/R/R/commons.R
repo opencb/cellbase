@@ -209,7 +209,7 @@ parseResponse <- function(content,parallel=FALSE,num_threads=num_threads){
 #' @return documentation about avaiable resources or required parameters
 #' @examples 
 #' cb <- CellBaseR()
-#' cbHelp(cb, category="feature", subcategory="gene")
+#' cbHelp(cb, category="feature", subcategory="geneId")
 #' @export
 cbHelp <- function(object, category, subcategory, resource=NULL){
   host <- object@host

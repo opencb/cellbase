@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
@@ -169,6 +170,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
                 dbAdaptor = null;
                 break;
+            case "svs":
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
+                break;
             case "cadd":
 ////                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
                 dbAdaptor = null;
@@ -223,6 +230,10 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "clinical_variants":
                 dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
+            case "repeats":
+                dbAdaptor = null;
+//                collectionName = "protein_functional_prediction";
+                break;
             case "metadata":
                 dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
@@ -248,6 +259,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 collection = "gene";
                 break;
             case "variation":
+                collection = "variation";
+                break;
+            case "svs":
                 collection = "variation";
                 break;
             case "cadd":
@@ -289,6 +303,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "metadata":
                 collection = "metadata";
                 break;
+            case "repeats":
+                collection = "repeats";
+                break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
         }
@@ -314,6 +331,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     break;
                 case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
+                    break;
+                case "repeats":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE};
                     break;
                 case "conservation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
@@ -663,10 +683,47 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
+
     public int load(List<Document> batch) {
-        // TODO: queryOptions?
-        QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
-        return result.first().getInsertedCount();
+        // End recursive calls
+        if (batch.size() > 0) {
+            try {
+                // TODO: queryOptions?
+                QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
+                return result.first().getInsertedCount();
+            } catch (BsonSerializationException e) {
+                // End recursive calls
+                if (batch.size() == 1) {
+                    logger.warn("Found document raising load problems: {}...", batch.get(0).toJson().substring(0, 1000));
+                    if (data.equalsIgnoreCase("variation")) {
+                        Document annotationDocument = (Document) batch.get(0).get("annotation");
+                        if (annotationDocument.get("xrefs") != null && ((List) annotationDocument.get("xrefs")).size() > 3) {
+                            logger.warn("Truncating xrefs array");
+                            annotationDocument.put("xrefs", ((List) annotationDocument.get("xrefs")).subList(0, 3));
+                            return load(batch);
+                        } else if (annotationDocument.get("additionalAttributes") != null) {
+                            logger.warn("Removing additionalAttributes field");
+                            annotationDocument.remove("additionalAttributes");
+                            return load(batch);
+                        } else {
+                            logger.warn("Skipping and continuing with the load");
+                            return 0;
+                        }
+                    } else {
+                        logger.warn("Skipping and continuing with the load");
+                        return 0;
+                    }
+                }
+                logger.warn("Found problems loading document batch, splitting in two and trying recursive load");
+                // TODO: queryOptions?
+                int resultLeft = load(batch.subList(0, batch.size() / 2));
+                // TODO: queryOptions?
+                int resultRight = load(batch.subList(batch.size() / 2, batch.size()));
+                return resultLeft + resultRight;
+            }
+        } else {
+            return 0;
+        }
     }
 
     private void addChunkId(Document document) {
@@ -741,6 +798,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "clinical_variants":
                 indexFileName = "clinical-indexes.js";
+            case "repeats":
+                indexFileName = "repeat-indexes.js";
                 break;
             default:
                 break;

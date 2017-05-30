@@ -80,7 +80,7 @@ res <- cbData(object = res)
 str(res,2)
 # as you can see the res dataframe also contains a transcriots column 
 # which is in fact a list column of nested dataframes, to get the
-# trasnscripts data.frame for first gene
+# trasnscripts data.frame for first geneId
 TET1_transcripts <- res$transcripts[[1]]
 str(TET1_transcripts,1)
 ```
@@ -114,7 +114,7 @@ str(res2, 1)
 ```
 
 A very powerfull feature of cellbaseR is ability to fetch a wealth of clinical 
-data, as well as abiliy to fiter these data by gene, phenotype, rs, etc…
+data, as well as abiliy to fiter these data by geneId, phenotype, rs, etc…
 
 ### cbClinical
 
@@ -123,7 +123,7 @@ library(cellbaseR)
 cb <- CellBaseR()
 # First we have to specify aour filters, we do that by creating an object of
 # class CellbaseParam
-cbparam <- CellBaseParam(gene="TET1", genome="GRCh38")
+cbparam <- CellBaseParam(geneId="TET1", genome="GRCh38")
 cbparam
 # Note that cbClinical does NOT require any Ids to be passed, only the filters
 # and of course the CellbaseQuery object
@@ -136,7 +136,7 @@ str(res,1)
 
 # CellbaseR utilities
 ## CreateGeneModel 
-A usefull utility for fast building of gene models, compatible with Gviz 
+A usefull utility for fast building of geneId models, compatible with Gviz
 package for genomic visualization
 
 ```{r,message=FALSE, warning=FALSE, eval=FALSE}
