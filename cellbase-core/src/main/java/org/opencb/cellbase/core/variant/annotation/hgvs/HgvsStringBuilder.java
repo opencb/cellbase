@@ -142,7 +142,7 @@ public class HgvsStringBuilder {
 
         if (kind.equals(Kind.CODING)) {
             allele.append("c.").append(formatCdna());
-        } else if (kind.equals(Kind.NON_CODING)){
+        } else if (kind.equals(Kind.NON_CODING)) {
             allele.append("n.").append(formatCdna());
 //    elif self.kind == 'p':
 //    allele = 'p.' + self.format_protein()
