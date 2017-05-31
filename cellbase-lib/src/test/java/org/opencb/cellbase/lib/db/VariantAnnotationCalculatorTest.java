@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
@@ -262,12 +263,58 @@ public class VariantAnnotationCalculatorTest {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "repeats");
 
-        Variant variant = new Variant("1:1823634-1823770:<DEL>");
-        StructuralVariation structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
+        Variant variant = new Variant("19:78787-78807:<CN4>");
+        StructuralVariation structuralVariation = new StructuralVariation(78787, 78787,
+                78807, 78807, 0, null);
+        queryOptions.put("cnvExtraPadding", 150);
+        variant.setSv(structuralVariation);
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(9, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.hasItems(new Repeat("21279", "19", 60000, 78757, null,
+                        2f, 0.989968f, 0f, null, "genomicSuperDup")));
+
+        queryOptions.remove("cnvExtraPadding");
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("21279", "19", 60000,
+                        78757, null, 2f, 0.989968f, 0f, null,
+                        "genomicSuperDup"))));
+
+        variant = new Variant("19:78787-78807:<DEL>");
+        structuralVariation = new StructuralVariation(78787, 78787,
+                78807, 78807, 0, null);
+        queryOptions.put("svExtraPadding", 150);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(9, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.hasItems(new Repeat("21279", "19", 60000, 78757, null,
+                        2f, 0.989968f, 0f, null, "genomicSuperDup")));
+
+        queryOptions.remove("svExtraPadding");
+        queryResult = variantAnnotationCalculatorGrch38
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("21279", "19", 60000,
+                        78757, null, 2f, 0.989968f, 0f, null,
+                        "genomicSuperDup"))));
+
+        variant = new Variant("1:1823634-1823770:<DEL>");
+        structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
                 1823770 - 20, 1823770 + 10, 0, null);
         variant.setSv(structuralVariation);
         queryOptions.put("imprecise", false);
-        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculatorGrch38
+        queryResult = variantAnnotationCalculatorGrch38
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertNull(queryResult.getResult().get(0).getRepeat());
@@ -313,39 +360,47 @@ public class VariantAnnotationCalculatorTest {
         queryResult = variantAnnotationCalculatorGrch38
                 .getAnnotationByVariant(new Variant("1:1801242-1823252:<CN3>"), queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(15, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(3, queryResult.getResult().get(0).getRepeat().size());
         assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
                 new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
-                                Float.valueOf(1), Float.valueOf(50), "A", "trf"),
-                        new Repeat(null, "1", 1800743, 1800796, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1800810, 1800854, null, null,
-                                null, null, null, "windowMasker"),
                         new Repeat(null, "1", 1801025, 1801354, null, null,
                                 null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1801634, 1801700, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1801704, 1801750, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1822767, 1822794, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1822871, 1822904, null, null,
-                                null, null, null, "windowMasker"),
+                        new Repeat(null, "1", 1823242, 1823267, 1, 25f,
+                                1f, 50f, "A", "trf"),
                         new Repeat(null, "1", 1822940, 1823278, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1823332, 1823339, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1823351, 1823397, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1823460, 1823512, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1823577, 1823603, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1823664, 1823686, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1823699, 1823720, null, null,
                                 null, null, null, "windowMasker"))));
+//        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+//                new HashSet<Repeat>(Arrays.asList(
+//                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
+//                                Float.valueOf(1), Float.valueOf(50), "A", "trf"),
+//                        new Repeat(null, "1", 1800743, 1800796, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1800810, 1800854, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1801025, 1801354, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1801634, 1801700, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1801704, 1801750, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1822767, 1822794, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1822871, 1822904, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1822940, 1823278, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1823332, 1823339, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1823351, 1823397, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1823460, 1823512, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1823577, 1823603, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1823664, 1823686, null, null,
+//                                null, null, null, "windowMasker"),
+//                        new Repeat(null, "1", 1823699, 1823720, null, null,
+//                                null, null, null, "windowMasker"))));
 
     }
 

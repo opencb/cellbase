@@ -35,8 +35,6 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.opencb.cellbase.core.api.VariantDBAdaptor.CNV_DEFAULT_PADDING;
-
 //import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 //import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
 //import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -75,6 +73,8 @@ public class VariantAnnotationCalculator {
     private boolean useCache = true;
     private boolean phased = false;
     private Boolean imprecise = true;
+    private Integer svExtraPadding = 0;
+    private Integer cnvExtraPadding = 0;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private static HgvsCalculator hgvsCalculator;
@@ -567,7 +567,15 @@ public class VariantAnnotationCalculator {
 
         // Default behaviour - enable imprecise searches
         imprecise = (queryOptions.get("imprecise") != null ? (Boolean) queryOptions.get("imprecise") : true);
-        logger.debug("imprecise = {}", phased);
+        logger.debug("imprecise = {}", imprecise);
+
+        // Default behaviour - no extra padding for structural variants
+        svExtraPadding = (queryOptions.get("svExtraPadding") != null ? (Integer) queryOptions.get("svExtraPadding") : 0);
+        logger.info("svExtraPadding = {}", svExtraPadding);
+
+        // Default behaviour - no extra padding for CNV
+        cnvExtraPadding = (queryOptions.get("cnvExtraPadding") != null ? (Integer) queryOptions.get("cnvExtraPadding") : 0);
+        logger.info("cnvExtraPadding = {}", cnvExtraPadding);
     }
 
 
@@ -958,27 +966,11 @@ public class VariantAnnotationCalculator {
         int variantStart = variant.getReference() != null && variant.getReference().isEmpty()
                 ? variant.getStart() - 1 : variant.getStart();
         QueryOptions queryOptions = new QueryOptions("include", includeFields);
-//        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-//                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
 
         return geneDBAdaptor
                 .getByRegion(new Region(variant.getChromosome(), Math.max(1, variantStart - 5000),
                         variant.getEnd() + 5000), queryOptions).getResult();
-//                        variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions).getResult();
 
-//        return geneDBAdaptor.get(new Query("region", variant.getChromosome()+":"+(variantStart - 5000)+":"
-//                +(variant.getStart() + variant.getReference().length() - 1 + 5000)), queryOptions)
-//                .getResult();
-
-//        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-//                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
-//
-//        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
-//        for (Object object : queryResult.getResult()) {
-//            Gene gene = geneObjectMapper.convertValue(object, Gene.class);
-//            geneList.add(gene);
-//        }
-//        return geneList;
     }
 
     private boolean nonSynonymous(ConsequenceType consequenceType, boolean useMitochondrialCode) {
@@ -1111,8 +1103,8 @@ public class VariantAnnotationCalculator {
             for (Variant variant : variantList) {
                 if (VariantType.CNV.equals(variant.getType())) {
                     regionList.add(new Region(variant.getChromosome(),
-                            variant.getStart() - CNV_DEFAULT_PADDING,
-                            variant.getEnd() + CNV_DEFAULT_PADDING));
+                            variant.getStart() - cnvExtraPadding,
+                            variant.getEnd() + cnvExtraPadding));
                 } else if (variant.getSv() != null) {
                     regionList.add(new Region(variant.getChromosome(),
                             variant.getSv() != null && variant.getSv().getCiStartLeft() != null
@@ -1150,10 +1142,10 @@ public class VariantAnnotationCalculator {
                 break;
             case CNV:
                 if (imprecise) {
-                    regionList.add(new Region(variant.getChromosome(), variant.getStart() - CNV_DEFAULT_PADDING,
-                            variant.getStart() + CNV_DEFAULT_PADDING));
-                    regionList.add(new Region(variant.getChromosome(), variant.getEnd() - CNV_DEFAULT_PADDING,
-                            variant.getEnd() + CNV_DEFAULT_PADDING));
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart() - cnvExtraPadding,
+                            variant.getStart() + cnvExtraPadding));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd() - cnvExtraPadding,
+                            variant.getEnd() + cnvExtraPadding));
                 } else {
                     regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                     regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
@@ -1162,14 +1154,14 @@ public class VariantAnnotationCalculator {
             default:
                 if (imprecise && variant.getSv() != null) {
                     regionList.add(new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
-                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+                                    ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
                             variant.getSv().getCiStartRight() != null
-                                    ? variant.getSv().getCiStartRight() : variant.getStart()));
+                                    ? variant.getSv().getCiStartRight() + svExtraPadding : variant.getStart()));
                     regionList.add(new Region(variant.getChromosome(),
                             variant.getSv().getCiEndLeft() != null
-                                    ? variant.getSv().getCiEndLeft() : variant.getEnd(),
+                                    ? variant.getSv().getCiEndLeft() - svExtraPadding : variant.getEnd(),
                             variant.getSv().getCiEndRight() != null
-                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+                                    ? variant.getSv().getCiEndRight() + svExtraPadding : variant.getEnd()));
                 } else {
                     regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
                     regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
