@@ -196,7 +196,13 @@ public class VariantWSServer extends GenericRestWSServer {
                                                             value = "Integer to optionally provide the size of the extra"
                                                                     + " padding to be used when annotating imprecise (or not)"
                                                                     + " structural variants",
-                                                            defaultValue = "0", required = false) Boolean svExtraPadding) {
+                                                            defaultValue = "0", required = false) Integer svExtraPadding,
+                                                @QueryParam("cnvExtraPadding")
+                                                    @ApiParam(name = "cnvExtraPadding",
+                                                            value = "Integer to optionally provide the size of the extra"
+                                                                    + " padding to be used when annotating imprecise (or not)"
+                                                                    + " CNVs",
+                                                            defaultValue = "0", required = false) Integer cnvExtraPadding) {
 
         try {
             parseQueryParams();
@@ -219,6 +225,9 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (svExtraPadding != null) {
                 queryOptions.put("svExtraPadding", svExtraPadding);
+            }
+            if (cnvExtraPadding != null) {
+                queryOptions.put("cnvExtraPadding", cnvExtraPadding);
             }
             VariantAnnotationCalculator variantAnnotationCalculator =
                     new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
@@ -274,7 +283,13 @@ public class VariantWSServer extends GenericRestWSServer {
                                                            value = "Integer to optionally provide the size of the extra"
                                                                    + " padding to be used when annotating imprecise (or not)"
                                                                    + " structural variants",
-                                                           defaultValue = "0", required = false) Integer svExtraPadding) {
+                                                           defaultValue = "0", required = false) Integer svExtraPadding,
+                                               @QueryParam("cnvExtraPadding")
+                                                   @ApiParam(name = "cnvExtraPadding",
+                                                           value = "Integer to optionally provide the size of the extra"
+                                                                   + " padding to be used when annotating imprecise (or not)"
+                                                                   + " CNVs",
+                                                           defaultValue = "0", required = false) Integer cnvExtraPadding) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
@@ -294,6 +309,9 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (svExtraPadding != null) {
                 queryOptions.put("svExtraPadding", svExtraPadding);
+            }
+            if (cnvExtraPadding != null) {
+                queryOptions.put("cnvExtraPadding", cnvExtraPadding);
             }
             logger.debug(queryOptions.toJson());
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =

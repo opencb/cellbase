@@ -847,6 +847,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             queryOptions.put("svExtraPadding", svExtraPadding);
         }
 
+        // Parameter not expected to be very used - provide extra padding (bp) to be used for CNV annotation
+        if (variantAnnotationCommandOptions.buildParams.get("cnv-extra-padding") != null) {
+            Integer cnvExtraPadding = Integer.valueOf(variantAnnotationCommandOptions.buildParams.get("cnv-extra-padding"));
+            if (cnvExtraPadding < 0) {
+                throw new ParameterException("Extra padding for CNV annotation cannot be < 0, value provided: "
+                        + cnvExtraPadding + ". Please provide a value >= 0");
+            }
+            queryOptions.put("cnvExtraPadding", cnvExtraPadding);
+        }
+
         // Annotate variation collection in CellBase
         cellBaseAnnotation = variantAnnotationCommandOptions.cellBaseAnnotation;
 
