@@ -11,12 +11,14 @@ import org.apache.commons.lang.NotImplementedException;
  */
 public class HgvsStringBuilder {
 
+    enum Kind { CODING, NON_CODING }
+
     // HGVS string parts
     private String prefix;
     private String chromosome;
     private String transcriptId;
     private String geneId;
-    private String kind;
+    private Kind kind;
     private String mutationType;
     private int start;
     private int end;
@@ -63,11 +65,11 @@ public class HgvsStringBuilder {
         this.geneId = geneId;
     }
 
-    public String getKind() {
+    public Kind getKind() {
         return kind;
     }
 
-    public void setKind(String kind) {
+    public void setKind(Kind kind) {
         this.kind = kind;
     }
 
@@ -138,8 +140,10 @@ public class HgvsStringBuilder {
         allele.append(formatPrefix());  // if use_prefix else ''
         allele.append(":");
 
-        if (kind.equals("c")) {
+        if (kind.equals(Kind.CODING)) {
             allele.append("c.").append(formatCdna());
+        } else if (kind.equals(Kind.NON_CODING)){
+            allele.append("n.").append(formatCdna());
 //    elif self.kind == 'p':
 //    allele = 'p.' + self.format_protein()
 //    elif self.kind == 'g':
@@ -226,147 +230,11 @@ public class HgvsStringBuilder {
      * Generate HGVS cDNA coordinates string.
      */
     private String formatCdnaCoords() {
-        // Format coordinates.
-//        if (cdnaStart.equals(cdnaEnd)
-//                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
-//                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
-//                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
         if (cdnaStart.equals(cdnaEnd)) {
-//            || "dup".equals(mutationType)) {
-//                || cdnaEnd.getCdsPosition() < cdnaStart.getCdsPosition()  // Happens when insertion
-//                || (cdnaEnd.getCdsPosition() == cdnaStart.getCdsPosition()
-//                    && cdnaEnd.getStartStopCodonOffset() < cdnaStart.getStartStopCodonOffset())) {
             return cdnaStart.toString();
         } else {
             return cdnaStart.toString() + "_" + cdnaEnd.toString();
         }
     }
-
-
-
-//
-//    def format_protein(self):
-//            """
-//    Generate HGVS protein name.
-//    Some examples include:
-//    No change: Glu1161=
-//    Change: Glu1161Ser
-//    Frameshift: Glu1161_Ser1164?fs
-//        """
-//                if (self.start == self.end and
-//    self.ref_allele == self.ref2_allele == self.alt_allele):
-//            # Match.
-//            # Example: Glu1161=
-//    pep_extra = self.pep_extra if self.pep_extra else '='
-//            return self.ref_allele + str(self.start) + pep_extra
-//
-//    elif (self.start == self.end and
-//                    self.ref_allele == self.ref2_allele and
-//                    self.ref_allele != self.alt_allele):
-//            # Change.
-//            # Example: Glu1161Ser
-//            return (self.ref_allele + str(self.start) +
-//    self.alt_allele + self.pep_extra)
-//
-//    elif self.start != self.end:
-//            # Range change.
-//            # Example: Glu1161_Ser1164?fs
-//            return (self.ref_allele + str(self.start) + '_' +
-//    self.ref2_allele + str(self.end) +
-//    self.pep_extra)
-//
-//            else:
-//    raise NotImplementedError('protein name formatting.')
-//
-//    def format_coords(self):
-//            """
-//    Generate HGVS cDNA coordinates string.
-//        """
-//                # Format coordinates.
-//            if self.start == self.end:
-//            return str(self.start)
-//        else:
-//                return "%s_%s" % (self.start, self.end)
-//
-//    def format_genome(self):
-//            """
-//    Generate HGVS genomic allele.
-//    Som examples include:
-//    Substitution: 1000100A>T
-//    Indel: 1000100_1000102delATG
-//        """
-//                return self.format_coords() + self.format_dna_allele()
-//
-//    def get_coords(self, transcriptId=None):
-//            """Return genomic coordinates of reference allele."""
-//            if self.kind == 'c':
-//    chrom = transcriptId.tx_position.chrom
-//            start = cdna_to_genomic_coord(transcriptId, self.cdna_start)
-//    end = cdna_to_genomic_coord(transcriptId, self.cdna_end)
-//
-//            if not transcriptId.tx_position.is_forward_strand:
-//            if end > start:
-//    raise AssertionError(
-//                        "cdna_start cannot be greater than cdna_end")
-//    start, end = end, start
-//            else:
-//                    if start > end:
-//    raise AssertionError(
-//                        "cdna_start cannot be greater than cdna_end")
-//
-//            if self.mutation_type == "ins":
-//            # Inserts have empty interval.
-//            if start < end:
-//    start += 1
-//    end -= 1
-//            else:
-//    end = start - 1
-//
-//    elif self.mutation_type == "dup":
-//    end = start - 1
-//
-//    elif self.kind == 'g':
-//    chrom = self.chrom
-//            start = self.start
-//    end = self.end
-//
-//        else:
-//    raise NotImplementedError(
-//                'Coordinates are not available for this kind of HGVS name "%s"'
-//                        % self.kind)
-//
-//        return chrom, start, end
-//
-//    def get_vcf_coords(self, transcriptId=None):
-//            """Return genomic coordinates of reference allele in VCF-style."""
-//    chrom, start, end = self.get_coords(transcriptId)
-//
-//            # Inserts and deletes require left-padding by 1 base
-//        if self.mutation_type in ("=", ">"):
-//    pass
-//    elif self.mutation_type in ("del", "ins", "dup", "delins"):
-//            # Indels have left-padding.
-//            start -= 1
-//            else:
-//    raise NotImplementedError("Unknown mutation_type '%s'" %
-//                              self.mutation_type)
-//        return chrom, start, end
-//
-//    def get_ref_alt(self, is_forward_strand=True):
-//            """Return reference and alternate alleles."""
-//            if self.kind == 'p':
-//    raise NotImplementedError(
-//                'get_ref_alt is not implemented for protein HGVS names')
-//    alleles = [self.ref_allele, self.alt_allele]
-//
-//            # Represent duplications are inserts.
-//            if self.mutation_type == "dup":
-//    alleles[0] = ""
-//    alleles[1] = alleles[1][:len(alleles[1]) / 2]
-//
-//            if is_forward_strand:
-//            return alleles
-//        else:
-//                return tuple(map(revcomp, alleles))
 
 }
