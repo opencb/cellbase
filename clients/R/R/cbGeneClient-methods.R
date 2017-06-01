@@ -1,12 +1,12 @@
 ################################################################################
-#' A method to query gene data from Cellbase web services.
+#' A method to query geneId data from Cellbase web services.
 #' @details Please, for details on possible values for the parameters 
 #' and  additional filters of this function refer to
 #'  https://github.com/opencb/cellbase/wiki and the RESTful API 
 #' documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 #' @aliases cbGeneClient
 #' @param object an object of class CellBaseR
-#' @param ids a character vector of gene ids to be queried
+#' @param ids a character vector of geneId ids to be queried
 #' @param resource a character vector to specify the resource to be queried
 #' @param filters an object of class CellBaseParam specifying additional filters
 #'  for the CellBaseR
@@ -25,11 +25,11 @@ setMethod("cbGeneClient", "CellBaseR", definition = function(object, ids,
     species <- object@species
     version <- object@version
     categ <- "feature"
-    subcateg<- "gene"
+    subcateg<- "geneId"
     ids <- ids
     resource <- resource
     if (!is.null(filters)) {
-        filters <- c(genome=filters@genome, gene=filters@gene,
+        filters <- c(genome=filters@genome, geneId=filters@geneId,
                      region=filters@region, rs=filters@rs,so=filters@so,
                      phenotype=filters@phenotype, limit=filters@limit, 
                      include=filters@include, exclude=filters@exclude,

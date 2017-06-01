@@ -5,6 +5,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.commons.utils.CryptoUtils;
 
 import java.util.*;
@@ -342,6 +343,7 @@ public class VariantAnnotationUtils {
         COMPLEMENTARY_NT.put('C', 'G');
         COMPLEMENTARY_NT.put('G', 'C');
         COMPLEMENTARY_NT.put('T', 'A');
+        COMPLEMENTARY_NT.put('N', 'N');
 
         POLYPHEN_DESCRIPTIONS.put(0, "probably damaging");
         POLYPHEN_DESCRIPTIONS.put(1, "possibly damaging");
@@ -489,5 +491,25 @@ public class VariantAnnotationUtils {
         return stringBuilder.append(chromosome);
     }
 
+    public static VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
+        if (variant.getType() == null) {
+            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
+        }
+        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
+        // FIXME: insertions and deletions
+        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+            if (variant.getReference().isEmpty()) {
+//                variant.setType(VariantType.INSERTION);
+                return VariantType.INSERTION;
+            } else if (variant.getAlternate().isEmpty()) {
+//                variant.setType(VariantType.DELETION);
+                return VariantType.DELETION;
+            } else {
+                return VariantType.MNV;
+            }
+        }
+        return variant.getType();
+//        return getVariantType(variant.getReference(), variant.getAlternate());
+    }
 
 }

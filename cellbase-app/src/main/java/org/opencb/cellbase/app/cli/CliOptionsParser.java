@@ -322,10 +322,10 @@ public class CliOptionsParser {
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
         public String url = "http://bioinfo.hpc.cam.ac.uk:80/cellbase";
 
-        @Parameter(names = {"--include"}, description = "Comma separated list of annotation types to be included. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband}", required = false)
+        @Parameter(names = {"--include"}, description = "Comma separated list of annotation types to be included. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband, repeats, hgvs}", required = false)
         public String include;
 
-        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotation types to be excluded. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband}", required = false)
+        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotation types to be excluded. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband, repeats, hgvs}", required = false)
         public String exclude;
 
         @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used for loading", required = false, arity = 1)
@@ -394,12 +394,20 @@ public class CliOptionsParser {
                 " By default phased annotation is not enabled.", required = false, arity = 0)
         public boolean phased;
 
-        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
+                + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
+                + "documents that include lists of population frequencies objects. Will allow annotating the input file "
+                + "(-i) with the population frequencies present in this json file; sv-extra-padding=Integer to optionally "
+                + "provide the size of the extra padding to be used when annotating imprecise (or not) "
+                + "structural variants}; cnv-extra-padding=Integer to optionally provide the size of the extra padding "
+                + "to be used when annotating imprecise (or not) structural variants}")
         public Map<String, String> buildParams;
 
         public VariantAnnotationCommandOptions() {
             buildParams = new HashMap<>();
             buildParams.put("population-frequencies", null);
+            buildParams.put("sv-extra-padding", "0");
+            buildParams.put("cnv-extra-padding", "0");
         }
 
     }

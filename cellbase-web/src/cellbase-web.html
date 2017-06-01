@@ -16,7 +16,7 @@
 
 <link rel="import" href="components/shared/cellbase-species-menu.html">
 <link rel="import" href="components/core/cellbase-genomic-panel.html">
-<link rel="import" href="components/core/cellbase-gene-panel.html">
+<link rel="import" href="components/core/cellbase-geneId-panel.html">
 <link rel="import" href="components/core/cellbase-regulation-panel.html">
 <link rel="import" href="components/variation/cellbase-variation-panel.html">
 <link rel="import" href="components/variation/cellbase-clinical-panel.html">
@@ -130,7 +130,7 @@
                         <span style="font-size:50px; text-align: center">CellBase Web</span>
                         <br><br><br>
                         <input type="text" class="form-control" id="welcomeSearchTextBox" list="json-datalist" style="text-align: center; height: 45px"
-                               placeholder="Search for a gene, transcript, variant, variant or region" on-keyup="triggerSearch">
+                               placeholder="Search for a geneId, transcriptId, variant, variant or region" on-keyup="triggerSearch">
                         <datalist id="json-datalist">
                             <template is="dom-repeat" items="{{autocompleteData}}">
                                 <option value="{{item.name}}">
@@ -154,7 +154,7 @@
                         <br><br>
                         To cope with all these problems we have designed and developed a NoSQL database that
                         integrates the most relevant biological information about genomic features and proteins,
-                        gene expression regulation, functional annotation, genomic variation and systems biology
+                        geneId expression regulation, functional annotation, genomic variation and systems biology
                         information. We use the most relevant repositories such as Ensembl, Uniprot, ClinVar,
                         COSMIC or IntAct among many others.
                         <br><br>
@@ -182,9 +182,9 @@
                     <h2 style="margin-left: 15px;">Genomic Region</h2>
                     <cellbase-genomic-panel cellbase-client="{{cellbaseClient}}" region="{{region}}"></cellbase-genomic-panel>
                 </div>
-                <div class="collapse content" id="gene">
+                <div class="collapse content" id="geneId">
                     <h2 style="margin-left: 15px;">Gene/Transcript</h2>
-                    <cellbase-gene-panel cellbase-client="{{cellbaseClient}}" gene-search="{{geneId}}"></cellbase-gene-panel>
+                    <cellbase-geneId-panel cellbase-client="{{cellbaseClient}}" geneId-search="{{geneId}}"></cellbase-geneId-panel>
                 </div>
                 <!--<div class="collapse content" id="transcriptPanel">-->
                     <!--Transcript-->
@@ -334,7 +334,7 @@
             triggerSearch: function (e) {
                 let value = "";
 
-                // Autocomplete for gene
+                // Autocomplete for geneId
                 let _this = this;
                 if (typeof e !== "undefined" && typeof e.target.value !== "undefined") {
                     if (e.target.value.length > 2) {
@@ -363,7 +363,7 @@
                         this.tool = "variantAnnotation";
                     } else {
                         this.geneId = value;
-                        this.tool = "gene";
+                        this.tool = "geneId";
                     }
 
                     $('.content').hide();
