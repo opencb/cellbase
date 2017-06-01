@@ -11,7 +11,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 
 /**
  * Created by fjlopez on 05/05/17.
@@ -98,31 +97,21 @@ public class RepeatsParser extends CellBaseParser {
 
             ProgressLogger progressLogger = new ProgressLogger("Parsed GSD lines:",
                     () -> countFileLines(filePath), 200).setBatchSize(10000);
-            ArrayList<Repeat> duplications;
             while (line != null) {
-                duplications = parseGSDLine(line);
-                serializer.serialize(duplications.get(0));
-                serializer.serialize(duplications.get(1));
+                serializer.serialize(parseGSDLine(line));
                 line = bufferedReader.readLine();
                 progressLogger.increment(1);
             }
         }
     }
 
-    private ArrayList<Repeat> parseGSDLine(String line) {
+    private Repeat parseGSDLine(String line) {
         String[] parts = line.split("\t");
 
-        Repeat dupFirst = new Repeat(parts[11], Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
-                Integer.valueOf(parts[3]), null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]), null, GSD);
+        return new Repeat(parts[11], Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
+                Integer.valueOf(parts[3]), null, 2f, Float.valueOf(parts[26]), null,
+                null, GSD);
 
-        Repeat dupSecond = new Repeat(parts[11], Region.normalizeChromosome(parts[7]), Integer.valueOf(parts[8]) + 1,
-                Integer.valueOf(parts[9]), null, 2f, Float.valueOf(parts[26]), Float.valueOf(parts[5]), null, GSD);
-
-        ArrayList<Repeat> dups = new ArrayList<Repeat>(2);
-        dups.add(dupFirst);
-        dups.add(dupSecond);
-
-        return dups;
     }
 
     private void parseWmFile(Path filePath) throws IOException {
