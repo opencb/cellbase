@@ -161,8 +161,19 @@ public class ClinVarIndexer extends ClinicalIndexer {
             }
         }
 
+        VariantClassification variantClassification = null;
+        if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])) {
+            if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.containsKey(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])) {
+                variantClassification = new VariantClassification(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG
+                        .get(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]), null, null, null, null);
+            } else {
+                logger.warn("No SO term found for allele origin {}. Skipping.", originString);
+            }
+        }
+
         EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
-                "https://www.ncbi.nlm.nih.gov/clinvar/variation/" + variationId, variationId, alleleOrigin, null,
+                "https://www.ncbi.nlm.nih.gov/clinvar/variation/" + variationId, variationId,
+                !alleleOrigin.isEmpty() ? alleleOrigin : null, null, genomicFeatureList,
                 );
 
         String clinicalSignificance = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])
