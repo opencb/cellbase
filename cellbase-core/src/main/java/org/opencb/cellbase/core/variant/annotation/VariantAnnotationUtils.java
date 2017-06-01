@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
+import org.opencb.biodata.models.variant.avro.AlleleOrigin;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.commons.utils.CryptoUtils;
@@ -117,9 +118,19 @@ public class VariantAnnotationUtils {
     public static final Map<Integer, String> SIFT_DESCRIPTIONS = new HashMap<>();
     public static final Map<Integer, String> POLYPHEN_DESCRIPTIONS = new HashMap<>();
     public static final Map<String, Integer> SO_SEVERITY = new HashMap<>();
+    public static final Map<String, AlleleOrigin> ORIGIN_STRING_TO_ALLELE_ORIGIN = new HashMap<>();
     public static final Set<String> CODING_SO_NAMES = new HashSet<>();
 
     static {
+
+        ///////////////////////////////////////////////////////////////////////
+        /////   ClinVar allele origins to SO terms   //////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("germline", AlleleOrigin.SO_0001778);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("maternal", AlleleOrigin.SO_0001775);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("de novo", AlleleOrigin.SO_0001781);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("paternal", AlleleOrigin.SO_0001776);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("somatic", AlleleOrigin.SO_0001777);
 
         ///////////////////////////////////////////////////////////////////////
         /////   GENETIC CODE   ////////////////////////////////////////////////

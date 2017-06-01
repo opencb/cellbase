@@ -1,11 +1,11 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variant.avro.Germline;
 import org.opencb.biodata.models.variant.avro.Somatic;
-import org.opencb.biodata.models.variant.avro.Submission;
-import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
@@ -104,9 +104,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        VariantTraitAssociation variantTraitAssociation = getVariantTraitAssociation(key);
-        addNewEntries(variantTraitAssociation, variationId, lineFields, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
+        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
+        addNewEntries(evidenceEntryList, variationId, lineFields, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
     }
 
     private void updateRocksDB(SequenceLocation sequenceLocation, PublicSetType publicSet,
@@ -115,32 +115,55 @@ public class ClinVarIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        VariantTraitAssociation variantTraitAssociation = getVariantTraitAssociation(key);
+        VariantTraitAssociation variantTraitAssociation = getEvidenceEntryList(key);
         addNewEntries(variantTraitAssociation, publicSet, traitsToEfoTermsMap);
         rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
     }
 
-    private VariantTraitAssociation getVariantTraitAssociation(byte[] key) throws RocksDBException, IOException {
+    private List<EvidenceEntry> getEvidenceEntryList(byte[] key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key);
-        VariantTraitAssociation variantTraitAssociation;
-        List<Germline> germline;
-        List<Somatic> somatic;
+        List<EvidenceEntry> evidenceEntryList;
         if (dbContent == null) {
-            variantTraitAssociation = new VariantTraitAssociation();
-            germline = new ArrayList<>();
-            somatic = new ArrayList<>();
-            variantTraitAssociation.setGermline(germline);
-            variantTraitAssociation.setSomatic(somatic);
+            evidenceEntryList = new ArrayList<>();
             numberNewVariants++;
         } else {
-            variantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
+            evidenceEntryList = mapper.readValue(dbContent, List.class);
             numberVariantUpdates++;
         }
-        return variantTraitAssociation;
+        return evidenceEntryList;
     }
 
-    private void addNewEntries(VariantTraitAssociation variantTraitAssociation, String variationId, String[] lineFields,
+    private void addNewEntries(List<EvidenceEntry> evidenceEntryList, String variationId, String[] lineFields,
                                Map<String, EFO> traitsToEfoTermsMap) {
+
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
+        // Create a set to avoid situations like germline;germline;germline
+        List<AlleleOrigin> alleleOrigin = null;
+        if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
+            Set<String> originSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN]
+                    .toLowerCase().split(";")));
+            alleleOrigin = new ArrayList<>(originSet.size());
+            for (String originString : originSet) {
+                if (VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.containsKey(originString)) {
+                    alleleOrigin.add(VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.get(originString));
+                } else {
+                    logger.warn("No SO term found for allele origin {}. Skipping.", originString);
+                }
+            }
+        }
+
+        List<GenomicFeature> genomicFeatureList = null;
+        if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])) {
+            for (String geneString : lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(",")) {
+                Map<String, String> map = new HashMap<>(1);
+                map.put("symbol", geneString);
+                genomicFeatureList.add(new GenomicFeature(FeatureTypes.Gene, null, map));
+            }
+        }
+
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
+                "https://www.ncbi.nlm.nih.gov/clinvar/variation/" + variationId, variationId, alleleOrigin, null,
+                );
 
         String clinicalSignificance = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])
                 ? null : lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN];
