@@ -22,7 +22,8 @@ public class BenchmarkTask implements
         ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception> {
 
     private FastaIndexManager fastaIndexManager;
-    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CN([0123456789]+)>)";
+//    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
+    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CNV>)";
     private VariantAnnotator variantAnnotator;
 
     public BenchmarkTask(VariantAnnotator variantAnnotator, FastaIndexManager fastaIndexManager) {
@@ -144,8 +145,11 @@ public class BenchmarkTask implements
     private List<Variant> createEmptyVariantList(List<VariantAnnotation> variantAnnotationList) {
         List<Variant> newVariantList = new ArrayList<>(variantAnnotationList.size());
         for (VariantAnnotation variantAnnotation : variantAnnotationList) {
-            newVariantList.add(new Variant(variantAnnotation.getChromosome(), variantAnnotation.getStart(),
-                    variantAnnotation.getReference(), variantAnnotation.getAlternate()));
+            Variant variant = new Variant(variantAnnotation.getChromosome(), variantAnnotation.getStart(),
+                    variantAnnotation.getEnd(), variantAnnotation.getReference(), variantAnnotation.getAlternate());
+            variant.resetType();
+            variant.resetLength();
+            newVariantList.add(variant);
         }
 
         return newVariantList;

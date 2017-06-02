@@ -5,63 +5,87 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Created by fjlopez on 22/06/15.
+ * Created by fjlopez on 09/05/17.
  */
-public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
+public class ConsequenceTypeBNDCalculator extends ConsequenceTypeCalculator {
+    private String chromosome;
+    private Integer position;
+    private boolean isIntergenic;
 
-    public ConsequenceTypeSNVCalculator() {
+    public ConsequenceTypeBNDCalculator() {
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
+                                     List<RegulatoryFeature> regulatoryRegionList) {
+        List<ConsequenceType> consequenceTypeList1 = run(inputVariant.getChromosome(), inputVariant.getStart(),
+                geneList, regulatoryRegionList);
+        Variant mate = VariantAnnotationUtils.parseBreakendFromAlternate(inputVariant.getAlternate());
+        if (mate == null) {
+            return consequenceTypeList1;
+        } else {
+            Set<ConsequenceType> result = new HashSet<>(consequenceTypeList1);
+            result.addAll(run(mate.getChromosome(), mate.getStart(), geneList, regulatoryRegionList));
+            return new ArrayList<>(result);
+        }
+    }
+
+    private List<ConsequenceType> run(String chromosome, Integer position, List<Gene> geneList,
+                                      List<RegulatoryFeature> regulatoryRegionList) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
-        variant = inputVariant;
-        boolean isIntergenic = true;
+        this.chromosome = chromosome;
+        this.position = position;
+        isIntergenic = true;
         for (Gene currentGene : geneList) {
-            gene = currentGene;
-            for (Transcript currentTranscript : gene.getTranscripts()) {
-                isIntergenic = isIntergenic && (variant.getStart() < currentTranscript.getStart()
-                        || variant.getStart() > currentTranscript.getEnd());
-                transcript = currentTranscript;
-                consequenceType = new ConsequenceType();
-                consequenceType.setGeneName(gene.getName());
-                consequenceType.setEnsemblGeneId(gene.getId());
-                consequenceType.setEnsemblTranscriptId(transcript.getId());
-                consequenceType.setStrand(transcript.getStrand());
-                consequenceType.setBiotype(transcript.getBiotype());
-                consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags() != null
-                        ? new ArrayList<>(transcript.getAnnotationFlags())
-                        : null);
-                SoNames.clear();
+            // Check this gene is in the same chromosome of current position - the gene may be here because overlaps the mate
+            if (chromosome.equals(currentGene.getChromosome())) {
+                gene = currentGene;
+                for (Transcript currentTranscript : gene.getTranscripts()) {
+                    isIntergenic = isIntergenic && (position < currentTranscript.getStart()
+                            || position > currentTranscript.getEnd());
+                    transcript = currentTranscript;
+                    consequenceType = new ConsequenceType();
+                    consequenceType.setGeneName(gene.getName());
+                    consequenceType.setEnsemblGeneId(gene.getId());
+                    consequenceType.setEnsemblTranscriptId(transcript.getId());
+                    consequenceType.setStrand(transcript.getStrand());
+                    consequenceType.setBiotype(transcript.getBiotype());
+                    consequenceType.setTranscriptAnnotationFlags(transcript.getAnnotationFlags() != null
+                            ? new ArrayList<>(transcript.getAnnotationFlags())
+                            : null);
+                    SoNames.clear();
 
-                if (transcript.getStrand().equals("+")) {
-                    // Check variant overlaps transcript start/end coordinates
-                    if (variant.getStart() >= transcript.getStart() && variant.getStart() <= transcript.getEnd()) {
-                        solvePositiveTranscript(consequenceTypeList);
-                    } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
-//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                            consequenceTypeList.add(consequenceType);
+                    if (transcript.getStrand().equals("+")) {
+                        // Check variant overlaps transcript start/end coordinates
+                        if (position >= transcript.getStart() && position <= transcript.getEnd()) {
+                            solvePositiveTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
+                                //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
-                    }
 
-                } else {
-                    // Check overlaps transcript start/end coordinates
-                    if (variant.getStart() >= transcript.getStart() && variant.getStart() <= transcript.getEnd()) {
-                        solveNegativeTranscript(consequenceTypeList);
                     } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
-                        if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
-//                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                            consequenceTypeList.add(consequenceType);
+                        // Check overlaps transcript start/end coordinates
+                        if (position >= transcript.getStart() && position <= transcript.getEnd()) {
+                            solveNegativeTranscript(consequenceTypeList);
+                        } else {
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
+                                    VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
+                            if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
+                                //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
+                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
+                                consequenceTypeList.add(consequenceType);
+                            }
                         }
                     }
                 }
@@ -84,8 +108,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         int cdnaVariantPosition = -1;
         boolean[] junctionSolution = {false, false};
 
-        if (variant.getStart() <= exon.getEnd() && variant.getStart() >= exon.getStart()) {  // Variant within the exon
-            cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
+        if (position <= exon.getEnd() && position >= exon.getStart()) {  // Variant within the exon
+            cdnaVariantPosition = cdnaExonEnd - (position - exon.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
             consequenceType.setExonNumber(exon.getExonNumber());
         }
@@ -99,10 +123,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             solveJunction(exon.getEnd() + 1, prevSpliceSite, VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_DONOR_VARIANT, junctionSolution);
 
-            if (variant.getStart() <= exon.getEnd()) {
+            if (position <= exon.getEnd()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if (variant.getStart() >= exon.getStart()) {  // Variant end within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
+                if (position >= exon.getStart()) {  // Variant end within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (position - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
                     consequenceType.setExonNumber(exon.getExonNumber());
                 }
@@ -128,8 +152,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (transcript.getGenomicCodingEnd() >= exon.getStart()) {
             firstCdsPhase = exon.getPhase();
         }
-        if (variant.getStart() <= exon.getEnd() && variant.getStart() >= exon.getStart()) {  // Variant within the exon
-            cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
+        if (position <= exon.getEnd() && position >= exon.getStart()) {  // Variant within the exon
+            cdnaVariantPosition = cdnaExonEnd - (position - exon.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
             consequenceType.setExonNumber(exon.getExonNumber());
         }
@@ -148,10 +172,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     VariantAnnotationUtils.SPLICE_DONOR_VARIANT, junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
-            if (variant.getStart() <= exon.getEnd()) {
+            if (position <= exon.getEnd()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if (variant.getStart() >= exon.getStart()) {  // Variant end within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
+                if (position >= exon.getStart()) {  // Variant end within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (position - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
                     consequenceType.setExonNumber(exon.getExonNumber());
                 }
@@ -168,11 +192,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantPosition, int firstCdsPhase) {
-        if (variant.getStart() > transcript.getGenomicCodingEnd()
+        if (position > transcript.getGenomicCodingEnd()
                 && (transcript.getEnd() > transcript.getGenomicCodingEnd()
                 || transcript.unconfirmedStart())) { // Check transcript has 3 UTR
             SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
-        } else if (variant.getStart() >= transcript.getGenomicCodingStart()) {
+        } else if (position >= transcript.getGenomicCodingStart()) {
             // Need to define a local cdnaCodingStart because may modified in two lines below
             int cdnaCodingStart = transcript.getCdnaCodingStart();
             cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantPosition, firstCdsPhase, cdnaCodingStart);
@@ -210,53 +234,58 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     referenceCodon[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon[0]);
                     referenceCodon[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon[1]);
                     referenceCodon[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodon[2]);
-                    char[] modifiedCodonArray = referenceCodon.clone();
-                    modifiedCodonArray[variantPhaseShift] =
-                            VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant.getAlternate().toCharArray()[0]);
-                    codingAnnotationAdded = true;
-                    String referenceA = VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
+//                    char[] modifiedCodonArray = referenceCodon.clone();
+//                    modifiedCodonArray[variantPhaseShift] =
+//                            VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant.getAlternate().toCharArray()[0]);
+                    String referenceA = VariantAnnotationUtils.getAminoacid(chromosome.equals("MT"),
                             String.valueOf(referenceCodon));
-                    String alternativeA = VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
-                            String.valueOf(modifiedCodonArray));
+//                    String alternativeA = VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
+//                            String.valueOf(modifiedCodonArray));
 
-                    if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
-                            String.valueOf(referenceCodon), String.valueOf(modifiedCodonArray))) {
-                        if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
-                                String.valueOf(referenceCodon))) {
-                            SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
-                        } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
-                            // but if the length of the cds%3=0, annotation should be synonymous variant
-                            SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
-                        }
-                    } else {
-                        if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
-                            // Gary - initiator codon SO terms not compatible with the terms below
-                            SoNames.add(VariantAnnotationUtils.START_LOST);
-                            if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
-                                    String.valueOf(modifiedCodonArray))) {
-                                // Gary - initiator codon SO terms not compatible with the terms below
-                                SoNames.add(VariantAnnotationUtils.STOP_GAINED);
-                            }
-                        } else if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
-                                String.valueOf(referenceCodon))) {
-                            SoNames.add(VariantAnnotationUtils.STOP_LOST);
-                        } else {
-                            SoNames.add(VariantAnnotationUtils
-                                    .isStopCodon(variant.getChromosome().equals("MT"), String.valueOf(modifiedCodonArray))
-                                    ? VariantAnnotationUtils.STOP_GAINED : VariantAnnotationUtils.MISSENSE_VARIANT);
-                        }
+                    if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                            String.valueOf(referenceCodon))) {
+                        codingAnnotationAdded = true;
+                        SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
                     }
+//                        if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
+//                            String.valueOf(referenceCodon), String.valueOf(modifiedCodonArray))) {
+//                        if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+//                                String.valueOf(referenceCodon))) {
+//                            SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
+//                        } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
+//                            // but if the length of the cds%3=0, annotation should be synonymous variant
+//                            SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
+//                        }
+//                    } else {
+//                        if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
+//                            // Gary - initiator codon SO terms not compatible with the terms below
+//                            SoNames.add(VariantAnnotationUtils.START_LOST);
+//                            if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+//                                    String.valueOf(modifiedCodonArray))) {
+//                                // Gary - initiator codon SO terms not compatible with the terms below
+//                                SoNames.add(VariantAnnotationUtils.STOP_GAINED);
+//                            }
+//                        } else if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+//                                String.valueOf(referenceCodon))) {
+//                            SoNames.add(VariantAnnotationUtils.STOP_LOST);
+//                        } else {
+//                            SoNames.add(VariantAnnotationUtils
+//                                    .isStopCodon(variant.getChromosome().equals("MT"), String.valueOf(modifiedCodonArray))
+//                                    ? VariantAnnotationUtils.STOP_GAINED : VariantAnnotationUtils.MISSENSE_VARIANT);
+//                        }
+//                    }
                     // Set consequenceTypeTemplate.aChange
 //                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
                     consequenceType.getProteinVariantAnnotation().setReference(referenceA);
-                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
+//                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
                     // Fill consequenceTypeTemplate.codon leaving only the nt that changes in uppercase.
                     // Careful with upper/lower case letters
                     char[] referenceCodonArray = String.valueOf(referenceCodon).toLowerCase().toCharArray();
                     referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
-                    modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
-                    modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
-                    consequenceType.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
+//                    modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
+//                    modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
+//                    consequenceType.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
+                    consequenceType.setCodon(String.valueOf(referenceCodonArray));
                 }
             }
         }
@@ -267,18 +296,18 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveTranscriptFlankingRegions(String leftRegionTag, String rightRegionTag) {
         // Variant within -5kb region
-        if (variant.getStart() > (transcript.getStart() - 5001) && variant.getStart() < transcript.getStart()) {
+        if (position > (transcript.getStart() - 5001) && position < transcript.getStart()) {
             // Variant within -2kb region
-            if (variant.getStart() > (transcript.getStart() - 2001)) {
+            if (position > (transcript.getStart() - 2001)) {
                 SoNames.add("2KB_" + leftRegionTag);
             } else {
                 SoNames.add(leftRegionTag);
             }
         }
         // Variant within +5kb region
-        if (variant.getStart() > transcript.getEnd() && variant.getStart() < (transcript.getEnd() + 5001)) {
+        if (position > transcript.getEnd() && position < (transcript.getEnd() + 5001)) {
             // Variant within +2kb region
-            if (variant.getStart() < (transcript.getEnd() + 2001)) {
+            if (position < (transcript.getEnd() + 2001)) {
                 SoNames.add("2KB_" + rightRegionTag);
             } else {
                 SoNames.add(rightRegionTag);
@@ -295,9 +324,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         junctionSolution[0] = false;
         junctionSolution[1] = false;
 
-        if (variant.getStart() >= exon.getStart()) {
-            if (variant.getStart() <= exon.getEnd()) {  // Variant start within the exon
-                cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
+        if (position >= exon.getStart()) {
+            if (position <= exon.getEnd()) {  // Variant start within the exon
+                cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - position);
                 consequenceType.setCdnaPosition(cdnaVariantPosition);
                 consequenceType.setExonNumber(exon.getExonNumber());
             }
@@ -311,10 +340,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
             solveJunction(prevSpliceSite, exon.getStart() - 1, VariantAnnotationUtils.SPLICE_DONOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT, junctionSolution);
 
-            if (variant.getStart() >= exon.getStart()) {
+            if (position >= exon.getStart()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if (variant.getStart() <= exon.getEnd()) {  // Variant within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
+                if (position <= exon.getEnd()) {  // Variant within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - position);
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
                     consequenceType.setExonNumber(exon.getExonNumber());
                 }
@@ -368,8 +397,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (transcript.getGenomicCodingStart() <= exon.getEnd()) {
             firstCdsPhase = exon.getPhase();
         }
-        if (variant.getStart() >= exon.getStart() && variant.getStart() <= exon.getEnd()) {  // Variant start within the exon
-            cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
+        if (position >= exon.getStart() && position <= exon.getEnd()) {  // Variant start within the exon
+            cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - position);
             consequenceType.setCdnaPosition(cdnaVariantPosition);
             consequenceType.setExonNumber(exon.getExonNumber());
         }
@@ -388,10 +417,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT, junctionSolution);
             splicing = (splicing || junctionSolution[0]);
 
-            if (variant.getStart() >= exon.getStart()) {
+            if (position >= exon.getStart()) {
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
-                if (variant.getStart() <= exon.getEnd()) {  // Variant within the exon
-                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
+                if (position <= exon.getEnd()) {  // Variant within the exon
+                    cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - position);
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
                     consequenceType.setExonNumber(exon.getExonNumber());
                 }
@@ -409,11 +438,11 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     private void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence, int cdnaVariantPosition,
                                                       int firstCdsPhase) {
-        if (variant.getStart() < transcript.getGenomicCodingStart()
+        if (position < transcript.getGenomicCodingStart()
                 && (transcript.getStart() < transcript.getGenomicCodingStart()
                 || transcript.unconfirmedStart())) { // Check transcript has 5 UTR
             SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
-        } else if (variant.getStart() <= transcript.getGenomicCodingEnd()) {  // Variant start within coding region
+        } else if (position <= transcript.getGenomicCodingEnd()) {  // Variant start within coding region
             // Need to define a local cdnaCodingStart because may modified in two lines below
             int cdnaCodingStart = transcript.getCdnaCodingStart();
             cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantPosition, firstCdsPhase, cdnaCodingStart);
@@ -446,51 +475,56 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     int modifiedCodonStart = cdnaVariantPosition - variantPhaseShift;
                     // -1 and +2 because of base 0 String indexing
                     String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
-                    char[] modifiedCodonArray = referenceCodon.toCharArray();
-                    modifiedCodonArray[variantPhaseShift] = variant.getAlternate().toCharArray()[0];
+//                    char[] modifiedCodonArray = referenceCodon.toCharArray();
+//                    modifiedCodonArray[variantPhaseShift] = variant.getAlternate().toCharArray()[0];
                     String referenceA =
-                            VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"), referenceCodon);
-                    String alternativeA =
-                            VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
-                                    String.valueOf(modifiedCodonArray));
-                    codingAnnotationAdded = true;
-                    if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
-                            referenceCodon, String.valueOf(modifiedCodonArray))) {
-                        if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon)) {
-                            SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
-                        } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
-                            // but if the length of the cds%3=0, annotation should be synonymous variant
-                            SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
-                        }
-                    } else {
-                        if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
-                            // Gary - initiator codon SO terms not compatible with the terms below
-                            SoNames.add(VariantAnnotationUtils.START_LOST);
-                            if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
-                                    String.valueOf(modifiedCodonArray))) {
-                                // Gary - initiator codon SO terms not compatible with the terms below
-                                SoNames.add(VariantAnnotationUtils.STOP_GAINED);
-                            }
-                        } else if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
-                                String.valueOf(referenceCodon))) {
-                            SoNames.add(VariantAnnotationUtils.STOP_LOST);
-                        } else {
-                            SoNames.add(VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
-                                    String.valueOf(modifiedCodonArray))
-                                    ? VariantAnnotationUtils.STOP_GAINED : VariantAnnotationUtils.MISSENSE_VARIANT);
-                        }
+                            VariantAnnotationUtils.getAminoacid(chromosome.equals("MT"), referenceCodon);
+//                    String alternativeA =
+//                            VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
+//                                    String.valueOf(modifiedCodonArray));
+
+                    if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon)) {
+                        codingAnnotationAdded = true;
+                        SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
                     }
-                    // Set consequenceTypeTemplate.aChange
-//                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
+//                    if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
+//                            referenceCodon, String.valueOf(modifiedCodonArray))) {
+//                        if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon)) {
+//                            SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
+//                        } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
+//                            // but if the length of the cds%3=0, annotation should be synonymous variant
+//                            SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
+//                        }
+//                    } else {
+//                        if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
+//                            // Gary - initiator codon SO terms not compatible with the terms below
+//                            SoNames.add(VariantAnnotationUtils.START_LOST);
+//                            if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+//                                    String.valueOf(modifiedCodonArray))) {
+//                                // Gary - initiator codon SO terms not compatible with the terms below
+//                                SoNames.add(VariantAnnotationUtils.STOP_GAINED);
+//                            }
+//                        } else if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+//                                String.valueOf(referenceCodon))) {
+//                            SoNames.add(VariantAnnotationUtils.STOP_LOST);
+//                        } else {
+//                            SoNames.add(VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+//                                    String.valueOf(modifiedCodonArray))
+//                                    ? VariantAnnotationUtils.STOP_GAINED : VariantAnnotationUtils.MISSENSE_VARIANT);
+//                        }
+//                    }
+//                    // Set consequenceTypeTemplate.aChange
+////                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
                     consequenceType.getProteinVariantAnnotation().setReference(referenceA);
-                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
+//                    consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
                     // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase.
                     // Careful with upper/lower case letters
                     char[] referenceCodonArray = referenceCodon.toLowerCase().toCharArray();
                     referenceCodonArray[variantPhaseShift] = Character.toUpperCase(referenceCodonArray[variantPhaseShift]);
-                    modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
-                    modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
-                    consequenceType.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
+//                    modifiedCodonArray = String.valueOf(modifiedCodonArray).toLowerCase().toCharArray();
+//                    modifiedCodonArray[variantPhaseShift] = Character.toUpperCase(modifiedCodonArray[variantPhaseShift]);
+//                    consequenceType.setCodon(String.valueOf(referenceCodonArray) + "/" + String.valueOf(modifiedCodonArray));
+                    consequenceType.setCodon(String.valueOf(referenceCodonArray));
                 }
             }
         }
@@ -506,50 +540,48 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         junctionSolution[1] = false;  // Variant is intronic and both ends fall within the intron
 
         // Variant overlaps the rest of intronic region (splice region within the intron and/or rest of intron)
-        if (variant.getStart() > (spliceSite1 + 1) && variant.getStart() < (spliceSite2 - 1)) {
+        if (position > (spliceSite1 + 1) && position < (spliceSite2 - 1)) {
             SoNames.add(VariantAnnotationUtils.INTRON_VARIANT);
             junctionSolution[1] = true;  // variant falls within the intron
         } else {
-            if (variant.getStart() >= spliceSite1 && variant.getStart() <= spliceSite2) {
+            if (position >= spliceSite1 && position <= spliceSite2) {
                 junctionSolution[1] = true;  // variant falls within the intron
             }
         }
 
-        if (variant.getStart().equals(spliceSite1) || variant.getStart().equals(spliceSite1 + 1)) {  // Variant donor/acceptor
+        if (position.equals(spliceSite1) || position.equals(spliceSite1 + 1)) {  // Variant donor/acceptor
             SoNames.add(leftSpliceSiteTag);  // donor/acceptor depending on transcript strand
             // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-            junctionSolution[0] = (variant.getStart() <= spliceSite2);
+            junctionSolution[0] = (position <= spliceSite2);
         } else {
-            if (variant.getStart() > (spliceSite1 + 1) && variant.getStart() < (spliceSite1 + 8)) {
+            if (position > (spliceSite1 + 1) && position < (spliceSite1 + 8)) {
                 SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-                junctionSolution[0] = (variant.getStart() <= spliceSite2);
+                junctionSolution[0] = (position <= spliceSite2);
             } else {
                 // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
-                if (variant.getStart() > (spliceSite1 - 4) && variant.getStart() < spliceSite1) {
+                if (position > (spliceSite1 - 4) && position < spliceSite1) {
                     SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 }
             }
         }
 
-        if (variant.getStart().equals(spliceSite2 - 1) || variant.getStart().equals(spliceSite2)) {  // Variant donor/acceptor
+        if (position.equals(spliceSite2 - 1) || position.equals(spliceSite2)) {  // Variant donor/acceptor
             SoNames.add(rightSpliceSiteTag);  // donor/acceptor depending on transcript strand
             // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-            junctionSolution[0] = (variant.getStart() >= spliceSite1);
+            junctionSolution[0] = (position >= spliceSite1);
         } else {
-            if (variant.getStart() < (spliceSite2 - 1) && variant.getStart() > (spliceSite2 - 8)) {
+            if (position < (spliceSite2 - 1) && position > (spliceSite2 - 8)) {
                 SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 // BE CAREFUL: there are introns shorter than 7nts, and even just 1nt long!! (22:36587846)
-                junctionSolution[0] = (spliceSite1 <= variant.getStart());
+                junctionSolution[0] = (spliceSite1 <= position);
             } else {
                 // Insertion coordinates are passed to this function as (variantStart-1,variantStart)
-                if (variant.getStart() < (spliceSite2 + 4) && variant.getStart() > spliceSite2) {
+                if (position < (spliceSite2 + 4) && position > spliceSite2) {
                     SoNames.add(VariantAnnotationUtils.SPLICE_REGION_VARIANT);
                 }
             }
         }
 
     }
-
-
 }

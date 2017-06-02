@@ -2,17 +2,13 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.biodata.models.core.RegulatoryFeature;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 //import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -24,7 +20,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
     private int variantStart;
     private int variantEnd;
-    private GenomeDBAdaptor genomeDBAdaptor;
+//    private GenomeDBAdaptor genomeDBAdaptor;
 
     public ConsequenceTypeInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         this.genomeDBAdaptor = genomeDBAdaptor;
@@ -56,41 +52,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (transcript.getStrand().equals("+")) {
                     // Check variant overlaps transcript start/end coordinates
                     if (variantEnd > transcript.getStart() && variantStart < transcript.getEnd()) {
-                        switch (transcript.getBiotype()) {
-                            /**
-                             * Coding biotypes
-                             */
-                            case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
-                                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
-                            case VariantAnnotationUtils.IG_C_GENE:
-                            case VariantAnnotationUtils.IG_D_GENE:
-                            case VariantAnnotationUtils.IG_J_GENE:
-                            case VariantAnnotationUtils.IG_V_GENE:
-                            case VariantAnnotationUtils.TR_C_GENE:  // TR_C_gene
-                            case VariantAnnotationUtils.TR_D_GENE:  // TR_D_gene
-                            case VariantAnnotationUtils.TR_J_GENE:  // TR_J_gene
-                            case VariantAnnotationUtils.TR_V_GENE:  // TR_V_gene
-                            case VariantAnnotationUtils.POLYMORPHIC_PSEUDOGENE:
-                            case VariantAnnotationUtils.PROTEIN_CODING:    // protein_coding
-                            case VariantAnnotationUtils.NON_STOP_DECAY:    // non_stop_decay
-                            case VariantAnnotationUtils.TRANSLATED_PROCESSED_PSEUDOGENE:
-                            case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
-                            case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
-                                solveCodingPositiveTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                            /**
-                             * Non-coding biotypes
-                             */
-                            default:
-                                solveNonCodingPositiveTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                        }
+                        solvePositiveTranscript(consequenceTypeList);
                     } else {
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
@@ -103,41 +65,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 } else {
                     // Check variant overlaps transcript start/end coordinates
                     if (variantEnd > transcript.getStart() && variantStart < transcript.getEnd()) {
-                        switch (transcript.getBiotype()) {
-                            /**
-                             * Coding biotypes
-                             */
-                            case VariantAnnotationUtils.NONSENSE_MEDIATED_DECAY:
-                                SoNames.add(VariantAnnotationUtils.NMD_TRANSCRIPT_VARIANT);
-                            case VariantAnnotationUtils.IG_C_GENE:
-                            case VariantAnnotationUtils.IG_D_GENE:
-                            case VariantAnnotationUtils.IG_J_GENE:
-                            case VariantAnnotationUtils.IG_V_GENE:
-                            case VariantAnnotationUtils.TR_C_GENE:  // TR_C_gene
-                            case VariantAnnotationUtils.TR_D_GENE:  // TR_D_gene
-                            case VariantAnnotationUtils.TR_J_GENE:  // TR_J_gene
-                            case VariantAnnotationUtils.TR_V_GENE:  // TR_V_gene
-                            case VariantAnnotationUtils.POLYMORPHIC_PSEUDOGENE:
-                            case VariantAnnotationUtils.PROTEIN_CODING:    // protein_coding
-                            case VariantAnnotationUtils.NON_STOP_DECAY:    // non_stop_decay
-                            case VariantAnnotationUtils.TRANSLATED_PROCESSED_PSEUDOGENE:
-                            case VariantAnnotationUtils.TRANSLATED_UNPROCESSED_PSEUDOGENE:    // translated_unprocessed_pseudogene
-                            case VariantAnnotationUtils.LRG_GENE:    // LRG_gene
-                                solveCodingNegativeTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                            /**
-                             * Non-coding biotypes
-                             */
-                            default:
-                                solveNonCodingNegativeTranscript();
-//                                consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
-                                consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
-                                consequenceTypeList.add(consequenceType);
-                                break;
-                        }
+                        solveNegativeTranscript(consequenceTypeList);
                     } else {
                         solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
                                 VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
@@ -151,22 +79,13 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             }
         }
 
-        if (consequenceTypeList.size() == 0 && isIntergenic) {
-//        if (isIntegernic) {
-//            consequenceTypeList.add(new ConsequenceType(VariantAnnotationUtils.INTERGENIC_VARIANT));
-            HashSet<String> intergenicName = new HashSet<>();
-            intergenicName.add(VariantAnnotationUtils.INTERGENIC_VARIANT);
-            ConsequenceType consequenceType = new ConsequenceType();
-            consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(intergenicName));
-            consequenceTypeList.add(consequenceType);
-        }
-
+        solveIntergenic(consequenceTypeList, isIntergenic);
         solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
 
         return consequenceTypeList;
     }
 
-    private void solveNonCodingNegativeTranscript() {
+    protected void solveNonCodingNegativeTranscript() {
         Exon exon = transcript.getExons().get(0);
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);
@@ -231,7 +150,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
-    private void solveCodingNegativeTranscript() {
+    protected void solveCodingNegativeTranscript() {
         Exon exon = transcript.getExons().get(0);
         String transcriptSequence = exon.getSequence();
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
@@ -318,18 +237,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         } else if (variantEnd >= transcript.getGenomicCodingStart()) {
             // Need to define a local cdnaCodingStart because may modified in two lines below
             int cdnaCodingStart = transcript.getCdnaCodingStart();
-            if (cdnaVariantStart != -1) {  // cdnaVariantStart may be null if variantEnd falls in an intron
-                if (transcript.unconfirmedStart()) {
-                    cdnaCodingStart -= ((3 - firstCdsPhase) % 3);
-                }
-                int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
-                consequenceType.setCdsPosition(cdsVariantStart);
-                // First place where protein variant annotation is added to the Consequence type,
-                // must create the ProteinVariantAnnotation object
-                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
-                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
-                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
-            }
+            cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantStart, firstCdsPhase, cdnaCodingStart);
             if (variantStart >= transcript.getGenomicCodingStart()) {  // Variant start also within coding region
                 solveCodingExonVariantInNegativeTranscript(transcriptSequence, cdnaCodingStart, cdnaVariantStart,
                         cdnaVariantEnd);
@@ -419,49 +327,14 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
                     i++;
                 }
-                for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                    if (reverseTranscriptSequencePosition >= reverseTranscriptSequence.length()) {
-                        int genomicCoordinate = transcript.getStart()
-                                - (reverseTranscriptSequencePosition - reverseTranscriptSequence.length() + 1);
 
-//                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
-//                                ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(variant.getChromosome(),
-//                                        genomicCoordinate, genomicCoordinate + 1, new QueryOptions())
-//                                        .getResult().get(0)).getSequence().charAt(0));
-                        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                                + ":" + genomicCoordinate
-                                + "-" + (genomicCoordinate + 1));
-                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
-                                .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
-                                        .getResult().get(0).getSequence().charAt(0));
-                    } else {
-                        modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
-                                reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
-                    }
-                    reverseTranscriptSequencePosition++;
-
-                    // Edit modified nt to make it upper-case in the formatted strings
-                    formattedReferenceCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(formattedReferenceCodonArray[modifiedCodonPosition]);
-                    formattedModifiedCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
-                }
+                reverseTranscriptSequencePosition = updateNegativeInsertionCodonArrays(reverseTranscriptSequence,
+                        formattedReferenceCodonArray, reverseTranscriptSequencePosition, modifiedCodonPosition,
+                        formattedModifiedCodonArray, modifiedCodonArray);
 
                 // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
-                if (firstCodon) {
-                    firstCodon = false;
-                    // Only the exact codon where the deletion starts is set
-                    consequenceType.setCodon(String.valueOf(formattedReferenceCodonArray) + "/"
-                            + String.valueOf(formattedModifiedCodonArray));
-                    // Assumes proteinVariantAnnotation attribute is already initialized
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon));
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode,
-                                    String.valueOf(modifiedCodonArray)));
-                }
+                firstCodon = setInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray,
+                        formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames, String.valueOf(referenceCodonArray),
                         String.valueOf(modifiedCodonArray), variant.getChromosome().equals("MT"));
@@ -493,7 +366,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         }
     }
 
-    private void solveNonCodingPositiveTranscript() {
+    protected void solveNonCodingPositiveTranscript() {
         Exon exon = transcript.getExons().get(0);
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);
@@ -565,7 +438,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
-    private void solveCodingPositiveTranscript() {
+    protected void solveCodingPositiveTranscript() {
 
         Exon exon = transcript.getExons().get(0);
         String transcriptSequence = exon.getSequence();
@@ -658,18 +531,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         } else if (variantStart <= transcript.getGenomicCodingEnd()) {  // Variant start within coding region
             // Need to define a local cdnaCodingStart because may modified in two lines below
             int cdnaCodingStart = transcript.getCdnaCodingStart();
-            if (cdnaVariantStart != -1) {  // cdnaVariantStart may be -1 if variantStart falls in an intron
-                if (transcript.unconfirmedStart()) {
-                    cdnaCodingStart -= ((3 - firstCdsPhase) % 3);
-                }
-                int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
-                consequenceType.setCdsPosition(cdsVariantStart);
-                // First place where protein variant annotation is added to the Consequence type,
-                // must create the ProteinVariantAnnotation object
-                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
-                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
-                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
-            }
+            cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantStart, firstCdsPhase, cdnaCodingStart);
             if (variantEnd <= transcript.getGenomicCodingEnd()) {  // Variant end also within coding region
                 solveCodingExonVariantInPositiveTranscript(transcriptSequence, cdnaCodingStart, cdnaVariantStart);
             } else if (transcript.getEnd() > transcript.getGenomicCodingEnd()
@@ -743,45 +605,12 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
                     i++;
                 }
-                for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {  // Concatenate reference codon nts after alternative nts
-                    if (transcriptSequencePosition >= transcriptSequence.length()) {
-                        int genomicCoordinate = transcript.getEnd() + (transcriptSequencePosition - transcriptSequence.length()) + 1;
-//                        modifiedCodonArray[modifiedCodonPosition] = ((GenomeSequenceFeature) genomeDBAdaptor.getSequenceByRegion(
-//                                variant.getChromosome(), genomicCoordinate, genomicCoordinate + 1,
-//                                new QueryOptions()).getResult().get(0)).getSequence().charAt(0);
-                        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                                + ":" + genomicCoordinate
-                                + "-" + (genomicCoordinate + 1));
-                        modifiedCodonArray[modifiedCodonPosition] = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
-                                .getResult().get(0).getSequence().charAt(0);
-                    } else {
-                        modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
-                    }
-                    transcriptSequencePosition++;
+                transcriptSequencePosition = updatePositiveInsertionCodonArrays(transcriptSequence, modifiedCodonArray,
+                        transcriptSequencePosition, modifiedCodonPosition, formattedReferenceCodonArray,
+                        formattedModifiedCodonArray);
 
-                    // Edit modified nt to make it upper-case in the formatted strings
-                    formattedReferenceCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(formattedReferenceCodonArray[modifiedCodonPosition]);
-                    formattedModifiedCodonArray[modifiedCodonPosition]
-                            = Character.toUpperCase(modifiedCodonArray[modifiedCodonPosition]);
-
-                }
-
-                // Set codon str, protein ref and protein alt ONLY for the first codon mofified by the insertion
-                if (firstCodon) {
-                    firstCodon = false;
-                    // Only the exact codon where the deletion starts is set
-                    consequenceType.setCodon(String.valueOf(formattedReferenceCodonArray) + "/"
-                            + String.valueOf(formattedModifiedCodonArray));
-                    // Assumes proteinVariantAnnotation attribute is already initialized
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setReference(VariantAnnotationUtils.getAminoacid(useMitochondrialCode, referenceCodon));
-                    consequenceType
-                            .getProteinVariantAnnotation()
-                            .setAlternate(VariantAnnotationUtils.getAminoacid(useMitochondrialCode,
-                                    String.valueOf(modifiedCodonArray)));
-                }
+                firstCodon = setInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray,
+                        formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
 
                 decideStopCodonModificationAnnotation(SoNames, referenceCodon, String.valueOf(modifiedCodonArray),
                         useMitochondrialCode);
