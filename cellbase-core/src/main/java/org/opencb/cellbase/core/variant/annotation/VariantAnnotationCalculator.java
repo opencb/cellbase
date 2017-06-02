@@ -336,7 +336,7 @@ public class VariantAnnotationCalculator {
         stringBuilder.append(",annotation.alternate,annotation.id");
 
         if (annotatorSet.contains("variation")) {
-            stringBuilder.append(",annotation.id");
+            stringBuilder.append(",annotation.id,annotation.additionalAttributes.dgvSpecificAttributes");
         }
         if (annotatorSet.contains("clinical")) {
             stringBuilder.append(",annotation.variantTraitAssociation");
@@ -389,7 +389,8 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
 //        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
-                    "id,annotation.populationFrequencies").append("imprecise", imprecise));
+                    "id,annotation.populationFrequencies,annotation.additionalAttributes.dgvSpecificAttributes")
+                    .append("imprecise", imprecise));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
         }
 
@@ -1249,9 +1250,16 @@ public class VariantAnnotationCalculator {
             if (variationQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResultList.size(); i++) {
                     Variant preferredVariant = getPreferredVariant(variationQueryResults.get(i));
-                    if (preferredVariant != null && preferredVariant.getIds().size() > 0) {
-                        variantAnnotationResultList.get(i).first().setId(preferredVariant.getIds().get(0));
-
+                    if (preferredVariant != null) {
+                        if (preferredVariant.getIds().size() > 0) {
+                            variantAnnotationResultList.get(i).first().setId(preferredVariant.getIds().get(0));
+                        }
+                        if (preferredVariant.getAnnotation() != null
+                                && preferredVariant.getAnnotation().getAdditionalAttributes() != null
+                                && preferredVariant.getAnnotation().getAdditionalAttributes().size() > 0) {
+                            variantAnnotationResultList.get(i).first()
+                                    .setAdditionalAttributes(preferredVariant.getAnnotation().getAdditionalAttributes());
+                        }
                     }
 
                     if (annotatorSet.contains("populationFrequencies") && preferredVariant != null) {

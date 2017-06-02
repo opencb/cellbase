@@ -230,29 +230,67 @@ public class VariantAnnotationCalculatorTest {
     public void testDGVAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "variation");
-        Variant variant = new Variant("1:10161-10291:<DEL>");
-        StructuralVariation structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
-                10291 - 100, 10291 + 10, 0, null);
+        Variant variant = new Variant("1:10161-10291:<DUP>");
+        StructuralVariation structuralVariation = new StructuralVariation(10377 - 10, 10377 + 50,
+                1018704 - 100, 1018704 + 10, null, null);
         variant.setSv(structuralVariation);
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals("esv2758911", queryResult.getResult().get(0).getId());
+
+        variant = new Variant("1:10161-10291:<DEL>");
+        structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
+                10291 - 100, 10291 + 10, null, null);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
         assertEquals("nsv958854", queryResult.getResult().get(0).getId());
+
+        variant = new Variant("1:10161-10291:<CN1>");
+        structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
+                10291 - 100, 10291 + 10, 1, StructuralVariantType.COPY_NUMBER_LOSS);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals("nsv958854", queryResult.getResult().get(0).getId());
+
+        variant = new Variant("1:10161-10291:<CN10>");
+        structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
+                10291 - 100, 10291 + 10, 10, StructuralVariantType.COPY_NUMBER_GAIN);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertNull(queryResult.getResult().get(0).getId());
+
+        variant = new Variant("1:10161-10291:<DUP>");
+        structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
+                10291 - 100, 10291 + 10, null, null);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertNull(queryResult.getResult().get(0).getId());
 
         variant = new Variant("1:10401-127130:<CN10>");
         structuralVariation = new StructuralVariation(10401, 10401, 127130,
-                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+                127130, 10, StructuralVariantType.COPY_NUMBER_GAIN);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals("nsv7879", queryResult.getResult().get(0).getId());
+        assertNull(queryResult.getResult().get(0).getId());
+//        assertEquals("nsv7879", queryResult.getResult().get(0).getId());
 
         queryOptions.put("imprecise", false);
-        variant = new Variant("1:10401-127130:<CN10>");
-        structuralVariation = new StructuralVariation(10401, 10401, 127130,
-                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+        variant = new Variant("1:10161-10291:<DEL>");
+        structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
+                10291 - 100, 10291 + 10, null, null);
         variant.setSv(structuralVariation);
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertNull(queryResult.getResult().get(0).getId());
     }

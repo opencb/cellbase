@@ -219,7 +219,8 @@ public class DgvParser extends CellBaseParser {
         AdditionalAttribute dgvSpecificAttributes = new AdditionalAttribute(map);
         additionalAttributes.put(DGV_SPECIFIC_ATTRIBUTES, dgvSpecificAttributes);
         VariantAnnotation annotation = new VariantAnnotation(variant.getChromosome(), variant.getStart(),
-                variant.getReference(), variant.getAlternate(), null, null, null, null,
+                variant.getEnd(), variant.getReference(), variant.getAlternate(), null, null,
+                null, null,
                 null, null, null, null,
                 null, null, null, null,
                 null, null, null, null, null,
