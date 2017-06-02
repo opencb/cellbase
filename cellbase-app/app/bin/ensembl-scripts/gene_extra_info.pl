@@ -8,6 +8,7 @@ use DB_CONFIG;
 
 
 my $species = 'Homo sapiens';
+my $assembly = 'GRCh37';
 my $phylo = "";
 my $outdir = "/tmp/$species";
 my $verbose = '0';
@@ -19,7 +20,7 @@ my $help = '0';
 # USAGE: ./core.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
-GetOptions ('species=s' => \$species, 'outdir=s' => \$outdir, 'phylo=s' => \$phylo,
+GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly, 'outdir=s' => \$outdir, 'phylo=s' => \$phylo,
 			'ensembl-libs=s' => \$ENSEMBL_LIBS, 'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
 			'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
 			'ensembl-user=s' => \$ENSEMBL_USER, 'ensembl-pass=s' => \$ENSEMBL_PASS,
@@ -33,9 +34,9 @@ print_parameters() if $verbose;
 
 ## Checking outdir parameter exist, otherwise create it
 if(-d $outdir){
-	print "Writing files to directory '$outdir'...\n" if $verbose;
+	print "Writing files to directory '$outdir'...\n";
 }else{
-	print "Directory '$outdir' does not exist, creating directory...\n" if $verbose;
+	print "Directory '$outdir' does not exist, creating directory...\n";
    	mkdir $outdir or die "Couldn't create dir: [$outdir] ($!)";
 }
 
@@ -66,16 +67,28 @@ use Bio::EnsEMBL::Funcgen::DBSQL::DBAdaptor;
 #  -host    => 'ensembldb.ensembl.org',
 #  -user    => 'anonymous',
 #  -verbose => '0'
-#);
+
+
 if($phylo eq "" || $phylo eq "vertebrate") {
-    print ("In vertebrates section");
-    Bio::EnsEMBL::Registry->load_registry_from_db(
-      -host    => 'ensembldb.ensembl.org',
-      -user    => 'anonymous',
-      -verbose => '0'
-    );
+    print ("In vertebrates section\n");
+    if($species eq "Homo sapiens" && ($assembly eq "" || $assembly eq "GRCh37")) {
+        print ("Human selected, assembly ".$assembly." selected, connecting to port 3337\n");
+        Bio::EnsEMBL::Registry->load_registry_from_db(
+          -host    => 'ensembldb.ensembl.org',
+          -user    => 'anonymous',
+          -port => 3337,
+          -verbose => '0'
+        );
+    }else {
+        print ("Human selected, assembly ".$assembly." selected, connecting to default port\n");
+        Bio::EnsEMBL::Registry->load_registry_from_db(
+          -host    => 'ensembldb.ensembl.org',
+          -user    => 'anonymous',
+          -verbose => '0'
+        );
+    }
 }else {
-    print ("In no-vertebrates section");
+    print ("In no-vertebrates section\n");
     Bio::EnsEMBL::Registry->load_registry_from_db(
         -host => 'mysql-eg-publicsql.ebi.ac.uk',
         -port => 4157,
