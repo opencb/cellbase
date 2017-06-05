@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.core.variant.annotation;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.RegulatoryFeature;
@@ -32,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,11 +80,41 @@ public class VariantAnnotationCalculator {
     private Integer svExtraPadding = 0;
     private Integer cnvExtraPadding = 0;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
     private static HgvsCalculator hgvsCalculator;
 
+    public enum AnnotationTimes {
+        VARIATION_CALL, CONSERVATION_CALL, VARIANT_FUNCTIONAL_SCORE_CALL, CLINICAL_CALL, REPEATS_CALL, CYTOBAND_CALL,
+        GENE_DEPENDENT_ANNOTATIONSET, GENE_DEPENDENT_ANNOTATIONSET_HGVS, GENE_DEPENDENT_ANNOTATIONSET_GENE_ANNOTATION,
+        GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE, TOTAL_ANNOTATION
+    }
 
-//    public VariantAnnotationCalculator(String species, String assembly, MongoDataStore mongoDataStore) {
+    private static Map<AnnotationTimes, AtomicLong> times = new EnumMap<>(AnnotationTimes.class);
+
+    static {
+        for (AnnotationTimes annotationTime : AnnotationTimes.values()) {
+            times.put(annotationTime, new AtomicLong());
+        }
+    }
+
+    public static Map<AnnotationTimes, AtomicLong> getTimes() {
+        return times;
+    }
+
+    public static void printTimesSummary() {
+        printTimesSummary(logger::info);
+    }
+
+    public static void printTimesSummary(Consumer<String> logger) {
+        logger.accept("Accumulated execution times");
+        times.forEach((annotationTime, time) -> {
+            logger.accept(StringUtils.rightPad(annotationTime.name(), 30) + "\t"
+                    + TimeUnit.NANOSECONDS.toMinutes(time.get()) + "min\t"
+                    + TimeUnit.NANOSECONDS.toMillis(time.get()) / 1000.0 + "s ");
+        });
+    }
+
+    //    public VariantAnnotationCalculator(String species, String assembly, MongoDataStore mongoDataStore) {
 ////        super(species, assembly, mongoDataStore);
 //
 //        normalizer = new VariantNormalizer(false);
@@ -368,7 +402,7 @@ public class VariantAnnotationCalculator {
     private List<QueryResult<VariantAnnotation>> runAnnotationProcess(List<Variant> normalizedVariantList)
             throws InterruptedException, ExecutionException {
         QueryOptions queryOptions;
-        long globalStartTime = System.currentTimeMillis();
+        long globalStartTime = System.nanoTime();
         long startTime;
         queryOptions = new QueryOptions();
 
@@ -439,7 +473,7 @@ public class VariantAnnotationCalculator {
          */
         List<Gene> geneList;
         Queue<Variant> variantBuffer = new LinkedList<>();
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         for (int i = 0; i < normalizedVariantList.size(); i++) {
             // normalizedVariantList is the passed by reference argument - modifying normalizedVariantList will
             // modify user-provided Variant objects. If there's no annotation - just set it; if there's an annotation
@@ -457,7 +491,9 @@ public class VariantAnnotationCalculator {
             variantAnnotation.setReference(normalizedVariantList.get(i).getReference());
             variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
 
+            StopWatch geneAnnotationWatch = createStarted();
             geneList = setGeneAnnotation(normalizedVariantList.get(i));
+            times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_GENE_ANNOTATION).addAndGet(geneAnnotationWatch.getNanoTime());
 
             // Better not run hgvs calculation with a Future for the following reasons:
             //   * geneList is needed in order to calculate the hgvs for ALL VARIANTS
@@ -471,12 +507,18 @@ public class VariantAnnotationCalculator {
             // decision is to run it synchronously
             if (annotatorSet.contains("hgvs")) {
                 // No need to carry out normalization if it has already been done
+                StopWatch hgvsWatch = createStarted();
                 variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
+                times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_HGVS).addAndGet(hgvsWatch.getNanoTime());
             }
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
-                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
+                    StopWatch consequenceTypeWatch = createStarted();
+                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i),
+                            geneList, true);
+                    times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE)
+                            .addAndGet(consequenceTypeWatch.getNanoTime());
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
                         checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
@@ -497,7 +539,7 @@ public class VariantAnnotationCalculator {
             }
 
             QueryResult queryResult = new QueryResult(normalizedVariantList.get(i).toString());
-            queryResult.setDbTime((int) (System.currentTimeMillis() - startTime));
+            queryResult.setDbTime((int) TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
             queryResult.setNumResults(1);
             queryResult.setNumTotalResults(1);
             //noinspection unchecked
@@ -512,8 +554,10 @@ public class VariantAnnotationCalculator {
             adjustPhasedConsequenceTypes(variantBuffer.toArray());
         }
 
-        logger.debug("Main loop iteration annotation performance is {}ms for {} variants", System.currentTimeMillis()
-                - startTime, normalizedVariantList.size());
+        long delta = System.nanoTime()
+                - startTime;
+        logger.debug("Main loop iteration annotation performance is {}ms for {} variants", delta, normalizedVariantList.size());
+        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET).addAndGet(delta);
 
         /*
          * Now, hopefully the other annotations have finished and we can store the results.
@@ -540,9 +584,16 @@ public class VariantAnnotationCalculator {
         fixedThreadPool.shutdown();
 
 
-        logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
-                - globalStartTime, normalizedVariantList.size());
+        delta = System.nanoTime() - globalStartTime;
+        logger.debug("Total batch annotation performance is {}ms for {} variants", delta, normalizedVariantList.size());
+        times.get(AnnotationTimes.TOTAL_ANNOTATION).addAndGet(delta);
         return variantAnnotationResultList;
+    }
+
+    private static StopWatch createStarted() {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        return stopWatch;
     }
 
     private void parseQueryParam(QueryOptions queryOptions) {
@@ -571,11 +622,11 @@ public class VariantAnnotationCalculator {
 
         // Default behaviour - no extra padding for structural variants
         svExtraPadding = (queryOptions.get("svExtraPadding") != null ? (Integer) queryOptions.get("svExtraPadding") : 0);
-        logger.info("svExtraPadding = {}", svExtraPadding);
+        logger.debug("svExtraPadding = {}", svExtraPadding);
 
         // Default behaviour - no extra padding for CNV
         cnvExtraPadding = (queryOptions.get("cnvExtraPadding") != null ? (Integer) queryOptions.get("cnvExtraPadding") : 0);
-        logger.info("cnvExtraPadding = {}", cnvExtraPadding);
+        logger.debug("cnvExtraPadding = {}", cnvExtraPadding);
     }
 
 
@@ -1186,9 +1237,12 @@ public class VariantAnnotationCalculator {
 
         @Override
         public List<QueryResult<Variant>> call() throws Exception {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(variantList, queryOptions);
-            logger.debug("Variation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
+            long delta = System.nanoTime() - startTime;
+            logger.debug("Variation query performance is {}ms for {} variants", delta, variantList.size());
+            times.get(AnnotationTimes.VARIATION_CALL).addAndGet(delta);
+
             return variationQueryResultList;
         }
 
@@ -1276,11 +1330,13 @@ public class VariantAnnotationCalculator {
 
         @Override
         public List<QueryResult> call() throws Exception {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             List<QueryResult> conservationQueryResultList = conservationDBAdaptor
                     .getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
-            logger.debug("Conservation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+            long delta = System.nanoTime() - startTime;
+            logger.debug("Conservation query performance is {}ms for {} variants", delta,
                     variantList.size());
+            times.get(AnnotationTimes.CONSERVATION_CALL).addAndGet(delta);
             return conservationQueryResultList;
         }
 
@@ -1319,13 +1375,14 @@ public class VariantAnnotationCalculator {
 
         @Override
         public List<QueryResult<Score>> call() throws Exception {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
 //            List<QueryResult> variantFunctionalScoreQueryResultList =
 //                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
             List<QueryResult<Score>> variantFunctionalScoreQueryResultList =
                     variantDBAdaptor.getFunctionalScoreVariant(variantList, queryOptions);
-            logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
-                    System.currentTimeMillis() - startTime, variantList.size());
+            long delta = System.nanoTime() - startTime;
+            logger.debug("VariantFunctionalScore query performance is {}ms for {} variants", delta, variantList.size());
+            times.get(AnnotationTimes.VARIANT_FUNCTIONAL_SCORE_CALL).addAndGet(delta);
             return variantFunctionalScoreQueryResultList;
         }
 
@@ -1365,9 +1422,11 @@ public class VariantAnnotationCalculator {
 
         @Override
         public List<QueryResult> call() throws Exception {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
-            logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
+            long delta = System.nanoTime() - startTime;
+            logger.debug("Clinical query performance is {}ms for {} variants", delta, variantList.size());
+            times.get(AnnotationTimes.CLINICAL_CALL).addAndGet(delta);
             return clinicalQueryResultList;
         }
 
@@ -1409,7 +1468,7 @@ public class VariantAnnotationCalculator {
 //            List<QueryResult<Repeat>> queryResultList
 //                    = repeatsDBAdaptor.getByRegion(variantListToRegionList(variantList), queryOptions);
 
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             List<QueryResult<Repeat>> queryResultList = new ArrayList<>(variantList.size());
 
             // Want to return only one QueryResult object per Variant
@@ -1433,8 +1492,9 @@ public class VariantAnnotationCalculator {
                 queryResultList.add(newQueryResult);
             }
 
-            logger.debug("Repeat query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
-                    variantList.size());
+            long delta = System.nanoTime() - startTime;
+            logger.debug("Repeat query performance is {}ms for {} variants", delta, variantList.size());
+            times.get(AnnotationTimes.REPEATS_CALL).addAndGet(delta);
 
             return queryResultList;
 
@@ -1476,7 +1536,7 @@ public class VariantAnnotationCalculator {
 
         @Override
         public List<QueryResult<Cytoband>> call() throws Exception {
-            long startTime = System.currentTimeMillis();
+            long startTime = System.nanoTime();
             List<QueryResult<Cytoband>> queryResultList = new ArrayList<>(variantList.size());
 
             // Want to return only one QueryResult object per Variant
@@ -1500,8 +1560,10 @@ public class VariantAnnotationCalculator {
                 queryResultList.add(newQueryResult);
             }
 
-            logger.debug("Cytoband query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+            long delta = System.nanoTime() - startTime;
+            logger.debug("Cytoband query performance is {}ms for {} variants", delta,
                     variantList.size());
+            times.get(AnnotationTimes.CYTOBAND_CALL).addAndGet(delta);
             return queryResultList;
         }
 
