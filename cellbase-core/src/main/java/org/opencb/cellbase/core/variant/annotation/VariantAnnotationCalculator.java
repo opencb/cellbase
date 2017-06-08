@@ -583,7 +583,7 @@ public class VariantAnnotationCalculator {
 
         // Default behaviour - no extra padding for structural variants
         svExtraPadding = (queryOptions.get("svExtraPadding") != null ? (Integer) queryOptions.get("svExtraPadding") : 0);
-        logger.info("svExtraPadding = {}", svExtraPadding);
+        logger.debug("svExtraPadding = {}", svExtraPadding);
     }
 
 
@@ -1313,7 +1313,7 @@ public class VariantAnnotationCalculator {
         @Override
         public List<QueryResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            logger.info("Query variation");
+            logger.debug("Query variation");
             List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(variantList, queryOptions);
             logger.debug("Variation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return variationQueryResultList;
@@ -1404,7 +1404,7 @@ public class VariantAnnotationCalculator {
         @Override
         public List<QueryResult> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            logger.info("Query conservation");
+            logger.debug("Query conservation");
             List<QueryResult> conservationQueryResultList = conservationDBAdaptor
                     .getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
             logger.debug("Conservation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
@@ -1450,7 +1450,7 @@ public class VariantAnnotationCalculator {
             long startTime = System.currentTimeMillis();
 //            List<QueryResult> variantFunctionalScoreQueryResultList =
 //                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
-            logger.info("Query variant functional score");
+            logger.debug("Query variant functional score");
             List<QueryResult<Score>> variantFunctionalScoreQueryResultList =
                     variantDBAdaptor.getFunctionalScoreVariant(variantList, queryOptions);
             logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
@@ -1495,7 +1495,7 @@ public class VariantAnnotationCalculator {
         @Override
         public List<QueryResult> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            logger.info("Query clinical");
+            logger.debug("Query clinical");
             List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalQueryResultList;
@@ -1542,7 +1542,7 @@ public class VariantAnnotationCalculator {
             long startTime = System.currentTimeMillis();
             List<QueryResult<Repeat>> queryResultList = new ArrayList<>(variantList.size());
 
-            logger.info("Query repeats");
+            logger.debug("Query repeats");
             // Want to return only one QueryResult object per Variant
             for (Variant variant : variantList) {
                 List<QueryResult<Repeat>> tmpQueryResultList = repeatsDBAdaptor
@@ -1610,7 +1610,7 @@ public class VariantAnnotationCalculator {
             long startTime = System.currentTimeMillis();
             List<QueryResult<Cytoband>> queryResultList = new ArrayList<>(variantList.size());
 
-            logger.info("Query cytoband");
+            logger.debug("Query cytoband");
             // Want to return only one QueryResult object per Variant
             for (Variant variant : variantList) {
                 List<QueryResult<Cytoband>> tmpQueryResultList = genomeDBAdaptor
