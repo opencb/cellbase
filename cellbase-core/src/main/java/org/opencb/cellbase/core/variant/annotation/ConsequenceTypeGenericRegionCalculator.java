@@ -2,7 +2,6 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
@@ -20,7 +19,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
 
     protected static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getEnd();
@@ -83,7 +82,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         }
 
         solveIntergenic(consequenceTypeList, isIntergenic);
-        solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
+        solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
         return consequenceTypeList;
     }
 
@@ -512,7 +511,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
 
     }
 
-    private void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
+    protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
         if (variantStart < transcript.getGenomicCodingStart()) {
             // Check transcript has 3 UTR

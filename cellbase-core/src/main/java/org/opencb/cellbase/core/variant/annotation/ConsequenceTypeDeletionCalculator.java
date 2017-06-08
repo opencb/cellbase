@@ -1,10 +1,10 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -27,7 +27,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
     }
 
     @Override
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getEnd();
@@ -96,8 +96,119 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
         }
 
         solveIntergenic(consequenceTypeList, isIntergenic);
-        solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
+        solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
         return consequenceTypeList;
+    }
+
+    @Override
+    protected void solveExonVariantInNegativeTranscript(boolean splicing, String transcriptSequence,
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+        if (variantEnd > transcript.getGenomicCodingEnd()) {
+            if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedStart()) { // Check transcript has 3 UTR
+                SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
+            }
+            if (variantStart <= transcript.getGenomicCodingEnd()) {
+                SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
+                // cdnaCodingStart < 1 if cds_start_NF and phase!=0
+                if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
+                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                }
+                if (variantStart < (transcript.getGenomicCodingStart() + 3)) {
+                    SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                    if (variantStart < transcript.getGenomicCodingStart()) {
+                        if (transcript.getStart() < transcript.getGenomicCodingStart()
+                                || transcript.unconfirmedEnd()) { // Check transcript has 3 UTR)
+                            SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
+                        }
+                    }
+                }
+            }
+        } else if (variantEnd >= transcript.getGenomicCodingStart()) {
+            // Need to define a local cdnaCodingStart because may modified in two lines below
+            int cdnaCodingStart = transcript.getCdnaCodingStart();
+            if (cdnaVariantStart != -1) {  // cdnaVariantStart may be null if variantEnd falls in an intron
+                if (transcript.unconfirmedStart()) {
+                    cdnaCodingStart -= ((3 - firstCdsPhase) % 3);
+                }
+                int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
+                consequenceType.setCdsPosition(cdsVariantStart);
+                // First place where protein variant annotation is added to the Consequence type,
+                // must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
+            }
+            if (variantStart >= transcript.getGenomicCodingStart()) {  // Variant start also within coding region
+                solveCodingExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaCodingStart, cdnaVariantStart,
+                        cdnaVariantEnd);
+            } else {
+                // Check transcript has 3 UTR)
+                if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedEnd()) {
+                    SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
+                }
+                SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
+                SoNames.add(VariantAnnotationUtils.STOP_LOST);
+            }
+            // Check transcript has 3 UTR)
+        } else if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedEnd()) {
+            SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
+        }
+    }
+
+    @Override
+    protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
+                                                      int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
+        if (variantStart < transcript.getGenomicCodingStart()) {
+            // Check transcript has 3 UTR
+            if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedStart()) {
+                SoNames.add(VariantAnnotationUtils.FIVE_PRIME_UTR_VARIANT);
+            }
+            if (variantEnd >= transcript.getGenomicCodingStart()) {
+                SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
+                // cdnaCodingStart<1 if cds_start_NF and phase!=0
+                if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
+                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                }
+                if (variantEnd > (transcript.getGenomicCodingEnd() - 3)) {
+                    SoNames.add(VariantAnnotationUtils.STOP_LOST);
+                    if (variantEnd > transcript.getGenomicCodingEnd()) {
+                        // Check transcript has 3 UTR)
+                        if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedStart()) {
+                            SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
+                        }
+                    }
+                }
+            }
+        } else if (variantStart <= transcript.getGenomicCodingEnd()) {  // Variant start within coding region
+            // Need to define a local cdnaCodingStart because may modified in two lines below
+            int cdnaCodingStart = transcript.getCdnaCodingStart();
+            if (cdnaVariantStart != -1) {  // cdnaVariantStart may be null if variantStart falls in an intron
+                if (transcript.unconfirmedStart()) {
+                    cdnaCodingStart -= ((3 - firstCdsPhase) % 3);
+                }
+                int cdsVariantStart = cdnaVariantStart - cdnaCodingStart + 1;
+                consequenceType.setCdsPosition(cdsVariantStart);
+                // First place where protein variant annotation is added to the Consequence type,
+                // must create the ProteinVariantAnnotation object
+                ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
+                proteinVariantAnnotation.setPosition(((cdsVariantStart - 1) / 3) + 1);
+                consequenceType.setProteinVariantAnnotation(proteinVariantAnnotation);
+            }
+            if (variantEnd <= transcript.getGenomicCodingEnd()) {  // Variant end also within coding region
+                solveCodingExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaCodingStart,
+                        cdnaVariantStart, cdnaVariantEnd);
+            } else {
+                // Check transcript has 3 UTR)
+                if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedEnd()) {
+                    SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
+                }
+                SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
+                SoNames.add(VariantAnnotationUtils.STOP_LOST);
+            }
+            // Check transcript has 3 UTR)
+        } else if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedEnd()) {
+            SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
+        }
     }
 
     @Override

@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
@@ -16,7 +15,7 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
 
     public ConsequenceTypeCNVGainCalculator() { }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, List<RegulatoryFeature> regulatoryRegionList) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getEnd();
@@ -41,7 +40,7 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
                 if (transcript.getStrand().equals("+")) {
                     // whole transcript affected
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
-                        SoNames.add(VariantAnnotationUtils.COPY_NUMBER_CHANGE);
+                        SoNames.add(VariantAnnotationUtils.TRANSCRIPT_AMPLIFICATION);
                         consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                         consequenceTypeList.add(consequenceType);
                     } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
@@ -56,7 +55,7 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
                     }
                 } else {
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // whole trans. affected
-                        SoNames.add(VariantAnnotationUtils.COPY_NUMBER_CHANGE);
+                        SoNames.add(VariantAnnotationUtils.TRANSCRIPT_AMPLIFICATION);
                         consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                         consequenceTypeList.add(consequenceType);
                     } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
@@ -74,7 +73,7 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
         }
 
         solveIntergenic(consequenceTypeList, isIntergenic);
-        solveRegulatoryRegions(regulatoryRegionList, consequenceTypeList);
+        solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
         return consequenceTypeList;
     }
 

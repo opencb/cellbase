@@ -22,8 +22,8 @@ public class BenchmarkTask implements
         ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception> {
 
     private FastaIndexManager fastaIndexManager;
-//    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
-    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CNV>)";
+    private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
+//    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CNV>)|(<INV>)|(<DEL>)|(<INS>)|(<DUP:TANDEM>)";
     private VariantAnnotator variantAnnotator;
 
     public BenchmarkTask(VariantAnnotator variantAnnotator, FastaIndexManager fastaIndexManager) {

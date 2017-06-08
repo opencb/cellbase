@@ -99,6 +99,7 @@ public class VariantAnnotationUtils {
     public static final String FRAMESHIFT_VARIANT = "frameshift_variant";
     public static final String CODING_SEQUENCE_VARIANT = "coding_sequence_variant";
     public static final String TRANSCRIPT_ABLATION = "transcript_ablation";
+    public static final String TRANSCRIPT_AMPLIFICATION = "transcript_amplification";
     public static final String COPY_NUMBER_CHANGE = "copy_number_change";
     public static final String TERMINATOR_CODON_VARIANT = "terminator_codon_variant";
     public static final String FEATURE_TRUNCATION = "feature_truncation";
@@ -512,7 +513,8 @@ public class VariantAnnotationUtils {
         }
         // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
         // FIXME: insertions and deletions
-        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+//        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+        if (variant.getType().equals(VariantType.INDEL)) {
             if (variant.getReference().isEmpty()) {
 //                variant.setType(VariantType.INSERTION);
                 return VariantType.INSERTION;

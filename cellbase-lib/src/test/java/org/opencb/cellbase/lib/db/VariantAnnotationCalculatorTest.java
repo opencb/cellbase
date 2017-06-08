@@ -232,7 +232,8 @@ public class VariantAnnotationCalculatorTest {
         queryOptions.put("include", "variation");
         Variant variant = new Variant("1:10161-10291:<DEL>");
         StructuralVariation structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
-                10291 - 100, 10291 + 10, 0, null);
+                10291 - 100, 10291 + 10, 0, null, null,
+                null);
         variant.setSv(structuralVariation);
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -241,7 +242,8 @@ public class VariantAnnotationCalculatorTest {
 
         variant = new Variant("1:10401-127130:<CN10>");
         structuralVariation = new StructuralVariation(10401, 10401, 127130,
-                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+                127130, 0, null, null,
+                StructuralVariantType.COPY_NUMBER_GAIN);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
@@ -250,7 +252,8 @@ public class VariantAnnotationCalculatorTest {
         queryOptions.put("imprecise", false);
         variant = new Variant("1:10401-127130:<CN10>");
         structuralVariation = new StructuralVariation(10401, 10401, 127130,
-                127130, 0, StructuralVariantType.COPY_NUMBER_GAIN);
+                127130, 0, null, null,
+                StructuralVariantType.COPY_NUMBER_GAIN);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
@@ -264,7 +267,7 @@ public class VariantAnnotationCalculatorTest {
 
         Variant variant = new Variant("19:78787-78807:<DEL>");
         StructuralVariation structuralVariation = new StructuralVariation(78787, 78787,
-                78807, 78807, 0, null);
+                78807, 78807, 0, null, null, null);
         queryOptions.put("svExtraPadding", 150);
         variant.setSv(structuralVariation);
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculatorGrch38
@@ -287,7 +290,8 @@ public class VariantAnnotationCalculatorTest {
 
         variant = new Variant("1:1823634-1823770:<DEL>");
         structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
-                1823770 - 20, 1823770 + 10, 0, null);
+                1823770 - 20, 1823770 + 10, 0, null, null,
+                null);
         variant.setSv(structuralVariation);
         queryOptions.put("imprecise", false);
         queryResult = variantAnnotationCalculatorGrch38
@@ -297,7 +301,8 @@ public class VariantAnnotationCalculatorTest {
 
         variant = new Variant("1:1823634-1823770:<DEL>");
         structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
-                1823770 - 20, 1823770 + 10, 0, null);
+                1823770 - 20, 1823770 + 10, 0, null, null,
+                null);
         variant.setSv(structuralVariation);
         queryOptions.remove("imprecise");
         queryResult = variantAnnotationCalculatorGrch38
@@ -521,7 +526,7 @@ public class VariantAnnotationCalculatorTest {
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
         QueryResult<ConsequenceType> consequenceTypeResult =
-            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 34857337, "CTTG", "TA"),
+            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("22:16084114-16084134:<CNV>"),
                     new QueryOptions("normalize", false));
         assertObjectListEquals("[{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000587521\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":4,\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":554,\"cdsPosition\":327,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":109,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000587384\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":4,\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":737,\"cdsPosition\":327,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":109,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000592277\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":4,\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":504,\"cdsPosition\":327,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":109,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000415930\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":3,\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"cdnaPosition\":497,\"cdsPosition\":327,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":109,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000588991\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":3,\"transcriptAnnotationFlags\":[\"cds_start_NF\",\"mRNA_start_NF\"],\"cdnaPosition\":255,\"cdsPosition\":255,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":85,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000592144\",\"strand\":\"+\",\"biotype\":\"nonsense_mediated_decay\",\"exonNumber\":3,\"transcriptAnnotationFlags\":[\"cds_start_NF\",\"mRNA_start_NF\"],\"cdnaPosition\":316,\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001624\",\"name\":\"3_prime_UTR_variant\"},{\"accession\":\"SO:0001621\",\"name\":\"NMD_transcript_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000589504\",\"strand\":\"+\",\"biotype\":\"retained_intron\",\"exonNumber\":3,\"cdnaPosition\":238,\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001792\",\"name\":\"non_coding_transcript_exon_variant\"},{\"accession\":\"SO:0001619\",\"name\":\"non_coding_transcript_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000590375\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":3,\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":261,\"cdsPosition\":210,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":70,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000356487\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":2,\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"cdnaPosition\":451,\"cdsPosition\":210,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":70,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000589399\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":2,\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":290,\"cdsPosition\":210,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":70,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000589640\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":2,\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":281,\"cdsPosition\":210,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":70,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000591204\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":2,\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":281,\"cdsPosition\":210,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":70,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"geneName\":\"GPI\",\"ensemblGeneId\":\"ENSG00000105220\",\"ensemblTranscriptId\":\"ENST00000586425\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonNumber\":2,\"transcriptAnnotationFlags\":[\"basic\"],\"cdnaPosition\":235,\"cdsPosition\":210,\"codon\":\"gaC/gaT\",\"proteinVariantAnnotation\":{\"position\":70,\"reference\":\"ASP\",\"alternate\":\"ASP\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001630\",\"name\":\"splice_region_variant\"},{\"accession\":\"SO:0001589\",\"name\":\"frameshift_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
