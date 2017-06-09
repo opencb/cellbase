@@ -10,6 +10,8 @@ import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +22,8 @@ import java.util.List;
  * Created by fjlopez on 26/01/17.
  */
 public class HgvsCalculator {
+
+    private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
 
     private static final String DUP = "dup";
     private static final String INS = "ins";
@@ -91,8 +95,14 @@ public class HgvsCalculator {
                     return calculateInsertionHgvs(normalizedVariant, transcript, geneId);
                 case DELETION:
                     return calculateDeletionHhgvs(normalizedVariant, transcript, geneId);
+                case MNV:
+                    logger.warn("No HGVS implementation available for MNVs. Returning empty list of HGVS identifiers.");
+                    return Collections.emptyList();
                 default:
-                    throw new UnsupportedURLVariantFormat();
+                    logger.warn("No HGVS implementation available for variant type {}. Returning empty list of HGVS "
+                            + "identifiers.", normalizedVariant.getType());
+                    return Collections.emptyList();
+//                    throw new UnsupportedURLVariantFormat();
             }
         }
 
