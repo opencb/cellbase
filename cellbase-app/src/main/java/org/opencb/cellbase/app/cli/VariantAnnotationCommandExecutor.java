@@ -71,6 +71,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -353,7 +354,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> getStringTaskList() throws IOException {
         List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
-        Set<String> breakendMates = Collections.synchronizedSet(new HashSet<>());
+        VcfStringAnnotatorTask.SharedContext sharedContext = new VcfStringAnnotatorTask.SharedContext(numThreads);
+//        Set<String> breakendMates = Collections.synchronizedSet(new HashSet<>());
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             switch (inputFormat) {
@@ -367,7 +369,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
                         variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
-                                variantAnnotatorList, breakendMates, normalize));
+                                variantAnnotatorList, sharedContext, normalize));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
@@ -837,6 +839,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         + " Variant objects.");
             }
         }
+
+        // Enable/Disable imprecise annotation
+        queryOptions.put("imprecise", variantAnnotationCommandOptions.imprecise);
 
         // Parameter not expected to be very used - provide extra padding (bp) to be used for structural variant annotation
         if (variantAnnotationCommandOptions.buildParams.get("sv-extra-padding") != null) {

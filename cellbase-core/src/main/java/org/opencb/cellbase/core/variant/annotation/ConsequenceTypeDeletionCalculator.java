@@ -27,7 +27,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
     }
 
     @Override
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
+                                     QueryOptions queryOptions) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getEnd();

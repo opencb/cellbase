@@ -134,7 +134,8 @@ public class VariantAnnotationCalculator {
         List<Gene> geneList = getAffectedGenes(variant, includeGeneFields);
 
         // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
-        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true);
+        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true,
+                queryOptions);
 
         QueryResult queryResult = new QueryResult();
         queryResult.setId(variant.toString());
@@ -483,7 +484,8 @@ public class VariantAnnotationCalculator {
 
             if (annotatorSet.contains("consequenceType")) {
                 try {
-                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
+                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i),
+                            geneList, true, queryOptions);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
                         checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
@@ -973,19 +975,10 @@ public class VariantAnnotationCalculator {
     }
 
     private List<Gene> getAffectedGenes(Variant variant, String includeFields) {
-        // Variant type checked in expected order of frequency of occurrence to minimize number of checks
-        // SNV
-        if (VariantType.SNV.equals(variant.getType())) {
-            return getGenesInRange(variant.getChromosome(), variant.getStart(), variant.getEnd(), includeFields);
-        // Short insertion
-        } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
-            return getGenesInRange(variant.getChromosome(), variant.getStart() - 1, variant.getEnd(), includeFields);
-        // Short deletions and symbolic variants except breakends
-        } else if (!VariantType.BREAKEND.equals(variant.getType())) {
-            return getGenesInRange(variant.getChromosome(), variant.getStart(), variant.getEnd(), includeFields);
-        // Breakends
-        } else {
-            List<Gene> result = getGenesInRange(variant.getChromosome(), variant.getStart(), variant.getStart(), includeFields);
+
+        if (VariantType.BREAKEND.equals(variant.getType())) {
+            List<Gene> result = getGenesInRange(variant.getChromosome(), variant.getStart(), variant.getStart(),
+                    includeFields);
             Variant breakendMate = VariantAnnotationUtils.parseBreakendFromAlternate(variant.getAlternate());
             if (breakendMate != null) {
                 Set<String> firstGeneIdSet = result.stream().map((gene) -> gene.getId()).collect(Collectors.toSet());
@@ -998,6 +991,9 @@ public class VariantAnnotationCalculator {
                 }
             }
             return result;
+        } else {
+            Region region = variantToRegion(variant);
+            return getGenesInRange(region.getChromosome(), region.getStart(), region.getEnd(), includeFields);
         }
     }
 
@@ -1207,13 +1203,15 @@ public class VariantAnnotationCalculator {
         return stringBuilder.toString();
     }
 
-    private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList, boolean regulatoryAnnotation) {
+    private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList,
+                                                         boolean regulatoryAnnotation, QueryOptions queryOptions) {
         boolean[] overlapsRegulatoryRegion = {false, false};
         if (regulatoryAnnotation) {
             overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
-        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, overlapsRegulatoryRegion);
+        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
+                overlapsRegulatoryRegion, queryOptions);
         if (variant.getType() == VariantType.SNV
                 || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
@@ -1226,39 +1224,69 @@ public class VariantAnnotationCalculator {
     }
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {
-        List<Region> regionList = new ArrayList<>(variantList.size());
-        if (imprecise) {
-            for (Variant variant : variantList) {
-                if (VariantType.CNV.equals(variant.getType())) {
-                    regionList.add(new Region(variant.getChromosome(),
-                            variant.getStart() - cnvExtraPadding,
-                            variant.getEnd() + cnvExtraPadding));
-                } else if (variant.getSv() != null) {
-                    regionList.add(new Region(variant.getChromosome(),
-                            variant.getSv() != null && variant.getSv().getCiStartLeft() != null
-                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
-                            variant.getSv() != null && variant.getSv().getCiEndRight() != null
-                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
-                // Insertion
-                } else if (variant.getStart() > variant.getEnd()) {
-                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
-                // Other but insertion
-                } else {
-                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
-                }
+        return variantList.stream().map((variant) -> variantToRegion(variant)).collect(Collectors.toList());
+//        List<Region> regionList = new ArrayList<>(variantList.size());
+//        if (imprecise) {
+//            for (Variant variant : variantList) {
+//                if (VariantType.CNV.equals(variant.getType())) {
+//                    regionList.add(new Region(variant.getChromosome(),
+//                            variant.getStart() - cnvExtraPadding,
+//                            variant.getEnd() + cnvExtraPadding));
+//                } else if (variant.getSv() != null) {
+//                    regionList.add(new Region(variant.getChromosome(),
+//                            variant.getSv() != null && variant.getSv().getCiStartLeft() != null
+//                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+//                            variant.getSv() != null && variant.getSv().getCiEndRight() != null
+//                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+//                // Insertion
+//                } else if (variant.getStart() > variant.getEnd()) {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+//                // Other but insertion
+//                } else {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+//                }
+//            }
+//        } else {
+//            for (Variant variant : variantList) {
+//                // Insertion
+//                if (variant.getStart() > variant.getEnd()) {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+//                // Other but insertion
+//                } else {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+//                }
+//            }
+//        }
+//        return regionList;
+    }
+
+    private Region variantToRegion(Variant variant) {
+        // Variant type checked in expected order of frequency of occurrence to minimize number of checks
+        // SNV
+        if (VariantType.SNV.equals(variant.getType())) {
+            return new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
+        // Short insertion
+        } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
+            return new Region(variant.getChromosome(), variant.getStart() - 1, variant.getEnd());
+        // CNV
+        } else if (VariantType.CNV.equals(variant.getType())) {
+            if (imprecise) {
+                return new Region(variant.getChromosome(), variant.getStart() - cnvExtraPadding,
+                        variant.getEnd() + cnvExtraPadding);
+            } else {
+                return new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
             }
+        // Short deletions and symbolic variants (no BREAKENDS expected althought not checked either)
         } else {
-            for (Variant variant : variantList) {
-                // Insertion
-                if (variant.getStart() > variant.getEnd()) {
-                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
-                // Other but insertion
-                } else {
-                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
-                }
+            if (imprecise && variant.getSv() != null) {
+                return new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null ?
+                                variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                        variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + svExtraPadding :
+                                variant.getEnd());
+            } else {
+                return new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
             }
         }
-        return regionList;
     }
 
     private List<Region> breakpointsToRegionList(Variant variant) {

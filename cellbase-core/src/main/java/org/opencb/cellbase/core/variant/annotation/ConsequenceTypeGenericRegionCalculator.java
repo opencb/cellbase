@@ -5,6 +5,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,8 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
 
     protected static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion) {
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
+                                     QueryOptions queryOptions) {
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
         variantEnd = variant.getEnd();

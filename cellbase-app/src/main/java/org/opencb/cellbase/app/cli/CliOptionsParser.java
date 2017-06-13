@@ -394,6 +394,11 @@ public class CliOptionsParser {
                 " By default phased annotation is not enabled.", required = false, arity = 0)
         public boolean phased;
 
+        @Parameter(names = {"--imprecise"}, description = "Flag to indicate whether imprecise borders (CIPOS, CIEND)"
+                + " should be taken into account when annotating structural variants or CNVs."
+                + " By default imprecise annotation is enabled.", required = false, arity = 0)
+        public boolean imprecise = true;
+
         @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
                 + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
                 + "documents that include lists of population frequencies objects. Will allow annotating the input file "

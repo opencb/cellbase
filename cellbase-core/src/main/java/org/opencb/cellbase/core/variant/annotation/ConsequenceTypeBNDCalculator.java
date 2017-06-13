@@ -6,6 +6,7 @@ import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,20 +25,42 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeCalculator {
     }
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
-                                     boolean[] overlapsRegulatoryRegion) {
-        List<ConsequenceType> consequenceTypeList1 = run(inputVariant.getChromosome(), inputVariant.getStart(),
-                geneList, overlapsRegulatoryRegion);
+                                     boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions) {
+        parseQueryParam(queryOptions);
+
+        List<ConsequenceType> consequenceTypeList1 = run(inputVariant.getChromosome(),
+                getStart(inputVariant), getEnd(inputVariant), geneList,
+                overlapsRegulatoryRegion);
         Variant mate = VariantAnnotationUtils.parseBreakendFromAlternate(inputVariant.getAlternate());
         if (mate == null) {
             return consequenceTypeList1;
         } else {
             Set<ConsequenceType> result = new HashSet<>(consequenceTypeList1);
-            result.addAll(run(mate.getChromosome(), mate.getStart(), geneList, overlapsRegulatoryRegion));
+            result.addAll(run(mate.getChromosome(), getStart(mate), getEnd(mate), geneList,
+                    overlapsRegulatoryRegion));
             return new ArrayList<>(result);
         }
     }
 
-    private List<ConsequenceType> run(String chromosome, Integer position, List<Gene> geneList,
+    private Integer getEnd(Variant variant) {
+        if (imprecise && variant.getSv() != null) {
+            return variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + svExtraPadding
+                    : variant.getStart();
+        } else {
+            return variant.getStart();
+        }
+    }
+
+    private Integer getStart(Variant variant) {
+        if (imprecise && variant.getSv() != null) {
+            return variant.getSv().getCiStartLeft() != null ? variant.getSv().getCiStartLeft() - svExtraPadding
+                    : variant.getStart();
+        } else {
+            return variant.getStart();
+        }
+    }
+
+    private List<ConsequenceType> run(String chromosome, Integer position, Integer end, List<Gene> geneList,
                                       boolean[] overlapsRegulatoryRegion) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();

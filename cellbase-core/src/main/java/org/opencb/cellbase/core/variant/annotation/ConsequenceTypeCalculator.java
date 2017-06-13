@@ -28,8 +28,24 @@ public abstract class ConsequenceTypeCalculator {
     protected Transcript transcript;
     protected Variant variant;
     protected GenomeDBAdaptor genomeDBAdaptor;
+    protected Boolean imprecise = true;
+    protected Integer svExtraPadding = 0;
+    protected Integer cnvExtraPadding = 0;
 
-    public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion);
+    protected static final String IMPRECISE = "imprecise";
+    protected static final String SV_EXTRA_PADDING = "svExtraPadding";
+    protected static final String CNV_EXTRA_PADDING = "cnvExtraPadding";
+
+    public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList,
+                                              boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions);
+
+    protected void parseQueryParam(QueryOptions queryOptions) {
+        imprecise = (Boolean) queryOptions.get(IMPRECISE) != null ? (Boolean) queryOptions.get(IMPRECISE) : true;
+        svExtraPadding = (Integer) queryOptions.get(SV_EXTRA_PADDING) != null
+                ? (Integer) queryOptions.get(SV_EXTRA_PADDING) : 0;
+        cnvExtraPadding = (Integer) queryOptions.get(CNV_EXTRA_PADDING) != null
+                ? (Integer) queryOptions.get(CNV_EXTRA_PADDING) : 0;
+    }
 
     protected void solvePositiveTranscript(List<ConsequenceType> consequenceTypeList) {
         switch (transcript.getBiotype()) {
