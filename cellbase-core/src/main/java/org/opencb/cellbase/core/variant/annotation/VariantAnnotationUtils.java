@@ -4,9 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
-import org.opencb.biodata.models.variant.avro.AlleleOrigin;
-import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
-import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.commons.utils.CryptoUtils;
 
 import java.util.*;
@@ -120,8 +118,35 @@ public class VariantAnnotationUtils {
     public static final Map<String, Integer> SO_SEVERITY = new HashMap<>();
     public static final Map<String, AlleleOrigin> ORIGIN_STRING_TO_ALLELE_ORIGIN = new HashMap<>();
     public static final Set<String> CODING_SO_NAMES = new HashSet<>();
+    public static final Map<String, ClinicalSignificance> CLINVAR_CLINSIG_TO_ACMG = new HashMap<>();
+    public static final Map<String, TraitAssociation> CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION = new HashMap<>();
+    public static final Map<String, DrugResponseClassification> CLINVAR_CLINSIG_TO_DRUG_RESPONSE = new HashMap<>();
+    public static final HashMap<String, ConsistencyStatus> CLINVAR_REVIEW_TO_CONSISTENCY_STATUS = new HashMap<>();
 
     static {
+
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_conflicting_interpretations", ConsistencyStatus.conflict);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_multiple_submitters_no_conflicts", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_single_submitter", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("reviewed_by_expert_panel", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("conflicting interpretations", ConsistencyStatus.conflict);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("no conflicts", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("single submitter", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("reviewed by expert panel", ConsistencyStatus.congruent);
+
+
+        CLINVAR_CLINSIG_TO_ACMG.put("benign", ClinicalSignificance.benign);
+        CLINVAR_CLINSIG_TO_ACMG.put("likely benign", ClinicalSignificance.likely_benign);
+        CLINVAR_CLINSIG_TO_ACMG.put("conflicting interpretations of pathogenicity", ClinicalSignificance.uncertain_significance);
+        CLINVAR_CLINSIG_TO_ACMG.put("likely pathogenic", ClinicalSignificance.likely_pathogenic);
+        CLINVAR_CLINSIG_TO_ACMG.put("pathogenic", ClinicalSignificance.pathogenic);
+        CLINVAR_CLINSIG_TO_ACMG.put("uncertain significance", ClinicalSignificance.uncertain_significance);
+        CLINVAR_CLINSIG_TO_ACMG.put("conflicting data from submitters", ClinicalSignificance.uncertain_significance);
+
+        CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.put("risk factor", TraitAssociation.established_risk_allele);
+        CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.put("protective", TraitAssociation.protective);
+
+        CLINVAR_CLINSIG_TO_DRUG_RESPONSE.put("drug response", DrugResponseClassification.responsive);
 
         ///////////////////////////////////////////////////////////////////////
         /////   ClinVar allele origins to SO terms   //////////////////////////

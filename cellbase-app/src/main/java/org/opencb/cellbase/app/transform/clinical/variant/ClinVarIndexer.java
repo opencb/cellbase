@@ -1,11 +1,8 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.biodata.models.variant.avro.Germline;
-import org.opencb.biodata.models.variant.avro.Somatic;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
@@ -19,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -35,6 +33,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final int VARIATION_ALLELE_ALLELE_COLUMN = 2;
     private static final int VARIATION_ALLELE_VARIATION_COLUMN = 0;
     private static final String SOMATIC = "somatic";
+    private static final String CLINSIG_FIELD_NAME = "ClinicalSignificance";
+    private static final String REVIEW_FIELD_NAME = "ReviewStatus";
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
     private final Path clinvarVariationAlleleFile;
@@ -115,9 +115,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        VariantTraitAssociation variantTraitAssociation = getEvidenceEntryList(key);
-        addNewEntries(variantTraitAssociation, publicSet, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
+        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
+        addNewEntries(evidenceEntryList, publicSet, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
     }
 
     private List<EvidenceEntry> getEvidenceEntryList(byte[] key) throws RocksDBException, IOException {
@@ -142,14 +142,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
             Set<String> originSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN]
                     .toLowerCase().split(";")));
-            alleleOrigin = new ArrayList<>(originSet.size());
-            for (String originString : originSet) {
-                if (VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.containsKey(originString)) {
-                    alleleOrigin.add(VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.get(originString));
-                } else {
-                    logger.warn("No SO term found for allele origin {}. Skipping.", originString);
-                }
-            }
+            alleleOrigin = getAlleleOriginList(originSet);
+        }
+
+        List<HeritableTrait> heritableTraitList = null;
+        if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])) {
+            Set<String> phenotypeSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]
+                    .toLowerCase().split(";")));
+            heritableTraitList = phenotypeSet.stream()
+                    .map((phenotype) -> new HeritableTrait(phenotype, null)).collect(Collectors.toList());
         }
 
         List<GenomicFeature> genomicFeatureList = null;
@@ -161,139 +162,134 @@ public class ClinVarIndexer extends ClinicalIndexer {
             }
         }
 
+        List<Property> additionalProperties = new ArrayList<>(2);
         VariantClassification variantClassification = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])) {
-            if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.containsKey(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])) {
-                variantClassification = new VariantClassification(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG
-                        .get(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]), null, null, null, null);
-            } else {
-                logger.warn("No SO term found for allele origin {}. Skipping.", originString);
-            }
+            variantClassification = getVariantClassification(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]);
+            additionalProperties.add(new Property(null, CLINSIG_FIELD_NAME, lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]));
+        }
+
+        ConsistencyStatus consistencyStatus = null;
+        if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_REVIEW_COLUMN])) {
+            consistencyStatus = getConsistencyStatus(lineFields[VARIANT_SUMMARY_REVIEW_COLUMN]);
+            additionalProperties.add(new Property(null, REVIEW_FIELD_NAME, lineFields[VARIANT_SUMMARY_REVIEW_COLUMN]));
         }
 
         EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
                 "https://www.ncbi.nlm.nih.gov/clinvar/variation/" + variationId, variationId,
-                !alleleOrigin.isEmpty() ? alleleOrigin : null, null, genomicFeatureList,
-                );
+                !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
+                variantClassification, null,
+                null, consistencyStatus, null, null, null,
+                null, additionalProperties, null);
 
-        String clinicalSignificance = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])
-                ? null : lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN];
-        List<String> geneNames = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])
-                ? null: Arrays.asList(lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(","));
-        String reviewStatus = EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_REVIEW_COLUMN])
-                ? null : lineFields[VARIANT_SUMMARY_REVIEW_COLUMN];
-
-        Germline germline = null;
-        Somatic somatic = null;
-
-//        if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
-        // Create a set to avoid situations like germline;germline;germline
-        Set<String> originSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN]
-                .toLowerCase().split(";")));
-        boolean addGermline = true;
-        if (originSet.contains(SOMATIC)) {
-            somatic = new Somatic();
-            somatic.setSource(CLINVAR_NAME);
-            somatic.setReviewStatus(reviewStatus);
-            somatic.setGeneNames(geneNames);
-            somatic.setAccession(variationId);
-            somatic.setPrimaryHistology(EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])
-                    ? null : lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]);
-            variantTraitAssociation.getSomatic().add(somatic);
-
-            // Origin for a number of the variants may not be clear, values found in the database for this field are:
-            // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
-            // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
-            // For the sake of simplicity and since it's not clear what to do with the rest of tags, we'll classify
-            // as somatic only those with the "somatic" tag and the rest will be stored as germline
-            addGermline = originSet.size() > 1;
-        }
-
-        // Origin for a number of the variants may not be clear, values found in the database for this field are:
-        // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
-        // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
-        // For the sake of simplicity and since it's not clear what to do with the rest of tags, we'll classify
-        // as somatic only those with the "somatic" tag and the rest will be stored as germline
-        if (addGermline) {
-            germline = new Germline();
-            germline.setAccession(variationId);
-            germline.setClinicalSignificance(clinicalSignificance);
-            germline.setDisease(EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])
-                    ? null : Arrays.asList(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]));
-            germline.setReviewStatus(reviewStatus);
-            germline.setSource(CLINVAR_NAME);
-            germline.setGeneNames(geneNames);
-            variantTraitAssociation.getGermline().add(germline);
-        }
-//        }
+        evidenceEntryList.add(evidenceEntry);
     }
 
-    private void addNewEntries(VariantTraitAssociation variantTraitAssociation, PublicSetType publicSet,
+    private List<AlleleOrigin> getAlleleOriginList(Set<String> originSet) {
+        List<AlleleOrigin> alleleOrigin;
+        alleleOrigin = new ArrayList<>(originSet.size());
+        for (String originString : originSet) {
+            if (VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.containsKey(originString)) {
+                alleleOrigin.add(VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.get(originString));
+            } else {
+                logger.warn("No SO term found for allele origin {}. Skipping.", originString);
+            }
+        }
+        return alleleOrigin;
+    }
+
+    private ConsistencyStatus getConsistencyStatus(String lineField) {
+        for (String value : lineField.split("[,/;]")) {
+            value = value.toLowerCase().trim();
+            if (VariantAnnotationUtils.CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.containsKey(value)) {
+                return VariantAnnotationUtils.CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.get(value);
+            }
+        }
+        return null;
+    }
+
+    private VariantClassification getVariantClassification(String lineField) {
+        VariantClassification variantClassification = new VariantClassification();
+        for (String value : lineField.split("[,/;]")) {
+            value = value.toLowerCase().trim();
+            if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.containsKey(value)) {
+                // No value set
+                if (variantClassification.getClinicalSignificance() == null) {
+                    variantClassification.setClinicalSignificance(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.get(value));
+                // Seen cases like Benign;Pathogenic;association;not provided;risk factor for the same record
+                } else if (isBenign(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.get(value))
+                        && isPathogenic(variantClassification.getClinicalSignificance())) {
+                    logger.warn("Benign and Pathogenic clinical significances found for the same record");
+                    logger.warn("Will set uncertain_significance instead");
+                    variantClassification.setClinicalSignificance(ClinicalSignificance.uncertain_significance);
+                }
+            } else if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.containsKey(value)) {
+                variantClassification.setTraitAssociation(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.get(value));
+            } else if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.containsKey(value)) {
+                variantClassification.setDrugResponseClassification(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.get(value));
+            } else {
+                logger.warn("No mapping found for referenceClinVarAssertion.clinicalSignificance {}", value);
+                logger.warn("No value will be set at EvidenceEntry.variantClassification for this term");
+            }
+        }
+        return variantClassification;
+    }
+
+    private boolean isPathogenic(ClinicalSignificance clinicalSignificance) {
+        return ClinicalSignificance.pathogenic.equals(clinicalSignificance)
+                || ClinicalSignificance.likely_pathogenic.equals(clinicalSignificance);
+    }
+
+    private boolean isBenign(ClinicalSignificance clinicalSignificance) {
+        return ClinicalSignificance.benign.equals(clinicalSignificance)
+                || ClinicalSignificance.likely_benign.equals(clinicalSignificance);
+    }
+
+    private void addNewEntries(List<EvidenceEntry> evidenceEntryList, PublicSetType publicSet,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
+        List<Property> additionalProperties = new ArrayList<>(2);
+        EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
         String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
-        String clinicalSignificance = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getDescription();
-        String reviewStatus = publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getReviewStatus().name();
-        List<String> geneNames = getGeneNames(publicSet);
-        List<Submission> submissions = getSubmissionList(publicSet);
-        List<String> germlineBibliography = new ArrayList<>();
-        List<String> somaticBibliography = new ArrayList<>();
-        Germline germline = null;
-        Somatic somatic = null;
-        boolean hasGermlineAnnotation = false;
-        boolean hasSomaticAnnotation = false;
+
+        VariantClassification variantClassification = getVariantClassification(publicSet.getReferenceClinVarAssertion()
+                .getClinicalSignificance().getDescription());
+        additionalProperties.add(new Property(null, CLINSIG_FIELD_NAME, publicSet.getReferenceClinVarAssertion()
+                .getClinicalSignificance().getDescription()));
+
+        ConsistencyStatus consistencyStatus = getConsistencyStatus(publicSet.getReferenceClinVarAssertion()
+                .getClinicalSignificance().getReviewStatus().name());
+        additionalProperties.add(new Property(null, REVIEW_FIELD_NAME, publicSet.getReferenceClinVarAssertion()
+                .getClinicalSignificance().getReviewStatus().name()));
+
+        List<GenomicFeature> genomicFeatureList = getGenomicFeature(publicSet);
+        List<EvidenceSubmission> submissions = getSubmissionList(publicSet);
+
+        List<String> bibliography = new ArrayList<>();
+        Set<String> originSet = new HashSet<>(publicSet.getReferenceClinVarAssertion().getObservedIn().size());
         for (ObservationSet observationSet : publicSet.getReferenceClinVarAssertion().getObservedIn()) {
             // Origin for a number of the variants may not be clear, values found in the database for this field are:
             // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
             // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
             // For the sake of simplicity and since it's not clear what to do with the rest of tags, we'll classify
             // as somatic only those with the "somatic" tag and the rest will be stored as germline
-            if (observationSet.getSample().getOrigin().equalsIgnoreCase("somatic")) {
-                hasSomaticAnnotation = true;
-                somaticBibliography = addBibliographyFromObservationSet(somaticBibliography, observationSet);
-            } else {
-                hasGermlineAnnotation = true;
-                germlineBibliography = addBibliographyFromObservationSet(germlineBibliography, observationSet);
-            }
-
+            originSet.add(observationSet.getSample().getOrigin());
+            bibliography = addBibliographyFromObservationSet(bibliography, observationSet);
         }
+        List<AlleleOrigin> alleleOrigin = getAlleleOriginList(originSet);
 
-        if (hasSomaticAnnotation) {
-            somatic = new Somatic();
-            somatic.setBibliography(germlineBibliography);
-            somatic.setSource(CLINVAR_NAME);
-            somatic.setReviewStatus(reviewStatus);
-            somatic.setGeneNames(geneNames);
-            somatic.setSubmissions(submissions);
-            somatic.setAccession(accession);
-            somatic.setPrimaryHistology(getPreferredTraitName(publicSet, traitsToEfoTermsMap));
-            variantTraitAssociation.getSomatic().add(somatic);
-            if (somaticBibliography.size() > 0) {
-                somatic.setBibliography(somaticBibliography);
-            }
-            numberSomaticRecords++;
-        }
-        if (hasGermlineAnnotation) {
-            germline = new Germline();
-            germline.setAccession(accession);
-            germline.setClinicalSignificance(clinicalSignificance);
-            germline.setDisease(getDisease(publicSet, traitsToEfoTermsMap));
-            germline.setReviewStatus(reviewStatus);
-            germline.setSource(CLINVAR_NAME);
-            germline.setInheritanceModel(getInheritanceModel(publicSet));
-            germline.setGeneNames(geneNames);
-            germline.setSubmissions(submissions);
-            variantTraitAssociation.getGermline().add(germline);
-            if (germlineBibliography.size() > 0) {
-                germline.setBibliography(germlineBibliography);
-            }
-            numberGermlineRecords++;
-        }
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, xxxxx,
+                "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession,
+                !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
+                variantClassification, null,
+                null, consistencyStatus, null, null, null,
+                null, additionalProperties, null);
 
+        evidenceEntryList.add(evidenceEntry);
     }
 
-    private List<Submission> getSubmissionList(PublicSetType publicSet) {
-        List<Submission> submissionList = new ArrayList<>(publicSet.getClinVarAssertion().size());
+    private List<EvidenceSubmission> getSubmissionList(PublicSetType publicSet) {
+        List<EvidenceSubmission> submissionList = new ArrayList<>(publicSet.getClinVarAssertion().size());
         for (MeasureTraitType measureTraitType : publicSet.getClinVarAssertion()) {
             String date;
             // Try to provide the clinVarAssertion.clinicalSignificance.dateLastUpdated date. If does not exist, provide
@@ -313,7 +309,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
 //                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinVarAccession()
 //                        .getDateUpdated().getMillisecond());
             }
-            submissionList.add(new Submission(measureTraitType.getClinVarSubmissionID().getSubmitter(), date));
+            submissionList.add(new EvidenceSubmission(measureTraitType.getClinVarSubmissionID().getSubmitter(), date,
+                    null));
         }
         return submissionList;
     }
@@ -366,8 +363,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
     }
 
-    private List<String> getGeneNames(PublicSetType publicSet) {
-        Set<String> geneIdSet = new HashSet<>();
+    private List<GenomicFeature> getGenomicFeature(PublicSetType publicSet) {
+        Set<GenomicFeature> genomicFeatureSet = new HashSet<>();
         for (MeasureSetType.Measure measure : publicSet.getReferenceClinVarAssertion().getMeasureSet().getMeasure()) {
             if (measure.getMeasureRelationship() != null) {
                 for (MeasureSetType.Measure.MeasureRelationship measureRelationship : measure.getMeasureRelationship()) {
@@ -375,7 +372,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
                         for (SetElementSetType setElementSet : measureRelationship.getSymbol()) {
                             if (setElementSet.getElementValue() != null) {
                                 if (setElementSet.getElementValue().getValue() != null) {
-                                    geneIdSet.add(setElementSet.getElementValue().getValue());
+                                    Map<String, String> map = new HashMap<>(1);
+                                    map.put("symbol", setElementSet.getElementValue().getValue());
+                                    genomicFeatureSet.add(new GenomicFeature(FeatureTypes.Gene, null, map));
                                 }
                             }
                         }
@@ -383,8 +382,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 }
             }
         }
-        if (geneIdSet.size() > 0) {
-            return new ArrayList<>(geneIdSet);
+        if (genomicFeatureSet.size() > 0) {
+            return new ArrayList<>(genomicFeatureSet);
         } else {
             return null;
         }
