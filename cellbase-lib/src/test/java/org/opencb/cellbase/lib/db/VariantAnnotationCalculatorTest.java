@@ -79,6 +79,274 @@ public class VariantAnnotationCalculatorTest {
     }
 
     @Test
+    public void testSVsCNVsConsequenceTypeAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType");
+
+        /**
+         * Whole affected non coding transcript
+         */
+        Variant variant = new Variant("22:16328960-16344095:<CNV>");
+        QueryResult<ConsequenceType> consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(consequenceTypeResult.getNumResults(), 2);
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
+                        "structural_variant")));
+
+        variant = new Variant("22:16328960-16344095:<DEL>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(consequenceTypeResult.getNumResults(), 2);
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
+                        "transcript_ablation")));
+
+        variant = new Variant("22:16328960-16344095:<DUP>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(consequenceTypeResult.getNumResults(), 2);
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
+                        "transcript_amplification")));
+
+        variant = new Variant("22:16328960-16344095:<INV>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(consequenceTypeResult.getNumResults(), 2);
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
+                        "structural_variant")));
+
+        /**
+         * Partially affected non coding transcript
+         */
+        variant = new Variant("22:16328960-16339130:<CNV>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(3, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
+                        "non_coding_transcript_exon_variant"),
+                        new SequenceOntologyTerm("SO:0001619",
+                                "non_coding_transcript_variant"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+        variant = new Variant("22:16328960-16339130:<DEL>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(4, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
+                        "non_coding_transcript_exon_variant"),
+                        new SequenceOntologyTerm("SO:0001619",
+                                "non_coding_transcript_variant"),
+                        new SequenceOntologyTerm("SO:0001906",
+                                "feature_truncation"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+        variant = new Variant("22:16328960-16339130:<DUP>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(3, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
+                                "non_coding_transcript_exon_variant"),
+                        new SequenceOntologyTerm("SO:0001619",
+                                "non_coding_transcript_variant"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+        variant = new Variant("22:16328960-16339130:<INV>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(3, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000435410"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
+                                "non_coding_transcript_exon_variant"),
+                        new SequenceOntologyTerm("SO:0001619",
+                                "non_coding_transcript_variant"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+        /**
+         * Whole affected coding transcript
+         */
+        variant = new Variant("22:17254012-17306871:<CNV>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
+                        "structural_variant")));
+
+        variant = new Variant("22:17254012-17306871:<DEL>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
+                        "transcript_ablation")));
+
+        variant = new Variant("22:17254012-17306871:<DUP>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
+                        "transcript_amplification")));
+
+        variant = new Variant("22:17254012-17306871:<INV>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size(), 1);
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
+                        "structural_variant")));
+
+        /**
+         * Partially affected coding transcript
+         */
+        variant = new Variant("22:17254012-17281248:<CNV>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(4, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
+                                "terminator_codon_variant"),
+                        new SequenceOntologyTerm("SO:0001580",
+                                "coding_sequence_variant"),
+                        new SequenceOntologyTerm("SO:0001624",
+                                "3_prime_UTR_variant"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+        variant = new Variant("22:17254012-17281248:<DEL>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(5, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001578",
+                                "stop_lost"),
+                        new SequenceOntologyTerm("SO:0001580",
+                                "coding_sequence_variant"),
+                        new SequenceOntologyTerm("SO:0001624",
+                                "3_prime_UTR_variant"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001906",
+                                "feature_truncation")));
+
+        variant = new Variant("22:17254012-17281248:<DUP>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(4, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
+                                "terminator_codon_variant"),
+                        new SequenceOntologyTerm("SO:0001580",
+                                "coding_sequence_variant"),
+                        new SequenceOntologyTerm("SO:0001624",
+                                "3_prime_UTR_variant"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+        variant = new Variant("22:17254012-17281248:<INV>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(4, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
+                                "terminator_codon_variant"),
+                        new SequenceOntologyTerm("SO:0001580",
+                                "coding_sequence_variant"),
+                        new SequenceOntologyTerm("SO:0001624",
+                                "3_prime_UTR_variant"),
+                        new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+        /**
+         * Insertions affecting non coding transcript
+         */
+        variant = new Variant("22:17308607:<INS>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(2, consequenceTypeResult.getNumResults());
+        assertEquals(2, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000423928").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000423928"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
+                                "non_coding_transcript_exon_variant"),
+                        new SequenceOntologyTerm("SO:0001619",
+                                "non_coding_transcript_variant")));
+
+        variant = new Variant("22:17309113:<INS>");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(2, consequenceTypeResult.getNumResults());
+        assertEquals(2, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000423928").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000423928"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant"),
+                        new SequenceOntologyTerm("SO:0001619",
+                                "non_coding_transcript_variant")));
+
+        /**
+         * Insertions affecting coding transcript
+         */
+        variant = new Variant("22:17264399:<INS>");
+        variant.getSv().setLeftSvInsSeq("AGAACCTTAATACCCTAGTCTCGATGGTCTTTACATTTTGGCATGATTTTGCAGCGGCTGGTACCGG");
+        variant.getSv().setRightSvInsSeq("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001624",
+                                "3_prime_UTR_variant")));
+
+        variant = new Variant("22:17265044:<INS>");
+        variant.getSv().setLeftSvInsSeq("AGAACCTTAATACCCTAGTCTCGATGGTCTTTACATTTTGGCATGATTTTGCAGCGGCTGGTACCGG");
+        variant.getSv().setRightSvInsSeq("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001580",
+                                "coding_sequence_variant")));
+
+        variant = new Variant("22:17266127:<INS>");
+        variant.getSv().setLeftSvInsSeq("AGAACCTTAATACCCTAGTCTCGATGGTCTTTACATTTTGGCATGATTTTGCAGCGGCTGGTACCGG");
+        variant.getSv().setRightSvInsSeq("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001627",
+                                "intron_variant")));
+
+    }
+
+    @Test
     public void testImpreciseConsequenceTypeAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");
@@ -90,7 +358,7 @@ public class VariantAnnotationCalculatorTest {
         variant.setSv(structuralVariation);
         QueryResult<ConsequenceType> consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 11);
+        assertEquals(11, consequenceTypeResult.getNumResults());
         assertThat(consequenceTypeResult.getResult(),
                 CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
                         "ENST00000417324", "-", "lincRNA", null,
@@ -110,15 +378,15 @@ public class VariantAnnotationCalculatorTest {
         variant.setSv(structuralVariation);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 11);
+        assertEquals(11, consequenceTypeResult.getNumResults());
         assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324"),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification"))));
         assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000461467"),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification"))));
-        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324").size(), 3);
-        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000461467").size(), 3);
+        assertEquals(3, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324").size());
+        assertEquals(3, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000461467").size());
         assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324"),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
                         "non_coding_transcript_exon_variant")));
@@ -133,7 +401,7 @@ public class VariantAnnotationCalculatorTest {
         variant.setSv(structuralVariation);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 11);
+        assertEquals(11, consequenceTypeResult.getNumResults());
         assertThat(consequenceTypeResult.getResult(),
                 CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
                         "ENST00000417324", "-", "lincRNA", null,
@@ -149,28 +417,21 @@ public class VariantAnnotationCalculatorTest {
         queryOptions.put("imprecise", false);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 11);
+        assertEquals(11, consequenceTypeResult.getNumResults());
         assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324"),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
                         "transcript_ablation"))));
         assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000461467"),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
                         "transcript_ablation"))));
-        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324").size(), 4);
-        assertEquals(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000461467").size(), 4);
+        assertEquals(4, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324").size());
+        assertEquals(4, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000461467").size());
         assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000417324"),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001906",
                         "feature_truncation")));
         assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000461467"),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001906",
                         "feature_truncation")));
-
-
-
-
-
-
-
     }
 
     private List<SequenceOntologyTerm> getConsequenceTypeList(List<ConsequenceType> consequenceTypeList, String transcriptId) {
