@@ -1279,10 +1279,10 @@ public class VariantAnnotationCalculator {
         // Short deletions and symbolic variants (no BREAKENDS expected althought not checked either)
         } else {
             if (imprecise && variant.getSv() != null) {
-                return new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null ?
-                                variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
-                        variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + svExtraPadding :
-                                variant.getEnd());
+                return new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
+                            ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                        variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + svExtraPadding
+                                : variant.getEnd());
             } else {
                 return new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
             }

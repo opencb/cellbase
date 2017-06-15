@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -8,6 +9,8 @@ import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +22,7 @@ import java.util.List;
  */
 public class HgvsCalculator {
 
+    private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
 
@@ -64,22 +68,34 @@ public class HgvsCalculator {
             // We cannot know the type of variant before normalization has been carried out
             Variant normalizedVariant = normalize(variant, normalize);
             HgvsCalculator hgvsCalculator = getHgvsCalculator(normalizedVariant);
-            // Normalization set to false - if needed, it would have been done already two lines above
-            return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
+            // Can be null if there's no hgvs implementation for the variant type
+            if (hgvsCalculator != null) {
+                // Normalization set to false - if needed, it would have been done already two lines above
+                return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
+            }
         }
         return Collections.emptyList();
     }
 
     private HgvsCalculator getHgvsCalculator(Variant normalizedVariant) {
-        switch (VariantAnnotationUtils.getVariantType(normalizedVariant)) {
+//        switch (VariantAnnotationUtils.getVariantType(normalizedVariant)) {
+        switch (normalizedVariant.getType()) {
             case SNV:
                 return new HgvsSNVCalculator(genomeDBAdaptor);
-            case INSERTION:
-                return new HgvsInsertionCalculator(genomeDBAdaptor);
-            case DELETION:
-                return new HgvsDeletionCalculator(genomeDBAdaptor);
+            case INDEL:
+                if (StringUtils.isBlank(normalizedVariant.getReference())) {
+                    return new HgvsInsertionCalculator(genomeDBAdaptor);
+                } else if (StringUtils.isBlank(normalizedVariant.getAlternate())) {
+                    return new HgvsDeletionCalculator(genomeDBAdaptor);
+                } else {
+                    logger.warn("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
+                            + "identifiers.");
+                    return null;
+                }
             default:
-                throw new UnsupportedURLVariantFormat();
+                 logger.warn("No HGVS implementation available for structural variants. Found {}. Returning empty list"
+                        + "  of HGVS identifiers.", normalizedVariant.getType());
+                return null;
         }
     }
 

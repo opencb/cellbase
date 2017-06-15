@@ -105,6 +105,7 @@ public class VariantAnnotationUtils {
     public static final String TERMINATOR_CODON_VARIANT = "terminator_codon_variant";
     public static final String FEATURE_TRUNCATION = "feature_truncation";
     public static final String FEATURE_VARIANT = "feature_variant";
+    public static final String STRUCTURAL_VARIANT = "structural_variant";
     public static final String INFRAME_DELETION = "inframe_deletion";
 
     public static final String CDS_START_NF = "cds_start_NF";
@@ -357,8 +358,9 @@ public class VariantAnnotationUtils {
         SIFT_DESCRIPTIONS.put(0, "tolerated");
         SIFT_DESCRIPTIONS.put(1, "deleterious");
 
-        SO_SEVERITY.put("copy_number_change", 40);
-        SO_SEVERITY.put("transcript_ablation", 39);
+        SO_SEVERITY.put("copy_number_change", 41);
+        SO_SEVERITY.put("transcript_ablation", 40);
+        SO_SEVERITY.put("structural_variant", 39);
         SO_SEVERITY.put("splice_acceptor_variant", 38);
         SO_SEVERITY.put("splice_donor_variant", 37);
         SO_SEVERITY.put("stop_gained", 36);

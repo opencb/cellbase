@@ -123,14 +123,12 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
                                 String breakendPairId = getBreakendPairId(variantContext);
                                 // Mate was previously seen and stored, create Variant with the pair info, remove
                                 // variantContext from sharedContext and continue
-                                if (sharedContext.getBreakendMates().putIfAbsent(breakendPairId, variantContext) != null) {    // WARNING: assuming
+                                // WARNING: assuming BND positions cannot be multiallelic positions - there will always
+                                // be just one alternate allele!
+                                if (sharedContext.getBreakendMates().putIfAbsent(breakendPairId, variantContext) != null) {
                                     variantList.add(parseBreakendPair(sharedContext.getBreakendMates().get(breakendPairId),
-                                            variantContext));                                                                  // BND positions
-                                    sharedContext.getBreakendMates().remove(breakendPairId);                                   // cannot be
-                                                                                                                               // multiallelic
-                                                                                                                               // positions - there
-                                                                                                                               // will always be just
-                                                                                                                               // one alternate allele!
+                                            variantContext));
+                                    sharedContext.getBreakendMates().remove(breakendPairId);
                                 // Mate not seen yet, variantContext has been saved in sharedContext, continue
                                 }
                             // Singleton BND, no mate specified within the INFO field

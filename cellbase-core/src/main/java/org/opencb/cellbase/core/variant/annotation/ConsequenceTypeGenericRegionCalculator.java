@@ -47,7 +47,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                 if (transcript.getStrand().equals("+")) {
                     // whole transcript affected
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) {
-                        SoNames.add(VariantAnnotationUtils.FEATURE_VARIANT);
+                        SoNames.add(VariantAnnotationUtils.STRUCTURAL_VARIANT);
                         consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                         consequenceTypeList.add(consequenceType);
                     } else if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
@@ -62,7 +62,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                     }
                 } else {
                     if (variantStart <= transcript.getStart() && variantEnd >= transcript.getEnd()) { // whole trans. affected
-                        SoNames.add(VariantAnnotationUtils.FEATURE_VARIANT);
+                        SoNames.add(VariantAnnotationUtils.STRUCTURAL_VARIANT);
 //                        consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                         consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                         consequenceTypeList.add(consequenceType);

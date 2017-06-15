@@ -220,7 +220,9 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
 //            cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantPosition, firstCdsPhase, cdnaCodingStart);
 //            solveCodingExonVariantInNegativeTranscript(splicing, transcriptSequence, cdnaCodingStart, cdnaVariantPosition);
 //        } else {
-//            if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedEnd()) { // Check transcript has 3 UTR)
+//            if (transcript.getStart() < transcript.getGenomicCodingStart() || transcript.unconfirmedEnd()) { // Check
+//                                                                                                             // transcript
+//                                                                                                             // has 3 UTR)
 //                SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
 //            }
 //        }

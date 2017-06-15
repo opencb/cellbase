@@ -71,7 +71,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.GZIPInputStream;
 
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -841,7 +840,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         // Enable/Disable imprecise annotation
-        queryOptions.put("imprecise", variantAnnotationCommandOptions.imprecise);
+        queryOptions.put("imprecise", !variantAnnotationCommandOptions.noImprecision);
 
         // Parameter not expected to be very used - provide extra padding (bp) to be used for structural variant annotation
         if (variantAnnotationCommandOptions.buildParams.get("sv-extra-padding") != null) {
