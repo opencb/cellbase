@@ -979,7 +979,7 @@ public class VariantAnnotationCalculator {
         if (VariantType.BREAKEND.equals(variant.getType())) {
             List<Gene> result = getGenesInRange(variant.getChromosome(), variant.getStart(), variant.getStart(),
                     includeFields);
-            Variant breakendMate = VariantAnnotationUtils.parseBreakendFromAlternate(variant.getAlternate());
+            Variant breakendMate = VariantAnnotationUtils.parseMateBreakend(variant);
             if (breakendMate != null) {
                 Set<String> firstGeneIdSet = result.stream().map((gene) -> gene.getId()).collect(Collectors.toSet());
                 // Merge genes that overlap with the first break end with those overlapping the second breakend
@@ -1117,7 +1117,7 @@ public class VariantAnnotationCalculator {
                 return overlapsRegulatoryRegion;
             // Otherwise check the other breakend in case exists
             } else {
-                Variant breakendMate = VariantAnnotationUtils.parseBreakendFromAlternate(variant.getAlternate());
+                Variant breakendMate = VariantAnnotationUtils.parseMateBreakend(variant);
                 if (breakendMate != null) {
                     return getRegulatoryRegionOverlaps(breakendMate.getChromosome(), Math.max(1, breakendMate.getStart()));
                 } else {

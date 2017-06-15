@@ -5,6 +5,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -29,11 +30,12 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
     @Override
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
                                      QueryOptions queryOptions) {
+        parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = variant.getEnd();
-//        variantEnd = variant.getStart() + variant.getReference().length() - 1;
-        variantStart = variant.getStart();
+        int extraPadding = VariantType.CNV.equals(variant.getType()) ? cnvExtraPadding : svExtraPadding;
+        variantEnd = getEnd(extraPadding);
+        variantStart = getStart(extraPadding);
         isBigDeletion = ((variantEnd - variantStart) > BIG_VARIANT_SIZE_THRESHOLD);
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {

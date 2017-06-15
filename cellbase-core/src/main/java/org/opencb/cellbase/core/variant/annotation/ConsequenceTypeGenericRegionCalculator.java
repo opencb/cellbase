@@ -22,10 +22,11 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
                                      QueryOptions queryOptions) {
+        parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = variant.getEnd();
-        variantStart = variant.getStart();
+        variantEnd = getEnd(svExtraPadding);
+        variantStart = getStart(svExtraPadding);
 //        isBigDeletion = ((variantEnd - variantStart) > BIG_VARIANT_SIZE_THRESHOLD);
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {

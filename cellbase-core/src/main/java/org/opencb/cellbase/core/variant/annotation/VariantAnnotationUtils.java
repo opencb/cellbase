@@ -6,6 +6,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
+import org.opencb.biodata.models.variant.avro.StructuralVariation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.commons.utils.CryptoUtils;
 
@@ -495,14 +496,18 @@ public class VariantAnnotationUtils {
         return stringBuilder.append(chromosome);
     }
 
-    public static Variant parseBreakendFromAlternate(String alternate) {
+    public static Variant parseMateBreakend(Variant variant) {
         // e.g. A]2:321681]
-        String[] parts = alternate.split(":");
+        String[] parts = variant.getAlternate().split(":");
         if (parts.length == 2) {
             String chromosome = parts[0].split("[\\[\\]]")[1];
             chromosome = Region.normalizeChromosome(chromosome);
             Integer start = Integer.valueOf(parts[1].split("[\\[\\]]")[0]);
-            return new Variant(chromosome, start, null, null);
+            Variant newvariant = new Variant(chromosome, start, null, null);
+            newvariant.setSv(new StructuralVariation(variant.getSv().getCiEndLeft(), variant.getSv().getCiEndRight(),
+                    variant.getSv().getCiStartLeft(), variant.getSv().getCiStartRight(), null,
+                    null, null, null));
+            return newvariant;
         }
         return null;
     }

@@ -29,8 +29,8 @@ public abstract class ConsequenceTypeCalculator {
     protected Variant variant;
     protected GenomeDBAdaptor genomeDBAdaptor;
     protected Boolean imprecise = true;
-    protected Integer svExtraPadding = 0;
-    protected Integer cnvExtraPadding = 0;
+    protected int svExtraPadding = 0;
+    protected int cnvExtraPadding = 0;
 
     protected static final String IMPRECISE = "imprecise";
     protected static final String SV_EXTRA_PADDING = "svExtraPadding";
@@ -40,11 +40,30 @@ public abstract class ConsequenceTypeCalculator {
                                               boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions);
 
     protected void parseQueryParam(QueryOptions queryOptions) {
-        imprecise = (Boolean) queryOptions.get(IMPRECISE) != null ? (Boolean) queryOptions.get(IMPRECISE) : true;
-        svExtraPadding = (Integer) queryOptions.get(SV_EXTRA_PADDING) != null
-                ? (Integer) queryOptions.get(SV_EXTRA_PADDING) : 0;
-        cnvExtraPadding = (Integer) queryOptions.get(CNV_EXTRA_PADDING) != null
-                ? (Integer) queryOptions.get(CNV_EXTRA_PADDING) : 0;
+        imprecise = queryOptions.get(IMPRECISE) != null ? (Boolean) queryOptions.get(IMPRECISE) : true;
+        svExtraPadding = queryOptions.get(SV_EXTRA_PADDING) != null
+                ? (int) queryOptions.get(SV_EXTRA_PADDING) : 0;
+        cnvExtraPadding = queryOptions.get(CNV_EXTRA_PADDING) != null
+                ? (int) queryOptions.get(CNV_EXTRA_PADDING) : 0;
+    }
+
+    protected int getStart(int extraPadding) {
+        if (imprecise && variant.getSv() != null) {
+            return variant.getSv().getCiStartLeft() != null ? variant.getSv().getCiStartLeft() - extraPadding
+                    : variant.getStart();
+        } else {
+            return variant.getStart();
+        }
+
+    }
+
+    protected int getEnd(int extraPadding) {
+        if (imprecise && variant.getSv() != null) {
+            return variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + extraPadding
+                    : variant.getEnd();
+        } else {
+            return variant.getEnd();
+        }
     }
 
     protected void solvePositiveTranscript(List<ConsequenceType> consequenceTypeList) {

@@ -18,10 +18,11 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
                                      QueryOptions queryOptions) {
+        parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
         variant = inputVariant;
-        variantEnd = variant.getEnd();
-        variantStart = variant.getStart();
+        variantEnd = getEnd(cnvExtraPadding);
+        variantStart = getStart(cnvExtraPadding);
 //        isBigDeletion = ((variantEnd - variantStart) > BIG_VARIANT_SIZE_THRESHOLD);
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {
@@ -78,5 +79,4 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
         solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
         return consequenceTypeList;
     }
-
 }
