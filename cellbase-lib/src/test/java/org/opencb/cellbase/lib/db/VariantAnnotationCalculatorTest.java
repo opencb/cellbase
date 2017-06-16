@@ -79,6 +79,33 @@ public class VariantAnnotationCalculatorTest {
     }
 
     @Test
+    public void testExonAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType");
+
+        Variant variant = new Variant("22:17260740-17288774:<DEL>");
+        QueryResult<ConsequenceType> consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001624",
+                        "3_prime_UTR_variant")));
+
+        variant = new Variant("22:17264399:<INS>");
+        variant.getSv().setLeftSvInsSeq("AGAACCTTAATACCCTAGTCTCGATGGTCTTTACATTTTGGCATGATTTTGCAGCGGCTGGTACCGG");
+        variant.getSv().setRightSvInsSeq("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428").size());
+        assertThat(getConsequenceTypeList(consequenceTypeResult.getResult(), "ENST00000331428"),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001624",
+                        "3_prime_UTR_variant")));
+
+    }
+
+    @Test
     public void testSVsCNVsConsequenceTypeAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "consequenceType");

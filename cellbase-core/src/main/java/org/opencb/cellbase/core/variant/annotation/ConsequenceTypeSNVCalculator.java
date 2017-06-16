@@ -6,9 +6,11 @@ import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -83,16 +85,20 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     protected void solveNonCodingNegativeTranscript() {
 
         Exon exon = transcript.getExons().get(0);
+        int exonSize = exon.getEnd() - exon.getStart() + 1;
         String transcriptSequence = exon.getSequence();
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);  // cdnaExonEnd poinst to the same base than exonStart
         int cdnaVariantPosition = -1;
         boolean[] junctionSolution = {false, false};
+        Score exonOverlap = null;
 
         if (variant.getStart() <= exon.getEnd() && variant.getStart() >= exon.getStart()) {  // Variant within the exon
             cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
-            consequenceType.setExonNumber(exon.getExonNumber());
+            exonOverlap = new Score(100.0 / exonSize, null,
+                    (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -100,6 +106,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         while (exonCounter < transcript.getExons().size() && variantAhead) {
             int prevSpliceSite = exon.getStart() - 1;
             exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
+            exonSize = exon.getEnd() - exon.getStart() + 1;
             transcriptSequence = exon.getSequence() + transcriptSequence;
             solveJunction(exon.getEnd() + 1, prevSpliceSite, VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_DONOR_VARIANT, junctionSolution);
@@ -109,12 +116,17 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonOverlap = new Score(100.0 / exonSize, null,
+                            (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
             }
             exonCounter++;
+        }
+        if (exonOverlap != null) {
+            consequenceType.setExonOverlap(Collections.singletonList(exonOverlap));
         }
         solveMiRNA(cdnaVariantPosition, junctionSolution[1]);
     }
@@ -122,6 +134,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     protected void solveCodingNegativeTranscript() {
 
         Exon exon = transcript.getExons().get(0);
+        int exonSize = exon.getEnd() - exon.getStart() + 1;
         String transcriptSequence = exon.getSequence();
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);  // cdnaExonEnd poinst to the same base than exonStart
@@ -129,6 +142,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        Score exonOverlap = null;
 
         if (transcript.getGenomicCodingEnd() >= exon.getStart()) {
             firstCdsPhase = exon.getPhase();
@@ -136,7 +150,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (variant.getStart() <= exon.getEnd() && variant.getStart() >= exon.getStart()) {  // Variant within the exon
             cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
-            consequenceType.setExonNumber(exon.getExonNumber());
+            exonOverlap = new Score(100.0 / exonSize, null,
+                    (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -144,6 +160,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         while (exonCounter < transcript.getExons().size() && variantAhead) {
             int prevSpliceSite = exon.getStart() - 1;
             exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
+            exonSize = exon.getEnd() - exon.getStart() + 1;
             transcriptSequence = exon.getSequence() + transcriptSequence;
             // Set firsCdsPhase only when the first coding exon is reached
             if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {
@@ -158,12 +175,17 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantPosition = cdnaExonEnd - (variant.getStart() - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonOverlap = new Score(100.0 / exonSize, null,
+                            (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
             }
             exonCounter++;
+        }
+        if (exonOverlap != null) {
+            consequenceType.setExonOverlap(Collections.singletonList(exonOverlap));
         }
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
@@ -293,18 +315,22 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
 
     protected void solveNonCodingPositiveTranscript() {
         Exon exon = transcript.getExons().get(0);
+        int exonSize = exon.getEnd() - exon.getStart() + 1;
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);
         int cdnaVariantPosition = -1;
         boolean[] junctionSolution = {false, false};
         junctionSolution[0] = false;
         junctionSolution[1] = false;
+        Score exonOverlap = null;
 
         if (variant.getStart() >= exon.getStart()) {
             if (variant.getStart() <= exon.getEnd()) {  // Variant start within the exon
                 cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantPosition);
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonOverlap = new Score(100.0 / exonSize, null,
+                        (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//                consequenceType.setExonNumber(exon.getExonNumber());
             }
         }
 
@@ -313,6 +339,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         while (exonCounter < transcript.getExons().size() && variantAhead) {
             int prevSpliceSite = exon.getEnd() + 1;
             exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
+            exonSize = exon.getEnd() - exon.getStart() + 1;
             solveJunction(prevSpliceSite, exon.getStart() - 1, VariantAnnotationUtils.SPLICE_DONOR_VARIANT,
                     VariantAnnotationUtils.SPLICE_ACCEPTOR_VARIANT, junctionSolution);
 
@@ -321,12 +348,17 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() <= exon.getEnd()) {  // Variant within the exon
                     cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonOverlap = new Score(100.0 / exonSize, null,
+                            (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
             }
             exonCounter++;
+        }
+        if (exonOverlap != null) {
+            consequenceType.setExonOverlap(Collections.singletonList(exonOverlap));
         }
         solveMiRNA(cdnaVariantPosition, junctionSolution[1]);
     }
@@ -362,6 +394,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     protected void solveCodingPositiveTranscript() {
 
         Exon exon = transcript.getExons().get(0);
+        int exonSize = exon.getEnd() - exon.getStart() + 1;
         String transcriptSequence = exon.getSequence();
         boolean variantAhead = true; // we need a first iteration within the while to ensure junction is solved in case needed
         int cdnaExonEnd = (exon.getEnd() - exon.getStart() + 1);
@@ -369,6 +402,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        Score exonOverlap = null;
 
         if (transcript.getGenomicCodingStart() <= exon.getEnd()) {
             firstCdsPhase = exon.getPhase();
@@ -376,7 +410,9 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (variant.getStart() >= exon.getStart() && variant.getStart() <= exon.getEnd()) {  // Variant start within the exon
             cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
             consequenceType.setCdnaPosition(cdnaVariantPosition);
-            consequenceType.setExonNumber(exon.getExonNumber());
+            exonOverlap = new Score(100.0 / exonSize, null,
+                    (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -384,6 +420,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         while (exonCounter < transcript.getExons().size() && variantAhead) {
             int prevSpliceSite = exon.getEnd() + 1;
             exon = transcript.getExons().get(exonCounter);          // next exon has been loaded
+            exonSize = exon.getEnd() - exon.getStart() + 1;
             transcriptSequence = transcriptSequence + exon.getSequence();
             // Set firsCdsPhase only when the first coding exon is reached
             if (firstCdsPhase == -1 && transcript.getGenomicCodingStart() <= exon.getEnd()) {
@@ -398,14 +435,18 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (variant.getStart() <= exon.getEnd()) {  // Variant within the exon
                     cdnaVariantPosition = cdnaExonEnd - (exon.getEnd() - variant.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantPosition);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonOverlap = new Score(100.0 / exonSize, null,
+                            (new StringBuilder()).append(exon.getExonNumber()).append("/").append(transcript.getExons().size()).toString());
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                 }
             } else {
                 variantAhead = false;
             }
             exonCounter++;
         }
-
+        if (exonOverlap != null) {
+            consequenceType.setExonOverlap(Collections.singletonList(exonOverlap));
+        }
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
             solveExonVariantInPositiveTranscript(splicing, transcriptSequence, cdnaVariantPosition, firstCdsPhase);

@@ -5,10 +5,12 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 //import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
@@ -19,6 +21,7 @@ import java.util.List;
 public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculator {
 
     private static final String SYMBOLIC_START = "<";
+    private static final Double INVALID_OVERLAP_PERCENTAGE = -1.0;
     private int variantStart;
     private int variantEnd;
 //    private GenomeDBAdaptor genomeDBAdaptor;
@@ -96,6 +99,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        int exonNumber = NO_EXON_OVERLAP;
 
         if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {
             firstCdsPhase = exon.getPhase();
@@ -104,7 +108,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantStart);
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 } else {  // Only variant start within the exon  ---ES||||||||||||----
@@ -114,7 +119,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         } else if (variantStart == exon.getEnd()) {
             cdnaVariantEnd = cdnaExonEnd - (variantEnd - exon.getStart());
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
-            consequenceType.setExonNumber(exon.getExonNumber());
+            exonNumber = exon.getExonNumber();
+//            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -134,20 +140,26 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantStart);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonNumber = exon.getExonNumber();
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||SE|||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
-                        consequenceType.setExonNumber(exon.getExonNumber());
+//                        consequenceType.setExonNumber(exon.getExonNumber());
                     }
                 }
             } else if (variantStart == exon.getEnd()) {  // Only variant start within the exon  ----||||||||||||||SE---
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
             exonCounter++;
+        }
+        if (exonNumber != NO_EXON_OVERLAP) {
+            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
+                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
         }
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
@@ -162,6 +174,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        int exonNumber = NO_EXON_OVERLAP;
 
         if (firstCdsPhase == -1 && transcript.getGenomicCodingEnd() >= exon.getStart()) {
             firstCdsPhase = exon.getPhase();
@@ -170,7 +183,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                 cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                 consequenceType.setCdnaPosition(cdnaVariantStart);
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||S|||||E||||----
                     cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
                 } else {  // Only variant start within the exon  ---ES||||||||||||----
@@ -180,7 +194,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         } else if (variantStart == exon.getEnd()) {
             cdnaVariantEnd = cdnaExonEnd - (variantEnd - exon.getStart());
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
-            consequenceType.setExonNumber(exon.getExonNumber());
+            exonNumber = exon.getExonNumber();
+//            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -202,20 +217,26 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantEnd >= exon.getStart()) {  // Variant end within the exon
                     cdnaVariantStart = cdnaExonEnd - (variantEnd - exon.getStart());
                     consequenceType.setCdnaPosition(cdnaVariantStart);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonNumber = exon.getExonNumber();
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantStart >= exon.getStart()) {  // Both variant start and variant end within the exon  ----||||SE|||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
-                        consequenceType.setExonNumber(exon.getExonNumber());
+//                        consequenceType.setExonNumber(exon.getExonNumber());
                     }
                 }
             } else if (variantStart == exon.getEnd()) {  // Only variant start within the exon  ----||||||||||||||SE---
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (variantStart - exon.getStart());
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
             exonCounter++;
+        }
+        if (exonNumber != NO_EXON_OVERLAP) {
+            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
+                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
         }
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
@@ -398,6 +419,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        int exonNumber = NO_EXON_OVERLAP;
 
         if (transcript.getGenomicCodingStart() <= exon.getEnd()) {
             firstCdsPhase = exon.getPhase();
@@ -407,7 +429,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantStart <= exon.getEnd()) { // Variant start within the exon (this is a insertion, variantEnd=variantStart+1)
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                 consequenceType.setCdnaPosition(cdnaVariantStart);
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 } else {  // Only variant start within the exon  ---||||||||||||SE----
@@ -419,7 +442,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
-            consequenceType.setExonNumber(exon.getExonNumber());
+            exonNumber = exon.getExonNumber();
+//            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -441,7 +465,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                     consequenceType.setCdnaPosition(cdnaVariantStart);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonNumber = exon.getExonNumber();
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     } else {  // Only variant start within the exon  ---||||||||||||SE----
@@ -452,11 +477,16 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the 3' end of an intron
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
             exonCounter++;
+        }
+        if (exonNumber != NO_EXON_OVERLAP) {
+            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
+                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
         }
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
@@ -472,6 +502,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         int firstCdsPhase = -1;
         boolean[] junctionSolution = {false, false};
         boolean splicing = false;
+        int exonNumber = NO_EXON_OVERLAP;
 
         if (transcript.getGenomicCodingStart() <= exon.getEnd()) {
             firstCdsPhase = exon.getPhase();
@@ -481,7 +512,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             if (variantStart <= exon.getEnd()) { // Variant start within the exon (this is a insertion, variantEnd=variantStart+1)
                 cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                 consequenceType.setCdnaPosition(cdnaVariantStart);
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
                 if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                     cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 } else {  // Only variant start within the exon  ---||||||||||||SE----
@@ -492,7 +524,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             // We do not contemplate that variant end can be located before this exon since this is the first exon
             cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
             cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the first nucleotide of the exon
-            consequenceType.setExonNumber(exon.getExonNumber());
+            exonNumber = exon.getExonNumber();
+//            consequenceType.setExonNumber(exon.getExonNumber());
         }
 
         int exonCounter = 1;
@@ -515,7 +548,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 if (variantStart <= exon.getEnd()) {  // Variant start within the exon
                     cdnaVariantStart = cdnaExonEnd - (exon.getEnd() - variantStart);
                     consequenceType.setCdnaPosition(cdnaVariantStart);
-                    consequenceType.setExonNumber(exon.getExonNumber());
+                    exonNumber = exon.getExonNumber();
+//                    consequenceType.setExonNumber(exon.getExonNumber());
                     if (variantEnd <= exon.getEnd()) {  // Both variant start and variant end within the exon  ----||||SE||||||||----
                         cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                     } else {  // Only variant start within the exon  ---||||||||||||SE----
@@ -526,11 +560,16 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                 cdnaExonEnd += (exon.getEnd() - exon.getStart() + 1);
                 cdnaVariantEnd = cdnaExonEnd - (exon.getEnd() - variantEnd);
                 cdnaVariantStart = cdnaVariantEnd - 1;  // To account for those insertions in the 3' end of an intron
-                consequenceType.setExonNumber(exon.getExonNumber());
+                exonNumber = exon.getExonNumber();
+//                consequenceType.setExonNumber(exon.getExonNumber());
             } else {  // Variant does not include this exon, variant is located before this exon
                 variantAhead = false;
             }
             exonCounter++;
+        }
+        if (exonNumber != NO_EXON_OVERLAP) {
+            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
+                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
         }
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
