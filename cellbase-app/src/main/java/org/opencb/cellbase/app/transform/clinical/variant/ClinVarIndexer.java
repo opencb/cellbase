@@ -278,14 +278,16 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
         List<AlleleOrigin> alleleOrigin = getAlleleOriginList(originSet);
 
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, xxxxx,
-                "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession,
-                !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
-                variantClassification, null,
-                null, consistencyStatus, null, null, null,
-                null, additionalProperties, null);
+        // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
+//        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, xxxxx,
+//                "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession,
+//                !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
+//                variantClassification, null,
+//                null, consistencyStatus, null, null, null,
+//                null, additionalProperties, null);
+//
+//        evidenceEntryList.add(evidenceEntry);
 
-        evidenceEntryList.add(evidenceEntry);
     }
 
     private List<EvidenceSubmission> getSubmissionList(PublicSetType publicSet) {
@@ -300,14 +302,10 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 date = String.format("%04d", measureTraitType.getClinicalSignificance().getDateLastEvaluated().getYear())
                         + String.format("%02d", measureTraitType.getClinicalSignificance().getDateLastEvaluated().getMonth())
                         + String.format("%02d", measureTraitType.getClinicalSignificance().getDateLastEvaluated().getDay());
-//                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinicalSignificance()
-//                        .getDateLastEvaluated().getMillisecond());
             } else {
                 date = String.format("%04d", measureTraitType.getClinVarAccession().getDateUpdated().getYear())
                         + String.format("%02d", measureTraitType.getClinVarAccession().getDateUpdated().getMonth())
                         + String.format("%02d", measureTraitType.getClinVarAccession().getDateUpdated().getDay());
-//                date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(measureTraitType.getClinVarAccession()
-//                        .getDateUpdated().getMillisecond());
             }
             submissionList.add(new EvidenceSubmission(measureTraitType.getClinVarSubmissionID().getSubmitter(), date,
                     null));

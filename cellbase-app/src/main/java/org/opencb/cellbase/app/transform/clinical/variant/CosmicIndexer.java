@@ -1,17 +1,11 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
-import org.opencb.biodata.models.variant.avro.Somatic;
-import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
-import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,35 +68,36 @@ public class CosmicIndexer extends ClinicalIndexer {
 
         logger.info("Parsing cosmic file ...");
 
-        try {
-            BufferedReader cosmicReader = FileUtils.newBufferedReader(cosmicFile);
-            String line;
-            cosmicReader.readLine(); // First line is the header -> ignore it
-            while ((line = cosmicReader.readLine()) != null) {
-                logger.debug(line);
-                Somatic somatic = buildCosmic(line);
-                SequenceLocation sequenceLocation = new SequenceLocation();
-                if (parsePosition(sequenceLocation, line) && parseVariant(sequenceLocation, line)) {
-                    updateRocksDB(sequenceLocation, somatic);
-                    numberIndexedRecords++;
-                } else {
-                    ignoredCosmicLines++;
-                }
-                totalNumberRecords++;
-
-                if (totalNumberRecords % 1000 == 0) {
-                    logger.info("{} records parsed", totalNumberRecords);
-                }
-            }
-        } catch (RocksDBException e) {
-            logger.error("Error reading/writing from/to the RocksDB index while indexing Cosmic");
-            throw e;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            logger.info("Done");
-            this.printSummary();
-        }
+// FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
+//        try {
+//            BufferedReader cosmicReader = FileUtils.newBufferedReader(cosmicFile);
+//            String line;
+//            cosmicReader.readLine(); // First line is the header -> ignore it
+//            while ((line = cosmicReader.readLine()) != null) {
+//                logger.debug(line);
+//                Somatic somatic = buildCosmic(line);
+//                SequenceLocation sequenceLocation = new SequenceLocation();
+//                if (parsePosition(sequenceLocation, line) && parseVariant(sequenceLocation, line)) {
+//                    updateRocksDB(sequenceLocation, somatic);
+//                    numberIndexedRecords++;
+//                } else {
+//                    ignoredCosmicLines++;
+//                }
+//                totalNumberRecords++;
+//
+//                if (totalNumberRecords % 1000 == 0) {
+//                    logger.info("{} records parsed", totalNumberRecords);
+//                }
+//            }
+//        } catch (RocksDBException e) {
+//            logger.error("Error reading/writing from/to the RocksDB index while indexing Cosmic");
+//            throw e;
+//        } catch (IOException ex) {
+//            ex.printStackTrace();
+//        } finally {
+//            logger.info("Done");
+//            this.printSummary();
+//        }
 
     }
 
@@ -135,110 +130,112 @@ public class CosmicIndexer extends ClinicalIndexer {
         }
     }
 
-    private void updateRocksDB(SequenceLocation sequenceLocation, Somatic somatic) throws RocksDBException, IOException {
+    // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
+//    private void updateRocksDB(SequenceLocation sequenceLocation, Somatic somatic) throws RocksDBException, IOException {
+//
+//        byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
+//                sequenceLocation.getStart(), sequenceLocation.getReference(),
+//                sequenceLocation.getAlternate()).getBytes();
+//        byte[] dbContent = rdb.get(key);
+//        VariantTraitAssociation variantTraitAssociation;
+//        if (dbContent == null) {
+//            variantTraitAssociation = new VariantTraitAssociation();
+//            variantTraitAssociation.setGermline(Collections.emptyList());
+//            variantTraitAssociation.setSomatic(Collections.singletonList(somatic));
+//            numberNewVariants++;
+//        } else {
+//            variantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
+//            // There are cosmic records which share all the fields but the bibliography. In some occassions (COSM12600)
+//            // the redundancy is such that the document becomes much bigger than 16MB and cannot be loaded into MongoDB.
+//            // This merge reduces redundancy.
+//            mergeSomaticDocument(variantTraitAssociation.getSomatic(), somatic);
+//            numberVariantUpdates++;
+//        }
+//        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
+//    }
+// FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
+//    private void mergeSomaticDocument(List<Somatic> somaticList, Somatic somatic) {
+//        int i = 0;
+//        boolean merged = false;
+//        while (i < somaticList.size() && !merged) {
+//            if (sameSomaticDocument(somaticList.get(i), somatic)) {
+//                if (somaticList.get(i).getBibliography() != null) {
+//                    if (somatic.getBibliography() != null) {
+//                        Set<String> bibliographySet = new HashSet<>(somaticList.get(i).getBibliography());
+//                        bibliographySet.addAll(new HashSet<>(somatic.getBibliography()));
+//                        somaticList.get(i).setBibliography(new ArrayList<>(bibliographySet));
+//                    }
+//                } else {
+//                    somaticList.get(i).setBibliography(somatic.getBibliography());
+//                }
+//                merged = true;
+//            }
+//            i++;
+//        }
+//        if (!merged) {
+//            somaticList.add(somatic);
+//        }
+//    }
 
-        byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
-                sequenceLocation.getStart(), sequenceLocation.getReference(),
-                sequenceLocation.getAlternate()).getBytes();
-        byte[] dbContent = rdb.get(key);
-        VariantTraitAssociation variantTraitAssociation;
-        if (dbContent == null) {
-            variantTraitAssociation = new VariantTraitAssociation();
-            variantTraitAssociation.setGermline(Collections.emptyList());
-            variantTraitAssociation.setSomatic(Collections.singletonList(somatic));
-            numberNewVariants++;
-        } else {
-            variantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
-            // There are cosmic records which share all the fields but the bibliography. In some occassions (COSM12600)
-            // the redundancy is such that the document becomes much bigger than 16MB and cannot be loaded into MongoDB.
-            // This merge reduces redundancy.
-            mergeSomaticDocument(variantTraitAssociation.getSomatic(), somatic);
-            numberVariantUpdates++;
-        }
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
-    }
-
-    private void mergeSomaticDocument(List<Somatic> somaticList, Somatic somatic) {
-        int i = 0;
-        boolean merged = false;
-        while (i < somaticList.size() && !merged) {
-            if (sameSomaticDocument(somaticList.get(i), somatic)) {
-                if (somaticList.get(i).getBibliography() != null) {
-                    if (somatic.getBibliography() != null) {
-                        Set<String> bibliographySet = new HashSet<>(somaticList.get(i).getBibliography());
-                        bibliographySet.addAll(new HashSet<>(somatic.getBibliography()));
-                        somaticList.get(i).setBibliography(new ArrayList<>(bibliographySet));
-                    }
-                } else {
-                    somaticList.get(i).setBibliography(somatic.getBibliography());
-                }
-                merged = true;
-            }
-            i++;
-        }
-        if (!merged) {
-            somaticList.add(somatic);
-        }
-    }
-
+    // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
     /**
      * Checks whether all fields but the bibliography list, are exactly the same in two somatic records.
      * @param somatic1 Somatic object
      * @param somatic2 Somatic object
      * @return true if all fields but the bibliography are exaclty the same in both records. false otherwise
      */
-    private boolean sameSomaticDocument(Somatic somatic1, Somatic somatic2) {
-        // Check gene name list
-        boolean equalSource = (somatic1.getSource() == null
-                && somatic2.getSource() == null)
-                || (somatic1.getSource().equalsIgnoreCase(somatic2.getSource()));
-
-        if (equalSource) {
-            boolean equalAccession = (somatic1.getAccession() == null && somatic2.getAccession() == null)
-                    || (somatic1.getAccession().equals(somatic2.getAccession()));
-            if (equalAccession) {
-                boolean equalGeneList = (somatic1.getGeneNames() == null && somatic2.getGeneNames() == null)
-                        || (new HashSet<>(somatic1.getGeneNames()).equals(new HashSet<>(somatic2.getGeneNames())));
-                if (equalGeneList) {
-                    boolean equalMutationSomaticStatus = (somatic1.getMutationSomaticStatus() == null
-                            && somatic2.getMutationSomaticStatus() == null)
-                            || (somatic1.getMutationSomaticStatus().equalsIgnoreCase(somatic2.getMutationSomaticStatus()));
-                    if (equalMutationSomaticStatus) {
-                        boolean equalPrimarySite = (somatic1.getPrimarySite() == null
-                                && somatic2.getPrimarySite() == null)
-                                || (somatic1.getPrimarySite().equalsIgnoreCase(somatic2.getPrimarySite()));
-                        if (equalPrimarySite) {
-                            boolean equalSiteSubtype = (somatic1.getSiteSubtype() == null
-                                    && somatic2.getSiteSubtype() == null)
-                                    || (somatic1.getSiteSubtype().equalsIgnoreCase(somatic2.getSiteSubtype()));
-                            if (equalSiteSubtype) {
-                                boolean equalPrimaryHistology = (somatic1.getPrimaryHistology() == null
-                                        && somatic2.getPrimaryHistology() == null)
-                                        || (somatic1.getPrimaryHistology().equalsIgnoreCase(somatic2.getPrimaryHistology()));
-                                if (equalPrimaryHistology) {
-                                    boolean equalHistologySubtype = (somatic1.getHistologySubtype() == null
-                                            && somatic2.getHistologySubtype() == null)
-                                            || (somatic1.getHistologySubtype().equalsIgnoreCase(somatic2.getHistologySubtype()));
-                                    if (equalHistologySubtype) {
-                                        boolean equalSampleSource = (somatic1.getSampleSource() == null
-                                                && somatic2.getSampleSource() == null)
-                                                || (somatic1.getSampleSource().equalsIgnoreCase(somatic2.getSampleSource()));
-                                        if (equalSampleSource) {
-                                            boolean equalTumourOrigin = (somatic1.getTumourOrigin() == null
-                                                    && somatic2.getTumourOrigin() == null)
-                                                    || (somatic1.getTumourOrigin().equalsIgnoreCase(somatic2.getTumourOrigin()));
-                                            return equalTumourOrigin;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
+//    private boolean sameSomaticDocument(Somatic somatic1, Somatic somatic2) {
+//        // Check gene name list
+//        boolean equalSource = (somatic1.getSource() == null
+//                && somatic2.getSource() == null)
+//                || (somatic1.getSource().equalsIgnoreCase(somatic2.getSource()));
+//
+//        if (equalSource) {
+//            boolean equalAccession = (somatic1.getAccession() == null && somatic2.getAccession() == null)
+//                    || (somatic1.getAccession().equals(somatic2.getAccession()));
+//            if (equalAccession) {
+//                boolean equalGeneList = (somatic1.getGeneNames() == null && somatic2.getGeneNames() == null)
+//                        || (new HashSet<>(somatic1.getGeneNames()).equals(new HashSet<>(somatic2.getGeneNames())));
+//                if (equalGeneList) {
+//                    boolean equalMutationSomaticStatus = (somatic1.getMutationSomaticStatus() == null
+//                            && somatic2.getMutationSomaticStatus() == null)
+//                            || (somatic1.getMutationSomaticStatus().equalsIgnoreCase(somatic2.getMutationSomaticStatus()));
+//                    if (equalMutationSomaticStatus) {
+//                        boolean equalPrimarySite = (somatic1.getPrimarySite() == null
+//                                && somatic2.getPrimarySite() == null)
+//                                || (somatic1.getPrimarySite().equalsIgnoreCase(somatic2.getPrimarySite()));
+//                        if (equalPrimarySite) {
+//                            boolean equalSiteSubtype = (somatic1.getSiteSubtype() == null
+//                                    && somatic2.getSiteSubtype() == null)
+//                                    || (somatic1.getSiteSubtype().equalsIgnoreCase(somatic2.getSiteSubtype()));
+//                            if (equalSiteSubtype) {
+//                                boolean equalPrimaryHistology = (somatic1.getPrimaryHistology() == null
+//                                        && somatic2.getPrimaryHistology() == null)
+//                                        || (somatic1.getPrimaryHistology().equalsIgnoreCase(somatic2.getPrimaryHistology()));
+//                                if (equalPrimaryHistology) {
+//                                    boolean equalHistologySubtype = (somatic1.getHistologySubtype() == null
+//                                            && somatic2.getHistologySubtype() == null)
+//                                            || (somatic1.getHistologySubtype().equalsIgnoreCase(somatic2.getHistologySubtype()));
+//                                    if (equalHistologySubtype) {
+//                                        boolean equalSampleSource = (somatic1.getSampleSource() == null
+//                                                && somatic2.getSampleSource() == null)
+//                                                || (somatic1.getSampleSource().equalsIgnoreCase(somatic2.getSampleSource()));
+//                                        if (equalSampleSource) {
+//                                            boolean equalTumourOrigin = (somatic1.getTumourOrigin() == null
+//                                                    && somatic2.getTumourOrigin() == null)
+//                                                    || (somatic1.getTumourOrigin().equalsIgnoreCase(somatic2.getTumourOrigin()));
+//                                            return equalTumourOrigin;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * Check whether the variant is valid and parse it.
@@ -353,30 +350,31 @@ public class CosmicIndexer extends ClinicalIndexer {
         return String.valueOf(reverseAlleleString);
     }
 
-    private Somatic buildCosmic(String line) {
-        String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
-        Somatic cosmic = new Somatic();
-        cosmic.setSource(COSMIC_NAME);
-        cosmic.setGeneNames(new ArrayList<>(Arrays.asList(fields[0])));
-        cosmic.setAccession(fields[16]);
-        if (!fields[3].equalsIgnoreCase(fields[0]) && !fields[3].isEmpty()) {
-            cosmic.getGeneNames().add(fields[3]);
-        }
-        cosmic.setPrimarySite(fields[7]);
-        cosmic.setSiteSubtype(fields[8]);
-        cosmic.setPrimaryHistology(fields[11]);
-        cosmic.setHistologySubtype(fields[12]);
-        cosmic.setMutationSomaticStatus(fields[mutationSomaticStatusColumn]);
-        if (!fields[pubmedPMIDColumn].isEmpty()
-                && !fields[pubmedPMIDColumn].replace(" ", "").replace("NA", "").replace("NULL", "").replace("\t", "")
-                .replace(".", "").replace("-", "").isEmpty()) {
-            cosmic.setBibliography(Collections.singletonList("PMID:" + fields[pubmedPMIDColumn]));
-        }
-        cosmic.setSampleSource(fields[sampleSourceColumn]);
-        cosmic.setTumourOrigin(fields[tumourOriginColumn]);
-
-        return cosmic;
-    }
+    // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
+//    private Somatic buildCosmic(String line) {
+//        String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
+//        Somatic cosmic = new Somatic();
+//        cosmic.setSource(COSMIC_NAME);
+//        cosmic.setGeneNames(new ArrayList<>(Arrays.asList(fields[0])));
+//        cosmic.setAccession(fields[16]);
+//        if (!fields[3].equalsIgnoreCase(fields[0]) && !fields[3].isEmpty()) {
+//            cosmic.getGeneNames().add(fields[3]);
+//        }
+//        cosmic.setPrimarySite(fields[7]);
+//        cosmic.setSiteSubtype(fields[8]);
+//        cosmic.setPrimaryHistology(fields[11]);
+//        cosmic.setHistologySubtype(fields[12]);
+//        cosmic.setMutationSomaticStatus(fields[mutationSomaticStatusColumn]);
+//        if (!fields[pubmedPMIDColumn].isEmpty()
+//                && !fields[pubmedPMIDColumn].replace(" ", "").replace("NA", "").replace("NULL", "").replace("\t", "")
+//                .replace(".", "").replace("-", "").isEmpty()) {
+//            cosmic.setBibliography(Collections.singletonList("PMID:" + fields[pubmedPMIDColumn]));
+//        }
+//        cosmic.setSampleSource(fields[sampleSourceColumn]);
+//        cosmic.setTumourOrigin(fields[tumourOriginColumn]);
+//
+//        return cosmic;
+//    }
 
     public boolean parsePosition(SequenceLocation sequenceLocation, String line) {
         boolean success = false;

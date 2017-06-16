@@ -2,9 +2,6 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.Germline;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -12,9 +9,7 @@ import org.rocksdb.RocksDBException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -73,12 +68,13 @@ public class DOCMIndexer extends ClinicalIndexer {
             Variant variant = new Variant((String) map.get("chromosome"), Integer.valueOf((String) map.get("start")),
                     (String) map.get("reference"), (String) map.get("alternate"));
 
-            List<Germline> germlineList = new ArrayList<Germline>();
-
-
-            variant.setAnnotation(new VariantAnnotation());
-            variant.getAnnotation().setVariantTraitAssociation(new VariantTraitAssociation());
-            variant.getAnnotation().getVariantTraitAssociation().setGermline(germlineList);
+// FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
+//            List<Germline> germlineList = new ArrayList<Germline>();
+//
+//
+//            variant.setAnnotation(new VariantAnnotation());
+//            variant.getAnnotation().setVariantTraitAssociation(new VariantTraitAssociation());
+//            variant.getAnnotation().getVariantTraitAssociation().setGermline(germlineList);
             return variant;
         } else {
             return null;
