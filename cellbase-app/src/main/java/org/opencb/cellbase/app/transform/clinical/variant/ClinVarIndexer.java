@@ -278,15 +278,17 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
         List<AlleleOrigin> alleleOrigin = getAlleleOriginList(originSet);
 
+        List<HeritableTrait> heritableTraitList = getHeritableTrait(publicSet, traitsToEfoTermsMap);
+
         // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-//        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, xxxxx,
-//                "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession,
-//                !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
-//                variantClassification, null,
-//                null, consistencyStatus, null, null, null,
-//                null, additionalProperties, null);
-//
-//        evidenceEntryList.add(evidenceEntry);
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
+                "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession,
+                !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
+                variantClassification, null,
+                null, consistencyStatus, null, null, null,
+                null, additionalProperties, null);
+
+        evidenceEntryList.add(evidenceEntry);
 
     }
 
@@ -387,7 +389,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
     }
 
-    private List<String> getDisease(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
+    private List<String> getHeritableTrait(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
         Set<String> diseaseList = new HashSet<>();
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
 //            if (!trait.getType().equalsIgnoreCase("disease")) {
