@@ -6,6 +6,8 @@ import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,10 +25,38 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     @Override
     protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
         Variant normalizedVariant = normalize(variant, normalize);
-        return calculateTranscriptHhgvs(normalizedVariant, transcript, geneId);
+        String transcriptHgvs = calculateTranscriptHhgvs(normalizedVariant, transcript, geneId);
+        String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
+
+        if (proteinHgvs == null) {
+            return Collections.singletonList(transcriptHgvs);
+        } else {
+            return Arrays.asList(transcriptHgvs, proteinHgvs);
+        }
     }
 
-    private List<String> calculateTranscriptHhgvs(Variant variant, Transcript transcript, String geneId) {
+    /**
+     * Calculates protein HGVS. Must always be called after calling calculateTranscriptHhgvs, since the latter will
+     * normalize and calculate cdna coords that will be used to calculate the protein HGVS.
+     * @param variant Variant object containing genomic coordinates and variation for which protein HGVS wants to be
+     *                calculated
+     * @param transcript Transcript object containing the info for the transcript codifying the protein for which the
+     *                  HGVS will be calculated
+     * @return
+     */
+    private String calculateProteinHgvs(Variant variant, Transcript transcript) {
+        // Check if protein HGVS can be calculated
+        if (isCoding(transcript) && onlySpansCodingSequence(variant)) {
+            ProteinHgvsStringBuilder proteinHgvsStringBuilder = new ProteinHgvsStringBuilder();
+            proteinHgvsStringBuilder.setId(transcript.getProteinID());
+            setProteinCoordinates(proteinHgvsStringBuilder);
+            setAffectedAminoAcids(proteinHgvsStringBuilder);
+        }
+
+        return null;
+    }
+
+    private String calculateTranscriptHhgvs(Variant variant, Transcript transcript, String geneId) {
         // Additional normalization required for insertions
         Variant normalizedVariant = new Variant();
         String mutationType = hgvsNormalize(variant, transcript, normalizedVariant);
@@ -46,7 +76,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         hgvsStringBuilder.setTranscriptId(transcript.getId());
         hgvsStringBuilder.setGeneId(geneId);
 
-        return Collections.singletonList(hgvsStringBuilder.format());
+        return hgvsStringBuilder.format();
 
     }
 
