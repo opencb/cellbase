@@ -1,11 +1,13 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
+import org.opencb.commons.utils.StringUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -35,16 +37,23 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final String SOMATIC = "somatic";
     private static final String CLINSIG_FIELD_NAME = "ClinicalSignificance";
     private static final String REVIEW_FIELD_NAME = "ReviewStatus";
+    private static final String TRAIT = "trait";
+    private static final String MODE_OF_INHERITANCE = "modeOfInheritance";
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
     private final Path clinvarVariationAlleleFile;
     private final Path clinvarEFOFile;
     private final String assembly;
-    private RocksDB rdb;
     private int numberSomaticRecords = 0;
     private int numberGermlineRecords = 0;
     private int numberNoDiseaseTrait = 0;
     private int numberMultipleInheritanceModels = 0;
+    private static final Set<ModeOfInheritance> dominantTermsSet
+            = new HashSet<>(Arrays.asList(ModeOfInheritance.monoallelic,
+            ModeOfInheritance.monoallelic_maternally_imprinted,
+            ModeOfInheritance.monoallelic_not_imprinted, ModeOfInheritance.monoallelic_paternally_imprinted));
+    private static final Set<ModeOfInheritance> recessiveTermsSet
+            = new HashSet<>(Arrays.asList(ModeOfInheritance.biallelic));
 
     public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
                           Path clinvarEFOFile, String assembly, RocksDB rdb) {
@@ -120,19 +129,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
         rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
     }
 
-    private List<EvidenceEntry> getEvidenceEntryList(byte[] key) throws RocksDBException, IOException {
-        byte[] dbContent = rdb.get(key);
-        List<EvidenceEntry> evidenceEntryList;
-        if (dbContent == null) {
-            evidenceEntryList = new ArrayList<>();
-            numberNewVariants++;
-        } else {
-            evidenceEntryList = mapper.readValue(dbContent, List.class);
-            numberVariantUpdates++;
-        }
-        return evidenceEntryList;
-    }
-
     private void addNewEntries(List<EvidenceEntry> evidenceEntryList, String variationId, String[] lineFields,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
@@ -142,7 +138,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN])) {
             Set<String> originSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_ORIGIN_COLUMN]
                     .toLowerCase().split(";")));
-            alleleOrigin = getAlleleOriginList(originSet);
+            alleleOrigin = getAlleleOriginList(new ArrayList<>(originSet));
         }
 
         List<HeritableTrait> heritableTraitList = null;
@@ -156,9 +152,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<GenomicFeature> genomicFeatureList = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])) {
             for (String geneString : lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(",")) {
-                Map<String, String> map = new HashMap<>(1);
-                map.put("symbol", geneString);
-                genomicFeatureList.add(new GenomicFeature(FeatureTypes.Gene, null, map));
+                genomicFeatureList.add(createGeneGenomicFeature(geneString));
             }
         }
 
@@ -183,19 +177,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 null, additionalProperties, null);
 
         evidenceEntryList.add(evidenceEntry);
-    }
-
-    private List<AlleleOrigin> getAlleleOriginList(Set<String> originSet) {
-        List<AlleleOrigin> alleleOrigin;
-        alleleOrigin = new ArrayList<>(originSet.size());
-        for (String originString : originSet) {
-            if (VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.containsKey(originString)) {
-                alleleOrigin.add(VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.get(originString));
-            } else {
-                logger.warn("No SO term found for allele origin {}. Skipping.", originString);
-            }
-        }
-        return alleleOrigin;
     }
 
     private ConsistencyStatus getConsistencyStatus(String lineField) {
@@ -246,9 +227,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private void addNewEntries(List<EvidenceEntry> evidenceEntryList, PublicSetType publicSet,
-                               Map<String, EFO> traitsToEfoTermsMap) {
+                               Map<String, EFO> traitsToEfoTermsMap) throws JsonProcessingException {
 
-        List<Property> additionalProperties = new ArrayList<>(2);
+        List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
         String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
@@ -276,17 +257,16 @@ public class ClinVarIndexer extends ClinicalIndexer {
             originSet.add(observationSet.getSample().getOrigin());
             bibliography = addBibliographyFromObservationSet(bibliography, observationSet);
         }
-        List<AlleleOrigin> alleleOrigin = getAlleleOriginList(originSet);
+        List<AlleleOrigin> alleleOrigin = getAlleleOriginList(new ArrayList<>(originSet));
 
-        List<HeritableTrait> heritableTraitList = getHeritableTrait(publicSet, traitsToEfoTermsMap);
+        List<HeritableTrait> heritableTraitList = getHeritableTrait(publicSet, traitsToEfoTermsMap, additionalProperties);
 
-        // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, submissions, null,
                 "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession,
                 !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
                 variantClassification, null,
                 null, consistencyStatus, null, null, null,
-                null, additionalProperties, null);
+                null, additionalProperties, bibliography);
 
         evidenceEntryList.add(evidenceEntry);
 
@@ -340,27 +320,70 @@ public class ClinVarIndexer extends ClinicalIndexer {
         return null;
     }
 
-    private List<String> getInheritanceModel(PublicSetType publicSet) {
+//    private List<String> getInheritanceModel(PublicSetType publicSet) {
+    private ModeOfInheritance getInheritanceModel(TraitType trait, Map<String, String> sourceInheritableTrait)
+            throws JsonProcessingException {
         Set<String> inheritanceModelSet = new HashSet<>();
-        for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
-            if (trait.getAttributeSet() != null) {
-                for (TraitType.AttributeSet attributeSet : trait.getAttributeSet()) {
-                    if (attributeSet.getAttribute().getType()
-                            != null && attributeSet.getAttribute().getType().equalsIgnoreCase("modeofinheritance")) {
-                        inheritanceModelSet.add(attributeSet.getAttribute().getValue().toLowerCase());
-                    }
+//        for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
+        if (trait.getAttributeSet() != null) {
+            for (TraitType.AttributeSet attributeSet : trait.getAttributeSet()) {
+                if (attributeSet.getAttribute().getType() != null
+                        && attributeSet.getAttribute().getType().equalsIgnoreCase("modeofinheritance")) {
+                    inheritanceModelSet.add(attributeSet.getAttribute().getValue().toLowerCase());
                 }
             }
         }
+//        }
 
         if (inheritanceModelSet.size() == 0) {
             return null;
         } else if (inheritanceModelSet.size() > 1) {
+            sourceInheritableTrait.put(MODE_OF_INHERITANCE,
+                    jsonObjectWriter.writeValueAsString(new ArrayList<>(inheritanceModelSet)));
             numberMultipleInheritanceModels++;
-            return new ArrayList<>(inheritanceModelSet);
+            return solveModeOfInheritanceConflict(inheritanceModelSet);
         } else {
-            return new ArrayList<>(inheritanceModelSet);
+            sourceInheritableTrait.put(MODE_OF_INHERITANCE, inheritanceModelSet.iterator().next());
+            return getModeOfInheritance(inheritanceModelSet.iterator().next());
         }
+    }
+
+    private ModeOfInheritance solveModeOfInheritanceConflict(Set<String> inheritanceModelSet) {
+        logger.warn("Multiple inheritance models found for a variant {}",
+                String.join(",", new ArrayList<>(inheritanceModelSet)));
+        Set<ModeOfInheritance> modeOfInheritanceSet = inheritanceModelSet.stream()
+                .map((modeofInheritanceString) -> getModeOfInheritance(modeofInheritanceString))
+                .collect(Collectors.toSet());
+
+        if (modeOfInheritanceSet.size() == 1
+                || (modeOfInheritanceSet.size() == 2 && modeOfInheritanceSet.contains(null))) {
+            modeOfInheritanceSet.remove(null);
+            logger.warn("Selected inheritance model: {}", modeOfInheritanceSet.iterator().next());
+            return modeOfInheritanceSet.iterator().next();
+        } else {
+            modeOfInheritanceSet.remove(null);
+            modeOfInheritanceSet.removeAll(dominantTermsSet);
+            if (modeOfInheritanceSet.size() > 0) {
+                modeOfInheritanceSet.removeAll(recessiveTermsSet);
+                if (modeOfInheritanceSet.size() > 0) {
+                    logger.warn("No inheritance model selected, conflicting inheritance models found");
+                    return null;
+                } else {
+                    logger.warn("Dominant and recessive models found, {} selected",
+                            ModeOfInheritance.monoallelic_and_biallelic.name());
+                    return ModeOfInheritance.monoallelic_and_biallelic;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private ModeOfInheritance getModeOfInheritance(String modeOfInheritance) {
+        if (VariantAnnotationUtils.CLINVAR_MODEOFINHERITANCE_MAP.containsKey(modeOfInheritance)) {
+            return VariantAnnotationUtils.CLINVAR_MODEOFINHERITANCE_MAP.get(modeOfInheritance);
+        }
+        return null;
     }
 
     private List<GenomicFeature> getGenomicFeature(PublicSetType publicSet) {
@@ -389,33 +412,50 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
     }
 
-    private List<String> getHeritableTrait(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap) {
-        Set<String> diseaseList = new HashSet<>();
+    private List<HeritableTrait> getHeritableTrait(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap,
+                                                   List<Property> propertyList) throws JsonProcessingException {
+
+        List<HeritableTrait> heritableTraitList
+                = new ArrayList<>(publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait().size());
+        // To keep trait and inheritance modes as they appear in the source file
+        List<Map<String,String>> sourceInheritableTraitList
+                = new ArrayList<>(publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait().size());
+
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
-//            if (!trait.getType().equalsIgnoreCase("disease")) {
-//                logger.warn("Entry {}. trait type = {}. No action defined for these traits. Skipping entry",
-//                        publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc(), trait.getType());
-////                System.exit(1);
-//            } else {
-            for (SetElementSetType setElementSet : trait.getName()) {
-                diseaseList.add(setElementSet.getElementValue().getValue());
-                if (setElementSet.getElementValue().getType().equalsIgnoreCase("preferred")) {
-                    if (traitsToEfoTermsMap != null  // May be null if no traits -> EFO file is provided
-                            && traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()) != null) {
-                        diseaseList.add(traitsToEfoTermsMap.get(setElementSet.getElementValue().getValue()).name);
-                    }
-                }
+            // Look for the preferred trait name
+            int i = 0;
+            while (i < trait.getName().size()
+                    && !trait.getName().get(i).getElementValue().getType().equalsIgnoreCase("preferred")) {
+                i++;
             }
-//            }
+            // WARN: assuming there will always be a preferred trait name
+            // Found preferred trait name
+            if (i < trait.getName().size()) {
+                Map<String, String> sourceInheritableTraitMap = new HashMap<>();
+                sourceInheritableTraitMap.put(TRAIT, trait.getName().get(i).getElementValue().getValue());
+
+                heritableTraitList.add(new HeritableTrait(trait.getName().get(i).getElementValue().getValue(),
+                        getInheritanceModel(trait, sourceInheritableTraitMap)));
+
+                sourceInheritableTraitList.add(sourceInheritableTraitMap);
+            } else {
+                throw new IllegalArgumentException("ClinVar record found "
+                        + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()
+                        + " with no preferred trait provided");
+            }
         }
 
-        if (diseaseList.size() == 0) {
+
+        if (heritableTraitList.size() == 0) {
             logger.warn("Entry {}. No \"disease\" entry found among the traits",
                     publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
             numberNoDiseaseTrait++;
+            return null;
+        } else {
+            propertyList.add(new Property(null, MODE_OF_INHERITANCE,
+                    jsonObjectWriter.writeValueAsString(sourceInheritableTraitList)));
+            return heritableTraitList;
         }
-
-        return new ArrayList<>(diseaseList);
     }
 
     private List<String> addBibliographyFromObservationSet(List<String> germlineBibliography, ObservationSet observationSet) {

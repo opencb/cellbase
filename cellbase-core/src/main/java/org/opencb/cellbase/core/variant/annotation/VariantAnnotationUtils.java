@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation;
 
+import htsjdk.variant.variantcontext.Allele;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
@@ -122,8 +123,26 @@ public class VariantAnnotationUtils {
     public static final Map<String, TraitAssociation> CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION = new HashMap<>();
     public static final Map<String, DrugResponseClassification> CLINVAR_CLINSIG_TO_DRUG_RESPONSE = new HashMap<>();
     public static final HashMap<String, ConsistencyStatus> CLINVAR_REVIEW_TO_CONSISTENCY_STATUS = new HashMap<>();
+    public static final HashMap<Object, ModeOfInheritance> CLINVAR_MODEOFINHERITANCE_MAP = new HashMap<>();
+    public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
 
     static {
+
+        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance", ModeOfInheritance.monoallelic);
+        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with maternal imprinting",
+                ModeOfInheritance.monoallelic_maternally_imprinted);
+        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with paternal imprinting",
+                ModeOfInheritance.monoallelic_paternally_imprinted);
+        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal recessive inheritance",
+                ModeOfInheritance.biallelic);
+        CLINVAR_MODEOFINHERITANCE_MAP.put("Mitochondrial inheritance",
+                ModeOfInheritance.mitochondrial);
+        CLINVAR_MODEOFINHERITANCE_MAP.put("Sex-limited autosomal dominant",
+                ModeOfInheritance.monoallelic);
+        CLINVAR_MODEOFINHERITANCE_MAP.put("X-linked dominant inheritance",
+                ModeOfInheritance.xlinked_monoallelic);
+        CLINVAR_MODEOFINHERITANCE_MAP.put("X-linked recessive inheritance",
+                ModeOfInheritance.xlinked_biallelic);
 
         CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_conflicting_interpretations", ConsistencyStatus.conflict);
         CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_multiple_submitters_no_conflicts", ConsistencyStatus.congruent);
@@ -149,13 +168,13 @@ public class VariantAnnotationUtils {
         CLINVAR_CLINSIG_TO_DRUG_RESPONSE.put("drug response", DrugResponseClassification.responsive);
 
         ///////////////////////////////////////////////////////////////////////
-        /////   ClinVar allele origins to SO terms   //////////////////////////
+        /////   ClinVar and Cosmic allele origins to SO terms   ///////////////
         ///////////////////////////////////////////////////////////////////////
-        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("germline", AlleleOrigin.SO_0001778);
-        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("maternal", AlleleOrigin.SO_0001775);
-        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("de novo", AlleleOrigin.SO_0001781);
-        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("paternal", AlleleOrigin.SO_0001776);
-        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("somatic", AlleleOrigin.SO_0001777);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("germline", AlleleOrigin.germline_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("maternal", AlleleOrigin.maternal_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("de novo", AlleleOrigin.de_novo_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("paternal", AlleleOrigin.paternal_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("somatic", AlleleOrigin.somatic_variant);
 
         ///////////////////////////////////////////////////////////////////////
         /////   GENETIC CODE   ////////////////////////////////////////////////

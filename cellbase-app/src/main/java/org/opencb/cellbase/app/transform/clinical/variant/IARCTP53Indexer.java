@@ -39,7 +39,6 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         INHERITANCE_TAGS_MAP.put("na", "not known");
     }
 
-    private final RocksDB rdb;
     private final Path germlineFile;
     private final Path somaticFile;
     private final String assembly;
@@ -120,9 +119,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
                     sequenceLocation = parseVariant(fields, fastaIndexManager, isGermline);
                     if (sequenceLocation != null) {
                         variantTraitAssociation = new VariantTraitAssociation();
-                        // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-//                        variantTraitAssociation.setGermline(new ArrayList<>());
-//                        variantTraitAssociation.setSomatic(new ArrayList<>());
+                        variantTraitAssociation.setGermline(new ArrayList<>());
+                        variantTraitAssociation.setSomatic(new ArrayList<>());
                         skip = false;
                     } else {
                         skip = true;
@@ -134,20 +132,19 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
                 if (!skip) {
                     List<String> bibliography = parseBibliography(fields, references, isGermline);
-                    // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-//                    if (isGermline) {
-//                        Germline germlineObject = buildGermline(fields);
-//                        if (bibliography != null) {
-//                            germlineObject.setBibliography(bibliography);
-//                        }
-//                        variantTraitAssociation.getGermline().add(germlineObject);
-//                    } else {
-//                        Somatic somaticObject = buildSomatic(fields);
-//                        if (bibliography != null) {
-//                            somaticObject.setBibliography(bibliography);
-//                        }
-//                        variantTraitAssociation.getSomatic().add(somaticObject);
-//                    }
+                    if (isGermline) {
+                        Germline germlineObject = buildGermline(fields);
+                        if (bibliography != null) {
+                            germlineObject.setBibliography(bibliography);
+                        }
+                        variantTraitAssociation.getGermline().add(germlineObject);
+                    } else {
+                        Somatic somaticObject = buildSomatic(fields);
+                        if (bibliography != null) {
+                            somaticObject.setBibliography(bibliography);
+                        }
+                        variantTraitAssociation.getSomatic().add(somaticObject);
+                    }
                 }
             }
 
@@ -239,9 +236,8 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             numberNewVariants++;
         } else {
             VariantTraitAssociation existingVariantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
-            // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-//            existingVariantTraitAssociation.getGermline().addAll(variantTraitAssociation.getGermline());
-//            existingVariantTraitAssociation.getSomatic().addAll(variantTraitAssociation.getSomatic());
+            existingVariantTraitAssociation.getGermline().addAll(variantTraitAssociation.getGermline());
+            existingVariantTraitAssociation.getSomatic().addAll(variantTraitAssociation.getSomatic());
             rdb.put(key, jsonObjectWriter.writeValueAsBytes(existingVariantTraitAssociation));
             numberVariantUpdates++;
         }
@@ -368,163 +364,162 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         return String.valueOf(reverseAlleleString);
     }
 
-    // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-//    private Germline buildGermline(String[] fields) {
-//        // IARC TP53 Germline file is a tab-delimited file with the following fields (columns)
-////        1 Family_ID
-////        2 Family_code
-////        3 Country
-////        4 Population
-////        5 Region
-////        6 Development
-////        7 Class
-////        8 Generations_analyzed
-////        9 Germline_mutation
-////        10 MUT_ID
-////        11 hg18_Chr17_coordinates
-////        12 hg19_Chr17_coordinates
-////        13 hg38_Chr17_coordinates
-////        14 ExonIntron
-////        15 Genomic_nt
-////        16 Codon_number
-////        17 Type
-////        18 Description
-////        19 c_description
-////        20 g_description
-////        21 WT_nucleotide
-////        22 Mutant_nucleotide
-////        23 WT_codon
-////        24 Mutant_codon
-////        25 CpG_site
-////        26 Splice_site
-////        27 WT_AA
-////        28 Mutant_AA
-////        29 Effect
-////        30 AGVGDClass
-////        31 SIFTClass
-////        32 Polyphen2
-////        33 TransactivationClass
-////        34 DNEclass
-////        35 ProtDescription
-////        36 Domain_function
-////        37 Residue_function
-////        38 Individual_ID
-////        39 Individual_code
-////        40 FamilyCase
-////        41 FamilyCase_group
-////        42 Generation
-////        43 Sex
-////        44 Germline_carrier
-////        45 Mode_of_inheritance
-////        46 Dead
-////        47 Unaffected
-////        48 Age
-////        49 Tumor_ID
-////        50 Topography
-////        51 Short_topo
-////        52 Morphology
-////        53 Age_at_diagnosis
-////        54 Ref_ID
-////        55 Other_infos
-////        56 p53mut_ID
-//
-//        Germline germline = new Germline();
-//
-//        germline.setSource(IARCTP53_NAME);
-//        germline.setAccession(fields[9]);
-//        germline.setPhenotype(Collections.singletonList(fields[49]));
-//        germline.setDisease(Collections.singletonList(fields[51]));
-//        germline.setGeneNames(Collections.singletonList("TP53"));
-//        germline.setInheritanceModel(Collections.singletonList(INHERITANCE_TAGS_MAP.get(fields[44])));
-//
-//
-//        return germline;
-//    }
-//
-//    private Somatic buildSomatic(String[] fields) {
-//        // IARC TP53 Germline file is a tab-delimited file with the following fields (columns)
-////      1 Mutation_ID
-////      2 MUT_ID
-////      3 hg18_Chr17_coordinates
-////      4 hg19_Chr17_coordinates
-////      5 hg38_Chr17_coordinates
-////      6 ExonIntron
-////      7 Genomic_nt
-////      8 Codon_number
-////      9 Description
-////     10 c_description
-////     11 g_description
-////     12 WT_nucleotide
-////     13 Mutant_nucleotide
-////     14 Splice_site
-////     15 CpG_site
-////     16 Context_coding_3
-////     17 Type
-////     18 Mut_rate
-////     19 WT_codon
-////     20 Mutant_codon
-////     21 WT_AA
-////     22 Mutant_AA
-////     23 ProtDescription
-////     24 Mut_rateAA
-////     25 Effect
-////     26 SIFTClass
-////     27 Polyphen2
-////     28 TransactivationClass
-////     29 DNEclass
-////     30 Structural_motif
-////     31 Sample_Name
-////     32 Sample_ID
-////     33 Sample_source
-////     34 Tumor_origin
-////     35 Topography
-////     36 Short_topo
-////     37 Topo_code
-////     38 Sub_topography
-////     39 Morphology
-////     40 Morpho_code
-////     41 Grade
-////     42 Stage
-////     43 TNM
-////     44 p53_IHC
-////     45 KRAS_status
-////     46 Other_mutations
-////     47 Other_associations
-////     48 Add_Info
-////     49 Individual_ID
-////     50 Sex
-////     51 Age
-////     52 Ethnicity
-////     53 Geo_area
-////     54 Country
-////     55 Development
-////     56 Population
-////     57 Region
-////     58 TP53polymorphism
-////     59 Germline_mutation
-////     60 Family_history
-////     61 Tobacco
-////     62 Alcohol
-////     63 Exposure
-////     64 Infectious_agent
-////     65 Ref_ID
-////     66 Cross_Ref_ID
-////     67 PubMed
-////     68 Exclude_analysis
-////     69 WGS_WXS
-//
-//        Somatic somatic = new Somatic();
-//        somatic.setSource(IARCTP53_NAME);
-//        somatic.setAccession(fields[1]);
-//        somatic.setPrimarySite(fields[34]);
-//        somatic.setSiteSubtype(fields[33]);
-//        somatic.setHistologySubtype(fields[38]);
-//        somatic.setSampleSource(fields[32]);
-//        somatic.setTumourOrigin(fields[33]);
-//        somatic.setGeneNames(Collections.singletonList("TP53"));
-//
-//        return somatic;
-//    }
+    private Germline buildGermline(String[] fields) {
+        // IARC TP53 Germline file is a tab-delimited file with the following fields (columns)
+//        1 Family_ID
+//        2 Family_code
+//        3 Country
+//        4 Population
+//        5 Region
+//        6 Development
+//        7 Class
+//        8 Generations_analyzed
+//        9 Germline_mutation
+//        10 MUT_ID
+//        11 hg18_Chr17_coordinates
+//        12 hg19_Chr17_coordinates
+//        13 hg38_Chr17_coordinates
+//        14 ExonIntron
+//        15 Genomic_nt
+//        16 Codon_number
+//        17 Type
+//        18 Description
+//        19 c_description
+//        20 g_description
+//        21 WT_nucleotide
+//        22 Mutant_nucleotide
+//        23 WT_codon
+//        24 Mutant_codon
+//        25 CpG_site
+//        26 Splice_site
+//        27 WT_AA
+//        28 Mutant_AA
+//        29 Effect
+//        30 AGVGDClass
+//        31 SIFTClass
+//        32 Polyphen2
+//        33 TransactivationClass
+//        34 DNEclass
+//        35 ProtDescription
+//        36 Domain_function
+//        37 Residue_function
+//        38 Individual_ID
+//        39 Individual_code
+//        40 FamilyCase
+//        41 FamilyCase_group
+//        42 Generation
+//        43 Sex
+//        44 Germline_carrier
+//        45 Mode_of_inheritance
+//        46 Dead
+//        47 Unaffected
+//        48 Age
+//        49 Tumor_ID
+//        50 Topography
+//        51 Short_topo
+//        52 Morphology
+//        53 Age_at_diagnosis
+//        54 Ref_ID
+//        55 Other_infos
+//        56 p53mut_ID
+
+        Germline germline = new Germline();
+
+        germline.setSource(IARCTP53_NAME);
+        germline.setAccession(fields[9]);
+        germline.setPhenotype(Collections.singletonList(fields[49]));
+        germline.setDisease(Collections.singletonList(fields[51]));
+        germline.setGeneNames(Collections.singletonList("TP53"));
+        germline.setInheritanceModel(Collections.singletonList(INHERITANCE_TAGS_MAP.get(fields[44])));
+
+
+        return germline;
+    }
+
+    private Somatic buildSomatic(String[] fields) {
+        // IARC TP53 Germline file is a tab-delimited file with the following fields (columns)
+//      1 Mutation_ID
+//      2 MUT_ID
+//      3 hg18_Chr17_coordinates
+//      4 hg19_Chr17_coordinates
+//      5 hg38_Chr17_coordinates
+//      6 ExonIntron
+//      7 Genomic_nt
+//      8 Codon_number
+//      9 Description
+//     10 c_description
+//     11 g_description
+//     12 WT_nucleotide
+//     13 Mutant_nucleotide
+//     14 Splice_site
+//     15 CpG_site
+//     16 Context_coding_3
+//     17 Type
+//     18 Mut_rate
+//     19 WT_codon
+//     20 Mutant_codon
+//     21 WT_AA
+//     22 Mutant_AA
+//     23 ProtDescription
+//     24 Mut_rateAA
+//     25 Effect
+//     26 SIFTClass
+//     27 Polyphen2
+//     28 TransactivationClass
+//     29 DNEclass
+//     30 Structural_motif
+//     31 Sample_Name
+//     32 Sample_ID
+//     33 Sample_source
+//     34 Tumor_origin
+//     35 Topography
+//     36 Short_topo
+//     37 Topo_code
+//     38 Sub_topography
+//     39 Morphology
+//     40 Morpho_code
+//     41 Grade
+//     42 Stage
+//     43 TNM
+//     44 p53_IHC
+//     45 KRAS_status
+//     46 Other_mutations
+//     47 Other_associations
+//     48 Add_Info
+//     49 Individual_ID
+//     50 Sex
+//     51 Age
+//     52 Ethnicity
+//     53 Geo_area
+//     54 Country
+//     55 Development
+//     56 Population
+//     57 Region
+//     58 TP53polymorphism
+//     59 Germline_mutation
+//     60 Family_history
+//     61 Tobacco
+//     62 Alcohol
+//     63 Exposure
+//     64 Infectious_agent
+//     65 Ref_ID
+//     66 Cross_Ref_ID
+//     67 PubMed
+//     68 Exclude_analysis
+//     69 WGS_WXS
+
+        Somatic somatic = new Somatic();
+        somatic.setSource(IARCTP53_NAME);
+        somatic.setAccession(fields[1]);
+        somatic.setPrimarySite(fields[34]);
+        somatic.setSiteSubtype(fields[33]);
+        somatic.setHistologySubtype(fields[38]);
+        somatic.setSampleSource(fields[32]);
+        somatic.setTumourOrigin(fields[33]);
+        somatic.setGeneNames(Collections.singletonList("TP53"));
+
+        return somatic;
+    }
 
     public SequenceLocation parsePosition(String[] fields, boolean isGermline) {
         SequenceLocation sequenceLocation = new SequenceLocation();
@@ -579,32 +574,6 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         } else {
             logger.warn("Deletion size string format not recognized: \"{}\"", sizeString);
             return null;
-        }
-    }
-
-    private Integer getStart(Integer readPosition, String mutationCDS) {
-        // In order to agree with the Variant model and what it's stored in variation, the start must be incremented in
-        // 1 for insertions given what is provided in the COSMIC file
-        if (mutationCDS.contains("ins")) {
-            return readPosition + 1;
-        } else {
-            return readPosition;
-        }
-    }
-
-    private void setCosmicChromosome(String chromosome, SequenceLocation sequenceLocation) {
-        switch (chromosome) {
-            case "23":
-                sequenceLocation.setChromosome("X");
-                break;
-            case "24":
-                sequenceLocation.setChromosome("Y");
-                break;
-            case "25":
-                sequenceLocation.setChromosome("MT");
-                break;
-            default:
-                sequenceLocation.setChromosome(chromosome);
         }
     }
 

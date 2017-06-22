@@ -16,7 +16,6 @@ import java.util.Map;
  * Created by fjlopez on 29/03/17.
  */
 public class DOCMIndexer extends ClinicalIndexer {
-    private final RocksDB rdb;
     private final Path docmFile;
     private final String assembly;
 

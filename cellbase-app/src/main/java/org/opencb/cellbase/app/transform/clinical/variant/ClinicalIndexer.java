@@ -3,8 +3,18 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.biodata.models.variant.avro.AlleleOrigin;
+import org.opencb.biodata.models.variant.avro.EvidenceEntry;
+import org.opencb.biodata.models.variant.avro.FeatureTypes;
+import org.opencb.biodata.models.variant.avro.GenomicFeature;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Created by fjlopez on 04/10/16.
@@ -18,6 +28,10 @@ public abstract class ClinicalIndexer {
     protected int numberVariantUpdates = 0;
     protected int totalNumberRecords = 0;
     protected int numberIndexedRecords = 0;
+    protected RocksDB rdb;
+
+
+    private static final String SYMBOL = "symbol";
 
     protected static ObjectMapper mapper;
     protected static ObjectWriter jsonObjectWriter;
@@ -29,6 +43,40 @@ public abstract class ClinicalIndexer {
     }
 
     public ClinicalIndexer() {
+    }
+
+
+    protected List<EvidenceEntry> getEvidenceEntryList(byte[] key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key);
+        List<EvidenceEntry> evidenceEntryList;
+        if (dbContent == null) {
+            evidenceEntryList = new ArrayList<>();
+            numberNewVariants++;
+        } else {
+            evidenceEntryList = mapper.readValue(dbContent, List.class);
+            numberVariantUpdates++;
+        }
+        return evidenceEntryList;
+    }
+
+    protected GenomicFeature createGeneGenomicFeature(String gene) {
+        Map<String, String> map = new HashMap<>(1);
+        map.put(SYMBOL, gene);
+
+        return new GenomicFeature(FeatureTypes.Gene, null, map);
+    }
+
+    protected List<AlleleOrigin> getAlleleOriginList(List<String> sourceOriginList) {
+        List<AlleleOrigin> alleleOrigin;
+        alleleOrigin = new ArrayList<>(sourceOriginList.size());
+        for (String originString : sourceOriginList) {
+            if (VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.containsKey(originString)) {
+                alleleOrigin.add(VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.get(originString));
+            } else {
+                logger.warn("No SO term found for allele origin {}. Skipping.", originString);
+            }
+        }
+        return alleleOrigin;
     }
 
     class SequenceLocation {
