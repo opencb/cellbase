@@ -25,7 +25,7 @@ import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
 import org.opencb.biodata.models.variant.protobuf.VariantAnnotationProto;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
-import org.opencb.cellbase.server.grpc.service.*;
+import org.opencb.cellbase.core.grpc.service.*;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
