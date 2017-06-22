@@ -36,7 +36,7 @@ import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.io.JsonVariantReader;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;

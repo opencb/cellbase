@@ -22,7 +22,7 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
