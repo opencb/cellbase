@@ -84,7 +84,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                                                required = true) String id) {
         try {
             parseQueryParams();
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, ProteinDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
@@ -125,7 +125,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             parseQueryParams();
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(proteinDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -162,7 +162,7 @@ public class ProteinWSServer extends GenericRestWSServer {
 //            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
 
             // Fetch Ensembl transcriptId to query substiturion scores
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             logger.info("Searching transcripts for protein {}", id);
             Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
             QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
@@ -175,7 +175,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                 query.put("transcript", ((Map) queryResult.getResult().get(0)).get("id"));
                 logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
                 logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
-                ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+                ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
                 QueryResult scoresQueryResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
                 scoresQueryResult.setId(id);
                 return createOkResponse(scoresQueryResult);
@@ -194,7 +194,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     public Response getproteinByName(@PathParam("proteinId") String id) {
         try {
             parseQueryParams();
-            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.get(Splitter.on(",").splitToList(id), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -299,7 +299,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     public Response getSequence(@PathParam("proteinId")
                                 @ApiParam (name = "proteinId", value = "UniProt accession id, e.g: Q9UL59",
                                         required = true) String proteinId) {
-        ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+        ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
         query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteinId);
         queryOptions.put("include", "sequence.value");
         // split by comma
