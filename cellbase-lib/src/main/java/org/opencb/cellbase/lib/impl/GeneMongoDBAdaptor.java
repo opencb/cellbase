@@ -41,6 +41,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +88,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
+    public QueryResult<String> distinct(Query query, String field) {
         Bson bsonDocument = parseQuery(query);
         return mongoDBCollection.distinct(field, bsonDocument);
     }
@@ -104,10 +105,13 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
         if (postDBFilteringParametersEnabled(query)) {
             QueryResult<Document> nativeQueryResult = postDBFiltering(query, mongoDBCollection.find(bson, options));
-            QueryResult<Gene> queryResult = new QueryResult<Gene>(nativeQueryResult.getId(),
+            QueryResult<Gene> queryResult = new QueryResult<>(nativeQueryResult.getId(),
                     nativeQueryResult.getDbTime(), nativeQueryResult.getNumResults(),
                     nativeQueryResult.getNumTotalResults(), nativeQueryResult.getWarningMsg(),
                     nativeQueryResult.getErrorMsg(), null);
+
+            // Now we need to convert MongoDB Documents to Gene objects
+            // TODO: maybe we could query Genes in the first stage
             ObjectMapper jsonObjectMapper = new ObjectMapper();
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
             jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
@@ -115,8 +119,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             queryResult.setResult(nativeQueryResult.getResult().stream()
                     .map(document -> {
                         try {
-                            return this.objectMapper.readValue(objectWriter.writeValueAsString(document),
-                                    Gene.class);
+                            return this.objectMapper.readValue(objectWriter.writeValueAsString(document), Gene.class);
                         } catch (IOException e) {
                             e.printStackTrace();
                             return null;
@@ -173,16 +176,20 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
+    public QueryResult startsWith(String id, QueryOptions options) {
+        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
+        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+        return mongoDBCollection.find(regex, include, options);
+    }
+
+    @Override
     public QueryResult getRegulatoryElements(Query query, QueryOptions queryOptions) {
         Bson bson = parseQuery(query);
         QueryResult<Document> queryResult = null;
-        QueryResult<Document> gene = mongoDBCollection.find(bson, new QueryOptions(MongoDBCollection.INCLUDE, "chromosome,start,end"));
+        QueryResult<Document> gene = mongoDBCollection.find(bson, new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,end"));
         if (gene != null) {
             MongoDBCollection regulatoryRegionCollection = mongoDataStore.getCollection("regulatory_region");
             for (Document document : gene.getResult()) {
-//                String region = document.getString("chromosome") + ":"
-//                        + document.getInteger("start", 1) + "-" + document.getInteger("end", Integer.MAX_VALUE);
-//                query.put(RegulationDBAdaptor.QueryParams.REGION.key(), region);
                 Bson eq = Filters.eq("chromosome", document.getString("chromosome"));
                 Bson lte = Filters.lte("start", document.getInteger("end", Integer.MAX_VALUE));
                 Bson gte = Filters.gte("end", document.getInteger("start", 1));
@@ -228,6 +235,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         Bson project = Aggregates.project(document);
 
         return mongoDBCollection.aggregate(Arrays.asList(match, includeAndExclude, unwind, unwind2, project), queryOptions);
+    }
+
+    @Override
+    public QueryResult<String> getBiotypes(Query query) {
+        return distinct(query, "biotypes");
     }
 
     private Bson parseQuery(Query query) {
