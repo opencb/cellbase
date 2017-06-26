@@ -88,12 +88,12 @@ public class HgvsCalculator {
                 } else if (StringUtils.isBlank(normalizedVariant.getAlternate())) {
                     return new HgvsDeletionCalculator(genomeDBAdaptor);
                 } else {
-                    logger.warn("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
+                    logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
                             + "identifiers.");
                     return null;
                 }
             default:
-                 logger.warn("No HGVS implementation available for structural variants. Found {}. Returning empty list"
+                 logger.debug("No HGVS implementation available for structural variants. Found {}. Returning empty list"
                         + "  of HGVS identifiers.", normalizedVariant.getType());
                 return null;
         }

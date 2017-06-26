@@ -158,18 +158,25 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
         // Get Variant object for the first BND
         Variant variant = converter.convert(variantContext);
 
-        // Get CIPOS from second BND
-        String ciposString = StringUtils.join(variantContext1.getAttributeAsList(CIPOS), VCFConstants.INFO_FIELD_ARRAY_SEPARATOR);
+        // Check the second BND does have CIPOS
+        List ciposValue = variantContext1.getAttributeAsList(CIPOS);
+        if (!ciposValue.isEmpty()) {
+            // Get CIPOS from second BND
+            String ciposString = StringUtils.join(ciposValue, VCFConstants.INFO_FIELD_ARRAY_SEPARATOR);
 
+            // Set CIPOS string of the sencond BND as part of the file INFO field in the first BND
+            Map<String, String> attributesMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
+            attributesMap.put(MATE_CIPOS, ciposString);
 
-        // Set CIPOS string of the sencond BND as part of the file INFO field in the first BND
-        Map<String, String> attributesMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
-        attributesMap.put(MATE_CIPOS, ciposString);
-
-        // CIPOS of the second breakend is saved at CiEnd
-        List ciposParts = variantContext1.getAttributeAsList(CIPOS);
-        variant.getSv().setCiEndLeft(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(0)));
-        variant.getSv().setCiEndRight(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(1)));
+            // CIPOS of the second breakend is saved at CiEnd
+            List ciposParts = variantContext1.getAttributeAsList(CIPOS);
+            variant.getSv().setCiEndLeft(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(0)));
+            variant.getSv().setCiEndRight(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(1)));
+        // If not, it's a precise call, just store the second BND coordinates in the SV CIEND field
+        } else {
+            variant.getSv().setCiEndLeft(variantContext1.getStart());
+            variant.getSv().setCiEndRight(variantContext1.getStart());
+        }
 
         return variant;
     }

@@ -43,7 +43,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
 
     private Integer getEnd(Variant variant) {
         if (imprecise && variant.getSv() != null) {
-            return variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + svExtraPadding
+            return variant.getSv().getCiStartRight() != null ? variant.getSv().getCiStartRight() + svExtraPadding
                     : variant.getStart();
         } else {
             return variant.getStart();

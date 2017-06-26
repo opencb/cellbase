@@ -140,7 +140,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                     exonOverlap.add(new Score((variantEnd - variantStart + 1) * 100.0 / exonSize, null,
                             exon.getExonNumber() + exonStringSuffix));
                 } else {
-                    exonOverlap.add(new Score((variantStart - exon.getStart() + 1) * 100.0 / exonSize, null,
+                    exonOverlap.add(new Score((variantEnd - exon.getStart() + 1) * 100.0 / exonSize, null,
                             exon.getExonNumber() + exonStringSuffix));
                 }
             }
@@ -203,7 +203,9 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             exonCounter++;
         }
 //        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
-        consequenceType.setExonOverlap(exonOverlap);
+        if (exonOverlap.size() > 0) {
+            consequenceType.setExonOverlap(exonOverlap);
+        }
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
 
@@ -236,7 +238,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
                     exonOverlap.add(new Score((variantEnd - variantStart + 1) * 100.0 / exonSize, null,
                             exon.getExonNumber() + exonStringSuffix));
                 } else {
-                    exonOverlap.add(new Score((variantStart - exon.getStart() + 1) * 100.0 / exonSize, null,
+                    exonOverlap.add(new Score((variantEnd - exon.getStart() + 1) * 100.0 / exonSize, null,
                             exon.getExonNumber() + exonStringSuffix));
                 }
 
@@ -300,7 +302,9 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             }
             exonCounter++;
         }
-        consequenceType.setExonOverlap(exonOverlap);
+        if (exonOverlap.size() > 0) {
+            consequenceType.setExonOverlap(exonOverlap);
+        }
 //        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
@@ -580,7 +584,9 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             }
             exonCounter++;
         }
-        consequenceType.setExonOverlap(exonOverlap);
+        if (exonOverlap.size() > 0) {
+            consequenceType.setExonOverlap(exonOverlap);
+        }
 //        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
@@ -781,7 +787,9 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             }
             exonCounter++;
         }
-        consequenceType.setExonOverlap(exonOverlap);
+        if (exonOverlap.size() > 0) {
+            consequenceType.setExonOverlap(exonOverlap);
+        }
 //        consequenceType.setExonNumber(variantStartExonNumber != null ? variantStartExonNumber : variantEndExonNumber);
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }

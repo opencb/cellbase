@@ -954,7 +954,7 @@ public class VariantAnnotationCalculator {
     }
 
     private String getIncludedGeneFields(Set<String> annotatorSet) {
-        String includeGeneFields = "name,id,start,end,transcripts.id,transcripts.start,transcripts.end,"
+        String includeGeneFields = "name,id,chromosome,start,end,transcripts.id,transcripts.start,transcripts.end,"
                 + "transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,"
                 + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
                 + "transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.cdsStart,transcripts.exons.end,"
@@ -1163,7 +1163,8 @@ public class VariantAnnotationCalculator {
 
     private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end) {
         QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", "_id");
+        queryOptions.add("exclude", "_id");
+        queryOptions.add("include", "chromosome");
         queryOptions.add("limit", "1");
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
@@ -1180,6 +1181,7 @@ public class VariantAnnotationCalculator {
             overlapsRegulatoryRegion[1] = true;
         // Does not overlap transcription factor binding site - check any other regulatory region type
         } else {
+            query.remove(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
             queryResult = regulationDBAdaptor.get(query, queryOptions);
             // Does overlap other types of regulatory regions
             if (queryResult.getNumResults() == 1) {
