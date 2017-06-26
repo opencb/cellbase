@@ -1646,7 +1646,7 @@ public class VariantAnnotationCalculator {
             // Want to return only one QueryResult object per Variant
             for (Variant variant : variantList) {
                 List<QueryResult<Cytoband>> tmpQueryResultList = genomeDBAdaptor
-                        .getCytoband(breakpointsToRegionList(variant));
+                        .getCytobands(breakpointsToRegionList(variant));
 
                 // There may be more than one QueryResult per variant for non SNV variants since there will be
                 // two breakpoints

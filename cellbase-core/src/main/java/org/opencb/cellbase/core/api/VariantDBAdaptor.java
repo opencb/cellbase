@@ -139,6 +139,8 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         return results;
     }
 
+    QueryResult<String> getConsequenceTypes(Query query);
+
     QueryResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions options);
 
     default List<QueryResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options) {

@@ -26,9 +26,9 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
-import org.opencb.cellbase.core.db.DBAdaptorFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.*;
@@ -132,8 +132,8 @@ public class GenericRestWSServer implements IWSServer {
      * HibernateDBAdaptorFactory or an HBaseDBAdaptorFactory. This object is a
      * factory for creating adaptors like GeneDBAdaptor
      */
+//    protected static DBAdaptorFactory dbAdaptorFactory;
     protected static DBAdaptorFactory dbAdaptorFactory;
-    protected static org.opencb.cellbase.core.api.DBAdaptorFactory dbAdaptorFactory2;
 
     private static final int LIMIT_DEFAULT = 1000;
     private static final int LIMIT_MAX = 5000;
@@ -155,7 +155,7 @@ public class GenericRestWSServer implements IWSServer {
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
 //            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-            dbAdaptorFactory2 = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+            dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
         } catch (IOException e) {
             e.printStackTrace();
         }

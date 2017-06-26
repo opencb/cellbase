@@ -1,6 +1,5 @@
 package org.opencb.cellbase.lib.impl;
 
-import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.junit.Test;
@@ -47,7 +46,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public void getCytoband() {
         GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
         List<QueryResult<Cytoband>> queryResultList
-                = dbAdaptor.getCytoband(Arrays.asList(new Region("19:55799900-55803000"),
+                = dbAdaptor.getCytobands(Arrays.asList(new Region("19:55799900-55803000"),
                 new Region("11:121300000-124030001")));
 
         assertEquals(2, queryResultList.size());

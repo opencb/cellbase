@@ -58,7 +58,7 @@ public class VariationWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the first object in the database", response = Variant.class,
             responseContainer = "QueryResponse")
     public Response first() {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
         return createOkResponse(variationDBAdaptor.first(queryOptions));
     }
 
@@ -97,7 +97,7 @@ public class VariationWSServer extends GenericRestWSServer {
 //                          @ApiParam(name = "region",
 //                                  value = "Comma separated list of genomic regions to be queried, "
 //                                          + "e.g.: 1:6635137-6635325", required = true) String region) {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 //        query.append(VariantDBAdaptor.QueryParams.REGION.key(), region);
         return createOkResponse(variationDBAdaptor.count(query));
     }
@@ -145,7 +145,7 @@ public class VariationWSServer extends GenericRestWSServer {
                                            required = true) String id) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
             List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
@@ -187,7 +187,7 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response search() {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -203,7 +203,7 @@ public class VariationWSServer extends GenericRestWSServer {
                                         required = true) String id) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
             QueryResult queryResult = variationDBAdaptor.next(query, queryOptions);
             queryResult.setId(id);
@@ -220,7 +220,7 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getAllConsequenceTypes() {
         try {
             parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 //            query.put(VariantDBAdaptor.QueryParams.REGION.key(), "22:1-50000000");
 //            return createOkResponse(variationDBAdaptor.distinct(query, "displayConsequenceType"));
 
@@ -256,7 +256,7 @@ public class VariationWSServer extends GenericRestWSServer {
     private Response getConsequenceType(String snpId) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
             queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
             QueryResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
@@ -287,7 +287,7 @@ public class VariationWSServer extends GenericRestWSServer {
     private Response getRegulatoryType(String snpId) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return null;
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -314,7 +314,7 @@ public class VariationWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", Arrays.asList(""));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -328,7 +328,7 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getXrefs(@PathParam("snpId") String query) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return null;
         } catch (Exception e) {
             return createErrorResponse(e);

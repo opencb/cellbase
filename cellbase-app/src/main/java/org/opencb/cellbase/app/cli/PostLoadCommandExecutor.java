@@ -19,10 +19,9 @@ package org.opencb.cellbase.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.db.DBAdaptorFactory;
-import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
-import org.opencb.cellbase.lib.db.MongoDBAdaptorFactory;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -132,7 +131,8 @@ public class PostLoadCommandExecutor extends CommandExecutor {
         List<VariantAnnotation> variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
         while (!variantAnnotationList.isEmpty()) {
             nVepAnnotatedVariants += variantAnnotationList.size();
-            clinicalDBAdaptor.updateAnnotations(variantAnnotationList, new QueryOptions());
+            // FIXME commented to compile
+//            clinicalDBAdaptor.update(variantAnnotationList, new QueryOptions());
             logger.info(Integer.valueOf(nVepAnnotatedVariants) + " read variants with vep annotations");
             variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
         }

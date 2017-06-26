@@ -104,7 +104,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
         try {
             logger.info("VERSION: {}", this.version);
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             if (!queryOptions.containsKey("limit") || ((int) queryOptions.get("limit")) > 1000) {
                 queryOptions.put("limit", 1000);
             }
@@ -165,7 +165,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     + "clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus", required = true) String fields) {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -178,7 +178,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getPhenotypeGeneRelations() {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             return createOkResponse(clinicalDBAdaptor.getPhenotypeGeneRelations(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -191,7 +191,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAllClinicalSignificances() {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
             query.put("source", "clinvar");
             return createOkResponse(clinicalDBAdaptor.distinct(query,
                     "clinvarSet.referenceClinVarAssertion.clinicalSignificance.description"));

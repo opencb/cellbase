@@ -79,7 +79,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     @Override
-    public QueryResult<Cytoband> getCytoband(Region region, QueryOptions queryOptions) {
+    public QueryResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions) {
 
         List<Cytoband> cytobandList = new ArrayList<>();
         long dbStartTime = System.currentTimeMillis();

@@ -22,7 +22,7 @@ import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
-import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.core.grpc.service.GenericServiceModel;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Created by swaathi on 16/12/15.
  */
-public class VariantGrpcService extends org.opencb.cellbase.server.grpc.service.VariantServiceGrpc.VariantServiceImplBase
+public class VariantGrpcService extends org.opencb.cellbase.core.grpc.service.VariantServiceGrpc.VariantServiceImplBase
         implements IGrpcService {
 
     private DBAdaptorFactory dbAdaptorFactory;
