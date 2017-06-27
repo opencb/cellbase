@@ -1,6 +1,5 @@
 package org.opencb.cellbase.core.variant.annotation;
 
-import htsjdk.variant.variantcontext.Allele;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
@@ -123,25 +122,25 @@ public class VariantAnnotationUtils {
     public static final Map<String, TraitAssociation> CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION = new HashMap<>();
     public static final Map<String, DrugResponseClassification> CLINVAR_CLINSIG_TO_DRUG_RESPONSE = new HashMap<>();
     public static final HashMap<String, ConsistencyStatus> CLINVAR_REVIEW_TO_CONSISTENCY_STATUS = new HashMap<>();
-    public static final HashMap<Object, ModeOfInheritance> CLINVAR_MODEOFINHERITANCE_MAP = new HashMap<>();
+    public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
 
     static {
 
-        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance", ModeOfInheritance.monoallelic);
-        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with maternal imprinting",
+        MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance", ModeOfInheritance.monoallelic);
+        MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with maternal imprinting",
                 ModeOfInheritance.monoallelic_maternally_imprinted);
-        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with paternal imprinting",
+        MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with paternal imprinting",
                 ModeOfInheritance.monoallelic_paternally_imprinted);
-        CLINVAR_MODEOFINHERITANCE_MAP.put("Autosomal recessive inheritance",
+        MODEOFINHERITANCE_MAP.put("Autosomal recessive inheritance",
                 ModeOfInheritance.biallelic);
-        CLINVAR_MODEOFINHERITANCE_MAP.put("Mitochondrial inheritance",
+        MODEOFINHERITANCE_MAP.put("Mitochondrial inheritance",
                 ModeOfInheritance.mitochondrial);
-        CLINVAR_MODEOFINHERITANCE_MAP.put("Sex-limited autosomal dominant",
+        MODEOFINHERITANCE_MAP.put("Sex-limited autosomal dominant",
                 ModeOfInheritance.monoallelic);
-        CLINVAR_MODEOFINHERITANCE_MAP.put("X-linked dominant inheritance",
+        MODEOFINHERITANCE_MAP.put("X-linked dominant inheritance",
                 ModeOfInheritance.xlinked_monoallelic);
-        CLINVAR_MODEOFINHERITANCE_MAP.put("X-linked recessive inheritance",
+        MODEOFINHERITANCE_MAP.put("X-linked recessive inheritance",
                 ModeOfInheritance.xlinked_biallelic);
 
         CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_conflicting_interpretations", ConsistencyStatus.conflict);

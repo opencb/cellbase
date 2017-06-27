@@ -1,7 +1,8 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
-import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
+import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
@@ -11,10 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,15 +27,15 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private static final String REF = "REF";
     private static final String ALT = "ALT";
 
-    private static final Map<String, String> INHERITANCE_TAGS_MAP = new HashMap<>(4);
-
-    static {
-        INHERITANCE_TAGS_MAP.put("P", "paternal");
-        INHERITANCE_TAGS_MAP.put("M", "maternal");
-        INHERITANCE_TAGS_MAP.put("P&M", "maternal and paternal");
-        INHERITANCE_TAGS_MAP.put("de novo", "de novo");
-        INHERITANCE_TAGS_MAP.put("na", "not known");
-    }
+    private static final int GERMLINE_ID_COLUMN = 9;
+    private static final int SOMATIC_ID_COLUMN = 1;
+    private static final int GERMLINE_TOPOGRAPHY_COLUMN = 49;
+    private static final int MORPHOLOGY_COLUMN = 38;
+    private static final String TP53 = "TP53";
+    private static final int MODE_OF_INHERITANCE_COLUMN = 44;
+    private static final int TUMOR_ORIGIN_COLUMN = 33;
+    private static final int SOMATIC_TOPOGRAPHY_COLUMN = 34;
+    private static final int SAMPLE_SOURCE_COLUMN = 32;
 
     private final Path germlineFile;
     private final Path somaticFile;
@@ -101,7 +99,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             reader.readLine(); // First line is the header -> ignore it
             String previousVariantId = null;
             SequenceLocation sequenceLocation = null;
-            VariantTraitAssociation variantTraitAssociation = null;
+            List<EvidenceEntry> evidenceEntryList = null;
             Map<String, String> references = loadReferences(referencesFilePath, isGermline);
             boolean skip = false;
             while ((line = reader.readLine()) != null) {
@@ -113,14 +111,12 @@ public class IARCTP53Indexer extends ClinicalIndexer {
                     totalNumberRecords++;
                     // Do not update RocksDB on first iteration
                     if (previousVariantId != null && !skip) {
-                        updateRocksDB(sequenceLocation, variantTraitAssociation);
+                        updateRocksDB(sequenceLocation, evidenceEntryList);
                         numberIndexedRecords++;
                     }
                     sequenceLocation = parseVariant(fields, fastaIndexManager, isGermline);
                     if (sequenceLocation != null) {
-                        variantTraitAssociation = new VariantTraitAssociation();
-                        variantTraitAssociation.setGermline(new ArrayList<>());
-                        variantTraitAssociation.setSomatic(new ArrayList<>());
+                        evidenceEntryList = new ArrayList<>();
                         skip = false;
                     } else {
                         skip = true;
@@ -132,26 +128,30 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
                 if (!skip) {
                     List<String> bibliography = parseBibliography(fields, references, isGermline);
-                    if (isGermline) {
-                        Germline germlineObject = buildGermline(fields);
-                        if (bibliography != null) {
-                            germlineObject.setBibliography(bibliography);
-                        }
-                        variantTraitAssociation.getGermline().add(germlineObject);
-                    } else {
-                        Somatic somaticObject = buildSomatic(fields);
-                        if (bibliography != null) {
-                            somaticObject.setBibliography(bibliography);
-                        }
-                        variantTraitAssociation.getSomatic().add(somaticObject);
-                    }
+                    EvidenceEntry evidenceEntry = buildEvidenceEntry(fields, isGermline);
+                    evidenceEntry.setBibliography(bibliography);
+                    evidenceEntryList.add(evidenceEntry);
+
+//                    if (isGermline) {
+//                        Germline germlineObject = buildEvidenceEntry(fields);
+//                        if (bibliography != null) {
+//                            germlineObject.setBibliography(bibliography);
+//                        }
+//                        variantTraitAssociation.getGermline().add(germlineObject);
+//                    } else {
+//                        Somatic somaticObject = buildSomatic(fields);
+//                        if (bibliography != null) {
+//                            somaticObject.setBibliography(bibliography);
+//                        }
+//                        variantTraitAssociation.getSomatic().add(somaticObject);
+//                    }
                 }
             }
 
             // Write last variant
             // Do not update RocksDB on first iteration
             if (previousVariantId != null && !skip) {
-                updateRocksDB(sequenceLocation, variantTraitAssociation);
+                updateRocksDB(sequenceLocation, evidenceEntryList);
                 numberIndexedRecords++;
             }
         } catch (RocksDBException e) {
@@ -224,24 +224,15 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         }
     }
 
-    private void updateRocksDB(SequenceLocation sequenceLocation, VariantTraitAssociation variantTraitAssociation)
+    private void updateRocksDB(SequenceLocation sequenceLocation, List<EvidenceEntry> evidenceEntryList)
             throws RocksDBException, IOException {
 
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        byte[] dbContent = rdb.get(key);
-        if (dbContent == null) {
-            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantTraitAssociation));
-            numberNewVariants++;
-        } else {
-            VariantTraitAssociation existingVariantTraitAssociation = mapper.readValue(dbContent, VariantTraitAssociation.class);
-            existingVariantTraitAssociation.getGermline().addAll(variantTraitAssociation.getGermline());
-            existingVariantTraitAssociation.getSomatic().addAll(variantTraitAssociation.getSomatic());
-            rdb.put(key, jsonObjectWriter.writeValueAsBytes(existingVariantTraitAssociation));
-            numberVariantUpdates++;
-        }
-
+        List<EvidenceEntry> existingEvidenceEntryList = getEvidenceEntryList(key);
+        existingEvidenceEntryList.addAll(evidenceEntryList);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
     }
 
     /**
@@ -364,7 +355,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         return String.valueOf(reverseAlleleString);
     }
 
-    private Germline buildGermline(String[] fields) {
+    private EvidenceEntry buildEvidenceEntry(String[] fields, boolean isGermline) {
         // IARC TP53 Germline file is a tab-delimited file with the following fields (columns)
 //        1 Family_ID
 //        2 Family_code
@@ -423,20 +414,34 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 //        55 Other_infos
 //        56 p53mut_ID
 
-        Germline germline = new Germline();
+        EvidenceSource evidenceSource = new EvidenceSource(IARCTP53_NAME, null, null);
 
-        germline.setSource(IARCTP53_NAME);
-        germline.setAccession(fields[9]);
-        germline.setPhenotype(Collections.singletonList(fields[49]));
-        germline.setDisease(Collections.singletonList(fields[51]));
-        germline.setGeneNames(Collections.singletonList("TP53"));
-        germline.setInheritanceModel(Collections.singletonList(INHERITANCE_TAGS_MAP.get(fields[44])));
+        SomaticInformation somaticInformation = null;
+        if (!isGermline) {
+            somaticInformation = getSomaticInformation(fields);
+        }
 
+        List<HeritableTrait> heritableTraitList = null;
+        if (!isGermline) {
+            heritableTraitList = getHeritableTrait(fields);
+        }
 
-        return germline;
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, somaticInformation,
+                null, fields[isGermline ? GERMLINE_ID_COLUMN : SOMATIC_ID_COLUMN],
+                Collections.singletonList(isGermline ? AlleleOrigin.germline_variant : AlleleOrigin.somatic_variant),
+                heritableTraitList, Collections.singletonList(createGeneGenomicFeature(TP53)), null,
+                null, null, null, null, null,
+                null, null, null, null);
+
+        return evidenceEntry;
     }
 
-    private Somatic buildSomatic(String[] fields) {
+    private List<HeritableTrait> getHeritableTrait(String[] fields) {
+        return  Collections.singletonList(new HeritableTrait(fields[GERMLINE_TOPOGRAPHY_COLUMN], null));
+//                VariantAnnotationUtils.MODEOFINHERITANCE_MAP.get(fields[MODE_OF_INHERITANCE_COLUMN])));
+    }
+
+    private SomaticInformation getSomaticInformation(String[] fields) {
         // IARC TP53 Germline file is a tab-delimited file with the following fields (columns)
 //      1 Mutation_ID
 //      2 MUT_ID
@@ -508,17 +513,33 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 //     68 Exclude_analysis
 //     69 WGS_WXS
 
-        Somatic somatic = new Somatic();
-        somatic.setSource(IARCTP53_NAME);
-        somatic.setAccession(fields[1]);
-        somatic.setPrimarySite(fields[34]);
-        somatic.setSiteSubtype(fields[33]);
-        somatic.setHistologySubtype(fields[38]);
-        somatic.setSampleSource(fields[32]);
-        somatic.setTumourOrigin(fields[33]);
-        somatic.setGeneNames(Collections.singletonList("TP53"));
 
-        return somatic;
+        String primarySite = null;
+        if (!EtlCommons.isMissing(fields[SOMATIC_TOPOGRAPHY_COLUMN])) {
+            primarySite = fields[SOMATIC_TOPOGRAPHY_COLUMN];
+        }
+
+        String siteSubtype = null;
+        String tumorOrigin = null;
+        if (!EtlCommons.isMissing(fields[TUMOR_ORIGIN_COLUMN])) {
+            siteSubtype = fields[TUMOR_ORIGIN_COLUMN];
+            tumorOrigin = fields[TUMOR_ORIGIN_COLUMN];
+        }
+
+        String histologySubtype = null;
+        if (!EtlCommons.isMissing(fields[MORPHOLOGY_COLUMN])) {
+            histologySubtype = fields[MORPHOLOGY_COLUMN];
+        }
+
+        String sampleSource = null;
+        if (!EtlCommons.isMissing(fields[SAMPLE_SOURCE_COLUMN])) {
+            sampleSource = fields[SAMPLE_SOURCE_COLUMN];
+        }
+
+        SomaticInformation somaticInformation = new SomaticInformation(primarySite, siteSubtype, null,
+                histologySubtype, tumorOrigin, sampleSource);
+
+        return somaticInformation;
     }
 
     public SequenceLocation parsePosition(String[] fields, boolean isGermline) {

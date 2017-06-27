@@ -180,28 +180,41 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     public boolean sameSomaticDocument(EvidenceEntry evidenceEntry1, EvidenceEntry evidenceEntry2) {
 
-        if (evidenceEntry1 == evidenceEntry2) return true;
-        if (evidenceEntry2 == null || evidenceEntry1.getClass() != evidenceEntry2.getClass()) return false;
+        if (evidenceEntry1 == evidenceEntry2) {
+            return true;
+        }
+        if (evidenceEntry2 == null || evidenceEntry1.getClass() != evidenceEntry2.getClass()) {
+            return false;
+        }
 
         if (evidenceEntry1.getSource() != null ? !evidenceEntry1.getSource().equals(evidenceEntry2.getSource())
-                : evidenceEntry2.getSource() != null) return false;
+                : evidenceEntry2.getSource() != null) {
+            return false;
+        }
         if (evidenceEntry1.getSomaticInformation() != null
                 ? !evidenceEntry1.getSomaticInformation().equals(evidenceEntry2.getSomaticInformation())
-                : evidenceEntry2.getSomaticInformation() != null)
+                : evidenceEntry2.getSomaticInformation() != null) {
             return false;
+        }
         if (evidenceEntry1.getId() != null
-                ? !evidenceEntry1.getId().equals(evidenceEntry2.getId()) : evidenceEntry2.getId() != null) return false;
+                ? !evidenceEntry1.getId().equals(evidenceEntry2.getId()) : evidenceEntry2.getId() != null) {
+            return false;
+        }
         if (evidenceEntry1.getAlleleOrigin() != null
                 ? !evidenceEntry1.getAlleleOrigin().equals(evidenceEntry2.getAlleleOrigin())
-                : evidenceEntry2.getAlleleOrigin() != null) return false;
+                : evidenceEntry2.getAlleleOrigin() != null) {
+            return false;
+        }
         if (evidenceEntry1.getGenomicFeatures() != null
                 ? !evidenceEntry1.getGenomicFeatures().equals(evidenceEntry2.getGenomicFeatures())
-                : evidenceEntry2.getGenomicFeatures() != null)
+                : evidenceEntry2.getGenomicFeatures() != null) {
             return false;
+        }
         if (evidenceEntry1.getAdditionalProperties() != null
                 ? !evidenceEntry1.getAdditionalProperties().equals(evidenceEntry2.getAdditionalProperties())
-                : evidenceEntry2.getAdditionalProperties() != null)
+                : evidenceEntry2.getAdditionalProperties() != null) {
             return false;
+        }
 
         return true;
     }

@@ -7,7 +7,6 @@ import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
-import org.opencb.commons.utils.StringUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -48,11 +47,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private int numberGermlineRecords = 0;
     private int numberNoDiseaseTrait = 0;
     private int numberMultipleInheritanceModels = 0;
-    private static final Set<ModeOfInheritance> dominantTermsSet
+    private static final Set<ModeOfInheritance> DOMINANT_TERM_SET
             = new HashSet<>(Arrays.asList(ModeOfInheritance.monoallelic,
             ModeOfInheritance.monoallelic_maternally_imprinted,
             ModeOfInheritance.monoallelic_not_imprinted, ModeOfInheritance.monoallelic_paternally_imprinted));
-    private static final Set<ModeOfInheritance> recessiveTermsSet
+    private static final Set<ModeOfInheritance> RECESSIVE_TERM_SET
             = new HashSet<>(Arrays.asList(ModeOfInheritance.biallelic));
 
     public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
@@ -362,9 +361,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
             return modeOfInheritanceSet.iterator().next();
         } else {
             modeOfInheritanceSet.remove(null);
-            modeOfInheritanceSet.removeAll(dominantTermsSet);
+            modeOfInheritanceSet.removeAll(DOMINANT_TERM_SET);
             if (modeOfInheritanceSet.size() > 0) {
-                modeOfInheritanceSet.removeAll(recessiveTermsSet);
+                modeOfInheritanceSet.removeAll(RECESSIVE_TERM_SET);
                 if (modeOfInheritanceSet.size() > 0) {
                     logger.warn("No inheritance model selected, conflicting inheritance models found");
                     return null;
@@ -380,8 +379,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private ModeOfInheritance getModeOfInheritance(String modeOfInheritance) {
-        if (VariantAnnotationUtils.CLINVAR_MODEOFINHERITANCE_MAP.containsKey(modeOfInheritance)) {
-            return VariantAnnotationUtils.CLINVAR_MODEOFINHERITANCE_MAP.get(modeOfInheritance);
+        if (VariantAnnotationUtils.MODEOFINHERITANCE_MAP.containsKey(modeOfInheritance)) {
+            return VariantAnnotationUtils.MODEOFINHERITANCE_MAP.get(modeOfInheritance);
         }
         return null;
     }
@@ -418,7 +417,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<HeritableTrait> heritableTraitList
                 = new ArrayList<>(publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait().size());
         // To keep trait and inheritance modes as they appear in the source file
-        List<Map<String,String>> sourceInheritableTraitList
+        List<Map<String, String>> sourceInheritableTraitList
                 = new ArrayList<>(publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait().size());
 
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
