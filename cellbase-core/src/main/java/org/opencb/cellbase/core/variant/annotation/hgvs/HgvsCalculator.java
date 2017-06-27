@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
@@ -125,7 +126,7 @@ public class HgvsCalculator {
 
     protected void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
                                           String genomicAlternate, Transcript transcript,
-                                          HgvsStringBuilder hgvsStringBuilder) {
+                                          BuildingComponents buildingComponents) {
         int start;
         int end;
         String reference;
@@ -151,10 +152,10 @@ public class HgvsCalculator {
                     ? String.valueOf(genomicAlternate.length())
                     : reverseComplementary(genomicAlternate);
         }
-        hgvsStringBuilder.setReference(reference);
-        hgvsStringBuilder.setAlternate(alternate);
-        hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, start));
-        hgvsStringBuilder.setCdnaEnd(genomicToCdnaCoord(transcript, end));
+        buildingComponents.setReference(reference);
+        buildingComponents.setAlternate(alternate);
+        buildingComponents.setCdnaStart(genomicToCdnaCoord(transcript, start));
+        buildingComponents.setCdnaEnd(genomicToCdnaCoord(transcript, end));
     }
 
     private String reverseComplementary(String string) {
@@ -447,5 +448,57 @@ public class HgvsCalculator {
         }
 
     }
+
+    /**
+     * Generate a HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+    protected String formatTranscriptString(BuildingComponents buildingComponents) {
+
+        StringBuilder allele = new StringBuilder();
+        allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
+        allele.append(":");
+
+        if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
+            allele.append("c.").append(formatCdnaCoords(buildingComponents)
+                    + formatDnaAllele(buildingComponents));
+        } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
+            allele.append("n.").append(formatCdnaCoords(buildingComponents)
+                    + formatDnaAllele(buildingComponents));
+        } else {
+            throw new NotImplementedException("HGVS calculation not implemented for variant "
+                    + buildingComponents.getChromosome() + ":"
+                    + buildingComponents.getStart() + ":" + buildingComponents.getReference() + ":"
+                    + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
+        }
+
+        return allele.toString();
+
+    }
+
+    protected String formatDnaAllele(BuildingComponents buildingComponents) {
+        return null;
+    }
+
+    protected String formatCdnaCoords(BuildingComponents buildingComponents) {
+        return null;
+    }
+
+    /**
+     * Generate HGVS trancript/geneId prefix.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * Some examples of full hgvs names with transcriptId include:
+     * NM_007294.3:c.2207A>C
+     * NM_007294.3(BRCA1):c.2207A>C
+     */
+    private String formatPrefix(BuildingComponents buildingComponents) {
+        StringBuilder stringBuilder = new StringBuilder(buildingComponents.getTranscriptId());
+        stringBuilder.append("(").append(buildingComponents.getGeneId()).append(")");
+
+        return stringBuilder.toString();
+    }
+
+
 
 }

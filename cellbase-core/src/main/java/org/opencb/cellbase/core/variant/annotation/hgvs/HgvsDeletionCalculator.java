@@ -7,7 +7,6 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,12 +45,12 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
      */
     private String calculateProteinHgvs(Variant variant, Transcript transcript) {
         // Check if protein HGVS can be calculated
-        if (isCoding(transcript) && onlySpansCodingSequence(variant)) {
-            ProteinHgvsStringBuilder proteinHgvsStringBuilder = new ProteinHgvsStringBuilder();
-            proteinHgvsStringBuilder.setId(transcript.getProteinID());
-            setProteinCoordinates(proteinHgvsStringBuilder);
-            setAffectedAminoAcids(proteinHgvsStringBuilder);
-        }
+//        if (isCoding(transcript) && onlySpansCodingSequence(variant)) {
+//            ProteinHgvsStringBuilder proteinHgvsStringBuilder = new ProteinHgvsStringBuilder();
+//            proteinHgvsStringBuilder.setId(transcript.getProteinID());
+//            setProteinCoordinates(proteinHgvsStringBuilder);
+//            setAffectedAminoAcids(proteinHgvsStringBuilder);
+//        }
 
         return null;
     }
@@ -62,22 +61,44 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         String mutationType = hgvsNormalize(variant, transcript, normalizedVariant);
 
         // Populate HGVSName parse tree.
-        HgvsStringBuilder hgvsStringBuilder = new HgvsStringBuilder();
+        BuildingComponents buildingComponents = new BuildingComponents();
 
         // Use cDNA coordinates.
-        hgvsStringBuilder.setKind(isCoding(transcript) ? HgvsStringBuilder.Kind.CODING : HgvsStringBuilder.Kind.NON_CODING);
+        buildingComponents.setKind(isCoding(transcript) ? BuildingComponents.Kind.CODING : BuildingComponents.Kind.NON_CODING);
 
         // Use a range of coordinates. - Calculate start/end, reference/alternate alleles as appropriate
 //        setRangeCoordsAndAlleles(normalizedVariant, transcript, hgvsStringBuilder);
         setRangeCoordsAndAlleles(normalizedVariant.getStart(), normalizedVariant.getEnd(),
-                normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
+                normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, buildingComponents);
 
-        hgvsStringBuilder.setMutationType(mutationType);
-        hgvsStringBuilder.setTranscriptId(transcript.getId());
-        hgvsStringBuilder.setGeneId(geneId);
+        buildingComponents.setMutationType(mutationType);
+        buildingComponents.setTranscriptId(transcript.getId());
+        buildingComponents.setGeneId(geneId);
 
-        return hgvsStringBuilder.format();
+        return formatTranscriptString(buildingComponents);
+//        return hgvsStringBuildingComponents.format();
 
+    }
+
+    /**
+     * Generate HGVS cDNA coordinates string.
+     */
+    @Override
+    protected String formatCdnaCoords(BuildingComponents buildingComponents) {
+        return buildingComponents.getCdnaStart().toString() + "_"
+                + buildingComponents.getCdnaEnd().toString();
+    }
+
+    /**
+     * Generate HGVS DNA allele.
+     * @return
+     */
+    @Override
+    protected String formatDnaAllele(BuildingComponents buildingComponents) {
+        // Delete
+        // example:
+        // 1000_1003d elATG
+        return buildingComponents.getMutationType() + buildingComponents.getReference();
     }
 
     private String hgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {

@@ -31,18 +31,18 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         String mutationType = ">";
 
         // Populate HGVSName parse tree.
-        HgvsStringBuilder hgvsStringBuilder = new HgvsStringBuilder();
+        BuildingComponents buildingComponents = new BuildingComponents();
 
         // Populate coordinates.
         // Use cDNA coordinates.
-        hgvsStringBuilder.setKind(isCoding(transcript) ? HgvsStringBuilder.Kind.CODING : HgvsStringBuilder.Kind.NON_CODING);
+        buildingComponents.setKind(isCoding(transcript) ? BuildingComponents.Kind.CODING : BuildingComponents.Kind.NON_CODING);
 
-        hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, variant.getStart()));
-        hgvsStringBuilder.setCdnaEnd(hgvsStringBuilder.getCdnaStart());
+        buildingComponents.setCdnaStart(genomicToCdnaCoord(transcript, variant.getStart()));
+        buildingComponents.setCdnaEnd(buildingComponents.getCdnaStart());
 
         // Populate prefix.
-        hgvsStringBuilder.setTranscriptId(transcript.getId());
-        hgvsStringBuilder.setGeneId(geneId);
+        buildingComponents.setTranscriptId(transcript.getId());
+        buildingComponents.setGeneId(geneId);
 
         String reference;
         String alternate;
@@ -56,11 +56,29 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         }
 
         // Populate alleles.
-        hgvsStringBuilder.setMutationType(mutationType);
-        hgvsStringBuilder.setReference(reference);
-        hgvsStringBuilder.setAlternate(alternate);
+        buildingComponents.setMutationType(mutationType);
+        buildingComponents.setReference(reference);
+        buildingComponents.setAlternate(alternate);
 
-        return Collections.singletonList(hgvsStringBuilder.format());
+        return Collections.singletonList(formatTranscriptString(buildingComponents));
+//        return Collections.singletonList(buildingComponents.format());
+    }
+
+    /**
+     * Generate HGVS cDNA coordinates string.
+     */
+    @Override
+    protected String formatCdnaCoords(BuildingComponents buildingComponents) {
+        return buildingComponents.getCdnaStart().toString();
+    }
+
+    /**
+     * Generate HGVS DNA allele.
+     * @return
+     */
+    @Override
+    protected String formatDnaAllele(BuildingComponents buildingComponents) {
+        return buildingComponents.getReference() + '>' + buildingComponents.getAlternate();
     }
 
 }
