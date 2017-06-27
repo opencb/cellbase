@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
@@ -46,7 +46,7 @@ public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcep
         normalizer = new VariantNormalizer(true, false, true);
     }
 
-    private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)";
+    private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)|(<DUP>)|(<DEL>)|(<INS>)|(<INV>)";
 
     public JsonStringAnnotatorTask(List<VariantAnnotator> variantAnnotatorList) {
         this(variantAnnotatorList, true);
@@ -110,7 +110,9 @@ public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcep
      */
     private boolean isValid(Variant variant) {
         return (variant.getReference().matches(VARIANT_STRING_PATTERN)
-                && variant.getAlternate().matches(VARIANT_STRING_PATTERN)
+                && (variant.getAlternate().matches(VARIANT_STRING_PATTERN)
+                  || variant.getAlternate().contains("[") || variant.getAlternate().contains("]")  // mated breakend
+                  || variant.getAlternate().startsWith(".") || variant.getAlternate().endsWith(".")) // single breakend
                 && !variant.getAlternate().equals(variant.getReference()));
     }
 

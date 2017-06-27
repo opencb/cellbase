@@ -71,7 +71,7 @@ public class MetaWSServer extends GenericRestWSServer {
                                                + "available species ids, please refer to: "
                                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
                                         required = true) String species) {
-        CellBaseDBAdaptor metaDBAdaptor = dbAdaptorFactory2.getMetaDBAdaptor(species, this.assembly);
+        CellBaseDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor(species, this.assembly);
         return createOkResponse(metaDBAdaptor.nativeGet(new Query(), new QueryOptions()));
     }
 

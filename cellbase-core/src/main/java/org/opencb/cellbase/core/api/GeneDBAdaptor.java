@@ -76,8 +76,12 @@ public interface GeneDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
     }
 
+    QueryResult startsWith(String id, QueryOptions options);
+
     QueryResult getRegulatoryElements(Query query, QueryOptions queryOptions);
 
     QueryResult getTfbs(Query query, QueryOptions queryOptions);
+
+    QueryResult<String> getBiotypes(Query query);
 
 }

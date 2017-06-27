@@ -67,6 +67,7 @@ public interface ProteinDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     QueryResult<Score> getSubstitutionScores(Query query, QueryOptions options);
 
+    // TODO: to think about moving this method to annotation or to change the params
     QueryResult<ProteinVariantAnnotation> getVariantAnnotation(String enstranscriptId, int position, String aaReference,
                                                                String aaAlternate, QueryOptions options);
 

@@ -3,8 +3,8 @@ package org.opencb.cellbase.client.grpc;
 import io.grpc.ManagedChannel;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
-import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
-import org.opencb.cellbase.server.grpc.service.RegulatoryRegionServiceGrpc;
+import org.opencb.cellbase.core.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.core.grpc.service.RegulatoryRegionServiceGrpc;
 
 import java.util.HashMap;
 import java.util.Iterator;

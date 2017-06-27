@@ -230,7 +230,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 queryOptions.put("cnvExtraPadding", cnvExtraPadding);
             }
             VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
             List<QueryResult<VariantAnnotation>> queryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
@@ -294,7 +294,7 @@ public class VariantWSServer extends GenericRestWSServer {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
             VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
             if (normalize != null) {
                 queryOptions.put("normalize", normalize);
             }
@@ -335,7 +335,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                                     required = true) String variants) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
             List<QueryResult<Score>> functionalScoreVariant =
                     variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);

@@ -1,15 +1,16 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,11 +22,9 @@ import java.util.List;
  */
 public class HgvsCalculator {
 
-    private static final String DUP = "dup";
-    private static final String INS = "ins";
-    private static final String DEL = "del";
-    private static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
-    private GenomeDBAdaptor genomeDBAdaptor;
+    private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
+    protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
+    protected GenomeDBAdaptor genomeDBAdaptor;
 
     public HgvsCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         this.genomeDBAdaptor = genomeDBAdaptor;
@@ -63,140 +62,68 @@ public class HgvsCalculator {
         return hgvsList;
     }
 
-    private List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
+    protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
         // Check variant falls within transcript coords
         if (variant.getStart() <= transcript.getEnd() && variant.getEnd() >= transcript.getStart()) {
-//                && transcript.getCdnaCodingEnd() != 0) { // 0 in the cdnaCodingEnd means that the transcript doesn't
-                                                         // have a coding end <==> is non coding. Just annotating
-                                                         // coding transcripts in a first approach
-            Variant normalizedVariant;
-            // Convert VCF-style variant to HGVS-style.
-            if (normalize) {
-                List<Variant> normalizedVariantList = NORMALIZER.apply(Collections.singletonList(variant));
-                if (normalizedVariantList != null && !normalizedVariantList.isEmpty()) {
-                    normalizedVariant = normalizedVariantList.get(0);
-                } else {
-                    throw new UnsupportedURLVariantFormat("Variant " + variant.toString() + " cannot be properly normalized. "
-                            + " Please check.");
-                }
-            } else {
-                normalizedVariant = variant;
-            }
-
             // We cannot know the type of variant before normalization has been carried out
-            switch (VariantAnnotationUtils.getVariantType(normalizedVariant)) {
-                case SNV:
-                    return calculateSNVHgvs(normalizedVariant, transcript, geneId);
-                case INSERTION:
-                    return calculateInsertionHgvs(normalizedVariant, transcript, geneId);
-                case DELETION:
-                    return calculateDeletionHhgvs(normalizedVariant, transcript, geneId);
-                default:
-                    throw new UnsupportedURLVariantFormat();
+            Variant normalizedVariant = normalize(variant, normalize);
+            HgvsCalculator hgvsCalculator = getHgvsCalculator(normalizedVariant);
+            // Can be null if there's no hgvs implementation for the variant type
+            if (hgvsCalculator != null) {
+                // Normalization set to false - if needed, it would have been done already two lines above
+                return hgvsCalculator.run(normalizedVariant, transcript, geneId, false);
             }
         }
-
         return Collections.emptyList();
     }
 
-    private List<String> calculateDeletionHhgvs(Variant variant, Transcript transcript, String geneId) {
-        // Additional normalization required for insertions
-        Variant normalizedVariant = new Variant();
-        String mutationType = hgvsNormalizeDeletion(variant, transcript, normalizedVariant);
-
-        // Populate HGVSName parse tree.
-        HgvsStringBuilder hgvsStringBuilder = new HgvsStringBuilder();
-
-        // Use cDNA coordinates.
-        hgvsStringBuilder.setKind(isCoding(transcript) ? HgvsStringBuilder.Kind.CODING : HgvsStringBuilder.Kind.NON_CODING);
-
-        // Use a range of coordinates. - Calculate start/end, reference/alternate alleles as appropriate
-//        setRangeCoordsAndAlleles(normalizedVariant, transcript, hgvsStringBuilder);
-        setRangeCoordsAndAlleles(normalizedVariant.getStart(), normalizedVariant.getEnd(),
-                normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
-
-        hgvsStringBuilder.setMutationType(mutationType);
-        hgvsStringBuilder.setTranscriptId(transcript.getId());
-        hgvsStringBuilder.setGeneId(geneId);
-
-        return Collections.singletonList(hgvsStringBuilder.format());
-
+    private HgvsCalculator getHgvsCalculator(Variant normalizedVariant) {
+//        switch (VariantAnnotationUtils.getVariantType(normalizedVariant)) {
+        switch (normalizedVariant.getType()) {
+            case SNV:
+                return new HgvsSNVCalculator(genomeDBAdaptor);
+            case INDEL:
+                if (StringUtils.isBlank(normalizedVariant.getReference())) {
+                    return new HgvsInsertionCalculator(genomeDBAdaptor);
+                } else if (StringUtils.isBlank(normalizedVariant.getAlternate())) {
+                    return new HgvsDeletionCalculator(genomeDBAdaptor);
+                } else {
+                    logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
+                            + "identifiers.");
+                    return null;
+                }
+            default:
+                 logger.debug("No HGVS implementation available for structural variants. Found {}. Returning empty list"
+                        + "  of HGVS identifiers.", normalizedVariant.getType());
+                return null;
+        }
     }
 
-    private boolean isCoding(Transcript transcript) {
+    protected Variant normalize(Variant variant, boolean normalize) {
+        Variant normalizedVariant;
+        // Convert VCF-style variant to HGVS-style.
+        if (normalize) {
+            List<Variant> normalizedVariantList = NORMALIZER.apply(Collections.singletonList(variant));
+            if (normalizedVariantList != null && !normalizedVariantList.isEmpty()) {
+                normalizedVariant = normalizedVariantList.get(0);
+            } else {
+                throw new UnsupportedURLVariantFormat("Variant " + variant.toString() + " cannot be properly normalized. "
+                        + " Please check.");
+            }
+        } else {
+            normalizedVariant = variant;
+        }
+        return normalizedVariant;
+    }
+
+    protected boolean isCoding(Transcript transcript) {
         // 0 in the cdnaCodingEnd means that the transcript doesn't
         // have a coding end <==> is non coding. Just annotating
         // coding transcripts in a first approach
         return transcript.getCdnaCodingEnd() != 0;
     }
 
-    private String hgvsNormalizeDeletion(Variant variant, Transcript transcript, Variant normalizedVariant) {
-        // Get genomic sequence around the lesion.
-        int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
-        int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
-        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                + ":" + start + "-" + end);
-        String genomicSequence
-                = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
-
-        // Create normalizedVariant and justify sequence to the right/left as appropriate
-        normalizedVariant.setChromosome(variant.getChromosome());
-        normalizedVariant.setStart(variant.getStart());
-        normalizedVariant.setEnd(variant.getEnd());
-        normalizedVariant.setReference(variant.getReference());
-        normalizedVariant.setAlternate(variant.getAlternate());
-        normalizedVariant.resetType();
-        normalizedVariant.resetLength();
-        // startOffset must point to the position right before the actual variant start, since that's the position that
-        // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
-        // the position right after the actual variant end.
-        justify(normalizedVariant, variant.getStart() - start,
-                variant.getStart() - start + normalizedVariant.getReference().length() - 1,
-                normalizedVariant.getReference(), genomicSequence, transcript.getStrand());
-
-        return DEL;
-    }
-
-    private List<String> calculateInsertionHgvs(Variant variant, Transcript transcript, String geneId) {
-        // Additional normalization required for insertions
-        Variant normalizedVariant = new Variant();
-        String mutationType = hgvsNormalizeInsertion(variant, transcript, normalizedVariant);
-
-        // Populate HGVSName parse tree.
-        HgvsStringBuilder hgvsStringBuilder = new HgvsStringBuilder();
-
-        // Use cDNA coordinates.
-        hgvsStringBuilder.setKind(isCoding(transcript) ? HgvsStringBuilder.Kind.CODING : HgvsStringBuilder.Kind.NON_CODING);
-
-        // Use a range of coordinates. - Calculate start/end, reference/alternate alleles as appropriate.
-        if (INS.equals(mutationType)) {
-            setRangeCoordsAndAlleles(normalizedVariant.getStart() - 1, normalizedVariant.getStart(),
-                    normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
-
-        // dup of just one nt use only one coordinate
-        } else if (normalizedVariant.getLength() == 1) {
-            setRangeCoordsAndAlleles(normalizedVariant.getStart() - 1, normalizedVariant.getStart() - 1,
-                    normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
-        // dup of more than 1nt
-        } else {
-            // WARNING: -1 to fit the HGVS specification so that setRangeCoordsAndAlleles appropriately calculates
-            // the offset to the nearest exon limit. This normalizedVariant object is not used after this line
-            // and therefore has no other effect. Be careful
-//            normalizedVariant.setStart(normalizedVariant.getStart() - 1);
-//            setRangeCoordsAndAlleles(normalizedVariant, transcript, hgvsStringBuilder);
-            setRangeCoordsAndAlleles(normalizedVariant.getStart(),
-                    normalizedVariant.getStart() + normalizedVariant.getLength() - 1,
-                    normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, hgvsStringBuilder);
-        }
-
-        hgvsStringBuilder.setMutationType(mutationType);
-        hgvsStringBuilder.setTranscriptId(transcript.getId());
-        hgvsStringBuilder.setGeneId(geneId);
-
-        return Collections.singletonList(hgvsStringBuilder.format());
-    }
-
-    private void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
+    protected void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
                                           String genomicAlternate, Transcript transcript,
                                           HgvsStringBuilder hgvsStringBuilder) {
         int start;
@@ -238,78 +165,18 @@ public class HgvsCalculator {
         return stringBuilder.toString();
     }
 
-    private String hgvsNormalizeInsertion(Variant variant, Transcript transcript, Variant normalizedVariant) {
-        // Get genomic sequence around the lesion.
-        int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
-        int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
-        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                + ":" + start + "-" + end);
-        String genomicSequence = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
-
-        // Create normalizedVariant and justify sequence to the right/left as appropriate
-        normalizedVariant.setChromosome(variant.getChromosome());
-        normalizedVariant.setStart(variant.getStart());
-        normalizedVariant.setEnd(variant.getEnd());
-        normalizedVariant.setReference(variant.getReference());
-        normalizedVariant.setAlternate(variant.getAlternate());
-        normalizedVariant.resetType();
-        normalizedVariant.resetLength();
-        // WARNING: it's tricky to understand startOffset and endOffset for insertions. For - strand, the position to
-        // compare with the allele is the previous one, that is variant.getStart - 1. For + strand, the position to
-        // compare with the allele is CURRENT position and NOT the next one, since the insertion takes place between
-        // positions variant.getStart and (variant.getStart - 1). Pointing endOffset to variant.getStart-1 ensures
-        // correct behaviour of the "justify" method, since it will be comparing the allele against (endOffset+1) for
-        // + strand transcripts.
-        justify(normalizedVariant, variant.getStart() - start, variant.getStart() - start - 1,
-                normalizedVariant.getAlternate(), genomicSequence, transcript.getStrand());
-
-        // Check duplication
-        String previousSequence = genomicSequence.substring(Math.max(0,
-                NEIGHBOURING_SEQUENCE_SIZE - variant.getAlternate().length()  // TODO: might need to adjust +-1 nt
-                        + (normalizedVariant.getStart() - variant.getStart())), // Needs to sum the difference with the
-                                                                                // normalized one in order to take into
-                                                                                // account potential
-                                                                                // normalization/lef-right alignment
-                                                                                // differences
-                NEIGHBOURING_SEQUENCE_SIZE + (normalizedVariant.getStart() - variant.getStart())); // Needs to sum the difference with the
-                                                                                                   // normalized one in order to take into
-                                                                                                   // account potential
-                                                                                                   // normalization/lef-right alignment
-                                                                                                   // differences
-        if (previousSequence.equals(normalizedVariant.getAlternate())) {
-            return DUP;
-        } else {
-            String nextSequence = genomicSequence.substring(NEIGHBOURING_SEQUENCE_SIZE // TODO: might need to adjust +-1 nt
-                            + (normalizedVariant.getStart() - variant.getStart()), // Needs to sum the difference with the
-                                                                                   // normalized one in order to take into
-                                                                                   // account potential
-                                                                                   // normalization/lef-right alignment
-                                                                                   // differences
-                    NEIGHBOURING_SEQUENCE_SIZE + variant.getAlternate().length()
-                            + (normalizedVariant.getStart() - variant.getStart())); // Needs to sum the difference with the
-                                                                                    // normalized one in order to take into
-                                                                                    // account potential
-                                                                                    // normalization/lef-right alignment
-                                                                                    // differences
-            if (nextSequence.equals(normalizedVariant.getAlternate())) {
-                return DUP;
-            }
-        }
-        return INS;
-    }
-
     /**
      * Justify an indel to the left or right along a sequence 'seq'.
-     * @param variant: Variant object that needs to be justified. It will get modified accordingly.
-     * @param startOffset: relative start position of the variant within genomicSequence (0-based)
-     * @param endOffset: relative end position of the variant within genomicSequence (0-based, startOffset=endOffset
-     *                 for insertions)
-     * @param allele: String containing the allele that needs to be justified
-     * @param genomicSequence: String containing the genomic sequence around the variant.getStart() position
-     *                       (+-NEIGHBOURING_SEQUENCE_SIZE)
-     * @param strand: String {"+", "-"}
+     * @param variant Variant object that needs to be justified. It will get modified accordingly.
+     * @param startOffset relative start position of the variant within genomicSequence (0-based).
+     * @param endOffset relative end position of the variant within genomicSequence (0-based, startOffset=endOffset
+     *                 for insertions).
+     * @param allele String containing the allele that needs to be justified.
+     * @param genomicSequence String containing the genomic sequence around the variant.getStart() position
+     *                       (+-NEIGHBOURING_SEQUENCE_SIZE).
+     * @param strand String {"+", "-"}.
      */
-    private void justify(Variant variant, int startOffset, int endOffset, String allele, String genomicSequence,
+    protected void justify(Variant variant, int startOffset, int endOffset, String allele, String genomicSequence,
                          String strand) {
         StringBuilder stringBuilder = new StringBuilder(allele);
         // Justify to the left
@@ -342,56 +209,7 @@ public class HgvsCalculator {
         }
     }
 
-    /**
-     * Generates cdna HGVS names from an SNV.
-     * @param transcript Transcript object that will be used as a reference
-     */
-    private List<String> calculateSNVHgvs(Variant variant, Transcript transcript, String geneId) {
-
-
-
-        // Don't consider that reference = alternate -> there would be no variant then
-//        // Convert VCF-style variant to HGVS-style
-//        if (variant.getReference().equals(variant.getAlternate())) {
-//            mutation_type = "=";
-//        }
-
-        String mutationType = ">";
-
-        // Populate HGVSName parse tree.
-        HgvsStringBuilder hgvsStringBuilder = new HgvsStringBuilder();
-
-        // Populate coordinates.
-        // Use cDNA coordinates.
-        hgvsStringBuilder.setKind(isCoding(transcript) ? HgvsStringBuilder.Kind.CODING : HgvsStringBuilder.Kind.NON_CODING);
-
-        hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, variant.getStart()));
-        hgvsStringBuilder.setCdnaEnd(hgvsStringBuilder.getCdnaStart());
-
-        // Populate prefix.
-        hgvsStringBuilder.setTranscriptId(transcript.getId());
-        hgvsStringBuilder.setGeneId(geneId);
-
-        String reference;
-        String alternate;
-        // Convert alleles to transcript strand.
-        if (transcript.getStrand().equals("-")) {
-            reference = String.valueOf(VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant.getReference().charAt(0)));
-            alternate = String.valueOf(VariantAnnotationUtils.COMPLEMENTARY_NT.get(variant.getAlternate().charAt(0)));
-        } else {
-            reference = variant.getReference();
-            alternate = variant.getAlternate();
-        }
-
-        // Populate alleles.
-        hgvsStringBuilder.setMutationType(mutationType);
-        hgvsStringBuilder.setReference(reference);
-        hgvsStringBuilder.setAlternate(alternate);
-
-        return Collections.singletonList(hgvsStringBuilder.format());
-    }
-
-    private CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
+    protected CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
         if (isCoding(transcript)) {
             return genomicToCdnaCoordInCodingTranscript(transcript, genomicPosition);
         } else {
