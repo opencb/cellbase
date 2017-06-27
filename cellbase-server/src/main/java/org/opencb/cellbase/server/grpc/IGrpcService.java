@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.server.grpc;
 
-import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.core.grpc.service.GenericServiceModel;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 

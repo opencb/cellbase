@@ -62,7 +62,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getSpeciesInfo() {
         try {
-            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(species, this.assembly);
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
             QueryResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
             queryResult.setId(species);
             return createOkResponse(queryResult);

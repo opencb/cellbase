@@ -17,7 +17,6 @@
 package org.opencb.cellbase.server.ws.network;
 
 import org.opencb.biodata.formats.graph.dot.Dot;
-import org.opencb.cellbase.core.db.api.systems.PathwayDBAdaptor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class DotServer {
     private String splitSep = "\\n";
 
     //private BioPaxServer dbAdaptor = null;
-    private PathwayDBAdaptor dbAdaptor;
+//    private PathwayDBAdaptor dbAdaptor;
     private Map<Integer, Boolean> map = new HashMap<>();
 
     public DotServer() {
