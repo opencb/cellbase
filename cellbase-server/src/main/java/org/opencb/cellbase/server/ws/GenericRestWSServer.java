@@ -26,6 +26,7 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
@@ -44,6 +45,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+
+import static org.opencb.commons.datastore.core.QueryOptions.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
@@ -90,6 +93,13 @@ public class GenericRestWSServer implements IWSServer {
     @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1. "
             + " Please note that this option may not be available for all web services.")
     protected int skip;
+
+    @DefaultValue("false")
+    @QueryParam("skipCount")
+    @ApiParam(name = "skipCount", value = "Skip counting the total number of results. In other words, will leave "
+            + "numTotalResults in the QueryResult object to -1. This can make queries much faster."
+            + " Please note that this option may not be available for all web services.")
+    protected String skipCount;
 
     @DefaultValue("false")
     @QueryParam("count")
@@ -237,8 +247,8 @@ public class GenericRestWSServer implements IWSServer {
 
         if (exclude != null && !exclude.isEmpty()) {
             // We add the user's 'exclude' fields to the default values _id and _chunks
-            if (queryOptions.containsKey("exclude")) {
-                queryOptions.getAsStringList("exclude").addAll(Splitter.on(",").splitToList(exclude));
+            if (queryOptions.containsKey(EXCLUDE)) {
+                queryOptions.getAsStringList(EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
             }
         }
 //        else {
@@ -248,16 +258,17 @@ public class GenericRestWSServer implements IWSServer {
 //        }
 
         if (include != null && !include.isEmpty()) {
-            queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
+            queryOptions.put(INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
         } else {
-            queryOptions.put("include", (multivaluedMap.get("include") != null)
-                    ? Splitter.on(",").splitToList(multivaluedMap.get("include").get(0))
+            queryOptions.put(INCLUDE, (multivaluedMap.get(INCLUDE) != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get(INCLUDE).get(0))
                     : null);
         }
 
-        queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
-        queryOptions.put("skip", (skip >= 0) ? skip : -1);
-        queryOptions.put("count", (count != null && !count.equals("")) && Boolean.parseBoolean(count));
+        queryOptions.put(LIMIT, (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
+        queryOptions.put(SKIP, (skip >= 0) ? skip : -1);
+        queryOptions.put(SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
+        queryOptions.put(COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
         // Add all the others QueryParams from the URL
