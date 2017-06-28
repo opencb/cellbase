@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
@@ -97,9 +98,12 @@ public class VariantAnnotationUtils {
     public static final String FRAMESHIFT_VARIANT = "frameshift_variant";
     public static final String CODING_SEQUENCE_VARIANT = "coding_sequence_variant";
     public static final String TRANSCRIPT_ABLATION = "transcript_ablation";
+    public static final String TRANSCRIPT_AMPLIFICATION = "transcript_amplification";
     public static final String COPY_NUMBER_CHANGE = "copy_number_change";
     public static final String TERMINATOR_CODON_VARIANT = "terminator_codon_variant";
     public static final String FEATURE_TRUNCATION = "feature_truncation";
+    public static final String FEATURE_VARIANT = "feature_variant";
+    public static final String STRUCTURAL_VARIANT = "structural_variant";
     public static final String INFRAME_DELETION = "inframe_deletion";
 
     public static final String CDS_START_NF = "cds_start_NF";
@@ -407,45 +411,47 @@ public class VariantAnnotationUtils {
         SIFT_DESCRIPTIONS.put(0, "tolerated");
         SIFT_DESCRIPTIONS.put(1, "deleterious");
 
-        SO_SEVERITY.put("copy_number_change", 39);
-        SO_SEVERITY.put("transcript_ablation", 38);
-        SO_SEVERITY.put("splice_acceptor_variant", 37);
-        SO_SEVERITY.put("splice_donor_variant", 36);
-        SO_SEVERITY.put("stop_gained", 35);
-        SO_SEVERITY.put("frameshift_variant", 34);
-        SO_SEVERITY.put("stop_lost", 33);
-        SO_SEVERITY.put("terminator_codon_variant", 32);
-        SO_SEVERITY.put("start_lost", 32);
-        SO_SEVERITY.put("initiator_codon_variant", 31);
-        SO_SEVERITY.put("transcript_amplification", 30);
-        SO_SEVERITY.put("inframe_insertion", 29);
-        SO_SEVERITY.put("inframe_deletion", 28);
-        SO_SEVERITY.put("inframe_variant", 27);
-        SO_SEVERITY.put("missense_variant", 26);
-        SO_SEVERITY.put("splice_region_variant", 25);
-        SO_SEVERITY.put("incomplete_terminal_codon_variant", 24);
-        SO_SEVERITY.put("stop_retained_variant", 23);
-        SO_SEVERITY.put("synonymous_variant", 22);
-        SO_SEVERITY.put("coding_sequence_variant", 21);
-        SO_SEVERITY.put("mature_miRNA_variant", 20);
-        SO_SEVERITY.put("5_prime_UTR_variant", 19);
-        SO_SEVERITY.put("3_prime_UTR_variant", 18);
-        SO_SEVERITY.put("non_coding_transcript_exon_variant", 17);
-        SO_SEVERITY.put("intron_variant", 16);
-        SO_SEVERITY.put("NMD_transcript_variant", 15);
-        SO_SEVERITY.put("non_coding_transcript_variant", 14);
-        SO_SEVERITY.put("2KB_upstream_gene_variant", 13);
-        SO_SEVERITY.put("upstream_gene_variant", 12);
-        SO_SEVERITY.put("2KB_downstream_gene_variant", 11);
-        SO_SEVERITY.put("downstream_gene_variant", 10);
-        SO_SEVERITY.put("TFBS_ablation", 9);
-        SO_SEVERITY.put("TFBS_amplification", 8);
-        SO_SEVERITY.put("TF_binding_site_variant", 7);
-        SO_SEVERITY.put("regulatory_region_ablation", 6);
-        SO_SEVERITY.put("regulatory_region_amplification", 5);
-        SO_SEVERITY.put("regulatory_region_variant", 4);
-        SO_SEVERITY.put("feature_elongation", 3);
-        SO_SEVERITY.put("feature_truncation", 2);
+        SO_SEVERITY.put("copy_number_change", 41);
+        SO_SEVERITY.put("transcript_ablation", 40);
+        SO_SEVERITY.put("structural_variant", 39);
+        SO_SEVERITY.put("splice_acceptor_variant", 38);
+        SO_SEVERITY.put("splice_donor_variant", 37);
+        SO_SEVERITY.put("stop_gained", 36);
+        SO_SEVERITY.put("frameshift_variant", 35);
+        SO_SEVERITY.put("stop_lost", 34);
+        SO_SEVERITY.put("terminator_codon_variant", 33);
+        SO_SEVERITY.put("start_lost", 33);
+        SO_SEVERITY.put("initiator_codon_variant", 32);
+        SO_SEVERITY.put("transcript_amplification", 31);
+        SO_SEVERITY.put("inframe_insertion", 30);
+        SO_SEVERITY.put("inframe_deletion", 29);
+        SO_SEVERITY.put("inframe_variant", 28);
+        SO_SEVERITY.put("missense_variant", 27);
+        SO_SEVERITY.put("splice_region_variant", 26);
+        SO_SEVERITY.put("incomplete_terminal_codon_variant", 25);
+        SO_SEVERITY.put("stop_retained_variant", 24);
+        SO_SEVERITY.put("synonymous_variant", 23);
+        SO_SEVERITY.put("coding_sequence_variant", 22);
+        SO_SEVERITY.put("mature_miRNA_variant", 21);
+        SO_SEVERITY.put("5_prime_UTR_variant", 20);
+        SO_SEVERITY.put("3_prime_UTR_variant", 19);
+        SO_SEVERITY.put("non_coding_transcript_exon_variant", 18);
+        SO_SEVERITY.put("intron_variant", 17);
+        SO_SEVERITY.put("NMD_transcript_variant", 16);
+        SO_SEVERITY.put("non_coding_transcript_variant", 15);
+        SO_SEVERITY.put("2KB_upstream_gene_variant", 14);
+        SO_SEVERITY.put("upstream_gene_variant", 13);
+        SO_SEVERITY.put("2KB_downstream_gene_variant", 12);
+        SO_SEVERITY.put("downstream_gene_variant", 11);
+        SO_SEVERITY.put("TFBS_ablation", 10);
+        SO_SEVERITY.put("TFBS_amplification", 9);
+        SO_SEVERITY.put("TF_binding_site_variant", 8);
+        SO_SEVERITY.put("regulatory_region_ablation", 7);
+        SO_SEVERITY.put("regulatory_region_amplification", 6);
+        SO_SEVERITY.put("regulatory_region_variant", 5);
+        SO_SEVERITY.put("feature_elongation", 4);
+        SO_SEVERITY.put("feature_truncation", 3);
+        SO_SEVERITY.put("feature_variant", 2);
         SO_SEVERITY.put("intergenic_variant", 1);
 
         CODING_SO_NAMES.add(STOP_RETAINED_VARIANT);
@@ -545,13 +551,30 @@ public class VariantAnnotationUtils {
         return stringBuilder.append(chromosome);
     }
 
+    public static Variant parseMateBreakend(Variant variant) {
+        // e.g. A]2:321681]
+        String[] parts = variant.getAlternate().split(":");
+        if (parts.length == 2) {
+            String chromosome = parts[0].split("[\\[\\]]")[1];
+            chromosome = Region.normalizeChromosome(chromosome);
+            Integer start = Integer.valueOf(parts[1].split("[\\[\\]]")[0]);
+            Variant newvariant = new Variant(chromosome, start, null, null);
+            newvariant.setSv(new StructuralVariation(variant.getSv().getCiEndLeft(), variant.getSv().getCiEndRight(),
+                    variant.getSv().getCiStartLeft(), variant.getSv().getCiStartRight(), null,
+                    null, null, null));
+            return newvariant;
+        }
+        return null;
+    }
+
     public static VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
         if (variant.getType() == null) {
             variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
         }
         // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
         // FIXME: insertions and deletions
-        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+//        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+        if (variant.getType().equals(VariantType.INDEL)) {
             if (variant.getReference().isEmpty()) {
 //                variant.setType(VariantType.INSERTION);
                 return VariantType.INSERTION;

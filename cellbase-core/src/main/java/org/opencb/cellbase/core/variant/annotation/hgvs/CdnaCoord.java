@@ -7,30 +7,30 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 public class CdnaCoord {
 
     public enum Landmark {
-        CDNA_START_CODON, CDNA_STOP_CODON
+        CDNA_START_CODON, TRANSCRIPT_START, CDNA_STOP_CODON
     }
 
-    private int cdsPosition = 0;
-    private int startStopCodonOffset = 0;
+    private int referencePosition = 0;
+    private int offset = 0;
     private Landmark landmark;
 
     public CdnaCoord() {
     }
 
-    public int getCdsPosition() {
-        return cdsPosition;
+    public int getReferencePosition() {
+        return referencePosition;
     }
 
-    public void setCdsPosition(int cdsPosition) {
-        this.cdsPosition = cdsPosition;
+    public void setReferencePosition(int referencePosition) {
+        this.referencePosition = referencePosition;
     }
 
-    public int getStartStopCodonOffset() {
-        return startStopCodonOffset;
+    public int getOffset() {
+        return offset;
     }
 
-    public void setStartStopCodonOffset(int startStopCodonOffset) {
-        this.startStopCodonOffset = startStopCodonOffset;
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
 
     public Landmark getLandmark() {
@@ -47,34 +47,34 @@ public class CdnaCoord {
         StringBuilder stringBuilder = new StringBuilder();
         if (landmark.equals(Landmark.CDNA_STOP_CODON)) {
             stringBuilder.append("*");
-            if (cdsPosition != 0) {
+            if (referencePosition != 0) {
                 // Remove sign
-                stringBuilder.append(Math.abs(cdsPosition));
+                stringBuilder.append(Math.abs(referencePosition));
             }
-        } else if (cdsPosition != 0) {
-            stringBuilder.append(cdsPosition);
+        } else if (referencePosition != 0) {
+            stringBuilder.append(referencePosition);
         }
 
-//        if (cdsPosition != 0) {
-//            stringBuilder.append(cdsPosition);
-//            if (startStopCodonOffset != 0) {
-//                if (startStopCodonOffset > 0) {
+//        if (referencePosition != 0) {
+//            stringBuilder.append(referencePosition);
+//            if (offset != 0) {
+//                if (offset > 0) {
 //                    stringBuilder.append("+");
 //                }
-//                stringBuilder.append(startStopCodonOffset);
+//                stringBuilder.append(offset);
 //            }
-//        } else if (startStopCodonOffset != 0) {
+//        } else if (offset != 0) {
 //            // Remove sign
-//            stringBuilder.append(Math.abs(startStopCodonOffset));
+//            stringBuilder.append(Math.abs(offset));
 //        }
 
-        if (startStopCodonOffset < 0) {
-            stringBuilder.append(startStopCodonOffset);
-        } else if (startStopCodonOffset > 0) {
-            if (cdsPosition != 0) {
+        if (offset < 0) {
+            stringBuilder.append(offset);
+        } else if (offset > 0) {
+            if (referencePosition != 0) {
                 stringBuilder.append("+");
             }
-            stringBuilder.append(startStopCodonOffset);
+            stringBuilder.append(offset);
         }
 
         return stringBuilder.toString();
@@ -91,10 +91,10 @@ public class CdnaCoord {
 
         CdnaCoord cdnaCoord = (CdnaCoord) o;
 
-        if (cdsPosition != cdnaCoord.cdsPosition) {
+        if (referencePosition != cdnaCoord.referencePosition) {
             return false;
         }
-        if (startStopCodonOffset != cdnaCoord.startStopCodonOffset) {
+        if (offset != cdnaCoord.offset) {
             return false;
         }
         return landmark == cdnaCoord.landmark;
@@ -103,8 +103,8 @@ public class CdnaCoord {
 
     @Override
     public int hashCode() {
-        int result = cdsPosition;
-        result = 31 * result + startStopCodonOffset;
+        int result = referencePosition;
+        result = 31 * result + offset;
         result = 31 * result + (landmark != null ? landmark.hashCode() : 0);
         return result;
     }

@@ -81,7 +81,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory2.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 
             return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {

@@ -21,6 +21,8 @@ public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transc
         BIOTYPE("biotype", TEXT_ARRAY, ""),
         TFBS_NAME("tfbs.name", TEXT_ARRAY, ""),
         XREFS("xrefs", TEXT_ARRAY, ""),
+        // TODO: add miRNA to query params
+//        MIRNA("mirna", TEXT_ARRAY, ""),
         ANNOTATION_FLAGS("annotationFlags", TEXT_ARRAY, "");
 
 

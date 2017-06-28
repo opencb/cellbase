@@ -3,8 +3,8 @@ package org.opencb.cellbase.client.grpc;
 import io.grpc.ManagedChannel;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
-import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
-import org.opencb.cellbase.server.grpc.service.VariantServiceGrpc;
+import org.opencb.cellbase.core.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.core.grpc.service.VariantServiceGrpc;
 
 import java.util.HashMap;
 import java.util.Iterator;

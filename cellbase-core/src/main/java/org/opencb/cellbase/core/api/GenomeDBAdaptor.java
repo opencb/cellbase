@@ -98,20 +98,19 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
 //    List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regions, QueryOptions queryOptions);
     List<QueryResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regions, QueryOptions queryOptions);
 
-    default List<QueryResult<Cytoband>> getCytoband(List<Region> regionList, QueryOptions queryOptions) {
+    default List<QueryResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions) {
         List<QueryResult<Cytoband>> queryResultList = new ArrayList<>(regionList.size());
-
         for (Region region : regionList) {
-            queryResultList.add(getCytoband(region, queryOptions));
+            queryResultList.add(getCytobands(region, queryOptions));
         }
-
         return queryResultList;
     }
 
-    default List<QueryResult<Cytoband>> getCytoband(List<Region> regionList) {
-        return getCytoband(regionList, null);
+    @Deprecated
+    default List<QueryResult<Cytoband>> getCytobands(List<Region> regionList) {
+        return getCytobands(regionList, null);
     }
 
-    QueryResult<Cytoband> getCytoband(Region region, QueryOptions queryOptions);
+    QueryResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions);
 
 }

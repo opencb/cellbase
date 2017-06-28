@@ -68,7 +68,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureTypes() {
         try {
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
             return createOkResponse(regulationDBAdaptor.distinct(query, "featureType"));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -93,7 +93,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureClasses() {
         try {
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
             return createOkResponse(regulationDBAdaptor.distinct(query, "featureClass"));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -125,7 +125,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
             return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);

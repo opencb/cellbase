@@ -81,8 +81,6 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
     }
 
-    int CNV_DEFAULT_PADDING = 500;
-
     QueryResult startsWith(String id, QueryOptions options);
 
     default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
@@ -99,16 +97,16 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
                 int ciStartRight = variant.getSv().getCiStartRight();
                 int ciEndLeft = variant.getSv().getCiEndLeft();
                 int ciEndRight = variant.getSv().getCiEndRight();
-                // CNVs must be considered inherently imprecise (GEL requirement), even if variant caller returned
-                // precise positions
-                if (VariantType.CNV.equals(variant.getType())
-                        && variant.getSv().getCiStartLeft().equals(variant.getSv().getCiStartRight())
-                        && variant.getSv().getCiEndLeft().equals(variant.getSv().getCiEndRight())) {
-                    ciStartLeft -= CNV_DEFAULT_PADDING;
-                    ciStartRight += CNV_DEFAULT_PADDING;
-                    ciEndLeft -= CNV_DEFAULT_PADDING;
-                    ciEndRight += CNV_DEFAULT_PADDING;
-                }
+//                // CNVs must be considered inherently imprecise (GEL requirement), even if variant caller returned
+//                // precise positions
+//                if (VariantType.CNV.equals(variant.getType())
+//                        && variant.getSv().getCiStartLeft().equals(variant.getSv().getCiStartRight())
+//                        && variant.getSv().getCiEndLeft().equals(variant.getSv().getCiEndRight())) {
+//                    ciStartLeft -= CNV_DEFAULT_PADDING;
+//                    ciStartRight += CNV_DEFAULT_PADDING;
+//                    ciEndLeft -= CNV_DEFAULT_PADDING;
+//                    ciEndRight += CNV_DEFAULT_PADDING;
+//                }
                 query.append(QueryParams.CI_START_LEFT.key(), ciStartLeft)
                         .append(QueryParams.CI_START_RIGHT.key(), ciStartRight)
                         .append(QueryParams.CI_END_LEFT.key(), ciEndLeft)
@@ -140,6 +138,8 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
         return results;
     }
+
+    QueryResult<String> getConsequenceTypes(Query query);
 
     QueryResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions options);
 

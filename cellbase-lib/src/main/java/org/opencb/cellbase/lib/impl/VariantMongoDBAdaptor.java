@@ -28,6 +28,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
 import org.opencb.commons.datastore.core.Query;
@@ -39,6 +40,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 26/11/15.
@@ -66,6 +68,18 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         Bson regex = Filters.regex("ids", Pattern.compile("^" + id));
         Bson include = Projections.include("ids", "chromosome", "start", "end");
         return mongoDBCollection.find(regex, include, options);
+    }
+
+    @Override
+    public QueryResult<String> getConsequenceTypes(Query query) {
+        // TODO we need to check if Query is empty!
+        List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
+                .sorted()
+                .collect(Collectors.toList());
+        QueryResult<String> queryResult = new QueryResult<>("consequence_types");
+        queryResult.setNumResults(consequenceTypes.size());
+        queryResult.setResult(consequenceTypes);
+        return queryResult;
     }
 
     @Override
@@ -133,7 +147,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         options = addVariantPrivateExcludeOptions(options);
 //        options = addPrivateExcludeOptions(options);
 
-        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, null, Variant.class, options);
     }
 

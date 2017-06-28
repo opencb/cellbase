@@ -244,7 +244,8 @@ public class VariationParser extends CellBaseParser {
                 String copyNumberStr = alternate.split("\\)")[1];
                 alternate = "<CN" + copyNumberStr + ">";
                 Integer copyNumber = Integer.valueOf(copyNumberStr);
-                sv = new StructuralVariation(start, start, end, end, copyNumber, Variant.getCNVSubtype(copyNumber));
+                sv = new StructuralVariation(start, start, end, end, copyNumber, null, null,
+                        Variant.getCNVSubtype(copyNumber));
                 break;
             default:
                 break;
@@ -256,7 +257,7 @@ public class VariationParser extends CellBaseParser {
         variant.setType(type);
         variant.setSv(sv);
         VariantAnnotation ensemblVariantAnnotation = new VariantAnnotation(null, null, null,
-                null, null, id, xrefs, hgvs,
+                null, null, null, id, xrefs, hgvs,
                 displayConsequenceType, conseqTypes, null, null, null,
                 null, null, null, null,
                 null, null, null, null, null,
@@ -268,7 +269,7 @@ public class VariationParser extends CellBaseParser {
             logger.warn("Variant {} annotation cannot be serialized to Json: {}", id, e.getMessage());
         }
         VariantAnnotation variantAnnotation = new VariantAnnotation(null, null, null,
-                null, ancestralAllele, id, xrefs, hgvs,
+                null, null, ancestralAllele, id, xrefs, hgvs,
                 displayConsequenceType, conseqTypes, null, minorAllele, minorAlleleFreq,
                 null, null, null, null,
                 null, null, null, null, null, additionalAttributes);

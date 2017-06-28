@@ -36,7 +36,7 @@ import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.io.JsonVariantReader;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
@@ -353,6 +353,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> getStringTaskList() throws IOException {
         List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+        VcfStringAnnotatorTask.SharedContext sharedContext = new VcfStringAnnotatorTask.SharedContext(numThreads);
+//        Set<String> breakendMates = Collections.synchronizedSet(new HashSet<>());
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             switch (inputFormat) {
@@ -366,7 +368,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
                         variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
-                                variantAnnotatorList, normalize));
+                                variantAnnotatorList, sharedContext, normalize));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
@@ -837,6 +839,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
         }
 
+        // Enable/Disable imprecise annotation
+        queryOptions.put("imprecise", !variantAnnotationCommandOptions.noImprecision);
+
         // Parameter not expected to be very used - provide extra padding (bp) to be used for structural variant annotation
         if (variantAnnotationCommandOptions.buildParams.get("sv-extra-padding") != null) {
             Integer svExtraPadding = Integer.valueOf(variantAnnotationCommandOptions.buildParams.get("sv-extra-padding"));
@@ -845,6 +850,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         + svExtraPadding + ". Please provide a value >= 0");
             }
             queryOptions.put("svExtraPadding", svExtraPadding);
+        }
+
+        // Parameter not expected to be very used - provide extra padding (bp) to be used for CNV annotation
+        if (variantAnnotationCommandOptions.buildParams.get("cnv-extra-padding") != null) {
+            Integer cnvExtraPadding = Integer.valueOf(variantAnnotationCommandOptions.buildParams.get("cnv-extra-padding"));
+            if (cnvExtraPadding < 0) {
+                throw new ParameterException("Extra padding for CNV annotation cannot be < 0, value provided: "
+                        + cnvExtraPadding + ". Please provide a value >= 0");
+            }
+            queryOptions.put("cnvExtraPadding", cnvExtraPadding);
         }
 
         // Annotate variation collection in CellBase

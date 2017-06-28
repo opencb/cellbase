@@ -16,20 +16,19 @@
 
 package org.opencb.cellbase.server.ws.regulatory;
 
-import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
-import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Path("/{version}/{species}/regulatory/mirna_mature")
@@ -42,108 +41,95 @@ public class MiRnaMatureWSServer extends RegulatoryWSServer {
         super(version, species, uriInfo, hsr);
     }
 
-    @GET
-    @Path("/{mirnaId}/info")
-    public Response getMiRnaMatureInfo(@PathParam("mirnaId") String query) {
-        try {
-            parseQueryParams();
-            // miRnaGene y Ensembl Genes + Transcripts
-            // mirnaDiseases
-            // mirnaTargets
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-            logger.debug("En getMiRnaMatureInfo: " + query);
-            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaMaturesByNameList(Splitter.on(",").splitToList(query)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMiRnaMatureInfo", e.toString());
-        }
-    }
-
 //    @GET
-//    @Path("/{mirnaId}/gene")
-//    public Response getEnsemblGene(@PathParam("mirnaId") String query) {
+//    @Path("/{mirnaId}/info")
+//    public Response getMiRnaMatureInfo(@PathParam("mirnaId") String query) {
 //        try {
 //            parseQueryParams();
-//            GeneDBAdaptor adaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//            return  generateResponse(query, adaptor.getAllByMiRnaMatureList(Splitter.on(",").splitToList(query)));
+//            // miRnaGene y Ensembl Genes + Transcripts
+//            // mirnaDiseases
+//            // mirnaTargets
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//            logger.debug("En getMiRnaMatureInfo: " + query);
+//            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaMaturesByNameList(Splitter.on(",").splitToList(query)));
 //        } catch (Exception e) {
 //            e.printStackTrace();
-//            return createErrorResponse("getEnsemblGene", e.toString());
+//            return createErrorResponse("getMiRnaMatureInfo", e.toString());
 //        }
 //    }
-
-    @GET
-    @Path("/{mirnaId}/mirna_gene")
-    public Response getMiRnaGene(@PathParam("mirnaId") String query) {
-        try {
-            parseQueryParams();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(Splitter.on(",").splitToList(query)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMiRnaGene", e.toString());
-        }
-    }
-
-    @GET
-    @Path("/{mirnaId}/target")
-    public Response getMirnaTargets(@PathParam("mirnaId") String query, @DefaultValue("") @QueryParam("source") String source) {
-        try {
-            parseQueryParams();
-            MirnaDBAdaptor adaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-            return generateResponse(query, adaptor.getAllMiRnaTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query),
-                    Splitter.on(",").splitToList(source)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMirnaTargets", e.toString());
-        }
-    }
-
-    @GET
-    @Path("/{mirnaId}/disease")
-    public Response getMinaDisease(@PathParam("mirnaId") String query) {
-        try {
-            parseQueryParams();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(Splitter.on(",").splitToList(query)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMinaDisease", e.toString());
-        }
-    }
-
-    @GET
-    @Path("/annotation")
-    public Response getAnnotation(@DefaultValue("") @QueryParam("source") String source) {
-        try {
-            parseQueryParams();
-            MirnaDBAdaptor adaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-
-            List<?> results;
-            if (source.equals("")) {
-                results = adaptor.getAllAnnotation();
-            } else {
-                results = adaptor.getAllAnnotationBySourceList(Splitter.on(",").splitToList(source));
-            }
-
-            List<String> lista = new ArrayList<String>();
-            if (results != null && results.size() > 0) {
-                for (Object result : results) {
-                    lista.add(((Object[]) result)[0].toString() + "\t" + ((Object[]) result)[1].toString());
-                }
-            }
-
-            return generateResponse(new String(), lista);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getAnnotation", e.toString());
-        }
-    }
-
-    @GET
-    public Response defaultMethod() {
-        return help();
-    }
+//
+//    @GET
+//    @Path("/{mirnaId}/mirna_gene")
+//    public Response getMiRnaGene(@PathParam("mirnaId") String query) {
+//        try {
+//            parseQueryParams();
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByMiRnaMatureList(Splitter.on(",").splitToList(query)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMiRnaGene", e.toString());
+//        }
+//    }
+//
+//    @GET
+//    @Path("/{mirnaId}/target")
+//    public Response getMirnaTargets(@PathParam("mirnaId") String query, @DefaultValue("") @QueryParam("source") String source) {
+//        try {
+//            parseQueryParams();
+//            MirnaDBAdaptor adaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//            return generateResponse(query, adaptor.getAllMiRnaTargetsByMiRnaMatureList(Splitter.on(",").splitToList(query),
+//                    Splitter.on(",").splitToList(source)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMirnaTargets", e.toString());
+//        }
+//    }
+//
+//    @GET
+//    @Path("/{mirnaId}/disease")
+//    public Response getMinaDisease(@PathParam("mirnaId") String query) {
+//        try {
+//            parseQueryParams();
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaMatureList(Splitter.on(",").splitToList(query)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMinaDisease", e.toString());
+//        }
+//    }
+//
+//    @GET
+//    @Path("/annotation")
+//    public Response getAnnotation(@DefaultValue("") @QueryParam("source") String source) {
+//        try {
+//            parseQueryParams();
+//            MirnaDBAdaptor adaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
+//
+//            List<?> results;
+//            if (source.equals("")) {
+//                results = adaptor.getAllAnnotation();
+//            } else {
+//                results = adaptor.getAllAnnotationBySourceList(Splitter.on(",").splitToList(source));
+//            }
+//
+//            List<String> lista = new ArrayList<String>();
+//            if (results != null && results.size() > 0) {
+//                for (Object result : results) {
+//                    lista.add(((Object[]) result)[0].toString() + "\t" + ((Object[]) result)[1].toString());
+//                }
+//            }
+//
+//            return generateResponse(new String(), lista);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getAnnotation", e.toString());
+//        }
+//    }
+//
+//    @GET
+//    public Response defaultMethod() {
+//        return help();
+//    }
 
     @GET
     @Path("/help")

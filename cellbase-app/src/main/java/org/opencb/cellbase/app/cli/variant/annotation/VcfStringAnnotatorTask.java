@@ -16,51 +16,68 @@
 
 package org.opencb.cellbase.app.cli.variant.annotation;
 
+import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFConstants;
 import htsjdk.variant.vcf.VCFHeader;
 import htsjdk.variant.vcf.VCFHeaderVersion;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.converters.avro.VariantContextToVariantConverter;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by fjlopez on 02/03/15.
  */
 public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
+    private static final String MATEID = "MATEID";
+    private static final String MATE_CIPOS = "MATE_CIPOS";
+    private static final String CIPOS = "CIPOS";
+    private final SharedContext sharedContext;
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
     private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
     private boolean normalize;
 
-    public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version, List<VariantAnnotator> variantAnnotatorList) {
-        this(header, version, variantAnnotatorList, true);
+    public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
+                                  List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext) {
+        this(header, version, variantAnnotatorList, sharedContext, true);
     }
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
-                                  List<VariantAnnotator> variantAnnotatorList, boolean normalize) {
+                                  List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext,
+                                  boolean normalize) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
         this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
+        this.sharedContext = sharedContext;
         this.normalize = normalize;
     }
 
+    @Override
     public void pre() {
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             variantAnnotator.open();
         }
     }
 
+    @Override
     public List<Variant> apply(List<String> batch) throws Exception {
         List<Variant> variantList = parseVariantList(batch);
+        return normalizeAndAnnotate(variantList);
+    }
+
+    private List<Variant> normalizeAndAnnotate(List<Variant> variantList) throws InterruptedException, ExecutionException {
         List<Variant> normalizedVariantList;
         if (normalize) {
             normalizedVariantList = normalizer.apply(variantList);
@@ -73,24 +90,130 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
         return normalizedVariantList;
     }
 
-    private List<Variant> parseVariantList(List<String> batch) {
-        List<VariantContext> variantContexts = new ArrayList<>(batch.size());
-        for (String line : batch) {
-            if (line.startsWith("#") || line.trim().isEmpty()) {
-                continue;
-            }
-            variantContexts.add(vcfCodec.decode(line));
+    @Override
+    public List<Variant> drain() throws Exception {
+        // Annotate singleton BNDs - BNDs that contain a MATEID in the info field, however, no BND was found in the
+        // VCF with that MATEID
+        if (sharedContext.getNumTasks().decrementAndGet() == 0) {
+            List<Variant> variantList = converter.apply(new ArrayList<>(sharedContext.getBreakendMates().values()));
+            return normalizeAndAnnotate(variantList);
         }
-
-        return converter.apply(variantContexts);
+        return Collections.emptyList();
     }
 
+    private List<Variant> parseVariantList(List<String> batch) {
+//        List<VariantContext> variantContexts = new ArrayList<>(batch.size());
+        List<Variant> variantList = new ArrayList<>(batch.size());
+        for (String line : batch) {
+            // It's not a header line
+            if (!line.startsWith("#") && !line.trim().isEmpty()) {
+                VariantContext variantContext = vcfCodec.decode(line);
+                if (variantContext.getAlternateAlleles() != null && !variantContext.getAlternateAlleles().isEmpty()) {
+                    byte[] alternateBytes = variantContext.getAlternateAllele(0).toString().getBytes();
+                    // Symbolic allele: CNV, DEL, DUP, INS, INV, BND
+                    if (Allele.wouldBeSymbolicAllele(alternateBytes)) {
+                        // BND
+                        if (alternateBytes[0] == '.' || alternateBytes[alternateBytes.length - 1] == '.'  // single breakend
+                                || variantContext.getAlternateAllele(0).toString().contains("[")       // mated breakend
+                                || variantContext.getAlternateAllele(0).toString().contains("]")) {
+                            // If there's no mate specified, add BND
+                            if (variantContext.getCommonInfo() != null
+                                    && variantContext.getCommonInfo().getAttributes() != null
+                                    && variantContext.getCommonInfo().getAttributes().get(MATEID) != null) {
+                                String breakendPairId = getBreakendPairId(variantContext);
+                                // Mate was previously seen and stored, create Variant with the pair info, remove
+                                // variantContext from sharedContext and continue
+                                // WARNING: assuming BND positions cannot be multiallelic positions - there will always
+                                // be just one alternate allele!
+                                if (sharedContext.getBreakendMates().putIfAbsent(breakendPairId, variantContext) != null) {
+                                    variantList.add(parseBreakendPair(sharedContext.getBreakendMates().get(breakendPairId),
+                                            variantContext));
+                                    sharedContext.getBreakendMates().remove(breakendPairId);
+                                // Mate not seen yet, variantContext has been saved in sharedContext, continue
+                                }
+                            // Singleton BND, no mate specified within the INFO field
+                            } else {
+                                variantList.add(converter.convert(variantContext));
+//                            variantContexts.add(variantContext);
+                            }
+                        // Symbolic allele other than BND: CNV, DEL, DUP, INS, INV BND; add it
+                        } else {
+                            variantList.add(converter.convert(variantContext));
+//                        variantContexts.add(variantContext);
+                        }
+                    // Simple variant: SNV, short insertion, short deletion; add it
+                    } else {
+                        variantList.add(converter.convert(variantContext));
+//                    variantContexts.add(variantContext);
+                    }
+                }
+            }
+        }
+
+        return variantList;
+//        return converter.apply(variantContexts);
+    }
+
+    private Variant parseBreakendPair(VariantContext variantContext, VariantContext variantContext1) {
+        // Get Variant object for the first BND
+        Variant variant = converter.convert(variantContext);
+
+        // Check the second BND does have CIPOS
+        List ciposValue = variantContext1.getAttributeAsList(CIPOS);
+        if (!ciposValue.isEmpty()) {
+            // Get CIPOS from second BND
+            String ciposString = StringUtils.join(ciposValue, VCFConstants.INFO_FIELD_ARRAY_SEPARATOR);
+
+            // Set CIPOS string of the sencond BND as part of the file INFO field in the first BND
+            Map<String, String> attributesMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
+            attributesMap.put(MATE_CIPOS, ciposString);
+
+            // CIPOS of the second breakend is saved at CiEnd
+            List ciposParts = variantContext1.getAttributeAsList(CIPOS);
+            variant.getSv().setCiEndLeft(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(0)));
+            variant.getSv().setCiEndRight(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(1)));
+        // If not, it's a precise call, just store the second BND coordinates in the SV CIEND field
+        } else {
+            variant.getSv().setCiEndLeft(variantContext1.getStart());
+            variant.getSv().setCiEndRight(variantContext1.getStart());
+        }
+
+        return variant;
+    }
+
+    private String getBreakendPairId(VariantContext variantContext) {
+        // The id for the breakend pair will be the two BND Ids alphabetically sorted and concatenated by a '_'
+        List<String> ids = Arrays.asList(variantContext.getID(),
+                (String) variantContext.getCommonInfo().getAttributes().get(MATEID));
+        Collections.sort(ids);
+
+        return StringUtils.join(ids, "_");
+    }
+
+    @Override
     public void post() {
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
             variantAnnotator.close();
         }
     }
 
+    public static class SharedContext {
+        private final AtomicInteger numTasks;
+        private final Map<String, VariantContext> breakendMates;
+
+        public SharedContext(int numTasks) {
+            this.numTasks = new AtomicInteger(numTasks);
+            this.breakendMates = Collections.synchronizedMap(new HashMap<>());
+        }
+
+        private AtomicInteger getNumTasks() {
+            return numTasks;
+        }
+
+        private Map<String, VariantContext> getBreakendMates() {
+            return breakendMates;
+        }
+    }
 }
 
 //    private Path inputFile;

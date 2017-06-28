@@ -1,7 +1,7 @@
 package org.opencb.cellbase.client.grpc;
 
 import io.grpc.ManagedChannel;
-import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.core.grpc.service.GenericServiceModel;
 
 import java.util.Map;
 

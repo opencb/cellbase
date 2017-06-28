@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protobuf.opencb.service;
 
-option java_package = "org.opencb.cellbase.server.grpc.service";
+option java_package = "org.opencb.cellbase.core.grpc.service";
 option java_outer_classname = "GenericServiceModel";
 
 message Request {

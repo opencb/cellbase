@@ -117,6 +117,7 @@ public class PostLoadCommandExecutor extends CommandExecutor {
 //            logger.info(Integer.valueOf(nVepAnnotatedVariants) + " read variants with vep annotations");
 //            variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
 //        }
+
 //
 //        vepFormatReader.post();
 //        vepFormatReader.close();
