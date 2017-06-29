@@ -150,7 +150,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
         List<GenomicFeature> genomicFeatureList = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])) {
-            for (String geneString : lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(",")) {
+            String[] geneList = lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(",");
+            genomicFeatureList = new ArrayList<>(geneList.length);
+            for (String geneString : geneList) {
                 genomicFeatureList.add(createGeneGenomicFeature(geneString));
             }
         }
@@ -394,9 +396,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                         for (SetElementSetType setElementSet : measureRelationship.getSymbol()) {
                             if (setElementSet.getElementValue() != null) {
                                 if (setElementSet.getElementValue().getValue() != null) {
-                                    Map<String, String> map = new HashMap<>(1);
-                                    map.put("symbol", setElementSet.getElementValue().getValue());
-                                    genomicFeatureSet.add(new GenomicFeature(FeatureTypes.Gene, null, map));
+                                    genomicFeatureSet.add(createGeneGenomicFeature(setElementSet.getElementValue().getValue()));
                                 }
                             }
                         }
