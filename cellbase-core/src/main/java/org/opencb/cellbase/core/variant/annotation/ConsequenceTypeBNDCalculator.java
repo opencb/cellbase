@@ -15,9 +15,6 @@ import java.util.Set;
  * Created by fjlopez on 09/05/17.
  */
 public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCalculator {
-    protected int variantStart;
-    protected int variantEnd;
-    private boolean isIntergenic;
 
     public ConsequenceTypeBNDCalculator() {
     }
@@ -30,7 +27,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
         List<ConsequenceType> consequenceTypeList1 = run(inputVariant.getChromosome(),
                 getStart(inputVariant), getEnd(inputVariant), geneList,
                 overlapsRegulatoryRegion);
-        Variant mate = VariantAnnotationUtils.parseMateBreakend(inputVariant);
+        Variant mate = Variant.getMateBreakend(inputVariant);
         if (mate == null) {
             return consequenceTypeList1;
         } else {

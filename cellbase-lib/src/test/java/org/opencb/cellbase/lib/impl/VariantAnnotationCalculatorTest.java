@@ -56,7 +56,6 @@ public class VariantAnnotationCalculatorTest {
 
     ObjectMapper jsonObjectMapper;
     VariantAnnotationCalculator variantAnnotationCalculator;
-    private VariantAnnotationCalculator variantAnnotationCalculatorGrch38;
 
     @Before
     public void setUp() {
@@ -73,9 +72,6 @@ public class VariantAnnotationCalculatorTest {
         }
         MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37", dbAdaptorFactory);
-        variantAnnotationCalculatorGrch38 = new VariantAnnotationCalculator("hsapiens", "GRCh38", dbAdaptorFactory);
-
-
     }
 
     @Test
@@ -185,14 +181,24 @@ public class VariantAnnotationCalculatorTest {
         /**
          * BND
          */
-        Variant variant = new Variant("1", 16897098, "", "[chr1_KI270713v1_random:20846[T");
+        Variant variant = new Variant("1", 16877367, "", "[chr4:17481913[T");
         QueryResult<ConsequenceType> consequenceTypeResult =
-                variantAnnotationCalculatorGrch38.getAllConsequenceTypesByVariant(variant, queryOptions);
-//        assertEquals(consequenceTypeResult.getNumResults(), 2);
-//        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size(), 1);
-//        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
-//                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
-//                        "structural_variant")));
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
+        assertEquals(4, consequenceTypeResult.getNumResults());
+        assertEquals(2, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000438396").getSequenceOntologyTerms().size());
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000438396").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
+                        "non_coding_transcript_exon_variant"),
+                        new SequenceOntologyTerm("SO:0001619",
+                                "non_coding_transcript_variant")));
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000577341").getSequenceOntologyTerms().size());
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000577341").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001632",
+                        "2KB_downstream_gene_variant")));
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000513615").getSequenceOntologyTerms().size());
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000513615").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001627",
+                        "intron_variant")));
 
         /**
          * Whole affected non coding transcript
@@ -200,8 +206,8 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16344095:<CNV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 2);
-        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size(), 1);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
                         "structural_variant")));
@@ -209,8 +215,8 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16344095:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 2);
-        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size(), 1);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
                         "transcript_ablation")));
@@ -218,8 +224,8 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16344095:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 2);
-        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size(), 1);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification")));
@@ -227,8 +233,8 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16344095:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(consequenceTypeResult.getNumResults(), 2);
-        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size(), 1);
+        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
                         "structural_variant")));
@@ -239,7 +245,7 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16339130:<CNV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -252,7 +258,7 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16339130:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -267,7 +273,7 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16339130:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -280,7 +286,7 @@ public class VariantAnnotationCalculatorTest {
         variant = new Variant("22:16328960-16339130:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(1, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -297,7 +303,7 @@ public class VariantAnnotationCalculatorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(5, consequenceTypeResult.getNumResults());
-        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size(), 1);
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
                         "structural_variant")));
@@ -315,7 +321,7 @@ public class VariantAnnotationCalculatorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(5, consequenceTypeResult.getNumResults());
-        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size(), 1);
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification")));
@@ -324,7 +330,7 @@ public class VariantAnnotationCalculatorTest {
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
         assertEquals(5, consequenceTypeResult.getNumResults());
-        assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size(), 1);
+        assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
                         "structural_variant")));
@@ -547,7 +553,7 @@ public class VariantAnnotationCalculatorTest {
 
     private ConsequenceType getConsequenceType(List<ConsequenceType> consequenceTypeList, String transcriptId) {
         for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (consequenceType.getEnsemblTranscriptId().equals(transcriptId)) {
+            if (transcriptId.equals(consequenceType.getEnsemblTranscriptId())) {
                 return consequenceType;
             }
         }
@@ -657,7 +663,46 @@ public class VariantAnnotationCalculatorTest {
         queryOptions.put("useCache", false);
         queryOptions.put("include", "populationFrequencies");
 
+        // BE ADVISED: rs is on mitochondrial genome have significantly changed since e82 - same rs assigned different
+        // genomic positions, e.g. rs28358574, rs193303007 are assigned 1736 in e82 while appear at 1738 in e89 GRCh37
+        // web. I've checked source files and everything is correct in CellBase - source e82 files assign these rs
+        // to position 1736. This is not unusual for MT variants, can be easily checked using HGVA.
+        // Also, ENSEMBL does not provide 1kG freqs for MT variants, just HAPMAP ones. I've manually checked that
+        // approximately match 1kG freqs CellBase is returning and that's why it just tests some of the populations
+        // below
         QueryResult<VariantAnnotation> queryResult =
+                variantAnnotationCalculator.getAnnotationByVariant(new Variant("MT", 1438,
+                                "A", "G"), queryOptions);
+        assertThat(queryResult.getResult().get(0).getPopulationFrequencies(),
+                CoreMatchers.hasItems(new PopulationFrequency("1kG_phase3_chrMT", "ASW", "A",
+                        "G", 0.16666667f, 0.8333333f, 0.16666667f,
+                        0f, 0.8333333f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "CHB", "A", "G",
+                                0.067961164f, 0.93203884f, 0.067961164f,
+                                0f, 0.93203884f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "GIH", "A", "G",
+                                0.018867925f, 0.9811321f, 0.018867925f,
+                                0f, 0.9811321f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "LWK", "A", "G",
+                                0.03960396f, 0.96039605f, 0.03960396f,
+                                0f, 0.96039605f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "MXL", "A", "G",
+                                0.014925373f, 0.98507464f, 0.014925373f,
+                                0f, 0.98507464f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "TSI", "A", "G",
+                                0.018518519f, 0.9814815f, 0.018518519f,
+                                0f, 0.9814815f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "CEU", "A", "G",
+                                0.030303031f, 0.969697f, 0.030303031f,
+                                0f, 0.969697f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "JPT", "A", "G",
+                                0.01923077f, 0.9807692f, 0.01923077f,
+                                0f, 0.9807692f),
+                        new PopulationFrequency("1kG_phase3_chrMT", "YRI", "A", "G",
+                                0.14814815f, 0.8518519f, 0.14814815f,
+                                0f, 0.8518519f)));
+
+        queryResult =
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("1", 55505283,
                                 "GGAGGAGTGA", "G"), queryOptions);
         assertObjectListEquals("[{\"study\":\"GNOMAD_GENOMES\",\"population\":\"ALL\",\"refAllele\":\"GAGGAGTGA\",\"altAllele\":\"\",\"refAlleleFreq\":0.9999677,\"altAlleleFreq\":0.00003229974,\"refHomGenotypeFreq\":0.9999354,\"hetGenotypeFreq\":0.00006459948,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"NFE\",\"refAllele\":\"GAGGAGTGA\",\"altAllele\":\"\",\"refAlleleFreq\":0.99993336,\"altAlleleFreq\":0.000066657776,\"refHomGenotypeFreq\":0.99986666,\"hetGenotypeFreq\":0.00013331555,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"MALE\",\"refAllele\":\"GAGGAGTGA\",\"altAllele\":\"\",\"refAlleleFreq\":0.9999415,\"altAlleleFreq\":0.00005845902,\"refHomGenotypeFreq\":0.99988306,\"hetGenotypeFreq\":0.00011691804,\"altHomGenotypeFreq\":0}]",
@@ -774,115 +819,117 @@ public class VariantAnnotationCalculatorTest {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "repeats");
 
-        Variant variant = new Variant("19:78787-78807:<CN4>");
-        StructuralVariation structuralVariation = new StructuralVariation(78787, 78787,
-                78807, 78807, 0, null, null, null);
-        queryOptions.put("cnvExtraPadding", 150);
-
+        Variant variant = new Variant("19", 172450, "", "A]2:10000]");
+        StructuralVariation structuralVariation = new StructuralVariation(172450 - 10, 172450 + 30,
+                10000 - 100, 10000 + 7, null, null, null,
+                null);
         variant.setSv(structuralVariation);
-        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculatorGrch38
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(9, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(22, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.hasItems(new Repeat("21279", "19", 60000, 78757, null,
-                        2f, 0.989968f, 0f, null, "genomicSuperDup")));
+                CoreMatchers.hasItems(new Repeat("10420", "19", 60001, 172445, null,
+                        2f, 0.991464f, null, null, "genomicSuperDup"),
+                        new Repeat(null, "2", 10006, 10174, 13,
+                                12.7f, 0.82f, 213f, "CCCACACACCACA", "trf")));
+
+        variant = new Variant("19:82354-82444:<CN4>");
+        structuralVariation = new StructuralVariation(82354, 82354,
+                82444, 82444, 0, null, null, null);
+        queryOptions.put("cnvExtraPadding", 150);
+        variant.setSv(structuralVariation);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
+                        2f, 0.997228f, null, null, "genomicSuperDup")));
 
         queryOptions.remove("cnvExtraPadding");
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(variant, queryOptions);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("21279", "19", 60000,
-                        78757, null, 2f, 0.989968f, 0f, null,
+                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
+                        82344, null, 2f, 0.997228f, null, null,
                         "genomicSuperDup"))));
 
-        variant = new Variant("19:78787-78807:<DEL>");
-        structuralVariation = new StructuralVariation(78787, 78787,
-                78807, 78807, 0, null, null, null);
+        variant = new Variant("19:82354-82444:<DEL>");
+        structuralVariation = new StructuralVariation(82354, 82354,
+                82444, 82444, 0, null, null, null);
         queryOptions.put("svExtraPadding", 150);
         variant.setSv(structuralVariation);
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(9, queryResult.getResult().get(0).getRepeat().size());
-        assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.hasItems(new Repeat("21279", "19", 60000, 78757, null,
-                        2f, 0.989968f, 0f, null, "genomicSuperDup")));
-
-        queryOptions.remove("svExtraPadding");
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(variant, queryOptions);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("21279", "19", 60000,
-                        78757, null, 2f, 0.989968f, 0f, null,
+                CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
+                        2f, 0.997228f, null, null, "genomicSuperDup")));
+
+        queryOptions.remove("svExtraPadding");
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
+        assertThat(queryResult.getResult().get(0).getRepeat(),
+                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
+                        82344, null, 2f, 0.997228f, null, null,
                         "genomicSuperDup"))));
 
-        variant = new Variant("1:1823634-1823770:<DEL>");
-        structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
+        variant = new Variant("1:1822100-1823770:<DEL>");
+        structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
                 1823770 - 20, 1823770 + 10, 0, null, null,
                 null);
         variant.setSv(structuralVariation);
         queryOptions.put("imprecise", false);
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(variant, queryOptions);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertNull(queryResult.getResult().get(0).getRepeat());
 
-        variant = new Variant("1:1823634-1823770:<DEL>");
-        structuralVariation = new StructuralVariation(1823634 - 10, 1823634 + 50,
+        variant = new Variant("1:1822100-1823770:<DEL>");
+        structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
                 1823770 - 20, 1823770 + 10, 0, null, null,
                 null);
         variant.setSv(structuralVariation);
         queryOptions.remove("imprecise");
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(variant, queryOptions);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
         assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
                 new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1823664, 1823686, null, null,
-                                null, null, null, "windowMasker"))));
+                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
+                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
 
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(new Variant("1:1823702:T:C"), queryOptions);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:1822050:T:C"), queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
         assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
                 new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1823699, 1823720, null, null,
-                                null, null, null, "windowMasker"))));
+                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
+                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
 
         queryOptions.put("imprecise", false);
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(new Variant("1:1801242-1823252:<CN3>"), queryOptions);
+        queryOptions.put("cnvExtraPadding", 150);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:8000-9990:<CN3>"), queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(3, queryResult.getResult().get(0).getRepeat().size());
-        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
-                new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
-                                Float.valueOf(1), Float.valueOf(50), "A", "trf"),
-                        new Repeat(null, "1", 1822940, 1823278, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1801025, 1801354, null, null,
-                                null, null, null, "windowMasker"))));
+        assertNull(queryResult.getResult().get(0).getRepeat());
 
         queryOptions.remove("imprecise");
-        queryResult = variantAnnotationCalculatorGrch38
-                .getAnnotationByVariant(new Variant("1:1801242-1823252:<CN3>"), queryOptions);
+        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:8000-9990:<CN3>"), queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(3, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(5, queryResult.getResult().get(0).getRepeat().size());
         assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
                 new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1801025, 1801354, null, null,
-                                null, null, null, "windowMasker"),
-                        new Repeat(null, "1", 1823242, 1823267, 1, 25f,
-                                1f, 50f, "A", "trf"),
-                        new Repeat(null, "1", 1822940, 1823278, null, null,
-                                null, null, null, "windowMasker"))));
+                        new Repeat(null, "1", 10001, 10468, 6, 77.2f,
+                                0.95f, 789f, "TAACCC", "trf"),
+                        new Repeat("9119", "1", 10001, 87112, null, 2f,
+                                0.992904f, null, null, "genomicSuperDup"),
+                        new Repeat("6001", "1", 10001, 20818, null, 2f,
+                                0.981582f, null, null, "genomicSuperDup"),
+                        new Repeat("2698", "1", 10001, 19844, null, 2f,
+                                0.982898f, null, null, "genomicSuperDup"),
+                        new Repeat("2595", "1", 10001, 19844, null, 2f,
+                                0.982898f, null, null, "genomicSuperDup"))));
 //        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
 //                new HashSet<Repeat>(Arrays.asList(
 //                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
