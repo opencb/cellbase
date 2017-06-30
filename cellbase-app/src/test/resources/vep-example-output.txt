@@ -10,11 +10,11 @@
 ## AFR_MAF : Frequency of existing variant in 1000 Genomes Phase 1 combined African population
 ## AMR_MAF : Frequency of existing variant in 1000 Genomes Phase 1 combined American population
 ## ASN_MAF : Frequency of existing variant in 1000 Genomes Phase 1 combined Asian population
-## BIOTYPE : Biotype of transcriptId
-## CANONICAL : Indicates if transcriptId is canonical for this geneId
-## CCDS : Indicates if transcriptId is a CCDS transcriptId
+## BIOTYPE : Biotype of transcript
+## CANONICAL : Indicates if transcript is canonical for this gene
+## CCDS : Indicates if transcript is a CCDS transcript
 ## CLIN_SIG : Clinical significance of variant from dbSNP
-## DISTANCE : Shortest distance from variant to transcriptId
+## DISTANCE : Shortest distance from variant to transcript
 ## DOMAINS : The source and identifer of any overlapping protein domains
 ## EA_MAF : Frequency of existing variant in NHLBI-ESP European American population
 ## ENSP : Ensembl protein identifer
@@ -33,7 +33,7 @@
 ## SIFT : SIFT prediction and/or score
 ## STRAND : Strand of the feature (1/-1)
 ## SYMBOL : Gene symbol (e.g. HGNC)
-## SYMBOL_SOURCE : Source of geneId symbol
+## SYMBOL_SOURCE : Source of gene symbol
 #Uploaded_variation	Location	Allele	Gene	Feature	Feature_type	Consequence	cDNA_position	CDS_position	Protein_position	Amino_acids	Codons	Existing_variation	Extra
 1_10001_T/-	1:10001	-	ENSG00000223972	ENST00000456328	Transcript	upstream_gene_variant	-	-	-	-	-	-	STRAND=1;SYMBOL=DDX11L1;BIOTYPE=processed_transcript;DISTANCE=1868;CANONICAL=YES;SYMBOL_SOURCE=HGNC
 1_10001_T/-	1:10001	-	ENSG00000227232	ENST00000488147	Transcript	downstream_gene_variant	-	-	-	-	-	-	STRAND=-1;SYMBOL=WASH7P;BIOTYPE=unprocessed_pseudogene;DISTANCE=4403;SYMBOL_SOURCE=HGNC

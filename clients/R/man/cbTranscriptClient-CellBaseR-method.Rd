@@ -4,7 +4,7 @@
 \name{cbTranscriptClient,CellBaseR-method}
 \alias{cbTranscriptClient}
 \alias{cbTranscriptClient,CellBaseR-method}
-\title{A method to query transcriptId data from Cellbase web services.}
+\title{A method to query transcript data from Cellbase web services.}
 \usage{
 \S4method{cbTranscriptClient}{CellBaseR}(object, ids, resource,
   filters = NULL, ...)
@@ -12,7 +12,7 @@
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a character vector of the transcriptId ids to be queried, for example, ensemble transccript ID
+\item{ids}{a character vector of the transcript ids to be queried, for example, ensemble transccript ID
 like ENST00000380152}
 
 \item{resource}{a character vector to specify the resource to be queried}
@@ -25,7 +25,7 @@ like ENST00000380152}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query transcriptId data from Cellbase web services.
+A method to query transcript data from Cellbase web services.
 }
 \details{
 Please, for details on possible values for the 

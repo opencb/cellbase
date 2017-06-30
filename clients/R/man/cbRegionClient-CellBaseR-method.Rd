@@ -34,6 +34,6 @@ RESTful API documentation  http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
 }
 \examples{
    cb <- CellBaseR()
-   res <- cbRegionClient(object=cb, ids="17:1000000-1200000", resource="geneId")
+   res <- cbRegionClient(object=cb, ids="17:1000000-1200000", resource="gene")
 }
 

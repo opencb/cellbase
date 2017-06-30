@@ -48,7 +48,7 @@ CellBaseResponse <-setClass("CellBaseResponse", slots=c(cbData="data.frame"))
 #' http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/ and the 
 #' Reference Manual for more information.
 #' @slot genome A character the genome build to query, e.g.GRCh37(default)
-#' @slot geneId A character vector denoting the geneId/s to be queried
+#' @slot gene A character vector denoting the gene/s to be queried
 #' @slot region A character vector denoting the region/s to be queried must be 
 #' in the form 1:100000-1500000
 #' @slot rs A character vector denoting the rs ids to be queried
@@ -58,13 +58,13 @@ CellBaseResponse <-setClass("CellBaseResponse", slots=c(cbData="data.frame"))
 #' @slot exclude A character vector denoting the fields to be excluded
 #' @slot limit A number limiting the number of results to be returned
 #' @export
-setClass("CellBaseParam",slots = c(genome="character", geneId="character",
+setClass("CellBaseParam",slots = c(genome="character", gene="character", 
                                    region="character", rs="character", 
                                    so="character", phenotype="character", 
                                    include ="character", exclude = "character", 
                                    limit="character"), 
                                   prototype = prototype(genome=character(0),
-                                                        geneId=character(0),
+                                                        gene=character(0),
                                                         region=character(0), 
                                                         rs=character(0), 
                                                         so=character(0), 

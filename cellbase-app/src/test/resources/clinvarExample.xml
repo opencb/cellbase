@@ -198,7 +198,7 @@
         </AttributeSet>
         <CytogeneticLocation>21q22.1</CytogeneticLocation>
         <SequenceLocation Assembly="GRCh37" Chr="21" Accession="NC_000021.8" start="34805197" stop="34805197"/>
-        <MeasureRelationship Type="variant in geneId">
+        <MeasureRelationship Type="variant in gene">
           <Name>
             <ElementValue Type="Preferred">interferon gamma receptor 2 (interferon gamma transducer 1)</ElementValue>
           </Name>
@@ -378,7 +378,7 @@
         <AttributeSet>
           <Attribute Type="Description">intronic mutation</Attribute>
         </AttributeSet>
-        <MeasureRelationship Type="variant in geneId">
+        <MeasureRelationship Type="variant in gene">
           <Symbol>
             <ElementValue Type="Preferred">IFNGR2</ElementValue>
           </Symbol>
