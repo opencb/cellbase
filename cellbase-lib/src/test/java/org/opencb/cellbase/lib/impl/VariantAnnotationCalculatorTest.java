@@ -23,6 +23,7 @@ import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
@@ -746,6 +747,7 @@ public class VariantAnnotationCalculatorTest {
 
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "cytoband");
+        queryOptions.put("cnvExtraPadding", 500);
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(new Variant("19:37800050-37801000:<CN3>"), queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
@@ -795,8 +797,8 @@ public class VariantAnnotationCalculatorTest {
         assertEquals("nsv958854", queryResult.getResult().get(0).getId());
 
         variant = new Variant("1:10401-127130:<CN10>");
-        structuralVariation = new StructuralVariation(10401, 10401, 127130,
-                127130, 0, null, null,
+        structuralVariation = new StructuralVariation(9000, 10401, 127130,
+                127630, 10, null, null,
                 StructuralVariantType.COPY_NUMBER_GAIN);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
@@ -805,8 +807,8 @@ public class VariantAnnotationCalculatorTest {
 
         queryOptions.put("imprecise", false);
         variant = new Variant("1:10401-127130:<CN10>");
-        structuralVariation = new StructuralVariation(10401, 10401, 127130,
-                127130, 0, null, null,
+        structuralVariation = new StructuralVariation(9000, 10401, 127130,
+                127630, 10, null, null,
                 StructuralVariantType.COPY_NUMBER_GAIN);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);

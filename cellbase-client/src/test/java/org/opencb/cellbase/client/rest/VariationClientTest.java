@@ -35,7 +35,7 @@ public class VariationClientTest {
     @Test
     public void count() throws Exception {
         QueryResponse<Long> count = cellBaseClient.getVariationClient().count(new Query());
-        assertEquals("Number of returned variants do not match", 154652501, count.firstResult().longValue());
+        assertEquals("Number of returned variants do not match", 329487984, count.firstResult().longValue());
     }
 
     @Test
