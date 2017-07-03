@@ -207,19 +207,19 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         NumberFormat formatter = NumberFormat.getInstance();
         logger.info(formatter.format(ignoredRecords) + " IARCTP53 records ignored: ");
         if (invalidSubstitutionLines > 0) {
-            logger.info("\t-" + formatter.format(invalidSubstitutionLines) + " lines by invalid substitution");
+            logger.info("\t" + formatter.format(invalidSubstitutionLines) + " lines by invalid substitution");
         }
         if (invalidInsertionLines > 0) {
-            logger.info("\t-" + formatter.format(invalidInsertionLines) + " lines by invalid insertion");
+            logger.info("\t" + formatter.format(invalidInsertionLines) + " lines by invalid insertion");
         }
         if (invalidDeletionLines > 0) {
-            logger.info("\t-" + formatter.format(invalidDeletionLines) + " lines by invalid deletion");
+            logger.info("\t" + formatter.format(invalidDeletionLines) + " lines by invalid deletion");
         }
         if (nDuplications > 0) {
-            logger.info("\t-" + formatter.format(nDuplications) + " lines by duplication");
+            logger.info("\t" + formatter.format(nDuplications) + " lines by duplication");
         }
         if (invalidgDescriptionOtherReason > 0) {
-            logger.info("\t-" + formatter.format(invalidgDescriptionOtherReason)
+            logger.info("\t" + formatter.format(invalidgDescriptionOtherReason)
                     + " lines because g. description is invalid for other reasons");
         }
     }

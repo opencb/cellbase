@@ -131,20 +131,20 @@ public class VariantAnnotationUtils {
 
     static {
 
-        MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance", ModeOfInheritance.monoallelic);
-        MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with maternal imprinting",
+        MODEOFINHERITANCE_MAP.put("autosomal dominant inheritance", ModeOfInheritance.monoallelic);
+        MODEOFINHERITANCE_MAP.put("autosomal dominant inheritance with maternal imprinting",
                 ModeOfInheritance.monoallelic_maternally_imprinted);
-        MODEOFINHERITANCE_MAP.put("Autosomal dominant inheritance with paternal imprinting",
+        MODEOFINHERITANCE_MAP.put("autosomal dominant inheritance with paternal imprinting",
                 ModeOfInheritance.monoallelic_paternally_imprinted);
-        MODEOFINHERITANCE_MAP.put("Autosomal recessive inheritance",
+        MODEOFINHERITANCE_MAP.put("autosomal recessive inheritance",
                 ModeOfInheritance.biallelic);
-        MODEOFINHERITANCE_MAP.put("Mitochondrial inheritance",
+        MODEOFINHERITANCE_MAP.put("mitochondrial inheritance",
                 ModeOfInheritance.mitochondrial);
-        MODEOFINHERITANCE_MAP.put("Sex-limited autosomal dominant",
+        MODEOFINHERITANCE_MAP.put("sex-limited autosomal dominant",
                 ModeOfInheritance.monoallelic);
-        MODEOFINHERITANCE_MAP.put("X-linked dominant inheritance",
+        MODEOFINHERITANCE_MAP.put("x-linked dominant inheritance",
                 ModeOfInheritance.xlinked_monoallelic);
-        MODEOFINHERITANCE_MAP.put("X-linked recessive inheritance",
+        MODEOFINHERITANCE_MAP.put("x-linked recessive inheritance",
                 ModeOfInheritance.xlinked_biallelic);
 
         CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_conflicting_interpretations", ConsistencyStatus.conflict);

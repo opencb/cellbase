@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.models.variant.avro.GenomicFeature;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -55,6 +56,7 @@ import java.util.concurrent.BlockingQueue;
 public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private static final String CLINICAL_VARIANTS_COLLECTION = "clinical_variants";
+    private static final String GENOMIC_FEATURES = "genomicFeatures";
     private MongoDataStoreManager mongoDataStoreManager;
     private MongoDataStore mongoDataStore;
     private MongoDBCollection mongoDBCollection;
@@ -507,11 +509,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private List<String> getFeatureXrefsFromClinicalVariants(Document document) throws JsonProcessingException, FileFormatException {
         Set<String> values = new HashSet<>();
-        if (document.containsKey("variantTraitAssociation")) {
-            List germlineList = (List) ((Document) document.get("variantTraitAssociation")).get("germline");
-            List somaticList = (List) ((Document) document.get("variantTraitAssociation")).get("somatic");
-            getFeatureXrefsFromClinicalObject(germlineList, values);
-            getFeatureXrefsFromClinicalObject(somaticList, values);
+        if (document.containsKey("traitAssociation")) {
+            List evidenceEntryList = (List) document.get("traitAssociation");
+            getFeatureXrefsFromClinicalObject(evidenceEntryList, values);
             getFeatureXrefsFromConsequenceTypes((List) document.get("consequenceTypes"), values);
         } else {
             ObjectMapper jsonObjectMapper = new ObjectMapper();
@@ -520,7 +520,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
             ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
 
-            throw new FileFormatException("variantTraitAssociation field missing in input objects. Please, ensure"
+            throw new FileFormatException("traitAssociation field missing in input objects. Please, ensure"
                     + " that input file contains variants with appropriate clinical annotation: "
                     + jsonObjectWriter.writeValueAsString(document));
         }
@@ -560,16 +560,18 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
-    private void getFeatureXrefsFromClinicalObject(List clinicalObjectList, Set<String> values) {
-        if (clinicalObjectList != null && !clinicalObjectList.isEmpty()) {
-            for (Object object : clinicalObjectList) {
-                List<String> geneNames = (List<String>) ((Document) object).get("geneNames");
-                if (geneNames != null && !geneNames.isEmpty()) {
-                    values.addAll(geneNames);
-                }
-                List<String> proteinNames = (List<String>) ((Document) object).get("proteinNames");
-                if (proteinNames != null && !proteinNames.isEmpty()) {
-                    values.addAll(proteinNames);
+    private void getFeatureXrefsFromClinicalObject(List evidenceEntryList, Set<String> values) {
+        if (evidenceEntryList != null && !evidenceEntryList.isEmpty()) {
+            for (Object object : evidenceEntryList) {
+                List<GenomicFeature> genomicFeatureList = (List<GenomicFeature>) ((Document) object).get(GENOMIC_FEATURES);
+                if (genomicFeatureList != null) {
+                    for (GenomicFeature genomicFeature : genomicFeatureList) {
+                        if (genomicFeature.getXrefs() != null && !genomicFeature.getXrefs().isEmpty()) {
+                            for (String key : genomicFeature.getXrefs().keySet()) {
+                                values.add(genomicFeature.getXrefs().get(key));
+                            }
+                        }
+                    }
                 }
             }
         }

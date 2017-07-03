@@ -1,7 +1,9 @@
 package org.opencb.cellbase.server.ws.clinical;
 
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.ClinicalSignificance;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -16,6 +18,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by fjlopez on 06/12/16.
@@ -45,14 +49,15 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "source",
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "
-                            + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
+                            + " are clinvar,cosmic or iarctp53. E.g.: clinvar,cosmic",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "so",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
-                            + "matches will be returned.",
+                            + "matches will be returned. A list of searchable SO term names can be accessed at"
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/variation/consequence_types",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "feature",
                     value = "Comma separated list of feature ids, which can be either ENSEMBL gene ids, HGNC gene symbols,"
@@ -63,19 +68,34 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     value = "String to indicate the phenotypes/diseases to query. A text search will be run.",
                     required = false, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "accession",
-                    value = "Comma separated list of database accesions, e.g.: RCV000033215,COSM306824",
+                    value = "Comma separated list of database accesions, e.g.: RCV000033215,COSM306824 Exact text "
+                            + "matches will be returned.",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of ids, e.g.: rs6025",
+                    value = "Comma separated list of ids, e.g.: rs6025 Exact text matches will be returned.",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "type",
-                    value = "Comma separated list of variant types, e.g. \"SNV\" ",
+                    value = "Comma separated list of variant types, e.g. \"SNV\" A list of searchable types can be accessed at"
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/type",
                     required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "reviewStatus",
-                    value = "Comma separated list of review labels, e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
+            @ApiImplicitParam(name = "consistencyStatus",
+                    value = "Comma separated list of consistency labels. A list of searchable consistency labels can be accessed at"
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/consistency_labels",
                     required = false, dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "clinicalSignificance",
-                    value = "Comma separated list of clinical significance labels, e.g.: Benign",
+                    value = "Comma separated list of clinical significance labels. A list of searchable clinical "
+                            + " significance labels can be accessed at"
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/clinsig_labels",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "modeInheritance",
+                    value = "Comma separated list of mode of inheritance labels. A list of searchable mode of inheritance "
+                            + " labels can be accessed at"
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/mode_inheritance_labels",
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "alleleOrigin",
+                    value = "Comma separated list of allele origin labels. A list of searchable allele origin "
+                            + " labels can be accessed at"
+                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/allele_origin_labels",
                     required = false, dataType = "list of strings", paramType = "query")
     })
     public Response getAll() {
@@ -84,6 +104,90 @@ public class ClinicalWSServer extends GenericRestWSServer {
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 
             return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/variant/allele_origin_labels")
+    @ApiOperation(httpMethod = "GET", notes = "",
+            value = "Retrieves all available allele origin labels", response = Variant.class,
+            responseContainer = "QueryResponse")
+    public Response getAlleleOriginLabels() {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+
+            return createOkResponse(clinicalDBAdaptor.distinct(query,
+                    "annotation.traitAssociation.alleleOrigin"));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/variant/mode_inheritance_labels")
+    @ApiOperation(httpMethod = "GET", notes = "",
+            value = "Retrieves all available mode of inheritance labels", response = Variant.class,
+            responseContainer = "QueryResponse")
+    public Response getModeInheritanceLabels() {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+
+            return createOkResponse(clinicalDBAdaptor.distinct(query,
+                    "annotation.traitAssociation.heritableTraits.inheritanceMode"));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/variant/clinsig_labels")
+    @ApiOperation(httpMethod = "GET", notes = "",
+            value = "Retrieves all available clinical significance labels", response = Variant.class,
+            responseContainer = "QueryResponse")
+    public Response getClinicalSignificanceLabels() {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+
+            return createOkResponse(clinicalDBAdaptor.distinct(query,
+                    "annotation.traitAssociation.variantClassification.clinicalSignificance"));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/variant/consistency_labels")
+    @ApiOperation(httpMethod = "GET", notes = "",
+            value = "Retrieves all available consistency labels", response = Variant.class,
+            responseContainer = "QueryResponse")
+    public Response getConsistencyLabels() {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+
+            return createOkResponse(clinicalDBAdaptor.distinct(query,
+                    "annotation.traitAssociation.consistencyStatus"));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/variant/type")
+    @ApiOperation(httpMethod = "GET", notes = "",
+            value = "Retrieves all available variant types", response = Variant.class,
+            responseContainer = "QueryResponse")
+    public Response getVariantTypes() {
+        try {
+            parseQueryParams();
+            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+
+            return createOkResponse(clinicalDBAdaptor.distinct(query, "type"));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

@@ -86,8 +86,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options);
-        parsedOptions = addPrivateExcludeOptions(parsedOptions,
-                "_featureXrefs,_sources,_accessions,_reviewStatus,_clinicalSignificance");
+        parsedOptions = addPrivateExcludeOptions(parsedOptions, "_featureXrefs");
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
     }
@@ -96,8 +95,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options);
-        parsedOptions = addPrivateExcludeOptions(parsedOptions,
-                "_featureXrefs,_sources,_accessions,_reviewStatus,_clinicalSignificance");
+        parsedOptions = addPrivateExcludeOptions(parsedOptions, "_featureXrefs");
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, parsedOptions);
     }
@@ -152,12 +150,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
 
         createOrQuery(query, QueryParams.FEATURE.key(), "_featureXrefs", andBsonList);
-        createOrQuery(query, QueryParams.SO.key(), "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-        createOrQuery(query, QueryParams.SOURCE.key(), "_sources", andBsonList);
-        createOrQuery(query, QueryParams.ACCESSION.key(), "_accessions", andBsonList);
+        createOrQuery(query, QueryParams.SO.key(),
+                "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
+        createOrQuery(query, QueryParams.SOURCE.key(),
+                "annotation.traitAssociation.source.name", andBsonList);
+        createOrQuery(query, QueryParams.ACCESSION.key(), "annotation.traitAssociation.id", andBsonList);
         createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
-        createOrQuery(query, QueryParams.REVIEWSTATUS.key(), "_reviewStatus", andBsonList);
-        createOrQuery(query, QueryParams.CLINICALSIGNIFICANCE.key(), "_clinicalSignificance", andBsonList);
+        createOrQuery(query, QueryParams.CONSISTENCY_STATUS.key(),
+                "annotation.traitAssociation.consistencyStatus", andBsonList);
+        createOrQuery(query, QueryParams.CLINICALSIGNIFICANCE.key(),
+                "annotation.traitAssociation.variantClassification.clinicalSignificance", andBsonList);
+        createOrQuery(query, QueryParams.MODE_INHERITANCE.key(),
+                "annotation.traitAssociation.heritableTraits.inheritanceMode", andBsonList);
+        createOrQuery(query, QueryParams.ALLELE_ORIGIN.key(),
+                "annotation.traitAssociation.alleleOrigin", andBsonList);
 
         // Avoid creating a text empty query, otherwise results will never be returned
         if (query.containsKey(QueryParams.PHENOTYPEDISEASE.key())) {

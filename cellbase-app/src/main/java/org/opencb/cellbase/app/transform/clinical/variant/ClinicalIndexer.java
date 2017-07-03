@@ -14,7 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by fjlopez on 04/10/16.
@@ -53,7 +56,8 @@ public abstract class ClinicalIndexer {
             evidenceEntryList = new ArrayList<>();
             numberNewVariants++;
         } else {
-            evidenceEntryList = mapper.readValue(dbContent, List.class);
+            evidenceEntryList = mapper.readValue(dbContent, mapper.getTypeFactory().constructParametrizedType(List.class,
+                    List.class, EvidenceEntry.class));
             numberVariantUpdates++;
         }
         return evidenceEntryList;
@@ -73,7 +77,7 @@ public abstract class ClinicalIndexer {
             if (VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.containsKey(originString)) {
                 alleleOrigin.add(VariantAnnotationUtils.ORIGIN_STRING_TO_ALLELE_ORIGIN.get(originString));
             } else {
-                logger.warn("No SO term found for allele origin {}. Skipping.", originString);
+                logger.debug("No SO term found for allele origin {}. Skipping.", originString);
             }
         }
         return alleleOrigin;

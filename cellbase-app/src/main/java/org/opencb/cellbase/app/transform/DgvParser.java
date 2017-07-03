@@ -5,12 +5,12 @@ import org.opencb.biodata.models.variant.avro.AdditionalAttribute;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.StructuralVariation;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -71,19 +71,6 @@ public class DgvParser extends CellBaseParser {
         this.file = file;
     }
 
-    private Long countFileLines(Path filePath) throws IOException {
-        try (BufferedReader bufferedReader1 = FileUtils.newBufferedReader(filePath)) {
-            long nLines = 0;
-            String line1 = bufferedReader1.readLine();
-            while (line1 != null) {
-                nLines++;
-                line1 = bufferedReader1.readLine();
-            }
-            return nLines;
-        }
-
-    }
-
     @Override
     public void parse() throws Exception {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(file)) {
@@ -92,7 +79,7 @@ public class DgvParser extends CellBaseParser {
 
             unexpectedVariantSubtype = new HashMap<>();
             ProgressLogger progressLogger = new ProgressLogger("Parsed DGV lines:",
-                    () -> countFileLines(file), 200).setBatchSize(10000);
+                    () -> EtlCommons.countFileLines(file), 200).setBatchSize(10000);
             String line = bufferedReader.readLine();
             while (line != null) {
                 List<Variant> variantList = parseVariants(line);

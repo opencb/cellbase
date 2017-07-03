@@ -3,6 +3,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -82,6 +83,9 @@ public class CosmicIndexer extends ClinicalIndexer {
         logger.info("Parsing cosmic file ...");
 
         try {
+            ProgressLogger progressLogger = new ProgressLogger("Parsed COSMIC lines:",
+                    () -> EtlCommons.countFileLines(cosmicFile), 200).setBatchSize(10000);
+
             BufferedReader cosmicReader = FileUtils.newBufferedReader(cosmicFile);
             String line;
             cosmicReader.readLine(); // First line is the header -> ignore it
@@ -96,10 +100,7 @@ public class CosmicIndexer extends ClinicalIndexer {
                     ignoredCosmicLines++;
                 }
                 totalNumberRecords++;
-
-                if (totalNumberRecords % 1000 == 0) {
-                    logger.info("{} records parsed", totalNumberRecords);
-                }
+                progressLogger.increment(1);
             }
         } catch (RocksDBException e) {
             logger.error("Error reading/writing from/to the RocksDB index while indexing Cosmic");

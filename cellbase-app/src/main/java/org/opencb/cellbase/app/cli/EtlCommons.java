@@ -4,11 +4,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -125,6 +128,19 @@ public class EtlCommons {
         return !((string != null) && !string.isEmpty()
                 && !string.replace(" ", "").replace("NA", "").replace("NULL", "").replace("\t", "").replace(".", "")
                 .replace("-", "").isEmpty());
+    }
+
+    public static Long countFileLines(Path filePath) throws IOException {
+        try (BufferedReader bufferedReader1 = FileUtils.newBufferedReader(filePath)) {
+            long nLines = 0;
+            String line1 = bufferedReader1.readLine();
+            while (line1 != null) {
+                nLines++;
+                line1 = bufferedReader1.readLine();
+            }
+            return nLines;
+        }
+
     }
 
 }

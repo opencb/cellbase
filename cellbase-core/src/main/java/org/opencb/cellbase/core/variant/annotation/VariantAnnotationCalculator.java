@@ -1547,8 +1547,8 @@ public class VariantAnnotationCalculator {
                     QueryResult<Variant> clinicalQueryResult = clinicalQueryResults.get(i);
                     if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
                         variantAnnotationResults.get(i).getResult().get(0)
-                                .setVariantTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
-                                        .getVariantTraitAssociation());
+                                .setTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
+                                        .getTraitAssociation());
                     }
                 }
             }

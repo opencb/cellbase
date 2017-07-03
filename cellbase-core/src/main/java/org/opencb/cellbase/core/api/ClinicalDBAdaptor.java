@@ -47,8 +47,10 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         SOURCE("source", TEXT_ARRAY, ""),
         ID("id", TEXT_ARRAY, ""),
         TYPE("type", TEXT_ARRAY, ""),
-        REVIEWSTATUS("reviewStatus", TEXT_ARRAY, ""),
+        CONSISTENCY_STATUS("reviewStatus", TEXT_ARRAY, ""),
         CLINICALSIGNIFICANCE("clinicalSignificance", TEXT_ARRAY, ""),
+        MODE_INHERITANCE("modeInheritance", TEXT_ARRAY, ""),
+        ALLELE_ORIGIN("alleleOrigin", TEXT_ARRAY, ""),
         ACCESSION("accession", TEXT_ARRAY, ""),
 
         @Deprecated

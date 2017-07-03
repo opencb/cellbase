@@ -125,12 +125,13 @@ public class ClinicalVariantParser extends CellBaseParser {
                 logger.warn("One or more of required IARCTP53 files are missing. Skipping IARCTP53 data.");
             }
 
-            if (this.docmFile != null && Files.exists(docmFile)) {
-                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, assembly, rdb);
-                docmIndexer.index();
-            } else {
-                logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);
-            }
+            // FIXME: finish implementation of the DOCM parser
+//            if (this.docmFile != null && Files.exists(docmFile)) {
+//                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, assembly, rdb);
+//                docmIndexer.index();
+//            } else {
+//                logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);
+//            }
 
             serializeRDB(rdb);
             closeIndex(rdb, dbOption, dbLocation);

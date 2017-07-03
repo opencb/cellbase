@@ -6,6 +6,7 @@ import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -75,6 +76,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
             logger.info("Done");
 
             logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
+            ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", clinvarRelease.getValue().getClinVarSet().size(),
+                    200).setBatchSize(10000);
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 SequenceLocation sequenceLocation =
                         rcvTo37SequenceLocation.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
@@ -82,6 +85,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     updateRocksDB(sequenceLocation, publicSet, traitsToEfoTermsMap);
                     numberIndexedRecords++;
                 }
+                progressLogger.increment(1);
                 totalNumberRecords++;
             }
             logger.info("Done");
@@ -210,8 +214,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
             } else if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.containsKey(value)) {
                 variantClassification.setDrugResponseClassification(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.get(value));
             } else {
-                logger.warn("No mapping found for referenceClinVarAssertion.clinicalSignificance {}", value);
-                logger.warn("No value will be set at EvidenceEntry.variantClassification for this term");
+                logger.debug("No mapping found for referenceClinVarAssertion.clinicalSignificance {}", value);
+                logger.debug("No value will be set at EvidenceEntry.variantClassification for this term");
             }
         }
         return variantClassification;
@@ -350,7 +354,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private ModeOfInheritance solveModeOfInheritanceConflict(Set<String> inheritanceModelSet) {
-        logger.warn("Multiple inheritance models found for a variant {}",
+        logger.warn("Multiple inheritance models found for a variant: {}",
                 String.join(",", new ArrayList<>(inheritanceModelSet)));
         Set<ModeOfInheritance> modeOfInheritanceSet = inheritanceModelSet.stream()
                 .map((modeofInheritanceString) -> getModeOfInheritance(modeofInheritanceString))
@@ -482,6 +486,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
         BufferedReader bufferedReader;
         bufferedReader = FileUtils.newBufferedReader(clinvarSummaryFile);
 
+        ProgressLogger progressLogger = new ProgressLogger("Parsed variant summary lines:",
+                () -> EtlCommons.countFileLines(clinvarSummaryFile), 200).setBatchSize(10000);
+
         Map<String, SequenceLocation> rcvToSequenceLocation = new HashMap<>();
         // Skip header, read first data line
         bufferedReader.readLine();
@@ -501,9 +508,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 // Index the Germline/Somatic documents corresponding to the aggregated variation object
                 if (!EtlCommons.isMissing(parts[0]) && alleleIdToVariationId.containsKey(parts[0])) {
                     updateRocksDB(sequenceLocation, alleleIdToVariationId.get(parts[0]), parts, traitsToEfoTermsMap);
+                    numberIndexedRecords++;
                 }
-
+                totalNumberRecords++;
             }
+            progressLogger.increment(1);
             line = bufferedReader.readLine();
         }
 
