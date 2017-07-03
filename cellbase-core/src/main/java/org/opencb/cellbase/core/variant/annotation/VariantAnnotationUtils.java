@@ -74,8 +74,8 @@ public class VariantAnnotationUtils {
     public static final String INTERGENIC_VARIANT = "intergenic_variant";
     public static final String REGULATORY_REGION_VARIANT = "regulatory_region_variant";
     public static final String TF_BINDING_SITE_VARIANT = "TF_binding_site_variant";
-    public static final String UPSTREAM_GENE_VARIANT = "upstream_gene_variant";
-    public static final String DOWNSTREAM_GENE_VARIANT = "downstream_gene_variant";
+    public static final String UPSTREAM_VARIANT = "upstream_variant";
+    public static final String DOWNSTREAM_VARIANT = "downstream_variant";
     public static final String SPLICE_DONOR_VARIANT = "splice_donor_variant";
     public static final String SPLICE_ACCEPTOR_VARIANT = "splice_acceptor_variant";
     public static final String INTRON_VARIANT = "intron_variant";
@@ -384,10 +384,10 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("intron_variant", 17);
         SO_SEVERITY.put("NMD_transcript_variant", 16);
         SO_SEVERITY.put("non_coding_transcript_variant", 15);
-        SO_SEVERITY.put("2KB_upstream_gene_variant", 14);
-        SO_SEVERITY.put("upstream_gene_variant", 13);
-        SO_SEVERITY.put("2KB_downstream_gene_variant", 12);
-        SO_SEVERITY.put("downstream_gene_variant", 11);
+        SO_SEVERITY.put("2KB_upstream_variant", 14);
+        SO_SEVERITY.put("upstream_variant", 13);
+        SO_SEVERITY.put("2KB_downstream_variant", 12);
+        SO_SEVERITY.put("downstream_variant", 11);
         SO_SEVERITY.put("TFBS_ablation", 10);
         SO_SEVERITY.put("TFBS_amplification", 9);
         SO_SEVERITY.put("TF_binding_site_variant", 8);
