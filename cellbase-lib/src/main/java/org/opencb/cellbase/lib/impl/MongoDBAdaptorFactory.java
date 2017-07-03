@@ -113,8 +113,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                     if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
                         builder.add("replicaSet", mongodbCredentials.getOptions().get("replicaSet"));
                     }
-
-                    builder.add(MongoDBConfiguration.CONNECTIONS_PER_HOST, mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST))
+                    builder.add(MongoDBConfiguration.CONNECTIONS_PER_HOST, mongodbCredentials.getOptions()
+                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
                     mongoDBConfiguration = builder.build();
                 } else {
                     mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
