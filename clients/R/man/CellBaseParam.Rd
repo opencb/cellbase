@@ -4,7 +4,7 @@
 \alias{CellBaseParam}
 \title{A constructor function for CellBaseParam}
 \usage{
-CellBaseParam(genome = character(), geneId = character(),
+CellBaseParam(genome = character(), gene = character(),
   region = character(), rs = character(), so = character(),
   phenotype = character(), include = character(), exclude = character(),
   limit = character())
@@ -13,7 +13,7 @@ CellBaseParam(genome = character(), geneId = character(),
 \item{genome}{A character denoting the genome build to query,eg, GRCh37
 (default),or GRCh38}
 
-\item{geneId}{A character vector denoting the geneId/s to be queried}
+\item{gene}{A character vector denoting the gene/s to be queried}
 
 \item{region}{A character vector denoting the region/s to be queried must be
 in the form 1:100000-1500000 not chr1:100000-1500000}
@@ -35,7 +35,7 @@ use the CellBaseParam object to control what results are returned from the
 CellBaseR methods
 }
 \examples{
-cbParam <- CellBaseParam(genome="GRCh38",geneId=c("TP73","TET1"))
+cbParam <- CellBaseParam(genome="GRCh38",gene=c("TP73","TET1"))
 print(cbParam)
 }
 \seealso{

@@ -99,7 +99,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                         builder = MongoDBConfiguration.builder()
                                 .add("username", mongodbCredentials.getUser())
                                 .add("password", mongodbCredentials.getPassword())
-                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"))
+                                .add(MongoDBConfiguration.READ_PREFERENCE, mongodbCredentials.getOptions().get("readPreference"))
                                 .add("authenticationDatabase", mongodbCredentials.getOptions()
                                         .get("authenticationDatabase"));
                     } else {
@@ -113,6 +113,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                     if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
                         builder.add("replicaSet", mongodbCredentials.getOptions().get("replicaSet"));
                     }
+                    builder.add(MongoDBConfiguration.CONNECTIONS_PER_HOST, mongodbCredentials.getOptions()
+                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
                     mongoDBConfiguration = builder.build();
                 } else {
                     mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
