@@ -135,7 +135,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "annotation.id", andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
         createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
                 "sv.ciStartLeft", "sv.ciStartRight", andBsonList);

@@ -6,7 +6,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.commons.utils.CryptoUtils;
 
 import java.util.*;
 
@@ -530,15 +529,17 @@ public class VariantAnnotationUtils {
                 .append(StringUtils.leftPad(Integer.toString(start), 10, " "))
                 .append(SEPARATOR_CHAR);
 
-        if (reference.length() > Variant.SV_THRESHOLD) {
-            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
-        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
+//        if (reference.length() > Variant.SV_THRESHOLD) {
+//            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
+//        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
+        if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
             stringBuilder.append(reference);
         }
         stringBuilder.append(SEPARATOR_CHAR);
-        if (alternate.length() > Variant.SV_THRESHOLD) {
-            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
-        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
+//        if (alternate.length() > Variant.SV_THRESHOLD) {
+//            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
+//        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
+        if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
             stringBuilder.append(alternate);
         }
         return stringBuilder.toString();
