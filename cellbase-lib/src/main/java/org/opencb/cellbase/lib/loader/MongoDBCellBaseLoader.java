@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.models.variant.avro.GenomicFeature;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -57,6 +56,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private static final String CLINICAL_VARIANTS_COLLECTION = "clinical_variants";
     private static final String GENOMIC_FEATURES = "genomicFeatures";
+    private static final String XREFS = "xrefs";
     private MongoDataStoreManager mongoDataStoreManager;
     private MongoDataStore mongoDataStore;
     private MongoDBCollection mongoDBCollection;
@@ -428,39 +428,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             if (!featureXrefs.isEmpty()) {
                 document.put("_featureXrefs", featureXrefs);
             }
-
-            List germlineList = (List) ((Document) annotationDocument.get("variantTraitAssociation")).get("germline");
-            List somaticList = (List) ((Document) annotationDocument.get("variantTraitAssociation")).get("somatic");
-
-            Set<String> sources = new HashSet<>();
-            getValuesFromClinicalObject(germlineList, "source", sources);
-            getValuesFromClinicalObject(somaticList, "source", sources);
-            if (!sources.isEmpty()) {
-                document.put("_sources", new ArrayList<String>(sources));
-            }
-
-            Set<String> accessionList = new HashSet<>();
-            getValuesFromClinicalObject(germlineList, "accession", accessionList);
-            getValuesFromClinicalObject(somaticList, "accession", accessionList);
-            if (!accessionList.isEmpty()) {
-                document.put("_accessions", new ArrayList<String>(accessionList
-                ));
-            }
-
-            Set<String> reviewStatusList = new HashSet<>();
-            getValuesFromClinicalObject(germlineList, "reviewStatus", reviewStatusList);
-            getValuesFromClinicalObject(somaticList, "reviewStatus", reviewStatusList);
-            if (!reviewStatusList.isEmpty()) {
-                document.put("_reviewStatus", new ArrayList<String>(reviewStatusList));
-            }
-
-            Set<String> clinicalSignificanceList = new HashSet<>();
-            getValuesFromClinicalObject(germlineList, "clinicalSignificance", clinicalSignificanceList);
-            getValuesFromClinicalObject(somaticList, "clinicalSignificance", clinicalSignificanceList);
-            if (!clinicalSignificanceList.isEmpty()) {
-                document.put("_clinicalSignificance", new ArrayList<String>(clinicalSignificanceList));
-            }
-
         }
 //
 //
@@ -563,12 +530,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private void getFeatureXrefsFromClinicalObject(List evidenceEntryList, Set<String> values) {
         if (evidenceEntryList != null && !evidenceEntryList.isEmpty()) {
             for (Object object : evidenceEntryList) {
-                List<GenomicFeature> genomicFeatureList = (List<GenomicFeature>) ((Document) object).get(GENOMIC_FEATURES);
+                List<Document> genomicFeatureList = (List<Document>) ((Document) object).get(GENOMIC_FEATURES);
                 if (genomicFeatureList != null) {
-                    for (GenomicFeature genomicFeature : genomicFeatureList) {
-                        if (genomicFeature.getXrefs() != null && !genomicFeature.getXrefs().isEmpty()) {
-                            for (String key : genomicFeature.getXrefs().keySet()) {
-                                values.add(genomicFeature.getXrefs().get(key));
+                    for (Document genomicFeature : genomicFeatureList) {
+                        if (genomicFeature.get(XREFS) != null && !((Document) genomicFeature.get(XREFS)).isEmpty()) {
+                            for (String key : ((Document) genomicFeature.get(XREFS)).keySet()) {
+                                values.add((String) ((Document) genomicFeature.get(XREFS)).get(key));
                             }
                         }
                     }
