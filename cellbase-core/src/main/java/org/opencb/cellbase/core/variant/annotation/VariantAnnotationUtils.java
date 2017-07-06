@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
@@ -73,8 +72,8 @@ public class VariantAnnotationUtils {
     public static final String INTERGENIC_VARIANT = "intergenic_variant";
     public static final String REGULATORY_REGION_VARIANT = "regulatory_region_variant";
     public static final String TF_BINDING_SITE_VARIANT = "TF_binding_site_variant";
-    public static final String UPSTREAM_GENE_VARIANT = "upstream_gene_variant";
-    public static final String DOWNSTREAM_GENE_VARIANT = "downstream_gene_variant";
+    public static final String UPSTREAM_VARIANT = "upstream_variant";
+    public static final String DOWNSTREAM_VARIANT = "downstream_variant";
     public static final String SPLICE_DONOR_VARIANT = "splice_donor_variant";
     public static final String SPLICE_ACCEPTOR_VARIANT = "splice_acceptor_variant";
     public static final String INTRON_VARIANT = "intron_variant";
@@ -438,10 +437,10 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("intron_variant", 17);
         SO_SEVERITY.put("NMD_transcript_variant", 16);
         SO_SEVERITY.put("non_coding_transcript_variant", 15);
-        SO_SEVERITY.put("2KB_upstream_gene_variant", 14);
-        SO_SEVERITY.put("upstream_gene_variant", 13);
-        SO_SEVERITY.put("2KB_downstream_gene_variant", 12);
-        SO_SEVERITY.put("downstream_gene_variant", 11);
+        SO_SEVERITY.put("2KB_upstream_variant", 14);
+        SO_SEVERITY.put("upstream_variant", 13);
+        SO_SEVERITY.put("2KB_downstream_variant", 12);
+        SO_SEVERITY.put("downstream_variant", 11);
         SO_SEVERITY.put("TFBS_ablation", 10);
         SO_SEVERITY.put("TFBS_amplification", 9);
         SO_SEVERITY.put("TF_binding_site_variant", 8);
@@ -550,22 +549,6 @@ public class VariantAnnotationUtils {
             stringBuilder.append(' ');
         }
         return stringBuilder.append(chromosome);
-    }
-
-    public static Variant parseMateBreakend(Variant variant) {
-        // e.g. A]2:321681]
-        String[] parts = variant.getAlternate().split(":");
-        if (parts.length == 2) {
-            String chromosome = parts[0].split("[\\[\\]]")[1];
-            chromosome = Region.normalizeChromosome(chromosome);
-            Integer start = Integer.valueOf(parts[1].split("[\\[\\]]")[0]);
-            Variant newvariant = new Variant(chromosome, start, null, null);
-            newvariant.setSv(new StructuralVariation(variant.getSv().getCiEndLeft(), variant.getSv().getCiEndRight(),
-                    variant.getSv().getCiStartLeft(), variant.getSv().getCiStartRight(), null,
-                    null, null, null));
-            return newvariant;
-        }
-        return null;
     }
 
     public static VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {

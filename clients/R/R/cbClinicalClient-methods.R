@@ -10,7 +10,7 @@
 #' @return an object of class CellBaseResponse which holds a dataframe with the results of the query
 #' @examples
 #'    cb <- CellBaseR()
-#'    cbParam <- CellBaseParam(geneId=c("TP73","TET1"))
+#'    cbParam <- CellBaseParam(gene=c("TP73","TET1"))
 #'    res <- cbClinicalClient(object=cb,filters=cbParam)
 #' @export
 ########################################################################################################################
@@ -23,7 +23,7 @@ setMethod("cbClinicalClient", "CellBaseR", definition = function(object, filters
     ids <- NULL
     resource <- "search"
 
-    filters <- c(genome=filters@genome, geneId=filters@geneId,
+    filters <- c(genome=filters@genome, gene=filters@gene,
     region=filters@region,rs=filters@rs,so=filters@so,
     phenotype=filters@phenotype, include=filters@include,
     exclude=filters@exclude, limit=filters@limit)

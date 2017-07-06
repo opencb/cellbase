@@ -979,7 +979,7 @@ public class VariantAnnotationCalculator {
         if (VariantType.BREAKEND.equals(variant.getType())) {
             List<Gene> result = getGenesInRange(variant.getChromosome(), variant.getStart(), variant.getStart(),
                     includeFields);
-            Variant breakendMate = VariantAnnotationUtils.parseMateBreakend(variant);
+            Variant breakendMate = Variant.getMateBreakend(variant);
             if (breakendMate != null) {
                 Set<String> firstGeneIdSet = result.stream().map((gene) -> gene.getId()).collect(Collectors.toSet());
                 // Merge genes that overlap with the first break end with those overlapping the second breakend
@@ -1117,7 +1117,7 @@ public class VariantAnnotationCalculator {
                 return overlapsRegulatoryRegion;
             // Otherwise check the other breakend in case exists
             } else {
-                Variant breakendMate = VariantAnnotationUtils.parseMateBreakend(variant);
+                Variant breakendMate = Variant.getMateBreakend(variant);
                 if (breakendMate != null) {
                     return getRegulatoryRegionOverlaps(breakendMate.getChromosome(), Math.max(1, breakendMate.getStart()));
                 } else {
@@ -1309,6 +1309,13 @@ public class VariantAnnotationCalculator {
                     regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
                 }
                 break;
+            case BREAKEND:
+                regionList.add(startBreakpointToRegion(variant));
+                Variant breakendMate = Variant.getMateBreakend(variant);
+                if (breakendMate != null) {
+                    regionList.add(startBreakpointToRegion(breakendMate));
+                }
+                break;
             default:
                 if (imprecise && variant.getSv() != null) {
                     regionList.add(new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
@@ -1328,6 +1335,17 @@ public class VariantAnnotationCalculator {
         }
 
         return regionList;
+    }
+
+    private Region startBreakpointToRegion(Variant variant) {
+        if (imprecise && variant.getSv() != null) {
+            return new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
+                    ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                    variant.getSv().getCiStartRight() != null
+                            ? variant.getSv().getCiStartRight() + svExtraPadding : variant.getStart());
+        } else {
+            return new Region(variant.getChromosome(), variant.getStart(), variant.getStart());
+        }
     }
 
     /*
