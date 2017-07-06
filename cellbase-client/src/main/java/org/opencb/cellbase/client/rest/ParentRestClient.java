@@ -67,6 +67,9 @@ public class ParentRestClient<T> {
     public static final int REST_CALL_BATCH_SIZE = 200;
     public static final int DEFAULT_NUM_THREADS = 4;
 
+    protected static final String WEBSERVICES = "webservices";
+    protected static final String REST = "rest";
+
 
     @Deprecated
     public ParentRestClient(ClientConfiguration configuration) {
@@ -309,12 +312,7 @@ public class ParentRestClient<T> {
     private <U> QueryResponse<U> restCall(List<String> hosts, String version, String ids, String resource, QueryOptions queryOptions,
                                           Class<U> clazz, boolean post) throws IOException {
 
-        WebTarget path = client
-                .target(URI.create(hosts.get(0)))
-                .path("webservices/rest/" + version)
-                .path(species)
-                .path(category)
-                .path(subcategory);
+        WebTarget path = getBaseUrl(hosts, version);
 
         WebTarget callUrl = path;
         if (ids != null && !ids.isEmpty() && !post) {
@@ -347,6 +345,17 @@ public class ParentRestClient<T> {
         }
 
         return parseResult(jsonString, clazz);
+    }
+
+    protected WebTarget getBaseUrl(List<String> hosts, String version) {
+        return client
+                    .target(URI.create(hosts.get(0)))
+                    .path(WEBSERVICES)
+                    .path(REST)
+                    .path(version)
+                    .path(species)
+                    .path(category)
+                    .path(subcategory);
     }
 
     private static <U> QueryResponse<U> parseResult(String json, Class<U> clazz) throws IOException {

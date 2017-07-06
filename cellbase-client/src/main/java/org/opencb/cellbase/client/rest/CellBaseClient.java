@@ -88,6 +88,10 @@ public class CellBaseClient {
         return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, clientConfiguration));
     }
 
+    public MetaClient getMetaClient() {
+        return getClient("GENOME_REGION", () -> new MetaClient(species, assembly, clientConfiguration));
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends ParentRestClient> T getClient(String key, Supplier<T> constructorIfAbsent) {
         // Avoid concurrent modifications
