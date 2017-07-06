@@ -767,6 +767,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "clinical_variants":
                 indexFileName = "clinical-indexes.js";
+                break;
             case "repeats":
                 indexFileName = "repeat-indexes.js";
                 break;
