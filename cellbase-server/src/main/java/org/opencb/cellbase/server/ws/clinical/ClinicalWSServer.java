@@ -112,11 +112,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getAlleleOriginLabels() {
         try {
-            parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 
-            return createOkResponse(clinicalDBAdaptor.distinct(query,
-                    "annotation.traitAssociation.alleleOrigin"));
+            return createOkResponse(clinicalDBAdaptor.getAlleleOriginLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -129,11 +127,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getModeInheritanceLabels() {
         try {
-            parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 
-            return createOkResponse(clinicalDBAdaptor.distinct(query,
-                    "annotation.traitAssociation.heritableTraits.inheritanceMode"));
+            return createOkResponse(clinicalDBAdaptor.getModeInheritanceLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -146,11 +142,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getClinicalSignificanceLabels() {
         try {
-            parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 
-            return createOkResponse(clinicalDBAdaptor.distinct(query,
-                    "annotation.traitAssociation.variantClassification.clinicalSignificance"));
+            return createOkResponse(clinicalDBAdaptor.getClinsigLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -163,11 +157,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getConsistencyLabels() {
         try {
-            parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 
-            return createOkResponse(clinicalDBAdaptor.distinct(query,
-                    "annotation.traitAssociation.consistencyStatus"));
+            return createOkResponse(clinicalDBAdaptor.getConsistencyLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -180,10 +172,9 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getVariantTypes() {
         try {
-            parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 
-            return createOkResponse(clinicalDBAdaptor.distinct(query, "type"));
+            return createOkResponse(clinicalDBAdaptor.getVariantTypes());
         } catch (Exception e) {
             return createErrorResponse(e);
         }

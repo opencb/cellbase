@@ -324,6 +324,31 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
         return queryResultList;
     }
 
+    @Override
+    public QueryResult<String> getAlleleOriginLabels() {
+        return null;
+    }
+
+    @Override
+    public QueryResult<String> getModeInheritanceLabels() {
+        return null;
+    }
+
+    @Override
+    public QueryResult<String> getClinsigLabels() {
+        return null;
+    }
+
+    @Override
+    public QueryResult<String> getConsistencyLabels() {
+        return null;
+    }
+
+    @Override
+    public QueryResult<String> getVariantTypes() {
+        return null;
+    }
+
 //    @Override
 //    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
 //        List<Document> queries = new ArrayList<>();

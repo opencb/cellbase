@@ -98,6 +98,16 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
     List<QueryResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions);
 
+    QueryResult<String> getAlleleOriginLabels();
+
+    QueryResult<String> getModeInheritanceLabels();
+
+    QueryResult<String> getClinsigLabels();
+
+    QueryResult<String> getConsistencyLabels();
+
+    QueryResult<String> getVariantTypes();
+
 //    List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options);
 
 }

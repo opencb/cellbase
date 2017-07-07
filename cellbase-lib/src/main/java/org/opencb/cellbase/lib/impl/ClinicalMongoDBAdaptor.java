@@ -5,6 +5,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -13,6 +14,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Created by fjlopez on 06/12/16.
@@ -203,6 +205,76 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
 
         return queryResultList;
+    }
+
+    @Override
+    public QueryResult<String> getAlleleOriginLabels() {
+
+        List<String> alleleOriginLabels = Arrays.stream(AlleleOrigin.values())
+                .map((value) -> value.name()).collect(Collectors.toList());
+
+        QueryResult<String> queryResult = new QueryResult<String>("allele_origin_labels", 0,
+                alleleOriginLabels.size(), alleleOriginLabels.size(), null, null,
+                alleleOriginLabels);
+
+        return queryResult;
+
+    }
+
+    @Override
+    public QueryResult<String> getModeInheritanceLabels() {
+
+        List<String> modeInheritanceLabels = Arrays.stream(ModeOfInheritance.values())
+                .map((value) -> value.name()).collect(Collectors.toList());
+
+        QueryResult<String> queryResult = new QueryResult<String>("mode_inheritance_labels", 0,
+                modeInheritanceLabels.size(), modeInheritanceLabels.size(), null, null,
+                modeInheritanceLabels);
+
+        return queryResult;
+
+    }
+
+    @Override
+    public QueryResult<String> getClinsigLabels() {
+
+        List<String> clinsigLabels = Arrays.stream(ClinicalSignificance.values())
+                .map((value) -> value.name()).collect(Collectors.toList());
+
+        QueryResult<String> queryResult = new QueryResult<String>("clinsig_labels", 0,
+                clinsigLabels.size(), clinsigLabels.size(), null, null,
+                clinsigLabels);
+
+        return queryResult;
+
+    }
+
+    @Override
+    public QueryResult<String> getConsistencyLabels() {
+
+        List<String> consistencyLabels = Arrays.stream(ConsistencyStatus.values())
+                .map((value) -> value.name()).collect(Collectors.toList());
+
+        QueryResult<String> queryResult = new QueryResult<String>("consistency_labels", 0,
+                consistencyLabels.size(), consistencyLabels.size(), null, null,
+                consistencyLabels);
+
+        return queryResult;
+
+    }
+
+    @Override
+    public QueryResult<String> getVariantTypes() {
+
+        List<String> variantTypes = Arrays.stream(VariantType.values())
+                .map((value) -> value.name()).collect(Collectors.toList());
+
+        QueryResult<String> queryResult = new QueryResult<String>("variant_types", 0,
+                variantTypes.size(), variantTypes.size(), null, null,
+                variantTypes);
+
+        return queryResult;
+
     }
 
 //    @Override
@@ -422,5 +494,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         return executeAggregation2("", pipeline, queryOptions);
     }
+
 
 }
