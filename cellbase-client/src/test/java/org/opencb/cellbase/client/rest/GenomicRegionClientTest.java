@@ -19,6 +19,7 @@ package org.opencb.cellbase.client.rest;
 import org.junit.Test;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -55,6 +56,14 @@ public class GenomicRegionClientTest {
         QueryResponse<Transcript> transcriptQueryResponse = cellBaseClient.getGenomicRegionClient().getTranscript(Arrays.asList("3:555-77777"), null);
         assertNotNull("The transcript that belongs to the region 3:555-77777 must be returned",transcriptQueryResponse.firstResult());
         assertEquals("The transcript returned is wrong", "AY269186.1-001", transcriptQueryResponse.firstResult().getName());
+    }
+
+    @Test
+    public void getRepeat() throws Exception {
+        QueryResponse<Repeat> queryResponse = cellBaseClient
+                .getGenomicRegionClient().getRepeat(Arrays.asList("3:555-77777"), null);
+        // MAY need fixing
+        assertTrue(queryResponse.allResults().size() > 0);
     }
 
     @Test

@@ -67,6 +67,8 @@ public class ParentRestClient<T> {
     public static final int REST_CALL_BATCH_SIZE = 200;
     public static final int DEFAULT_NUM_THREADS = 4;
 
+    protected static final String EMPTY_STRING = "";
+    protected static final String META = "meta";
     protected static final String WEBSERVICES = "webservices";
     protected static final String REST = "rest";
 
