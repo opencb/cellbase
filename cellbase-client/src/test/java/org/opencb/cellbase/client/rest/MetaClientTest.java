@@ -1,9 +1,7 @@
 package org.opencb.cellbase.client.rest;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.opencb.cellbase.client.config.ClientConfiguration;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
@@ -30,7 +28,7 @@ public class MetaClientTest {
 
     @Test
     public void getAbout() throws Exception {
-        QueryResponse<Map> about = cellBaseClient.getMetaClient().getAbout();
+        QueryResponse<Map> about = cellBaseClient.getMetaClient().about();
         assertEquals(5, about.firstResult().size());
         assertTrue(about.firstResult().containsKey("Program: "));
         assertTrue(about.firstResult().containsKey("Description: "));
