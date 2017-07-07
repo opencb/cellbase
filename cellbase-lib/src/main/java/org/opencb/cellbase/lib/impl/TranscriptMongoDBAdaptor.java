@@ -232,10 +232,18 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         Document document = new Document("id", "$transcripts.id");
         document.put("name", "$transcripts.name");
         document.put("biotype", "$transcripts.biotype");
+        document.put("status", "$transcripts.status");
         document.put("chromosome", "$transcripts.chromosome");
         document.put("start", "$transcripts.start");
         document.put("end", "$transcripts.end");
         document.put("strand", "$transcripts.strand");
+        document.put("genomicCodingStart", "$transcripts.genomicCodingStart");
+        document.put("genomicCodingEnd", "$transcripts.genomicCodingEnd");
+        document.put("cdnaCodingStart", "$transcripts.cdnaCodingStart");
+        document.put("cdnaCodingEnd", "$transcripts.cdnaCodingEnd");
+        document.put("cdsLength", "$transcripts.cdsLength");
+        document.put("proteinID", "$transcripts.proteinID");
+        document.put("proteinSequence", "$transcripts.proteinSequence");
         document.put("cDnaSequence", "$transcripts.cDnaSequence");
         document.put("xrefs", "$transcripts.xrefs");
         document.put("exons", "$transcripts.exons");
