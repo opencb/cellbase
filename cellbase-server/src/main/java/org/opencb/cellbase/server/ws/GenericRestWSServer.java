@@ -280,6 +280,13 @@ public class GenericRestWSServer implements IWSServer {
                 query.put(entry.getKey(), entry.getValue().get(0));
             }
         }
+
+        try {
+            logger.info("URL: {}, query = {}, queryOptions = {}", uriInfo.getAbsolutePath().toString(),
+                    jsonObjectWriter.writeValueAsString(query), jsonObjectWriter.writeValueAsString(queryOptions));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
 
