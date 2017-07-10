@@ -554,15 +554,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
         List<String> args = new ArrayList<>();
-        if (sp.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
-            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
-                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()
-                            .replace("79", "75")));
-        } else {
-            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
+//        if (sp.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
+//            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
+//                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()
+//                            .replace("79", "75")));
+//        } else {
+//            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
+//                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
+//
+//        }
+
+            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--assembly", assembly,
+                    "--outdir", geneFolder.toAbsolutePath().toString(),
                     "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
 
-        }
         if (!configuration.getSpecies().getVertebrates().contains(species)
                 && !species.getScientificName().equals("Drosophila melanogaster")) {
             args.add("--phylo");
