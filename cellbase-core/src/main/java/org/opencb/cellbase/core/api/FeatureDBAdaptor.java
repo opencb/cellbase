@@ -22,13 +22,18 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 25/11/15.
  */
 public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
+
+    String MERGE = "merge";
+    String REGION = "region";
 
     default QueryResult first() {
         return first(new QueryOptions());
@@ -52,12 +57,19 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
     }
 
     default List<QueryResult<T>> getByRegion(List<Region> regions, QueryOptions options) {
-        List<QueryResult<T>> results = new ArrayList<>(regions.size());
-        for (Region region: regions) {
-            Query query = new Query("region", region.toString());
-            results.add(get(query, options));
+        if (options.containsKey(MERGE) && (Boolean) options.get(MERGE)) {
+            Query query = new Query(REGION, String.join(",",
+                    regions.stream().map((region) -> region.toString()).collect(Collectors.toList())));
+            QueryResult<T> queryResult = get(query, options);
+            return Collections.singletonList(queryResult);
+        } else {
+            List<QueryResult<T>> results = new ArrayList<>(regions.size());
+            for (Region region : regions) {
+                Query query = new Query("region", region.toString());
+                results.add(get(query, options));
+            }
+            return results;
         }
-        return results;
     }
 
     QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options);
