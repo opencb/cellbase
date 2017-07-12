@@ -346,6 +346,27 @@ public class RegionWSServer extends GenericRestWSServer {
         }
     }
 
+    @GET
+    @Path("/{chrRegionId}/repeat")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all repeats for the regions", response = Transcript.class,
+            responseContainer = "QueryResponse")
+    public Response getRepeatByRegion(@PathParam("chrRegionId")
+                                          @ApiParam(name = "chrRegionId",
+                                                  value = "comma-separated list of genomic regions to be queried, "
+                                                          + "e.g. 1:11869-14412", required = true) String region) {
+        try {
+            parseQueryParams();
+            RepeatsDBAdaptor repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(this.species, this.assembly);
+            List<Query> queries = createQueries(region, RepeatsDBAdaptor.QueryParams.REGION.key());
+            List<QueryResult> queryResults = repeatsDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(RepeatsDBAdaptor.QueryParams.REGION.key()));
+            }
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 
     @GET
     @Path("/{chrRegionId}/variation")

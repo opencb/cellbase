@@ -18,6 +18,7 @@ package org.opencb.cellbase.client.rest;
 
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -46,6 +47,10 @@ public class GenomicRegionClient extends ParentRestClient<GenomeSequenceFeature>
 
     public QueryResponse<Transcript> getTranscript(List<String> id, QueryOptions options) throws IOException {
         return execute(id, "transcript", options, Transcript.class);
+    }
+
+    public QueryResponse<Repeat> getRepeat(List<String> id, QueryOptions options) throws IOException {
+        return execute(id, "repeat", options, Repeat.class);
     }
 
     public QueryResponse<Variant> getVariation(List<String> id, QueryOptions options) throws IOException {

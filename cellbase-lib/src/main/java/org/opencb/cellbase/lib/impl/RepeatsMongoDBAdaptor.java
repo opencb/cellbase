@@ -62,7 +62,11 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return null;
+        Bson bson = parseQuery(query);
+        options = addPrivateExcludeOptions(options);
+
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        return mongoDBCollection.find(bson, options);
     }
 
     @Override

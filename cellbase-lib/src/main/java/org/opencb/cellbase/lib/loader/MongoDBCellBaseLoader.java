@@ -21,6 +21,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.mongodb.ErrorCategory;
+import com.mongodb.MongoBulkWriteException;
+import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
@@ -683,12 +686,22 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         return 0;
                     }
                 }
-                logger.warn("Found problems loading document batch, splitting in two and trying recursive load");
-                // TODO: queryOptions?
-                int resultLeft = load(batch.subList(0, batch.size() / 2));
-                // TODO: queryOptions?
-                int resultRight = load(batch.subList(batch.size() / 2, batch.size()));
-                return resultLeft + resultRight;
+                logger.warn("Found problems loading document batch, loading one by one...");
+                int nInserted = 0;
+                for (Document document : batch) {
+                    // TODO: queryOptions?
+                    nInserted += load(Collections.singletonList(document));
+                }
+                return nInserted;
+            } catch (MongoBulkWriteException e) {
+                for (BulkWriteError bulkWriteError : e.getWriteErrors()) {
+                    // Duplicated key due to a batch which was partially inserted before, just skip the variant
+                    if (ErrorCategory.fromErrorCode(bulkWriteError.getCode()).equals(ErrorCategory.DUPLICATE_KEY)) {
+                        return 0;
+                    }
+                }
+                // It is not a duplicated key error - propagate it
+                throw e;
             }
         } else {
             return 0;
