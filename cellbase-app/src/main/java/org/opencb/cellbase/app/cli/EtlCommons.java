@@ -58,6 +58,8 @@ public class EtlCommons {
     public static final String WM_VERSION_FILE = "windowMasker.json";
     public static final String REPEATS_FOLDER = "repeats";
     public static final String REPEATS_JSON = "repeats";
+    public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
+    public static final String MOTIF_FEATURES_FILE = "motiffeatures.gff.gz";
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {
