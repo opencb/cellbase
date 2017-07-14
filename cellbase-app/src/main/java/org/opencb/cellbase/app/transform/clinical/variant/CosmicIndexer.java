@@ -408,7 +408,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         List<String> bibliography = getBibliography(fields[pubmedPMIDColumn]);
 
         EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, somaticInformation, null,
-                fields[ID_COLUMN],
+                fields[ID_COLUMN], null,
                 getAlleleOriginList(Collections.singletonList(fields[mutationSomaticStatusColumn])), null,
                 genomicFeatureList, null, null, null, null,
                 null, null, null, null, additionalProperties,
