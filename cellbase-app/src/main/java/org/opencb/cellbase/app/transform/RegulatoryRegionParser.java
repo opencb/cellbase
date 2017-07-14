@@ -112,7 +112,8 @@ public class RegulatoryRegionParser extends CellBaseParser {
         Path deprecatedRegulatoryFilePath = regulatoryRegionPath.resolve("RegulatoryFeatures_MultiCell.gff.gz.db");
         Path mirnaFilePath = regulatoryRegionPath.resolve("mirna_uniq.gff.gz.db");
 
-        List<Path> filePaths = Arrays.asList(annotatedFilePath, deprecatedMotifFilePath, deprecatedRegulatoryFilePath);
+        List<Path> filePaths = Arrays.asList(regulatoryFilePath, motifFilePath, annotatedFilePath,
+                deprecatedMotifFilePath, deprecatedRegulatoryFilePath);
         List<String> tableNames = Arrays.asList(REGULATORY_FEATURES, MOTIF_FEATURES, "annotated_features",
                 DEPRECATED_MOTIF_FEATURES, "regulatory_features_multicell");
 
@@ -138,7 +139,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
         for (String chromosome : chromosomes) {
             for (int i = 0; i < tableNames.size(); i++) {
                 chunksHash = new HashSet<>();
-                regulatoryFeatures = RegulatoryRegionParser.queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
+                regulatoryFeatures = queryChromosomesRegulatoryDB(filePaths.get(i), tableNames.get(i), chromosome);
                 for (RegulatoryFeature regulatoryFeature : regulatoryFeatures) {
                     int firstChunkId = getChunkId(regulatoryFeature.getStart(), CHUNK_SIZE);
                     int lastChunkId = getChunkId(regulatoryFeature.getEnd(), CHUNK_SIZE);
@@ -171,7 +172,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
         int limitRows = 100000;
         int batchCount = 0;
 
-        if (!Files.exists(filePath)) {
+        if (!Files.exists(filePath) || Files.size(filePath) == 0) {
             return;
         }
 
@@ -245,8 +246,14 @@ public class RegulatoryRegionParser extends CellBaseParser {
         conn.close();
     }
 
-    public static List<String> getChromosomesList(Path dbPath, String tableName) throws IOException {
-        FileUtils.checkFile(dbPath);
+    public List<String> getChromosomesList(Path dbPath, String tableName) throws IOException {
+
+        try {
+            FileUtils.checkFile(dbPath);
+        } catch (IOException e) {
+            logger.warn(e.getMessage());
+            return Collections.emptyList();
+        }
 
         List<String> chromosomes = new ArrayList<>();
         try {
@@ -254,10 +261,11 @@ public class RegulatoryRegionParser extends CellBaseParser {
             Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
 
             Statement query = conn.createStatement();
-            ResultSet rs = query.executeQuery("select distinct(seqname) from " + tableName + " where seqname like 'chr%'");
+            ResultSet rs = query.executeQuery("select distinct(seqname) from " + tableName);
+//            ResultSet rs = query.executeQuery("select distinct(seqname) from " + tableName + " where seqname like 'chr%'");
 
             while (rs.next()) {
-                chromosomes.add(rs.getString(1).replace("chr", ""));
+                chromosomes.add(rs.getString(1));
             }
             conn.close();
 
@@ -267,7 +275,15 @@ public class RegulatoryRegionParser extends CellBaseParser {
         return chromosomes;
     }
 
-    public static List<RegulatoryFeature> queryChromosomesRegulatoryDB(Path dbPath, String tableName, String chromosome) {
+    public List<RegulatoryFeature> queryChromosomesRegulatoryDB(Path dbPath, String tableName, String chromosome) {
+
+        try {
+            FileUtils.checkFile(dbPath);
+        } catch (IOException e) {
+            logger.warn(e.getMessage());
+            return Collections.emptyList();
+        }
+
         Connection conn;
         List<RegulatoryFeature> regulatoryFeatures = new ArrayList<>();
         try {
@@ -275,7 +291,8 @@ public class RegulatoryRegionParser extends CellBaseParser {
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath.toString());
 
             Statement query = conn.createStatement();
-            ResultSet rs = query.executeQuery("select * from " + tableName + " where seqname='chr" + chromosome + "'");
+            ResultSet rs = query.executeQuery("select * from " + tableName + " where seqname='" + chromosome + "'");
+//            ResultSet rs = query.executeQuery("select * from " + tableName + " where seqname='chr" + chromosome + "'");
             while (rs.next()) {
                 regulatoryFeatures.add(getDeprecatedRegulatoryFeature(rs, tableName));
             }
@@ -340,9 +357,9 @@ public class RegulatoryRegionParser extends CellBaseParser {
         RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setChromosome(rs.getString(1));
         regulatoryFeature.setSource(rs.getString(2));
-        regulatoryFeature.setFeatureType(rs.getString(3).replace("_", " "));
+        regulatoryFeature.setFeatureType(rs.getString(3));
         regulatoryFeature.setStart(rs.getInt(4));
         regulatoryFeature.setEnd(rs.getInt(5));
         regulatoryFeature.setScore(rs.getString(6));
@@ -363,9 +380,9 @@ public class RegulatoryRegionParser extends CellBaseParser {
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
         regulatoryFeature.setId(groupFields.get(ID));
-        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setChromosome(rs.getString(1));
         regulatoryFeature.setSource(rs.getString(2));
-        regulatoryFeature.setFeatureType(groupFields.get(FEATURE_TYPE));
+        regulatoryFeature.setFeatureType(groupFields.get(FEATURE_TYPE).replace(" ", "_"));
         regulatoryFeature.setStart(rs.getInt(4));
         regulatoryFeature.setEnd(rs.getInt(5));
         regulatoryFeature.setScore(rs.getString(6));
@@ -379,7 +396,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
         RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setChromosome(rs.getString(1));
         regulatoryFeature.setSource(rs.getString(2));
         regulatoryFeature.setFeatureType(rs.getString(3));
         regulatoryFeature.setStart(rs.getInt(4));
@@ -402,7 +419,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
         RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setChromosome(rs.getString(1));
         regulatoryFeature.setSource(rs.getString(2));
         regulatoryFeature.setFeatureType(rs.getString(3));
         regulatoryFeature.setStart(rs.getInt(4));
@@ -421,7 +438,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
         RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setChromosome(rs.getString(1));
         regulatoryFeature.setSource(rs.getString(2));
         regulatoryFeature.setFeatureType(rs.getString(3) + "_motif");
         regulatoryFeature.setStart(rs.getInt(4));
@@ -442,7 +459,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
         RegulatoryFeature regulatoryFeature = new RegulatoryFeature();
         Map<String, String> groupFields = getGroupFields(rs.getString(9));
 
-        regulatoryFeature.setChromosome(rs.getString(1).replace("chr", ""));
+        regulatoryFeature.setChromosome(rs.getString(1));
         regulatoryFeature.setSource(rs.getString(2));
         regulatoryFeature.setFeatureType(rs.getString(3));
         regulatoryFeature.setStart(rs.getInt(4));
@@ -500,21 +517,25 @@ public class RegulatoryRegionParser extends CellBaseParser {
     @Deprecated
     public static List<String> getAnnotatedFeaturesFields(String line) {
         String[] fields = line.split("\t");
+        fields[0] = fields[0].replace("chr", "");
         return Arrays.asList(fields);
     }
 
     public static List<String> getRegulatoryFeaturesFields(String line) {
         String[] fields = line.split("\t");
+        fields[0] = fields[0].replace("chr", "");
         return Arrays.asList(fields);
     }
 
     public static List<String> getMotifFeaturesFields(String line) {
         String[] fields = line.split("\t");
+        fields[0] = fields[0].replace("chr", "");
         return Arrays.asList(fields);
     }
 
     public static List<String> getMirnaFeaturesFields(String line) {
         String[] fields = line.split("\t");
+        fields[0] = fields[0].replace("chr", "");
         return Arrays.asList(fields);
     }
 
