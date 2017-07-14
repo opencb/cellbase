@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup_kwargs = {
     'name': 'pycellbase',
-    'version': '0.3.2',
+    'version': '0.3.3',
     'description': 'Python client for CellBase',
     'long_description': ('This Python package enables to query and obtain'
                          ' biological information from the exhaustive'

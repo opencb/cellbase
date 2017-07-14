@@ -10,11 +10,8 @@ class ConfigClient(object):
         # Default config params
         self._hosts = ['bioinfo.hpc.cam.ac.uk:80/cellbase',
                        'bioinfodev.hpc.cam.ac.uk:80/cellbase-4.5.0-beta']
-        self._config = {
-            'host': self._get_available_host(),
-            'version': 'v4',
-            'species': 'hsapiens',
-        }
+        self._version = 'v4'
+        self._species = 'hsapiens'
 
         # If config info is provided, override default config params
         if config_input is not None:
@@ -22,6 +19,12 @@ class ConfigClient(object):
                 self._override_config_params_from_dict(config_input)
             else:
                 self._override_config_params_from_file(config_input)
+
+        self._config = {
+            'host': self._get_available_host(),
+            'version': self._version,
+            'species': self._species,
+        }
 
     def _override_config_params_from_file(self, config_fpath):
         """Overrides config params if config file is provided"""
@@ -48,11 +51,10 @@ class ConfigClient(object):
             if 'rest' in config_dict:
                 if 'hosts' in config_dict['rest']:
                     self._hosts = config_dict['rest']['hosts']
-                    self._config['host'] = self._get_available_host()
             if 'version' in config_dict:
-                self._config['version'] = config_dict['version']
+                self._version = config_dict['version']
             if 'species' in config_dict:
-                self._config['species'] = config_dict['species']
+                self._species = config_dict['species']
         else:
             msg = 'No configuration parameters found'
             raise ValueError(msg)
