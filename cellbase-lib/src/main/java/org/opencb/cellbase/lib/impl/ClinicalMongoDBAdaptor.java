@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<Variant> {
 
-    private static final String PRIVATE_TRAIT_FIELD = "_trait";
+    private static final String PRIVATE_TRAIT_FIELD = "_traits";
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);

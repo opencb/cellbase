@@ -71,7 +71,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String HERITABLE_TRAITS = "heritableTraits";
     private static final String TRAIT = "trait";
     private static final String PRIVATE_FEATURE_XREF_FIELD = "_featureXrefs";
-    private static final String PRIVATE_TRAIT_FIELD = "_trait";
+    private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private MongoDataStoreManager mongoDataStoreManager;
     private MongoDataStore mongoDataStore;
     private MongoDBCollection mongoDBCollection;
