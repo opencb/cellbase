@@ -22,14 +22,20 @@ db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.
 db.getCollection('clinical_variants').createIndex({'annotation.consequenceTypes.sequenceOntologyTerms.name': 1})
 db.getCollection('clinical_variants').createIndex({'_featureXrefs': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.id': 1})
+db.getCollection('clinical_variants').createIndex({'annotation.id': 1})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.consistencyStatus': 1}, {sparse: true})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.variantClassification.clinicalSignificance': 1}, {sparse: true})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.heritableTraits.inheritanceMode': 1}, {sparse: true})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.alleleOrigin': 1}, {sparse: true})
-db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.heritableTraits.trait':'text',
-    'annotation.traitAssociation.somaticInformation.primarySite': 'text',
-    'annotation.traitAssociation.somaticInformation.siteSubtype': 'text',
-    'annotation.traitAssociation.somaticInformation.primaryHistology': 'text',
-    'annotation.traitAssociation.somaticInformation.histologySubtype': 'text',
-    'annotation.traitAssociation.somaticInformation.sampleSource': 'text',
-    'annotation.traitAssociation.somaticInformation.tumourOrigin': 'text'}, {name: "_diseasePhenotype"})
+db.getCollection('clinical_variants').createIndex({'_trait': 1})
+
+//db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.heritableTraits.trait':'text',
+//    'annotation.traitAssociation.somaticInformation.primarySite': 'text',
+//    'annotation.traitAssociation.somaticInformation.siteSubtype': 'text',
+//    'annotation.traitAssociation.somaticInformation.primaryHistology': 'text',
+//    'annotation.traitAssociation.somaticInformation.histologySubtype': 'text',
+//    'annotation.traitAssociation.somaticInformation.sampleSource': 'text',
+//    'annotation.traitAssociation.somaticInformation.tumourOrigin': 'text'}, {name: "_diseasePhenotype"})
+
+
+

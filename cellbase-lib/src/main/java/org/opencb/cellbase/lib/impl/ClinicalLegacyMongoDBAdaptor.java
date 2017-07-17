@@ -302,9 +302,9 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
     }
 
     private void createPhenotypeQuery(Query query, List<Bson> andBsonList) {
-        if (query != null && query.getString(QueryParams.PHENOTYPEDISEASE.key()) != null
-                && !query.getString(QueryParams.PHENOTYPEDISEASE.key()).isEmpty()) {
-            andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPEDISEASE.key())));
+        if (query != null && query.getString(QueryParams.TRAIT.key()) != null
+                && !query.getString(QueryParams.TRAIT.key()).isEmpty()) {
+            andBsonList.add(Filters.text(query.getString(QueryParams.TRAIT.key())));
         }
     }
 

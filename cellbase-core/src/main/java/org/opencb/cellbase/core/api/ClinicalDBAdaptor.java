@@ -41,7 +41,7 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         CI_END_RIGHT("ciEndRight", INTEGER, ""),
         REFERENCE("reference", STRING, ""),
         ALTERNATE("alternate", STRING, ""),
-        PHENOTYPEDISEASE("phenotypeDisease", TEXT_ARRAY, ""),
+        TRAIT("trait", TEXT_ARRAY, ""),
         FEATURE("feature", TEXT_ARRAY, ""),
         SO("so", TEXT_ARRAY, ""),
         SOURCE("source", TEXT_ARRAY, ""),

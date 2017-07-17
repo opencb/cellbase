@@ -60,6 +60,18 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String CLINICAL_VARIANTS_COLLECTION = "clinical_variants";
     private static final String GENOMIC_FEATURES = "genomicFeatures";
     private static final String XREFS = "xrefs";
+    private static final String TRAIT_ASSOCIATION = "traitAssociation";
+    private static final String SOMATIC_INFORMATION = "somaticInformation";
+    private static final String PRIMARY_SITE = "primarySite";
+    private static final String SITE_SUBTYPE = "siteSubtype";
+    private static final String PRIMARY_HISTOLOGY = "primaryHistology";
+    private static final String HISTOLOGY_SUBTYPE = "histologySubtype";
+    private static final String TUMOUR_ORIGIN = "tumourOrigin";
+    private static final String SAMPLE_SOURCE = "sampleSource";
+    private static final String HERITABLE_TRAITS = "heritableTraits";
+    private static final String TRAIT = "trait";
+    private static final String PRIVATE_FEATURE_XREF_FIELD = "_featureXrefs";
+    private static final String PRIVATE_TRAIT_FIELD = "_trait";
     private MongoDataStoreManager mongoDataStoreManager;
     private MongoDataStore mongoDataStore;
     private MongoDBCollection mongoDBCollection;
@@ -429,7 +441,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             Document annotationDocument = (Document) document.get("annotation");
             List<String> featureXrefs = getFeatureXrefsFromClinicalVariants(annotationDocument);
             if (!featureXrefs.isEmpty()) {
-                document.put("_featureXrefs", featureXrefs);
+                document.put(PRIVATE_FEATURE_XREF_FIELD, featureXrefs);
+            }
+            List<String> traitList = getTraitFromClinicalVariants(annotationDocument);
+            if (!featureXrefs.isEmpty()) {
+                document.put(PRIVATE_TRAIT_FIELD, traitList);
             }
         }
 //
@@ -466,6 +482,55 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //        }
     }
 
+    private List<String> getTraitFromClinicalVariants(Document document) throws JsonProcessingException, FileFormatException {
+        Set<String> values = new HashSet<>();
+        if (document.containsKey(TRAIT_ASSOCIATION)) {
+            for (Document evidenceEntryDocument : (List<Document>) document.get(TRAIT_ASSOCIATION)) {
+                if (evidenceEntryDocument.containsKey(SOMATIC_INFORMATION)) {
+                    Document somaticInformationDocument = (Document) evidenceEntryDocument.get(SOMATIC_INFORMATION);
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(PRIMARY_SITE))) {
+                        values.add((String) somaticInformationDocument.get(PRIMARY_SITE));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(SITE_SUBTYPE))) {
+                        values.add((String) somaticInformationDocument.get(SITE_SUBTYPE));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(PRIMARY_HISTOLOGY))) {
+                        values.add((String) somaticInformationDocument.get(PRIMARY_HISTOLOGY));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(HISTOLOGY_SUBTYPE))) {
+                        values.add((String) somaticInformationDocument.get(HISTOLOGY_SUBTYPE));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(TUMOUR_ORIGIN))) {
+                        values.add((String) somaticInformationDocument.get(TUMOUR_ORIGIN));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(SAMPLE_SOURCE))) {
+                        values.add((String) somaticInformationDocument.get(SAMPLE_SOURCE));
+                    }
+                }
+                if (evidenceEntryDocument.containsKey(HERITABLE_TRAITS)) {
+                    for (Document traitDocument : (List<Document>) evidenceEntryDocument.get(HERITABLE_TRAITS)) {
+                        if (StringUtils.isNotBlank((String) traitDocument.get(TRAIT))) {
+                            values.add((String) traitDocument.get(SAMPLE_SOURCE));
+                        }
+                    }
+                }
+            }
+        } else {
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+            ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+
+            throw new FileFormatException("traitAssociation field missing in input objects. Please, ensure"
+                    + " that input file contains variants with appropriate clinical annotation: "
+                    + jsonObjectWriter.writeValueAsString(document));
+        }
+
+        return new ArrayList<>(values);
+
+    }
+
     private void getValuesFromClinicalObject(List clinicalObjectList, String field, Set<String> values) {
         if (clinicalObjectList != null && !clinicalObjectList.isEmpty()) {
             for (Object object : clinicalObjectList) {
@@ -479,8 +544,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private List<String> getFeatureXrefsFromClinicalVariants(Document document) throws JsonProcessingException, FileFormatException {
         Set<String> values = new HashSet<>();
-        if (document.containsKey("traitAssociation")) {
-            List evidenceEntryList = (List) document.get("traitAssociation");
+        if (document.containsKey(TRAIT_ASSOCIATION)) {
+            List evidenceEntryList = (List) document.get(TRAIT_ASSOCIATION);
             getFeatureXrefsFromClinicalObject(evidenceEntryList, values);
             getFeatureXrefsFromConsequenceTypes((List) document.get("consequenceTypes"), values);
         } else {

@@ -126,7 +126,13 @@ public class EtlCommons {
 
     public static boolean isMissing(String string) {
         return !((string != null) && !string.isEmpty()
-                && !string.replace(" ", "").replace("NA", "").replace("NULL", "").replace("\t", "").replace(".", "")
+                && !string.replace(" ", "")
+                .replace("NS", "")
+                .replace("NA", "")
+                .replace("NULL", "")
+                .replace("null", "")
+                .replace("\t", "")
+                .replace(".", "")
                 .replace("-", "").isEmpty());
     }
 

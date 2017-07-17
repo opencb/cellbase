@@ -396,9 +396,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         String[] fields = line.split("\t", -1); // -1 argument make split return also empty fields
 
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.COSMIC_DATA, null, null);
-        SomaticInformation somaticInformation = new SomaticInformation(fields[PRIMARY_SITE_COLUMN],
-                fields[SITE_SUBTYPE_COLUMN], fields[PRIMARY_HISTOLOGY_COLUMN], fields[HISTOLOGY_SUBTYPE_COLUMN],
-                fields[tumourOriginColumn], fields[sampleSourceColumn]);
+        SomaticInformation somaticInformation = getSomaticInformation(fields);
 
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 
@@ -415,6 +413,36 @@ public class CosmicIndexer extends ClinicalIndexer {
                 bibliography);
 
         return evidenceEntry;
+    }
+
+    private SomaticInformation getSomaticInformation(String[] fields) {
+        String primarySite = null;
+        if (!EtlCommons.isMissing(fields[PRIMARY_SITE_COLUMN])) {
+            primarySite = fields[PRIMARY_SITE_COLUMN].replace("_", " ");
+        }
+        String siteSubtype = null;
+        if (!EtlCommons.isMissing(fields[SITE_SUBTYPE_COLUMN])) {
+            siteSubtype = fields[SITE_SUBTYPE_COLUMN].replace("_", " ");
+        }
+        String primaryHistology = null;
+        if (!EtlCommons.isMissing(fields[PRIMARY_HISTOLOGY_COLUMN])) {
+            primaryHistology = fields[PRIMARY_HISTOLOGY_COLUMN].replace("_", " ");
+        }
+        String histologySubtype = null;
+        if (!EtlCommons.isMissing(fields[HISTOLOGY_SUBTYPE_COLUMN])) {
+            histologySubtype = fields[HISTOLOGY_SUBTYPE_COLUMN].replace("_", " ");
+        }
+        String tumourOrigin = null;
+        if (!EtlCommons.isMissing(fields[tumourOriginColumn])) {
+            tumourOrigin = fields[tumourOriginColumn].replace("_", " ");
+        }
+        String sampleSource = null;
+        if (!EtlCommons.isMissing(fields[sampleSourceColumn])) {
+            sampleSource = fields[sampleSourceColumn].replace("_", " ");
+        }
+
+        return new SomaticInformation(primarySite, siteSubtype, primaryHistology, histologySubtype, tumourOrigin,
+                sampleSource);
     }
 
     private List<String> getBibliography(String bibliographyString) {

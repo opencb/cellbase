@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
@@ -20,6 +21,8 @@ import java.util.stream.Collectors;
  * Created by fjlopez on 06/12/16.
  */
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<Variant> {
+
+    private static final String PRIVATE_TRAIT_FIELD = "_trait";
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -168,14 +171,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 "annotation.traitAssociation.alleleOrigin", andBsonList);
 
         // Avoid creating a text empty query, otherwise results will never be returned
-        if (query.containsKey(QueryParams.PHENOTYPEDISEASE.key())) {
-            andBsonList.add(Filters.text(query.getString(QueryParams.PHENOTYPEDISEASE.key())));
+        if (StringUtils.isNotBlank(query.getString(QueryParams.TRAIT.key()))) {
+            createTraitQuery(query.getAsStringList(QueryParams.TRAIT.key()), andBsonList);
         }
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
+        }
+    }
+
+    private void createTraitQuery(List<String> keywords, List<Bson> andBsonList) {
+        for (String keyword : keywords) {
+            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, "*" + keyword + "*", "i"));
         }
     }
 
