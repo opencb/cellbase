@@ -90,7 +90,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        QueryOptions parsedOptions = parseQueryOptions(options);
+        QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, "_featureXrefs");
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
@@ -99,7 +99,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        QueryOptions parsedOptions = parseQueryOptions(options);
+        QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, "_featureXrefs");
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, parsedOptions);
@@ -125,14 +125,20 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
     }
 
-    private QueryOptions parseQueryOptions(QueryOptions options) {
-        List<String> sortFields = options.getAsStringList("sort");
+    private QueryOptions parseQueryOptions(QueryOptions options, Query query) {
+        List<String> sortFields = options.getAsStringList(QueryOptions.SORT);
         if (sortFields != null) {
             Document sortDocument = new Document();
             for (String field : sortFields) {
                 sortDocument.put(field, 1);
             }
-            options.put("sort", sortDocument);
+            options.put(QueryOptions.SORT, sortDocument);
+        }
+        // TODO: Improve
+        // numTotalResults cannot be enabled when searching by trait keywords
+        // regex search is too slow and would otherwise raise timeouts
+        if (StringUtils.isNotBlank(query.getString(QueryParams.TRAIT.key()))) {
+            options.put(QueryOptions.SKIP_COUNT, true);
         }
         return options;
     }

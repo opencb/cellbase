@@ -510,7 +510,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 if (evidenceEntryDocument.containsKey(HERITABLE_TRAITS)) {
                     for (Document traitDocument : (List<Document>) evidenceEntryDocument.get(HERITABLE_TRAITS)) {
                         if (StringUtils.isNotBlank((String) traitDocument.get(TRAIT))) {
-                            values.add((String) traitDocument.get(SAMPLE_SOURCE));
+                            values.add((String) traitDocument.get(TRAIT));
                         }
                     }
                 }

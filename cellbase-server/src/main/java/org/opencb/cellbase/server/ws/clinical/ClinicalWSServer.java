@@ -63,7 +63,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "trait",
                     value = "Keywords search. Comma separated (no spaces in between) list of keywords describing required"
                             + " phenotype/disease. All variants related somehow with all those keywords (case insensitive) "
-                            + " will be returned, e.g: carcinoma,lung or acute,myeloid,leukaemia",
+                            + " will be returned, e.g: carcinoma,lung or acute,myeloid,leukaemia. WARNING: returned "
+                            + " numTotalResults will always be -1 when searching by trait keywords.",
                     required = false, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "accession",
                     value = "Comma separated list of database accesions, e.g.: RCV000033215,COSM306824 Exact text "
