@@ -139,7 +139,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         // regex search is too slow and would otherwise raise timeouts
         if (StringUtils.isNotBlank(query.getString(QueryParams.TRAIT.key()))) {
             options.put(QueryOptions.SKIP_COUNT, true);
+        } else {
+            // TODO: Improve
+            // numTotalResults cannot be enabled when including multiple clinsig values
+            // search is too slow and would otherwise raise timeouts
+            List<String> clinsigList = query.getAsStringList(QueryParams.CLINICALSIGNIFICANCE.key());
+            if (clinsigList != null && clinsigList.size() > 1) {
+                options.put(QueryOptions.SKIP_COUNT, true);
+            }
         }
+
         return options;
     }
 
