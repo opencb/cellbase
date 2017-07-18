@@ -27,7 +27,7 @@ db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.variantClassification.clinicalSignificance': 1}, {sparse: true})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.heritableTraits.inheritanceMode': 1}, {sparse: true})
 db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.alleleOrigin': 1}, {sparse: true})
-db.getCollection('clinical_variants').createIndex({'_trait': 1})
+db.getCollection('clinical_variants').createIndex({'_traits': 1})
 
 //db.getCollection('clinical_variants').createIndex({'annotation.traitAssociation.heritableTraits.trait':'text',
 //    'annotation.traitAssociation.somaticInformation.primarySite': 'text',
