@@ -184,7 +184,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private void createTraitQuery(List<String> keywords, List<Bson> andBsonList) {
         for (String keyword : keywords) {
-            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, "*" + keyword + "*", "i"));
+            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, keyword, "i"));
         }
     }
 
