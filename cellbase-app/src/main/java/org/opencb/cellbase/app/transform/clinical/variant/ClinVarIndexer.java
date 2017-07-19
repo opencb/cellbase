@@ -35,8 +35,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final int VARIATION_ALLELE_ALLELE_COLUMN = 2;
     private static final int VARIATION_ALLELE_VARIATION_COLUMN = 0;
     private static final String SOMATIC = "somatic";
-    private static final String CLINSIG_FIELD_NAME = "ClinicalSignificance";
-    private static final String REVIEW_FIELD_NAME = "ReviewStatus";
+    private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
+    private static final String REVIEW_STATUS_IN_SOURCE_FILE = "ReviewStatus_in_source_file";
     private static final String TRAIT = "trait";
     private static final String MODE_OF_INHERITANCE = "modeOfInheritance";
     private final Path clinvarXMLFile;
@@ -165,13 +165,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
         VariantClassification variantClassification = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])) {
             variantClassification = getVariantClassification(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]);
-            additionalProperties.add(new Property(null, CLINSIG_FIELD_NAME, lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]));
+            additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE,
+                    lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]));
         }
 
         ConsistencyStatus consistencyStatus = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_REVIEW_COLUMN])) {
             consistencyStatus = getConsistencyStatus(lineFields[VARIANT_SUMMARY_REVIEW_COLUMN]);
-            additionalProperties.add(new Property(null, REVIEW_FIELD_NAME, lineFields[VARIANT_SUMMARY_REVIEW_COLUMN]));
+            additionalProperties.add(new Property(null, REVIEW_STATUS_IN_SOURCE_FILE,
+                    lineFields[VARIANT_SUMMARY_REVIEW_COLUMN]));
         }
 
         EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
@@ -240,12 +242,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
         VariantClassification variantClassification = getVariantClassification(publicSet.getReferenceClinVarAssertion()
                 .getClinicalSignificance().getDescription());
-        additionalProperties.add(new Property(null, CLINSIG_FIELD_NAME, publicSet.getReferenceClinVarAssertion()
+        additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE, publicSet.getReferenceClinVarAssertion()
                 .getClinicalSignificance().getDescription()));
 
         ConsistencyStatus consistencyStatus = getConsistencyStatus(publicSet.getReferenceClinVarAssertion()
                 .getClinicalSignificance().getReviewStatus().name());
-        additionalProperties.add(new Property(null, REVIEW_FIELD_NAME, publicSet.getReferenceClinVarAssertion()
+        additionalProperties.add(new Property(null, REVIEW_STATUS_IN_SOURCE_FILE, publicSet.getReferenceClinVarAssertion()
                 .getClinicalSignificance().getReviewStatus().name()));
 
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(publicSet);

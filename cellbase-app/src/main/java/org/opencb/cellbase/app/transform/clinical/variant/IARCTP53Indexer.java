@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class IARCTP53Indexer extends ClinicalIndexer {
 
-    private static final String IARCTP53_NAME = "IARCTP53";
+    private static final String IARCTP53_NAME = "iarctp53";
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
     private static final String REF = "REF";
@@ -437,7 +437,11 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     }
 
     private List<HeritableTrait> getHeritableTrait(String[] fields) {
-        return  Collections.singletonList(new HeritableTrait(fields[GERMLINE_TOPOGRAPHY_COLUMN], null));
+        if (!EtlCommons.isMissing(fields[GERMLINE_TOPOGRAPHY_COLUMN])) {
+            return Collections.singletonList(new HeritableTrait(fields[GERMLINE_TOPOGRAPHY_COLUMN], null));
+        } else {
+            return Collections.emptyList();
+        }
 //                VariantAnnotationUtils.MODEOFINHERITANCE_MAP.get(fields[MODE_OF_INHERITANCE_COLUMN])));
     }
 

@@ -27,7 +27,7 @@ public class CosmicIndexer extends ClinicalIndexer {
     private static final int PRIMARY_HISTOLOGY_COLUMN = 11;
     private static final int HISTOLOGY_SUBTYPE_COLUMN = 12;
     private static final int ID_COLUMN = 16;
-    private static final String MUTATION_SOMATIC_STATUS = "mutationSomaticStatus";
+    private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
     private static final int GENE_NAMES_COLUMN = 0;
     private static final int HGNC_COLUMN = 3;
     private final Path cosmicFile;
@@ -400,8 +400,8 @@ public class CosmicIndexer extends ClinicalIndexer {
 
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 
-        List<Property> additionalProperties = Collections.singletonList(new Property(null, MUTATION_SOMATIC_STATUS,
-                fields[mutationSomaticStatusColumn]));
+        List<Property> additionalProperties = Collections.singletonList(new Property(null,
+                MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE, fields[mutationSomaticStatusColumn]));
 
         List<String> bibliography = getBibliography(fields[pubmedPMIDColumn]);
 

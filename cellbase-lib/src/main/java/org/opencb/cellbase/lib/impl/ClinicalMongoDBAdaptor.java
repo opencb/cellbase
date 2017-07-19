@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<Variant> {
 
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
+    private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -91,7 +92,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
-        parsedOptions = addPrivateExcludeOptions(parsedOptions, "_featureXrefs");
+        parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
     }
@@ -100,7 +101,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
-        parsedOptions = addPrivateExcludeOptions(parsedOptions, "_featureXrefs");
+        parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, parsedOptions);
     }
