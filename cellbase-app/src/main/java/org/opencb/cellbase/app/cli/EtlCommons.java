@@ -127,6 +127,7 @@ public class EtlCommons {
     public static boolean isMissing(String string) {
         return !((string != null) && !string.isEmpty()
                 && !string.replace(" ", "")
+                .replace("not specified", "")
                 .replace("NS", "")
                 .replace("NA", "")
                 .replace("NULL", "")
