@@ -44,6 +44,8 @@ import java.util.*;
 
 public class GeneParser extends CellBaseParser {
 
+    private static final String ENSEMBL_GTF_DBNAME = "ensembl_gtf";
+    private static final java.lang.String ENSEMBL_GTF_DISPLAY = "Ensembl GTF";
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
 
@@ -133,7 +135,7 @@ public class GeneParser extends CellBaseParser {
         exonDict = new HashMap<>(8000000);
     }
 
-    public void parse() throws IOException, SecurityException, NoSuchMethodException, FileFormatException, InterruptedException {
+    public void parse() throws Exception {
         Gene gene = null;
         Transcript transcript;
         Exon exon = null;
@@ -153,16 +155,7 @@ public class GeneParser extends CellBaseParser {
         Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
 
         // Preparing the fasta file for fast accessing
-        FastaIndexManager fastaIndexManager = null;
-        try {
-            fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
-            if (!fastaIndexManager.isConnected()) {
-                fastaIndexManager.index();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
+        FastaIndexManager fastaIndexManager = getFastaIndexManager();
 
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
@@ -213,7 +206,14 @@ public class GeneParser extends CellBaseParser {
                 transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                         (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
-                        gtf.getStrand(), 0, 0, 0, 0, 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(), transcriptTfbses);
+                        gtf.getStrand(), 0, 0, 0, 0,
+                        0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
+                        transcriptTfbses);
+
+                // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
+                // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
+                // that the xrefs array contains all ids present in the GTF file
+                addGtfXrefs(transcript, gene);
 
                 String tags = gtf.getAttributes().get("tag");
                 if (tags != null) {
@@ -376,6 +376,24 @@ public class GeneParser extends CellBaseParser {
         gtfReader.close();
         serializer.close();
         fastaIndexManager.close();
+    }
+
+    private FastaIndexManager getFastaIndexManager() throws Exception {
+        FastaIndexManager fastaIndexManager;
+        fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
+        if (!fastaIndexManager.isConnected()) {
+            fastaIndexManager.index();
+        }
+
+        return fastaIndexManager;
+    }
+
+    private void addGtfXrefs(Transcript transcript, Gene gene) {
+        List<Xref> xrefList = transcript.getXrefs();
+        xrefList.add(new Xref(gene.getId(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
+        xrefList.add(new Xref(gene.getName(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
+        xrefList.add(new Xref(transcript.getId(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
+        xrefList.add(new Xref(transcript.getName(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
     }
 
     private void initializePointers(Map<String, Map<String, Map<String, Object>>> gtfMap) {
