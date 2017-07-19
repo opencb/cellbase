@@ -270,7 +270,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
         EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, submissions, null,
                 "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession, null,
-                !alleleOrigin.isEmpty() ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
+                !(alleleOrigin == null || alleleOrigin.isEmpty()) ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
                 variantClassification, null,
                 null, consistencyStatus, null, null, null,
                 null, additionalProperties, bibliography);

@@ -24,6 +24,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
+    private static final String SEPARATOR = ",";
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -186,10 +187,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         createOrQuery(query, QueryParams.ALLELE_ORIGIN.key(),
                 "annotation.traitAssociation.alleleOrigin", andBsonList);
 
-        // Avoid creating a text empty query, otherwise results will never be returned
-        if (StringUtils.isNotBlank(query.getString(QueryParams.TRAIT.key()))) {
-            createTraitQuery(query.getAsStringList(QueryParams.TRAIT.key()), andBsonList);
-        }
+        createTraitQuery(query.getString(QueryParams.TRAIT.key()), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -198,10 +196,15 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
     }
 
-    private void createTraitQuery(List<String> keywords, List<Bson> andBsonList) {
-        for (String keyword : keywords) {
-            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, keyword, "i"));
+    private void createTraitQuery(String keywordString, List<Bson> andBsonList) {
+        // Avoid creating a text empty query, otherwise results will never be returned
+        if (StringUtils.isNotBlank(keywordString)) {
+            keywordString = keywordString.toLowerCase();
+            createOrQuery(Arrays.asList(keywordString.split(SEPARATOR)), PRIVATE_TRAIT_FIELD, andBsonList);
         }
+//        for (String keyword : keywords) {
+//            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, keyword, "i"));
+//        }
     }
 
     private void createImprecisePositionQuery(Query query, String leftQueryParam, String rightQueryParam,

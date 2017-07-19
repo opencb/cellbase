@@ -72,6 +72,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     private static final String TRAIT = "trait";
     private static final String PRIVATE_FEATURE_XREF_FIELD = "_featureXrefs";
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
+    private static final Set<String> SKIP_WORKDS = new HashSet<>(Arrays.asList("or", "and", "the", "of", "at",
+            "in", "on"));
     private MongoDataStoreManager mongoDataStoreManager;
     private MongoDataStore mongoDataStore;
     private MongoDBCollection mongoDBCollection;
@@ -489,28 +491,28 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 if (evidenceEntryDocument.containsKey(SOMATIC_INFORMATION)) {
                     Document somaticInformationDocument = (Document) evidenceEntryDocument.get(SOMATIC_INFORMATION);
                     if (StringUtils.isNotBlank((String) somaticInformationDocument.get(PRIMARY_SITE))) {
-                        values.add((String) somaticInformationDocument.get(PRIMARY_SITE));
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(PRIMARY_SITE)));
                     }
                     if (StringUtils.isNotBlank((String) somaticInformationDocument.get(SITE_SUBTYPE))) {
-                        values.add((String) somaticInformationDocument.get(SITE_SUBTYPE));
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(SITE_SUBTYPE)));
                     }
                     if (StringUtils.isNotBlank((String) somaticInformationDocument.get(PRIMARY_HISTOLOGY))) {
-                        values.add((String) somaticInformationDocument.get(PRIMARY_HISTOLOGY));
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(PRIMARY_HISTOLOGY)));
                     }
                     if (StringUtils.isNotBlank((String) somaticInformationDocument.get(HISTOLOGY_SUBTYPE))) {
-                        values.add((String) somaticInformationDocument.get(HISTOLOGY_SUBTYPE));
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(HISTOLOGY_SUBTYPE)));
                     }
                     if (StringUtils.isNotBlank((String) somaticInformationDocument.get(TUMOUR_ORIGIN))) {
-                        values.add((String) somaticInformationDocument.get(TUMOUR_ORIGIN));
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(TUMOUR_ORIGIN)));
                     }
                     if (StringUtils.isNotBlank((String) somaticInformationDocument.get(SAMPLE_SOURCE))) {
-                        values.add((String) somaticInformationDocument.get(SAMPLE_SOURCE));
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(SAMPLE_SOURCE)));
                     }
                 }
                 if (evidenceEntryDocument.containsKey(HERITABLE_TRAITS)) {
                     for (Document traitDocument : (List<Document>) evidenceEntryDocument.get(HERITABLE_TRAITS)) {
                         if (StringUtils.isNotBlank((String) traitDocument.get(TRAIT))) {
-                            values.add((String) traitDocument.get(TRAIT));
+                            values.addAll(splitKeywords(traitDocument.getString(TRAIT)));
                         }
                     }
                 }
@@ -529,6 +531,18 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
         return new ArrayList<>(values);
 
+    }
+
+    private List<String> splitKeywords(String string) {
+        String[] stringArray = string.toLowerCase().split("\\W");
+        List<String> stringList = new ArrayList<>(stringArray.length);
+        for (String keyword : stringArray) {
+            if (!keyword.isEmpty() && !SKIP_WORKDS.contains(keyword)) {
+                stringList.add(keyword);
+            }
+        }
+
+        return stringList;
     }
 
     private void getValuesFromClinicalObject(List clinicalObjectList, String field, Set<String> values) {
