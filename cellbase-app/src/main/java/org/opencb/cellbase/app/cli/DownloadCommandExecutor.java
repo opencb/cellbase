@@ -65,8 +65,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
             "motif_feature_variation.txt.gz", "genotype_code.txt.gz", "allele_code.txt.gz",
             "population_genotype.txt.gz", "population.txt.gz", "allele.txt.gz", };
 
-
-    private static final String[] REGULATION_FILES = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
+    @Deprecated
+    private static final String[] DEPRECATED_REGULATION_FILES = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
             "RegulatoryFeatures_MultiCell.gff.gz", };
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES = new HashMap() {
@@ -642,12 +642,24 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
         regulationUrl = regulationUrl + "/regulation/" + shortName;
 
-        List<String> downloadedUrls = new ArrayList<>(REGULATION_FILES.length);
-        for (String regulationFile : REGULATION_FILES) {
+        List<String> downloadedUrls = new ArrayList<>(DEPRECATED_REGULATION_FILES.length + 2);
+        // TODO: REMOVE
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>> DEPRECATED
+        for (String regulationFile : DEPRECATED_REGULATION_FILES) {
             Path outputFile = regulationFolder.resolve(regulationFile);
             downloadFile(regulationUrl + "/" + regulationFile, outputFile.toString());
             downloadedUrls.add(regulationUrl + "/" + regulationFile);
         }
+        // <<<<<<<<<<<<<<<<<<<<<<<<<<< DEPRECATED
+
+        Path outputFile = regulationFolder.resolve(EtlCommons.REGULATORY_FEATURES_FILE);
+        downloadFile(regulationUrl + "/*Regulatory_Build.regulatory_features*.gff.gz", outputFile.toString());
+        downloadedUrls.add(regulationUrl + "/*Regulatory_Build.regulatory_features*.gff.gz");
+
+        outputFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
+        downloadFile(regulationUrl + "/*motiffeatures*.gff.gz", outputFile.toString());
+        downloadedUrls.add(regulationUrl + "/*motiffeatures*.gff.gz");
+
         saveVersionData(EtlCommons.REGULATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 regulationFolder.resolve("ensemblRegulationVersion.json"));
 

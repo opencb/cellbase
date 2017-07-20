@@ -73,7 +73,7 @@ public class VariantAnnotationCalculator {
     //    private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
-    private boolean useCache = true;
+    private boolean useCache = false;
     private boolean phased = false;
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
@@ -571,8 +571,8 @@ public class VariantAnnotationCalculator {
         normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
         logger.debug("normalize = {}", normalize);
 
-        // Default behaviour use cache
-        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : true);
+        // Default behaviour DO NOT use cache
+        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : false);
 
         // Default behaviour - don't calculate phased annotation
         phased = (queryOptions.get("phased") != null ? (Boolean) queryOptions.get("phased") : false);

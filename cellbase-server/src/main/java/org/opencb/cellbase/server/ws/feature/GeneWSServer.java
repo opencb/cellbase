@@ -291,6 +291,10 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
                             + " Exact text matches will be returned",
                     required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.annotationFlags",
+                    value = "Comma separated list of annotation flags that must be present in the transcripts returned "
+                            + "within the gene model, e.g.: basic,CCDS. Exact text matches will be returned",
+                    required = false, dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.tfbs.name",
                     value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
                             + " Exact text matches will be returned",

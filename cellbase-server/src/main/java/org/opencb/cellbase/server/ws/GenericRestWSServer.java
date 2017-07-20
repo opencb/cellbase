@@ -147,6 +147,8 @@ public class GenericRestWSServer implements IWSServer {
 
     private static final int LIMIT_DEFAULT = 1000;
     private static final int LIMIT_MAX = 5000;
+    private static final String ERROR = "error";
+    private static final String OK = "ok";
 
     static {
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
@@ -281,14 +283,26 @@ public class GenericRestWSServer implements IWSServer {
             }
         }
 
+//        try {
+//            logger.info("{}\t{}\t{}", uriInfo.getAbsolutePath().toString(),
+//                    jsonObjectWriter.writeValueAsString(query), jsonObjectWriter.writeValueAsString(queryOptions));
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    protected void logQuery(String status) {
         try {
-            logger.info("{}\t{}\t{}", uriInfo.getAbsolutePath().toString(),
-                    jsonObjectWriter.writeValueAsString(query), jsonObjectWriter.writeValueAsString(queryOptions));
+            logger.info("{}\t{}\t{}\t{}\t{}",
+                    uriInfo.getAbsolutePath().toString(),
+                    jsonObjectWriter.writeValueAsString(query),
+                    jsonObjectWriter.writeValueAsString(queryOptions),
+                    new Long(System.currentTimeMillis() - startTime).intValue(),
+                    status);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
     }
-
 
     @GET
     @Path("/help")
@@ -338,6 +352,7 @@ public class GenericRestWSServer implements IWSServer {
         result.setWarningMsg("Future errors will ONLY be shown in the QueryResponse body");
         result.setErrorMsg("DEPRECATED: " + e.toString());
         queryResponse.setResponse(Arrays.asList(result));
+        logQuery(ERROR);
 
         return Response
                 .fromResponse(createJsonResponse(queryResponse))
@@ -347,6 +362,7 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createErrorResponse(String method, String errorMessage) {
         try {
+            logQuery(ERROR);
             return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)),
                     MediaType.APPLICATION_JSON_TYPE));
         } catch (Exception e) {
@@ -369,6 +385,7 @@ public class GenericRestWSServer implements IWSServer {
             list.add(obj);
         }
         queryResponse.setResponse(list);
+        logQuery(OK);
 
         return createJsonResponse(queryResponse);
     }

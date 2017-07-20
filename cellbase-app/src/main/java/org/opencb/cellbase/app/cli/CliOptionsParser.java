@@ -386,12 +386,19 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean skipNormalize;
 
-        @Parameter(names = {"--no-server-cache"}, description = "Annotation was already pre-calculated and cached in "
+        @Parameter(names = {"--server-cache"}, description = "Use of this parameter is discouraged unless the "
+                + "server administrator advises so. Annotation was already pre-calculated and cached in "
                 + "our servers for the whole ENSEMBL variation collection. Most of variants will be included in that "
-                + "collection, meaning that the use of this cache may significantly improve performance. Use this flag "
-                + "if you want to avoid the use of this server cache.",
+                + "collection, meaning that the use of this cache may improve performance. Use this flag "
+                + "if you want to use this server cache.",
                 required = false, arity = 0)
-        public boolean noCache;
+        public boolean cache = false;
+
+        @Parameter(names = {"--no-server-cache"}, description = "DEPRECATED. Current implementation completely ignores" +
+                " this parameter. Please, have a look at --server-cache instead.",
+                required = false, arity = 0)
+        @Deprecated
+        public boolean noCache = false;
 
         @Parameter(names = {"--phased"}, description = "Flag to indicate whether phased annotation shall be activated." +
                 " By default phased annotation is not enabled.", required = false, arity = 0)
