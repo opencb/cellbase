@@ -35,7 +35,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult<Variant> queryResult1 = clinicalDBAdaptor.get(query1, queryOptions1);
         // WARNING: these values may change from one ClinVar version to another
         assertEquals(30, queryResult1.getNumResults());
-        assertTrue(containsAccession(queryResult1, "RCV000019769"));
+        assertTrue(containsAccession(queryResult1, "RCV000172777"));
 
         Query query2 = new Query();
         query2.put(ClinicalDBAdaptor.QueryParams.TRAIT.key(), "myelofibrosis");
@@ -71,7 +71,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions6 = new QueryOptions();
         queryOptions6.add(QueryOptions.LIMIT, 30);
         queryOptions6.put(QueryOptions.SORT, "chromosome,start");
-        queryOptions6.put(QueryOptions.INCLUDE, "chromosome,start,annotation.traitAssociation.genomicFeatures.xrefs.symbol");
+        queryOptions6.put(QueryOptions.INCLUDE, "chromosome,start,annotation.traitAssociation.genomicFeatures.xrefs.symbol,annotation.consequenceTypes");
         QueryResult queryResult6 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
         // Check sorted output
         int previousStart = -1;
@@ -90,7 +90,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult<Variant> queryResult8 = clinicalDBAdaptor.get(query6, queryOptions6);
         assertTrue(queryResult8.getNumTotalResults() > 61);
         // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-        assertThat(queryResult8.getResult().get(29).getAnnotation().getTraitAssociation().stream()
+        assertThat(queryResult8.getResult().get(0).getAnnotation().getTraitAssociation().stream()
                         .map((evidenceEntry) -> evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"))
                         .collect(Collectors.toList()),
                 CoreMatchers.hasItem("APOE"));

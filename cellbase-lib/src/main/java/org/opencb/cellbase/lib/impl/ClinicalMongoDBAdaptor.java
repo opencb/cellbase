@@ -137,18 +137,18 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             options.put(QueryOptions.SORT, sortDocument);
         }
         // TODO: Improve
-        // numTotalResults cannot be enabled when searching by trait keywords
-        // regex search is too slow and would otherwise raise timeouts
-        if (StringUtils.isNotBlank(query.getString(QueryParams.TRAIT.key()))) {
+        // numTotalResults cannot be enabled when including multiple clinsig values
+        // search is too slow and would otherwise raise timeouts
+        List<String> clinsigList = query.getAsStringList(QueryParams.CLINICALSIGNIFICANCE.key());
+        if (clinsigList != null && clinsigList.size() > 1) {
             options.put(QueryOptions.SKIP_COUNT, true);
-        } else {
-            // TODO: Improve
-            // numTotalResults cannot be enabled when including multiple clinsig values
-            // search is too slow and would otherwise raise timeouts
-            List<String> clinsigList = query.getAsStringList(QueryParams.CLINICALSIGNIFICANCE.key());
-            if (clinsigList != null && clinsigList.size() > 1) {
-                options.put(QueryOptions.SKIP_COUNT, true);
-            }
+        }
+        // TODO: Improve
+        // numTotalResults cannot be enabled when including multiple trait values
+        // search is too slow and would otherwise raise timeouts
+        List<String> traitList = query.getAsStringList(QueryParams.TRAIT.key());
+        if (traitList != null && traitList.size() > 1) {
+            options.put(QueryOptions.SKIP_COUNT, true);
         }
 
         return options;
