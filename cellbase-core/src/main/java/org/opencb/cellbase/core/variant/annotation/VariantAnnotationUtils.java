@@ -73,7 +73,9 @@ public class VariantAnnotationUtils {
     public static final String REGULATORY_REGION_VARIANT = "regulatory_region_variant";
     public static final String TF_BINDING_SITE_VARIANT = "TF_binding_site_variant";
     public static final String UPSTREAM_VARIANT = "upstream_variant";
+    public static final String TWOKB_UPSTREAM_VARIANT = "2KB_upstream_variant";
     public static final String DOWNSTREAM_VARIANT = "downstream_variant";
+    public static final String TWOKB_DOWNSTREAM_VARIANT = "2KB_downstream_variant";
     public static final String SPLICE_DONOR_VARIANT = "splice_donor_variant";
     public static final String SPLICE_ACCEPTOR_VARIANT = "splice_acceptor_variant";
     public static final String INTRON_VARIANT = "intron_variant";
