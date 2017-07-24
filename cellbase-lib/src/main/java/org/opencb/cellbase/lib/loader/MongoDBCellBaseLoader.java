@@ -486,9 +486,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private List<String> getTraitFromClinicalVariants(Document document) throws JsonProcessingException, FileFormatException {
         Set<String> values = new HashSet<>();
-        if (document.containsKey(TRAIT_ASSOCIATION)) {
+        if (document.get(TRAIT_ASSOCIATION) != null) {
             for (Document evidenceEntryDocument : (List<Document>) document.get(TRAIT_ASSOCIATION)) {
-                if (evidenceEntryDocument.containsKey(SOMATIC_INFORMATION)) {
+                if (evidenceEntryDocument.get(SOMATIC_INFORMATION) != null) {
                     Document somaticInformationDocument = (Document) evidenceEntryDocument.get(SOMATIC_INFORMATION);
                     if (StringUtils.isNotBlank((String) somaticInformationDocument.get(PRIMARY_SITE))) {
                         values.addAll(splitKeywords(somaticInformationDocument.getString(PRIMARY_SITE)));
@@ -509,7 +509,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         values.addAll(splitKeywords(somaticInformationDocument.getString(SAMPLE_SOURCE)));
                     }
                 }
-                if (evidenceEntryDocument.containsKey(HERITABLE_TRAITS)) {
+                if (evidenceEntryDocument.get(HERITABLE_TRAITS) != null) {
                     for (Document traitDocument : (List<Document>) evidenceEntryDocument.get(HERITABLE_TRAITS)) {
                         if (StringUtils.isNotBlank((String) traitDocument.get(TRAIT))) {
                             values.addAll(splitKeywords(traitDocument.getString(TRAIT)));
