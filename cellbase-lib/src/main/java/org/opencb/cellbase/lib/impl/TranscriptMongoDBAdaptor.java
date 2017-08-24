@@ -46,6 +46,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
             List<Document> transcripts = (List<Document>) result.getResult().get(0).get("transcripts");
             sequence = transcripts.get(0).getString("cDnaSequence");
         }
+
         return new QueryResult<>(id, result.getDbTime(), result.getNumResults(), result.getNumTotalResults(),
                 result.getWarningMsg(), result.getErrorMsg(), Collections.singletonList(sequence));
     }

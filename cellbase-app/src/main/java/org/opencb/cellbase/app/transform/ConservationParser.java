@@ -86,19 +86,22 @@ public class ConservationParser extends CellBaseParser {
         Set<String> chromosomes = new HashSet<>();
 
         // Reading all files in phastCons folder
-        DirectoryStream<Path> directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"), "*.wigFix.gz");
-        for (Path path : directoryStream) {
-            chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
-            chromosomes.add(chromosome);
-            files.put(chromosome + "phastCons", path);
+        try (DirectoryStream<Path> directoryStreamPhastCons =
+                     Files.newDirectoryStream(conservedRegionPath.resolve("phastCons"), "*.wigFix.gz")) {
+            for (Path path : directoryStreamPhastCons) {
+                chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
+                chromosomes.add(chromosome);
+                files.put(chromosome + "phastCons", path);
+            }
         }
-
         // Reading all files in phylop folder
-        directoryStream = Files.newDirectoryStream(conservedRegionPath.resolve("phylop"), "*.wigFix.gz");
-        for (Path path : directoryStream) {
-            chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
-            chromosomes.add(chromosome);
-            files.put(chromosome + "phylop", path);
+        try (DirectoryStream<Path> directoryStreamPhylop =
+                     Files.newDirectoryStream(conservedRegionPath.resolve("phylop"), "*.wigFix.gz")) {
+            for (Path path : directoryStreamPhylop) {
+                chromosome = path.getFileName().toString().split("\\.")[0].replace("chr", "");
+                chromosomes.add(chromosome);
+                files.put(chromosome + "phylop", path);
+            }
         }
 
         /*
@@ -164,7 +167,7 @@ public class ConservationParser extends CellBaseParser {
 
         if (!filesFound) {
             logger.warn("No GERP++ files were found. Please check that the original file {} is there, that it was"
-                    + " properly decompressed and that the *.rates files are present",
+                            + " properly decompressed and that the *.rates files are present",
                     gerpFolderPath.resolve(EtlCommons.GERP_FILE));
         }
     }
@@ -213,16 +216,16 @@ public class ConservationParser extends CellBaseParser {
                 int startChunk = start / CHUNK_SIZE;
 //                end++;
                 int endChunk = (start + values.size()) / CHUNK_SIZE; // This is the endChunk if current read score is
-                                                                     // appended to the array (otherwise it would be
-                                                                     // start + values.size() - 1). If this endChunk is
-                                                                     // different from the startChunk means that current
-                                                                     // conserved region must be dumped and current
-                                                                     // score must be associated to next chunk. Main
-                                                                     // difference to what there was before is that if
-                                                                     // the fixedStep starts on the last position of a
-                                                                     // chunk e.g. 1999, the chunk must be created with
-                                                                     // just that score - the chunk was left empty with
-                                                                     // the old code
+                // appended to the array (otherwise it would be
+                // start + values.size() - 1). If this endChunk is
+                // different from the startChunk means that current
+                // conserved region must be dumped and current
+                // score must be associated to next chunk. Main
+                // difference to what there was before is that if
+                // the fixedStep starts on the last position of a
+                // chunk e.g. 1999, the chunk must be created with
+                // just that score - the chunk was left empty with
+                // the old code
                 if (startChunk != endChunk) {
 //                    conservedRegion = new ConservationScoreRegion(chromosome, start, end - 1, conservationSource, values);
                     conservedRegion = new GenomicScoreRegion<>(chromosome, start, start + values.size() - 1,

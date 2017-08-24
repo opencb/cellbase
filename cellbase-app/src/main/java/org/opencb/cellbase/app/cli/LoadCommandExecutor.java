@@ -241,17 +241,17 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         // Common loading process from CellBase variation data models
         if (field == null) {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-                return entry.getFileName().toString().startsWith("variation_chr");
-            });
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+                    entry -> entry.getFileName().toString().startsWith("variation_chr"))) {
 
-            for (Path entry : stream) {
-                logger.info("Loading file '{}'", entry.toString());
-                loadRunner.load(input.resolve(entry.getFileName()), "variation");
+                for (Path entry : stream) {
+                    logger.info("Loading file '{}'", entry.toString());
+                    loadRunner.load(input.resolve(entry.getFileName()), "variation");
+                }
+                loadIfExists(input.resolve("ensemblVariationVersion.json"), METADATA);
+                loadRunner.index("variation");
+                // Custom update required e.g. population freqs loading
             }
-            loadIfExists(input.resolve("ensemblVariationVersion.json"), METADATA);
-            loadRunner.index("variation");
-            // Custom update required e.g. population freqs loading
         } else {
             logger.info("Loading file '{}'", input.toString());
             loadRunner.load(input, "variation", field, innerFields);
@@ -262,13 +262,13 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-            return entry.getFileName().toString().startsWith("conservation_");
-        });
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+                entry -> entry.getFileName().toString().startsWith("conservation_"))) {
 
-        for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(input.resolve(entry.getFileName()), "conservation");
+            for (Path entry : stream) {
+                logger.info("Loading file '{}'", entry.toString());
+                loadRunner.load(input.resolve(entry.getFileName()), "conservation");
+            }
         }
         loadIfExists(input.resolve("gerpVersion.json"), METADATA);
         loadIfExists(input.resolve("phastConsVersion.json"), METADATA);
@@ -280,13 +280,13 @@ public class LoadCommandExecutor extends CommandExecutor {
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
 
-        DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-            return entry.getFileName().toString().startsWith("prot_func_pred_");
-        });
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+                entry -> entry.getFileName().toString().startsWith("prot_func_pred_"))) {
 
-        for (Path entry : stream) {
-            logger.info("Loading file '{}'", entry.toString());
-            loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
+            for (Path entry : stream) {
+                logger.info("Loading file '{}'", entry.toString());
+                loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
+            }
         }
         loadRunner.index("protein_functional_prediction");
     }
@@ -294,14 +294,6 @@ public class LoadCommandExecutor extends CommandExecutor {
     private void loadClinical() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
             LoaderException, InvocationTargetException, ClassNotFoundException, FileNotFoundException {
 
-//        Map<String, String> files = new LinkedHashMap<>();
-//        files.put("clinvar", "clinvar.json.gz");
-//        files.put("cosmic", "cosmic.json.gz");
-//        files.put("gwas", "gwas.json.gz");
-//        files.put("gwas", "gwas.json.gz");
-
-//        files.keySet().forEach(entry -> {
-//            Path path = input.resolve(files.get(entry));
         Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_ANNOTATED_JSON_FILE);
         if (Files.exists(path)) {
             try {

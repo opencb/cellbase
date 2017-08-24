@@ -105,7 +105,7 @@ public class ParentRestClient<T> {
 
 
     protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz) throws IOException {
-        return  execute(action, query, queryOptions, clazz, false);
+        return execute(action, query, queryOptions, clazz, false);
     }
 
     protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz,
@@ -257,14 +257,14 @@ public class ParentRestClient<T> {
                 logger.warn("CellBase REST fail. Returned null for ids {}. hosts: {}, version: {}, "
                                 + "category: {}, subcategory: {}, resource: {}, queryOptions: {}",
                         ids, StringUtils.join(configuration.getRest().getHosts(), ","), configuration.getVersion(),
-                        category, subcategory, resource, queryOptions.toJson());
+                        category, subcategory, resource, (queryOptions != null ? queryOptions.toJson() : "NULL"));
                 queryError = true;
             }
         } catch (JsonProcessingException | javax.ws.rs.ProcessingException | WebApplicationException e) {
             logger.warn("CellBase REST fail. Error parsing query result for ids {}. hosts: {}, version: {}, "
                             + "category: {}, subcategory: {}, resource: {}, queryOptions: {}. Exception message: {}",
                     ids, StringUtils.join(configuration.getRest().getHosts(), ","), configuration.getVersion(),
-                    category, subcategory, resource, queryOptions.toJson(), e.getMessage());
+                    category, subcategory, resource, (queryOptions != null ? queryOptions.toJson() : "NULL"), e.getMessage());
             logger.debug("CellBase REST exception.", e);
             queryError = true;
             queryResponse = null;
@@ -351,13 +351,13 @@ public class ParentRestClient<T> {
 
     protected WebTarget getBaseUrl(List<String> hosts, String version) {
         return client
-                    .target(URI.create(hosts.get(0)))
-                    .path(WEBSERVICES)
-                    .path(REST)
-                    .path(version)
-                    .path(species)
-                    .path(category)
-                    .path(subcategory);
+                .target(URI.create(hosts.get(0)))
+                .path(WEBSERVICES)
+                .path(REST)
+                .path(version)
+                .path(species)
+                .path(category)
+                .path(subcategory);
     }
 
     private static <U> QueryResponse<U> parseResult(String json, Class<U> clazz) throws IOException {

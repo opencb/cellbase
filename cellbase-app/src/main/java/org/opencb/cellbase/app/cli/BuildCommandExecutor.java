@@ -490,15 +490,13 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private Path getFastaReferenceGenome() {
         Path fastaFile = null;
-        try {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(input.resolve("genome"), entry -> {
-                return entry.toString().endsWith(".fa.gz");
-            });
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(input.resolve("genome"),
+                entry -> entry.toString().endsWith(".fa.gz"))) {
             for (Path entry : stream) {
                 fastaFile = entry;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error in getFastaReferenceGenome", e.getMessage());
         }
         return fastaFile;
     }

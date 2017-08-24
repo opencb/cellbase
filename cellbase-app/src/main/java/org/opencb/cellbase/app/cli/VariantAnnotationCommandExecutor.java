@@ -152,20 +152,21 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         try {
 
             FastaIndexManager fastaIndexManager = getFastaIndexManger();
-            DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
-                return entry.getFileName().toString().endsWith(".vep");
-            });
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(input,
+                    entry -> entry.getFileName().toString().endsWith(".vep"))) {
 
-            DataWriter<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
-            ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-            List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
-                    variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndexManager);
-            for (Path entry : stream) {
-                logger.info("Processing file '{}'", entry.toString());
-                DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
-                ParallelTaskRunner<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
-                        = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
-                runner.run();
+                DataWriter<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> dataWriter =
+                        new BenchmarkDataWriter("VEP", "CellBase", output);
+                ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
+                List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
+                        variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndexManager);
+                for (Path entry : stream) {
+                    logger.info("Processing file '{}'", entry.toString());
+                    DataReader dataReader = new VepFormatReader(input.resolve(entry.getFileName()).toString());
+                    ParallelTaskRunner<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>> runner
+                            = new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                    runner.run();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -319,8 +320,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 && !variantAnnotationCommandOptions.chromosomeList.isEmpty()) {
             chromosomeList = Arrays.asList(variantAnnotationCommandOptions.chromosomeList.split(","));
             logger.info("Setting chromosomes {} for variant annotation", chromosomeList.toString());
-        // If the user does not provide any chromosome, fill chromosomeList with all available chromosomes in the
-        // database
+            // If the user does not provide any chromosome, fill chromosomeList with all available chromosomes in the
+            // database
         } else {
             logger.info("Getting full list of chromosome names in the database");
             dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
@@ -580,8 +581,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
 
-        try {
-            VCFFileReader vcfFileReader = new VCFFileReader(customFiles.get(customFileNumber).toFile(), false);
+        try (VCFFileReader vcfFileReader = new VCFFileReader(customFiles.get(customFileNumber).toFile(), false)) {
             Iterator<VariantContext> iterator = vcfFileReader.iterator();
             VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "",
                     vcfFileReader.getFileHeader().getSampleNamesInOrder());
@@ -603,7 +603,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     logger.info("{} lines indexed", lineCounter);
                 }
             }
-            vcfFileReader.close();
         } catch (IOException | RocksDBException | NonStandardCompliantSampleField e) {
             e.printStackTrace();
             System.exit(1);
@@ -699,7 +698,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 FileUtils.checkDirectory(input);
                 normalize = false;
             } else {
-                normalize =  !variantAnnotationCommandOptions.skipNormalize;
+                normalize = !variantAnnotationCommandOptions.skipNormalize;
                 FileUtils.checkFile(input);
                 String fileName = input.toFile().getName();
                 if (fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz")) {
@@ -711,7 +710,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                             + "valid .vcf, .vcf.gz, json or .json.gz file");
                 }
             }
-        // Expected to read from variation collection - normalization must be avoided
+            // Expected to read from variation collection - normalization must be avoided
         } else {
             normalize = false;
         }
@@ -746,7 +745,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     outputFormat = FileFormat.VEP;
                     break;
                 default:
-                    throw  new ParameterException("Only JSON and VEP output formats are currently available. Please, select one of them.");
+                    throw new ParameterException("Only JSON and VEP output formats are currently available. Please, select one of them.");
             }
 
         }

@@ -379,17 +379,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private void writeVersionDataFile(Map versionData, Path outputFilePath) {
-        try {
-            OutputStream os = Files.newOutputStream(outputFilePath);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        try (OutputStream os = Files.newOutputStream(outputFilePath);
+             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os))) {
             ObjectMapper jsonObjectMapper = new ObjectMapper();
             ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
             bw.write(jsonObjectWriter.writeValueAsString(versionData) + "\n");
-            bw.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error in writeVersionDataFile", e.getMessage());
         }
-
     }
 
     private void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder, String host)
@@ -435,7 +432,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         String bacteriaCollectionPath = "";
         if (configuration.getSpecies().getBacteria().contains(sp)) {
             // WARN: assuming there's just one assembly
-            bacteriaCollectionPath =  sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+            bacteriaCollectionPath = sp.getAssemblies().get(0).getEnsemblCollection() + "/";
         }
 
         // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
@@ -483,14 +480,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private String getUniProtRelease(String relnotesFilename) {
         Path path = Paths.get(relnotesFilename);
         Files.exists(path);
-        try {
-            // The first line at the relnotes.txt file contains the UniProt release
-            BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
+        // The first line at the relnotes.txt file contains the UniProt release
+        try (BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset())) {
             String release = reader.readLine().split(" ")[2];
-            reader.close();
-            return  release;
+            return release;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error in getUniProtRelease, ", e.getMessage());
         }
         return null;
     }
@@ -541,8 +536,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private String getVersionFromVersionLine(Path path, String tag) {
         Files.exists(path);
-        try {
-            BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
+        try (BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset())) {
             String line = reader.readLine();
             // There shall be a line at the README.txt containing the version.
             // e.g. The files in the current directory contain the data corresponding to the latest release
@@ -552,7 +546,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 // info
                 if (line.contains(tag)) {
                     String version = line.split("\\(")[1].split("\\)")[0];
-                    reader.close();
                     return version;
                 }
                 line = reader.readLine();
@@ -578,9 +571,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
 //
 //        }
 
-            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--assembly", assembly,
-                    "--outdir", geneFolder.toAbsolutePath().toString(),
-                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
+        args.addAll(Arrays.asList("--species", sp.getScientificName(), "--assembly", assembly,
+                "--outdir", geneFolder.toAbsolutePath().toString(),
+                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
 
         if (!configuration.getSpecies().getVertebrates().contains(species)
                 && !species.getScientificName().equals("Drosophila melanogaster")) {
@@ -719,13 +712,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     private String getLine(Path readmePath, int lineNumber) {
         Files.exists(readmePath);
-        try {
-            BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset());
+        try (BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset())) {
             String line = null;
             for (int i = 0; i < lineNumber; i++) {
                 line = reader.readLine();
             }
-            reader.close();
             return line;
         } catch (IOException e) {
             e.printStackTrace();
@@ -773,45 +764,46 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
-        BufferedReader br = FileUtils.newBufferedReader(uniprotFilePath);
-        PrintWriter pw = null;
-        StringBuilder header = new StringBuilder();
-        boolean beforeEntry = true;
-        boolean inEntry = false;
-        int count = 0;
-        int chunk = 0;
-        String line;
-        while ((line = br.readLine()) != null) {
-            if (line.trim().startsWith("<entry ")) {
-                inEntry = true;
-                beforeEntry = false;
-                if (count % 10000 == 0) {
-                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
-                    pw.println(header.toString().trim());
+        try (BufferedReader br = FileUtils.newBufferedReader(uniprotFilePath)) {
+            PrintWriter pw = null;
+            StringBuilder header = new StringBuilder();
+            boolean beforeEntry = true;
+            boolean inEntry = false;
+            int count = 0;
+            int chunk = 0;
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().startsWith("<entry ")) {
+                    inEntry = true;
+                    beforeEntry = false;
+
+                    if (count % 10000 == 0) {
+                        pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                        pw.println(header.toString().trim());
+                    }
+                    count++;
                 }
-                count++;
-            }
 
-            if (beforeEntry) {
-                header.append(line).append("\n");
-            }
+                if (beforeEntry) {
+                    header.append(line).append("\n");
+                }
 
-            if (inEntry) {
-                pw.println(line);
-            }
+                if (inEntry) {
+                    pw.println(line);
+                }
 
-            if (line.trim().startsWith("</entry>")) {
-                inEntry = false;
-                if (count % 10000 == 0) {
-                    pw.print("</uniprot>");
-                    pw.close();
-                    chunk++;
+                if (line.trim().startsWith("</entry>")) {
+                    inEntry = false;
+                    if (count % 10000 == 0) {
+                        pw.print("</uniprot>");
+                        pw.close();
+                        chunk++;
+                    }
                 }
             }
+            pw.print("</uniprot>");
+            pw.close();
         }
-        pw.print("</uniprot>");
-        pw.close();
-        br.close();
     }
 
     /**
@@ -823,6 +815,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
      * @throws IOException
      * @throws InterruptedException
      */
+
     private void downloadConservation(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading conservation information ...");
@@ -997,20 +990,21 @@ public class DownloadCommandExecutor extends CommandExecutor {
                                 + "&dataset-somaticMutationReference=somaticMutationReference"
                                 + "&dataset-germlineMutationReference=germlineMutationReference"));
 
-                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
-                    if (entry.isDirectory()) {
-                        entryDestination.mkdirs();
-                    } else {
-                        entryDestination.getParentFile().mkdirs();
-                        InputStream in = zipFile.getInputStream(entry);
-                        OutputStream out = new FileOutputStream(entryDestination);
-                        IOUtils.copy(in, out);
-                        IOUtils.closeQuietly(in);
-                        out.close();
+                try (ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString())) {
+                    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                    while (entries.hasMoreElements()) {
+                        ZipEntry entry = entries.nextElement();
+                        File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
+                        if (entry.isDirectory()) {
+                            entryDestination.mkdirs();
+                        } else {
+                            entryDestination.getParentFile().mkdirs();
+                            InputStream in = zipFile.getInputStream(entry);
+                            try (OutputStream out = new FileOutputStream(entryDestination)) {
+                                IOUtils.copy(in, out);
+                                IOUtils.closeQuietly(in);
+                            }
+                        }
                     }
                 }
                 saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,

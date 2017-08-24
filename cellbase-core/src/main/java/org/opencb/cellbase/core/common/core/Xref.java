@@ -40,6 +40,9 @@ public class Xref {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null || this.getClass() != obj.getClass()) {
+            return false;
+        }
         Xref xrefObj = (Xref) obj;
         return id.equals(xrefObj.id) && dbName.equals(xrefObj.dbName);
     }
