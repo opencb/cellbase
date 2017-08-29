@@ -18,14 +18,9 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.api.DBAdaptorFactory;
-import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 /**
  * Created by fjlopez on 14/04/15.
@@ -100,47 +95,34 @@ public class PostLoadCommandExecutor extends CommandExecutor {
          * Prepare clinical adaptor
          */
         logger.info("Initializing adaptor, connecting to the database...");
-//        org.opencb.cellbase.core.common.core.CellbaseConfiguration adaptorCellbaseConfiguration =
-//                new org.opencb.cellbase.core.common.core.CellbaseConfiguration();
-//        adaptorCellbaseConfiguration.addSpeciesAlias("hsapiens", "hsapiens");
-//        adaptorCellbaseConfiguration.addSpeciesConnection("hsapiens", assembly,
-//                configuration.getDatabase().getHost(), "cellbase_hsapiens_" + assembly.toLowerCase() + "_" +
-//                        configuration.getVersion(), Integer.valueOf(configuration.getDatabase().getPort()), "mongo",
-//                configuration.getDatabase().getUser(), configuration.getDatabase().getPassword(), 10, 10);
+        logger.error("Implementation of this functionality  is outdated and must be re-written if needed");
 
-//        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-//        try {
-//            cellBaseConfiguration = CellBaseConfiguration
-//                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-//        } catch (IOException e) {
-//            e.printStackTrace();
+        // TODO: this shall be done in a different way - old Java API was deprecated and removed
+
+//        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getUser());
+//        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getHost());
+//        System.out.println("cellBaseConfiguration = " + configuration.getDatabase().getPassword());
+//        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+//        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor("hsapiens", assembly);
+//
+//        /**
+//         * Load annotations
+//         */
+//        logger.info("Reading/Loading variant annotations...");
+//        int nVepAnnotatedVariants = 0;
+//        List<VariantAnnotation> variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
+//        while (!variantAnnotationList.isEmpty()) {
+//            nVepAnnotatedVariants += variantAnnotationList.size();
+//            clinicalDBAdaptor.updateAnnotations(variantAnnotationList, new QueryOptions());
+//            logger.info(Integer.valueOf(nVepAnnotatedVariants) + " read variants with vep annotations");
+//            variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
 //        }
 
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabases().getMongodb().getUser());
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabases().getMongodb().getHost());
-        System.out.println("cellBaseConfiguration = " + configuration.getDatabases().getMongodb().getPassword());
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
-//        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(adaptorCellbaseConfiguration);
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", assembly);
-
-        /**
-         * Load annotations
-         */
-        logger.info("Reading/Loading variant annotations...");
-        int nVepAnnotatedVariants = 0;
-        List<VariantAnnotation> variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
-        while (!variantAnnotationList.isEmpty()) {
-            nVepAnnotatedVariants += variantAnnotationList.size();
-            // FIXME commented to compile
-//            clinicalDBAdaptor.update(variantAnnotationList, new QueryOptions());
-            logger.info(Integer.valueOf(nVepAnnotatedVariants) + " read variants with vep annotations");
-            variantAnnotationList = vepFormatReader.read(CLINICAL_ANNOTATION_BATCH_SIZE);
-        }
-
-        vepFormatReader.post();
-        vepFormatReader.close();
-        logger.info(nVepAnnotatedVariants + " VEP annotated variants were read from " + clinicalAnnotationFilename.toString());
-        logger.info("Finished");
+//
+//        vepFormatReader.post();
+//        vepFormatReader.close();
+//        logger.info(nVepAnnotatedVariants + " VEP annotated variants were read from " + clinicalAnnotationFilename.toString());
+//        logger.info("Finished");
     }
 
 

@@ -17,14 +17,20 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -33,6 +39,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Created by imedina on 03/02/15.
@@ -57,8 +65,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
             "motif_feature_variation.txt.gz", "genotype_code.txt.gz", "allele_code.txt.gz",
             "population_genotype.txt.gz", "population.txt.gz", "allele.txt.gz", };
 
-
-    private static final String[] REGULATION_FILES = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
+    @Deprecated
+    private static final String[] DEPRECATED_REGULATION_FILES = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
             "RegulatoryFeatures_MultiCell.gff.gz", };
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES = new HashMap() {
@@ -88,9 +96,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String PHASTCONS_NAME = "PhastCons";
     private static final String PHYLOP_NAME = "PhyloP";
     private static final String CLINVAR_NAME = "ClinVar";
+    private static final String IARCTP53_NAME = "IARC TP53 Database";
     private static final String DGV_NAME = "DGV";
     private static final String GWAS_NAME = "Gwas Catalog";
-//    private static final String DBSNP_NAME = "dbSNP";
+    private static final String DBSNP_NAME = "dbSNP";
     private static final String REACTOME_NAME = "Reactome";
     private static final String TRF_NAME = "Tandem repeats finder";
     private static final String GSD_NAME = "Genomic super duplications";
@@ -244,9 +253,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                             downloadConservation(sp, assembly.getName(), spFolder);
                         }
                         break;
-                    case EtlCommons.CLINICAL_DATA:
-                        if (speciesHasInfoToDownload(sp, "clinical")) {
-                            downloadClinical(sp, spFolder);
+                    case EtlCommons.CLINICAL_VARIANTS_DATA:
+                        if (speciesHasInfoToDownload(sp, "clinical_variants")) {
+                            downloadClinical(sp, assembly.getName(), spFolder);
                         }
                         break;
                     case EtlCommons.STRUCTURAL_VARIANTS_DATA:
@@ -260,7 +269,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         }
                         break;
                     default:
-                        System.out.println("This data parameter is not allowed");
+                        System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
+                                + " are: {genome, gene, gene_disease_association, variation, variation_functional_score,"
+                                + " regulation, protein, conservation, clinical_variants}");
                         break;
                 }
             }
@@ -524,19 +535,22 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadFile(host, geneFolder.resolve(fileName).toString());
         downloadFile(readme, geneFolder.resolve("disgenetReadme.txt").toString());
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
-                getDisgenetVersion(geneFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
+                getVersionFromVersionLine(geneFolder.resolve("disgenetReadme.txt"), "(version"), getTimeStamp(),
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
-    private String getDisgenetVersion(Path path) {
+    private String getVersionFromVersionLine(Path path, String tag) {
         Files.exists(path);
         try {
             BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
             String line = reader.readLine();
             // There shall be a line at the README.txt containing the version.
-            // e.g. The files in the current directory contain the data corresponding to the latest release (version 4.0, April 2016). ...
+            // e.g. The files in the current directory contain the data corresponding to the latest release
+            // (version 4.0, April 2016). ...
             while (line != null) {
-                if (line.contains("(version")) {
+                // tag specifies a certain string that must be found within the line supposed to contain the version
+                // info
+                if (line.contains(tag)) {
                     String version = line.split("\\(")[1].split("\\)")[0];
                     reader.close();
                     return version;
@@ -554,15 +568,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
         List<String> args = new ArrayList<>();
-        if (sp.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
-            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
-                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()
-                            .replace("79", "75")));
-        } else {
-            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
+//        if (sp.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
+//            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
+//                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()
+//                            .replace("79", "75")));
+//        } else {
+//            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toAbsolutePath().toString(),
+//                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
+//
+//        }
+
+            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--assembly", assembly,
+                    "--outdir", geneFolder.toAbsolutePath().toString(),
                     "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
 
-        }
         if (!configuration.getSpecies().getVertebrates().contains(species)
                 && !species.getScientificName().equals("Drosophila melanogaster")) {
             args.add("--phylo");
@@ -623,12 +642,24 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
         regulationUrl = regulationUrl + "/regulation/" + shortName;
 
-        List<String> downloadedUrls = new ArrayList<>(REGULATION_FILES.length);
-        for (String regulationFile : REGULATION_FILES) {
+        List<String> downloadedUrls = new ArrayList<>(DEPRECATED_REGULATION_FILES.length + 2);
+        // TODO: REMOVE
+        // >>>>>>>>>>>>>>>>>>>>>>>>>>> DEPRECATED
+        for (String regulationFile : DEPRECATED_REGULATION_FILES) {
             Path outputFile = regulationFolder.resolve(regulationFile);
             downloadFile(regulationUrl + "/" + regulationFile, outputFile.toString());
             downloadedUrls.add(regulationUrl + "/" + regulationFile);
         }
+        // <<<<<<<<<<<<<<<<<<<<<<<<<<< DEPRECATED
+
+        Path outputFile = regulationFolder.resolve(EtlCommons.REGULATORY_FEATURES_FILE);
+        downloadFile(regulationUrl + "/*Regulatory_Build.regulatory_features*.gff.gz", outputFile.toString());
+        downloadedUrls.add(regulationUrl + "/*Regulatory_Build.regulatory_features*.gff.gz");
+
+        outputFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
+        downloadFile(regulationUrl + "/*motiffeatures*.gff.gz", outputFile.toString());
+        downloadedUrls.add(regulationUrl + "/*motiffeatures*.gff.gz");
+
         saveVersionData(EtlCommons.REGULATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 regulationFolder.resolve("ensemblRegulationVersion.json"));
 
@@ -891,51 +922,169 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void downloadClinical(Species species, Path speciesFolder)
+    private void downloadClinical(Species species, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
 
         if (species.getScientificName().equals("Homo sapiens")) {
+            if (downloadCommandOptions.assembly == null) {
+                throw new ParameterException("Assembly must be provided for downloading clinical variants data."
+                        + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
+            }
+
             logger.info("Downloading clinical information ...");
 
-            Path clinicalFolder = speciesFolder.resolve("clinical");
+            Path clinicalFolder = speciesFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
             makeDir(clinicalFolder);
             List<String> clinvarUrls = new ArrayList<>(3);
             String url = configuration.getDownload().getClinvar().getHost();
-            downloadFile(url, clinicalFolder.resolve("ClinVar.xml.gz").toString());
+
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString());
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarEfoTerms().getHost();
-            downloadFile(url, clinicalFolder.resolve("ClinVar_Traits_EFO_Names.csv").toString());
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_EFO_FILE).toString());
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarSummary().getHost();
-            downloadFile(url, clinicalFolder.resolve("variant_summary.txt.gz").toString());
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE).toString());
             clinvarUrls.add(url);
-            saveVersionData(EtlCommons.CLINICAL_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
+
+            url = configuration.getDownload().getClinvarVariationAllele().getHost();
+            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString());
+            clinvarUrls.add(url);
+            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
 
-            url = configuration.getDownload().getGwasCatalog().getHost();
-            downloadFile(url, clinicalFolder.resolve("gwas_catalog.tsv").toString());
-            saveVersionData(EtlCommons.CLINICAL_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(), Collections.singletonList(url),
-                    clinicalFolder.resolve("gwasVersion.json"));
+            // TODO: Fix and enable when needed
+//            url = configuration.getDownload().getGwasCatalog().getHost();
+//            downloadFile(url, clinicalFolder.resolve(EtlCommons.GWAS_FILE).toString());
+//            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, GWAS_NAME, getGwasVersion(), getTimeStamp(),
+//                     Collections.singletonList(url), clinicalFolder.resolve("gwasVersion.json"));
 
 //            List<String> dbsnpUrls = new ArrayList<>(2);
 //            url = configuration.getDownload().getDbsnp().getHost();
-//            downloadFile(url, clinicalFolder.resolve("All.vcf.gz").toString());
+//            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE).toString());
 //            dbsnpUrls.add(url);
 //
 //            url = url + ".tbi";
-//            downloadFile(url, clinicalFolder.resolve("All.vcf.gz.tbi").toString());
+//            downloadFile(url, clinicalFolder.resolve(EtlCommons.DBSNP_FILE + ".tbi").toString());
 //            dbsnpUrls.add(url);
-//            saveVersionData(EtlCommons.CLINICAL_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
+//            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
 //                    clinicalFolder.resolve("dbsnpVersion.json"));
+
+//            FIXME: re-enable; it's perfectly funcional and working fine. Was disabled for the 4.5.0 release since the
+//            FIXME: corresponding builder is not yet finished
+//            List<String> hgvsList = getDocmHgvsList();
+//            if (!hgvsList.isEmpty()) {
+//                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
+//                downloadFile(configuration.getDownload().getDocmVersion().getHost(),
+//                        clinicalFolder.resolve("docmIndex.html").toString());
+//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
+//                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
+//                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
+//                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
+//                        clinicalFolder.resolve("docmVersion.json"));
+//            } else {
+//                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
+//                        + "assembly");
+//            }
+
+            if (assembly.equalsIgnoreCase("grch37")) {
+                url = configuration.getDownload().getIarctp53().getHost();
+                downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
+                        Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
+                                + "&dataset-germlineMutationData=germlineMutationData"
+                                + "&dataset-somaticMutationReference=somaticMutationReference"
+                                + "&dataset-germlineMutationReference=germlineMutationReference"));
+
+                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
+                    if (entry.isDirectory()) {
+                        entryDestination.mkdirs();
+                    } else {
+                        entryDestination.getParentFile().mkdirs();
+                        InputStream in = zipFile.getInputStream(entry);
+                        OutputStream out = new FileOutputStream(entryDestination);
+                        IOUtils.copy(in, out);
+                        IOUtils.closeQuietly(in);
+                        out.close();
+                    }
+                }
+                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
+                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
+                                "The version of the database should be identified"), getTimeStamp(),
+                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
+            }
         }
     }
 
-//    private String getDbsnpVersion() {
-//        // ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b144_GRCh37p13/VCF/All_20150605.vcf.gz
-//        return configuration.getDownload().getDbsnp().getHost().split("_")[2];
-//    }
+    private String getDocmVersion(Path docmIndexHtml) {
+        return getVersionFromVersionLine(docmIndexHtml, "<select name=\"version\" id=\"version\"");
+    }
+
+    private void downloadDocm(List<String> hgvsList, Path path) throws IOException, InterruptedException {
+        BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(path);
+        Client client = ClientBuilder.newClient();
+        WebTarget restUrlBase = client
+                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants"));
+
+        logger.info("Querying DOCM REST API to get detailed data for all their variants");
+        int counter = 0;
+        for (String hgvs : hgvsList) {
+            WebTarget callUrl = restUrlBase.path(hgvs + ".json");
+            String jsonString = callUrl.request().get(String.class);
+            bufferedWriter.write(jsonString + "\n");
+
+            if (counter % 10 == 0) {
+                logger.info("{} DOCM variants saved", counter);
+            }
+            // Wait 1/3 of a second to avoid saturating their REST server - also avoid getting banned
+            Thread.sleep(300);
+
+            counter++;
+        }
+        logger.info("Finished. {} DOCM variants saved at {}", counter, path.toString());
+        bufferedWriter.close();
+    }
+
+    private List<String> getDocmHgvsList() throws IOException {
+        Client client = ClientBuilder.newClient();
+        WebTarget restUrl = client
+                .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants.json"));
+
+        String jsonString;
+        logger.info("Getting full list of DOCM hgvs from: {}", restUrl.getUri().toURL());
+        jsonString = restUrl.request().get(String.class);
+
+        List<Map<String, String>> responseMap = parseResult(jsonString);
+        List<String> hgvsList = new ArrayList<>(responseMap.size());
+        for (Map<String, String> document : responseMap) {
+            if (document.containsKey("reference_version")
+                    && document.get("reference_version").equalsIgnoreCase(downloadCommandOptions.assembly)) {
+                hgvsList.add(document.get("hgvs"));
+            }
+        }
+        logger.info("{} hgvs found", hgvsList.size());
+
+        return hgvsList;
+    }
+
+    private List<Map<String, String>> parseResult(String json) throws IOException {
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectReader reader = jsonObjectMapper
+                .readerFor(jsonObjectMapper.getTypeFactory()
+                        .constructCollectionType(List.class, Map.class));
+        return reader.readValue(json);
+    }
+
+    private String getDbsnpVersion() {
+        // ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b144_GRCh37p13/VCF/All_20150605.vcf.gz
+        return configuration.getDownload().getDbsnp().getHost().split("_")[2];
+    }
 
     private String getGwasVersion() {
         // ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/05/10/gwas-catalog-associations.tsv
@@ -961,8 +1110,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
             downloadFile(url, gene2diseaseFolder.resolve("all_gene_disease_associations.txt.gz").toString());
             downloadFile(readmeUrl, gene2diseaseFolder.resolve("disgenetReadme.txt").toString());
             saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
-                    getDisgenetVersion(gene2diseaseFolder.resolve("disgenetReadme.txt")), getTimeStamp(),
-                    Collections.singletonList(url), gene2diseaseFolder.resolve("disgenetVersion.json"));
+                    getVersionFromVersionLine(gene2diseaseFolder.resolve("disgenetReadme.txt"), "(version"),
+                    getTimeStamp(), Collections.singletonList(url), gene2diseaseFolder.resolve("disgenetVersion.json"));
 
             // Downloads HPO
             url = configuration.getDownload().getHpo().getHost();
@@ -1041,7 +1190,18 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
-        List<String> wgetArgs = Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log");
+        downloadFile(url, outputFileName, null);
+    }
+
+    private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
+            throws IOException, InterruptedException {
+
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
+                outputFileName + ".log"));
+        if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
+            wgetArgs.addAll(wgetAdditionalArgs);
+        }
+
         boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
 
         if (downloaded) {

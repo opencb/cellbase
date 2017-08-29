@@ -260,7 +260,8 @@ public class VariationParser extends CellBaseParser {
                 null, null, null, id, xrefs, hgvs,
                 displayConsequenceType, conseqTypes, null, null, null,
                 null, null, null, null,
-                null, null, null, null, null);
+                null, null, null, null, null,
+                null);
         try {
             String ensemblAnnotationJson = getEnsemblAnnotationJson(ensemblVariantAnnotation);
             additionalAttributes.get("ensemblAnnotation").getAttribute().put("annotation", ensemblAnnotationJson);
@@ -271,7 +272,7 @@ public class VariationParser extends CellBaseParser {
                 null, null, ancestralAllele, id, xrefs, hgvs,
                 displayConsequenceType, conseqTypes, null, minorAllele, minorAlleleFreq,
                 null, null, null, null,
-                null, null, null, null, additionalAttributes);
+                null, null, null, null, null, additionalAttributes);
         variant.setAnnotation(variantAnnotation);
         variant.setStrand(strand);
 
@@ -315,17 +316,27 @@ public class VariationParser extends CellBaseParser {
     }
 
     private VariantType getVariantType(String reference, String alternate) {
-        if (reference.length() != alternate.length()) {
+        if (reference.contains("(") || alternate.contains("(")) {
+            return checkSnv(reference, alternate);
+        } else if (reference.length() != alternate.length()) {
+            return VariantType.INDEL;
+        } else if (reference.equals("-") || alternate.equals("-")) {
             return VariantType.INDEL;
         } else {
-            if (reference.equals("-") || alternate.equals("-")) {
-                return VariantType.INDEL;
-            } else if (reference.contains("(") || alternate.contains("(")) {
-                return checkSnv(reference, alternate);
-            } else {
-                return VariantType.SNV;
-            }
+            return VariantType.SNV;
         }
+//
+//        if (reference.length() != alternate.length()) {
+//            return VariantType.INDEL;
+//        } else {
+//            if (reference.equals("-") || alternate.equals("-")) {
+//                return VariantType.INDEL;
+//            } else if (reference.contains("(") || alternate.contains("(")) {
+//                return checkSnv(reference, alternate);
+//            } else {
+//                return VariantType.SNV;
+//            }
+//        }
     }
 
     private VariantType checkSnv(String reference, String alternate) {

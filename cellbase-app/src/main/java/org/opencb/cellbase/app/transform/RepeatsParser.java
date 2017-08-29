@@ -56,25 +56,12 @@ public class RepeatsParser extends CellBaseParser {
 
     }
 
-    private Long countFileLines(Path filePath) throws IOException {
-        try (BufferedReader bufferedReader1 = FileUtils.newBufferedReader(filePath)) {
-            long nLines = 0;
-            String line1 = bufferedReader1.readLine();
-            while (line1 != null) {
-                nLines++;
-                line1 = bufferedReader1.readLine();
-            }
-            return nLines;
-        }
-
-    }
-
     private void parseTrfFile(Path filePath) throws IOException {
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(filePath)) {
             String line = bufferedReader.readLine();
 
             ProgressLogger progressLogger = new ProgressLogger("Parsed TRF lines:",
-                    () -> countFileLines(filePath), 200).setBatchSize(10000);
+                    () -> EtlCommons.countFileLines(filePath), 200).setBatchSize(10000);
             while (line != null) {
                 serializer.serialize(parseTrfLine(line));
                 line = bufferedReader.readLine();
@@ -96,7 +83,7 @@ public class RepeatsParser extends CellBaseParser {
             String line = bufferedReader.readLine();
 
             ProgressLogger progressLogger = new ProgressLogger("Parsed GSD lines:",
-                    () -> countFileLines(filePath), 200).setBatchSize(10000);
+                    () -> EtlCommons.countFileLines(filePath), 200).setBatchSize(10000);
             while (line != null) {
                 serializer.serialize(parseGSDLine(line));
                 line = bufferedReader.readLine();
@@ -119,7 +106,7 @@ public class RepeatsParser extends CellBaseParser {
             String line = bufferedReader.readLine();
 
             ProgressLogger progressLogger = new ProgressLogger("Parsed WM lines:",
-                    () -> countFileLines(filePath), 200).setBatchSize(10000);
+                    () -> EtlCommons.countFileLines(filePath), 200).setBatchSize(10000);
             while (line != null) {
                 serializer.serialize(parseWmLine(line));
                 line = bufferedReader.readLine();

@@ -682,7 +682,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         // Use cache
 //        queryOptions.put("useCache", variantAnnotationCommandOptions.noCache ? "false" : "true");
-        queryOptions.put("useCache", !variantAnnotationCommandOptions.noCache);
+        if (variantAnnotationCommandOptions.noCache) {
+            logger.warn("********************************************************************************************");
+            logger.warn("PLEASE NOTE that parameter --no-server-cache is no longer in use. It is deprecated and "
+                    + "completely ignored by current implementation. Is just kept visible not to break scripts using "
+                    + "it and will soon be removed from the interface. Please, have a look at the --server-cache "
+                    + "parameter instead");
+            logger.warn("********************************************************************************************");
+        }
+
+        queryOptions.put("useCache", variantAnnotationCommandOptions.cache);
         queryOptions.put("phased", variantAnnotationCommandOptions.phased);
 
         // input file

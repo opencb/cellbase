@@ -20,14 +20,13 @@ import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -98,7 +97,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.CONSERVATION_DATA,
                         EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
                         EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_DATA, };
+                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, };
             } else {
                 loadOptions = loadCommandOptions.data.split(",");
             }
@@ -156,7 +155,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA:
                             loadProteinFunctionalPrediction();
                             break;
-                        case EtlCommons.CLINICAL_DATA:
+                        case EtlCommons.CLINICAL_VARIANTS_DATA:
                             loadClinical();
                             break;
                         case EtlCommons.REPEATS_DATA:
@@ -293,28 +292,34 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadClinical() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
-            LoaderException, InvocationTargetException, ClassNotFoundException {
+            LoaderException, InvocationTargetException, ClassNotFoundException, FileNotFoundException {
 
-        Map<String, String> files = new LinkedHashMap<>();
-        files.put("clinvar", "clinvar.json.gz");
-        files.put("cosmic", "cosmic.json.gz");
-        files.put("gwas", "gwas.json.gz");
+//        Map<String, String> files = new LinkedHashMap<>();
+//        files.put("clinvar", "clinvar.json.gz");
+//        files.put("cosmic", "cosmic.json.gz");
+//        files.put("gwas", "gwas.json.gz");
+//        files.put("gwas", "gwas.json.gz");
 
-        files.keySet().forEach(entry -> {
-            Path path = input.resolve(files.get(entry));
-            if (Files.exists(path)) {
-                try {
-                    logger.debug("Loading '{}' ...", entry);
-                    loadRunner.load(path, entry);
-                    loadIfExists(input.resolve("clinvarVersion.json"), METADATA);
-                    loadIfExists(input.resolve("gwasVersion.json"), METADATA);
-                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                        | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
-                    logger.error(e.toString());
-                }
+//        files.keySet().forEach(entry -> {
+//            Path path = input.resolve(files.get(entry));
+        Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_ANNOTATED_JSON_FILE);
+        if (Files.exists(path)) {
+            try {
+                logger.info("Loading '{}' ...", path.toString());
+                loadRunner.load(path, EtlCommons.CLINICAL_VARIANTS_DATA);
+                loadIfExists(input.resolve("clinvarVersion.json"), "metadata");
+                loadIfExists(input.resolve("cosmicVersion.json"), "metadata");
+                loadIfExists(input.resolve("gwasVersion.json"), "metadata");
+            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                logger.error(e.toString());
             }
-        });
-        loadRunner.index("clinical");
+        } else {
+            throw new FileNotFoundException("File " + path.toString() + " does not exist");
+        }
+//        });
+        loadRunner.index("clinical_variants");
+//        loadRunner.index("clinical");
     }
 
     private void loadRepeats() throws NoSuchMethodException, IllegalAccessException, InstantiationException,

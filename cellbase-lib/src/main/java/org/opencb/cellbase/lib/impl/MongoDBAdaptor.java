@@ -75,19 +75,23 @@ public class MongoDBAdaptor {
     }
 
     protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
+        return addPrivateExcludeOptions(options, "_id,_chunkIds");
+    }
+
+    protected QueryOptions addPrivateExcludeOptions(QueryOptions options, String csvFields) {
         if (options != null) {
             if (options.get("exclude") == null) {
-                options.put("exclude", "_id,_chunkIds");
+                options.put("exclude", csvFields);
             } else {
                 String exclude = options.getString("exclude");
-                if (exclude.contains("_id,_chunkIds")) {
+                if (exclude.contains(csvFields)) {
                     return options;
                 } else {
-                    options.put("exclude", exclude + ",_id,_chunkIds");
+                    options.put("exclude", exclude + "," + csvFields);
                 }
             }
         } else {
-            options = new QueryOptions("exclude", "_id,_chunkIds");
+            options = new QueryOptions("exclude", csvFields);
         }
         return options;
     }

@@ -76,7 +76,7 @@ public class VariantAnnotationCalculator {
     //    private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
-    private boolean useCache = true;
+    private boolean useCache = false;
     private boolean phased = false;
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
@@ -449,7 +449,7 @@ public class VariantAnnotationCalculator {
         }
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
-        Future<List<QueryResult>> clinicalFuture = null;
+        Future<List<QueryResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, queryOptions);
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
@@ -621,8 +621,8 @@ public class VariantAnnotationCalculator {
         normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
         logger.debug("normalize = {}", normalize);
 
-        // Default behaviour use cache
-        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : true);
+        // Default behaviour DO NOT use cache
+        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : false);
 
         // Default behaviour - don't calculate phased annotation
         phased = (queryOptions.get("phased") != null ? (Boolean) queryOptions.get("phased") : false);
@@ -1587,7 +1587,7 @@ public class VariantAnnotationCalculator {
 
     }
 
-    class FutureClinicalAnnotator implements Callable<List<QueryResult>> {
+    class FutureClinicalAnnotator implements Callable<List<QueryResult<Variant>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
@@ -1597,17 +1597,18 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<QueryResult> call() throws Exception {
+        public List<QueryResult<Variant>> call() throws Exception {
 
             long startTime = System.nanoTime();
-            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+//            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+            List<QueryResult<Variant>> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
             long delta = System.nanoTime() - startTime;
             logger.debug("Clinical query performance is {}ms for {} variants", delta, variantList.size());
             times.get(AnnotationTimes.CLINICAL_CALL).addAndGet(delta);
             return clinicalQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> clinicalFuture,
+        public void processResults(Future<List<QueryResult<Variant>>> clinicalFuture,
                                    List<QueryResult<VariantAnnotation>> variantAnnotationResults)
                 throws InterruptedException, ExecutionException {
 //            try {
@@ -1615,13 +1616,14 @@ public class VariantAnnotationCalculator {
                 Thread.sleep(1);
             }
 
-            List<QueryResult> clinicalQueryResults = clinicalFuture.get();
+            List<QueryResult<Variant>> clinicalQueryResults = clinicalFuture.get();
             if (clinicalQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResults.size(); i++) {
-                    QueryResult clinicalQueryResult = clinicalQueryResults.get(i);
+                    QueryResult<Variant> clinicalQueryResult = clinicalQueryResults.get(i);
                     if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
                         variantAnnotationResults.get(i).getResult().get(0)
-                                .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
+                                .setTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
+                                        .getTraitAssociation());
                     }
                 }
             }
