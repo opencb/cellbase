@@ -55,8 +55,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
     public QueryResult get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         options = addPrivateExcludeOptions(options);
-
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         return mongoDBCollection.find(bson, null, Repeat.class, options);
     }
 

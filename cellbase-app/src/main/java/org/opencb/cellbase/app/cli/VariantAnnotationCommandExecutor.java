@@ -275,6 +275,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         logger.info("Variant annotation finished.");
+        VariantAnnotationCalculator.printTimesSummary(System.out::println);
+
         return false;
     }
 
