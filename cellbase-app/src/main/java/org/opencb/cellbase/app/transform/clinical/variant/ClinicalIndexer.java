@@ -67,7 +67,7 @@ public abstract class ClinicalIndexer {
         Map<String, String> map = new HashMap<>(1);
         map.put(SYMBOL, gene);
 
-        return new GenomicFeature(FeatureTypes.Gene, null, map);
+        return new GenomicFeature(FeatureTypes.gene, null, map);
     }
 
     protected List<AlleleOrigin> getAlleleOriginList(List<String> sourceOriginList) {
