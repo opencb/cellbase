@@ -24,16 +24,13 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
                                      boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions) {
         parseQueryParam(queryOptions);
 
-        List<ConsequenceType> consequenceTypeList1 = run(inputVariant.getChromosome(),
-                getStart(inputVariant), getEnd(inputVariant), geneList,
-                overlapsRegulatoryRegion);
+        List<ConsequenceType> consequenceTypeList1 = runBreakend(inputVariant, geneList, overlapsRegulatoryRegion);
         Variant mate = Variant.getMateBreakend(inputVariant);
         if (mate == null) {
             return consequenceTypeList1;
         } else {
             Set<ConsequenceType> result = new HashSet<>(consequenceTypeList1);
-            result.addAll(run(mate.getChromosome(), getStart(mate), getEnd(mate), geneList,
-                    overlapsRegulatoryRegion));
+            result.addAll(runBreakend(mate, geneList, overlapsRegulatoryRegion));
             return new ArrayList<>(result);
         }
     }
@@ -56,17 +53,16 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
         }
     }
 
-    private List<ConsequenceType> run(String chromosome, Integer start, Integer end, List<Gene> geneList,
-                                      boolean[] overlapsRegulatoryRegion) {
-
-        variantStart = start;
-        variantEnd = end;
+    private List<ConsequenceType> runBreakend(Variant currentVariant, List<Gene> geneList,
+                                              boolean[] overlapsRegulatoryRegion) {
+        variant = currentVariant;
+        variantStart = getStart(variant);
+        variantEnd = getEnd(variant);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
-//        variant = inputVariant;
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {
             // Check this gene is in the same chromosome of current position - the gene may be here because overlaps the mate
-            if (chromosome.equals(currentGene.getChromosome())) {
+            if (variant.getChromosome().equals(currentGene.getChromosome())) {
                 gene = currentGene;
                 for (Transcript currentTranscript : gene.getTranscripts()) {
                     isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() || variantStart > currentTranscript.getEnd());
