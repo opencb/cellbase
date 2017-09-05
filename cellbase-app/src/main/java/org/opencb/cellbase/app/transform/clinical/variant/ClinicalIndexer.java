@@ -3,10 +3,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.biodata.models.variant.avro.AlleleOrigin;
-import org.opencb.biodata.models.variant.avro.EvidenceEntry;
-import org.opencb.biodata.models.variant.avro.FeatureTypes;
-import org.opencb.biodata.models.variant.avro.GenomicFeature;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -81,6 +78,43 @@ public abstract class ClinicalIndexer {
             }
         }
         return !alleleOrigin.isEmpty() ? alleleOrigin : null;
+    }
+
+    protected VariantClassification getVariantClassification(List<String> classificationStringList) {
+        VariantClassification variantClassification = new VariantClassification();
+        for (String value : classificationStringList) {
+            value = value.toLowerCase().trim();
+            if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.containsKey(value)) {
+                // No value set
+                if (variantClassification.getClinicalSignificance() == null) {
+                    variantClassification.setClinicalSignificance(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.get(value));
+                    // Seen cases like Benign;Pathogenic;association;not provided;risk factor for the same record
+                } else if (isBenign(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.get(value))
+                        && isPathogenic(variantClassification.getClinicalSignificance())) {
+                    logger.warn("Benign and Pathogenic clinical significances found for the same record");
+                    logger.warn("Will set uncertain_significance instead");
+                    variantClassification.setClinicalSignificance(ClinicalSignificance.uncertain_significance);
+                }
+            } else if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.containsKey(value)) {
+                variantClassification.setTraitAssociation(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.get(value));
+            } else if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.containsKey(value)) {
+                variantClassification.setDrugResponseClassification(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.get(value));
+            } else {
+                logger.debug("No mapping found for referenceClinVarAssertion.clinicalSignificance {}", value);
+                logger.debug("No value will be set at EvidenceEntry.variantClassification for this term");
+            }
+        }
+        return variantClassification;
+    }
+
+    private boolean isPathogenic(ClinicalSignificance clinicalSignificance) {
+        return ClinicalSignificance.pathogenic.equals(clinicalSignificance)
+                || ClinicalSignificance.likely_pathogenic.equals(clinicalSignificance);
+    }
+
+    private boolean isBenign(ClinicalSignificance clinicalSignificance) {
+        return ClinicalSignificance.benign.equals(clinicalSignificance)
+                || ClinicalSignificance.likely_benign.equals(clinicalSignificance);
     }
 
     class SequenceLocation {
