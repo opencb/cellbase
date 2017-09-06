@@ -5,6 +5,7 @@ import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -79,8 +80,12 @@ public class DOCMIndexer extends ClinicalIndexer {
 
     }
 
-    private void updateRocksDB(Variant variant) throws RocksDBException {
-        int a = 1;
+    private void updateRocksDB(Variant variant) throws RocksDBException, IOException {
+        byte[] key = VariantAnnotationUtils.buildVariantId(variant.getChromosome(), variant.getStart(),
+                variant.getReference(), variant.getAlternate()).getBytes();
+        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
+        evidenceEntryList.addAll(variant.getAnnotation().getTraitAssociation());
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
     }
 
     private Variant parseVariant(String line) throws IOException {
