@@ -14,17 +14,13 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-genomic-filter">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
 
         <div>
-            <br>
             <cellbase-filter-toolbar id="filterToolbar" on-clear="clear" on-example="loadExample" on-submit="executeQuery"></cellbase-filter-toolbar>
             <br> <br>
             <textarea id="genomicRegionTextarea" class="form-control" rows="3"></textarea>
@@ -40,6 +36,7 @@
                 },
                 region: {
                     type: String,
+                    observer: 'regionChanged',
                     notify: true
                 }
             },
@@ -50,23 +47,11 @@
             loadExample: function (e) {
                 this.$.genomicRegionTextarea.value = "1:6635137-6835325";
             },
+            regionChanged: function () {
+                this.$.genomicRegionTextarea.value = this.region;
+            },
             executeQuery: function (e) {
                 this.region = this.$.genomicRegionTextarea.value;
-//                let success = function (response) {
-//                    let firstVariation = response.response[0].result[0];
-//                    _this.variant = firstVariation.chromosome + ":" + firstVariation.start + ":" + firstVariation.reference + ":" + firstVariation.alternate;
-//                };
-//
-//                // Now we execute the query. Note that ID are preferred
-//                if (this.$.variantAnnotationTextarea.value !== "") {
-//                    // Executes if the given value is variation ID
-//                    if (this.$.variantAnnotationTextarea.value.indexOf(':') == -1) {
-//                        this.cellbaseClient.get('feature','snp', this.$.variantAnnotationTextarea.value, 'info', {}, {success: success, async: true});
-//                    } else {
-//                        // Assigns the input value directly to the variant (if given like 10:15097577:G:C)
-//                        _this.variant = this.$.variantAnnotationTextarea.value;
-//                    }
-//                }
             }
         });
     </script>

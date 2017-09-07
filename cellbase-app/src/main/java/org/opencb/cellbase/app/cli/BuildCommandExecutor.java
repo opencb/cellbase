@@ -18,6 +18,10 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.transform.*;
+import org.opencb.cellbase.app.transform.clinical.variant.ClinVarParser;
+import org.opencb.cellbase.app.transform.clinical.variant.ClinicalVariantParser;
+import org.opencb.cellbase.app.transform.clinical.variant.CosmicParser;
+import org.opencb.cellbase.app.transform.clinical.variant.GwasParser;
 import org.opencb.cellbase.app.transform.variation.VariationParser;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -55,6 +59,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private File ensemblScriptsFolder;
     private File proteinScriptsFolder;
 
+    private boolean flexibleGTFParsing;
     private Species species;
 
     public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
@@ -77,6 +82,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
         this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
+        this.flexibleGTFParsing = buildCommandOptions.flexibleGTFParsing;
     }
 
 
@@ -164,6 +170,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.DRUG_DATA:
                             parser = buildDrugParser();
                             break;
+                        case EtlCommons.CLINICAL_VARIANTS_DATA:
+                            parser = buildClinicalVariants();
+                            break;
                         case EtlCommons.CLINVAR_DATA:
                             parser = buildClinvar();
                             break;
@@ -172,6 +181,12 @@ public class BuildCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.GWAS_DATA:
                             parser = buildGwas();
+                            break;
+                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+                            parser = buildStructuralVariants();
+                            break;
+                        case EtlCommons.REPEATS_DATA:
+                            parser = buildRepeats();
                             break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
@@ -193,6 +208,26 @@ public class BuildCommandExecutor extends CommandExecutor {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    private CellBaseParser buildStructuralVariants() {
+        Path structuralVariantsFolder = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
+        copyVersionFiles(Arrays.asList(structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE)));
+        Path structuralVariantsFile = structuralVariantsFolder.resolve(EtlCommons.DGV_FILE);
+
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.STRUCTURAL_VARIANTS_JSON,
+                true);
+        return new DgvParser(structuralVariantsFile, serializer);
+    }
+
+    private CellBaseParser buildRepeats() {
+        Path repeatsFilesDir = input.resolve(EtlCommons.REPEATS_FOLDER);
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILE)));
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILE)));
+        copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILE)));
+        // TODO: chunk size is not really used in ConvervedRegionParser, remove?
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.REPEATS_JSON);
+        return new RepeatsParser(repeatsFilesDir, serializer);
     }
 
     private void copyVersionFiles(List<Path> pathList) {
@@ -235,7 +270,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             String geneInfoLogFileName = output.resolve("genome_info.log").toAbsolutePath().toString();
 
             boolean downloadedGenomeInfo;
-            downloadedGenomeInfo = runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
+            downloadedGenomeInfo = EtlCommons.runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
 
             if (downloadedGenomeInfo) {
                 logger.info(outputFileName + " created OK");
@@ -262,8 +297,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
-
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, serializer);
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, flexibleGTFParsing, serializer);
     }
 
 
@@ -311,7 +345,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         List<String> args = Arrays.asList("--species", sp.getScientificName(), "--outdir", geneFolder.toString(),
                 "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs());
 
-        boolean proteinFunctionPredictionMatricesObtaines = runCommandLineProcess(ensemblScriptsFolder,
+        boolean proteinFunctionPredictionMatricesObtaines = EtlCommons.runCommandLineProcess(ensemblScriptsFolder,
                 "./protein_function_prediction_matrices.pl",
                 args,
                 proteinFunctionProcessLogFile);
@@ -351,8 +385,32 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ConservationParser(conservationFilesDir, conservationChunkSize, serializer);
     }
 
+    private CellBaseParser buildClinicalVariants() {
+        Path clinicalVariantFolder = input.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
+        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
+        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
 
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output,
+                EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
+        return new ClinicalVariantParser(clinicalVariantFolder, getFastaReferenceGenome(),
+                buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
+                serializer);
+    }
+
+    private String getDefaultHumanAssembly() {
+        for (Species species : configuration.getSpecies().getVertebrates()) {
+            if (species.getId().equals("hsapiens")) {
+                return species.getAssemblies().get(0).getName();
+            }
+        }
+
+        throw new ParameterException("Clinical data can only be built if an hsapiens entry is defined within the "
+                + "configuration file. No hsapiens data found within the configuration.json file");
+    }
+
+    @Deprecated
     private CellBaseParser buildClinvar() {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path clinvarFolder = input.resolve("clinical");
         copyVersionFiles(Arrays.asList(clinvarFolder.resolve("clinvarVersion.json")));
         Path clinvarFile = clinvarFolder.resolve("ClinVar.xml.gz");
@@ -369,11 +427,13 @@ public class BuildCommandExecutor extends CommandExecutor {
                     + ", " + ClinVarParser.GRCH38_ASSEMBLY);
         }
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar", true);
         return new ClinVarParser(clinvarFile, clinvarSummaryFile, efosFilePath, assembly, serializer);
     }
 
+    @Deprecated
     private CellBaseParser buildCosmic() {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
@@ -382,7 +442,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new CosmicParser(cosmicFilePath, serializer, assembly);
     }
 
+    @Deprecated
     private CellBaseParser buildGwas() throws IOException {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path inputDir = getInputDirFromCommandLine().resolve("clinical");
         copyVersionFiles(Arrays.asList(inputDir.resolve("gwasVersion.json")));
         Path gwasFile = inputDir.resolve(GWAS_INPUT_FILE_NAME);

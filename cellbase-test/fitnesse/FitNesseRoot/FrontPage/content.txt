@@ -1,0 +1,12 @@
+!1 CellBase Acceptance Tests
+
+
+!3 Notes
+Change the following variables in Suite Set Up page to run tests against desired installtion:
+
+ * CELLBASE_WAR 
+ * CELLBASE_VERSION 
+ * TEST_HOST 
+
+!note Release ${FITNESSE_VERSION}
+

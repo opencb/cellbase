@@ -16,9 +16,19 @@
 
 package org.opencb.cellbase.lib.loader;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.mongodb.ErrorCategory;
+import com.mongodb.MongoBulkWriteException;
+import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonSerializationException;
 import org.bson.Document;
+import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -39,10 +49,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -50,6 +57,23 @@ import java.util.concurrent.BlockingQueue;
  */
 public class MongoDBCellBaseLoader extends CellBaseLoader {
 
+    private static final String CLINICAL_VARIANTS_COLLECTION = "clinical_variants";
+    private static final String GENOMIC_FEATURES = "genomicFeatures";
+    private static final String XREFS = "xrefs";
+    private static final String TRAIT_ASSOCIATION = "traitAssociation";
+    private static final String SOMATIC_INFORMATION = "somaticInformation";
+    private static final String PRIMARY_SITE = "primarySite";
+    private static final String SITE_SUBTYPE = "siteSubtype";
+    private static final String PRIMARY_HISTOLOGY = "primaryHistology";
+    private static final String HISTOLOGY_SUBTYPE = "histologySubtype";
+    private static final String TUMOUR_ORIGIN = "tumourOrigin";
+    private static final String SAMPLE_SOURCE = "sampleSource";
+    private static final String HERITABLE_TRAITS = "heritableTraits";
+    private static final String TRAIT = "trait";
+    private static final String PRIVATE_FEATURE_XREF_FIELD = "_featureXrefs";
+    private static final String PRIVATE_TRAIT_FIELD = "_traits";
+    private static final Set<String> SKIP_WORKDS = new HashSet<>(Arrays.asList("or", "and", "the", "of", "at",
+            "in", "on"));
     private MongoDataStoreManager mongoDataStoreManager;
     private MongoDataStore mongoDataStore;
     private MongoDBCollection mongoDBCollection;
@@ -60,11 +84,17 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private Path indexScriptFolder;
     private int[] chunkSizes;
+
+    @Deprecated
     private String clinicalVariantSource;
 
+    @Deprecated
     private static final String CLINVARVARIANTSOURCE = "clinvar";
+    @Deprecated
     private static final String COSMICVARIANTSOURCE = "cosmic";
+    @Deprecated
     private static final String GWASVARIANTSOURCE = "gwas";
+    private String collectionName;
 
     public MongoDBCellBaseLoader(BlockingQueue<List<String>> queue, String data, String database) {
         this(queue, data, database, null, null, null);
@@ -120,13 +150,13 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
         mongoDataStore = mongoDataStoreManager.get(database, mongoDBConfiguration);
 
-        String collectionName = getCollectionName(data);
+        collectionName = getCollectionName(data);
         mongoDBCollection = mongoDataStore.getCollection(collectionName);
         logger.debug("Connection to MongoDB datastore '{}' created, collection '{}' is used",
                 mongoDataStore.getDatabaseName(), collectionName);
 
         // Some collections need to add an extra _chunkIds field to speed up some queries
-        getChunkSizes(collectionName);
+        getChunkSizes();
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
 
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
@@ -159,6 +189,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
                 dbAdaptor = null;
                 break;
+            case "svs":
+                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
+                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
+                // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species);
+                break;
             case "cadd":
 ////                dbAdaptor = dbAdaptorFactory.getVariantFunctionalScoreDBAdaptor(species, assembly);
                 dbAdaptor = null;
@@ -187,7 +223,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "cosmic":
                 clinicalVariantSource = "cosmic";
-//                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+//                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species, assembly);
                 dbAdaptor = null;
                 break;
             case "clinvar":
@@ -195,20 +231,27 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
                 // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
                 // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
+                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
                 break;
             case "gwas":
                 clinicalVariantSource = "gwas";
                 // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
                 // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
                 // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
+                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
                 break;
             case "clinical":
                 // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
                 // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
                 // method will soon be remove
+                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
+                break;
+            case "clinical_variants":
                 dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
+                break;
+            case "repeats":
+                dbAdaptor = null;
+//                collectionName = "protein_functional_prediction";
                 break;
             case "metadata":
                 dbAdaptor = null;
@@ -223,64 +266,73 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     // TODO: use adaptors within MongoDBCellBaseLoader, avoid using mongoDBCollection and remove this method
     private String getCollectionName(String data) throws LoaderException {
-        String collectionName;
+        String collection;
         switch (data) {
             case "genome_info":
-                collectionName = "genome_info";
+                collection = "genome_info";
                 break;
             case "genome_sequence":
-                collectionName = "genome_sequence";
+                collection = "genome_sequence";
                 break;
             case "gene":
-                collectionName = "gene";
+                collection = "gene";
                 break;
             case "variation":
-                collectionName = "variation";
+                collection = "variation";
+                break;
+            case "svs":
+                collection = "variation";
                 break;
             case "cadd":
-                collectionName = "variation_functional_score";
+                collection = "variation_functional_score";
                 break;
             case "regulatory_region":
-                collectionName = "regulatory_region";
+                collection = "regulatory_region";
                 break;
             case "protein":
-                collectionName = "protein";
+                collection = "protein";
                 break;
             case "protein_protein_interaction":
-                collectionName = "protein_protein_interaction";
+                collection = "protein_protein_interaction";
                 break;
             case "protein_functional_prediction":
-                collectionName = "protein_functional_prediction";
+                collection = "protein_functional_prediction";
                 break;
             case "conservation":
-                collectionName = "conservation";
+                collection = "conservation";
                 break;
             case "cosmic":
                 clinicalVariantSource = "cosmic";
-                collectionName = "clinical";
+                collection = "clinical";
                 break;
             case "clinvar":
                 clinicalVariantSource = "clinvar";
-                collectionName = "clinical";
+                collection = "clinical";
                 break;
             case "gwas":
                 clinicalVariantSource = "gwas";
-                collectionName = "clinical";
+                collection = "clinical";
                 break;
             case "clinical":
-                collectionName = "clinical";
+                collection = "clinical";
+                break;
+            case "clinical_variants":
+                collection = CLINICAL_VARIANTS_COLLECTION;
                 break;
             case "metadata":
-                collectionName = "metadata";
+                collection = "metadata";
+                break;
+            case "repeats":
+                collection = "repeats";
                 break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
         }
 
-        return collectionName;
+        return collection;
     }
 
-    private void getChunkSizes(String collectionName) {
+    private void getChunkSizes() {
         if (collectionName != null) {
             switch (collectionName) {
                 case "genome_sequence":
@@ -298,6 +350,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                     break;
                 case "regulatory_region":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE};
+                    break;
+                case "repeats":
+                    chunkSizes = new int[]{MongoDBCollectionConfiguration.REPEATS_CHUNK_SIZE};
                     break;
                 case "conservation":
                     chunkSizes = new int[]{MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE};
@@ -383,33 +438,190 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //        }
 //    }
 
-    private void addClinicalPrivateFields(Document document) {
-        if (clinicalVariantSource != null) {
-            List<String> geneIdList = null;
-            List<String> phenotypeList = null;
-            switch (clinicalVariantSource) {
-                case CLINVARVARIANTSOURCE:
-                    geneIdList = getClinvarGeneIds(document);
-                    phenotypeList = getClinvarPhenotypes(document);
-                    break;
-                case COSMICVARIANTSOURCE:
-                    geneIdList = document.get("geneName") != null ? Collections.singletonList(document.getString("geneName")) : null;
-                    phenotypeList = getCosmicPhenotypes(document);
-                    break;
-                case GWASVARIANTSOURCE:
-                    geneIdList = document.get("reportedGenes") != null
-                            ? Collections.singletonList(document.getString("reportedGenes"))
-                            : null;
-                    phenotypeList = getGwasPhenotypes(document);
-                    break;
-                default:
-                    break;
+    private void addClinicalPrivateFields(Document document) throws JsonProcessingException, FileFormatException {
+        if (collectionName.equals(CLINICAL_VARIANTS_COLLECTION)) {
+            Document annotationDocument = (Document) document.get("annotation");
+            List<String> featureXrefs = getFeatureXrefsFromClinicalVariants(annotationDocument);
+            if (!featureXrefs.isEmpty()) {
+                document.put(PRIVATE_FEATURE_XREF_FIELD, featureXrefs);
             }
-            if (geneIdList != null) {
-                document.put("_geneIds", geneIdList);
+            List<String> traitList = getTraitFromClinicalVariants(annotationDocument);
+            if (!featureXrefs.isEmpty()) {
+                document.put(PRIVATE_TRAIT_FIELD, traitList);
             }
-            if (phenotypeList != null) {
-                document.put("_phenotypes", phenotypeList);
+        }
+//
+//
+//
+//
+//        if (clinicalVariantSource != null) {
+//            List<String> geneIdList = null;
+//            List<String> phenotypeList = null;
+//            switch (clinicalVariantSource) {
+//                case CLINVARVARIANTSOURCE:
+//                    geneIdList = getClinvarGeneIds(document);
+//                    phenotypeList = getClinvarPhenotypes(document);
+//                    break;
+//                case COSMICVARIANTSOURCE:
+//                    geneIdList = document.get("geneName") != null ? Collections.singletonList(document.getString("geneName")) : null;
+//                    phenotypeList = getCosmicPhenotypes(document);
+//                    break;
+//                case GWASVARIANTSOURCE:
+//                    geneIdList = document.get("reportedGenes") != null
+//                            ? Collections.singletonList(document.getString("reportedGenes"))
+//                            : null;
+//                    phenotypeList = getGwasPhenotypes(document);
+//                    break;
+//                default:
+//                    break;
+//            }
+//            if (geneIdList != null) {
+//                document.put("_geneIds", geneIdList);
+//            }
+//            if (phenotypeList != null) {
+//                document.put("_phenotypes", phenotypeList);
+//            }
+//        }
+    }
+
+    private List<String> getTraitFromClinicalVariants(Document document) throws JsonProcessingException, FileFormatException {
+        Set<String> values = new HashSet<>();
+        if (document.get(TRAIT_ASSOCIATION) != null) {
+            for (Document evidenceEntryDocument : (List<Document>) document.get(TRAIT_ASSOCIATION)) {
+                if (evidenceEntryDocument.get(SOMATIC_INFORMATION) != null) {
+                    Document somaticInformationDocument = (Document) evidenceEntryDocument.get(SOMATIC_INFORMATION);
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(PRIMARY_SITE))) {
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(PRIMARY_SITE)));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(SITE_SUBTYPE))) {
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(SITE_SUBTYPE)));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(PRIMARY_HISTOLOGY))) {
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(PRIMARY_HISTOLOGY)));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(HISTOLOGY_SUBTYPE))) {
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(HISTOLOGY_SUBTYPE)));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(TUMOUR_ORIGIN))) {
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(TUMOUR_ORIGIN)));
+                    }
+                    if (StringUtils.isNotBlank((String) somaticInformationDocument.get(SAMPLE_SOURCE))) {
+                        values.addAll(splitKeywords(somaticInformationDocument.getString(SAMPLE_SOURCE)));
+                    }
+                }
+                if (evidenceEntryDocument.get(HERITABLE_TRAITS) != null) {
+                    for (Document traitDocument : (List<Document>) evidenceEntryDocument.get(HERITABLE_TRAITS)) {
+                        if (StringUtils.isNotBlank((String) traitDocument.get(TRAIT))) {
+                            values.addAll(splitKeywords(traitDocument.getString(TRAIT)));
+                        }
+                    }
+                }
+            }
+        } else {
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+            ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+
+            throw new FileFormatException("traitAssociation field missing in input objects. Please, ensure"
+                    + " that input file contains variants with appropriate clinical annotation: "
+                    + jsonObjectWriter.writeValueAsString(document));
+        }
+
+        return new ArrayList<>(values);
+
+    }
+
+    private List<String> splitKeywords(String string) {
+        String[] stringArray = string.toLowerCase().split("\\W");
+        List<String> stringList = new ArrayList<>(stringArray.length);
+        for (String keyword : stringArray) {
+            if (!keyword.isEmpty() && !SKIP_WORKDS.contains(keyword)) {
+                stringList.add(keyword);
+            }
+        }
+
+        return stringList;
+    }
+
+    private void getValuesFromClinicalObject(List clinicalObjectList, String field, Set<String> values) {
+        if (clinicalObjectList != null && !clinicalObjectList.isEmpty()) {
+            for (Object object : clinicalObjectList) {
+                String value = (String) ((Document) object).get(field);
+                if (value != null) {
+                    values.add(value);
+                }
+            }
+        }
+    }
+
+    private List<String> getFeatureXrefsFromClinicalVariants(Document document) throws JsonProcessingException, FileFormatException {
+        Set<String> values = new HashSet<>();
+        if (document.containsKey(TRAIT_ASSOCIATION)) {
+            List evidenceEntryList = (List) document.get(TRAIT_ASSOCIATION);
+            getFeatureXrefsFromClinicalObject(evidenceEntryList, values);
+            getFeatureXrefsFromConsequenceTypes((List) document.get("consequenceTypes"), values);
+        } else {
+            ObjectMapper jsonObjectMapper = new ObjectMapper();
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+            ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
+
+            throw new FileFormatException("traitAssociation field missing in input objects. Please, ensure"
+                    + " that input file contains variants with appropriate clinical annotation: "
+                    + jsonObjectWriter.writeValueAsString(document));
+        }
+
+        return new ArrayList<>(values);
+
+    }
+
+    private void getFeatureXrefsFromConsequenceTypes(List consequenceTypeObjectList, Set<String> values) {
+        if (consequenceTypeObjectList != null && !consequenceTypeObjectList.isEmpty()) {
+            for (Object consequenceTypeObject : consequenceTypeObjectList) {
+                String geneName = (String) ((Document) consequenceTypeObject).get("geneName");
+                if (geneName != null) {
+                    values.add(geneName);
+                }
+                String ensemblGeneId = (String) ((Document) consequenceTypeObject).get("ensemblGeneId");
+                if (geneName != null) {
+                    values.add(ensemblGeneId);
+                }
+                String ensemblTranscriptId = (String) ((Document) consequenceTypeObject).get("ensemblTranscriptId");
+                if (geneName != null) {
+                    values.add(ensemblTranscriptId);
+                }
+                Document proteinVariantAnnotationObject
+                        = (Document) ((Document) consequenceTypeObject).get("proteinVariantAnnotation");
+                if (proteinVariantAnnotationObject != null) {
+                    String uniprotAccession = (String) proteinVariantAnnotationObject.get("uniprotAccession");
+                    if (uniprotAccession != null) {
+                        values.add(uniprotAccession);
+                    }
+                    String uniprotName = (String) proteinVariantAnnotationObject.get("uniprotName");
+                    if (uniprotName != null) {
+                        values.add(uniprotName);
+                    }
+                }
+            }
+        }
+    }
+
+    private void getFeatureXrefsFromClinicalObject(List evidenceEntryList, Set<String> values) {
+        if (evidenceEntryList != null && !evidenceEntryList.isEmpty()) {
+            for (Object object : evidenceEntryList) {
+                List<Document> genomicFeatureList = (List<Document>) ((Document) object).get(GENOMIC_FEATURES);
+                if (genomicFeatureList != null) {
+                    for (Document genomicFeature : genomicFeatureList) {
+                        if (genomicFeature.get(XREFS) != null && !((Document) genomicFeature.get(XREFS)).isEmpty()) {
+                            for (String key : ((Document) genomicFeature.get(XREFS)).keySet()) {
+                                values.add((String) ((Document) genomicFeature.get(XREFS)).get(key));
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -522,10 +734,57 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         }
     }
 
+
     public int load(List<Document> batch) {
-        // TODO: queryOptions?
-        QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
-        return result.first().getInsertedCount();
+        // End recursive calls
+        if (batch.size() > 0) {
+            try {
+                // TODO: queryOptions?
+                QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
+                return result.first().getInsertedCount();
+            } catch (BsonSerializationException e) {
+                // End recursive calls
+                if (batch.size() == 1) {
+                    logger.warn("Found document raising load problems: {}...", batch.get(0).toJson().substring(0, 1000));
+                    if (data.equalsIgnoreCase("variation")) {
+                        Document annotationDocument = (Document) batch.get(0).get("annotation");
+                        if (annotationDocument.get("xrefs") != null && ((List) annotationDocument.get("xrefs")).size() > 3) {
+                            logger.warn("Truncating xrefs array");
+                            annotationDocument.put("xrefs", ((List) annotationDocument.get("xrefs")).subList(0, 3));
+                            return load(batch);
+                        } else if (annotationDocument.get("additionalAttributes") != null) {
+                            logger.warn("Removing additionalAttributes field");
+                            annotationDocument.remove("additionalAttributes");
+                            return load(batch);
+                        } else {
+                            logger.warn("Skipping and continuing with the load");
+                            return 0;
+                        }
+                    } else {
+                        logger.warn("Skipping and continuing with the load");
+                        return 0;
+                    }
+                }
+                logger.warn("Found problems loading document batch, loading one by one...");
+                int nInserted = 0;
+                for (Document document : batch) {
+                    // TODO: queryOptions?
+                    nInserted += load(Collections.singletonList(document));
+                }
+                return nInserted;
+            } catch (MongoBulkWriteException e) {
+                for (BulkWriteError bulkWriteError : e.getWriteErrors()) {
+                    // Duplicated key due to a batch which was partially inserted before, just skip the variant
+                    if (ErrorCategory.fromErrorCode(bulkWriteError.getCode()).equals(ErrorCategory.DUPLICATE_KEY)) {
+                        return 0;
+                    }
+                }
+                // It is not a duplicated key error - propagate it
+                throw e;
+            }
+        } else {
+            return 0;
+        }
     }
 
     private void addChunkId(Document document) {
@@ -597,6 +856,12 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "gwas":
             case "clinical":
                 indexFileName = "clinical-indexes.js";
+                break;
+            case "clinical_variants":
+                indexFileName = "clinical-indexes.js";
+                break;
+            case "repeats":
+                indexFileName = "repeat-indexes.js";
                 break;
             default:
                 break;

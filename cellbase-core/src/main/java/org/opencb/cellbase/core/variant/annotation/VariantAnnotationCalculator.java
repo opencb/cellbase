@@ -16,14 +16,17 @@
 
 package org.opencb.cellbase.core.variant.annotation;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -33,6 +36,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 //import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 //import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -51,13 +55,15 @@ import java.util.regex.Pattern;
  *
  * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
-public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements VariantAnnotationDBAdaptor<VariantAnnotation> {
+public class VariantAnnotationCalculator {
+    //extends MongoDBAdaptor implements VariantAnnotationDBAdaptor<VariantAnnotation> {
 
     private GenomeDBAdaptor genomeDBAdaptor;
     private GeneDBAdaptor geneDBAdaptor;
     private RegulationDBAdaptor regulationDBAdaptor;
     private VariantDBAdaptor variantDBAdaptor;
     private ClinicalDBAdaptor clinicalDBAdaptor;
+    private RepeatsDBAdaptor repeatsDBAdaptor;
     private ProteinDBAdaptor proteinDBAdaptor;
     private ConservationDBAdaptor conservationDBAdaptor;
     private Set<String> annotatorSet;
@@ -67,10 +73,19 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     //    private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
-    private boolean useCache = true;
+    private boolean useCache = false;
     private boolean phased = false;
+    private Boolean imprecise = true;
+    private Integer svExtraPadding = 0;
+    private Integer cnvExtraPadding = 0;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
+    private static HgvsCalculator hgvsCalculator;
+
+    private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
+    private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name() + ","
+            + RegulationDBAdaptor.FeatureType.TF_binding_site_motif;
+    private static final String REGION = "region";
 
 //    public VariantAnnotationCalculator(String species, String assembly, MongoDataStore mongoDataStore) {
 ////        super(species, assembly, mongoDataStore);
@@ -97,6 +112,9 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
         this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+        this.repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
+
+         hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -116,7 +134,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         List<Gene> geneList = getAffectedGenes(variant, includeGeneFields);
 
         // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
-        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true);
+        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true,
+                queryOptions);
 
         QueryResult queryResult = new QueryResult();
         queryResult.setId(variant.toString());
@@ -338,15 +357,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         if (annotatorSet.contains("consequenceType")) {
             stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
         }
-        if (annotatorSet.contains("expression")) {
-            stringBuilder.append(",annotation.geneExpression");
-        }
-        if (annotatorSet.contains("geneDisease")) {
-            stringBuilder.append(",annotation.geneTraitAssociation");
-        }
-        if (annotatorSet.contains("drugInteraction")) {
-            stringBuilder.append(",annotation.geneDrugInteraction");
-        }
+//        if (annotatorSet.contains("expression")) {
+//            stringBuilder.append(",annotation.geneExpression");
+//        }
+//        if (annotatorSet.contains("geneDisease")) {
+//            stringBuilder.append(",annotation.geneTraitAssociation");
+//        }
+//        if (annotatorSet.contains("drugInteraction")) {
+//            stringBuilder.append(",annotation.geneDrugInteraction");
+//        }
         if (annotatorSet.contains("populationFrequencies")) {
             stringBuilder.append(",annotation.populationFrequencies");
         }
@@ -368,7 +387,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
          * Next three async blocks calculate annotations using Futures, this will be calculated in a different thread.
          * Once the main loop has finished then they will be stored. This provides a ~30% of performance improvement.
          */
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(4);
+        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(5);
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<QueryResult<Variant>>> variationFuture = null;
 
@@ -377,7 +396,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
 //        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
-                    "id,annotation.populationFrequencies"));
+                    "id,annotation.populationFrequencies").append("imprecise", imprecise));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
         }
 
@@ -396,11 +415,32 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
-        Future<List<QueryResult>> clinicalFuture = null;
+        Future<List<QueryResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, queryOptions);
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
+
+        FutureRepeatsAnnotator futureRepeatsAnnotator = null;
+        Future<List<QueryResult<Repeat>>> repeatsFuture = null;
+        if (annotatorSet.contains("repeats")) {
+            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, queryOptions);
+            repeatsFuture = fixedThreadPool.submit(futureRepeatsAnnotator);
+        }
+
+        FutureCytobandAnnotator futureCytobandAnnotator = null;
+        Future<List<QueryResult<Cytoband>>> cytobandFuture = null;
+        if (annotatorSet.contains("cytoband")) {
+            futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, queryOptions);
+            cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
+        }
+
+//        FutureHgvsAnnotator futureHgvsAnnotator = null;
+//        Future<List<QueryResult<String>>> hgvsFuture = null;
+//        if (annotatorSet.contains("hgvs")) {
+//            futureHgvsAnnotator = new FutureHgvsAnnotator(normalizedVariantList, queryOptions);
+//            hgvsFuture = fixedThreadPool.submit(futureHgvsAnnotator);
+//        }
 
         /*
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
@@ -427,9 +467,25 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
             geneList = setGeneAnnotation(normalizedVariantList.get(i));
 
+            // Better not run hgvs calculation with a Future for the following reasons:
+            //   * geneList is needed in order to calculate the hgvs for ALL VARIANTS
+            //   * hgvsCalculator will raise an additional database query to get the genome sequence JUST FOR INDELS
+            //   * If a Future is used and a list of variants is provided to the hgvsCalculator, then the hgvsCalculator
+            //   will require to raise an additional query to the database (that would be performed asynchronously)
+            //   in order to get the geneList FOR ALL VARIANTS
+            //   * If no future is used, then the genome sequence query will be performed synchronously but JUST
+            //   FOR INDELS
+            // Given that the number of indels is expected to be negligible if compared to the number of SNVs, the
+            // decision is to run it synchronously
+            if (annotatorSet.contains("hgvs")) {
+                // No need to carry out normalization if it has already been done
+                variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
+            }
+
             if (annotatorSet.contains("consequenceType")) {
                 try {
-                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i), geneList, true);
+                    List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i),
+                            geneList, true, queryOptions);
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
                         checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
@@ -444,6 +500,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 } catch (Exception e) {
                     logger.error("Unhandled error when calculating consequence type for variant {}. Leaving an empty"
                             + " consequence type list.", normalizedVariantList.get(i).toString());
+                    e.printStackTrace();
                     variantAnnotation.setConsequenceTypes(Collections.emptyList());
 //                    throw e;
                 }
@@ -484,6 +541,15 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         if (futureClinicalAnnotator != null) {
             futureClinicalAnnotator.processResults(clinicalFuture, variantAnnotationResultList);
         }
+        if (futureRepeatsAnnotator != null) {
+            futureRepeatsAnnotator.processResults(repeatsFuture, variantAnnotationResultList);
+        }
+        if (futureCytobandAnnotator != null) {
+            futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationResultList);
+        }
+//        if (futureHgvsAnnotator != null) {
+//            futureHgvsAnnotator.processResults(hgvsFuture, variantAnnotationResultList);
+//        }
         fixedThreadPool.shutdown();
 
 
@@ -505,30 +571,55 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
         logger.debug("normalize = {}", normalize);
 
-        // Default behaviour use cache
-        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : true);
+        // Default behaviour DO NOT use cache
+        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : false);
 
         // Default behaviour - don't calculate phased annotation
         phased = (queryOptions.get("phased") != null ? (Boolean) queryOptions.get("phased") : false);
         logger.debug("phased = {}", phased);
+
+        // Default behaviour - enable imprecise searches
+        imprecise = (queryOptions.get("imprecise") != null ? (Boolean) queryOptions.get("imprecise") : true);
+        logger.debug("imprecise = {}", imprecise);
+
+        // Default behaviour - no extra padding for structural variants
+        svExtraPadding = (queryOptions.get("svExtraPadding") != null ? (Integer) queryOptions.get("svExtraPadding") : 0);
+        logger.debug("svExtraPadding = {}", svExtraPadding);
+
+        // Default behaviour - no extra padding for CNV
+        cnvExtraPadding = (queryOptions.get("cnvExtraPadding") != null ? (Integer) queryOptions.get("cnvExtraPadding") : 0);
+        logger.debug("cnvExtraPadding = {}", cnvExtraPadding);
     }
 
 
     private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
-        destination.setId(origin.getId());
         destination.setChromosome(origin.getChromosome());
         destination.setStart(origin.getStart());
         destination.setReference(origin.getReference());
         destination.setAlternate(origin.getAlternate());
-        destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
-        destination.setConsequenceTypes(origin.getConsequenceTypes());
-        destination.setConservation(origin.getConservation());
+
+        if (annotatorSet.contains("variation")) {
+            destination.setId(origin.getId());
+        }
+        if (annotatorSet.contains("consequenceType")) {
+            destination.setDisplayConsequenceType(origin.getDisplayConsequenceType());
+            destination.setConsequenceTypes(origin.getConsequenceTypes());
+        }
+        if (annotatorSet.contains("conservation")) {
+            destination.setConservation(origin.getConservation());
+        }
 //        destination.setGeneExpression(origin.getGeneExpression());
 //        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
-        destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+        if (annotatorSet.contains("populationFrequencies")) {
+            destination.setPopulationFrequencies(origin.getPopulationFrequencies());
+        }
 //        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
-        destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
-        destination.setFunctionalScore(origin.getFunctionalScore());
+        if (annotatorSet.contains("clinical")) {
+            destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
+        }
+        if (annotatorSet.contains("functionalScore")) {
+            destination.setFunctionalScore(origin.getFunctionalScore());
+        }
     }
 
     private void checkAndAdjustPhasedConsequenceTypes(Variant variant, Queue<Variant> variantBuffer) {
@@ -583,13 +674,20 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     private void adjustPhasedConsequenceTypes(Object[] variantArray) {
         Variant variant0 = (Variant) variantArray[0];
+        Variant variant1 = null;
+        Variant variant2 = null;
+
+        boolean variant0DisplayCTNeedsUpdate = false;
+        boolean variant1DisplayCTNeedsUpdate = false;
+        boolean variant2DisplayCTNeedsUpdate = false;
+
         for (ConsequenceType consequenceType1 : variant0.getAnnotation().getConsequenceTypes()) {
             ProteinVariantAnnotation newProteinVariantAnnotation = null;
             // Check if this is a coding consequence type. Also this consequence type may have been already
             // updated if there are 3 consecutive phased SNVs affecting the same codon.
             if (isCoding(consequenceType1)
                     && !transcriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId())) {
-                Variant variant1 = (Variant) variantArray[1];
+                variant1 = (Variant) variantArray[1];
                 ConsequenceType consequenceType2
                         = findCodingOverlappingConsequenceType(consequenceType1, variant1.getAnnotation().getConsequenceTypes());
                 // The two first variants affect the same codon
@@ -601,7 +699,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //                    String alternateAA = null;
                     List<SequenceOntologyTerm> soTerms = null;
                     ConsequenceType consequenceType3 = null;
-                    Variant variant2 = null;
+                    variant2 = null;
                     // Check if the third variant also affects the same codon
                     if (variantArray.length > 2) {
                         variant2 = (Variant) variantArray[2];
@@ -631,6 +729,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
                         // Flag these transcripts as already updated for this variant
                         flagTranscriptAnnotationUpdated(variant2, consequenceType1.getEnsemblTranscriptId());
+
+                        variant2DisplayCTNeedsUpdate = true;
 
                         // Only the two first SNVs affect the same codon
                     } else {
@@ -669,8 +769,27 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                     // Flag these transcripts as already updated for this variant
                     flagTranscriptAnnotationUpdated(variant0, consequenceType1.getEnsemblTranscriptId());
                     flagTranscriptAnnotationUpdated(variant1, consequenceType1.getEnsemblTranscriptId());
+
+                    variant0DisplayCTNeedsUpdate = true;
+                    variant1DisplayCTNeedsUpdate = true;
                 }
             }
+        }
+
+        if (variant0DisplayCTNeedsUpdate) {
+            variant0.getAnnotation()
+                    .setDisplayConsequenceType(getMostSevereConsequenceType(variant0.getAnnotation()
+                            .getConsequenceTypes()));
+        }
+        if (variant1DisplayCTNeedsUpdate) {
+            variant1.getAnnotation()
+                    .setDisplayConsequenceType(getMostSevereConsequenceType(variant1.getAnnotation()
+                            .getConsequenceTypes()));
+        }
+        if (variant2DisplayCTNeedsUpdate) {
+            variant2.getAnnotation()
+                    .setDisplayConsequenceType(getMostSevereConsequenceType(variant2.getAnnotation()
+                            .getConsequenceTypes()));
         }
     }
 
@@ -826,7 +945,8 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             annotatorSet = new HashSet<>(includeList);
         } else {
             annotatorSet = new HashSet<>(Arrays.asList("variation", "clinical", "conservation", "functionalScore",
-                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies"));
+                    "consequenceType", "expression", "geneDisease", "drugInteraction", "populationFrequencies",
+                    "repeats", "cytoband", "hgvs"));
             List<String> excludeList = queryOptions.getAsStringList("exclude");
             excludeList.forEach(annotatorSet::remove);
         }
@@ -834,10 +954,11 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private String getIncludedGeneFields(Set<String> annotatorSet) {
-        String includeGeneFields = "name,id,start,end,transcripts.id,transcripts.start,transcripts.end,transcripts.strand,"
-                + "transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,transcripts.genomicCodingStart,"
-                + "transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,transcripts.cdnaCodingEnd,transcripts.exons.start,"
-                + "transcripts.exons.end,transcripts.exons.sequence,transcripts.exons.phase,"
+        String includeGeneFields = "name,id,chromosome,start,end,transcripts.id,transcripts.start,transcripts.end,"
+                + "transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,"
+                + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
+                + "transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.cdsStart,transcripts.exons.end,"
+                + "transcripts.exons.cdsEnd,transcripts.exons.sequence,transcripts.exons.phase,"
                 + "transcripts.exons.exonNumber,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,"
                 + "mirna.matures.cdnaEnd";
 
@@ -854,31 +975,34 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private List<Gene> getAffectedGenes(Variant variant, String includeFields) {
-        // reference = "" if insertion, reference = null if CNV for example
-        int variantStart = variant.getReference() != null && variant.getReference().isEmpty()
-                ? variant.getStart() - 1 : variant.getStart();
+
+        if (VariantType.BREAKEND.equals(variant.getType())) {
+            List<Gene> result = getGenesInRange(variant.getChromosome(), variant.getStart(), variant.getStart(),
+                    includeFields);
+            Variant breakendMate = Variant.getMateBreakend(variant);
+            if (breakendMate != null) {
+                Set<String> firstGeneIdSet = result.stream().map((gene) -> gene.getId()).collect(Collectors.toSet());
+                // Merge genes that overlap with the first break end with those overlapping the second breakend
+                for (Gene gene : (List<Gene>) getGenesInRange(breakendMate.getChromosome(), breakendMate.getStart(),
+                        breakendMate.getStart(), includeFields)) {
+                    if (!firstGeneIdSet.contains(gene.getId())) {
+                        result.add(gene);
+                    }
+                }
+            }
+            return result;
+        } else {
+            Region region = variantToRegion(variant);
+            return getGenesInRange(region.getChromosome(), region.getStart(), region.getEnd(), includeFields);
+        }
+    }
+
+    private List<Gene> getGenesInRange(String chromosome, int start, int end, String includeFields) {
         QueryOptions queryOptions = new QueryOptions("include", includeFields);
-//        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-//                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
 
         return geneDBAdaptor
-                .getByRegion(new Region(variant.getChromosome(), Math.max(1, variantStart - 5000),
-                        variant.getEnd() + 5000), queryOptions).getResult();
-//                        variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions).getResult();
-
-//        return geneDBAdaptor.get(new Query("region", variant.getChromosome()+":"+(variantStart - 5000)+":"
-//                +(variant.getStart() + variant.getReference().length() - 1 + 5000)), queryOptions)
-//                .getResult();
-
-//        QueryResult queryResult = geneDBAdaptor.getAllByRegion(new Region(variant.getChromosome(),
-//                variantStart - 5000, variant.getStart() + variant.getReference().length() - 1 + 5000), queryOptions);
-//
-//        List<Gene> geneList = new ArrayList<>(queryResult.getNumResults());
-//        for (Object object : queryResult.getResult()) {
-//            Gene gene = geneObjectMapper.convertValue(object, Gene.class);
-//            geneList.add(gene);
-//        }
-//        return geneList;
+                .getByRegion(new Region(chromosome, Math.max(1, start - 5000),
+                        end + 5000), queryOptions).getResult();
     }
 
     private boolean nonSynonymous(ConsequenceType consequenceType, boolean useMitochondrialCode) {
@@ -909,38 +1033,55 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private ConsequenceTypeCalculator getConsequenceTypeCalculator(Variant variant) throws UnsupportedURLVariantFormat {
-        switch (getVariantType(variant)) {
+        switch (VariantAnnotationUtils.getVariantType(variant)) {
+            case SNV:
+                return new ConsequenceTypeSNVCalculator();
             case INSERTION:
                 return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
             case DELETION:
                 return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
-            case SNV:
-                return new ConsequenceTypeSNVCalculator();
+            case MNV:
+                return new ConsequenceTypeMNVCalculator(genomeDBAdaptor);
             case CNV:
-                return new ConsequenceTypeCNVCalculator();
+                if (variant.getSv().getCopyNumber() == null) {
+                    return new ConsequenceTypeGenericRegionCalculator();
+                } else if (variant.getSv().getCopyNumber() > 2) {
+                    return new ConsequenceTypeCNVGainCalculator();
+                } else {
+                    return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+                }
+            case DUPLICATION:
+                return new ConsequenceTypeCNVGainCalculator();
+            case INVERSION:
+                return new ConsequenceTypeGenericRegionCalculator();
+            case BREAKEND:
+                return new ConsequenceTypeBNDCalculator();
             default:
                 throw new UnsupportedURLVariantFormat();
         }
     }
 
-    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
-        if (variant.getType() == null) {
-            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()));
-        }
-        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
-        // FIXME: insertions and deletions
-        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
-            if (variant.getReference().isEmpty()) {
-//                variant.setType(VariantType.INSERTION);
-                return VariantType.INSERTION;
-            } else {
-//                variant.setType(VariantType.DELETION);
-                return VariantType.DELETION;
-            }
-        }
-        return variant.getType();
+//    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
+//        if (variant.getType() == null) {
+//            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
+//        }
+//        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
+//        // FIXME: insertions and deletions
+////        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+//        if (variant.getType().equals(VariantType.INDEL)) {
+//            if (variant.getReference().isEmpty()) {
+////                variant.setType(VariantType.INSERTION);
+//                return VariantType.INSERTION;
+//            } else if (variant.getAlternate().isEmpty()) {
+////                variant.setType(VariantType.DELETION);
+//                return VariantType.DELETION;
+//            } else {
+//                return VariantType.MNV;
+//            }
+//        }
+//        return variant.getType();
 //        return getVariantType(variant.getReference(), variant.getAlternate());
-    }
+//    }
 
 //    private VariantType getVariantType(String reference, String alternate) {
 //        if (reference.isEmpty()) {
@@ -954,44 +1095,127 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 //        }
 //    }
 
-    private List<RegulatoryFeature> getAffectedRegulatoryRegions(Variant variant) {
-        int variantStart = variant.getReference() != null && variant.getReference().isEmpty()
-                ? variant.getStart() - 1 : variant.getStart();
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", "chromosome,start,end");
-//        QueryResult queryResult = regulationDBAdaptor.nativeGet(new Query("region", variant.getChromosome()
-//                + ":" + variantStart + ":" + (variant.getStart() + variant.getReference().length() - 1)), queryOptions);
-        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor.getByRegion(new Region(variant.getChromosome(),
-                variantStart, variant.getEnd()), queryOptions);
-//                variantStart, variant.getStart() + variant.getReference().length() - 1), queryOptions);
+    private boolean[] getRegulatoryRegionOverlaps(Variant variant) {
+        // 0: overlaps any regulatory region type
+        // 1: overlaps transcription factor binding site
+        boolean[] overlapsRegulatoryRegion = {false, false};
 
-        List<RegulatoryFeature> regionList = new ArrayList<>(queryResult.getNumResults());
-        for (RegulatoryFeature object : queryResult.getResult()) {
-            regionList.add(object);
+        // Variant type checked in expected order of frequency of occurrence to minimize number of checks
+        // Most queries will be SNVs - it's worth implementing an special case for them
+        if (VariantType.SNV.equals(variant.getType())) {
+            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart());
+        } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
+            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart() - 1, variant.getEnd());
+        // Short deletions and symbolic variants except breakends
+        } else if (!VariantType.BREAKEND.equals(variant.getType())) {
+            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart(), variant.getEnd());
+        // Breakend "variants" only annotate features overlapping the exact positions
+        } else  {
+            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant.getChromosome(), Math.max(1, variant.getStart()));
+            // If already found one overlapping regulatory region there's no need to keep checking
+            if (overlapsRegulatoryRegion[0]) {
+                return overlapsRegulatoryRegion;
+            // Otherwise check the other breakend in case exists
+            } else {
+                Variant breakendMate = Variant.getMateBreakend(variant);
+                if (breakendMate != null) {
+                    return getRegulatoryRegionOverlaps(breakendMate.getChromosome(), Math.max(1, breakendMate.getStart()));
+                } else {
+                    return overlapsRegulatoryRegion;
+                }
+            }
         }
 
-//        for (Object object : queryResult.getResult()) {
-//            Document dbObject = (Document) object;
-//            RegulatoryRegion regulatoryRegion = new RegulatoryRegion();
-//            regulatoryRegion.setChromosome((String) dbObject.get("chromosome"));
-//            regulatoryRegion.setStart((int) dbObject.get("start"));
-//            regulatoryRegion.setEnd((int) dbObject.get("end"));
-//            regulatoryRegion.setType((String) dbObject.get("featureType"));
-//            regionList.add(regulatoryRegion);
+//        List<RegulatoryFeature> regionList = new ArrayList<>(queryResult.getNumResults());
+//        for (RegulatoryFeature object : queryResult.getResult()) {
+//            regionList.add(object);
 //        }
 
-        return regionList;
+
+//        return regionList;
     }
 
-    private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList, boolean regulatoryAnnotation) {
-        List<RegulatoryFeature> regulatoryRegionList = null;
+    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position) {
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("include", REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
+        // 0: overlaps any regulatory region type
+        // 1: overlaps transcription factor binding site
+        boolean[] overlapsRegulatoryRegion = {false, false};
+
+        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor
+                .get(new Query(REGION, toRegionString(chromosome, position)), queryOptions);
+
+        if (queryResult.getNumTotalResults() > 0) {
+            overlapsRegulatoryRegion[0] = true;
+            boolean tfbsFound = false;
+            for (int i = 0; (i < queryResult.getResult().size() && !tfbsFound); i++) {
+                String regulatoryRegionType = queryResult.getResult().get(i).getFeatureType();
+                tfbsFound = regulatoryRegionType != null
+                        && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site.name())
+                        || queryResult.getResult().get(i).getFeatureType()
+                            .equals(RegulationDBAdaptor.FeatureType.TF_binding_site_motif.name()));
+            }
+            overlapsRegulatoryRegion[1] = tfbsFound;
+        }
+
+        return overlapsRegulatoryRegion;
+    }
+
+    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end) {
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.add("exclude", "_id");
+        queryOptions.add("include", "chromosome");
+        queryOptions.add("limit", "1");
+        // 0: overlaps any regulatory region type
+        // 1: overlaps transcription factor binding site
+        boolean[] overlapsRegulatoryRegion = {false, false};
+        String regionString = toRegionString(chromosome, start, end);
+        Query query = new Query(REGION, regionString);
+
+        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor
+                .get(query.append(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE, TF_BINDING_SITE), queryOptions);
+
+        // Overlaps transcription factor binding site - it's therefore a regulatory variant
+        if (queryResult.getNumResults() == 1) {
+            overlapsRegulatoryRegion[0] = true;
+            overlapsRegulatoryRegion[1] = true;
+        // Does not overlap transcription factor binding site - check any other regulatory region type
+        } else {
+            query.remove(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
+            queryResult = regulationDBAdaptor.get(query, queryOptions);
+            // Does overlap other types of regulatory regions
+            if (queryResult.getNumResults() == 1) {
+                overlapsRegulatoryRegion[0] = true;
+            }
+        }
+
+        return overlapsRegulatoryRegion;
+    }
+
+    private String toRegionString(String chromosome, Integer position) {
+        return toRegionString(chromosome, position, position);
+    }
+
+    private String toRegionString(String chromosome, Integer start, Integer end) {
+        StringBuilder stringBuilder = new StringBuilder(chromosome);
+        stringBuilder.append(":");
+        stringBuilder.append(start);
+        stringBuilder.append("-");
+        stringBuilder.append(end == null ? start : end);
+        return stringBuilder.toString();
+    }
+
+    private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList,
+                                                         boolean regulatoryAnnotation, QueryOptions queryOptions) {
+        boolean[] overlapsRegulatoryRegion = {false, false};
         if (regulatoryAnnotation) {
-            regulatoryRegionList = getAffectedRegulatoryRegions(variant);
+            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
-        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList, regulatoryRegionList);
+        List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
+                overlapsRegulatoryRegion, queryOptions);
         if (variant.getType() == VariantType.SNV
-                || Variant.inferType(variant.getReference(), variant.getAlternate(), variant.getLength()) == VariantType.SNV) {
+                || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
                 if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
                     consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
@@ -1002,11 +1226,126 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
     }
 
     private List<Region> variantListToRegionList(List<Variant> variantList) {
-        List<Region> regionList = new ArrayList<>(variantList.size());
-        for (Variant variant : variantList) {
-            regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+        return variantList.stream().map((variant) -> variantToRegion(variant)).collect(Collectors.toList());
+//        List<Region> regionList = new ArrayList<>(variantList.size());
+//        if (imprecise) {
+//            for (Variant variant : variantList) {
+//                if (VariantType.CNV.equals(variant.getType())) {
+//                    regionList.add(new Region(variant.getChromosome(),
+//                            variant.getStart() - cnvExtraPadding,
+//                            variant.getEnd() + cnvExtraPadding));
+//                } else if (variant.getSv() != null) {
+//                    regionList.add(new Region(variant.getChromosome(),
+//                            variant.getSv() != null && variant.getSv().getCiStartLeft() != null
+//                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
+//                            variant.getSv() != null && variant.getSv().getCiEndRight() != null
+//                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
+//                // Insertion
+//                } else if (variant.getStart() > variant.getEnd()) {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+//                // Other but insertion
+//                } else {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+//                }
+//            }
+//        } else {
+//            for (Variant variant : variantList) {
+//                // Insertion
+//                if (variant.getStart() > variant.getEnd()) {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
+//                // Other but insertion
+//                } else {
+//                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
+//                }
+//            }
+//        }
+//        return regionList;
+    }
+
+    private Region variantToRegion(Variant variant) {
+        // Variant type checked in expected order of frequency of occurrence to minimize number of checks
+        // SNV
+        if (VariantType.SNV.equals(variant.getType())) {
+            return new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
+        // Short insertion
+        } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
+            return new Region(variant.getChromosome(), variant.getStart() - 1, variant.getEnd());
+        // CNV
+        } else if (VariantType.CNV.equals(variant.getType())) {
+            if (imprecise) {
+                return new Region(variant.getChromosome(), variant.getStart() - cnvExtraPadding,
+                        variant.getEnd() + cnvExtraPadding);
+            } else {
+                return new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
+            }
+        // Short deletions and symbolic variants (no BREAKENDS expected althought not checked either)
+        } else {
+            if (imprecise && variant.getSv() != null) {
+                return new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
+                            ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                        variant.getSv().getCiEndRight() != null ? variant.getSv().getCiEndRight() + svExtraPadding
+                                : variant.getEnd());
+            } else {
+                return new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
+            }
         }
+    }
+
+    private List<Region> breakpointsToRegionList(Variant variant) {
+        List<Region> regionList = new ArrayList<>();
+
+        switch (variant.getType()) {
+            case SNV:
+                regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+                break;
+            case CNV:
+                if (imprecise) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart() - cnvExtraPadding,
+                            variant.getStart() + cnvExtraPadding));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd() - cnvExtraPadding,
+                            variant.getEnd() + cnvExtraPadding));
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
+                }
+                break;
+            case BREAKEND:
+                regionList.add(startBreakpointToRegion(variant));
+                Variant breakendMate = Variant.getMateBreakend(variant);
+                if (breakendMate != null) {
+                    regionList.add(startBreakpointToRegion(breakendMate));
+                }
+                break;
+            default:
+                if (imprecise && variant.getSv() != null) {
+                    regionList.add(new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
+                                    ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                            variant.getSv().getCiStartRight() != null
+                                    ? variant.getSv().getCiStartRight() + svExtraPadding : variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(),
+                            variant.getSv().getCiEndLeft() != null
+                                    ? variant.getSv().getCiEndLeft() - svExtraPadding : variant.getEnd(),
+                            variant.getSv().getCiEndRight() != null
+                                    ? variant.getSv().getCiEndRight() + svExtraPadding : variant.getEnd()));
+                } else {
+                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getStart()));
+                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getEnd()));
+                }
+                break;
+        }
+
         return regionList;
+    }
+
+    private Region startBreakpointToRegion(Variant variant) {
+        if (imprecise && variant.getSv() != null) {
+            return new Region(variant.getChromosome(), variant.getSv().getCiStartLeft() != null
+                    ? variant.getSv().getCiStartLeft() - svExtraPadding : variant.getStart(),
+                    variant.getSv().getCiStartRight() != null
+                            ? variant.getSv().getCiStartRight() + svExtraPadding : variant.getStart());
+        } else {
+            return new Region(variant.getChromosome(), variant.getStart(), variant.getStart());
+        }
     }
 
     /*
@@ -1016,7 +1355,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
-        public FutureVariationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureVariationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
@@ -1024,20 +1363,21 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         @Override
         public List<QueryResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
+            logger.debug("Query variation");
             List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(variantList, queryOptions);
             logger.debug("Variation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return variationQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult<Variant>>> conservationFuture,
+        public void processResults(Future<List<QueryResult<Variant>>> variationFuture,
                                    List<QueryResult<VariantAnnotation>> variantAnnotationResultList,
                                    Set<String> annotatorSet) throws InterruptedException, ExecutionException {
 //            try {
-            while (!conservationFuture.isDone()) {
+            while (!variationFuture.isDone()) {
                 Thread.sleep(1);
             }
 
-            List<QueryResult<Variant>> variationQueryResults = conservationFuture.get();
+            List<QueryResult<Variant>> variationQueryResults = variationFuture.get();
             if (variationQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResultList.size(); i++) {
                     Variant preferredVariant = getPreferredVariant(variationQueryResults.get(i));
@@ -1106,7 +1446,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         private QueryOptions queryOptions;
 
-        public FutureConservationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureConservationAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
@@ -1114,6 +1454,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         @Override
         public List<QueryResult> call() throws Exception {
             long startTime = System.currentTimeMillis();
+            logger.debug("Query conservation");
             List<QueryResult> conservationQueryResultList = conservationDBAdaptor
                     .getAllScoresByRegionList(variantListToRegionList(variantList), queryOptions);
             logger.debug("Conservation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
@@ -1149,7 +1490,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
         private QueryOptions queryOptions;
 
-        public FutureVariantFunctionalScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureVariantFunctionalScoreAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
@@ -1159,6 +1500,7 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
             long startTime = System.currentTimeMillis();
 //            List<QueryResult> variantFunctionalScoreQueryResultList =
 //                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
+            logger.debug("Query variant functional score");
             List<QueryResult<Score>> variantFunctionalScoreQueryResultList =
                     variantDBAdaptor.getFunctionalScoreVariant(variantList, queryOptions);
             logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
@@ -1191,24 +1533,25 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
 
     }
 
-    class FutureClinicalAnnotator implements Callable<List<QueryResult>> {
+    class FutureClinicalAnnotator implements Callable<List<QueryResult<Variant>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
-        public FutureClinicalAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureClinicalAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
             this.variantList = variantList;
             this.queryOptions = queryOptions;
         }
 
         @Override
-        public List<QueryResult> call() throws Exception {
+        public List<QueryResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+//            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+            List<QueryResult<Variant>> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> clinicalFuture,
+        public void processResults(Future<List<QueryResult<Variant>>> clinicalFuture,
                                    List<QueryResult<VariantAnnotation>> variantAnnotationResults)
                 throws InterruptedException, ExecutionException {
 //            try {
@@ -1216,13 +1559,14 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
                 Thread.sleep(1);
             }
 
-            List<QueryResult> clinicalQueryResults = clinicalFuture.get();
+            List<QueryResult<Variant>> clinicalQueryResults = clinicalFuture.get();
             if (clinicalQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResults.size(); i++) {
-                    QueryResult clinicalQueryResult = clinicalQueryResults.get(i);
+                    QueryResult<Variant> clinicalQueryResult = clinicalQueryResults.get(i);
                     if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
                         variantAnnotationResults.get(i).getResult().get(0)
-                                .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
+                                .setTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
+                                        .getTraitAssociation());
                     }
                 }
             }
@@ -1233,4 +1577,190 @@ public class VariantAnnotationCalculator { //extends MongoDBAdaptor implements V
         }
     }
 
+    class FutureRepeatsAnnotator implements Callable<List<QueryResult<Repeat>>> {
+        private List<Variant> variantList;
+        private QueryOptions queryOptions;
+
+        FutureRepeatsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+            this.variantList = variantList;
+            this.queryOptions = queryOptions;
+        }
+
+        public List<QueryResult<Repeat>> call() throws Exception {
+//            List<QueryResult<Repeat>> queryResultList
+//                    = repeatsDBAdaptor.getByRegion(variantListToRegionList(variantList), queryOptions);
+
+            long startTime = System.currentTimeMillis();
+            List<QueryResult<Repeat>> queryResultList = new ArrayList<>(variantList.size());
+
+            logger.debug("Query repeats");
+            // Want to return only one QueryResult object per Variant
+            for (Variant variant : variantList) {
+                List<QueryResult<Repeat>> tmpQueryResultList = repeatsDBAdaptor
+                        .getByRegion(breakpointsToRegionList(variant), queryOptions);
+
+                // There may be more than one QueryResult per variant for non SNV variants since there will be
+                // two breakpoints
+                // Reuse one of the QueryResult objects returned by the adaptor
+                QueryResult newQueryResult = tmpQueryResultList.get(0);
+                if (tmpQueryResultList.size() > 1) {
+                    Set<Repeat> repeatSet = new HashSet<>(newQueryResult.getResult());
+                    // Reuse one of the QueryResult objects - new result is the set formed by the repeats corresponding
+                    // to the two breakpoints
+                    repeatSet.addAll(tmpQueryResultList.get(1).getResult());
+                    newQueryResult.setNumResults(repeatSet.size());
+                    newQueryResult.setNumTotalResults(repeatSet.size());
+                    newQueryResult.setResult(new ArrayList(repeatSet));
+                }
+                queryResultList.add(newQueryResult);
+            }
+
+            logger.debug("Repeat query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+                    variantList.size());
+
+            return queryResultList;
+
+        }
+
+        public void processResults(Future<List<QueryResult<Repeat>>> repeatsFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+                throws InterruptedException, ExecutionException {
+//            try {
+            while (!repeatsFuture.isDone()) {
+                Thread.sleep(1);
+            }
+
+            List<QueryResult<Repeat>> queryResultList = repeatsFuture.get();
+            if (queryResultList != null) {
+                for (int i = 0; i < variantAnnotationResults.size(); i++) {
+                    QueryResult<Repeat> queryResult = queryResultList.get(i);
+                    if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+                        variantAnnotationResults.get(i).getResult().get(0)
+                                .setRepeat(queryResult.getResult());
+                    }
+                }
+            }
+//            } catch (ExecutionException e) {
+////            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
+        }
+    }
+
+    class FutureCytobandAnnotator implements Callable<List<QueryResult<Cytoband>>> {
+        private List<Variant> variantList;
+        private QueryOptions queryOptions;
+
+        FutureCytobandAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+            this.variantList = variantList;
+            this.queryOptions = queryOptions;
+        }
+
+        @Override
+        public List<QueryResult<Cytoband>> call() throws Exception {
+            long startTime = System.currentTimeMillis();
+            List<QueryResult<Cytoband>> queryResultList = new ArrayList<>(variantList.size());
+
+            logger.debug("Query cytoband");
+            // Want to return only one QueryResult object per Variant
+            for (Variant variant : variantList) {
+                List<QueryResult<Cytoband>> tmpQueryResultList = genomeDBAdaptor
+                        .getCytobands(breakpointsToRegionList(variant));
+
+                // There may be more than one QueryResult per variant for non SNV variants since there will be
+                // two breakpoints
+                // Reuse one of the QueryResult objects returned by the adaptor
+                QueryResult newQueryResult = tmpQueryResultList.get(0);
+                if (tmpQueryResultList.size() > 1) {
+                    Set<Cytoband> cytobandSet = new HashSet<>(newQueryResult.getResult());
+                    // Reuse one of the QueryResult objects - new result is the set formed by the cytobands corresponding
+                    // to the two breakpoints
+                    cytobandSet.addAll(tmpQueryResultList.get(1).getResult());
+                    newQueryResult.setNumResults(cytobandSet.size());
+                    newQueryResult.setNumTotalResults(cytobandSet.size());
+                    newQueryResult.setResult(new ArrayList(cytobandSet));
+                }
+                queryResultList.add(newQueryResult);
+            }
+
+            logger.debug("Cytoband query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+                    variantList.size());
+            return queryResultList;
+        }
+
+        public void processResults(Future<List<QueryResult<Cytoband>>> cytobandFuture,
+                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+                throws InterruptedException, ExecutionException {
+            while (!cytobandFuture.isDone()) {
+                Thread.sleep(1);
+            }
+
+            List<QueryResult<Cytoband>> queryResultList = cytobandFuture.get();
+            if (queryResultList != null) {
+                if (queryResultList.isEmpty()) {
+                    StringBuilder stringbuilder = new StringBuilder(variantList.get(0).toString());
+                    for (int i = 1; i < variantList.size(); i++) {
+                        stringbuilder.append(",").append(variantList.get(i).toString());
+                    }
+                    logger.warn("NO cytoband was found for any of these variants: {}", stringbuilder.toString());
+                } else {
+                    // Cytoband lists are returned in the same order in which variants are queried
+                    for (int i = 0; i < variantAnnotationResults.size(); i++) {
+                        QueryResult queryResult = queryResultList.get(i);
+                        if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+                            variantAnnotationResults.get(i).getResult().get(0).setCytoband(queryResult.getResult());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+//    private class FutureHgvsAnnotator implements Callable<List<QueryResult<String>>> {
+//        private List<Variant> variantList;
+//        private QueryOptions queryOptions;
+//
+//        FutureHgvsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+//            this.variantList = variantList;
+//            this.queryOptions = queryOptions;
+//        }
+//
+//        @Override
+//        public List<QueryResult<String>> call() throws Exception {
+//            long startTime = System.currentTimeMillis();
+//            List<QueryResult<String>> queryResultList = hgvsCalculator.run(variantList);
+//            logger.debug("HGVS query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
+//                    variantList.size());
+//            return queryResultList;
+//        }
+//
+//        public void processResults(Future<List<QueryResult<Cytoband>>> cytobandFuture,
+//                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
+//                throws InterruptedException, ExecutionException {
+//            while (!cytobandFuture.isDone()) {
+//                Thread.sleep(1);
+//            }
+//
+//            List<QueryResult<Cytoband>> queryResultList = cytobandFuture.get();
+//            if (queryResultList != null) {
+//                if (queryResultList.isEmpty()) {
+//                    StringBuilder stringbuilder = new StringBuilder(variantList.get(0).toString());
+//                    for (int i = 1; i < variantList.size(); i++) {
+//                        stringbuilder.append(",").append(variantList.get(i).toString());
+//                    }
+//                    logger.warn("NO cytoband was found for any of these variants: {}", stringbuilder.toString());
+//                } else {
+//                    // Cytoband lists are returned in the same order in which variants are queried
+//                    for (int i = 0; i < variantAnnotationResults.size(); i++) {
+//                        QueryResult queryResult = queryResultList.get(i);
+//                        if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+//                            variantAnnotationResults.get(i).getResult().get(0).setCytoband(queryResult.getResult());
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
 }
+

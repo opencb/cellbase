@@ -3,12 +3,10 @@
 #' @aliases cbData
 #' @param object an object of class CellBaseResponse
 #' @return a dataframe
+#' @examples 
+#'  cb <- CellBaseR()
+#'  res <- cbGeneClient(object=cb, ids="TET1", resource="info")
+#'  res <- cbData(res)
 #' @export
 setMethod("cbData", "CellBaseResponse", definition = function(object) object@cbData)
 
-##
-setMethod("[","CellBaseResponse",definition = function(x,i,j,drop="missing")
-{
-    .cbData <- x@cbData[i, j]
-    CellBaseResponse(cbData = .cbData)
-})

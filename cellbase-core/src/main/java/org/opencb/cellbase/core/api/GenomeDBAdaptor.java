@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.api;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -69,7 +70,6 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
 
     QueryResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions);
 
-
     @Deprecated
     QueryResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions);
 
@@ -97,5 +97,20 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
 
 //    List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regions, QueryOptions queryOptions);
     List<QueryResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regions, QueryOptions queryOptions);
+
+    default List<QueryResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions) {
+        List<QueryResult<Cytoband>> queryResultList = new ArrayList<>(regionList.size());
+        for (Region region : regionList) {
+            queryResultList.add(getCytobands(region, queryOptions));
+        }
+        return queryResultList;
+    }
+
+    @Deprecated
+    default List<QueryResult<Cytoband>> getCytobands(List<Region> regionList) {
+        return getCytobands(regionList, null);
+    }
+
+    QueryResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions);
 
 }

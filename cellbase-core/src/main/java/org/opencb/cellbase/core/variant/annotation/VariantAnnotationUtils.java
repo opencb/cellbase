@@ -4,8 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailableException;
-import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
-import org.opencb.commons.utils.CryptoUtils;
+import org.opencb.biodata.models.variant.avro.*;
 
 import java.util.*;
 
@@ -73,8 +72,10 @@ public class VariantAnnotationUtils {
     public static final String INTERGENIC_VARIANT = "intergenic_variant";
     public static final String REGULATORY_REGION_VARIANT = "regulatory_region_variant";
     public static final String TF_BINDING_SITE_VARIANT = "TF_binding_site_variant";
-    public static final String UPSTREAM_GENE_VARIANT = "upstream_gene_variant";
-    public static final String DOWNSTREAM_GENE_VARIANT = "downstream_gene_variant";
+    public static final String UPSTREAM_VARIANT = "upstream_variant";
+    public static final String TWOKB_UPSTREAM_VARIANT = "2KB_upstream_variant";
+    public static final String DOWNSTREAM_VARIANT = "downstream_variant";
+    public static final String TWOKB_DOWNSTREAM_VARIANT = "2KB_downstream_variant";
     public static final String SPLICE_DONOR_VARIANT = "splice_donor_variant";
     public static final String SPLICE_ACCEPTOR_VARIANT = "splice_acceptor_variant";
     public static final String INTRON_VARIANT = "intron_variant";
@@ -93,12 +94,16 @@ public class VariantAnnotationUtils {
     public static final String NON_CODING_TRANSCRIPT_EXON_VARIANT = "non_coding_transcript_exon_variant";
     public static final String NON_CODING_TRANSCRIPT_VARIANT = "non_coding_transcript_variant";
     public static final String INFRAME_INSERTION = "inframe_insertion";
+    public static final String INFRAME_VARIANT = "inframe_variant";
     public static final String FRAMESHIFT_VARIANT = "frameshift_variant";
     public static final String CODING_SEQUENCE_VARIANT = "coding_sequence_variant";
     public static final String TRANSCRIPT_ABLATION = "transcript_ablation";
+    public static final String TRANSCRIPT_AMPLIFICATION = "transcript_amplification";
     public static final String COPY_NUMBER_CHANGE = "copy_number_change";
     public static final String TERMINATOR_CODON_VARIANT = "terminator_codon_variant";
     public static final String FEATURE_TRUNCATION = "feature_truncation";
+    public static final String FEATURE_VARIANT = "feature_variant";
+    public static final String STRUCTURAL_VARIANT = "structural_variant";
     public static final String INFRAME_DELETION = "inframe_deletion";
 
     public static final String CDS_START_NF = "cds_start_NF";
@@ -115,9 +120,64 @@ public class VariantAnnotationUtils {
     public static final Map<Integer, String> SIFT_DESCRIPTIONS = new HashMap<>();
     public static final Map<Integer, String> POLYPHEN_DESCRIPTIONS = new HashMap<>();
     public static final Map<String, Integer> SO_SEVERITY = new HashMap<>();
+    public static final Map<String, AlleleOrigin> ORIGIN_STRING_TO_ALLELE_ORIGIN = new HashMap<>();
     public static final Set<String> CODING_SO_NAMES = new HashSet<>();
+    public static final Map<String, ClinicalSignificance> CLINVAR_CLINSIG_TO_ACMG = new HashMap<>();
+    public static final Map<String, TraitAssociation> CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION = new HashMap<>();
+    public static final Map<String, DrugResponseClassification> CLINVAR_CLINSIG_TO_DRUG_RESPONSE = new HashMap<>();
+    public static final HashMap<String, ConsistencyStatus> CLINVAR_REVIEW_TO_CONSISTENCY_STATUS = new HashMap<>();
+    public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
+    public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
 
     static {
+
+        MODEOFINHERITANCE_MAP.put("autosomal dominant inheritance", ModeOfInheritance.monoallelic);
+        MODEOFINHERITANCE_MAP.put("autosomal dominant inheritance with maternal imprinting",
+                ModeOfInheritance.monoallelic_maternally_imprinted);
+        MODEOFINHERITANCE_MAP.put("autosomal dominant inheritance with paternal imprinting",
+                ModeOfInheritance.monoallelic_paternally_imprinted);
+        MODEOFINHERITANCE_MAP.put("autosomal recessive inheritance",
+                ModeOfInheritance.biallelic);
+        MODEOFINHERITANCE_MAP.put("mitochondrial inheritance",
+                ModeOfInheritance.mitochondrial);
+        MODEOFINHERITANCE_MAP.put("sex-limited autosomal dominant",
+                ModeOfInheritance.monoallelic);
+        MODEOFINHERITANCE_MAP.put("x-linked dominant inheritance",
+                ModeOfInheritance.xlinked_monoallelic);
+        MODEOFINHERITANCE_MAP.put("x-linked recessive inheritance",
+                ModeOfInheritance.xlinked_biallelic);
+
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_conflicting_interpretations", ConsistencyStatus.conflict);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_multiple_submitters_no_conflicts", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("criteria_provided_single_submitter", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("reviewed_by_expert_panel", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("conflicting interpretations", ConsistencyStatus.conflict);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("no conflicts", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("single submitter", ConsistencyStatus.congruent);
+        CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.put("reviewed by expert panel", ConsistencyStatus.congruent);
+
+
+        CLINVAR_CLINSIG_TO_ACMG.put("benign", ClinicalSignificance.benign);
+        CLINVAR_CLINSIG_TO_ACMG.put("likely benign", ClinicalSignificance.likely_benign);
+        CLINVAR_CLINSIG_TO_ACMG.put("conflicting interpretations of pathogenicity", ClinicalSignificance.uncertain_significance);
+        CLINVAR_CLINSIG_TO_ACMG.put("likely pathogenic", ClinicalSignificance.likely_pathogenic);
+        CLINVAR_CLINSIG_TO_ACMG.put("pathogenic", ClinicalSignificance.pathogenic);
+        CLINVAR_CLINSIG_TO_ACMG.put("uncertain significance", ClinicalSignificance.uncertain_significance);
+        CLINVAR_CLINSIG_TO_ACMG.put("conflicting data from submitters", ClinicalSignificance.uncertain_significance);
+
+        CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.put("risk factor", TraitAssociation.established_risk_allele);
+        CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.put("protective", TraitAssociation.protective);
+
+        CLINVAR_CLINSIG_TO_DRUG_RESPONSE.put("drug response", DrugResponseClassification.responsive);
+
+        ///////////////////////////////////////////////////////////////////////
+        /////   ClinVar and Cosmic allele origins to SO terms   ///////////////
+        ///////////////////////////////////////////////////////////////////////
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("germline", AlleleOrigin.germline_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("maternal", AlleleOrigin.maternal_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("de novo", AlleleOrigin.de_novo_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("paternal", AlleleOrigin.paternal_variant);
+        ORIGIN_STRING_TO_ALLELE_ORIGIN.put("somatic", AlleleOrigin.somatic_variant);
 
         ///////////////////////////////////////////////////////////////////////
         /////   GENETIC CODE   ////////////////////////////////////////////////
@@ -341,6 +401,7 @@ public class VariantAnnotationUtils {
         COMPLEMENTARY_NT.put('C', 'G');
         COMPLEMENTARY_NT.put('G', 'C');
         COMPLEMENTARY_NT.put('T', 'A');
+        COMPLEMENTARY_NT.put('N', 'N');
 
         POLYPHEN_DESCRIPTIONS.put(0, "probably damaging");
         POLYPHEN_DESCRIPTIONS.put(1, "possibly damaging");
@@ -350,44 +411,47 @@ public class VariantAnnotationUtils {
         SIFT_DESCRIPTIONS.put(0, "tolerated");
         SIFT_DESCRIPTIONS.put(1, "deleterious");
 
-        SO_SEVERITY.put("copy_number_change", 38);
-        SO_SEVERITY.put("transcript_ablation", 37);
-        SO_SEVERITY.put("splice_acceptor_variant", 36);
-        SO_SEVERITY.put("splice_donor_variant", 35);
-        SO_SEVERITY.put("stop_gained", 34);
-        SO_SEVERITY.put("frameshift_variant", 33);
-        SO_SEVERITY.put("stop_lost", 32);
-        SO_SEVERITY.put("terminator_codon_variant", 31);
-        SO_SEVERITY.put("start_lost", 30);
-        SO_SEVERITY.put("initiator_codon_variant", 30);
-        SO_SEVERITY.put("transcript_amplification", 29);
-        SO_SEVERITY.put("inframe_insertion", 28);
-        SO_SEVERITY.put("inframe_deletion", 27);
-        SO_SEVERITY.put("missense_variant", 26);
-        SO_SEVERITY.put("splice_region_variant", 25);
-        SO_SEVERITY.put("incomplete_terminal_codon_variant", 24);
-        SO_SEVERITY.put("stop_retained_variant", 23);
-        SO_SEVERITY.put("synonymous_variant", 22);
-        SO_SEVERITY.put("coding_sequence_variant", 21);
-        SO_SEVERITY.put("mature_miRNA_variant", 20);
-        SO_SEVERITY.put("5_prime_UTR_variant", 19);
-        SO_SEVERITY.put("3_prime_UTR_variant", 18);
-        SO_SEVERITY.put("non_coding_transcript_exon_variant", 17);
-        SO_SEVERITY.put("intron_variant", 16);
-        SO_SEVERITY.put("NMD_transcript_variant", 15);
-        SO_SEVERITY.put("non_coding_transcript_variant", 14);
-        SO_SEVERITY.put("2KB_upstream_gene_variant", 13);
-        SO_SEVERITY.put("upstream_gene_variant", 12);
-        SO_SEVERITY.put("2KB_downstream_gene_variant", 11);
-        SO_SEVERITY.put("downstream_gene_variant", 10);
-        SO_SEVERITY.put("TFBS_ablation", 9);
-        SO_SEVERITY.put("TFBS_amplification", 8);
-        SO_SEVERITY.put("TF_binding_site_variant", 7);
-        SO_SEVERITY.put("regulatory_region_ablation", 6);
-        SO_SEVERITY.put("regulatory_region_amplification", 5);
-        SO_SEVERITY.put("regulatory_region_variant", 4);
-        SO_SEVERITY.put("feature_elongation", 3);
-        SO_SEVERITY.put("feature_truncation", 2);
+        SO_SEVERITY.put("copy_number_change", 41);
+        SO_SEVERITY.put("transcript_ablation", 40);
+        SO_SEVERITY.put("structural_variant", 39);
+        SO_SEVERITY.put("splice_acceptor_variant", 38);
+        SO_SEVERITY.put("splice_donor_variant", 37);
+        SO_SEVERITY.put("stop_gained", 36);
+        SO_SEVERITY.put("frameshift_variant", 35);
+        SO_SEVERITY.put("stop_lost", 34);
+        SO_SEVERITY.put("terminator_codon_variant", 33);
+        SO_SEVERITY.put("start_lost", 33);
+        SO_SEVERITY.put("initiator_codon_variant", 32);
+        SO_SEVERITY.put("transcript_amplification", 31);
+        SO_SEVERITY.put("inframe_insertion", 30);
+        SO_SEVERITY.put("inframe_deletion", 29);
+        SO_SEVERITY.put("inframe_variant", 28);
+        SO_SEVERITY.put("missense_variant", 27);
+        SO_SEVERITY.put("splice_region_variant", 26);
+        SO_SEVERITY.put("incomplete_terminal_codon_variant", 25);
+        SO_SEVERITY.put("stop_retained_variant", 24);
+        SO_SEVERITY.put("synonymous_variant", 23);
+        SO_SEVERITY.put("coding_sequence_variant", 22);
+        SO_SEVERITY.put("mature_miRNA_variant", 21);
+        SO_SEVERITY.put("5_prime_UTR_variant", 20);
+        SO_SEVERITY.put("3_prime_UTR_variant", 19);
+        SO_SEVERITY.put("non_coding_transcript_exon_variant", 18);
+        SO_SEVERITY.put("intron_variant", 17);
+        SO_SEVERITY.put("NMD_transcript_variant", 16);
+        SO_SEVERITY.put("non_coding_transcript_variant", 15);
+        SO_SEVERITY.put("2KB_upstream_variant", 14);
+        SO_SEVERITY.put("upstream_variant", 13);
+        SO_SEVERITY.put("2KB_downstream_variant", 12);
+        SO_SEVERITY.put("downstream_variant", 11);
+        SO_SEVERITY.put("TFBS_ablation", 10);
+        SO_SEVERITY.put("TFBS_amplification", 9);
+        SO_SEVERITY.put("TF_binding_site_variant", 8);
+        SO_SEVERITY.put("regulatory_region_ablation", 7);
+        SO_SEVERITY.put("regulatory_region_amplification", 6);
+        SO_SEVERITY.put("regulatory_region_variant", 5);
+        SO_SEVERITY.put("feature_elongation", 4);
+        SO_SEVERITY.put("feature_truncation", 3);
+        SO_SEVERITY.put("feature_variant", 2);
         SO_SEVERITY.put("intergenic_variant", 1);
 
         CODING_SO_NAMES.add(STOP_RETAINED_VARIANT);
@@ -466,15 +530,17 @@ public class VariantAnnotationUtils {
                 .append(StringUtils.leftPad(Integer.toString(start), 10, " "))
                 .append(SEPARATOR_CHAR);
 
-        if (reference.length() > Variant.SV_THRESHOLD) {
-            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
-        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
+//        if (reference.length() > Variant.SV_THRESHOLD) {
+//            stringBuilder.append(new String(CryptoUtils.encryptSha1(reference)));
+//        } else if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
+        if (!(reference == null || reference.isEmpty() || reference.equals("-"))) {
             stringBuilder.append(reference);
         }
         stringBuilder.append(SEPARATOR_CHAR);
-        if (alternate.length() > Variant.SV_THRESHOLD) {
-            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
-        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
+//        if (alternate.length() > Variant.SV_THRESHOLD) {
+//            stringBuilder.append(new String(CryptoUtils.encryptSha1(alternate)));
+//        } else if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
+        if (!(alternate == null  || alternate.isEmpty() || alternate.equals("-"))) {
             stringBuilder.append(alternate);
         }
         return stringBuilder.toString();
@@ -487,5 +553,26 @@ public class VariantAnnotationUtils {
         return stringBuilder.append(chromosome);
     }
 
+    public static VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
+        if (variant.getType() == null) {
+            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
+        }
+        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
+        // FIXME: insertions and deletions
+//        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
+        if (variant.getType().equals(VariantType.INDEL)) {
+            if (variant.getReference().isEmpty()) {
+//                variant.setType(VariantType.INSERTION);
+                return VariantType.INSERTION;
+            } else if (variant.getAlternate().isEmpty()) {
+//                variant.setType(VariantType.DELETION);
+                return VariantType.DELETION;
+            } else {
+                return VariantType.MNV;
+            }
+        }
+        return variant.getType();
+//        return getVariantType(variant.getReference(), variant.getAlternate());
+    }
 
 }

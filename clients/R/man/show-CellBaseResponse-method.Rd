@@ -2,7 +2,6 @@
 % Please edit documentation in R/show-methods.R
 \docType{methods}
 \name{show,CellBaseResponse-method}
-\alias{show}
 \alias{show,CellBaseResponse-method}
 \title{The show method for CellBaseResponse class}
 \usage{

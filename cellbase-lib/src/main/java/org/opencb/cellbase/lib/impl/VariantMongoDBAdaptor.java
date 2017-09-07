@@ -29,6 +29,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
 import org.opencb.commons.datastore.core.Query;
@@ -39,6 +40,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 26/11/15.
@@ -67,6 +69,18 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         Bson regex = Filters.regex("ids", Pattern.compile("^" + id));
         Bson include = Projections.include("ids", "chromosome", "start", "end");
         return mongoDBCollection.find(regex, include, options);
+    }
+
+    @Override
+    public QueryResult<String> getConsequenceTypes(Query query) {
+        // TODO we need to check if Query is empty!
+        List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
+                .sorted()
+                .collect(Collectors.toList());
+        QueryResult<String> queryResult = new QueryResult<>("consequence_types");
+        queryResult.setNumResults(consequenceTypes.size());
+        queryResult.setResult(consequenceTypes);
+        return queryResult;
     }
 
     @Override
@@ -204,30 +218,29 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
-                MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
         createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
-        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
-                "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
-        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
-                "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
         createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
-//        createOrQuery(query, QueryParams.REFERENCE.key(), "reference", andBsonList);
+        createOrQuery(query, QueryParams.END.key(), "end", andBsonList, QueryValueType.INTEGER);
         if (query.containsKey(QueryParams.REFERENCE.key())) {
             createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
         }
         if (query.containsKey(QueryParams.ALTERNATE.key())) {
             createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
         }
-//        createOrQuery(query, QueryParams.ALTERNATE.key(), "alternate", andBsonList);
+        createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
+                MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
+        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+
+        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
+                "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
+        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
+                "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
+        createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
+        createOrQuery(query, QueryParams.SV_TYPE.key(), "sv.type", andBsonList);
+
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), "annotation.consequenceTypes.ensemblGeneId",
-//                andBsonList);
         createGeneOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), andBsonList);
-
-//        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

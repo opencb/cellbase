@@ -1,0 +1,30 @@
+---
+Test
+---
+!define TEST_SYSTEM {slim}
+
+#!define CELLBASE_WAR {cellbase}
+!define CELLBASE_WAR {cellbase-4.6.0-SNAPSHOT}
+!define CELLBASE_VERSION {v4}
+#!define TEST_HOST {bioinfo.hpc.cam.ac.uk}
+!define TEST_HOST {bioinfodev.hpc.cam.ac.uk}
+!path target/appassembler/dependencies/*.jar
+
+!|import|
+|smartrics.rest.fitnesse.fixture|
+
+!|Table: Rest Fixture | http://bioinfoint.hpc.cam.ac.uk/|
+|let|baseURL|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.6.0-SNAPSHOT/webservices/rest/v4|
+|let|baseURL_hsapiens|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}/hsapiens|http://bioinfodev.hpc.cam.ac.uk/cellbase-4.6.0-SNAPSHOT/webservices/rest/v4/hsapiens|
+|let|useCache|const|false|false|
+
+| Table: Rest Fixture Config |  with-compareJSON.js |
+| restfixture.javascript.imports.map | !- compareJSON=fitnesse/FitNesseRoot/files/javascript/compareJSON.js-! |
+| restfixture.display.toggle.for.cells.larger.than|200|
+| restfixture.display.actual.on.right | false |
+| http.client.connection.timeout| 200000|
+
+| Table: Rest Fixture Config |  isPresent.js |
+| restfixture.javascript.imports.map | !- isPresent=fitnesse/FitNesseRoot/files/javascript/isPresent.js-! |
+
+

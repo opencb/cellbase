@@ -16,14 +16,15 @@
 
 package org.opencb.cellbase.server.ws.regulatory;
 
-import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
-import org.opencb.cellbase.core.db.api.regulatory.MirnaDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -40,62 +41,62 @@ public class MiRnaGeneWSServer extends RegulatoryWSServer {
         super(version, species, uriInfo, hsr);
     }
 
-    @GET
-    @Path("/{mirnaId}/info")
-    public Response getMiRnaMatureInfo(@PathParam("mirnaId") String query) {
-        try {
-            parseQueryParams();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(Splitter.on(",").splitToList(query)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMiRnaMatureInfo", e.toString());
-        }
-    }
-
-    @GET
-    @Path("/{mirnaId}/fullinfo")
-    public Response getMiRnaMatureFullInfo(@PathParam("mirnaId") String query) {
-        try {
-            parseQueryParams();
-            // miRnaGene y Ensembl Genes + Transcripts
-            // miRnaMatures
-            // mirnaDiseases
-            // mirnaTargets
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(Splitter.on(",").splitToList(query)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMiRnaMatureFullInfo", e.toString());
-        }
-    }
-
-    @GET
-    @Path("/{mirnaId}/target")
-    public Response getMirnaTargets(@PathParam("mirnaId") String query, @DefaultValue("") @QueryParam("source") String source) {
-        try {
-            parseQueryParams();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaTargetsByMiRnaGeneList(Splitter.on(",").splitToList(query),
-                    Splitter.on(",").splitToList(source)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMirnaTargets", e.toString());
-        }
-    }
-
-    @GET
-    @Path("/{mirnaId}/disease")
-    public Response getMinaDisease(@PathParam("mirnaId") String query) {
-        try {
-            parseQueryParams();
-            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
-            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaGeneList(Splitter.on(",").splitToList(query)));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return createErrorResponse("getMinaDisease", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{mirnaId}/info")
+//    public Response getMiRnaMatureInfo(@PathParam("mirnaId") String query) {
+//        try {
+//            parseQueryParams();
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
+//            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(Splitter.on(",").splitToList(query)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMiRnaMatureInfo", e.toString());
+//        }
+//    }
+//
+//    @GET
+//    @Path("/{mirnaId}/fullinfo")
+//    public Response getMiRnaMatureFullInfo(@PathParam("mirnaId") String query) {
+//        try {
+//            parseQueryParams();
+//            // miRnaGene y Ensembl Genes + Transcripts
+//            // miRnaMatures
+//            // mirnaDiseases
+//            // mirnaTargets
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
+//            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaGenesByNameList(Splitter.on(",").splitToList(query)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMiRnaMatureFullInfo", e.toString());
+//        }
+//    }
+//
+//    @GET
+//    @Path("/{mirnaId}/target")
+//    public Response getMirnaTargets(@PathParam("mirnaId") String query, @DefaultValue("") @QueryParam("source") String source) {
+//        try {
+//            parseQueryParams();
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
+//            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaTargetsByMiRnaGeneList(Splitter.on(",").splitToList(query),
+//                    Splitter.on(",").splitToList(source)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMirnaTargets", e.toString());
+//        }
+//    }
+//
+//    @GET
+//    @Path("/{mirnaId}/disease")
+//    public Response getMinaDisease(@PathParam("mirnaId") String query) {
+//        try {
+//            parseQueryParams();
+//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.version);
+//            return generateResponse(query, mirnaDBAdaptor.getAllMiRnaDiseasesByMiRnaGeneList(Splitter.on(",").splitToList(query)));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return createErrorResponse("getMinaDisease", e.toString());
+//        }
+//    }
 
     @GET
     public Response defaultMethod() {

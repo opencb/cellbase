@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.transform
 
+import org.opencb.cellbase.app.transform.clinical.variant.GwasParser
 import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import org.opencb.cellbase.core.common.clinical.gwas.Gwas
 import spock.lang.Specification

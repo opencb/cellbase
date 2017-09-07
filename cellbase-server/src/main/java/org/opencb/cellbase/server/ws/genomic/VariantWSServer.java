@@ -50,12 +50,12 @@ public class VariantWSServer extends GenericRestWSServer {
     protected static final HashMap<String, List<Transcript>> CACHE_TRANSCRIPT = new HashMap<>();
 
     public VariantWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                                   defaultValue = "latest") String version,
+                           @ApiParam(name = "version", value = "Possible values: v3, v4",
+                                   defaultValue = "v4") String version,
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                    + "of potentially available species ids, please refer to: "
-                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -159,10 +159,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "POST",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies}. In addition, annotation was already "
-            + "pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of variants "
-            + "will be included in that collection, meaning that the use of this cache may significantly improve "
-            + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
+            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
                                                         + "annotate, e.g. "
@@ -175,11 +172,36 @@ public class VariantWSServer extends GenericRestWSServer {
                                                                 + "normalized or not. Normalization process includes "
                                                                 + "decomposing MNVs", allowableValues = "false,true",
                                                         defaultValue = "false", required = false) Boolean normalize,
+                                                @QueryParam("phased")
+                                                    @ApiParam(name = "phased",
+                                                            value = "Boolean to indicate whether phase should be considered "
+                                                                    + "during the annotation process",
+                                                            allowableValues = "false,true", defaultValue = "false",
+                                                            required = false) Boolean phased,
                                                 @QueryParam("useCache")
                                                     @ApiParam(name = "useCache",
-                                                            value = "Boolean to indicate whether cached annotation should be"
+                                                            value = "useCache=true is discouraged unless the server"
+                                                                    + " administrator advises so. Boolean to indicate"
+                                                                    + " whether cached annotation should be"
                                                                     + " used or not", allowableValues = "false,true",
-                                                            defaultValue = "false", required = false) Boolean useCache) {
+                                                            defaultValue = "false", required = false) Boolean useCache,
+                                                @QueryParam("imprecise")
+                                                    @ApiParam(name = "imprecise",
+                                                            value = "Boolean to indicate whether imprecise search must be"
+                                                                    + " used or not", allowableValues = "false,true",
+                                                            defaultValue = "true", required = false) Boolean imprecise,
+                                                @QueryParam("svExtraPadding")
+                                                    @ApiParam(name = "svExtraPadding",
+                                                            value = "Integer to optionally provide the size of the extra"
+                                                                    + " padding to be used when annotating imprecise (or not)"
+                                                                    + " structural variants",
+                                                            defaultValue = "0", required = false) Integer svExtraPadding,
+                                                @QueryParam("cnvExtraPadding")
+                                                    @ApiParam(name = "cnvExtraPadding",
+                                                            value = "Integer to optionally provide the size of the extra"
+                                                                    + " padding to be used when annotating imprecise (or not)"
+                                                                    + " CNVs",
+                                                            defaultValue = "0", required = false) Integer cnvExtraPadding) {
 
         try {
             parseQueryParams();
@@ -194,8 +216,20 @@ public class VariantWSServer extends GenericRestWSServer {
             if (useCache != null) {
                 queryOptions.put("useCache", useCache);
             }
+            if (phased != null) {
+                queryOptions.put("phased", phased);
+            }
+            if (imprecise != null) {
+                queryOptions.put("imprecise", imprecise);
+            }
+            if (svExtraPadding != null) {
+                queryOptions.put("svExtraPadding", svExtraPadding);
+            }
+            if (cnvExtraPadding != null) {
+                queryOptions.put("cnvExtraPadding", cnvExtraPadding);
+            }
             VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
             List<QueryResult<VariantAnnotation>> queryResultList =
                     variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
@@ -210,10 +244,7 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies}. In addition, annotation was already "
-            + "pre-calculated and cached in our servers for the whole ENSEMBL variation collection. Most of variants "
-            + "will be included in that collection, meaning that the use of this cache may significantly improve "
-            + "performance. Use of this cache by the server can be tuned with the \"useCache\" parameter. ",
+            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     public Response getAnnotationByVariantsGET(@PathParam("variants")
                                                @ApiParam(name = "variants", value = "Comma separated list of variants to"
@@ -234,15 +265,34 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        allowableValues = "false,true", defaultValue = "false",
                                                        required = false) Boolean phased,
                                                @QueryParam("useCache")
-                                               @ApiParam(name = "useCache",
-                                                       value = "Boolean to indicate whether cached annotation should be"
-                                                               + " used or not", allowableValues = "false,true",
-                                                       defaultValue = "false", required = false) Boolean useCache) {
+                                                   @ApiParam(name = "useCache",
+                                                           value = "useCache=true is discouraged unless the server"
+                                                                   + " administrator advises so. Boolean to indicate"
+                                                                   + " whether cached annotation should be"
+                                                                   + " used or not", allowableValues = "false,true",
+                                                           defaultValue = "false", required = false) Boolean useCache,
+                                               @QueryParam("imprecise")
+                                                   @ApiParam(name = "imprecise",
+                                                           value = "Boolean to indicate whether imprecise search must be"
+                                                                   + " used or not", allowableValues = "false,true",
+                                                           defaultValue = "true", required = false) Boolean imprecise,
+                                               @QueryParam("svExtraPadding")
+                                                   @ApiParam(name = "svExtraPadding",
+                                                           value = "Integer to optionally provide the size of the extra"
+                                                                   + " padding to be used when annotating imprecise (or not)"
+                                                                   + " structural variants",
+                                                           defaultValue = "0", required = false) Integer svExtraPadding,
+                                               @QueryParam("cnvExtraPadding")
+                                                   @ApiParam(name = "cnvExtraPadding",
+                                                           value = "Integer to optionally provide the size of the extra"
+                                                                   + " padding to be used when annotating imprecise (or not)"
+                                                                   + " CNVs",
+                                                           defaultValue = "0", required = false) Integer cnvExtraPadding) {
         try {
             parseQueryParams();
             List<Variant> variantList = Variant.parseVariants(variants);
             VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory2);
+                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
             if (normalize != null) {
                 queryOptions.put("normalize", normalize);
             }
@@ -251,6 +301,15 @@ public class VariantWSServer extends GenericRestWSServer {
             }
             if (phased != null) {
                 queryOptions.put("phased", phased);
+            }
+            if (imprecise != null) {
+                queryOptions.put("imprecise", imprecise);
+            }
+            if (svExtraPadding != null) {
+                queryOptions.put("svExtraPadding", svExtraPadding);
+            }
+            if (cnvExtraPadding != null) {
+                queryOptions.put("cnvExtraPadding", cnvExtraPadding);
             }
             logger.debug(queryOptions.toJson());
             List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
@@ -274,7 +333,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                                     required = true) String variants) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
             List<QueryResult<Score>> functionalScoreVariant =
                     variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);

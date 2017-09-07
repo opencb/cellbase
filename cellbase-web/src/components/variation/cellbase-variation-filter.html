@@ -14,22 +14,85 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../shared/cellbase-shared-styles.html">
 <link rel="import" href="../common/cellbase-options-list.html">
 <link rel="import" href="../common/cellbase-filter-toolbar.html">
 
 <dom-module id="cellbase-variation-filter">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles">
-            .menu-scroll{
-                max-height: 300px;
+        <style is="custom-style" include="jso-styles">
+            .popFreqName {
+                font-size: 12px;
+                color: #797979;
+            }
+
+            .custom-sized-input {
+                max-width: 60px;
+                height: 20px;
+            }
+
+            span + span {
+                margin-left: 10px;
+            }
+
+            .ct-scroll {
+                max-height: 450px;
                 overflow-y: scroll;
             }
+
+            .ct-tree-view,
+            .ct-tree-view * {
+                padding: 0;
+                margin: 0;
+                list-style: none;
+            }
+
+            .ct-tree-view li ul {
+                margin: 0 0 0 22px;
+            }
+
+            .ct-tree-view * {
+                vertical-align: middle;
+            }
+
+            .ct-tree-view {
+                font-size: 14px;
+            }
+
+            .ct-tree-view input[type="checkbox"] {
+                cursor: pointer;
+            }
+
+            .ct-item {
+                white-space: nowrap;
+                display:inline
+            }
+
+            div.block {
+                overflow:hidden;
+            }
+
+            div.block label {
+                width:80px;
+                display:block;
+                float:left;
+                text-align:left;
+                font-weight: normal;
+            }
+
+            select + select {
+                margin-left: 20px;
+            }
+
+            select + input {
+                margin-left: 20px;
+            }
+
             .variation-display {
                 max-height: 800px;
                 overflow: auto;
+            }
+            .highlight {
+                background-color: lightblue;
             }
         </style>
 
@@ -98,6 +161,170 @@
                             </div>
                         </div>
 
+                        <!-- Variant Type filter -->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="typeHeading">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#type" aria-expanded="false" aria-controls="type">
+                                        Type
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="type" class="panel-collapse collapse" role="tabpanel" aria-labelledby="typeHeading">
+                                <div class="panel-body">
+                                    <div>
+                                        <input type="checkbox" value="SNV,SNP"> SNV<br>
+                                        <input type="checkbox" value="MNV"> MNV<br>
+                                        <input type="checkbox" value="CNV"> CNV<br>
+                                        <input type="checkbox" value="SV"> SV<br>
+                                        <input type="checkbox" value="INDEL"> INDEL
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Population Frequency filter-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="populationFrequencyHeading">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#populationFrequency" aria-expanded="false" aria-controls="populationFrequency">
+                                        Population Frequency
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="populationFrequency" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="populationFrequencyHeading">
+                                <div class="panel-body">
+
+                                    <!-- This code create the population frequencies menu filter form populationFrequencies from config.js -->
+                                    <template is="dom-repeat" items="{{populationFrequencies.studies}}" as="study">
+                                        <label style="font-weight: bold;"><i class="fa fa-plus" on-click="handleCollapseAction" data-id="{{study.id}}" style="cursor: pointer;"></i>&nbsp;{{study.title}}</label>
+
+                                        <!-- If there is not submenu we just display a button -->
+                                        <template is="dom-if" if="{{study.populations}}">
+                                            <div id="{{study.id}}" hidden>
+                                                <template is="dom-repeat" items="{{study.populations}}" as="popFreq">
+                                                    <label class="popFreqName">{{popFreq.title}}</label>
+                                                    <div class="horizontal layout">
+                                                        <span>MAF</span>
+                                                        <span>
+                                                    <select name="{{popFreq.id}}Operator" id="{{study.id}}{{popFreq.id}}Operator">
+                                                        <option value="<" selected><</option>
+                                                        <option value="<="><=</option>
+                                                        <option value=">">></option>
+                                                        <option value=">=">>=</option>
+                                                    </select>
+                                                </span>
+                                                        <span>
+                                                    <input type="text" value="" class="custom-sized-input" name="{{study.id}}_{{popFreq.id}}" id="{{study.id}}{{popFreq.id}}">
+                                                </span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <br>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Protein Substitution Scores filter-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="proteinSubstitutionScoreHeading">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#proteinSubstitutionScore"
+                                       aria-expanded="false" aria-controls="proteinSubstitutionScore">
+                                        Protein Substitution Score
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="proteinSubstitutionScore" class="panel-collapse collapse" role="tabpanel" aria-labelledby="proteinSubstitutionScoreHeading">
+                                <div class="panel-body">
+                                    <div>
+                                        <label>SIFT</label><br>
+                                        <select class="options" name="sift" id="siftValues" style="width: 90px" on-change="checkScore">
+                                            <option value="none" selected>None</option>
+                                            <option value="tolerated">Tolerated</option>
+                                            <option value="deleterious">Deleterious</option>
+                                            <option value="score">Score...</option>
+                                        </select>
+                                        <select name="siftOperator" id="siftOperator">
+                                            <option value="<" selected><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">">></option>
+                                            <option value=">=">>=</option>
+                                        </select>
+                                        <input type="text" value="" class="custom-sized-input" id="siftInput" name="sift" disabled>
+                                    </div>
+                                    <div>
+                                        <label>Polyphen</label><br>
+                                        <select class="options" name="polyphen" id="polyphenValues" style="width: 90px" on-change="checkScore">
+                                            <option value="none" selected>None</option>
+                                            <option value="benign">Benign</option>
+                                            <option value="unknown">Unknown</option>
+                                            <option value="possibly damaging">Possibly damaging</option>
+                                            <option value="probably damaging">Probably damaging</option>
+                                            <option value="possibly damaging,probably damaging">Possibly & Probably damaging</option>
+                                            <option value="score">Score...</option>
+                                        </select>
+                                        <select name="polyphenOperator" id="polyphenOperator" disabled>
+                                            <option value="<" selected><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">">></option>
+                                            <option value=">=">>=</option>
+                                        </select>
+                                        <input type="text" value="" class="custom-sized-input" id="polyphenInput" name="polyphen" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Conservation Scores filter-->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="conservationFilterHeading">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#conservationFilter" aria-expanded="false" aria-controls="conservationFilter">
+                                        Conservation
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="conservationFilter" class="panel-collapse collapse" role="tabpanel" aria-labelledby="conservationFilterHeading">
+                                <div class="panel-body">
+                                    <div class="block">
+                                        <label>PhyloP</label>
+                                        <select name="phylopOperator" id="phylopOperator">
+                                            <option value="<" selected><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">">></option>
+                                            <option value=">=">>=</option>
+                                        </select>
+                                        <input type="text" value="" class="custom-sized-input" id="phylopInput" name="phylop">
+                                    </div>
+                                    <div class="block">
+                                        <label>PhastCons</label>
+                                        <select name="phastconsOperator" id="phastconsOperator">
+                                            <option value="<" selected><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">">></option>
+                                            <option value=">=">>=</option>
+                                        </select>
+                                        <input type="text" value="" class="custom-sized-input" id="phastconsInput" name="phastCons">
+                                    </div>
+                                    <div class="block">
+                                        <label>Gerp</label>
+                                        <select name="gerpOperator" id="gerpOperator">
+                                            <option value="<" selected><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">">></option>
+                                            <option value=">=">>=</option>
+                                        </select>
+                                        <input type="text" value="" class="custom-sized-input" id="gerpInput" name="gerp">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!--Consequence Types filter menu-->
                         <div class="panel panel-default">
                             <div class="panel-heading" role="tab" id="headingThree">
@@ -109,25 +336,62 @@
                                 </h4>
                             </div>
                             <div id="consequenceTypes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                                <div class="panel-body menu-scroll">
-                                    <cellbase-options-list cellbase-client={{cellbaseClient}} data-type="consequence_types" selected={{consequenceTypes}}></cellbase-options-list>
+                                <div class="panel-body ct-scroll">
+                                    <div class="ct-tree-view ct-item">
+                                        <ul id="consequenceTypeFilter">
+                                            <template is="dom-repeat" items="{{consequenceTypes.categories}}" as="category">
+                                                <li id="{{category.title}}">
+                                                    <template is="dom-if" if="{{checkTitle(category)}}">
+                                                        <input type="checkbox" on-change="updateConsequenceTypeFilter"> {{category.title}}
+                                                    </template>
+                                                    <template is="dom-if" if="{{!checkTitle(category)}}">
+                                                        <input type="checkbox" on-change="updateConsequenceTypeFilter"> {{category.name}}
+                                                    </template>
+                                                    <ul>
+                                                        <template is="dom-repeat" items="{{category.terms}}">
+                                                            <li><input type="checkbox" id="{{item.id}}" on-change="updateConsequenceTypeFilter" class="soTermCheckBox"> <span title="{{item.description}}">
+                                                        {{item.name}} (<a href="http://www.sequenceontology.org/browser/current_svn/term/{{item.id}}" target="_blank">{{item.id}}</a>)</span></li>
+                                                        </template>
+                                                    </ul>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!--Population frequency filter menu-->
+                        <!--Cadd Scores filter-->
                         <div class="panel panel-default">
-                            <div class="panel-heading" role="tab" id="headingFive">
+                            <div class="panel-heading" role="tab" id="caddFilterHeading">
                                 <h4 class="panel-title">
-                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
-                                       href="#variationPopulationFrequency" aria-expanded="false" aria-controls="variationPopulationFrequency">
-                                        Population Frequencies
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#caddFilter" aria-expanded="false" aria-controls="caddFilter">
+                                        Cadd
                                     </a>
                                 </h4>
                             </div>
-                            <div id="variationPopulationFrequency" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+                            <div id="caddFilter" class="panel-collapse collapse" role="tabpanel" aria-labelledby="caddFilterHeading">
                                 <div class="panel-body">
-                                    <textarea id="variationPopulationFrequencyText" class="form-control" rows="3"></textarea>
+                                    <div class="block">
+                                        <label>Raw</label>
+                                        <select name="caddRawOperator" id="caddRawOperator">
+                                            <option value="<" selected><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">">></option>
+                                            <option value=">=">>=</option>
+                                        </select>
+                                        <input type="text" value="" class="custom-sized-input" id="caddRawInput" name="caddRaw">
+                                    </div>
+                                    <div class="block">
+                                        <label>Scaled</label>
+                                        <select name="caddRScaledOperator" id="caddScaledOperator">
+                                            <option value="<" selected><</option>
+                                            <option value="<="><=</option>
+                                            <option value=">">></option>
+                                            <option value=">=">>=</option>
+                                        </select>
+                                        <input type="text" value="" class="custom-sized-input" id="caddScaledInput" name="caddScaled">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -141,12 +405,12 @@
                         <i id="variationSpinImg" class="fa fa-circle-o-notch fa-spin" style="display:none"></i>
                         <br>
                         <template is="dom-repeat" items="{{result}}">
-                            <div>
-                                <b on-click="_updateVariationView" id="{{item.ids}}" style="cursor: pointer">{{item.ids}}</b>
+                            <div on-click="_updateVariationView" id="{{item.id}}" style="cursor: pointer" class="variationResultDiv">
+                                <b>{{item.id}}</b>
                                 <i>{{item.annotation.displayConsequenceType}}</i><br>
-                                {{item.chromosome}}:{{item.start}}-{{item.end}}
-                                <hr>
+                                {{item.location}}
                             </div>
+                            <hr>
                         </template>
                     </div>
                 </div>
@@ -160,11 +424,17 @@
             properties: {
                 variationId: {
                     type: String,
+                    observer: 'variationIdChanged',
                     notify: true
                 },
                 cellbaseClient: {
-                    type: Object,
-                    notify: true
+                    type: Object
+                },
+                populationFrequencies: {
+                    type: Object
+                },
+                consequenceTypes: {
+                    type: Object
                 },
                 result: {
                     type: Array,
@@ -174,65 +444,126 @@
                     type: Array,
                     value: []
                 },
-                consequenceTypes: {
-                    type: Array,
-                    value: []
+                clearConsequenceType: {
+                    type: String,
+                    value: ""
                 }
             },
-            clear: function (e) {
-                // we empty the textareas
+            handleCollapseAction: function (e) {
+                let id = e.target.dataId;
+                let elem = $('#' + id)[0];
+                elem.hidden = !elem.hidden;
+                if (elem.hidden) {
+                    e.target.className = "fa fa-plus";
+                } else {
+                    e.target.className = "fa fa-minus";
+                }
+            },
+            checkScore: function (e) {
+                if (e.target.value == "score") {
+                    $("#" + e.target.name +"Input").prop("disabled", false);
+                    $("#" + e.target.name +"Operator").prop("disabled", false);
+                } else {
+                    $("#" + e.target.name + "Input").val("");
+                    $("#" + e.target.name + "Operator").val("<");
+                    $("#" + e.target.name + "Input").prop("disabled", true);
+                    $("#" + e.target.name + "Operator").prop("disabled", true);
+                }
+            },
+            checkTitle: function(consequenceType) {
+                return typeof consequenceType.title !== "undefined" && consequenceType.title != null;
+            },
+            updateConsequenceTypeFilter: function(e) {
+                let soTerms = [];
+                if (e.target.parentNode.id != "") {
+                    $("#" + e.target.parentNode.id).children('ul').children('li').children('input').prop("checked", e.target.checked);
+                }
+                let selected = $('.soTermCheckBox:checked');
+                for (let i = 0; i < selected.length; i++) {
+                    let node = selected[i];
+                    soTerms.push($(node).attr('id'));
+                }
+                this.set('ct', soTerms);
+            },
+            clear: function() {
                 this.$.variationFilterIdsTextarea.value = "";
                 this.$.variationRegionList.value = "";
                 this.$.variationPopulationFrequencyText.value= "";
+//                this.consequenceTypes = [];
+//                this.clearConsequenceType = Utils.randomString(6);
             },
-            loadExample: function (e) {
+            loadExample: function() {
+                this.clear();
                 this.$.variationFilterIdsTextarea.value = "rs666";
             },
-            executeQuery: function (e) {
+            variationIdChanged: function () {
+                this.$.variationFilterIdsTextarea.value = this.variationId;
+                this.executeQuery();
+            },
+            executeQuery: function() {
                 // activate the GIF
                 $('#variationSpinImg').show();
 
                 // We first build the query params object
-                let queryParams = {include: "ids,chromosome,start,end,annotation.displayConsequenceType"};
+                let queryParams = {};
+
+                if (this.$.variationFilterIdsTextarea.value != "") {
+                    queryParams.id = this.$.variationFilterIdsTextarea.value;
+                }
+
+                if (this.$.variationRegionList.value != "") {
+                    queryParams.region = this.$.variationRegionList.value;
+                }
+
                 if (this.consequenceTypes.length > 0) {
                     queryParams.consequenceType = this.consequenceTypes.join(",");
                 }
-//                if (this.$.geneFilterDrugsTextarea.value != "") {
-//                    queryParams.drugs = this.$.geneFilterDrugsTextarea.value;
-//                }
+                // TODO add population frequency filter
 
-                //
                 this.result= [];
                 let _this = this;
-                let success = function (response) {
-                    for(let i in response.response) {
-                        for(let j in response.response[i].result) {
-                            _this.push('result',response.response[i].result[j]);
-                        }
-                    }
-                    // remove the GIF
-                    $('#variationSpinImg').hide();
-                };
-
-                // Now we execute the query. Note that ID are preferred
-                if (this.$.variationFilterIdsTextarea.value !== "") {
-                    this.cellbaseClient.get('feature','variation', this.$.variationFilterIdsTextarea.value, 'info', queryParams, {success: success, async: true});
+                if (Object.keys(queryParams).length > 0) {
+                    queryParams.include = "id,chromosome,start,end,annotation.displayConsequenceType";
+                    this.cellbaseClient.get('feature', 'variation', null, 'search', queryParams, {})
+                        .then(function (response) {
+                            for(let i in response.response) {
+                                if (response.response[i].result.length > 0) {
+                                    for(let j in response.response[i].result) {
+                                        response.response[i].result[j].location = response.response[i].result[j].chromosome + ":" + response.response[i].result[j].start + "-"
+                                            + response.response[i].result[j].end;
+                                        _this.push('result',response.response[i].result[j]);
+                                    }
+                                } else {
+                                    let obj = {};
+                                    obj.id = "No results found";
+                                    _this.push('result', obj);
+                                }
+                            }
+                            // remove the GIF
+                            $('#variationSpinImg').hide();
+                        });
                 } else {
-                    if (this.$.variationRegionList.value !== "") {
-                        this.cellbaseClient.get('genomic','region', this.$.variationRegionList.value, 'variation', queryParams, {success: success, async: true});
-                    }
+                    $('#variationSpinImg').hide();
+                    let obj = {};
+                    obj.id = "Please fill in the filters";
+                    _this.push('result', obj);
                 }
 
                 $('.nav-tabs a[href="#variationResult"]').tab('show');
             },
-            ready: function() {
-//                this.cellBaseClient = CELLBASE_CLIENT;
-            },
             _updateVariationView: function(e) {
-                this.variationId = e.srcElement.id;
+                if (typeof e.currentTarget.id !== "undefined" && e.currentTarget.id != "Please fill in the filters" && e.currentTarget.id != "No results found") {
+                    this.variationId = e.currentTarget.id;
+                    let highlightColor = 'highlight';
+                    $('.variationResultDiv').removeClass(highlightColor);
+                    $("#" + e.currentTarget.id).addClass(highlightColor);
+                }
             },
             addVariationId: function(e) {
-                let allIds = this.$.variationFilterIdsTextarea.value.split(',');
+                let allIds = [];
+                if (this.$.geneFilterIdsTextarea.value != "") {
+                    allIds = this.$.geneFilterIdsTextarea.value.split(',');
+                }
                 var temp = this.$.variationIdText.value;
                 if (allIds.indexOf(temp) == -1){
                     allIds.push(temp);
@@ -243,10 +574,10 @@
             callVariationAutocomplete: function(e) {
                 if (this.$.variationIdText.value.length > 6) {
                     let _this = this;
-                    let success = function (response) {
-                        _this.autocompleteData = response.response[0].result;
-                    };
-                    _this.cellbaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {success: success, async: true});
+                    _this.cellbaseClient.get('feature', 'snp', this.$.variationIdText.value, 'starts_with', {}, {})
+                        .then(function (response) {
+                            _this.autocompleteData = response.response[0].result;
+                        });
                 }
             }
         });

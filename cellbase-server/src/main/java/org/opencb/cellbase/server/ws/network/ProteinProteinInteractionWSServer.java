@@ -66,7 +66,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             return createOkResponse(ppiDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -79,7 +79,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
             List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
@@ -96,7 +96,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory2.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             queryOptions.put("include", "interactorA,interactorB");
             List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
             List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);

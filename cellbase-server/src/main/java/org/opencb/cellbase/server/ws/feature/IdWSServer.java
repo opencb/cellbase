@@ -50,12 +50,12 @@ import java.util.Map;
 public class IdWSServer extends GenericRestWSServer {
 
     public IdWSServer(@PathParam("version")
-                      @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                              defaultValue = "latest") String version,
+                      @ApiParam(name = "version", value = "Possible values: v3, v4",
+                              defaultValue = "v4") String version,
                       @PathParam("species")
                       @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                               + "of potentially available species ids, please refer to: "
-                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
@@ -79,7 +79,7 @@ public class IdWSServer extends GenericRestWSServer {
                                                + "text matches will be returned.", required = true) String id) {
         try {
             parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
 
             List<String> list = Splitter.on(",").splitToList(id);
 //            String[] ids = id.split(",");
@@ -123,16 +123,17 @@ public class IdWSServer extends GenericRestWSServer {
                                                    + "getDBNames", required = false) String dbname) {
         try {
             parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
+
+            Query query = new Query();
+            query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
             if (dbname != null && !dbname.isEmpty()) {
-                queryOptions.put("dbname", Splitter.on(",").splitToList(dbname));
+                query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
             }
-            List<Query> queries = createQueries(ids, XRefDBAdaptor.QueryParams.ID.key());
-            List<QueryResult> queryResultList = xRefDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResultList.get(i).setId((String) queries.get(i).get(XRefDBAdaptor.QueryParams.ID.key()));
-            }
-            return createOkResponse(queryResultList);
+//            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
+            QueryResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
+            queryResult.setId(ids);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -147,7 +148,7 @@ public class IdWSServer extends GenericRestWSServer {
                                            + " the Xref id", required = true) String id) {
         try {
             parseQueryParams();
-            XRefDBAdaptor x = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            XRefDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             QueryResult queryResult = x.startsWith(id, queryOptions);
             queryResult.setId(id);
             return createOkResponse(queryResult);
@@ -165,7 +166,7 @@ public class IdWSServer extends GenericRestWSServer {
                                                + "be contained within the xref id, e.g.: BRCA2", required = true) String id) {
         try {
             parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             QueryResult xrefs = xRefDBAdaptor.contains(id, queryOptions);
             xrefs.setId(id);
             return createOkResponse(xrefs);
@@ -186,7 +187,7 @@ public class IdWSServer extends GenericRestWSServer {
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
             String[] ids = id.split(",");
             List<Query> queries = new ArrayList<>(ids.length);
@@ -210,7 +211,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getDBNames() {
         try {
             parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory2.getXRefDBAdaptor(this.species, this.assembly);
+            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
             QueryResult xrefs = xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
             return createOkResponse(xrefs);
         } catch (Exception e) {

@@ -79,9 +79,15 @@ public abstract class DBAdaptorFactory {
 
     public abstract RegulationDBAdaptor getRegulationDBAdaptor(String species, String assembly);
 
+    public abstract ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species);
+
+    public abstract ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species, String assembly);
+
     public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species);
 
     public abstract ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly);
+
+    public abstract RepeatsDBAdaptor getRepeatsDBAdaptor(String species, String assembly);
 
 //
 //    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species);

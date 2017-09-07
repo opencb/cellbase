@@ -14,19 +14,17 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-
-<link rel="import" href="../shared/cellbase-shared-styles.html">
-
 <dom-module id="cellbase-options-list">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles"></style>
+        <style is="custom-style" include="jso-styles"></style>
 
         <template is="dom-if" if="{{title}}">
             <label class="control-label">{{title}}</label><br>
         </template>
         <template is="dom-repeat" items="{{data}}">
-            <input type="checkbox" name="{{dataType}}" value="{{item}}" on-change="addSelected"> {{item}}<br>
+            <div style="white-space: nowrap; display:inline">
+                <input type="checkbox" name="{{dataType}}" value="{{item}}" on-change="addSelected" id="{{removeWhiteSpace(item)}}"> {{item}}<br>
+            </div>
         </template>
 
     </template>
@@ -40,11 +38,14 @@
                 },
                 cellbaseClient: {
                     type: Object
-//                    value: null
                 },
                 data: {
                     type: Array,
                     value: []
+                },
+                prefix: {
+                    type: String,
+                    observer: "prefixChanged"
                 },
                 dataType: {
                     type: String,
@@ -54,7 +55,19 @@
                     type: Array,
                     value: [],
                     notify: true
+                },
+                clear: {
+                    type: String,
+                    observer: "clearAll"
                 }
+            },
+            ready: function () {
+                if (typeof this.prefix === "undefined" || this.prefix == "" || this.prefix == null) {
+                    this.prefix = "options" + Utils.randomString(6);
+                }
+            },
+            prefixChanged: function () {
+                // this.prefix is null without an observer
             },
             attached: function () {
                 // If data array is passed we use those values:
@@ -63,27 +76,48 @@
                     if (typeof this.cellbaseClient !== "undefined" && this.cellbaseClient != null) {
                         var _this = this;
                         var success = function (response) {
-                            _this.data = response.response[0].result;
+                            let results = response.response[0].result;
+                            for (let i = 0; i < results.length; i++) {
+                                if (results[i] == null) {
+                                    results.splice(i, 1);
+                                }
+                            }
+                            _this.data = results;
                         };
 
                         // we used the dataType param to fill the options
                         switch (this.dataType) {
                             case "biotype":
-                                this.cellbaseClient.getGeneClient(null, this.dataType, {}, {success: success, async: true});
+                                this.cellbaseClient.getGeneClient(null, this.dataType, {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "consequence_types":
                             case "consequence-types":
-                                this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {success: success, async: true});
+                                this.cellbaseClient.getVariationClient(null, 'consequence_types', {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "featureType":
-                                this.cellbaseClient.get('regulatory', 'featureType', null, "", {}, {success: success, async: true});
+                                this.cellbaseClient.get('regulatory', 'featureType', null, "", {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "featureClass":
-                                this.cellbaseClient.get('regulatory', 'featureClass', null, "", {}, {success: success, async: true});
+                                this.cellbaseClient.get('regulatory', 'featureClass', null, "", {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             case "clinvar-significance":
                             case "clinvar_significance":
-                                this.cellbaseClient.get('feature', 'clinical', null, 'clinvar-significance', {}, {success: success, async: true});
+                                this.cellbaseClient.get('feature', 'clinical', null, 'clinvar-significance', {}, {})
+                                    .then(function (response) {
+                                        success(response);
+                                    });
                                 break;
                             default:
                                 console.error("No valid 'dataType'provided, select one of: biotype, consequence_type, ...")
@@ -101,6 +135,19 @@
                     var index = this.selected.indexOf(event.target.value);
                     this.splice('selected', index, 1);
                 }
+            },
+            clearAll: function() {
+                if (typeof this.data !== "undefined" && this.data.length > 0) {
+                    for (let i = 0; i < this.data.length; i++) {
+                        let id = this.removeWhiteSpace(this.data[i]);
+                        if ($("#" + id).is(':checked')) {
+                            $("#" + id).prop('checked', false);
+                        }
+                    }
+                }
+            },
+            removeWhiteSpace: function (str) {
+                return this.prefix + "_" + str.replace(/\s|\//g, "_"); // HTML ids shouldn't contain white space
             }
         });
     </script>

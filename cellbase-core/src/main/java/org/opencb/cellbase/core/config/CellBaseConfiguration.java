@@ -43,7 +43,7 @@ public class CellBaseConfiguration {
         return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
     }
 
-    public List<Species> getAllSpecies() {
+ /*   public List<Species> getAllSpecies() {
         List<Species> allSpecies = new ArrayList<>();
         allSpecies.addAll(species.getVertebrates());
         allSpecies.addAll(species.getMetazoa());
@@ -52,7 +52,7 @@ public class CellBaseConfiguration {
         allSpecies.addAll(species.getPlants());
 
         return allSpecies;
-    }
+    }*/
 
     @Override
     public String toString() {
@@ -140,4 +140,32 @@ public class CellBaseConfiguration {
         this.species = species;
         return this;
     }
+
+    public List<Species> getAllSpecies() {
+        List<Species> allSpecies = new ArrayList<>();
+        if (species.getVertebrates() != null && !species.getVertebrates().isEmpty()) {
+            allSpecies.addAll(species.getVertebrates());
+        }
+        if (species.getMetazoa() != null && !species.getMetazoa().isEmpty()) {
+            allSpecies.addAll(species.getMetazoa());
+        }
+        if (species.getFungi() != null && !species.getFungi().isEmpty()) {
+            allSpecies.addAll(species.getFungi());
+        }
+        if (species.getProtist() != null && !species.getProtist().isEmpty()) {
+            allSpecies.addAll(species.getProtist());
+        }
+        if (species.getPlants() != null && !species.getPlants().isEmpty()) {
+            allSpecies.addAll(species.getPlants());
+        }
+        if (species.getVirus() != null && !species.getVirus().isEmpty()) {
+            allSpecies.addAll(species.getVirus());
+        }
+        if (species.getBacteria() != null && !species.getBacteria().isEmpty()) {
+            allSpecies.addAll(species.getBacteria());
+        }
+
+        return allSpecies;
+    }
+
 }

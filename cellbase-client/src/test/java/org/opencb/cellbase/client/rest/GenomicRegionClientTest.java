@@ -19,6 +19,7 @@ package org.opencb.cellbase.client.rest;
 import org.junit.Test;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -58,14 +59,22 @@ public class GenomicRegionClientTest {
     }
 
     @Test
+    public void getRepeat() throws Exception {
+        QueryResponse<Repeat> queryResponse = cellBaseClient
+                .getGenomicRegionClient().getRepeat(Arrays.asList("3:555-77777"), null);
+        // MAY need fixing
+        assertTrue(queryResponse.allResults().size() > 0);
+    }
+
+    @Test
     public void getVariation() throws Exception {
         QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,id");
         QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGenomicRegionClient()
                 .getVariation(Arrays.asList("3:555-77777", "11:58888-198888"), queryOptions);
 
         assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
-        assertEquals("Number of variations do not match for 3:555-77777", 1258, variantQueryResponse.getResponse().get(0).getResult().size());
-        assertEquals("Number of variations do not match for 11:58888-198888", 2753, variantQueryResponse.getResponse().get(1).getResult().size());
+        assertTrue("Number of variations do not match for 3:555-77777", variantQueryResponse.getResponse().get(0).getResult().size() > 10300);
+        assertEquals("Number of variations do not match for 11:58888-198888", 3000, variantQueryResponse.getResponse().get(1).getResult().size());
     }
 
     @Test

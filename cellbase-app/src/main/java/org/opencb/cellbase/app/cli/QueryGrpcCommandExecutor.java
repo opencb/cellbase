@@ -23,8 +23,9 @@ import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
+import org.opencb.biodata.models.variant.protobuf.VariantAnnotationProto;
 import org.opencb.biodata.models.variant.protobuf.VariantProto;
-import org.opencb.cellbase.server.grpc.service.*;
+import org.opencb.cellbase.core.grpc.service.*;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -102,6 +103,12 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
                     break;
                 case "transcript":
                     executeTranscriptQuery(request, output);
+                    break;
+                case "variant_annotation":
+                    executeVariantAnnotationQuery(request, output);
+                    break;
+                case "genomic_region":
+                    executeGenomicRegionQuery(request, output);
                     break;
 //                case "conservation":
 //                    break;
@@ -234,6 +241,33 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         }
     }
 
+    private void executeVariantAnnotationQuery(GenericServiceModel.Request request, PrintStream output) throws JsonProcessingException {
+        VariantAnnotationServiceGrpc.VariantAnnotationServiceBlockingStub variantAnnotationServiceBlockingStub =
+                VariantAnnotationServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "annotate":
+                    Iterator<VariantAnnotationProto.VariantAnnotation> variantAnnotationIterator =
+                            variantAnnotationServiceBlockingStub.get(request);
+                    while (variantAnnotationIterator.hasNext()) {
+                        VariantAnnotationProto.VariantAnnotation next = variantAnnotationIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                case "score":
+                    Iterator<VariantAnnotationProto.Score> scoreIterator = variantAnnotationServiceBlockingStub.getCadd(request);
+                    while (scoreIterator.hasNext()) {
+                        VariantAnnotationProto.Score score = scoreIterator.next();
+                        output.println(score.toString());
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     private void executeRegulatoryRegionQuery(GenericServiceModel.Request request, PrintStream output)
             throws JsonProcessingException {
         RegulatoryRegionServiceGrpc.RegulatoryRegionServiceBlockingStub regulatoryServiceBlockingStub =
@@ -263,6 +297,60 @@ public class QueryGrpcCommandExecutor extends CommandExecutor {
         if (queryGrpcCommandOptions.distinct != null) {
             ServiceTypesModel.StringArrayResponse values = regulatoryServiceBlockingStub.distinct(request);
             output.println(values);
+        }
+    }
+
+    private void executeGenomicRegionQuery(GenericServiceModel.Request request, PrintStream output)
+            throws JsonProcessingException {
+        GenomicRegionServiceGrpc.GenomicRegionServiceBlockingStub genomicRegionServiceBlockingStub =
+                GenomicRegionServiceGrpc.newBlockingStub(channel);
+
+        if (queryGrpcCommandOptions.resource != null) {
+            switch (queryGrpcCommandOptions.resource) {
+                case "gene":
+                    Iterator<GeneModel.Gene> geneIterator = genomicRegionServiceBlockingStub.getGene(request);
+                    while (geneIterator.hasNext()) {
+                        GeneModel.Gene gene = geneIterator.next();
+                        output.println(gene);
+                    }
+                    break;
+                case "transcript":
+                    Iterator<TranscriptModel.Transcript> transcriptIterator = genomicRegionServiceBlockingStub.getTranscript(request);
+                    while (transcriptIterator.hasNext()) {
+                        TranscriptModel.Transcript next = transcriptIterator.next();
+                        output.println(next);
+                    }
+                    break;
+                case "sequence":
+                    ServiceTypesModel.StringResponse sequence = genomicRegionServiceBlockingStub.getSequence(request);
+                    output.println(sequence);
+                    break;
+                case "regulatory":
+                    Iterator<RegulatoryRegionModel.RegulatoryRegion> iterator =
+                            genomicRegionServiceBlockingStub.getRegulatoryRegion(request);
+                    while (iterator.hasNext()) {
+                        RegulatoryRegionModel.RegulatoryRegion next = iterator.next();
+                        output.println(next);
+                    }
+                    break;
+                case "tfbs":
+                    Iterator<RegulatoryRegionModel.RegulatoryRegion> tfbsIterator =
+                            genomicRegionServiceBlockingStub.getTfbs(request);
+                    while (tfbsIterator.hasNext()) {
+                        RegulatoryRegionModel.RegulatoryRegion next = tfbsIterator.next();
+                        output.println(next);
+                    }
+                    break;
+                case "variation":
+                    Iterator<VariantProto.Variant> variantIterator = genomicRegionServiceBlockingStub.getVariation(request);
+                    while (variantIterator.hasNext()) {
+                        VariantProto.Variant next = variantIterator.next();
+                        output.println(next.toString());
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

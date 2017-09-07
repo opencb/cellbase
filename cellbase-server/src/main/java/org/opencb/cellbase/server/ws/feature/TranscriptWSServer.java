@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.server.ws.feature;
 
-import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
@@ -25,7 +24,6 @@ import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
-import org.opencb.cellbase.core.db.api.variation.MutationDBAdaptor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.ws.GenericRestWSServer;
@@ -52,12 +50,12 @@ import java.util.Map;
 public class TranscriptWSServer extends GenericRestWSServer {
 
     public TranscriptWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                                defaultValue = "latest") String version,
+                              @ApiParam(name = "version", value = "Possible values: v3, v4",
+                                defaultValue = "v4") String version,
                               @PathParam("species")
                               @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                       + "of potentially available species ids, please refer to: "
-                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                               @DefaultValue("") @QueryParam("exclude") String exclude,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
@@ -79,7 +77,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
         responseContainer = "QueryResponse")
     public Response first() {
         parseQueryParams();
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.first(queryOptions));
     }
 
@@ -104,7 +102,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                   value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
                                           + " Exact text matches will be returned",
                                   required = false) String xrefs) throws Exception {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
         query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
         query.append(TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
@@ -125,7 +123,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("transcriptId") String id) {
         try {
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, TranscriptDBAdaptor.QueryParams.XREFS.key());
             return createOkResponse(transcriptDBAdaptor.nativeGet(queries, queryOptions));
         } catch (Exception e) {
@@ -185,13 +183,57 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                         required = true) String id) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
             List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key()));
             }
             return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Retrieves all transcript objects", response = Transcript.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "id",
+                    value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992"
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "name",
+                    value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "biotype",
+                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+
+            @ApiImplicitParam(name = "xrefs",
+                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "tfbs.name",
+                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "annotationFlags",
+                    value = "Comma separated list of annotation flags that must be present in the transcripts returned "
+                            + "within the gene model, e.g.: basic,CCDS. Exact text matches will be returned",
+                    dataType = "string", paramType = "query"),
+    })
+    public Response getAll() {
+        try {
+            parseQueryParams();
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+            QueryResult queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
+            // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
+            // properly fixed
+            queryResult.setNumTotalResults(-1);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -205,7 +247,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getVariationsByTranscriptId(@PathParam("transcriptId") String id) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, TranscriptDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResultList = variationDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
@@ -227,34 +269,13 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                  + " are allowed as well, e.g.: BRCA2-001", required = true) String id) {
         try {
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory2.getTranscriptDBAdaptor(this.species, this.assembly);
+            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             List<String> transcriptIdList = Arrays.asList(id.split(","));
             List<QueryResult> queryResult = transcriptDBAdaptor.getCdna(transcriptIdList);
             for (int i = 0; i < transcriptIdList.size(); i++) {
                 queryResult.get(i).setId(transcriptIdList.get(i));
             }
             return createOkResponse(queryResult);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/{transcriptId}/mutation")
-    @Deprecated
-    @ApiOperation(httpMethod = "GET", value = "To be removed", hidden = true)
-    public Response getMutationByTranscriptId(@PathParam("transcriptId") String query) {
-        try {
-            parseQueryParams();
-            MutationDBAdaptor mutationAdaptor = dbAdaptorFactory.getMutationDBAdaptor(this.species, this.assembly);
-//            List<List<MutationPhenotypeAnnotation>> geneList = mutationAdaptor
-//                    .getAllMutationPhenotypeAnnotationByGeneNameList(Splitter.on(",").splitToList(query));
-            List<String> transcriptIdList = Splitter.on(",").splitToList(query);
-            List<QueryResult> queryResults = mutationAdaptor.getAllByGeneNameList(transcriptIdList, queryOptions);
-            for (int i = 0; i < transcriptIdList.size(); i++) {
-                queryResults.get(i).setId(transcriptIdList.get(i));
-            }
-            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -277,7 +298,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                    required = true) String transcriptId) {
         try {
             parseQueryParams();
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(transcriptId, ProteinDBAdaptor.QueryParams.XREFS.key());
             List<QueryResult> queryResultList = proteinDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
@@ -318,7 +339,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                                 required = true) String id) {
         try {
             parseQueryParams();
-            ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory2.getProteinDBAdaptor(this.species, this.assembly);
+            ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             query.put("transcript", id);
             QueryResult queryResults = mutationAdaptor.getSubstitutionScores(query, queryOptions);
             queryResults.setId(id);

@@ -51,12 +51,12 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
 
     public ChromosomeWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                                      defaultValue = "latest") String version,
+                              @ApiParam(name = "version", value = "Possible values: v3, v4",
+                                      defaultValue = "v4") String version,
                               @PathParam("species")
                               @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                       + "of potentially available species ids, please refer to: "
-                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                                      + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -77,7 +77,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     public Response getChromosomesAll() {
         try {
             parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             return createOkResponse(dbAdaptor.getGenomeInfo(queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -90,7 +90,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     public Response getChromosomes() {
         try {
             parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             QueryOptions options = new QueryOptions();
             options.put("include", "chromosomes.name");
             return createOkResponse(dbAdaptor.getGenomeInfo(options));
@@ -109,7 +109,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                                                 required = true) String chromosomeId) {
         try {
             parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
 //            return createOkResponse(dbAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions));
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
             List<QueryResult> queryResults = new ArrayList<>(chromosomeList.size());
@@ -131,7 +131,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     public Response getChromosomeSize(@PathParam("chromosomeName") String chromosomeId) {
         try {
             parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             QueryOptions options = new QueryOptions("include", "chromosomes.size");
 //            return createOkResponse(dbAdaptor.getChromosomeById(query, options));
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
@@ -150,7 +150,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 //    public Response getByChromosomeName(@PathParam("chromosomeName") String query) {
 //        try {
 //            parseQueryParams();
-//            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(this.species, this.assembly);
+//            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
 //            return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
 //        } catch (Exception e) {
 //            return createErrorResponse(e);

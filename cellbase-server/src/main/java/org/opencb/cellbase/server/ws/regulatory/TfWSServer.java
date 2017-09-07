@@ -42,12 +42,12 @@ import java.util.List;
 public class TfWSServer extends RegulatoryWSServer {
 
     public TfWSServer(@PathParam("version")
-                      @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                              defaultValue = "latest") String version,
+                      @ApiParam(name = "version", value = "Possible values: v3, v4",
+                              defaultValue = "v4") String version,
                       @PathParam("species")
                       @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                               + "of potentially available species ids, please refer to: "
-                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                       @Context UriInfo uriInfo,
                       @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -69,7 +69,7 @@ public class TfWSServer extends RegulatoryWSServer {
                                  @DefaultValue("") @QueryParam("celltype") String celltype) {
         try {
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory2.getRegulationDBAdaptor(this.species, this.assembly);
+            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(tfId, RegulationDBAdaptor.QueryParams.NAME.key(),
                     RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                             + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
@@ -124,7 +124,7 @@ public class TfWSServer extends RegulatoryWSServer {
                                                         + " list of HGNC symbols, e.g.: CTCF", required = true) String tfId) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory2.getGeneDBAdaptor(this.species, this.assembly);
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(tfId, GeneDBAdaptor.QueryParams.NAME.key());
             List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {

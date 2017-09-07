@@ -17,6 +17,7 @@
 package org.opencb.cellbase.app.transform
 
 import org.junit.Ignore
+import org.opencb.cellbase.app.transform.clinical.variant.CosmicParser
 import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import org.opencb.cellbase.core.common.clinical.Cosmic
 import spock.lang.Shared
@@ -28,6 +29,7 @@ import java.nio.file.Paths
 /**
  * Created by lcruz on 23/10/14.
  */
+@Ignore
 class CosmicParserTest extends Specification {
 
     @Shared

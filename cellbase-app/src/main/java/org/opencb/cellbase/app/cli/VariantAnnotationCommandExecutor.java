@@ -30,25 +30,28 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
+import org.opencb.biodata.formats.variant.annotation.io.VariantAvroDataWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
 import org.opencb.biodata.formats.variant.io.JsonVariantReader;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
-import org.opencb.biodata.tools.sequence.fasta.FastaIndexManager;
-import org.opencb.biodata.tools.variant.converter.VariantContextToVariantConverter;
-import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkDataWriter;
-import org.opencb.cellbase.app.cli.variant.annotation.BenchmarkTask;
-import org.opencb.cellbase.app.cli.variant.annotation.VariantAnnotationDiff;
+import org.opencb.biodata.tools.sequence.FastaIndexManager;
+import org.opencb.biodata.tools.variant.converters.avro.VariantContextToVariantConverter;
+import org.opencb.cellbase.app.cli.variant.annotation.*;
+import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.cellbase.core.client.CellBaseClient;
-import org.opencb.cellbase.core.variant.annotation.*;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
+import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -63,7 +66,6 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,7 +80,7 @@ import static java.nio.file.StandardOpenOption.APPEND;
  */
 public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
-    public enum FileFormat {VCF, JSON, VEP};
+    public enum FileFormat {VCF, JSON, AVRO, VEP};
 
     private CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions;
 
@@ -154,7 +156,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 return entry.getFileName().toString().endsWith(".vep");
             });
 
-            DataWriter dataWriter = getDataWriter(output.toString());
+            DataWriter<Pair<VariantAnnotationDiff, VariantAnnotationDiff>> dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
             List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                     variantAnnotatorTaskList = getBenchmarkTaskList(fastaIndexManager);
@@ -231,10 +233,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // expensive to parse, i.e.: multisample vcf with thousands of samples. A specific task is created to enable
         // parallel parsing of these lines
         if (input != null) {
-            DataReader dataReader = new StringDataReader(input);
+            DataReader<String> dataReader = new StringDataReader(input);
             List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList
                     = getStringTaskList();
-            DataWriter dataWriter = getDataWriter(output.toString());
+            DataWriter<Variant> dataWriter = getVariantDataWriter(output.toString());
 
             ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
             ParallelTaskRunner<String, Variant> runner =
@@ -257,9 +259,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 for (String chromosome : chromosomeList) {
                     logger.info("Annotating chromosome {}", chromosome);
                     Query query = new Query("chromosome", chromosome);
-                    DataReader dataReader =
+                    DataReader<Variant> dataReader =
                             new VariationDataReader(dbAdaptorFactory.getVariationDBAdaptor(species), query, options);
-                    DataWriter dataWriter = getDataWriter(output.toString() + "/"
+                    DataWriter<Variant> dataWriter = getVariantDataWriter(output.toString() + "/"
                             + VARIATION_ANNOTATION_FILE_PREFIX + chromosome + ".json.gz");
                     ParallelTaskRunner<Variant, Variant> runner =
                             new ParallelTaskRunner<Variant, Variant>(dataReader, variantAnnotatorTaskList, dataWriter, config);
@@ -334,22 +336,25 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private DataWriter getDataWriter(String filename) {
-        DataWriter dataWriter = null;
-        if (benchmark) {
-            dataWriter = new BenchmarkDataWriter("VEP", "CellBase", output);
-        } else {
-            if (outputFormat.equals(FileFormat.JSON)) {
-                dataWriter = new JsonAnnotationWriter(filename);
-            } else if (outputFormat.equals(FileFormat.VEP)) {
-                dataWriter = new VepFormatWriter(filename);
-            }
+    private DataWriter<Variant> getVariantDataWriter(String filename) {
+        DataWriter<Variant> dataWriter = null;
+        if (outputFormat.equals(FileFormat.JSON)) {
+            dataWriter = new JsonAnnotationWriter(filename);
+        } else if (outputFormat.equals(FileFormat.AVRO)) {
+            ProgressLogger progressLogger = new ProgressLogger("Num written variants:");
+            dataWriter = new VariantAvroDataWriter(Paths.get(filename), true)
+                    .setProgressLogger(progressLogger);
+        } else if (outputFormat.equals(FileFormat.VEP)) {
+            dataWriter = new VepFormatWriter(filename);
         }
+
         return dataWriter;
     }
 
     private List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> getStringTaskList() throws IOException {
         List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
+        VcfStringAnnotatorTask.SharedContext sharedContext = new VcfStringAnnotatorTask.SharedContext(numThreads);
+//        Set<String> breakendMates = Collections.synchronizedSet(new HashSet<>());
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             switch (inputFormat) {
@@ -363,7 +368,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
                         variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
-                                variantAnnotatorList, normalize));
+                                variantAnnotatorList, sharedContext, normalize));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
@@ -445,14 +450,20 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     dbAdaptorFactory), queryOptions);
         } else {
             try {
+                ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()
+                        .getResourceAsStream("/client-configuration.yml"));
+                if (url != null) {
+                    clientConfiguration.getRest().setHosts(Collections.singletonList(url));
+                }
+                clientConfiguration.setDefaultSpecies(species);
                 CellBaseClient cellBaseClient;
-                cellBaseClient = new CellBaseClient(url, configuration.getVersion(), species);
-                logger.debug("URL set to: {}", url + ":" + port);
+                cellBaseClient = new CellBaseClient(clientConfiguration);
+                logger.debug("URL set to: {}", url);
 
                 // TODO: normalization must be carried out in the client - phase set must be sent together with the
                 // TODO: variant string to the server for proper phase annotation by REST
-                return new CellBaseWSVariantAnnotator(cellBaseClient, queryOptions);
-            } catch (URISyntaxException e) {
+                return new CellBaseWSVariantAnnotator(cellBaseClient.getVariantClient(), queryOptions);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -669,7 +680,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         // Use cache
 //        queryOptions.put("useCache", variantAnnotationCommandOptions.noCache ? "false" : "true");
-        queryOptions.put("useCache", !variantAnnotationCommandOptions.noCache);
+        if (variantAnnotationCommandOptions.noCache) {
+            logger.warn("********************************************************************************************");
+            logger.warn("PLEASE NOTE that parameter --no-server-cache is no longer in use. It is deprecated and "
+                    + "completely ignored by current implementation. Is just kept visible not to break scripts using "
+                    + "it and will soon be removed from the interface. Please, have a look at the --server-cache "
+                    + "parameter instead");
+            logger.warn("********************************************************************************************");
+        }
+
+        queryOptions.put("useCache", variantAnnotationCommandOptions.cache);
         queryOptions.put("phased", variantAnnotationCommandOptions.phased);
 
         // input file
@@ -718,6 +738,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             switch (variantAnnotationCommandOptions.outputFormat.toLowerCase()) {
                 case "json":
                     outputFormat = FileFormat.JSON;
+                    break;
+                case "avro":
+                    outputFormat = FileFormat.AVRO;
                     break;
                 case "vep":
                     outputFormat = FileFormat.VEP;
@@ -823,6 +846,29 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Population frequencies file must be a .json (.json.gz) file containing"
                         + " Variant objects.");
             }
+        }
+
+        // Enable/Disable imprecise annotation
+        queryOptions.put("imprecise", !variantAnnotationCommandOptions.noImprecision);
+
+        // Parameter not expected to be very used - provide extra padding (bp) to be used for structural variant annotation
+        if (variantAnnotationCommandOptions.buildParams.get("sv-extra-padding") != null) {
+            Integer svExtraPadding = Integer.valueOf(variantAnnotationCommandOptions.buildParams.get("sv-extra-padding"));
+            if (svExtraPadding < 0) {
+                throw new ParameterException("Extra padding for SV annotation cannot be < 0, value provided: "
+                        + svExtraPadding + ". Please provide a value >= 0");
+            }
+            queryOptions.put("svExtraPadding", svExtraPadding);
+        }
+
+        // Parameter not expected to be very used - provide extra padding (bp) to be used for CNV annotation
+        if (variantAnnotationCommandOptions.buildParams.get("cnv-extra-padding") != null) {
+            Integer cnvExtraPadding = Integer.valueOf(variantAnnotationCommandOptions.buildParams.get("cnv-extra-padding"));
+            if (cnvExtraPadding < 0) {
+                throw new ParameterException("Extra padding for CNV annotation cannot be < 0, value provided: "
+                        + cnvExtraPadding + ". Please provide a value >= 0");
+            }
+            queryOptions.put("cnvExtraPadding", cnvExtraPadding);
         }
 
         // Annotate variation collection in CellBase

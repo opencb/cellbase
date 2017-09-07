@@ -124,8 +124,9 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, clinical and . 'all' to download everything", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
+                + "gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, "
+                + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -149,8 +150,9 @@ public class CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-
-        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, gene, disgenet, hpo, variation, cadd, regulation, protein, conservation, drug, clinvar, cosmic and GWAS CAatalog. 'all' build everything.", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to build: genome, genome_info, "
+                + "gene, variation, variation_functional_score, regulation, protein, ppi, conservation, drug, "
+                + "clinical_variants, repeats, svs. 'all' builds everything.", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
@@ -167,6 +169,13 @@ public class CliOptionsParser {
 
         @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
         public String common;
+
+        @Parameter(names = {"--flexible-gtf-parsing"}, description = "By default, ENSEMBL GTF format is expected. "
+                + " Nevertheless, GTF specification is quite loose and other GTFs may be provided in which the order "
+                + "of the features is not as systematic as within the ENSEMBL's GTFs. Use this option to enable a more "
+                + "flexible parsing of the GTF if it does not strictly follow ENSEMBL's GTFs format. Flexible GTF "
+                + "requires more memory and is less efficient.", required = false, arity = 0)
+        public boolean flexibleGTFParsing = false;
 
     }
 
@@ -314,12 +323,12 @@ public class CliOptionsParser {
         public boolean local;
 
         @Parameter(names = {"--remote-url"}, description = "The URL of CellBase REST web services, this has no effect if --local is present", required = false, arity = 1)
-        public String url = "bioinfodev.hpc.cam.ac.uk:80/cellbase/webservices/rest";
+        public String url = "http://bioinfo.hpc.cam.ac.uk:80/cellbase";
 
-        @Parameter(names = {"--include"}, description = "Comma separated list of annotators to be included", required = false)
+        @Parameter(names = {"--include"}, description = "Comma separated list of annotation types to be included. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband, repeats, hgvs}", required = false)
         public String include;
 
-        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotators to be excluded", required = false)
+        @Parameter(names = {"--exclude"}, description = "Comma separated list of annotation types to be excluded. Available options are {variation, populationFrequencies, conservation, functionalScore, clinical, consequenceType, expression, geneDisease, drugInteraction, cytoband, repeats, hgvs}", required = false)
         public String exclude;
 
         @Parameter(names = {"-t", "--num-threads"}, description = "Number of threads to be used for loading", required = false, arity = 1)
@@ -340,7 +349,7 @@ public class CliOptionsParser {
         @Parameter(names = {"--custom-file-fields"}, description = "String containing a colon separated list (no spaces in between) of field lists which indicate the info fields to be taken from each VCF file. For example: field1File1,field2File1:field1File2,field3File2", required = false, arity = 1)
         public String customFileFields;
 
-        @Parameter(names = {"--output-format"}, description = "Variant annotation output format. Values: JSON, PB, VEP", required = false, arity = 1)
+        @Parameter(names = {"--output-format"}, description = "Variant annotation output format. Values: JSON, Avro, VEP", required = false, arity = 1)
         public String outputFormat = "JSON";
 
         @Parameter(names = {"--gzip"}, description = "Whether the output file is gzipped", required = false, arity = 0)
@@ -377,23 +386,43 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean skipNormalize;
 
-        @Parameter(names = {"--no-server-cache"}, description = "Annotation was already pre-calculated and cached in "
+        @Parameter(names = {"--server-cache"}, description = "Use of this parameter is discouraged unless the "
+                + "server administrator advises so. Annotation was already pre-calculated and cached in "
                 + "our servers for the whole ENSEMBL variation collection. Most of variants will be included in that "
-                + "collection, meaning that the use of this cache may significantly improve performance. Use this flag "
-                + "if you want to avoid the use of this server cache.",
+                + "collection, meaning that the use of this cache may improve performance. Use this flag "
+                + "if you want to use this server cache.",
                 required = false, arity = 0)
-        public boolean noCache;
+        public boolean cache = false;
+
+        @Parameter(names = {"--no-server-cache"}, description = "DEPRECATED. Current implementation completely ignores" +
+                " this parameter. Please, have a look at --server-cache instead.",
+                required = false, arity = 0)
+        @Deprecated
+        public boolean noCache = false;
 
         @Parameter(names = {"--phased"}, description = "Flag to indicate whether phased annotation shall be activated." +
                 " By default phased annotation is not enabled.", required = false, arity = 0)
         public boolean phased;
 
-        @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
+        @Parameter(names = {"--no-imprecision"}, description = "Flag to indicate whether noImprecision borders (CIPOS, CIEND)"
+                + " should be taken into account when annotating structural variants or CNVs."
+                + " By default noImprecision annotation is enabled.", required = false, arity = 0)
+        public boolean noImprecision;
+
+        @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
+                + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
+                + "documents that include lists of population frequencies objects. Will allow annotating the input file "
+                + "(-i) with the population frequencies present in this json file; sv-extra-padding=Integer to optionally "
+                + "provide the size of the extra padding to be used when annotating noImprecision (or not) "
+                + "structural variants}; cnv-extra-padding=Integer to optionally provide the size of the extra padding "
+                + "to be used when annotating noImprecision (or not) structural variants}")
         public Map<String, String> buildParams;
 
         public VariantAnnotationCommandOptions() {
             buildParams = new HashMap<>();
             buildParams.put("population-frequencies", null);
+            buildParams.put("sv-extra-padding", "0");
+            buildParams.put("cnv-extra-padding", "0");
         }
 
     }

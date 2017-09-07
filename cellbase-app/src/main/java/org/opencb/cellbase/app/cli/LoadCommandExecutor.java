@@ -20,14 +20,13 @@ import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -35,6 +34,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class LoadCommandExecutor extends CommandExecutor {
 
+    private static final String METADATA = "metadata";
     private LoadRunner loadRunner;
     private CliOptionsParser.LoadCommandOptions loadCommandOptions;
 
@@ -97,7 +97,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 loadOptions = new String[]{EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA, EtlCommons.CONSERVATION_DATA,
                         EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
                         EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_DATA, };
+                        EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA, };
             } else {
                 loadOptions = loadCommandOptions.data.split(",");
             }
@@ -109,17 +109,17 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.GENOME_DATA:
                             loadIfExists(input.resolve("genome_info.json"), "genome_info");
                             loadIfExists(input.resolve("genome_sequence.json.gz"), "genome_sequence");
-                            loadIfExists(input.resolve("genomeVersion.json"), "metadata");
+                            loadIfExists(input.resolve("genomeVersion.json"), METADATA);
                             loadRunner.index("genome_sequence");
                             break;
                         case EtlCommons.GENE_DATA:
                             loadIfExists(input.resolve("gene.json.gz"), "gene");
-                            loadIfExists(input.resolve("dgidbVersion.json"), "metadata");
-                            loadIfExists(input.resolve("ensemblCoreVersion.json"), "metadata");
-                            loadIfExists(input.resolve("uniprotXrefVersion.json"), "metadata");
-                            loadIfExists(input.resolve("geneExpressionAtlasVersion.json"), "metadata");
-                            loadIfExists(input.resolve("hpoVersion.json"), "metadata");
-                            loadIfExists(input.resolve("disgenetVersion.json"), "metadata");
+                            loadIfExists(input.resolve("dgidbVersion.json"), METADATA);
+                            loadIfExists(input.resolve("ensemblCoreVersion.json"), METADATA);
+                            loadIfExists(input.resolve("uniprotXrefVersion.json"), METADATA);
+                            loadIfExists(input.resolve("geneExpressionAtlasVersion.json"), METADATA);
+                            loadIfExists(input.resolve("hpoVersion.json"), METADATA);
+                            loadIfExists(input.resolve("disgenetVersion.json"), METADATA);
                             loadRunner.index("gene");
                             break;
                         case EtlCommons.VARIATION_DATA:
@@ -127,7 +127,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             loadIfExists(input.resolve("cadd.json.gz"), "cadd");
-                            loadIfExists(input.resolve("caddVersion.json"), "metadata");
+                            loadIfExists(input.resolve("caddVersion.json"), METADATA);
                             loadRunner.index("variation_functional_score");
                             break;
                         case EtlCommons.CONSERVATION_DATA:
@@ -135,28 +135,34 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.REGULATION_DATA:
                             loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
-                            loadIfExists(input.resolve("ensemblRegulationVersion.json"), "metadata");
-                            loadIfExists(input.resolve("mirbaseVersion.json"), "metadata");
-                            loadIfExists(input.resolve("targetScanVersion.json"), "metadata");
-                            loadIfExists(input.resolve("miRTarBaseVersion.json"), "metadata");
+                            loadIfExists(input.resolve("ensemblRegulationVersion.json"), METADATA);
+                            loadIfExists(input.resolve("mirbaseVersion.json"), METADATA);
+                            loadIfExists(input.resolve("targetScanVersion.json"), METADATA);
+                            loadIfExists(input.resolve("miRTarBaseVersion.json"), METADATA);
                             loadRunner.index("regulatory_region");
                             break;
                         case EtlCommons.PROTEIN_DATA:
                             loadIfExists(input.resolve("protein.json.gz"), "protein");
-                            loadIfExists(input.resolve("uniprotVersion.json"), "metadata");
-                            loadIfExists(input.resolve("interproVersion.json"), "metadata");
+                            loadIfExists(input.resolve("uniprotVersion.json"), METADATA);
+                            loadIfExists(input.resolve("interproVersion.json"), METADATA);
                             loadRunner.index("protein");
                             break;
                         case EtlCommons.PPI_DATA:
                             loadIfExists(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
-                            loadIfExists(input.resolve("intactVersion.json"), "metadata");
+                            loadIfExists(input.resolve("intactVersion.json"), METADATA);
                             loadRunner.index("protein_protein_interaction");
                             break;
                         case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA:
                             loadProteinFunctionalPrediction();
                             break;
-                        case EtlCommons.CLINICAL_DATA:
+                        case EtlCommons.CLINICAL_VARIANTS_DATA:
                             loadClinical();
+                            break;
+                        case EtlCommons.REPEATS_DATA:
+                            loadRepeats();
+                            break;
+                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+                            loadStructuralVariants();
                             break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");
@@ -168,6 +174,23 @@ public class LoadCommandExecutor extends CommandExecutor {
                 }
             }
         }
+    }
+
+    private void loadStructuralVariants() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
+            LoaderException, InvocationTargetException, ClassNotFoundException {
+        Path path = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_JSON + ".json.gz");
+        if (Files.exists(path)) {
+            try {
+                logger.debug("Loading '{}' ...", path.toString());
+                loadRunner.load(path, EtlCommons.STRUCTURAL_VARIANTS_DATA);
+                loadIfExists(input.resolve(EtlCommons.DGV_VERSION_FILE), "metadata");
+            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                logger.error(e.toString());
+            }
+        }
+        // Assuming variation collection is already indexed
+//        loadRunner.index("variation");
     }
 
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
@@ -226,7 +249,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 logger.info("Loading file '{}'", entry.toString());
                 loadRunner.load(input.resolve(entry.getFileName()), "variation");
             }
-            loadIfExists(input.resolve("ensemblVariationVersion.json"), "metadata");
+            loadIfExists(input.resolve("ensemblVariationVersion.json"), METADATA);
             loadRunner.index("variation");
             // Custom update required e.g. population freqs loading
         } else {
@@ -247,9 +270,9 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "conservation");
         }
-        loadIfExists(input.resolve("gerpVersion.json"), "metadata");
-        loadIfExists(input.resolve("phastConsVersion.json"), "metadata");
-        loadIfExists(input.resolve("phyloPVersion.json"), "metadata");
+        loadIfExists(input.resolve("gerpVersion.json"), METADATA);
+        loadIfExists(input.resolve("phastConsVersion.json"), METADATA);
+        loadIfExists(input.resolve("phyloPVersion.json"), METADATA);
         loadRunner.index("conservation");
     }
 
@@ -269,28 +292,77 @@ public class LoadCommandExecutor extends CommandExecutor {
     }
 
     private void loadClinical() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
+            LoaderException, InvocationTargetException, ClassNotFoundException, FileNotFoundException {
+
+//        Map<String, String> files = new LinkedHashMap<>();
+//        files.put("clinvar", "clinvar.json.gz");
+//        files.put("cosmic", "cosmic.json.gz");
+//        files.put("gwas", "gwas.json.gz");
+//        files.put("gwas", "gwas.json.gz");
+
+//        files.keySet().forEach(entry -> {
+//            Path path = input.resolve(files.get(entry));
+        Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_ANNOTATED_JSON_FILE);
+        if (Files.exists(path)) {
+            try {
+                logger.info("Loading '{}' ...", path.toString());
+                loadRunner.load(path, EtlCommons.CLINICAL_VARIANTS_DATA);
+                loadIfExists(input.resolve("clinvarVersion.json"), "metadata");
+                loadIfExists(input.resolve("cosmicVersion.json"), "metadata");
+                loadIfExists(input.resolve("gwasVersion.json"), "metadata");
+            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                logger.error(e.toString());
+            }
+        } else {
+            throw new FileNotFoundException("File " + path.toString() + " does not exist");
+        }
+//        });
+        loadRunner.index("clinical_variants");
+//        loadRunner.index("clinical");
+    }
+
+    private void loadRepeats() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
             LoaderException, InvocationTargetException, ClassNotFoundException {
 
-        Map<String, String> files = new LinkedHashMap<>();
-        files.put("clinvar", "clinvar.json.gz");
-        files.put("cosmic", "cosmic.json.gz");
-        files.put("gwas", "gwas.json.gz");
-
-        files.keySet().forEach(entry -> {
-            Path path = input.resolve(files.get(entry));
-            if (Files.exists(path)) {
-                try {
-                    logger.debug("Loading '{}' ...", entry);
-                    loadRunner.load(path, entry);
-                    loadIfExists(input.resolve("clinvarVersion.json"), "metadata");
-                    loadIfExists(input.resolve("gwasVersion.json"), "metadata");
-                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-                        | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
-                    logger.error(e.toString());
-                }
+        Path path = input.resolve(EtlCommons.REPEATS_JSON + ".json.gz");
+        if (Files.exists(path)) {
+            try {
+                logger.debug("Loading '{}' ...", path.toString());
+                loadRunner.load(path, EtlCommons.REPEATS_DATA);
+                loadIfExists(input.resolve(EtlCommons.TRF_VERSION_FILE), METADATA);
+                loadIfExists(input.resolve(EtlCommons.GSD_VERSION_FILE), METADATA);
+                loadIfExists(input.resolve(EtlCommons.WM_VERSION_FILE), METADATA);
+            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+                    | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+                logger.error(e.toString());
             }
-        });
-        loadRunner.index("clinical");
+            loadRunner.index(EtlCommons.REPEATS_DATA);
+        } else {
+            logger.warn("Repeats file {} not found", path.toString());
+            logger.warn("No repeats data will be loaded");
+        }
+//        Map<String, String> files = new LinkedHashMap<>();
+//        files.put("simpleRepeat", "simpleRepeat.json.gz");
+//        files.put("genomicSuperDup", "genomicSuperDup.json.gz");
+//        files.put("windowMasker", "windowMasker.json.gz");
+//
+//        files.keySet().forEach(entry -> {
+//            Path path = input.resolve(files.get(entry));
+//            if (Files.exists(path)) {
+//                try {
+//                    logger.debug("Loading '{}' ...", entry);
+//                    loadRunner.load(path, entry);
+//                    loadIfExists(input.resolve(EtlCommons.TRF_VERSION_FILE), "metadata");
+//                    loadIfExists(input.resolve(EtlCommons.GSD_VERSION_FILE), "metadata");
+//                    loadIfExists(input.resolve(EtlCommons.WM_VERSION_FILE), "metadata");
+//                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
+//                        | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
+//                    logger.error(e.toString());
+//                }
+//            }
+//        });
+
     }
 
 }

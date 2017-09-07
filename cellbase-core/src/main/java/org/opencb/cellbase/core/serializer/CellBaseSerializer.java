@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.serializer;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Created by parce on 9/02/15.
@@ -26,5 +27,8 @@ public interface CellBaseSerializer {
     void serialize(Object object);
 
     void close() throws IOException;
+
+    Path getOutdir();
+    String getFileName();
 
 }

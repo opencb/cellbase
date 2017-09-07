@@ -32,7 +32,7 @@ public class LoadRunnerTest {
 
     @Before
     public void setUp() throws Exception {
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
+//        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
         Path jsonFile = Paths.get(LoadRunnerTest.class.getResource("/cosmic.json.gz").toURI());
         // connection params
         Map<String, String> params = new HashMap<>();

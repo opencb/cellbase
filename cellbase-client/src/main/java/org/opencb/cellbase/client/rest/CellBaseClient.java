@@ -16,10 +16,12 @@
 
 package org.opencb.cellbase.client.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Created by imedina on 12/05/16.
@@ -27,9 +29,10 @@ import java.util.Map;
 public class CellBaseClient {
 
     private String species;
+    private String assembly;
     private ClientConfiguration clientConfiguration;
 
-    private Map<String, ParentRestClient> clients;
+    private final Map<String, ParentRestClient> clients;
 
 
     public CellBaseClient(ClientConfiguration clientConfiguration) {
@@ -37,36 +40,76 @@ public class CellBaseClient {
     }
 
     public CellBaseClient(String species, ClientConfiguration clientConfiguration) {
-        this.species = species;
-        this.clientConfiguration = clientConfiguration;
-
-        clients = new HashMap<>();
+        this(species, null, clientConfiguration);
     }
 
+    public CellBaseClient(String species, String assembly, ClientConfiguration clientConfiguration) {
+
+        if (StringUtils.isBlank(species)) {
+            throw new IllegalArgumentException("Species parameter cannot be empty when building a CellBaseClient");
+        }
+        this.species = species;
+        this.assembly = StringUtils.isEmpty(assembly) ? null : assembly;
+        if (clientConfiguration != null && clientConfiguration.getRest() != null
+                && clientConfiguration.getRest().getHosts() != null
+                && !clientConfiguration.getRest().getHosts().isEmpty()
+                && StringUtils.isNotBlank(clientConfiguration.getVersion())) {
+            this.clientConfiguration = clientConfiguration;
+        } else {
+            throw new IllegalArgumentException("version and host must be provided in a ClienConfiguration object"
+                    + " when building a CellBase client and cannot be empty");
+        }
+        clients = new HashMap<>();
+
+    }
 
     public GeneClient getGeneClient() {
-        clients.putIfAbsent("GENE", new GeneClient(species, clientConfiguration));
-        return (GeneClient) clients.get("GENE");
+        return getClient("GENE", () -> new GeneClient(species, assembly, clientConfiguration));
     }
 
     public TranscriptClient getTranscriptClient() {
-        clients.putIfAbsent("TRANSCRIPT", new TranscriptClient(species, clientConfiguration));
-        return (TranscriptClient) clients.get("TRANSCRIPT");
+        return getClient("TRANSCRIPT", () -> new TranscriptClient(species, assembly, clientConfiguration));
     }
 
     public VariationClient getVariationClient() {
-        clients.putIfAbsent("VARIATION", new VariationClient(species, clientConfiguration));
-        return (VariationClient) clients.get("VARIATION");
+        return getClient("VARIATION", () -> new VariationClient(species, assembly, clientConfiguration));
+    }
+
+    public VariantClient getVariantClient() {
+        return getClient("VARIANT", () -> new VariantClient(species, assembly, clientConfiguration));
     }
 
     public ProteinClient getProteinClient() {
-        clients.putIfAbsent("PROTEIN", new ProteinClient(species, clientConfiguration));
-        return (ProteinClient) clients.get("PROTEIN");
+        return getClient("PROTEIN", () -> new ProteinClient(species, assembly, clientConfiguration));
     }
 
     public GenomicRegionClient getGenomicRegionClient() {
-        clients.putIfAbsent("GENOME_REGION", new GenomicRegionClient(species, clientConfiguration));
-        return (GenomicRegionClient) clients.get("GENOME_REGION");
+        return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, clientConfiguration));
+    }
+
+    public MetaClient getMetaClient() {
+        return getClient("META", () -> new MetaClient(species, assembly, clientConfiguration));
+    }
+
+    public ClinicalVariantClient getClinicalClient() {
+        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, clientConfiguration));
+    }
+
+    public GenericClient getGenericClient() {
+        return getClient("GENERIC", () -> new GenericClient(species, assembly, clientConfiguration));
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends ParentRestClient> T getClient(String key, Supplier<T> constructorIfAbsent) {
+        // Avoid concurrent modifications
+        if (!clients.containsKey(key)) {
+            synchronized (clients) {
+                if (!clients.containsKey(key)) {
+                    clients.put(key, constructorIfAbsent.get());
+                }
+            }
+        }
+        return (T) clients.get(key);
     }
 
 
@@ -98,4 +141,5 @@ public class CellBaseClient {
         this.clientConfiguration = clientConfiguration;
         return this;
     }
+
 }

@@ -44,12 +44,12 @@ import java.io.IOException;
 public class SpeciesWSServer extends GenericRestWSServer {
 
     public SpeciesWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                                   defaultValue = "latest") String version,
+                           @ApiParam(name = "version", value = "Possible values: v3, v4",
+                                   defaultValue = "v4") String version,
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                    + "of potentially available species ids, please refer to: "
-                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -62,7 +62,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getSpeciesInfo() {
         try {
-            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory2.getGenomeDBAdaptor(species, this.assembly);
+            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
             QueryResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
             queryResult.setId(species);
             return createOkResponse(queryResult);

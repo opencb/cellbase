@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>4.5.0-rc</version>
+        <version>4.6.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -21,17 +21,13 @@
     <dependencies>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-core</artifactId>
+            <artifactId>cellbase-server</artifactId>
+            <version>${cellbase.version}</version>
+            <!--<type>war</type>-->
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.opencb.cellbase</groupId>-->
-        <!--<artifactId>cellbase-server</artifactId>-->
-        <!--<version>${cellbase.version}</version>-->
-        <!--<type>jar</type>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-server</artifactId>
+            <artifactId>cellbase-client</artifactId>
             <version>${cellbase.version}</version>
             <!--<type>war</type>-->
         </dependency>
@@ -39,7 +35,7 @@
         <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
-            <version>1.47</version>
+            <version>1.58</version>
         </dependency>
         <!--<dependency>-->
             <!--<groupId>psidev.psi.mi</groupId>-->
@@ -52,26 +48,6 @@
             <version>2.4</version>
         </dependency>
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
             <scope>test</scope>
@@ -80,11 +56,6 @@
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -159,6 +130,7 @@
                                 </exec>
                                 <exec executable="mkdir">
                                     <arg value="${build.dir}"/>
+                                    <arg value="${build.dir}/test"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}</echo>
@@ -180,6 +152,25 @@
                                 <exec executable="cp">
                                     <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>
                                     <arg value="${build.dir}"/>
+                                </exec>
+                                <echo>Coping Acceptance testing files</echo>
+                                <exec executable="mvn">
+                                    <arg value="-f"/>
+                                    <arg value="${project.basedir}/../cellbase-test/pom.xml"/>
+                                    <arg value="install"/>
+                                </exec>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../cellbase-test/target/appassembler/bin"/>
+                                    <arg value="${project.basedir}/../cellbase-test/target/appassembler/dependencies"/>
+                                    <arg value="${project.basedir}/../cellbase-test/README.md"/>
+                                    <arg value="${project.basedir}/../cellbase-test/fitnesse"/>
+                                    <arg value="${build.dir}/test"/>
+                                </exec>
+                                <exec executable="sed">
+                                    <arg value="-i"/>
+                                    <arg value="s/target\/appassembler\/dependencies/dependencies/"/>
+                                    <arg value="${build.dir}/test/fitnesse/FitNesseRoot/CellBase/CellBaseCompleteSuite/SuiteSetUp.wiki"/>
                                 </exec>
                             </target>
                         </configuration>

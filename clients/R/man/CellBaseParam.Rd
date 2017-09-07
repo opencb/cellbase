@@ -31,14 +31,10 @@ in the form 1:100000-1500000 not chr1:100000-1500000}
 \item{limit}{A number limiting the number of results to be returned}
 }
 \description{
-A constructor function for CellBaseParam
-}
-\details{
 use the CellBaseParam object to control what results are returned from the
 CellBaseR methods
 }
 \examples{
-library(cellbaseR)
 cbParam <- CellBaseParam(genome="GRCh38",gene=c("TP73","TET1"))
 print(cbParam)
 }

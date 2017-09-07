@@ -1,12 +1,15 @@
+/*
 package org.opencb.cellbase.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.junit.Test;
 
+*/
 /**
  * Created by imedina on 20/10/16.
- */
+ *//*
+
 public class CellBaseConfigurationTest {
 
 
@@ -19,4 +22,4 @@ public class CellBaseConfigurationTest {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
         System.out.println(objectMapper.writer().withDefaultPrettyPrinter().writeValueAsString(cellBaseConfiguration));
     }
-}
+}*/

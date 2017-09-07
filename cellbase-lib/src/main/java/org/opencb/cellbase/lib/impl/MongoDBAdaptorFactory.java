@@ -20,6 +20,7 @@ import org.bson.Document;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 
+
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     /**
@@ -33,8 +34,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         super(cellBaseConfiguration);
         this.cellBaseConfiguration = cellBaseConfiguration;
     }
-
-
 
     @Override
     public void open(String species, String assembly) {
@@ -148,6 +147,16 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
+    public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species) {
+        return getClinicalLegacyDBAdaptor(species, null);
+    }
+
+    @Override
+    public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species, String assembly) {
+        return new ClinicalLegacyMongoDBAdaptor(species, assembly, cellBaseConfiguration);
+    }
+
+    @Override
     public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
         return getClinicalDBAdaptor(species, null);
     }
@@ -155,6 +164,11 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     @Override
     public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
         return new ClinicalMongoDBAdaptor(species, assembly, cellBaseConfiguration);
+    }
+
+    @Override
+    public RepeatsDBAdaptor getRepeatsDBAdaptor(String species, String assembly) {
+        return new RepeatsMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 
@@ -172,7 +186,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //        variantAnnotationDBAdaptor.setGeneDBAdaptor(getGeneDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setRegulationDBAdaptor(getRegulatoryRegionDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setVariantDBAdaptor(getVariationDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
+//        variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalLegacyDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setProteinDBAdaptor(getProteinDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setConservationDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setVariantFunctionalScoreDBAdaptor(getVariantFunctionalScoreDBAdaptor(species, assembly));

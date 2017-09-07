@@ -33,12 +33,12 @@ public class VariationWSServer extends GenericRestWSServer {
     protected static final HashMap<String, List<Transcript>> CACHE_TRANSCRIPT = new HashMap<>();
 
     public VariationWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Use 'latest' for last stable version",
-                                   defaultValue = "latest") String version,
+                           @ApiParam(name = "version", value = "Possible values: v3, v4",
+                                   defaultValue = "v4") String version,
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                    + "of potentially available species ids, please refer to: "
-                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/meta/species") String species,
+                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
@@ -58,7 +58,7 @@ public class VariationWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the first object in the database", response = Variant.class,
             responseContainer = "QueryResponse")
     public Response first() {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
         return createOkResponse(variationDBAdaptor.first(queryOptions));
     }
 
@@ -97,7 +97,7 @@ public class VariationWSServer extends GenericRestWSServer {
 //                          @ApiParam(name = "region",
 //                                  value = "Comma separated list of genomic regions to be queried, "
 //                                          + "e.g.: 1:6635137-6635325", required = true) String region) {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 //        query.append(VariantDBAdaptor.QueryParams.REGION.key(), region);
         return createOkResponse(variationDBAdaptor.count(query));
     }
@@ -145,7 +145,7 @@ public class VariationWSServer extends GenericRestWSServer {
                                            required = true) String id) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
             List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
@@ -164,25 +164,30 @@ public class VariationWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of ENSEMBL gene ids, e.g.: ENST00000380152,ENSG00000155657."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    value = "Comma separated list of rs ids, e.g.: rs6025, rs666"
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "consequence_type",
-                    value = "Comma separated list of  consequence types."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.gene",
-                    value = "Comma separated list of gene names for which drug data is available, "
-                            + "e.g.: BRCA2,TTN."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant."
+                            + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list ENSEMBL gene ids, e.g.: ENSG00000161905. Exact text matches will be "
+                            + "returned.", dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "chromosome",
+                    value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
+                    dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "reference",
+                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+                    dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "alternate",
+                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+                    dataType = "list of strings", paramType = "query")
     })
     public Response search() {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -198,7 +203,7 @@ public class VariationWSServer extends GenericRestWSServer {
                                         required = true) String id) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
             QueryResult queryResult = variationDBAdaptor.next(query, queryOptions);
             queryResult.setId(id);
@@ -215,7 +220,7 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getAllConsequenceTypes() {
         try {
             parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 //            query.put(VariantDBAdaptor.QueryParams.REGION.key(), "22:1-50000000");
 //            return createOkResponse(variationDBAdaptor.distinct(query, "displayConsequenceType"));
 
@@ -251,7 +256,7 @@ public class VariationWSServer extends GenericRestWSServer {
     private Response getConsequenceType(String snpId) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
             queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
             QueryResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
@@ -282,7 +287,7 @@ public class VariationWSServer extends GenericRestWSServer {
     private Response getRegulatoryType(String snpId) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return null;
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -309,7 +314,7 @@ public class VariationWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
 //            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", Arrays.asList(""));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -323,7 +328,7 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getXrefs(@PathParam("snpId") String query) {
         try {
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory2.getVariationDBAdaptor(this.species, this.assembly);
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return null;
         } catch (Exception e) {
             return createErrorResponse(e);

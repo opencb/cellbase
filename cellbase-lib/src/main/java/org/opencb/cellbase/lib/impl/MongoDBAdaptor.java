@@ -203,19 +203,23 @@ public class MongoDBAdaptor {
     }
 
     protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
+        return addPrivateExcludeOptions(options, "_id,_chunkIds");
+    }
+
+    protected QueryOptions addPrivateExcludeOptions(QueryOptions options, String csvFields) {
         if (options != null) {
             if (options.get("exclude") == null) {
-                options.put("exclude", "_id,_chunkIds");
+                options.put("exclude", csvFields);
             } else {
                 String exclude = options.getString("exclude");
-                if (exclude.contains("_id,_chunkIds")) {
+                if (exclude.contains(csvFields)) {
                     return options;
                 } else {
-                    options.put("exclude", exclude + ",_id,_chunkIds");
+                    options.put("exclude", exclude + "," + csvFields);
                 }
             }
         } else {
-            options = new QueryOptions("exclude", "_id,_chunkIds");
+            options = new QueryOptions("exclude", csvFields);
         }
         return options;
     }
@@ -899,9 +903,9 @@ public class MongoDBAdaptor {
         int end = start + interval;
         for (int i = 0, j = 0; i < numIntervals; i++) {
             if (j < objectList.size() && ((BigInteger) objectList.get(j)[0]).intValue() == i) {
-                intervalFeatureFrequenciesList.add(new IntervalFeatureFrequency(start, end, ((BigInteger) objectList.get(j)[0]).intValue()
-                        , ((BigInteger) objectList.get(j)[1]).intValue()
-                        , ((BigInteger) objectList.get(j)[1]).floatValue() / max.floatValue()));
+                intervalFeatureFrequenciesList.add(new IntervalFeatureFrequency(start, end, ((BigInteger) objectList.get(j)[0]).intValue(),
+                        ((BigInteger) objectList.get(j)[1]).intValue(),
+                        ((BigInteger) objectList.get(j)[1]).floatValue() / max.floatValue()));
                 j++;
             } else {
                 intervalFeatureFrequenciesList.add(new IntervalFeatureFrequency(start, end, i, 0, 0.0f));

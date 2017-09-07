@@ -23,6 +23,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -42,6 +43,13 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     private MongoDBCollection genomeInfoMongoDBCollection;
     private MongoDBCollection conservationMongoDBCollection;
+    private static final Object CYTOBANDS = "cytobands";
+    private static final Object START = "start";
+    private static final String END = "end";
+    private static final String STAIN = "stain";
+    private static final String NAME = "name";
+    private static final Object CHROMOSOMES = "chromosomes";
+    private Document genomeInfo = null;
 
     public GenomeMongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
@@ -68,6 +76,59 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
         }
         Document dbObject = new Document("chromosomes", new Document("$elemMatch", new Document("name", chromosomeId)));
         return executeQuery(chromosomeId, dbObject, queryOptions, genomeInfoMongoDBCollection);
+    }
+
+    @Override
+    public QueryResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions) {
+
+        List<Cytoband> cytobandList = new ArrayList<>();
+        long dbStartTime = System.currentTimeMillis();
+        long dbTime = System.currentTimeMillis() - dbStartTime;
+        Document chromosomeInfo = getOneChromosomeInfo(region.getChromosome());
+        // May not have info for specified chromosome, e.g. 17_KI270729v1_random
+        if (chromosomeInfo != null) {
+            List<Document> cytobandDocumentList = (List<Document>) chromosomeInfo.get(CYTOBANDS);
+            int i = 0;
+            while (i < cytobandDocumentList.size() && ((int) cytobandDocumentList.get(i).get(START)) <= region.getEnd()) {
+                if (((int) cytobandDocumentList.get(i).get(END)) >= region.getStart()) {
+                    cytobandList.add(new Cytoband((String) cytobandDocumentList.get(i).get(STAIN),
+                            (String) cytobandDocumentList.get(i).get(NAME), (Integer) cytobandDocumentList.get(i).get(START),
+                            (Integer) cytobandDocumentList.get(i).get(END)));
+                }
+                i++;
+            }
+        }
+        QueryResult queryResult = new QueryResult(region.toString(), (int) dbTime, cytobandList.size(),
+                cytobandList.size(), null, null, cytobandList);
+
+        return queryResult;
+
+    }
+
+    private Document getOneChromosomeInfo(String chromosome) {
+        Document genomeInfoVariable = getGenomeInfoVariable();
+        if (genomeInfoVariable != null) {
+            for (Document document : (List<Document>) genomeInfoVariable.get(CHROMOSOMES)) {
+                if (document.get(NAME).equals(chromosome)) {
+                    return document;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Document getGenomeInfoVariable() {
+        if (genomeInfo == null) {
+            QueryResult<Document> queryResult = genomeInfoMongoDBCollection.find(new Document(), null);
+            if (queryResult.getNumResults() > 0) {
+                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResult().get(0);
+                for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
+                    ((List<Document>) chromosomeDocument.get(CYTOBANDS))
+                            .sort((c1, c2) -> Integer.compare((int) c1.get(START), (int) c2.get(START)));
+                }
+            }
+        }
+        return genomeInfo;
     }
 
     @Deprecated
@@ -132,7 +193,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             String sequence = stringBuilder.toString().substring(startIndex, startIndex + length);
 
             String strand = "1";
-            String queryStrand= (query.getString("strand") != null) ? query.getString("strand") : "1";
+            String queryStrand = (query.getString("strand") != null) ? query.getString("strand") : "1";
             if (queryStrand.equals("-1") || queryStrand.equals("-")) {
                 sequence = DNASequenceUtils.reverseComplement(sequence);
                 strand = "-1";

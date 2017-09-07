@@ -60,7 +60,7 @@ public class MongoDBCellBaseLoaderTest {
 //        params.put(CellBaseLoader.CELLBASE_DATABASE_NAME_PROPERTY, "cellbaseTest");
 
         // loader
-        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
+//        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
 //        loader = new MongoDBCellBaseLoader(queue, "cosmic", params);
 //        loader.init();
     }

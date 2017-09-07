@@ -107,48 +107,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        Bson match = Aggregates.match(bson);
-
-        Bson include = null;
-        if (options != null && options.containsKey("include")) {
-            List<String> includeList = new ArrayList<>();
-            List<String> optionsAsStringList = options.getAsStringList("include");
-            for (String s : optionsAsStringList) {
-                if (s.startsWith("transcripts")) {
-                    includeList.add(s);
-                }
-            }
-
-            if (includeList.size() > 0) {
-                include = Projections.include(includeList);
-            }
-        }
-
-        if (include == null) {
-            include = Projections.include("transcripts");
-        }
-        Bson excludeAndInclude = Aggregates.project(Projections.fields(Projections.excludeId(), include));
-        Bson unwind = Aggregates.unwind("$transcripts");
-
-        // This project the three fields of Xref to the top of the object
-        Document document = new Document("id", "$transcripts.id");
-        document.put("name", "$transcripts.name");
-        document.put("biotype", "$transcripts.biotype");
-        document.put("chromosome", "$transcripts.chromosome");
-        document.put("start", "$transcripts.start");
-        document.put("end", "$transcripts.end");
-        document.put("strand", "$transcripts.strand");
-        document.put("cDnaSequence", "$transcripts.cDnaSequence");
-        document.put("xrefs", "$transcripts.xrefs");
-        document.put("exons", "$transcripts.exons");
-        document.put("annotationFlags", "$transcripts.annotationFlags");
-        Bson project = Aggregates.project(document);
-
-        Bson match2 = Aggregates.match(bson);
-
-        return mongoDBCollection.aggregate(Arrays.asList(match, unwind, match2, excludeAndInclude, project), options);
-//        return mongoDBCollection.aggregate(Arrays.asList(match, excludeAndInclude, unwind, project, match2), options);
+        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
+        return mongoDBCollection.aggregate(aggregateList, options);
     }
 
     @Override
@@ -158,8 +118,9 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
+        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
+        return mongoDBCollection.nativeQuery().aggregate(aggregateList, options).iterator();
+//        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
     @Override
@@ -214,7 +175,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         createOrQuery(query, QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
         createOrQuery(query, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
-
+        createOrQuery(query, QueryParams.ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
@@ -231,12 +192,73 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         createOrQuery(query, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
         createOrQuery(query, QueryParams.XREFS.key(), "xrefs.id", andBsonList);
         createOrQuery(query, QueryParams.TFBS_NAME.key(), "tfbs.name", andBsonList);
+        createOrQuery(query, QueryParams.ANNOTATION_FLAGS.key(), "annotationFlags", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
         }
+    }
+
+    private List<Bson> unwindAndMatchTranscripts(Query query, QueryOptions options) {
+        List<Bson> aggregateList = new ArrayList<>();
+
+        Bson bson = parseQuery(query);
+        Bson match = Aggregates.match(bson);
+
+        Bson include = null;
+        if (options != null && options.containsKey("include")) {
+            List<String> includeList = new ArrayList<>();
+            List<String> optionsAsStringList = options.getAsStringList("include");
+            for (String s : optionsAsStringList) {
+                if (s.startsWith("transcripts")) {
+                    includeList.add(s);
+                }
+            }
+
+            if (includeList.size() > 0) {
+                include = Projections.include(includeList);
+            }
+        }
+
+        if (include == null) {
+            include = Projections.include("transcripts");
+        }
+        Bson excludeAndInclude = Aggregates.project(Projections.fields(Projections.excludeId(), include));
+        Bson unwind = Aggregates.unwind("$transcripts");
+
+        // This project the three fields of Xref to the top of the object
+        Document document = new Document("id", "$transcripts.id");
+        document.put("name", "$transcripts.name");
+        document.put("biotype", "$transcripts.biotype");
+        document.put("status", "$transcripts.status");
+        document.put("chromosome", "$transcripts.chromosome");
+        document.put("start", "$transcripts.start");
+        document.put("end", "$transcripts.end");
+        document.put("strand", "$transcripts.strand");
+        document.put("genomicCodingStart", "$transcripts.genomicCodingStart");
+        document.put("genomicCodingEnd", "$transcripts.genomicCodingEnd");
+        document.put("cdnaCodingStart", "$transcripts.cdnaCodingStart");
+        document.put("cdnaCodingEnd", "$transcripts.cdnaCodingEnd");
+        document.put("cdsLength", "$transcripts.cdsLength");
+        document.put("proteinID", "$transcripts.proteinID");
+        document.put("proteinSequence", "$transcripts.proteinSequence");
+        document.put("cDnaSequence", "$transcripts.cDnaSequence");
+        document.put("xrefs", "$transcripts.xrefs");
+        document.put("exons", "$transcripts.exons");
+        document.put("annotationFlags", "$transcripts.annotationFlags");
+        Bson project = Aggregates.project(document);
+
+        Bson match2 = Aggregates.match(bson);
+
+        aggregateList.add(match);
+        aggregateList.add(unwind);
+        aggregateList.add(match2);
+        aggregateList.add(excludeAndInclude);
+        aggregateList.add(project);
+
+        return aggregateList;
     }
 
 }

@@ -22,8 +22,8 @@ import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.TranscriptModel;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
-import org.opencb.cellbase.server.grpc.service.GenericServiceModel;
-import org.opencb.cellbase.server.grpc.service.TranscriptServiceGrpc;
+import org.opencb.cellbase.core.grpc.service.GenericServiceModel;
+import org.opencb.cellbase.core.grpc.service.TranscriptServiceGrpc;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -110,21 +110,9 @@ public class TranscriptGrpcService extends TranscriptServiceGrpc.TranscriptServi
         Query query = createQuery(request);
         QueryOptions queryOptions = createQueryOptions(request);
         Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
-        int count = 0;
-        int limit = queryOptions.getInt("limit", 0);
         while (iterator.hasNext()) {
-            Document gene = (Document) iterator.next();
-            List<Document> transcripts = (List<Document>) gene.get("transcripts");
-            if (limit > 0) {
-                for (int i = 0; i < transcripts.size() && count < limit; i++) {
-                    responseObserver.onNext(ProtoConverterUtils.createTranscript(transcripts.get(i)));
-                    count++;
-                }
-            } else {
-                for (Document doc : transcripts) {
-                    responseObserver.onNext(ProtoConverterUtils.createTranscript(doc));
-                }
-            }
+            Document document = (Document) iterator.next();
+            responseObserver.onNext(ProtoConverterUtils.createTranscript(document));
         }
         responseObserver.onCompleted();
     }

@@ -14,32 +14,33 @@
   ~ limitations under the License.
   -->
 
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../shared/cellbase-shared-styles.html">
-
-<link rel="import" href="cellbase-transcripts-view.html">
-<link rel="import" href="cellbase-expression-grid.html">
-<link rel="import" href="cellbase-phenotype-grid.html">
-<link rel="import" href="cellbase-drugs-view.html">
-<link rel="import" href="cellbase-regulation-grid.html">
-<link rel="import" href="cellbase-variation-grid.html">
-<link rel="import" href="../variation/cellbase-variantannotation-view.html">
-<link rel="import" href="cellbase-clinvar-grid.html">
-<link rel="import" href="cellbase-cosmic-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-transcripts-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-expression-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-phenotype-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/core/cellbase-drugs-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/regulation/cellbase-regulation-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variation-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-variantannotation-view.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-clinvar-grid.html">
+<link rel="import" href="../../../lib/jsorolla/src/lib/cellbase/variation/cellbase-cosmic-grid.html">
 
 
 
 <dom-module id="cellbase-genomic-view">
     <template>
-        <style is="custom-style" include="cellbase-shared-styles">
-            .highlight {
-                background-color: darkgray;
-            }
-        </style>
+        <style is="custom-style" include="jso-styles"></style>
 
         <div>
+            <div hidden$="{{!checkRegion(region)}}" style="text-align: center;">
+                <br>
+                <h4>Query all features within a genomic region. Introduce a genomic region in the search box in order
+                    to obtain all annotations available for that region: <br>
+                    genes, transcripts, exons, genomic variants,regulatory features, etc.</h4>
+            </div>
+            <br>
+
             <!--List of Tabs-->
-            <ul id="genomicViewTabs" class="nav nav-tabs" role="tablist">
+            <ul id="genomicViewTabs" class="nav nav-tabs" role="tablist" hidden$="{{checkRegion(region)}}">
                 <li role="presentation" class="active"><a href="#genomicViewInfo" role="tab" data-toggle="tab">Summary</a></li>
                 <li role="presentation"><a href="#genomicViewGene" role="tab" data-toggle="tab">Gene</a></li>
                 <li role="presentation"><a href="#genomicViewRegulation" role="tab" data-toggle="tab">Regulation</a></li>
@@ -48,7 +49,7 @@
                 <li role="presentation"><a href="#genomicViewGenomeContext" role="tab" data-toggle="tab">Genome Context</a></li>
             </ul>
 
-            <div class="tab-content" style="width: 90%">
+            <div class="tab-content" style="width: 90%" hidden$="{{checkRegion(region)}}">
                 <div id="genomicViewInfo" role="tabpanel" class="tab-pane active">
                     <h4>{{region}}</h4> <br>
                     Number of Genes: {{geneCount}}<br>
@@ -77,6 +78,7 @@
 
                     <div class="tab-content">
                         <div id="genomicViewGeneTranscript" role="tabpanel" class="tab-pane active">
+                            <br>
                             <cellbase-transcripts-view data="{{transcripts}}" prefix="genomicView"></cellbase-transcripts-view>
                         </div>
                         <div id="genomicViewGeneExpression" role="tabpanel" class="tab-pane">
@@ -136,6 +138,7 @@
                 },
                 region: {
                     type: String,
+                    value: "",
                     observer: '_regionChanged'
                 },
                 genes : {
@@ -146,8 +149,11 @@
                 }
             },
             attached: function() {
-                this.genomeViewer;
-                this.renderGenomeViewer();
+//                this.genomeViewer;
+//                this.renderGenomeViewer();
+            },
+            checkRegion: function(region) {
+                return this.region == "";
             },
             iconChangeClinvar: function () {
                 $('#clinvarToggle').toggleClass('fa-minus-circle fa-plus-circle');
@@ -156,94 +162,68 @@
                 $('#cosmicToggle').toggleClass('fa-minus-circle fa-plus-circle');
             },
             _regionChanged: function (newValue, oldValue) {
-                this.genomeViewer.setRegion(this.region);
-                this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/variation';
-                this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=clinvar';
-                this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/clinical?source=cosmic';
-                this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/hsapiens/genomic/region/' + this.region + '/regulatory';
-                let _this = this;
-                let geneSuccess = function (response) {
-                    _this.genes = response.response[0].result;
-                    _this.geneCount = _this.genes.length;
+                if (typeof this.genomeViewer !== "undefined"){
+                    this.genomeViewer.setRegion(this.region);
+                }
+                if (this.cellbaseClient instanceof CellBaseClient) {
 
-                    // Gene grid definition
-                    $('#geneTable').bootstrapTable('destroy');
-                    $('#geneTable').bootstrapTable({
-                        data: _this.genes,
-                        columns: [
-                            [
-                                {
-                                    title: 'Name',
-                                    field: 'name',
-                                    sortable: true
-                                },
-                                {
-                                    title: 'Ensembl ID',
-                                    formatter: _this.idFormatter
-                                },
-                                {
-                                    title: 'Biotype',
-                                    field: 'biotype',
-                                    sortable: true
-                                },
-                                {
-                                    title: 'Location',
-                                    formatter: _this.locationFormatter
-                                },
-                                {
-                                    title: 'Strand',
-                                    field: 'strand'
-                                },
-                                {
-                                    title: 'Description',
-                                    field: 'description'
+                    this.variationUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/variation';
+                    this.clinvarUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/clinical?source=clinvar';
+                    this.cosmicUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/clinical?source=cosmic';
+                    this.regUrl = 'http://' + this.cellbaseClient._config.hosts[0] + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/genomic/region/' + this.region + '/regulatory';
+                    let _this = this;
+
+                    this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {})
+                        .then(function (response) {
+                            _this.genes = response.response[0].result;
+                            _this.geneCount = _this.genes.length;
+
+                            // Gene grid definition
+                            $('#geneTable').bootstrapTable('destroy');
+                            $('#geneTable').bootstrapTable({
+                                data: _this.genes,
+                                columns: [
+                                    [
+                                        {
+                                            title: 'Name',
+                                            field: 'name',
+                                            sortable: true
+                                        },
+                                        {
+                                            title: 'Ensembl ID',
+                                            formatter: _this.idFormatter
+                                        },
+                                        {
+                                            title: 'Biotype',
+                                            field: 'biotype',
+                                            sortable: true
+                                        },
+                                        {
+                                            title: 'Location',
+                                            formatter: _this.locationFormatter
+                                        },
+                                        {
+                                            title: 'Strand',
+                                            field: 'strand'
+                                        },
+                                        {
+                                            title: 'Description',
+                                            field: 'description'
+                                        }
+                                    ]
+                                ],
+                                onClickRow: function (row, $element) {
+                                    $('.success').removeClass('success');
+                                    $($element).addClass('success');
+                                    _this.selectedGene = row.name;
+                                    _this.transcripts = row.transcripts;
+                                    _this.expression = row.annotation.expression;
+                                    _this.phenotype = row.annotation.diseases;
+                                    _this.drugs = row.annotation.drugs;
                                 }
-                            ]
-                        ],
-                        onClickRow: function (row, $element) {
-                            $('#geneTable tr').removeClass("highlight");
-                            $element.addClass("highlight");
-                            _this.selectedGene = row.name;
-                            _this.transcripts = row.transcripts;
-                            _this.expression = row.annotation.expression;
-                            _this.phenotype = row.annotation.diseases;
-                            _this.drugs = row.annotation.drugs;
-                        }
-                    });
-                };
-//                let regSuccess = function (response) {
-//                    let reg = [];
-//                    for (let i in response.response) {
-//                        for (let j in response.response[i].result) {
-//                            reg.push(response.response[i].result[j]);
-//                        }
-//                    }
-//                    _this.regulatory = reg;
-//                    _this.regulationCount = reg.length;
-//                };
-//                let clinicalSuccess = function (response) {
-//                    let clinical = response.response[0].result;
-//                    _this.clinicalCount = clinical.length;
-//                    let clinivarArray = [];
-//                    let cosmicArray = [];
-//                    for (let i in clinical) {
-//                        if (clinical[i].source == "clinvar") {
-//                            clinivarArray.push(clinical[i]);
-//                        }
-//                        if (clinical[i].source == "cosmic") {
-//                            cosmicArray.push(clinical[i]);
-//                        }
-//                    }
-//                    _this.clinvar = clinivarArray;
-//                    _this.cosmic = cosmicArray;
-//                };
-                let error = function (response) {
-                    alert("Genomic Region not valid: " + _this.region)
-                };
-
-                this.cellbaseClient.get('genomic', 'region', this.region, 'gene', {}, {success: geneSuccess, error: error, async: true});
-//                this.cellbaseClient.get('genomic', 'region', this.region, 'regulatory', {}, {success: regSuccess, error: error, async: true});
-//                this.cellbaseClient.get('genomic', 'region', this.region, 'clinical', {}, {success: clinicalSuccess, error: error, async: true});
+                            });
+                        });
+                }
             },
             onVariantSelected: function(e) {
                 this.variant = e.detail.variant;
