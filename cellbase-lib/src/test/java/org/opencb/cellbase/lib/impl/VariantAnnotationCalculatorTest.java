@@ -830,108 +830,111 @@ public class VariantAnnotationCalculatorTest {
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertEquals(22, queryResult.getResult().get(0).getRepeat().size());
-        assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.hasItems(new Repeat("10420", "19", 60001, 172445, null,
-                        2f, 0.991464f, null, null, "genomicSuperDup"),
-                        new Repeat(null, "2", 10006, 10174, 13,
-                                12.7f, 0.82f, 213f, "CCCACACACCACA", "trf")));
+//        assertThat(queryResult.getResult().get(0).getRepeat(),
+//                CoreMatchers.hasItems(new Repeat("10420", "19", 60001, 172445, null,
+//                        2f, 0.991464f, null, null, "genomicSuperDup"),
+//                        new Repeat(null, "2", 10006, 10174, 13,
+//                                12.7f, 0.82f, 213f, "CCCACACACCACA", "trf")));
+//
+//        variant = new Variant("19:82354-82444:<CN4>");
+//        structuralVariation = new StructuralVariation(82354, 82354,
+//                82444, 82444, 0, null, null, null);
+//        queryOptions.put("cnvExtraPadding", 150);
+//        variant.setSv(structuralVariation);
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+//        assertThat(queryResult.getResult().get(0).getRepeat(),
+//                CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
+//                        2f, 0.997228f, null, null, "genomicSuperDup")));
+//
+//        queryOptions.remove("cnvExtraPadding");
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
+//        assertThat(queryResult.getResult().get(0).getRepeat(),
+//                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
+//                        82344, null, 2f, 0.997228f, null, null,
+//                        "genomicSuperDup"))));
+//
+//        variant = new Variant("19:82354-82444:<DEL>");
+//        structuralVariation = new StructuralVariation(82354, 82354,
+//                82444, 82444, 0, null, null, null);
+//        queryOptions.put("svExtraPadding", 150);
+//        variant.setSv(structuralVariation);
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+//        assertThat(queryResult.getResult().get(0).getRepeat(),
+//                CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
+//                        2f, 0.997228f, null, null, "genomicSuperDup")));
+//
+//        queryOptions.remove("svExtraPadding");
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
+//        assertThat(queryResult.getResult().get(0).getRepeat(),
+//                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
+//                        82344, null, 2f, 0.997228f, null, null,
+//                        "genomicSuperDup"))));
+//
+//        variant = new Variant("1:1822100-1823770:<DEL>");
+//        structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
+//                1823770 - 20, 1823770 + 10, 0, null, null,
+//                null);
+//        variant.setSv(structuralVariation);
+//        queryOptions.put("imprecise", false);
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertNull(queryResult.getResult().get(0).getRepeat());
+//
+//        variant = new Variant("1:1822100-1823770:<DEL>");
+//        structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
+//                1823770 - 20, 1823770 + 10, 0, null, null,
+//                null);
+//        variant.setSv(structuralVariation);
+//        queryOptions.remove("imprecise");
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
+//        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+//                new HashSet<Repeat>(Arrays.asList(
+//                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
+//                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
+//
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:1822050:T:C"), queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
+//        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+//                new HashSet<Repeat>(Arrays.asList(
+//                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
+//                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
+//
+//        queryOptions.put("imprecise", false);
+//        queryOptions.put("cnvExtraPadding", 150);
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:8000-9990:<CN3>"), queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertNull(queryResult.getResult().get(0).getRepeat());
+//
+//        queryOptions.remove("imprecise");
+//        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:8000-9990:<CN3>"), queryOptions);
+//        assertEquals(1, queryResult.getNumTotalResults());
+//        assertEquals(5, queryResult.getResult().get(0).getRepeat().size());
+//        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
+//                new HashSet<Repeat>(Arrays.asList(
+//                        new Repeat(null, "1", 10001, 10468, 6, 77.2f,
+//                                0.95f, 789f, "TAACCC", "trf"),
+//                        new Repeat("9119", "1", 10001, 87112, null, 2f,
+//                                0.992904f, null, null, "genomicSuperDup"),
+//                        new Repeat("6001", "1", 10001, 20818, null, 2f,
+//                                0.981582f, null, null, "genomicSuperDup"),
+//                        new Repeat("2698", "1", 10001, 19844, null, 2f,
+//                                0.982898f, null, null, "genomicSuperDup"),
+//                        new Repeat("2595", "1", 10001, 19844, null, 2f,
+//                                0.982898f, null, null, "genomicSuperDup"))));
 
-        variant = new Variant("19:82354-82444:<CN4>");
-        structuralVariation = new StructuralVariation(82354, 82354,
-                82444, 82444, 0, null, null, null);
-        queryOptions.put("cnvExtraPadding", 150);
-        variant.setSv(structuralVariation);
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
-        assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
-                        2f, 0.997228f, null, null, "genomicSuperDup")));
 
-        queryOptions.remove("cnvExtraPadding");
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
-        assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
-                        82344, null, 2f, 0.997228f, null, null,
-                        "genomicSuperDup"))));
 
-        variant = new Variant("19:82354-82444:<DEL>");
-        structuralVariation = new StructuralVariation(82354, 82354,
-                82444, 82444, 0, null, null, null);
-        queryOptions.put("svExtraPadding", 150);
-        variant.setSv(structuralVariation);
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
-        assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
-                        2f, 0.997228f, null, null, "genomicSuperDup")));
-
-        queryOptions.remove("svExtraPadding");
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
-        assertThat(queryResult.getResult().get(0).getRepeat(),
-                CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
-                        82344, null, 2f, 0.997228f, null, null,
-                        "genomicSuperDup"))));
-
-        variant = new Variant("1:1822100-1823770:<DEL>");
-        structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
-                1823770 - 20, 1823770 + 10, 0, null, null,
-                null);
-        variant.setSv(structuralVariation);
-        queryOptions.put("imprecise", false);
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertNull(queryResult.getResult().get(0).getRepeat());
-
-        variant = new Variant("1:1822100-1823770:<DEL>");
-        structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
-                1823770 - 20, 1823770 + 10, 0, null, null,
-                null);
-        variant.setSv(structuralVariation);
-        queryOptions.remove("imprecise");
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
-        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
-                new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
-                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
-
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:1822050:T:C"), queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
-        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
-                new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
-                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
-
-        queryOptions.put("imprecise", false);
-        queryOptions.put("cnvExtraPadding", 150);
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:8000-9990:<CN3>"), queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertNull(queryResult.getResult().get(0).getRepeat());
-
-        queryOptions.remove("imprecise");
-        queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:8000-9990:<CN3>"), queryOptions);
-        assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(5, queryResult.getResult().get(0).getRepeat().size());
-        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
-                new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 10001, 10468, 6, 77.2f,
-                                0.95f, 789f, "TAACCC", "trf"),
-                        new Repeat("9119", "1", 10001, 87112, null, 2f,
-                                0.992904f, null, null, "genomicSuperDup"),
-                        new Repeat("6001", "1", 10001, 20818, null, 2f,
-                                0.981582f, null, null, "genomicSuperDup"),
-                        new Repeat("2698", "1", 10001, 19844, null, 2f,
-                                0.982898f, null, null, "genomicSuperDup"),
-                        new Repeat("2595", "1", 10001, 19844, null, 2f,
-                                0.982898f, null, null, "genomicSuperDup"))));
 //        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
 //                new HashSet<Repeat>(Arrays.asList(
 //                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
