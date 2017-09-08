@@ -1534,6 +1534,12 @@ public class VariantAnnotationCalculator {
     }
 
     class FutureClinicalAnnotator implements Callable<List<QueryResult<Variant>>> {
+        private static final String CLINVAR = "clinvar";
+        private static final String COSMIC = "cosmic";
+        private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
+        private static final String REVIEW_STATUS_IN_SOURCE_FILE = "ReviewStatus_in_source_file";
+        private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
+        private static final String SYMBOL = "symbol";
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
@@ -1567,6 +1573,14 @@ public class VariantAnnotationCalculator {
                         variantAnnotationResults.get(i).getResult().get(0)
                                 .setTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
                                         .getTraitAssociation());
+                        // DEPRECATED
+                        // TODO: remove in 4.6
+                        variantAnnotationResults.get(i).getResult().get(0)
+                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalQueryResult
+                                        .getResult()
+                                        .get(0)
+                                        .getAnnotation()
+                                        .getTraitAssociation()));
                     }
                 }
             }
@@ -1574,6 +1588,88 @@ public class VariantAnnotationCalculator {
 ////            } catch (InterruptedException | ExecutionException e) {
 //                e.printStackTrace();
 //            }
+        }
+
+        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
+            List<ClinVar> clinvarList = new ArrayList<>();
+            List<Cosmic> cosmicList = new ArrayList<>(traitAssociation.size());
+            for (EvidenceEntry evidenceEntry : traitAssociation) {
+                switch (evidenceEntry.getSource().getName()) {
+                    case CLINVAR:
+                        clinvarList.add(parseClinvar(evidenceEntry));
+                        break;
+                    case COSMIC:
+                        cosmicList.add(parseCosmic(evidenceEntry));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return new VariantTraitAssociation(clinvarList, null, cosmicList);
+        }
+
+        private Cosmic parseCosmic(EvidenceEntry evidenceEntry) {
+            String primarySite = null;
+            String siteSubtype = null;
+            String primaryHistology = null;
+            String histologySubtype = null;
+            String sampleSource = null;
+            String tumourOrigin = null;
+            if (evidenceEntry.getSomaticInformation() != null) {
+                primarySite = evidenceEntry.getSomaticInformation().getPrimarySite();
+                siteSubtype = evidenceEntry.getSomaticInformation().getSiteSubtype();
+                primaryHistology = evidenceEntry.getSomaticInformation().getPrimaryHistology();
+                histologySubtype = evidenceEntry.getSomaticInformation().getHistologySubtype();
+                sampleSource = evidenceEntry.getSomaticInformation().getSampleSource();
+                tumourOrigin = evidenceEntry.getSomaticInformation().getTumourOrigin();
+            }
+            return new Cosmic(evidenceEntry.getId(), primarySite, siteSubtype, primaryHistology, histologySubtype,
+                    sampleSource, tumourOrigin, parseGeneName(evidenceEntry),
+                    getAdditionalProperty(evidenceEntry, MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE));
+        }
+
+        private String parseGeneName(EvidenceEntry evidenceEntry) {
+            if (evidenceEntry.getGenomicFeatures() != null && !evidenceEntry.getGenomicFeatures().isEmpty()
+                    && evidenceEntry.getGenomicFeatures().get(0).getXrefs() != null) {
+                // There may be more than one genomic feature for cosmic evidence entries. However, the actual gene symbol
+                // is expected to be found at index 0.
+                return evidenceEntry.getGenomicFeatures().get(0).getXrefs().get(SYMBOL);
+            }
+            return null;
+        }
+
+        private ClinVar parseClinvar(EvidenceEntry evidenceEntry) {
+            String clinicalSignificance = getAdditionalProperty(evidenceEntry, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE);
+            List<String> traitList = null;
+            if (evidenceEntry.getHeritableTraits() != null) {
+                traitList = evidenceEntry
+                        .getHeritableTraits()
+                        .stream()
+                        .map((heritableTrait) -> heritableTrait.getTrait())
+                        .collect(Collectors.toList());
+            }
+            List<String> geneNameList = null;
+            if (evidenceEntry.getGenomicFeatures() != null) {
+                geneNameList = evidenceEntry
+                        .getGenomicFeatures()
+                        .stream()
+                        .map((genomicFeature) -> genomicFeature.getXrefs().get(SYMBOL))
+                        .collect(Collectors.toList());
+            }
+            String reviewStatus = getAdditionalProperty(evidenceEntry, REVIEW_STATUS_IN_SOURCE_FILE);
+            return new ClinVar(evidenceEntry.getId(), clinicalSignificance, traitList, geneNameList,
+                    reviewStatus);
+        }
+
+        private String getAdditionalProperty(EvidenceEntry evidenceEntry, String name) {
+            if (evidenceEntry.getAdditionalProperties() != null) {
+                for (Property property : evidenceEntry.getAdditionalProperties()) {
+                    if (name.equals(property.getName())) {
+                        return property.getValue();
+                    }
+                }
+            }
+            return null;
         }
     }
 
