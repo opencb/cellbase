@@ -127,13 +127,14 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
                 logger.info("*************************************************************************************");
                 logger.info("MongoDataStore configuration parameters: ");
-                for (String key : mongoDBConfiguration.keySet()) {
-                    // Server address key within mongoDBConfiguration is not used anywhere. Hosts are set in the
-                    // "init" method above. Printing this serverAddress in the log would be misleading
-                    if (!key.equals(SERVER_ADDRESS)) {
-                        logger.info(key + " = " + mongoDBConfiguration.get(key));
-                    }
-                }
+                logger.info("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
+                        mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+                logger.info("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
+                        mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
+                logger.info("{} = {}", MongoDBConfiguration.REPLICA_SET,
+                        mongoDBConfiguration.get(MongoDBConfiguration.REPLICA_SET));
+                logger.info("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
+                        mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
                 logger.info("*************************************************************************************");
 //                } else {
 //                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
