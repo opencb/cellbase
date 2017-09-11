@@ -832,9 +832,11 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(22, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.hasItems(new Repeat("10420", "19", 60001, 172445, null,
-                        2f, 0.991464f, null, null, "genomicSuperDup"),
-                        new Repeat(null, "2", 10006, 10174, 13,
-                                12.7f, 0.82f, 213f, "CCCACACACCACA", "trf")));
+                                null, 2f, 0.991464f, null,
+                                null, "genomicSuperDup"),
+                        new Repeat(null, "2", 10006, 10174, 13, 13,
+                                12.7f, 0.82f, 213f, "CCCACACACCACA",
+                                "trf")));
 
         variant = new Variant("19:82354-82444:<CN4>");
         structuralVariation = new StructuralVariation(82354, 82354,
@@ -846,7 +848,8 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
-                        2f, 0.997228f, null, null, "genomicSuperDup")));
+                        null, 2f, 0.997228f, null, null,
+                        "genomicSuperDup")));
 
         queryOptions.remove("cnvExtraPadding");
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
@@ -854,8 +857,8 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
-                        82344, null, 2f, 0.997228f, null, null,
-                        "genomicSuperDup"))));
+                        82344, null, null, 2f, 0.997228f,
+                        null, null, "genomicSuperDup"))));
 
         variant = new Variant("19:82354-82444:<DEL>");
         structuralVariation = new StructuralVariation(82354, 82354,
@@ -867,7 +870,8 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
-                        2f, 0.997228f, null, null, "genomicSuperDup")));
+                        null, 2f, 0.997228f, null, null,
+                        "genomicSuperDup")));
 
         queryOptions.remove("svExtraPadding");
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
@@ -875,8 +879,8 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
-                        82344, null, 2f, 0.997228f, null, null,
-                        "genomicSuperDup"))));
+                        82344, null, null, 2f, 0.997228f,
+                        null, null, "genomicSuperDup"))));
 
         variant = new Variant("1:1822100-1823770:<DEL>");
         structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
@@ -899,16 +903,18 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
         assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
                 new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
-                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
+                        new Repeat(null, "1", 1822050, 1822099, 13, 13,
+                                3.8f, 0.8f, 50f, "CCCTCGACCCCGA",
+                                "trf"))));
 
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(new Variant("1:1822050:T:C"), queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
         assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
         assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
                 new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 1822050, 1822099, 13, 3.8f,
-                                0.8f, 50f, "CCCTCGACCCCGA", "trf"))));
+                        new Repeat(null, "1", 1822050, 1822099, 13, 13,
+                                3.8f, 0.8f, 50f, "CCCTCGACCCCGA",
+                                "trf"))));
 
         queryOptions.put("imprecise", false);
         queryOptions.put("cnvExtraPadding", 150);
@@ -922,16 +928,23 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(5, queryResult.getResult().get(0).getRepeat().size());
         assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
                 new HashSet<Repeat>(Arrays.asList(
-                        new Repeat(null, "1", 10001, 10468, 6, 77.2f,
-                                0.95f, 789f, "TAACCC", "trf"),
-                        new Repeat("9119", "1", 10001, 87112, null, 2f,
-                                0.992904f, null, null, "genomicSuperDup"),
-                        new Repeat("6001", "1", 10001, 20818, null, 2f,
-                                0.981582f, null, null, "genomicSuperDup"),
-                        new Repeat("2698", "1", 10001, 19844, null, 2f,
-                                0.982898f, null, null, "genomicSuperDup"),
-                        new Repeat("2595", "1", 10001, 19844, null, 2f,
-                                0.982898f, null, null, "genomicSuperDup"))));
+                        new Repeat(null, "1", 10001, 10468, 6, 6,
+                                77.2f,0.95f, 789f, "TAACCC", "trf"),
+                        new Repeat("9119", "1", 10001, 87112, null,
+                                null, 2f,0.992904f, null, null,
+                                "genomicSuperDup"),
+                        new Repeat("6001", "1", 10001, 20818, null,
+                                null, 2f, 0.981582f, null,
+                                null, "genomicSuperDup"),
+                        new Repeat("2698", "1", 10001, 19844, null,
+                                null, 2f, 0.982898f, null,
+                                null, "genomicSuperDup"),
+                        new Repeat("2595", "1", 10001, 19844, null,
+                                null, 2f, 0.982898f, null,
+                                null, "genomicSuperDup"))));
+
+
+
 //        assertEquals(queryResult.getResult().get(0).getRepeat().stream().collect(Collectors.toSet()),
 //                new HashSet<Repeat>(Arrays.asList(
 //                        new Repeat(null, "1", 1823242, 1823267, 1, Float.valueOf(25),
@@ -1112,6 +1125,7 @@ public class VariantAnnotationCalculatorTest {
 
     }
 
+    @Ignore
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
