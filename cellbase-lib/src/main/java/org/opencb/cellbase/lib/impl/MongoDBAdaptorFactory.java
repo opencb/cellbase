@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
+    private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
+    private static final String SERVER_ADDRESS = "serverAddress";
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
@@ -90,35 +92,52 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 logger.debug("Database for the species is '{}'", database);
 
                 MongoDBConfiguration mongoDBConfiguration;
-                MongoDBConfiguration.Builder builder;
+                MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
                 // For authenticated databases
                 if (!mongodbCredentials.getUser().isEmpty()
                         && !mongodbCredentials.getPassword().isEmpty()) {
                     // MongoDB could authenticate against different databases
-                    if (mongodbCredentials.getOptions().containsKey("authenticationDatabase")) {
-                        builder = MongoDBConfiguration.builder()
-                                .add("username", mongodbCredentials.getUser())
-                                .add("password", mongodbCredentials.getPassword())
-                                .add(MongoDBConfiguration.READ_PREFERENCE, mongodbCredentials.getOptions().get("readPreference"))
-                                .add("authenticationDatabase", mongodbCredentials.getOptions()
-                                        .get("authenticationDatabase"));
+                    if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
+                        builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
+                        builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
+                                .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
                     } else {
-                        builder = MongoDBConfiguration.builder()
-                                .add("username", mongodbCredentials.getUser())
-                                .add("password", mongodbCredentials.getPassword())
-                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"));
+                        builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
                     }
-
-                    String replicaSet = mongodbCredentials.getOptions().get("replicaSet");
-                    if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
-                        builder.add("replicaSet", mongodbCredentials.getOptions().get("replicaSet"));
-                    }
-                    builder.add(MongoDBConfiguration.CONNECTIONS_PER_HOST, mongodbCredentials.getOptions()
-                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
-                    mongoDBConfiguration = builder.build();
-                } else {
-                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
                 }
+
+                if (mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE) != null
+                        && !mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE).isEmpty()) {
+                    builder.add(MongoDBConfiguration.READ_PREFERENCE,
+                            mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE));
+                }
+
+                String replicaSet = mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET);
+                if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
+                    builder.setReplicaSet(mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET));
+                }
+
+                String connectionsPerHost = mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST);
+                if (connectionsPerHost != null && !connectionsPerHost.isEmpty()) {
+                    builder.setConnectionsPerHost(Integer.valueOf(mongodbCredentials.getOptions()
+                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST)));
+                }
+
+                mongoDBConfiguration = builder.build();
+
+                logger.info("*************************************************************************************");
+                logger.info("MongoDataStore configuration parameters: ");
+                for (String key : mongoDBConfiguration.keySet()) {
+                    // Server address key within mongoDBConfiguration is not used anywhere. Hosts are set in the
+                    // "init" method above. Printing this serverAddress in the log would be misleading
+                    if (!key.equals(SERVER_ADDRESS)) {
+                        logger.info(key + " = " + mongoDBConfiguration.get(key));
+                    }
+                }
+                logger.info("*************************************************************************************");
+//                } else {
+//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+//                }
 
                 // A MongoDataStore to this host and database is returned
                 MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
