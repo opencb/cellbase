@@ -125,17 +125,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
                 mongoDBConfiguration = builder.build();
 
-                logger.info("*************************************************************************************");
-                logger.info("MongoDataStore configuration parameters: ");
-                logger.info("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
+                logger.debug("*************************************************************************************");
+                logger.debug("MongoDataStore configuration parameters: ");
+                logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
                         mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
-                logger.info("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
+                logger.debug("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
                         mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
-                logger.info("{} = {}", MongoDBConfiguration.REPLICA_SET,
+                logger.debug("{} = {}", MongoDBConfiguration.REPLICA_SET,
                         mongoDBConfiguration.get(MongoDBConfiguration.REPLICA_SET));
-                logger.info("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
+                logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
                         mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
-                logger.info("*************************************************************************************");
+                logger.debug("*************************************************************************************");
 //                } else {
 //                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
 //                }
