@@ -754,8 +754,8 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(2, queryResult.getResult().get(0).getCytoband().size());
         assertEquals(queryResult.getResult().get(0).getCytoband().stream().collect(Collectors.toSet()),
                 new HashSet<Cytoband>(Arrays.asList(
-                        new Cytoband("gpos25", "q13.12", 35100001,37800000),
-                        new Cytoband("gneg", "q13.13", 37800001,38200000))));
+                        new Cytoband("19", "gpos25", "q13.12", 35100001,37800000),
+                        new Cytoband("19", "gneg", "q13.13", 37800001,38200000))));
 
         List<QueryResult<VariantAnnotation>> queryResultList = variantAnnotationCalculator
                 .getAnnotationByVariantList(Arrays.asList(new Variant("19:37800050-42910001:<CN3>"),
@@ -766,19 +766,19 @@ public class VariantAnnotationCalculatorTest {
         assertEquals(3, queryResultList.get(0).getResult().get(0).getCytoband().size());
         assertEquals(queryResultList.get(0).getResult().get(0).getCytoband().stream().collect(Collectors.toSet()),
                 new HashSet<Cytoband>(Arrays.asList(
-                        new Cytoband("gpos25", "q13.12", 35100001,37800000),
-                        new Cytoband("gneg", "q13.13", 37800001,38200000),
-                        new Cytoband("gneg", "q13.31", 42900001,44700000))));
+                        new Cytoband("19", "gpos25", "q13.12", 35100001,37800000),
+                        new Cytoband("19", "gneg", "q13.13", 37800001,38200000),
+                        new Cytoband("19", "gneg", "q13.31", 42900001,44700000))));
 
         assertEquals(1, queryResultList.get(1).getNumTotalResults());
         assertEquals(1, queryResultList.get(1).getResult().get(0).getCytoband().size());
         assertEquals(queryResultList.get(1).getResult().get(0).getCytoband().get(0),
-                        new Cytoband("gpos100", "q22.1", 63900001,69100000));
+                        new Cytoband("18", "gpos100", "q22.1", 63900001,69100000));
 
         assertEquals(1, queryResultList.get(2).getNumTotalResults());
         assertEquals(1, queryResultList.get(2).getResult().get(0).getCytoband().size());
         assertEquals(queryResultList.get(2).getResult().get(0).getCytoband().get(0),
-                new Cytoband("gneg", "q25.1", 148500001,152100000));
+                new Cytoband("6", "gneg", "q25.1", 148500001,152100000));
 
     }
 
