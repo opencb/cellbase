@@ -75,7 +75,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          cellbase_hsapiens_grch37_v3
          **/
 
-//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
         DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
 
         // We need to look for the species object in the configuration
@@ -93,16 +92,14 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
                 MongoDBConfiguration mongoDBConfiguration;
                 MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
+
                 // For authenticated databases
-                if (!mongodbCredentials.getUser().isEmpty()
-                        && !mongodbCredentials.getPassword().isEmpty()) {
+                if (!mongodbCredentials.getUser().isEmpty() && !mongodbCredentials.getPassword().isEmpty()) {
                     // MongoDB could authenticate against different databases
+                    builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
                     if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
-                        builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
                         builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
                                 .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
-                    } else {
-                        builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
                     }
                 }
 
@@ -162,8 +159,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             throw new InvalidParameterException("Species name is not valid: '" + species + "'. Please provide one"
                     + " of supported species: {"
                     + String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
-                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
-                            .collect(Collectors.toList())) + "}");
+                    -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                    .collect(Collectors.toList())) + "}");
         }
     }
 
