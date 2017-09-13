@@ -118,9 +118,9 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
             }
             // CNVs must always be matched against COPY_NUMBER_GAIN/COPY_NUMBER_LOSS when searching - if provided
             if (VariantType.CNV.equals(variant.getType()) && variant.getSv().getType() != null) {
-                query.append(QueryParams.SV_TYPE.key(), variant.getSv().getType());
+                query.append(QueryParams.SV_TYPE.key(), variant.getSv().getType().toString());
             }
-            query.append(QueryParams.TYPE.key(), variant.getType());
+            query.append(QueryParams.TYPE.key(), variant.getType().toString());
         // simple short variant query; This will be the query run in more than 99% of the cases
         } else {
             query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome())

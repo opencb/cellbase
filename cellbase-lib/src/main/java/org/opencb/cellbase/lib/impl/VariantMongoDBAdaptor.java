@@ -260,12 +260,16 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             List<Bson> orBsonList = new ArrayList<>();
             VariantType variantType = VariantType.valueOf((String) query.get(typeQueryParam));
             if (variantType.equals(VariantType.DELETION)
-                    || (StructuralVariantType.COPY_NUMBER_LOSS.equals(query.get(svTypeQueryParam)))) {
+                    || (StructuralVariantType
+                    .COPY_NUMBER_LOSS
+                    .equals(StructuralVariantType.valueOf((String) query.get(svTypeQueryParam))))) {
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.DELETION.toString()));
                 orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_LOSS.toString()));
                 andBsonList.add(Filters.or(orBsonList));
             } else if (variantType.equals(VariantType.INSERTION) || variantType.equals(VariantType.DUPLICATION)
-                    || (StructuralVariantType.COPY_NUMBER_GAIN.equals(query.get(svTypeQueryParam)))) {
+                    || (StructuralVariantType
+                    .COPY_NUMBER_GAIN
+                    .equals(StructuralVariantType.valueOf((String) query.get(svTypeQueryParam))))) {
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.INSERTION.toString()));
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.DUPLICATION.toString()));
                 orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_GAIN.toString()));

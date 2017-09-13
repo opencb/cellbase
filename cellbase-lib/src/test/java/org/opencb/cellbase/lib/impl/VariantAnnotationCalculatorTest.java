@@ -1125,7 +1125,6 @@ public class VariantAnnotationCalculatorTest {
 
     }
 
-    @Ignore
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
