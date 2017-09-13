@@ -258,7 +258,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
         if (query != null && StringUtils.isNotBlank(query.getString(typeQueryParam))) {
             List<Bson> orBsonList = new ArrayList<>();
-            VariantType variantType = (VariantType) query.get(typeQueryParam);
+            VariantType variantType = VariantType.valueOf((String) query.get(typeQueryParam));
             if (variantType.equals(VariantType.DELETION)
                     || (StructuralVariantType.COPY_NUMBER_LOSS.equals(query.get(svTypeQueryParam)))) {
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.DELETION.toString()));
