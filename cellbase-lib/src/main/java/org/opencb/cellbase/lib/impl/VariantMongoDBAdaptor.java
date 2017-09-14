@@ -258,25 +258,22 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 
         if (query != null && StringUtils.isNotBlank(query.getString(typeQueryParam))) {
             List<Bson> orBsonList = new ArrayList<>();
-            VariantType variantType = VariantType.valueOf((String) query.get(typeQueryParam));
-            if (variantType.equals(VariantType.DELETION)
-                    || (StructuralVariantType
-                    .COPY_NUMBER_LOSS
-                    .equals(StructuralVariantType.valueOf((String) query.get(svTypeQueryParam))))) {
+            String variantTypeString = query.getString(typeQueryParam);
+            if (variantTypeString.equals(VariantType.DELETION.toString())
+                    || (StructuralVariantType.COPY_NUMBER_LOSS.toString().equals(query.getString(svTypeQueryParam)))) {
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.DELETION.toString()));
                 orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_LOSS.toString()));
                 andBsonList.add(Filters.or(orBsonList));
-            } else if (variantType.equals(VariantType.INSERTION) || variantType.equals(VariantType.DUPLICATION)
-                    || (StructuralVariantType
-                    .COPY_NUMBER_GAIN
-                    .equals(StructuralVariantType.valueOf((String) query.get(svTypeQueryParam))))) {
+            } else if (variantTypeString.equals(VariantType.INSERTION.toString())
+                    || variantTypeString.equals(VariantType.DUPLICATION.toString())
+                    || StructuralVariantType.COPY_NUMBER_GAIN.toString().equals(query.getString(svTypeQueryParam))) {
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.INSERTION.toString()));
                 orBsonList.add(Filters.eq(typeMongoField, VariantType.DUPLICATION.toString()));
                 orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_GAIN.toString()));
                 andBsonList.add(Filters.or(orBsonList));
             // Inversion or just CNV (without subtype)
             } else {
-                andBsonList.add(Filters.eq(typeMongoField, variantType.toString()));
+                andBsonList.add(Filters.eq(typeMongoField, variantTypeString.toString()));
             }
         }
     }
