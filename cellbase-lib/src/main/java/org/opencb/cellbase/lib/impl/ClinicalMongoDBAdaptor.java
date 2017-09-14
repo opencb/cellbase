@@ -29,9 +29,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public ClinicalMongoDBAdaptor(String species, String assembly,
                                   CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, cellBaseConfiguration);
-        mongoDBCollection = mongoDataStore.getCollection("clinical");
-
-
+        mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
 
@@ -97,7 +95,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
-        return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
+        return executeBsonQuery(bson, null, query, parsedOptions, mongoDBCollection, Variant.class);
     }
 
     @Override
@@ -106,7 +104,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
-        return mongoDBCollection.find(bson, parsedOptions);
+        return executeBsonQuery(bson, null, query, parsedOptions, mongoDBCollection, Document.class);
     }
 
     @Override
