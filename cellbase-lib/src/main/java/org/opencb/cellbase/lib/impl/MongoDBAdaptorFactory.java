@@ -23,6 +23,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
+
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
@@ -34,6 +35,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         super(cellBaseConfiguration);
         this.cellBaseConfiguration = cellBaseConfiguration;
     }
+
 
     @Override
     public void open(String species, String assembly) {

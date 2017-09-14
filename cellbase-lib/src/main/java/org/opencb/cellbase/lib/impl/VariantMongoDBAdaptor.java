@@ -22,11 +22,14 @@ import com.mongodb.QueryBuilder;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.biodata.models.variant.avro.StructuralVariantType;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -235,8 +238,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
                 "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
         createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
                 "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
-        createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
-        createOrQuery(query, QueryParams.SV_TYPE.key(), "sv.type", andBsonList);
+
+        createTypeQuery(query, QueryParams.TYPE.key(), QueryParams.SV_TYPE.key(), "type",
+                "sv.type", andBsonList);
 
         createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
@@ -246,6 +250,32 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             return Filters.and(andBsonList);
         } else {
             return new Document();
+        }
+    }
+
+    private void createTypeQuery(Query query, String typeQueryParam, String svTypeQueryParam, String typeMongoField,
+                                 String svTypeMongoField, List<Bson> andBsonList) {
+
+
+        if (query != null && StringUtils.isNotBlank(query.getString(typeQueryParam))) {
+            List<Bson> orBsonList = new ArrayList<>();
+            String variantTypeString = query.getString(typeQueryParam);
+            if (variantTypeString.equals(VariantType.DELETION.toString())
+                    || (StructuralVariantType.COPY_NUMBER_LOSS.toString().equals(query.getString(svTypeQueryParam)))) {
+                orBsonList.add(Filters.eq(typeMongoField, VariantType.DELETION.toString()));
+                orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_LOSS.toString()));
+                andBsonList.add(Filters.or(orBsonList));
+            } else if (variantTypeString.equals(VariantType.INSERTION.toString())
+                    || variantTypeString.equals(VariantType.DUPLICATION.toString())
+                    || StructuralVariantType.COPY_NUMBER_GAIN.toString().equals(query.getString(svTypeQueryParam))) {
+                orBsonList.add(Filters.eq(typeMongoField, VariantType.INSERTION.toString()));
+                orBsonList.add(Filters.eq(typeMongoField, VariantType.DUPLICATION.toString()));
+                orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_GAIN.toString()));
+                andBsonList.add(Filters.or(orBsonList));
+            // Inversion or just CNV (without subtype)
+            } else {
+                andBsonList.add(Filters.eq(typeMongoField, variantTypeString.toString()));
+            }
         }
     }
 

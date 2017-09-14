@@ -91,8 +91,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             int i = 0;
             while (i < cytobandDocumentList.size() && ((int) cytobandDocumentList.get(i).get(START)) <= region.getEnd()) {
                 if (((int) cytobandDocumentList.get(i).get(END)) >= region.getStart()) {
-                    cytobandList.add(new Cytoband((String) cytobandDocumentList.get(i).get(STAIN),
-                            (String) cytobandDocumentList.get(i).get(NAME), (Integer) cytobandDocumentList.get(i).get(START),
+                    cytobandList.add(new Cytoband(region.getChromosome(),
+                            (String) cytobandDocumentList.get(i).get(STAIN),
+                            (String) cytobandDocumentList.get(i).get(NAME),
+                            (Integer) cytobandDocumentList.get(i).get(START),
                             (Integer) cytobandDocumentList.get(i).get(END)));
                 }
                 i++;
