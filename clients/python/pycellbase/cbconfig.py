@@ -8,10 +8,8 @@ class ConfigClient(object):
 
     def __init__(self, config_input=None):
         # Default config params
-        self._hosts = ['bioinfo.hpc.cam.ac.uk:80/cellbase',
-                       'bioinfodev.hpc.cam.ac.uk:80/cellbase-4.5.0-beta']
         self._config = {
-            'host': self._get_available_host(),
+            'host': 'http://bioinfo.hpc.cam.ac.uk:80/cellbase',
             'version': 'v4',
             'species': 'hsapiens',
         }
@@ -34,7 +32,6 @@ class ConfigClient(object):
         config_dict = None
         if config_fpath.endswith('.yml') or config_fpath.endswith('.yaml'):
             config_dict = yaml.safe_load(config_fhand)
-
         if config_fpath.endswith('.json'):
             config_dict = json.loads(config_fhand.read())
 
@@ -47,8 +44,8 @@ class ConfigClient(object):
         if config_dict is not None:
             if 'rest' in config_dict:
                 if 'hosts' in config_dict['rest']:
-                    self._hosts = config_dict['rest']['hosts']
-                    self._config['host'] = self._get_available_host()
+                    hosts = config_dict['rest']['hosts']
+                    self._config['host'] = self._get_available_host(hosts)
             if 'version' in config_dict:
                 self._config['version'] = config_dict['version']
             if 'species' in config_dict:
@@ -57,22 +54,34 @@ class ConfigClient(object):
             msg = 'No configuration parameters found'
             raise ValueError(msg)
 
-    def _get_available_host(self):
+    def _format_url(self, url):
+        """"Formats URL strings"""
+        if not (url.startswith('http://') or url.startswith('https://')):
+            url = 'http://' + url
+        return url
+
+    def _check_host(self, host):
+        """Checks host availability"""
+        try:
+            r = requests.head(host, timeout=1)
+            if r.status_code == 302:  # Found
+                return True
+            else:
+                return False
+        except requests.ConnectionError:
+            return False
+
+    def _get_available_host(self, hosts):
         """Returns the first available host"""
         available_host = None
-        for host in self._hosts:
-            if not (host.startswith('http://') or host.startswith('https://')):
-                host = 'http://' + host
-            try:
-                r = requests.head(host, timeout=1)
-                if r.status_code == 302:  # Found
-                    available_host = host
-                    break
-            except requests.ConnectionError:
-                pass
+        for host in hosts:
+            host = self._format_url(host)
+            if self._check_host(host):
+                available_host = host
+                break
 
         if available_host is None:
-            msg = 'No available host found'
+            msg = 'No available host found in "' + str(hosts) + '"'
             raise requests.ConnectionError(msg)
         else:
             return available_host
@@ -91,10 +100,7 @@ class ConfigClient(object):
 
     @host.setter
     def host(self, new_host):
-        if not (new_host.startswith('http://') or
-                    new_host.startswith('https://')):
-            new_host = 'http://' + new_host
-        self._config['host'] = new_host
+        self._config['host'] = self._format_url(new_host)
 
     @property
     def species(self):
