@@ -404,9 +404,9 @@ public class CliOptionsParser {
                 " By default phased annotation is not enabled.", required = false, arity = 0)
         public boolean phased;
 
-        @Parameter(names = {"--no-imprecision"}, description = "Flag to indicate whether noImprecision borders (CIPOS, CIEND)"
+        @Parameter(names = {"--no-imprecision"}, description = "Flag to indicate whether imprecision borders (CIPOS, CIEND)"
                 + " should be taken into account when annotating structural variants or CNVs."
-                + " By default noImprecision annotation is enabled.", required = false, arity = 0)
+                + " By default imprecision annotation is enabled.", required = false, arity = 0)
         public boolean noImprecision;
 
         @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "

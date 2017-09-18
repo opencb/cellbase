@@ -425,6 +425,8 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon1)
                     || VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon2)) {
                 SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
+            } else {
+                SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
             }
         }
     }
@@ -687,6 +689,8 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             if (VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon1)
                     || VariantAnnotationUtils.isStopCodon(useMitochondrialCode, referenceCodon2)) {
                 SoNames.add(VariantAnnotationUtils.TERMINATOR_CODON_VARIANT);
+            } else {
+                SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
             }
         }
     }
