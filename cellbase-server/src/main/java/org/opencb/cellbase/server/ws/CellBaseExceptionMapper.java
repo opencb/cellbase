@@ -16,10 +16,16 @@
 
 package org.opencb.cellbase.server.ws;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -36,7 +42,22 @@ import java.util.Collections;
 public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
 
     private final UriInfo uriInfo;
+    private static Logger logger;
+    private static ObjectMapper jsonObjectMapper;
+    private static ObjectWriter jsonObjectWriter;
+    private static final String ERROR = "error";
+
 //    private final HttpServletRequest hsr;
+
+    static {
+        logger = LoggerFactory.getLogger(CellBaseExceptionMapper.class);
+
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectWriter = jsonObjectMapper.writer();
+
+    }
 
     public CellBaseExceptionMapper(@Context UriInfo uriInfo) {
         this.uriInfo = uriInfo;
@@ -62,6 +83,11 @@ public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
         queryResponse.setResponse(Collections.singletonList(result));
 
         try {
+            logger.info("{}\t{}\t{}",
+                    uriInfo.getAbsolutePath().toString(),
+                    jsonObjectWriter.writeValueAsString(queryOptions),
+                    ERROR);
+
             return Response.ok(GenericRestWSServer.jsonObjectWriter.writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE)
                     .status(Response.Status.INTERNAL_SERVER_ERROR)
                     .build();

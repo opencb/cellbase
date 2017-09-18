@@ -1,0 +1,6 @@
+Ref_ID	Title	Authors	Year	Journal	Volume	Start_page	End_page	PubMed	Comment	Other_infos
+1	Anaplastic Wilms' tumour, a subtype displaying poor prognosis, harbours p53 gene mutations	Bardeesy N;Falkoff D;Petruzzi MJ;Nowak N;Zabel B;Adam M;Aguiar MC;Grundy P;Shows T;Pelletier J;	1994	Nat Genet	7	91	97	0008075648		
+2	Prevalence and diversity of constitutional mutations in the p53 gene among 21 Li-Fraumeni families	Birch JM;Hartley AL;Tricker KJ;Prosser J;Condie A;Kelsey AM;Harris M;Jones PH;Binchy A;Crowther D;	1994	Cancer Res	54	1298	1304	0008118819	DNA, direct+HOT, ex1-11	updated from ref 64 and 86
+9	A novel germline p53 splicing mutation in a pediatric patient with a second malignant neoplasm	Felix CA;Strauss EA;D'Amico D;Tsokos M;Winter S;Mitsudomi T;Nau MM;Brown DL;Leahey AM;Horowitz ME;	1993	Oncogene	8	1203	1210	0008479743		
+38	Prevalence and spectrum of germline mutations of the p53 gene among patients with sarcoma	Toguchida J;Yamaguchi T;Dayton SH;Beauchamp RL;Herrera GE;Ishizaki K;Yamamuro T;Meyers PA;Little JB;Sasaki MS;	1992	N Engl J Med	326	1301	1308	92228022		Japan or USA
+38	Prevalence and spectrum of germline mutations of the p53 gene among patients with sarcoma	Toguchida J;Yamaguchi T;Dayton SH;Beauchamp RL;Herrera GE;Ishizaki K;Yamamuro T;Meyers PA;Little JB;Sasaki MS;	1992	N Engl J Med	326	1301	1308	92228022		Japan or USA; insC

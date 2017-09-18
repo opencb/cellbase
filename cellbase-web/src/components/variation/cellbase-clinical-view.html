@@ -388,7 +388,7 @@
                     })
                 });
                 tracks.push(this.sequence);
-                this.geneId = new GeneTrack({
+                this.gene = new GeneTrack({
                     title: 'Gene',
                     minHistogramRegionSize: 20000000,
                     maxLabelRegionSize: 10000000,
@@ -404,7 +404,7 @@
                     dataAdapter: new CellBaseAdapter({
                         category: "genomic",
                         subCategory: "region",
-                        resource: "geneId",
+                        resource: "gene",
                         species: this.genomeViewer.species,
                         params: {
                             exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence'
@@ -414,15 +414,15 @@
                         }
                     })
                 });
-                tracks.push(this.geneId);
-                var renderer = new FeatureRenderer(FEATURE_TYPES.geneId);
+                tracks.push(this.gene);
+                var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
                 renderer.on({
                     'feature:click': function (event) {
                         // feature click event example
                         console.log(event)
                     }
                 });
-                var geneId = new FeatureTrack({
+                var gene = new FeatureTrack({
 //        title: 'Gene overview',
                     minHistogramRegionSize: 20000000,
                     maxLabelRegionSize: 10000000,
@@ -431,7 +431,7 @@
                     dataAdapter: new CellBaseAdapter({
                         category: "genomic",
                         subCategory: "region",
-                        resource: "geneId",
+                        resource: "gene",
                         params: {
                             exclude: 'transcripts,chunkIds'
                         },
@@ -441,7 +441,7 @@
                         }
                     })
                 });
-                this.genomeViewer.addOverviewTrack(geneId);
+                this.genomeViewer.addOverviewTrack(gene);
                 this.snp = new FeatureTrack({
                     title: 'SNP',
                     featureType: 'SNP',
@@ -473,7 +473,7 @@
 //                    dataAdapter: new FeatureTemplateAdapter({
 //                        multiRegions: true,
 //                        histogramMultiRegions: false,
-//                        uriTemplate: 'https://dcc.icgc.org/api/browser/geneId?segment={region}&resource=geneId',
+//                        uriTemplate: 'https://dcc.icgc.org/api/browser/gene?segment={region}&resource=gene',
 //                        cacheConfig: {
 //                            chunkSize: 100000
 //                        }

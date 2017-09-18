@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.transform;
+package org.opencb.cellbase.app.transform.clinical.variant;
 
+import org.opencb.cellbase.app.transform.CellBaseParser;
 import org.opencb.cellbase.core.common.clinical.Cosmic;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
  * @author Luis Miguel Cruz.
  * @since October 08, 2014
  */
+@Deprecated
 public class CosmicParser extends CellBaseParser {
 
     private final Path cosmicFilePath;

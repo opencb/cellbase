@@ -91,8 +91,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             int i = 0;
             while (i < cytobandDocumentList.size() && ((int) cytobandDocumentList.get(i).get(START)) <= region.getEnd()) {
                 if (((int) cytobandDocumentList.get(i).get(END)) >= region.getStart()) {
-                    cytobandList.add(new Cytoband((String) cytobandDocumentList.get(i).get(STAIN),
-                            (String) cytobandDocumentList.get(i).get(NAME), (Integer) cytobandDocumentList.get(i).get(START),
+                    cytobandList.add(new Cytoband(region.getChromosome(),
+                            (String) cytobandDocumentList.get(i).get(STAIN),
+                            (String) cytobandDocumentList.get(i).get(NAME),
+                            (Integer) cytobandDocumentList.get(i).get(START),
                             (Integer) cytobandDocumentList.get(i).get(END)));
                 }
                 i++;
@@ -106,9 +108,12 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     private Document getOneChromosomeInfo(String chromosome) {
-        for (Document document : (List<Document>) getGenomeInfoVariable().get(CHROMOSOMES)) {
-            if (document.get(NAME).equals(chromosome)) {
-                return document;
+        Document genomeInfoVariable = getGenomeInfoVariable();
+        if (genomeInfoVariable != null) {
+            for (Document document : (List<Document>) genomeInfoVariable.get(CHROMOSOMES)) {
+                if (document.get(NAME).equals(chromosome)) {
+                    return document;
+                }
             }
         }
         return null;
@@ -116,10 +121,13 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     private Document getGenomeInfoVariable() {
         if (genomeInfo == null) {
-            genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResult().get(0);
-            for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
-                ((List<Document>) chromosomeDocument.get(CYTOBANDS))
-                        .sort((c1, c2) -> Integer.compare((int) c1.get(START), (int) c2.get(START)));
+            QueryResult<Document> queryResult = genomeInfoMongoDBCollection.find(new Document(), null);
+            if (queryResult.getNumResults() > 0) {
+                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResult().get(0);
+                for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
+                    ((List<Document>) chromosomeDocument.get(CYTOBANDS))
+                            .sort((c1, c2) -> Integer.compare((int) c1.get(START), (int) c2.get(START)));
+                }
             }
         }
         return genomeInfo;

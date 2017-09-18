@@ -49,9 +49,13 @@ import java.util.stream.Collectors;
  */
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<Gene> {
 
+    private static final String TRANSCRIPTS = "transcripts";
+    private static final String GENE = "gene";
+    private static final String ANNOTATION_FLAGS = "annotationFlags";
+
     public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection("gene");
+        mongoDBCollection = mongoDataStore.getCollection(GENE);
 
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");
     }
@@ -263,12 +267,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         createOrQuery(query, QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
 
-//        createOrQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "annotation.expression.factorValue", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
         createOrQuery(query, QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
-
-  //      createExpressionTissueQuery(query, QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), andBsonList);
-        //      createExpressionValueQuery(query, QueryParams.ANNOTATION_EXPRESSION_VALUE.key(), andBsonList);
 
         createExpressionQuery(query, andBsonList);
 
@@ -285,70 +285,34 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             if (tissue != null && !tissue.isEmpty()) {
                 String value = query.getString(QueryParams.ANNOTATION_EXPRESSION_VALUE.key());
                 if (value != null && !value.isEmpty()) {
-                    Document elemMatchDocument = new Document();
                     andBsonList.add(Filters.elemMatch("annotation.expression",
                             Filters.and(Filters.regex("factorValue", "(.)*" + tissue + "(.)*", "i"), Filters.eq("expression", value))));
                 }
-
-//                if (tissueList.size() == 1) {
-//                    andBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissueList.get(0) + "(.)*", "i"));
-//                } else {
-//                    List<Bson> orBsonList = new ArrayList<>(tissueList.size());
-//                    for (String tissue : tissueList) {
-//                        orBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissue + "(.)*", "i"));
-//                    }
-//                    andBsonList.add(Filters.or(orBsonList));
-//                }
-            }
-        }
-    }
-
-    private void createExpressionTissueQuery(Query query, String queryParam, List<Bson> andBsonList) {
-        if (query != null) {
-            List<String> tissueList = query.getAsStringList(queryParam);
-            if (tissueList != null && !tissueList.isEmpty()) {
-                if (tissueList.size() == 1) {
-                    andBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissueList.get(0) + "(.)*", "i"));
-                } else {
-                    List<Bson> orBsonList = new ArrayList<>(tissueList.size());
-                    for (String tissue : tissueList) {
-                        orBsonList.add(Filters.regex("annotation.expression.factorValue", "(.)*" + tissue + "(.)*", "i"));
-                    }
-                    andBsonList.add(Filters.or(orBsonList));
-                }
-            }
-        }
-    }
-
-    private void createExpressionValueQuery(Query query, String queryParam, List<Bson> andBsonList) {
-        if (query != null) {
-            String value = query.getString(queryParam).toUpperCase();
-            if (value != null && !value.isEmpty()) {
-                andBsonList.add(Filters.eq("annotation.expression.expression", value));
             }
         }
     }
 
     private Boolean postDBFilteringParametersEnabled(Query query) {
-        return StringUtils.isNotEmpty(query.getString("transcripts.annotationFlags"));
+        return StringUtils.isNotEmpty(query.getString(QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key()));
     }
 
     private QueryResult<Document> postDBFiltering(Query query, QueryResult<Document> documentQueryResult) {
-        if (StringUtils.isNotEmpty(query.getString("transcripts.annotationFlags"))) {
-            Set<String> flags = new HashSet<>(Arrays.asList(query.getString("transcripts.annotationFlags").split(",")));
+        String annotationFlagsString = query.getString(QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key());
+        if (StringUtils.isNotEmpty(annotationFlagsString)) {
+            Set<String> flags = new HashSet<>(Arrays.asList(annotationFlagsString.split(",")));
             List<Document> documents = documentQueryResult.getResult();
             for (Document document : documents) {
-                ArrayList<Document> transcripts = document.get("transcripts", ArrayList.class);
+                ArrayList<Document> transcripts = document.get(TRANSCRIPTS, ArrayList.class);
                 ArrayList<Document> matchedTranscripts = new ArrayList<>();
                 for (Document transcript : transcripts) {
-                    ArrayList annotationFlags = transcript.get("annotationFlags", ArrayList.class);
+                    ArrayList annotationFlags = transcript.get(ANNOTATION_FLAGS, ArrayList.class);
                     if (annotationFlags != null && annotationFlags.size() > 0) {
                         if (CollectionUtils.containsAny(annotationFlags, flags)) {
                             matchedTranscripts.add(transcript);
                         }
                     }
                 }
-                document.put("transcripts", matchedTranscripts);
+                document.put(TRANSCRIPTS, matchedTranscripts);
             }
             documentQueryResult.setResult(documents);
         }

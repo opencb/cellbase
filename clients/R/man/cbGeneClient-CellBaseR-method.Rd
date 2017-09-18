@@ -4,14 +4,14 @@
 \name{cbGeneClient,CellBaseR-method}
 \alias{cbGeneClient}
 \alias{cbGeneClient,CellBaseR-method}
-\title{A method to query geneId data from Cellbase web services.}
+\title{A method to query gene data from Cellbase web services.}
 \usage{
 \S4method{cbGeneClient}{CellBaseR}(object, ids, resource, filters = NULL, ...)
 }
 \arguments{
 \item{object}{an object of class CellBaseR}
 
-\item{ids}{a character vector of geneId ids to be queried}
+\item{ids}{a character vector of gene ids to be queried}
 
 \item{resource}{a character vector to specify the resource to be queried}
 
@@ -25,7 +25,7 @@ an object of class CellBaseResponse which holds a dataframe with the
 results of the query
 }
 \description{
-A method to query geneId data from Cellbase web services.
+A method to query gene data from Cellbase web services.
 }
 \details{
 Please, for details on possible values for the parameters 

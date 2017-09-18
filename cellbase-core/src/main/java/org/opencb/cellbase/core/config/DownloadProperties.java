@@ -39,7 +39,11 @@ public class DownloadProperties {
     private URLProperties gerp;
     private URLProperties clinvar;
     private URLProperties clinvarSummary;
+    private URLProperties clinvarVariationAllele;
     private URLProperties clinvarEfoTerms;
+    private URLProperties iarctp53;
+    private URLProperties docm;
+    private URLProperties docmVersion;
     private URLProperties dgv;
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
@@ -207,6 +211,14 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getClinvarVariationAllele() {
+        return clinvarVariationAllele;
+    }
+
+    public void setClinvarVariationAllele(URLProperties clinvarVariationAllele) {
+        this.clinvarVariationAllele = clinvarVariationAllele;
+    }
+
     public URLProperties getClinvarEfoTerms() {
         return clinvarEfoTerms;
     }
@@ -214,6 +226,30 @@ public class DownloadProperties {
     public DownloadProperties setClinvarEfoTerms(URLProperties clinvarEfoTerms) {
         this.clinvarEfoTerms = clinvarEfoTerms;
         return this;
+    }
+
+    public URLProperties getIarctp53() {
+        return iarctp53;
+    }
+
+    public void setIarctp53(URLProperties iarctp53) {
+        this.iarctp53 = iarctp53;
+    }
+
+    public URLProperties getDocm() {
+        return docm;
+    }
+
+    public void setDocm(URLProperties docm) {
+        this.docm = docm;
+    }
+
+    public URLProperties getDocmVersion() {
+        return docmVersion;
+    }
+
+    public void setDocmVersion(URLProperties docmVersion) {
+        this.docmVersion = docmVersion;
     }
 
     public URLProperties getDgv() {

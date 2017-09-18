@@ -15,9 +15,6 @@ import java.util.Set;
  * Created by fjlopez on 09/05/17.
  */
 public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCalculator {
-    protected int variantStart;
-    protected int variantEnd;
-    private boolean isIntergenic;
 
     public ConsequenceTypeBNDCalculator() {
     }
@@ -27,16 +24,13 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
                                      boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions) {
         parseQueryParam(queryOptions);
 
-        List<ConsequenceType> consequenceTypeList1 = run(inputVariant.getChromosome(),
-                getStart(inputVariant), getEnd(inputVariant), geneList,
-                overlapsRegulatoryRegion);
-        Variant mate = VariantAnnotationUtils.parseMateBreakend(inputVariant);
+        List<ConsequenceType> consequenceTypeList1 = runBreakend(inputVariant, geneList, overlapsRegulatoryRegion);
+        Variant mate = Variant.getMateBreakend(inputVariant);
         if (mate == null) {
             return consequenceTypeList1;
         } else {
             Set<ConsequenceType> result = new HashSet<>(consequenceTypeList1);
-            result.addAll(run(mate.getChromosome(), getStart(mate), getEnd(mate), geneList,
-                    overlapsRegulatoryRegion));
+            result.addAll(runBreakend(mate, geneList, overlapsRegulatoryRegion));
             return new ArrayList<>(result);
         }
     }
@@ -59,17 +53,16 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
         }
     }
 
-    private List<ConsequenceType> run(String chromosome, Integer start, Integer end, List<Gene> geneList,
-                                      boolean[] overlapsRegulatoryRegion) {
-
-        variantStart = start;
-        variantEnd = end;
+    private List<ConsequenceType> runBreakend(Variant currentVariant, List<Gene> geneList,
+                                              boolean[] overlapsRegulatoryRegion) {
+        variant = currentVariant;
+        variantStart = getStart(variant);
+        variantEnd = getEnd(variant);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
-//        variant = inputVariant;
         boolean isIntergenic = true;
         for (Gene currentGene : geneList) {
             // Check this gene is in the same chromosome of current position - the gene may be here because overlaps the mate
-            if (chromosome.equals(currentGene.getChromosome())) {
+            if (variant.getChromosome().equals(currentGene.getChromosome())) {
                 gene = currentGene;
                 for (Transcript currentTranscript : gene.getTranscripts()) {
                     isIntergenic = isIntergenic && (variantEnd < currentTranscript.getStart() || variantStart > currentTranscript.getEnd());
@@ -88,8 +81,8 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
                         if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
                             solvePositiveTranscript(consequenceTypeList);
                         } else {
-                            solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
-                                    VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_VARIANT,
+                                    VariantAnnotationUtils.DOWNSTREAM_VARIANT);
                             if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
                                 consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
                                 consequenceTypeList.add(consequenceType);
@@ -99,8 +92,8 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
                         if (regionsOverlap(transcript.getStart(), transcript.getEnd(), variantStart, variantEnd)) {
                             solveNegativeTranscript(consequenceTypeList);
                         } else {
-                            solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
-                                    VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
+                            solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_VARIANT,
+                                    VariantAnnotationUtils.UPSTREAM_VARIANT);
                             if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
                                 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                                 consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));

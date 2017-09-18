@@ -29,7 +29,11 @@ import static org.junit.Assert.*;
 /**
  * Created by fjlopez on 10/05/17.
  */
-public class RepeatsParserTest {
+public class RepeatsParserTest extends GenericParserTest<Repeat> {
+
+    public RepeatsParserTest() {
+        super(Repeat.class);
+    }
 
     @Test
     public void testParse() throws Exception {
@@ -43,9 +47,6 @@ public class RepeatsParserTest {
 
     private Set<Repeat> loadRepeatSet(Path path) throws IOException {
         Set<Repeat> repeatSet = new HashSet<>(16);
-        ObjectMapper jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         try (BufferedReader bufferedReader = FileUtils.newBufferedReader(path)) {
             String line = bufferedReader.readLine();

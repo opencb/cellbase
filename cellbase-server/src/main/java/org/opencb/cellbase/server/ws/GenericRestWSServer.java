@@ -26,6 +26,7 @@ import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
@@ -44,6 +45,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+
+import static org.opencb.commons.datastore.core.QueryOptions.*;
 
 @Path("/{version}/{species}")
 @Produces("text/plain")
@@ -92,6 +95,13 @@ public class GenericRestWSServer implements IWSServer {
     protected int skip;
 
     @DefaultValue("false")
+    @QueryParam("skipCount")
+    @ApiParam(name = "skipCount", value = "Skip counting the total number of results. In other words, will leave "
+            + "numTotalResults in the QueryResult object to -1. This can make queries much faster."
+            + " Please note that this option may not be available for all web services.")
+    protected String skipCount;
+
+    @DefaultValue("false")
     @QueryParam("count")
     @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default. "
             + " Please note that this option may not be available for all web services.",
@@ -137,6 +147,8 @@ public class GenericRestWSServer implements IWSServer {
 
     private static final int LIMIT_DEFAULT = 1000;
     private static final int LIMIT_MAX = 5000;
+    private static final String ERROR = "error";
+    private static final String OK = "ok";
 
     static {
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
@@ -237,8 +249,8 @@ public class GenericRestWSServer implements IWSServer {
 
         if (exclude != null && !exclude.isEmpty()) {
             // We add the user's 'exclude' fields to the default values _id and _chunks
-            if (queryOptions.containsKey("exclude")) {
-                queryOptions.getAsStringList("exclude").addAll(Splitter.on(",").splitToList(exclude));
+            if (queryOptions.containsKey(EXCLUDE)) {
+                queryOptions.getAsStringList(EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
             }
         }
 //        else {
@@ -248,16 +260,17 @@ public class GenericRestWSServer implements IWSServer {
 //        }
 
         if (include != null && !include.isEmpty()) {
-            queryOptions.put("include", new LinkedList<>(Splitter.on(",").splitToList(include)));
+            queryOptions.put(INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
         } else {
-            queryOptions.put("include", (multivaluedMap.get("include") != null)
-                    ? Splitter.on(",").splitToList(multivaluedMap.get("include").get(0))
+            queryOptions.put(INCLUDE, (multivaluedMap.get(INCLUDE) != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get(INCLUDE).get(0))
                     : null);
         }
 
-        queryOptions.put("limit", (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
-        queryOptions.put("skip", (skip >= 0) ? skip : -1);
-        queryOptions.put("count", (count != null && !count.equals("")) && Boolean.parseBoolean(count));
+        queryOptions.put(LIMIT, (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
+        queryOptions.put(SKIP, (skip >= 0) ? skip : -1);
+        queryOptions.put(SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
+        queryOptions.put(COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
         // Add all the others QueryParams from the URL
@@ -269,8 +282,27 @@ public class GenericRestWSServer implements IWSServer {
                 query.put(entry.getKey(), entry.getValue().get(0));
             }
         }
+
+//        try {
+//            logger.info("{}\t{}\t{}", uriInfo.getAbsolutePath().toString(),
+//                    jsonObjectWriter.writeValueAsString(query), jsonObjectWriter.writeValueAsString(queryOptions));
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
     }
 
+    protected void logQuery(String status) {
+        try {
+            logger.info("{}\t{}\t{}\t{}\t{}",
+                    uriInfo.getAbsolutePath().toString(),
+                    jsonObjectWriter.writeValueAsString(query),
+                    jsonObjectWriter.writeValueAsString(queryOptions),
+                    new Long(System.currentTimeMillis() - startTime).intValue(),
+                    status);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
 
     @GET
     @Path("/help")
@@ -320,6 +352,7 @@ public class GenericRestWSServer implements IWSServer {
         result.setWarningMsg("Future errors will ONLY be shown in the QueryResponse body");
         result.setErrorMsg("DEPRECATED: " + e.toString());
         queryResponse.setResponse(Arrays.asList(result));
+        logQuery(ERROR);
 
         return Response
                 .fromResponse(createJsonResponse(queryResponse))
@@ -329,6 +362,7 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createErrorResponse(String method, String errorMessage) {
         try {
+            logQuery(ERROR);
             return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(new HashMap<>().put("[ERROR] " + method, errorMessage)),
                     MediaType.APPLICATION_JSON_TYPE));
         } catch (Exception e) {
@@ -351,6 +385,7 @@ public class GenericRestWSServer implements IWSServer {
             list.add(obj);
         }
         queryResponse.setResponse(list);
+        logQuery(OK);
 
         return createJsonResponse(queryResponse);
     }

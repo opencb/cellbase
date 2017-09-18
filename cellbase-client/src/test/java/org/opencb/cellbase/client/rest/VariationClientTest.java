@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -35,7 +36,7 @@ public class VariationClientTest {
     @Test
     public void count() throws Exception {
         QueryResponse<Long> count = cellBaseClient.getVariationClient().count(new Query());
-        assertEquals("Number of returned variants do not match", 154652501, count.firstResult().longValue());
+        assertTrue("Number of returned variants do not match", count.firstResult().longValue() > 329000000 );
     }
 
     @Test

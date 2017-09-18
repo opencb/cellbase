@@ -63,7 +63,6 @@ public class CellBaseClient {
 
     }
 
-
     public GeneClient getGeneClient() {
         return getClient("GENE", () -> new GeneClient(species, assembly, clientConfiguration));
     }
@@ -86,6 +85,18 @@ public class CellBaseClient {
 
     public GenomicRegionClient getGenomicRegionClient() {
         return getClient("GENOME_REGION", () -> new GenomicRegionClient(species, assembly, clientConfiguration));
+    }
+
+    public MetaClient getMetaClient() {
+        return getClient("META", () -> new MetaClient(species, assembly, clientConfiguration));
+    }
+
+    public ClinicalVariantClient getClinicalClient() {
+        return getClient("CLINICAL", () -> new ClinicalVariantClient(species, assembly, clientConfiguration));
+    }
+
+    public GenericClient getGenericClient() {
+        return getClient("GENERIC", () -> new GenericClient(species, assembly, clientConfiguration));
     }
 
     @SuppressWarnings("unchecked")
@@ -130,4 +141,5 @@ public class CellBaseClient {
         this.clientConfiguration = clientConfiguration;
         return this;
     }
+
 }

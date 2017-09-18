@@ -5,7 +5,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.biodata.models.variant.avro.ExonOverlap;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -21,7 +21,7 @@ import java.util.List;
 public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculator {
 
     private static final String SYMBOLIC_START = "<";
-    private static final Double INVALID_OVERLAP_PERCENTAGE = -1.0;
+    private static final float INVALID_OVERLAP_PERCENTAGE = -1;
     private int variantStart;
     private int variantEnd;
 //    private GenomeDBAdaptor genomeDBAdaptor;
@@ -59,8 +59,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     if (variantEnd > transcript.getStart() && variantStart < transcript.getEnd()) {
                         solvePositiveTranscript(consequenceTypeList);
                     } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
+                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_VARIANT,
+                                VariantAnnotationUtils.DOWNSTREAM_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
@@ -72,8 +72,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     if (variantEnd > transcript.getStart() && variantStart < transcript.getEnd()) {
                         solveNegativeTranscript(consequenceTypeList);
                     } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
-                                VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
+                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_VARIANT,
+                                VariantAnnotationUtils.UPSTREAM_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
@@ -158,8 +158,10 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             exonCounter++;
         }
         if (exonNumber != NO_EXON_OVERLAP) {
-            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
-                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
+            consequenceType.setExonOverlap(
+                    Collections.singletonList(new ExonOverlap((new StringBuilder()).append(exonNumber).append("/")
+                            .append(transcript.getExons().size()).toString(),
+                    INVALID_OVERLAP_PERCENTAGE)));
         }
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
@@ -235,8 +237,9 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             exonCounter++;
         }
         if (exonNumber != NO_EXON_OVERLAP) {
-            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
-                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
+            consequenceType.setExonOverlap(Collections.singletonList(new ExonOverlap(
+                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString(),
+                    INVALID_OVERLAP_PERCENTAGE)));
         }
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {
@@ -485,8 +488,9 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             exonCounter++;
         }
         if (exonNumber != NO_EXON_OVERLAP) {
-            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
-                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
+            consequenceType.setExonOverlap(Collections.singletonList(new ExonOverlap(
+                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString(),
+                    INVALID_OVERLAP_PERCENTAGE)));
         }
         solveMiRNA(cdnaVariantStart, cdnaVariantEnd, junctionSolution[1]);
     }
@@ -568,8 +572,9 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             exonCounter++;
         }
         if (exonNumber != NO_EXON_OVERLAP) {
-            consequenceType.setExonOverlap(Collections.singletonList(new Score(INVALID_OVERLAP_PERCENTAGE, null,
-                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString())));
+            consequenceType.setExonOverlap(Collections.singletonList(new ExonOverlap(
+                    (new StringBuilder()).append(exonNumber).append("/").append(transcript.getExons().size()).toString(),
+                    INVALID_OVERLAP_PERCENTAGE)));
         }
         // Is not intron variant (both ends fall within the same intron)
         if (!junctionSolution[1]) {

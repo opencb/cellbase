@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
+    private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
+    private static final String SERVER_ADDRESS = "serverAddress";
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
@@ -73,7 +75,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          cellbase_hsapiens_grch37_v3
          **/
 
-//        DatabaseProperties mongodbCredentials = cellBaseConfiguration.getDatabases().get("mongodb");
         DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
 
         // We need to look for the species object in the configuration
@@ -90,33 +91,51 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 logger.debug("Database for the species is '{}'", database);
 
                 MongoDBConfiguration mongoDBConfiguration;
-                MongoDBConfiguration.Builder builder;
-                // For authenticated databases
-                if (!mongodbCredentials.getUser().isEmpty()
-                        && !mongodbCredentials.getPassword().isEmpty()) {
-                    // MongoDB could authenticate against different databases
-                    if (mongodbCredentials.getOptions().containsKey("authenticationDatabase")) {
-                        builder = MongoDBConfiguration.builder()
-                                .add("username", mongodbCredentials.getUser())
-                                .add("password", mongodbCredentials.getPassword())
-                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"))
-                                .add("authenticationDatabase", mongodbCredentials.getOptions()
-                                        .get("authenticationDatabase"));
-                    } else {
-                        builder = MongoDBConfiguration.builder()
-                                .add("username", mongodbCredentials.getUser())
-                                .add("password", mongodbCredentials.getPassword())
-                                .add("readPreference", mongodbCredentials.getOptions().get("readPreference"));
-                    }
+                MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
 
-                    String replicaSet = mongodbCredentials.getOptions().get("replicaSet");
-                    if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains("CELLBASE.DB.MONGODB.REPLICASET")) {
-                        builder.add("replicaSet", mongodbCredentials.getOptions().get("replicaSet"));
+                // For authenticated databases
+                if (!mongodbCredentials.getUser().isEmpty() && !mongodbCredentials.getPassword().isEmpty()) {
+                    // MongoDB could authenticate against different databases
+                    builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
+                    if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
+                        builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
+                                .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
                     }
-                    mongoDBConfiguration = builder.build();
-                } else {
-                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
                 }
+
+                if (mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE) != null
+                        && !mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE).isEmpty()) {
+                    builder.add(MongoDBConfiguration.READ_PREFERENCE,
+                            mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE));
+                }
+
+                String replicaSet = mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET);
+                if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
+                    builder.setReplicaSet(mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET));
+                }
+
+                String connectionsPerHost = mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST);
+                if (connectionsPerHost != null && !connectionsPerHost.isEmpty()) {
+                    builder.setConnectionsPerHost(Integer.valueOf(mongodbCredentials.getOptions()
+                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST)));
+                }
+
+                mongoDBConfiguration = builder.build();
+
+                logger.debug("*************************************************************************************");
+                logger.debug("MongoDataStore configuration parameters: ");
+                logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
+                        mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+                logger.debug("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
+                        mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
+                logger.debug("{} = {}", MongoDBConfiguration.REPLICA_SET,
+                        mongoDBConfiguration.get(MongoDBConfiguration.REPLICA_SET));
+                logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
+                        mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
+                logger.debug("*************************************************************************************");
+//                } else {
+//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+//                }
 
                 // A MongoDataStore to this host and database is returned
                 MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
@@ -140,8 +159,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             throw new InvalidParameterException("Species name is not valid: '" + species + "'. Please provide one"
                     + " of supported species: {"
                     + String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
-                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
-                            .collect(Collectors.toList())) + "}");
+                    -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                    .collect(Collectors.toList())) + "}");
         }
     }
 
@@ -188,7 +207,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     public GeneDBAdaptor getGeneDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
-//        geneMongoDBAdaptor.setClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
+//        geneMongoDBAdaptor.setClinicalDBAdaptor(getClinicalLegacyDBAdaptor(species, assembly));
         return geneMongoDBAdaptor;
     }
 
@@ -265,6 +284,17 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
 
     @Override
+    public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species) {
+        return getClinicalLegacyDBAdaptor(species, null);
+    }
+
+    @Override
+    public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new ClinicalLegacyMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
+    @Override
     public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
         return getClinicalDBAdaptor(species, null);
     }
@@ -296,7 +326,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 //        variantAnnotationDBAdaptor.setGeneDBAdaptor(getGeneDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setRegulationDBAdaptor(getRegulatoryRegionDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setVariantDBAdaptor(getVariationDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
+//        variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalLegacyDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setProteinDBAdaptor(getProteinDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setConservationDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
 //        variantAnnotationDBAdaptor.setVariantFunctionalScoreDBAdaptor(getVariantFunctionalScoreDBAdaptor(species, assembly));
