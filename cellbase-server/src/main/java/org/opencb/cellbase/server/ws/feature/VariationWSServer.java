@@ -168,7 +168,7 @@ public class VariationWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "id",
                     value = "Comma separated list of rs ids, e.g.: rs6025, rs666"
                             + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
-            @ApiImplicitParam(name = "consequence_type",
+            @ApiImplicitParam(name = "consequenceType",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant."
                             + " Exact text matches will be returned", dataType = "list of strings", paramType = "query"),
             @ApiImplicitParam(name = "gene",

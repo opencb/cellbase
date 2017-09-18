@@ -36,18 +36,19 @@ import java.util.Arrays;
  */
 @Path("/{version}/{species}/feature/clinical")
 @Produces("application/json")
-@Api(value = "Clinical", description = "Clinical RESTful Web Services API")
-public class ClinicalWSServer extends GenericRestWSServer {
+@Api(value = "Clinical (Deprecated)", description = "Clinical RESTful Web Services API")
+@Deprecated
+public class ClinicalLegacyWSServer extends GenericRestWSServer {
 
 
-    public ClinicalWSServer(@PathParam("version")
+    public ClinicalLegacyWSServer(@PathParam("version")
                             @ApiParam(name = "version", value = "Possible values: v3, v4",
                                     defaultValue = "v4") String version,
-                            @PathParam("species")
+                                  @PathParam("species")
                             @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                     + "of potentially available species ids, please refer to: "
                                     + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
-                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+                                  @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException {
         super(version, species, uriInfo, hsr);
     }
@@ -206,7 +207,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
 //    public Response getAllListAccessions() {
 //        try {
 //            parseQueryParams();
-//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(this.species, this.assembly);
 //            return createOkResponse(clinicalDBAdaptor.getListClinvarAccessions(queryOptions));
 //        } catch (Exception e) {
 //            return createErrorResponse(e);

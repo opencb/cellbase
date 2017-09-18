@@ -36,6 +36,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 //import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
 //import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
@@ -72,7 +73,7 @@ public class VariantAnnotationCalculator {
     //    private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
-    private boolean useCache = true;
+    private boolean useCache = false;
     private boolean phased = false;
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
@@ -347,7 +348,7 @@ public class VariantAnnotationCalculator {
         stringBuilder.append(",annotation.alternate,annotation.id");
 
         if (annotatorSet.contains("variation")) {
-            stringBuilder.append(",annotation.id");
+            stringBuilder.append(",annotation.id,annotation.additionalAttributes.dgvSpecificAttributes");
         }
         if (annotatorSet.contains("clinical")) {
             stringBuilder.append(",annotation.variantTraitAssociation");
@@ -400,7 +401,8 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
 //        if (!useCache && (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies"))) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
-                    "id,annotation.populationFrequencies").append("imprecise", imprecise));
+                    "id,annotation.populationFrequencies,annotation.additionalAttributes.dgvSpecificAttributes")
+                    .append("imprecise", imprecise));
             variationFuture = fixedThreadPool.submit(futureVariationAnnotator);
         }
 
@@ -419,7 +421,7 @@ public class VariantAnnotationCalculator {
         }
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
-        Future<List<QueryResult>> clinicalFuture = null;
+        Future<List<QueryResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, queryOptions);
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
@@ -591,8 +593,8 @@ public class VariantAnnotationCalculator {
         normalize = (queryOptions.get("normalize") != null && (Boolean) queryOptions.get("normalize"));
         logger.debug("normalize = {}", normalize);
 
-        // Default behaviour use cache
-        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : true);
+        // Default behaviour DO NOT use cache
+        useCache = (queryOptions.get("useCache") != null ? (Boolean) queryOptions.get("useCache") : false);
 
         // Default behaviour - don't calculate phased annotation
         phased = (queryOptions.get("phased") != null ? (Boolean) queryOptions.get("phased") : false);
@@ -1004,7 +1006,6 @@ public class VariantAnnotationCalculator {
                 }
             }
         }
-
         return geneList;
     }
 
@@ -1416,9 +1417,16 @@ public class VariantAnnotationCalculator {
             if (variationQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResultList.size(); i++) {
                     Variant preferredVariant = getPreferredVariant(variationQueryResults.get(i));
-                    if (preferredVariant != null && preferredVariant.getIds().size() > 0) {
-                        variantAnnotationResultList.get(i).first().setId(preferredVariant.getIds().get(0));
-
+                    if (preferredVariant != null) {
+                        if (preferredVariant.getIds().size() > 0) {
+                            variantAnnotationResultList.get(i).first().setId(preferredVariant.getIds().get(0));
+                        }
+                        if (preferredVariant.getAnnotation() != null
+                                && preferredVariant.getAnnotation().getAdditionalAttributes() != null
+                                && preferredVariant.getAnnotation().getAdditionalAttributes().size() > 0) {
+                            variantAnnotationResultList.get(i).first()
+                                    .setAdditionalAttributes(preferredVariant.getAnnotation().getAdditionalAttributes());
+                        }
                     }
 
                     if (annotatorSet.contains("populationFrequencies") && preferredVariant != null) {
@@ -1589,7 +1597,13 @@ public class VariantAnnotationCalculator {
 
     }
 
-    class FutureClinicalAnnotator implements Callable<List<QueryResult>> {
+    class FutureClinicalAnnotator implements Callable<List<QueryResult<Variant>>> {
+        private static final String CLINVAR = "clinvar";
+        private static final String COSMIC = "cosmic";
+        private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
+        private static final String REVIEW_STATUS_IN_SOURCE_FILE = "ReviewStatus_in_source_file";
+        private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
+        private static final String SYMBOL = "symbol";
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
@@ -1599,15 +1613,15 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<QueryResult> call() throws Exception {
+        public List<QueryResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            logger.debug("Query clinical");
-            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+//            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
+            List<QueryResult<Variant>> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalQueryResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> clinicalFuture,
+        public void processResults(Future<List<QueryResult<Variant>>> clinicalFuture,
                                    List<QueryResult<VariantAnnotation>> variantAnnotationResults)
                 throws InterruptedException, ExecutionException {
 //            try {
@@ -1615,13 +1629,22 @@ public class VariantAnnotationCalculator {
                 Thread.sleep(1);
             }
 
-            List<QueryResult> clinicalQueryResults = clinicalFuture.get();
+            List<QueryResult<Variant>> clinicalQueryResults = clinicalFuture.get();
             if (clinicalQueryResults != null) {
                 for (int i = 0; i < variantAnnotationResults.size(); i++) {
-                    QueryResult clinicalQueryResult = clinicalQueryResults.get(i);
+                    QueryResult<Variant> clinicalQueryResult = clinicalQueryResults.get(i);
                     if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
                         variantAnnotationResults.get(i).getResult().get(0)
-                                .setVariantTraitAssociation((VariantTraitAssociation) clinicalQueryResult.getResult().get(0));
+                                .setTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
+                                        .getTraitAssociation());
+                        // DEPRECATED
+                        // TODO: remove in 4.6
+                        variantAnnotationResults.get(i).getResult().get(0)
+                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalQueryResult
+                                        .getResult()
+                                        .get(0)
+                                        .getAnnotation()
+                                        .getTraitAssociation()));
                     }
                 }
             }
@@ -1629,6 +1652,88 @@ public class VariantAnnotationCalculator {
 ////            } catch (InterruptedException | ExecutionException e) {
 //                e.printStackTrace();
 //            }
+        }
+
+        private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
+            List<ClinVar> clinvarList = new ArrayList<>();
+            List<Cosmic> cosmicList = new ArrayList<>(traitAssociation.size());
+            for (EvidenceEntry evidenceEntry : traitAssociation) {
+                switch (evidenceEntry.getSource().getName()) {
+                    case CLINVAR:
+                        clinvarList.add(parseClinvar(evidenceEntry));
+                        break;
+                    case COSMIC:
+                        cosmicList.add(parseCosmic(evidenceEntry));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return new VariantTraitAssociation(clinvarList, null, cosmicList);
+        }
+
+        private Cosmic parseCosmic(EvidenceEntry evidenceEntry) {
+            String primarySite = null;
+            String siteSubtype = null;
+            String primaryHistology = null;
+            String histologySubtype = null;
+            String sampleSource = null;
+            String tumourOrigin = null;
+            if (evidenceEntry.getSomaticInformation() != null) {
+                primarySite = evidenceEntry.getSomaticInformation().getPrimarySite();
+                siteSubtype = evidenceEntry.getSomaticInformation().getSiteSubtype();
+                primaryHistology = evidenceEntry.getSomaticInformation().getPrimaryHistology();
+                histologySubtype = evidenceEntry.getSomaticInformation().getHistologySubtype();
+                sampleSource = evidenceEntry.getSomaticInformation().getSampleSource();
+                tumourOrigin = evidenceEntry.getSomaticInformation().getTumourOrigin();
+            }
+            return new Cosmic(evidenceEntry.getId(), primarySite, siteSubtype, primaryHistology, histologySubtype,
+                    sampleSource, tumourOrigin, parseGeneName(evidenceEntry),
+                    getAdditionalProperty(evidenceEntry, MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE));
+        }
+
+        private String parseGeneName(EvidenceEntry evidenceEntry) {
+            if (evidenceEntry.getGenomicFeatures() != null && !evidenceEntry.getGenomicFeatures().isEmpty()
+                    && evidenceEntry.getGenomicFeatures().get(0).getXrefs() != null) {
+                // There may be more than one genomic feature for cosmic evidence entries. However, the actual gene symbol
+                // is expected to be found at index 0.
+                return evidenceEntry.getGenomicFeatures().get(0).getXrefs().get(SYMBOL);
+            }
+            return null;
+        }
+
+        private ClinVar parseClinvar(EvidenceEntry evidenceEntry) {
+            String clinicalSignificance = getAdditionalProperty(evidenceEntry, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE);
+            List<String> traitList = null;
+            if (evidenceEntry.getHeritableTraits() != null) {
+                traitList = evidenceEntry
+                        .getHeritableTraits()
+                        .stream()
+                        .map((heritableTrait) -> heritableTrait.getTrait())
+                        .collect(Collectors.toList());
+            }
+            List<String> geneNameList = null;
+            if (evidenceEntry.getGenomicFeatures() != null) {
+                geneNameList = evidenceEntry
+                        .getGenomicFeatures()
+                        .stream()
+                        .map((genomicFeature) -> genomicFeature.getXrefs().get(SYMBOL))
+                        .collect(Collectors.toList());
+            }
+            String reviewStatus = getAdditionalProperty(evidenceEntry, REVIEW_STATUS_IN_SOURCE_FILE);
+            return new ClinVar(evidenceEntry.getId(), clinicalSignificance, traitList, geneNameList,
+                    reviewStatus);
+        }
+
+        private String getAdditionalProperty(EvidenceEntry evidenceEntry, String name) {
+            if (evidenceEntry.getAdditionalProperties() != null) {
+                for (Property property : evidenceEntry.getAdditionalProperties()) {
+                    if (name.equals(property.getName())) {
+                        return property.getValue();
+                    }
+                }
+            }
+            return null;
         }
     }
 

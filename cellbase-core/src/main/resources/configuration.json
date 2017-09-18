@@ -91,13 +91,25 @@
 			"host": "http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz"
 		},
 		"clinvar": {
-			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2016-12.xml.gz"
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2017-07.xml.gz"
 		},
 		"clinvarSummary": {
 			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"
 		},
+		"clinvarVariationAllele": {
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz"
+		},
 		"clinvarEfoTerms": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv"
+		},
+		"iarctp53": {
+			"host": "http://p53.iarc.fr/ajax/Zipper.ashx"
+		},
+		"docm": {
+			"host": "http://docm.genome.wustl.edu/api/"
+		},
+		"docmVersion": {
+			"host": "http://docm.genome.wustl.edu"
 		},
 		"dgv": {
 			"host": "http://dgv.tcag.ca/v106/docs"
@@ -144,7 +156,7 @@
 						"name":"GRCh37"
 					},
 					{
-						"ensemblVersion":"86_38",
+						"ensemblVersion":"89_38",
 						"name":"GRCh38"
 					}
 				],
@@ -158,6 +170,7 @@
 					"regulation",
 					"protein",
 					"conservation",
+					"clinical_variants",
 					"clinical",
 					"svs",
 					"repeats"

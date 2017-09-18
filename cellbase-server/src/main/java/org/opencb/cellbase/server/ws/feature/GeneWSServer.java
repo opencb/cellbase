@@ -291,6 +291,10 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
                             + " Exact text matches will be returned",
                     required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.annotationFlags",
+                    value = "Comma separated list of annotation flags that must be present in the transcripts returned "
+                            + "within the gene model, e.g.: basic,CCDS. Exact text matches will be returned",
+                    required = false, dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.tfbs.name",
                     value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
                             + " Exact text matches will be returned",
@@ -898,11 +902,13 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/clinical")
-    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
+    @ApiOperation(httpMethod = "GET", notes = "WARNING: this web service is currently deprecated, is no longer "
+            + " supported and will"
+            + " soon be removed. No more than 1000 objects are allowed to be returned at a time. "
             + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
             + "a look at "
             + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
-            value = "Resource to get clinical variants from a list of gene HGNC symbols", response = Document.class,
+            value = "[DEPRECATED] Use {version}/{species}/clinical/variant/search instead.", response = Document.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "source",
@@ -929,6 +935,7 @@ public class GeneWSServer extends GenericRestWSServer {
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "list of strings", paramType = "query")
     })
+    @Deprecated
     public Response getAllClinvarByGene(@PathParam("geneId")
                                         @ApiParam(name = "geneId", value = "String containing one gene symbol, e.g:"
                                                 + " BRCA2", required = true) String geneId) {

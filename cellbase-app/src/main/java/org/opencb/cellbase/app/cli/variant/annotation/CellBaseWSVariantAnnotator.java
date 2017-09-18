@@ -57,29 +57,31 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     }
 
     public void run(List<Variant> variantList) {
-        logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
-        QueryResponse<VariantAnnotation> response;
-        try {
-            response = variantClient.getAnnotations(variantList.stream().map(Variant::toString).collect(Collectors.toList()),
-                    queryOptions, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
+        if (variantList != null && !variantList.isEmpty()) {
+            logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
+            QueryResponse<VariantAnnotation> response;
+            try {
+                response = variantClient.getAnnotations(variantList.stream().map(Variant::toString).collect(Collectors.toList()),
+                        queryOptions, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
 
-        //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
-//        variantAnnotationList = new ArrayList<>(variantList.size());
-//        List<QueryResult<QueryResult<VariantAnnotation>>> response1 = response.getResponse();
-        List<QueryResult<VariantAnnotation>> queryResultList = response.getResponse();
-        for (int i = 0; i < queryResultList.size(); i++) {
-            if (queryResultList.get(i).getResult().size() > 0) {
-                if (variantList.get(i).getAnnotation() == null) {
-                    variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+            //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
+            //        variantAnnotationList = new ArrayList<>(variantList.size());
+            //        List<QueryResult<QueryResult<VariantAnnotation>>> response1 = response.getResponse();
+            List<QueryResult<VariantAnnotation>> queryResultList = response.getResponse();
+            for (int i = 0; i < queryResultList.size(); i++) {
+                if (queryResultList.get(i).getResult().size() > 0) {
+                    if (variantList.get(i).getAnnotation() == null) {
+                        variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+                    } else {
+                        mergeAnnotation(variantList.get(i).getAnnotation(), queryResultList.get(i).getResult().get(0));
+                    }
                 } else {
-                    mergeAnnotation(variantList.get(i).getAnnotation(), queryResultList.get(i).getResult().get(0));
+                    logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
                 }
-            } else {
-                logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
             }
         }
     }

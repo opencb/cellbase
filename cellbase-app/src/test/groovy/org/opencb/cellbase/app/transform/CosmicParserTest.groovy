@@ -17,6 +17,7 @@
 package org.opencb.cellbase.app.transform
 
 import org.junit.Ignore
+import org.opencb.cellbase.app.transform.clinical.variant.CosmicParser
 import org.opencb.cellbase.core.serializer.CellBaseSerializer
 import org.opencb.cellbase.core.common.clinical.Cosmic
 import spock.lang.Shared

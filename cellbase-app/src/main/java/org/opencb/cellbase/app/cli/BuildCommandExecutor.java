@@ -18,6 +18,10 @@ package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.transform.*;
+import org.opencb.cellbase.app.transform.clinical.variant.ClinVarParser;
+import org.opencb.cellbase.app.transform.clinical.variant.ClinicalVariantParser;
+import org.opencb.cellbase.app.transform.clinical.variant.CosmicParser;
+import org.opencb.cellbase.app.transform.clinical.variant.GwasParser;
 import org.opencb.cellbase.app.transform.variation.VariationParser;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
@@ -165,6 +169,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.DRUG_DATA:
                             parser = buildDrugParser();
+                            break;
+                        case EtlCommons.CLINICAL_VARIANTS_DATA:
+                            parser = buildClinicalVariants();
                             break;
                         case EtlCommons.CLINVAR_DATA:
                             parser = buildClinvar();
@@ -378,8 +385,32 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ConservationParser(conservationFilesDir, conservationChunkSize, serializer);
     }
 
+    private CellBaseParser buildClinicalVariants() {
+        Path clinicalVariantFolder = input.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
+        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
+        copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
 
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output,
+                EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
+        return new ClinicalVariantParser(clinicalVariantFolder, getFastaReferenceGenome(),
+                buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
+                serializer);
+    }
+
+    private String getDefaultHumanAssembly() {
+        for (Species species : configuration.getSpecies().getVertebrates()) {
+            if (species.getId().equals("hsapiens")) {
+                return species.getAssemblies().get(0).getName();
+            }
+        }
+
+        throw new ParameterException("Clinical data can only be built if an hsapiens entry is defined within the "
+                + "configuration file. No hsapiens data found within the configuration.json file");
+    }
+
+    @Deprecated
     private CellBaseParser buildClinvar() {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path clinvarFolder = input.resolve("clinical");
         copyVersionFiles(Arrays.asList(clinvarFolder.resolve("clinvarVersion.json")));
         Path clinvarFile = clinvarFolder.resolve("ClinVar.xml.gz");
@@ -400,7 +431,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new ClinVarParser(clinvarFile, clinvarSummaryFile, efosFilePath, assembly, serializer);
     }
 
+    @Deprecated
     private CellBaseParser buildCosmic() {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
         //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
         // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
@@ -409,7 +442,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new CosmicParser(cosmicFilePath, serializer, assembly);
     }
 
+    @Deprecated
     private CellBaseParser buildGwas() throws IOException {
+        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
         Path inputDir = getInputDirFromCommandLine().resolve("clinical");
         copyVersionFiles(Arrays.asList(inputDir.resolve("gwasVersion.json")));
         Path gwasFile = inputDir.resolve(GWAS_INPUT_FILE_NAME);

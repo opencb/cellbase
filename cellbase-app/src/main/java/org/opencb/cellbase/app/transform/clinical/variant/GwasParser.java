@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.transform;
+package org.opencb.cellbase.app.transform.clinical.variant;
 
 import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.lang.math.NumberUtils;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.app.transform.CellBaseParser;
 import org.opencb.cellbase.core.common.clinical.gwas.Gwas;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasStudy;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasTest;
@@ -39,6 +40,7 @@ import java.util.Map;
  * @version 1.2.3
  * @since October 08, 2014
  */
+@Deprecated
 public class GwasParser extends CellBaseParser {
 
     private static final int REF = 0;
