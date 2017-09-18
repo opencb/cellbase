@@ -153,11 +153,11 @@ public class DOCMIndexer extends ClinicalIndexer {
         if (map.containsKey(TRANSCRIPT)) {
             String symbol = (String) map.get(TRANSCRIPT);
             if (symbol.startsWith(ENST)) {
-                genomicFeatureList.add(new GenomicFeature(FeatureTypes.Transcript, symbol, null));
+                genomicFeatureList.add(new GenomicFeature(FeatureTypes.transcript, symbol, null));
             } else {
                 Map<String, String> transcriptMap = new HashMap<>(1);
                 map.put(SYMBOL, gene);
-                genomicFeatureList.add(new GenomicFeature(FeatureTypes.Transcript, null, transcriptMap));
+                genomicFeatureList.add(new GenomicFeature(FeatureTypes.transcript, null, transcriptMap));
             }
         }
         return genomicFeatureList;
