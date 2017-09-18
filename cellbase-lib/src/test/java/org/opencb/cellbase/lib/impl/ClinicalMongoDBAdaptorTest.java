@@ -11,6 +11,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions6 = new QueryOptions();
         queryOptions6.add(QueryOptions.LIMIT, 30);
         queryOptions6.put(QueryOptions.SORT, "chromosome,start");
-        queryOptions6.put(QueryOptions.INCLUDE, "chromosome,start,annotation.traitAssociation.genomicFeatures.xrefs.symbol,annotation.consequenceTypes");
+        queryOptions6.put(QueryOptions.INCLUDE, "chromosome,start,annotation.consequenceTypes.geneName,annotation.traitAssociation.genomicFeatures.xrefs.symbol,annotation.consequenceTypes,annotation.traitAssociation.id");
         QueryResult queryResult6 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
         // Check sorted output
         int previousStart = -1;
@@ -88,12 +89,14 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic");
         QueryResult<Variant> queryResult8 = clinicalDBAdaptor.get(query6, queryOptions6);
-        assertTrue(queryResult8.getNumTotalResults() > 61);
-        // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
-        assertThat(queryResult8.getResult().get(0).getAnnotation().getTraitAssociation().stream()
-                        .map((evidenceEntry) -> evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"))
-                        .collect(Collectors.toList()),
-                CoreMatchers.hasItem("APOE"));
+        assertTrue(queryResult8.getNumTotalResults() > 60);
+        List<String> geneSymbols = queryResult8.getResult().get(0).getAnnotation().getTraitAssociation().stream()
+                .map((evidenceEntry) -> evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"))
+                .collect(Collectors.toList());
+        geneSymbols.addAll(queryResult8.getResult().get(0).getAnnotation().getConsequenceTypes().stream()
+                .map((consequenceType) -> consequenceType.getGeneName())
+                .collect(Collectors.toList()));
+        assertThat(geneSymbols, CoreMatchers.hasItem("APOE"));
 
         Query query7 = new Query();
         query7.put(ClinicalDBAdaptor.QueryParams.ACCESSION.key(),"COSM306824");

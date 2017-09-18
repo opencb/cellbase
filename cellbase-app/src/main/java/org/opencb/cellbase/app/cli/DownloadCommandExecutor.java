@@ -884,7 +884,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
                         conservationFolder.resolve("phastConsVersion.json"));
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                        conservationFolder.resolve("phastConsVersion.json"));
+                        conservationFolder.resolve("phyloPVersion.json"));
 //                String phastConsUrl = url + "/phastCons7way/hg38.phastCons100way.wigFix.gz";
 //                Path outFile = conservationFolder.resolve("phastCons").resolve("hg38.phastCons100way.wigFix.gz");
 //                downloadFile(phastConsUrl, outFile.toString());
