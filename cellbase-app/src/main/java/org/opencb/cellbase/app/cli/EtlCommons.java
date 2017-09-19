@@ -82,6 +82,9 @@ public class EtlCommons {
     public static final String REPEATS_JSON = "repeats";
     public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
     public static final String MOTIF_FEATURES_FILE = "motiffeatures.gff.gz";
+    public static final String ONTOLOGIES_DATA = "ontologies";
+    public static final String GO_FILE = "go.owl";
+    public static final String GO_VERSION_FILE = "goVersion.json";
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {

@@ -104,6 +104,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String TRF_NAME = "Tandem repeats finder";
     private static final String GSD_NAME = "Genomic super duplications";
     private static final String WM_NAME = "WindowMasker";
+    private static final String GO_NAME = "Gene Ontology";
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -267,6 +268,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         if (speciesHasInfoToDownload(sp, "repeats")) {
                             downloadRepeats(sp, assembly.getName(), spFolder);
                         }
+                        break;
+                    case EtlCommons.ONTOLOGIES_DATA:
+                        downloadOntologies(sp, assembly.getName());
                         break;
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
@@ -733,6 +737,22 @@ public class DownloadCommandExecutor extends CommandExecutor {
         return null;
     }
 
+    private String getLine(Path readmePath, String tag) {
+        Files.exists(readmePath);
+        try {
+            BufferedReader reader = Files.newBufferedReader(readmePath, Charset.defaultCharset());
+            String line = reader.readLine();
+            while (line != null && !line.contains(tag)) {
+                line = reader.readLine();
+            }
+            reader.close();
+            return line;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * This method downloads UniProt, IntAct and Interpro data from EMBL-EBI.
      *
@@ -1186,6 +1206,26 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         repeatsFolder.resolve(EtlCommons.WM_VERSION_FILE));
             }
 
+        }
+    }
+
+    private void downloadOntologies(Species sp, String name) throws IOException, InterruptedException {
+        logger.info("Downloading Gene Ontology data ...");
+        // Download Gene Ontology
+        String url = configuration.getDownload().getGeneOntology().getHost();
+        downloadFile(url, common.resolve(EtlCommons.GO_FILE).toString());
+        saveVersionData(EtlCommons.ONTOLOGIES_DATA, GO_NAME, getGeneOntologyRelease(common.resolve(EtlCommons.GO_FILE)),
+                getTimeStamp(), Collections.singletonList(url), common.resolve(EtlCommons.GO_VERSION_FILE));
+    }
+
+    private String getGeneOntologyRelease(Path goFile) {
+        String versionLine = getLine(goFile,
+                "<owl:versionIRI rdf:resource=\"http://purl.obolibrary.org/obo/go/releases/");
+        if (StringUtils.isNotBlank(versionLine)) {
+            return versionLine.split("releases/")[1].split("/go\\.owl")[0];
+        } else {
+            throw new ParameterException("Could not find Gene Ontology release within " + goFile.toString()
+                    + ". Please, check");
         }
     }
 

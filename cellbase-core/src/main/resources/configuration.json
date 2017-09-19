@@ -123,6 +123,9 @@
 		"genomicSuperDups": {
 			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
 		},
+		"geneOntology": {
+			"host": "http://purl.obolibrary.org/obo/go.owl"
+		},
 		"gwasCatalog": {
 			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"
 		},

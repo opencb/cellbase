@@ -48,6 +48,7 @@ public class DownloadProperties {
     private URLProperties simpleRepeats;
     private URLProperties windowMasker;
     private URLProperties genomicSuperDups;
+    private URLProperties geneOntology;
     private URLProperties hpo;
     private URLProperties disgenet;
     private URLProperties disgenetReadme;
@@ -282,6 +283,14 @@ public class DownloadProperties {
 
     public void setWindowMasker(URLProperties windowMasker) {
         this.windowMasker = windowMasker;
+    }
+
+    public URLProperties getGeneOntology() {
+        return geneOntology;
+    }
+
+    public void setGeneOntology(URLProperties geneOntology) {
+        this.geneOntology = geneOntology;
     }
 
     public URLProperties getHpo() {
