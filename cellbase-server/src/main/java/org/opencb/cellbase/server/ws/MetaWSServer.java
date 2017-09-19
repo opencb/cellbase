@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.ws;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.collections.map.HashedMap;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
@@ -52,6 +53,9 @@ import java.util.Map;
 public class MetaWSServer extends GenericRestWSServer {
 
     private static final String PONG = "pong";
+    private static final String STATUS = "status";
+    private static final String HEALTH = "health";
+    private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
 
     public MetaWSServer(@PathParam("version")
                         @ApiParam(name = "version", value = "Possible values: v3, v4",
@@ -162,6 +166,25 @@ public class MetaWSServer extends GenericRestWSServer {
         queryResult.setId(PONG);
         queryResult.setDbTime(0);
         queryResult.setResult(Collections.emptyList());
+
+        return createOkResponse(queryResult);
+    }
+
+    @GET
+    @Path("/status")
+    @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
+            + "as database connections and the ability to access other API's.",
+            response = SpeciesProperties.class, responseContainer = "QueryResponse")
+    public Response status() {
+        Monitor monitor = new Monitor(LOCALHOST_REST_API, dbAdaptorFactory);
+        Health health = monitor.run();
+
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId(STATUS);
+        queryResult.setDbTime(-1);
+        Map<String, Health> healthMap = new HashMap<String, Health>(1);
+        healthMap.put(HEALTH, health);
+        queryResult.setResult(healthMap);
 
         return createOkResponse(queryResult);
     }
