@@ -153,11 +153,13 @@ public class ClinicalVariantParser extends CellBaseParser {
                 serializer.getOutdir().resolve(serializer.getFileName()));
         int counter = 0;
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            List<EvidenceEntry> evidenceEntryList
-                    = mapper.readValue(rocksIterator.value(), List.class);
+            VariantAnnotation variantAnnotation
+                    = mapper.readValue(rocksIterator.value(), VariantAnnotation.class);
+//            List<EvidenceEntry> evidenceEntryList
+//                    = mapper.readValue(rocksIterator.value(), List.class);
             Variant variant = parseVariantFromVariantId(new String(rocksIterator.key()));
-            VariantAnnotation variantAnnotation = new VariantAnnotation();
-            variantAnnotation.setTraitAssociation(evidenceEntryList);
+//            VariantAnnotation variantAnnotation = new VariantAnnotation();
+//            variantAnnotation.setTraitAssociation(evidenceEntryList);
             variant.setAnnotation(variantAnnotation);
             serializer.serialize(variant);
             counter++;

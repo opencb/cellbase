@@ -39,6 +39,10 @@ public class DOCMIndexer extends ClinicalIndexer {
     private static final String SYMBOL = "symbol";
     private static final String TAGS = "tags";
     private static final String TAGS_IN_SOURCE_FILE = "tags_in_source_file";
+    private static final String META = "meta";
+    private static final String DRUG_INTERACTION_DATA = "Drug Interaction Data";
+    private static final String FIELDS = "fields";
+    private static final String ROWS = "rows";
     private final Path docmFile;
     private final String assembly;
 
@@ -83,9 +87,10 @@ public class DOCMIndexer extends ClinicalIndexer {
     private void updateRocksDB(Variant variant) throws RocksDBException, IOException {
         byte[] key = VariantAnnotationUtils.buildVariantId(variant.getChromosome(), variant.getStart(),
                 variant.getReference(), variant.getAlternate()).getBytes();
-        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        evidenceEntryList.addAll(variant.getAnnotation().getTraitAssociation());
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+        variantAnnotation.getTraitAssociation().addAll(variant.getAnnotation().getTraitAssociation());
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
     private Variant parseVariant(String line) throws IOException {
@@ -94,12 +99,7 @@ public class DOCMIndexer extends ClinicalIndexer {
             Variant variant = new Variant((String) map.get(CHROMOSOME), Integer.valueOf((String) map.get(START)),
                     (String) map.get(REFERENCE), (String) map.get(ALTERNATE));
 
-            List<EvidenceEntry> evidenceEntryList = parseEvidenceEntryList(map);
-            VariantAnnotation variantAnnotation = new VariantAnnotation();
-            variantAnnotation.setTraitAssociation(evidenceEntryList);
-
-            // TODO: parse variant-drug relationships
-
+            VariantAnnotation variantAnnotation = parseVariantAnnotation(map);
             variant.setAnnotation(variantAnnotation);
 
             return variant;
@@ -108,7 +108,7 @@ public class DOCMIndexer extends ClinicalIndexer {
         }
     }
 
-    private List<EvidenceEntry> parseEvidenceEntryList(Map<String, Object> map) {
+    private VariantAnnotation parseVariantAnnotation(Map<String, Object> map) {
         // The list diseases in map.get(DISEASES) may contain multiple elements for the same disease but with different
         // pubmed ids
         Map<String, EvidenceEntry> evidenceEntryMap = new HashedMap(((List) map.get(DISEASES)).size());
@@ -138,11 +138,30 @@ public class DOCMIndexer extends ClinicalIndexer {
             }
         }
 
-        return evidenceEntryMap
+        VariantAnnotation variantAnnotation = new VariantAnnotation();
+        if (map.containsKey(META)) {
+            for (Map metaMap : ((List<Map>) map.get(META))) {
+                if (metaMap.containsKey(DRUG_INTERACTION_DATA)
+                        && ((Map) metaMap.get(DRUG_INTERACTION_DATA)).containsKey(FIELDS)
+                        && ((Map) metaMap.get(DRUG_INTERACTION_DATA)).containsKey(ROWS)) {
+                    
+                } else {
+                    logger.warn("Meta field found but no drug interaction data");
+                    logger.warn("Variant: {}:{}:{}:{}", map.get("chromosome"), map.get("start"), map.get("reference"),
+                            map.get("alternate"));
+                }
+
+            }
+        }
+
+        variantAnnotation.setTraitAssociation(evidenceEntryMap
                 .keySet()
                 .stream()
                 .map((diseaseName) -> evidenceEntryMap.get(diseaseName))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
+
+        return variantAnnotation;
+
     }
 
     private List<GenomicFeature> getGenomicFeature(Map<String, Object> map) {

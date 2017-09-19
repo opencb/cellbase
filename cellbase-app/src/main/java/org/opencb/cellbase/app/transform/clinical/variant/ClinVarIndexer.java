@@ -116,9 +116,10 @@ public class ClinVarIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        addNewEntries(evidenceEntryList, variationId, lineFields, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
+        addNewEntries(variantAnnotation, variationId, lineFields, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
     private void updateRocksDB(SequenceLocation sequenceLocation, PublicSetType publicSet,
@@ -127,12 +128,13 @@ public class ClinVarIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        addNewEntries(evidenceEntryList, publicSet, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+        addNewEntries(variantAnnotation, publicSet, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
-    private void addNewEntries(List<EvidenceEntry> evidenceEntryList, String variationId, String[] lineFields,
+    private void addNewEntries(VariantAnnotation variantAnnotation, String variationId, String[] lineFields,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
@@ -183,7 +185,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 null, consistencyStatus, null, null, null,
                 null, additionalProperties, null);
 
-        evidenceEntryList.add(evidenceEntry);
+        variantAnnotation.getTraitAssociation().add(evidenceEntry);
     }
 
     private ConsistencyStatus getConsistencyStatus(String lineField) {
@@ -196,7 +198,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         return null;
     }
 
-    private void addNewEntries(List<EvidenceEntry> evidenceEntryList, PublicSetType publicSet,
+    private void addNewEntries(VariantAnnotation variantAnnotation, PublicSetType publicSet,
                                Map<String, EFO> traitsToEfoTermsMap) throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
@@ -238,7 +240,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 null, consistencyStatus, null, null, null,
                 null, additionalProperties, bibliography);
 
-        evidenceEntryList.add(evidenceEntry);
+        variantAnnotation.getTraitAssociation().add(evidenceEntry);
 
     }
 

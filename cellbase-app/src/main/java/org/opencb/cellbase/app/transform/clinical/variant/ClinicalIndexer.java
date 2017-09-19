@@ -46,18 +46,23 @@ public abstract class ClinicalIndexer {
     }
 
 
-    protected List<EvidenceEntry> getEvidenceEntryList(byte[] key) throws RocksDBException, IOException {
+    protected VariantAnnotation getVariantAnnotation(byte[] key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key);
-        List<EvidenceEntry> evidenceEntryList;
+//        List<EvidenceEntry> evidenceEntryList;
+        VariantAnnotation variantAnnotation;
         if (dbContent == null) {
-            evidenceEntryList = new ArrayList<>();
+            variantAnnotation = new VariantAnnotation();
+            List<EvidenceEntry> evidenceEntryList = new ArrayList<>();
+            variantAnnotation.setTraitAssociation(evidenceEntryList);
             numberNewVariants++;
         } else {
-            evidenceEntryList = mapper.readValue(dbContent, mapper.getTypeFactory().constructParametrizedType(List.class,
-                    List.class, EvidenceEntry.class));
+            variantAnnotation = mapper.readValue(dbContent, VariantAnnotation.class);
+//            List<EvidenceEntry> evidenceEntryList = mapper.readValue(dbContent, mapper.getTypeFactory().constructParametrizedType(List.class,
+//                    List.class, EvidenceEntry.class));
+
             numberVariantUpdates++;
         }
-        return evidenceEntryList;
+        return variantAnnotation;
     }
 
     protected GenomicFeature createGeneGenomicFeature(String gene) {
