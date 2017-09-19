@@ -2,17 +2,25 @@ package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
 import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertNotNull;
@@ -24,6 +32,15 @@ import static org.junit.Assert.assertTrue;
  * Created by fjlopez on 24/03/17.
  */
 public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+
+    @Before
+    public void setUp() throws Exception {
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/clinicalVariant/clinical_variants.full.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants");
+    }
+
     @Test
     public void nativeGet() throws Exception {
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
@@ -31,46 +48,37 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         Query query1 = new Query();
         query1.put(ClinicalDBAdaptor.QueryParams.TRAIT.key(), "alzheimer");
-        queryOptions1.add(QueryOptions.LIMIT, 30);
         queryOptions1.add(QueryOptions.INCLUDE, "annotation.traitAssociation.id");
         QueryResult<Variant> queryResult1 = clinicalDBAdaptor.get(query1, queryOptions1);
-        // WARNING: these values may change from one ClinVar version to another
-        assertEquals(30, queryResult1.getNumResults());
+        assertEquals(1, queryResult1.getNumResults());
         assertTrue(containsAccession(queryResult1, "RCV000172777"));
 
         Query query2 = new Query();
         query2.put(ClinicalDBAdaptor.QueryParams.TRAIT.key(), "myelofibrosis");
         QueryOptions queryOptions2 = new QueryOptions();
-        queryOptions2.add(QueryOptions.LIMIT, 15);
         queryOptions2.add(QueryOptions.INCLUDE, "annotation.traitAssociation.id");
         QueryResult queryResult2 = clinicalDBAdaptor.nativeGet(query2, queryOptions2);
-        // WARNING: these values may change from one ClinVar version to another
-        assertEquals(15, queryResult2.getNumResults());
+        assertEquals(1, queryResult2.getNumResults());
 
         Query query4 = new Query();
         query4.put(ClinicalDBAdaptor.QueryParams.REGION.key(),
                 new Region("2", 170360030, 170362030));
         QueryOptions queryOptions4 = new QueryOptions();
-        queryOptions4.add(QueryOptions.LIMIT, 30);
         queryOptions4.add(QueryOptions.INCLUDE, "annotation.traitAssociation.id");
         QueryResult<Variant> queryResult4 = clinicalDBAdaptor.get(query4, queryOptions4);
-        // WARNING: these values may change from one ClinVar version to another
-        assertEquals(8, queryResult4.getNumTotalResults());
+        assertEquals(2, queryResult4.getNumTotalResults());
         assertTrue(containsAccession(queryResult4, "COSM4624460"));
         assertTrue(containsAccession(queryResult4, "RCV000171500"));
 
         Query query5 = new Query();
         query5.put(ClinicalDBAdaptor.QueryParams.CLINICALSIGNIFICANCE.key(), "likely_pathogenic");
         QueryOptions queryOptions5 = new QueryOptions();
-        queryOptions5.add(QueryOptions.LIMIT, 30);
         QueryResult queryResult5 = clinicalDBAdaptor.nativeGet(query5, queryOptions5);
-        // WARNING: these values may change from one ClinVar version to another
-        assertTrue(queryResult5.getNumTotalResults() > 9000);
+        assertEquals(2, queryResult4.getNumTotalResults());
 
         Query query6 = new Query();
         query6.put(ClinicalDBAdaptor.QueryParams.FEATURE.key(), "APOE");
         QueryOptions queryOptions6 = new QueryOptions();
-        queryOptions6.add(QueryOptions.LIMIT, 30);
         queryOptions6.put(QueryOptions.SORT, "chromosome,start");
         queryOptions6.put(QueryOptions.INCLUDE, "chromosome,start,annotation.consequenceTypes.geneName,annotation.traitAssociation.genomicFeatures.xrefs.symbol,annotation.consequenceTypes,annotation.traitAssociation.id");
         QueryResult queryResult6 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
@@ -79,13 +87,12 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         for (Document document : (List<Document>) queryResult6.getResult()) {
             assertTrue(previousStart < document.getInteger("start"));
         }
-        // WARNING: these values may change from one ClinVar version to another
-        assertTrue(queryResult6.getNumTotalResults() > 90);
+        assertEquals(3, queryResult4.getNumTotalResults());
 
         queryOptions6.remove(QueryOptions.SORT);
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar");
         QueryResult queryResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
-        assertEquals(33, queryResult7.getNumTotalResults());
+        assertEquals(33, queryResult7.getNumTotalResults()); // TODO: FIX
 
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic");
         QueryResult<Variant> queryResult8 = clinicalDBAdaptor.get(query6, queryOptions6);
