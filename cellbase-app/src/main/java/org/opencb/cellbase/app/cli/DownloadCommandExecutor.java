@@ -1213,9 +1213,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
         logger.info("Downloading Gene Ontology data ...");
         // Download Gene Ontology
         String url = configuration.getDownload().getGeneOntology().getHost();
-        downloadFile(url, common.resolve(EtlCommons.GO_FILE).toString());
+        Path ontologiesFolder = common.resolve(EtlCommons.ONTOLOGIES_FOLDER);
+        makeDir(ontologiesFolder);
+        downloadFile(url, ontologiesFolder.resolve(EtlCommons.GO_FILE).toString());
         saveVersionData(EtlCommons.ONTOLOGIES_DATA, GO_NAME, getGeneOntologyRelease(common.resolve(EtlCommons.GO_FILE)),
-                getTimeStamp(), Collections.singletonList(url), common.resolve(EtlCommons.GO_VERSION_FILE));
+                getTimeStamp(), Collections.singletonList(url), ontologiesFolder.resolve(EtlCommons.GO_VERSION_FILE));
     }
 
     private String getGeneOntologyRelease(Path goFile) {

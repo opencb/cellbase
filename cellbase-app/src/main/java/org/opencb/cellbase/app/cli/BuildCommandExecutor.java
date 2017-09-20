@@ -188,6 +188,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.REPEATS_DATA:
                             parser = buildRepeats();
                             break;
+                        case EtlCommons.ONTOLOGIES_DATA:
+                            parser = buildOntologies();
+                            break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                             break;
@@ -208,6 +211,14 @@ public class BuildCommandExecutor extends CommandExecutor {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    private CellBaseParser buildOntologies() {
+        Path ontologiesFilesDir = common.resolve(EtlCommons.ONTOLOGIES_FOLDER);
+        copyVersionFiles(Arrays.asList(ontologiesFilesDir.resolve(EtlCommons.GO_VERSION_FILE)));
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.ONTOLOGIES_JSON);
+        return new OntologiesParser(ontologiesFilesDir, serializer);
+
     }
 
     private CellBaseParser buildStructuralVariants() {
