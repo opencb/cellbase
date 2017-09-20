@@ -37,7 +37,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
-                .getResource("/clinicalVariant/clinical_variants.full.json.gz").toURI());
+                .getResource("/clinicalVariant/clinical_variants.full.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
     }
 
