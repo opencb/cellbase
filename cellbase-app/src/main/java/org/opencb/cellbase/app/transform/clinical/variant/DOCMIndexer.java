@@ -43,6 +43,13 @@ public class DOCMIndexer extends ClinicalIndexer {
     private static final String DRUG_INTERACTION_DATA = "Drug Interaction Data";
     private static final String FIELDS = "fields";
     private static final String ROWS = "rows";
+    private static final String THERAPEUTIC_CONTEXT = "Therapeutic Context";
+    private static final String PATHWAY = "Pathway";
+    private static final String EFFECT = "Effect";
+    private static final String ASSOCIATION = "Association";
+    private static final String STATUS = "Status";
+    private static final String EVIDENCE = "Evidence";
+    private static final String SOURCE = "Source";
     private final Path docmFile;
     private final String assembly;
 
@@ -138,13 +145,53 @@ public class DOCMIndexer extends ClinicalIndexer {
             }
         }
 
-        VariantAnnotation variantAnnotation = new VariantAnnotation();
+        List<Drug> drugList = null;
         if (map.containsKey(META)) {
+            drugList = new ArrayList<>(((List<Map>) map.get(META)).size());
             for (Map metaMap : ((List<Map>) map.get(META))) {
                 if (metaMap.containsKey(DRUG_INTERACTION_DATA)
                         && ((Map) metaMap.get(DRUG_INTERACTION_DATA)).containsKey(FIELDS)
                         && ((Map) metaMap.get(DRUG_INTERACTION_DATA)).containsKey(ROWS)) {
-                    
+                    List<String> fields = (List<String>) ((Map) metaMap.get(DRUG_INTERACTION_DATA)).get(FIELDS);
+
+                    if (fields.size() > 7) {
+                        logger.warn("More fields than expected found within Drug Interaction info. Please, check:");
+                        for (String field : fields) {
+                            logger.warn("{}", field);
+                        }
+                    }
+
+                    Drug drug = new Drug();
+                    List<String> rows = (List<String>) ((Map) metaMap.get(DRUG_INTERACTION_DATA)).get(ROWS);
+                    int idx = fields.indexOf(THERAPEUTIC_CONTEXT);
+                    if (idx > -1) {
+                        drug.setTherapeuticContext(rows.get(idx));
+                    }
+                    idx = fields.indexOf(PATHWAY);
+                    if (idx > -1) {
+                        drug.setPathway(rows.get(idx));
+                    }
+                    idx = fields.indexOf(EFFECT);
+                    if (idx > -1) {
+                        drug.setEffect(rows.get(idx));
+                    }
+                    idx = fields.indexOf(ASSOCIATION);
+                    if (idx > -1) {
+                        drug.setAssociation(rows.get(idx));
+                    }
+                    idx = fields.indexOf(STATUS);
+                    if (idx > -1) {
+                        drug.setStatus(rows.get(idx));
+                    }
+                    idx = fields.indexOf(EVIDENCE);
+                    if (idx > -1) {
+                        drug.setEvidence(rows.get(idx));
+                    }
+                    idx = fields.indexOf(SOURCE);
+                    if (idx > -1) {
+                        drug.setBibliography(Collections.singletonList(PMID + rows.get(idx)));
+                    }
+                    drugList.add(drug);
                 } else {
                     logger.warn("Meta field found but no drug interaction data");
                     logger.warn("Variant: {}:{}:{}:{}", map.get("chromosome"), map.get("start"), map.get("reference"),
@@ -154,6 +201,8 @@ public class DOCMIndexer extends ClinicalIndexer {
             }
         }
 
+        VariantAnnotation variantAnnotation = new VariantAnnotation();
+        variantAnnotation.setDrugs(drugList);
         variantAnnotation.setTraitAssociation(evidenceEntryMap
                 .keySet()
                 .stream()

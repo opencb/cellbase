@@ -57,8 +57,8 @@ public abstract class ClinicalIndexer {
             numberNewVariants++;
         } else {
             variantAnnotation = mapper.readValue(dbContent, VariantAnnotation.class);
-//            List<EvidenceEntry> evidenceEntryList = mapper.readValue(dbContent, mapper.getTypeFactory().constructParametrizedType(List.class,
-//                    List.class, EvidenceEntry.class));
+//            List<EvidenceEntry> evidenceEntryList = mapper.readValue(dbContent, mapper.getTypeFactory()
+// .constructParametrizedType(List.class, List.class, EvidenceEntry.class));
 
             numberVariantUpdates++;
         }
