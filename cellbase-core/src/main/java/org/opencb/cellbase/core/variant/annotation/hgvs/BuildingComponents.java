@@ -138,9 +138,9 @@ public class BuildingComponents {
 //        allele.append(formatPrefix());  // if use_prefix else ''
 //        allele.append(":");
 //
-//        if (kind.equals(Kind.CODING)) {
+//        if (kind.equals(Kind.CDNA_CODING)) {
 //            allele.append("c.").append(formatCdna());
-//        } else if (kind.equals(Kind.NON_CODING)) {
+//        } else if (kind.equals(Kind.CDNA_NON_CODING)) {
 //            allele.append("n.").append(formatCdna());
 ////    elif self.kind == 'p':
 ////    allele = 'p.' + self.format_protein()

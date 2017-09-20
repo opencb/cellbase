@@ -12,12 +12,16 @@ import java.util.List;
  * Created by fjlopez on 15/06/17.
  */
 public class HgvsSNVCalculator extends HgvsCalculator {
+    private BuildingComponents buildingComponents;
+
     public HgvsSNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
     }
 
     @Override
     protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
+        buildingComponents = new BuildingComponents();
+
         Variant normalizedVariant = normalize(variant, normalize);
         return calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
     }
@@ -29,9 +33,6 @@ public class HgvsSNVCalculator extends HgvsCalculator {
     private List<String> calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
 
         String mutationType = ">";
-
-        // Populate HGVSName parse tree.
-        BuildingComponents buildingComponents = new BuildingComponents();
 
         // Populate coordinates.
         // Use cDNA coordinates.

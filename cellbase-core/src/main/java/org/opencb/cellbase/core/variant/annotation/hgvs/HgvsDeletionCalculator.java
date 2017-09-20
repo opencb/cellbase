@@ -16,6 +16,8 @@ import java.util.List;
 public class HgvsDeletionCalculator extends HgvsCalculator {
 
     private static final String DEL = "del";
+    private BuildingComponents buildingComponents;
+
 
     public HgvsDeletionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
@@ -23,8 +25,10 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
     @Override
     protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
+        buildingComponents = new BuildingComponents();
+
         Variant normalizedVariant = normalize(variant, normalize);
-        String transcriptHgvs = calculateTranscriptHhgvs(normalizedVariant, transcript, geneId);
+        String transcriptHgvs = calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
         String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
 
         if (proteinHgvs == null) {
@@ -35,7 +39,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     }
 
     /**
-     * Calculates protein HGVS. Must always be called after calling calculateTranscriptHhgvs, since the latter will
+     * Calculates protein HGVS. Must always be called after calling calculateTranscriptHgvs, since the latter will
      * normalize and calculate cdna coords that will be used to calculate the protein HGVS.
      * @param variant Variant object containing genomic coordinates and variation for which protein HGVS wants to be
      *                calculated
@@ -45,23 +49,23 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
      */
     private String calculateProteinHgvs(Variant variant, Transcript transcript) {
         // Check if protein HGVS can be calculated
-//        if (isCoding(transcript) && onlySpansCodingSequence(variant)) {
-//            ProteinHgvsStringBuilder proteinHgvsStringBuilder = new ProteinHgvsStringBuilder();
-//            proteinHgvsStringBuilder.setId(transcript.getProteinID());
-//            setProteinCoordinates(proteinHgvsStringBuilder);
-//            setAffectedAminoAcids(proteinHgvsStringBuilder);
-//        }
+        if (isCoding(transcript) && onlySpansCodingSequence(variant)) {
+            buildingComponents.setKind(variant.getReference().length() % 3 == 0 ? Kind.INFRAME : Kind.FRAMESHIFT);
+            buildingComponents.setProteinId(transcript.getProteinID());
+            buildingComponents.setReference(getProteinReference());
+            // Overwrites start; it'll never be used again
+            buildingComponents.setStart(buildingComponents.getCdnaStart().getReferencePosition() / 3);
+
+            return formatProteinString(buildingComponents);
+        }
 
         return null;
     }
 
-    private String calculateTranscriptHhgvs(Variant variant, Transcript transcript, String geneId) {
+    private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
         // Additional normalization required for insertions
         Variant normalizedVariant = new Variant();
         String mutationType = hgvsNormalize(variant, transcript, normalizedVariant);
-
-        // Populate HGVSName parse tree.
-        BuildingComponents buildingComponents = new BuildingComponents();
 
         // Use cDNA coordinates.
         buildingComponents.setKind(isCoding(transcript) ? BuildingComponents.Kind.CODING : BuildingComponents.Kind.NON_CODING);

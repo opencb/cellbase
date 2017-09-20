@@ -17,12 +17,15 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private static final String INS = "ins";
     private static final String DUP = "dup";
 
+    private BuildingComponents buildingComponents;
+
     public HgvsInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
     }
 
     @Override
     protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
+        buildingComponents = new BuildingComponents();
         Variant normalizedVariant = normalize(variant, normalize);
         return calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
     }
@@ -31,9 +34,6 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         // Additional normalization required for insertions
         Variant normalizedVariant = new Variant();
         String mutationType = hgvsNormalize(variant, transcript, normalizedVariant);
-
-        // Populate HGVSName parse tree.
-        BuildingComponents buildingComponents = new BuildingComponents();
 
         // Use cDNA coordinates.
         buildingComponents.setKind(isCoding(transcript) ? BuildingComponents.Kind.CODING : BuildingComponents.Kind.NON_CODING);
