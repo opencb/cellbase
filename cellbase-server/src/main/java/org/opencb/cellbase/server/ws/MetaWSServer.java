@@ -24,6 +24,8 @@ import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesProperties;
+import org.opencb.cellbase.core.monitor.HealthStatus;
+import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Query;
@@ -177,16 +179,17 @@ public class MetaWSServer extends GenericRestWSServer {
             response = SpeciesProperties.class, responseContainer = "QueryResponse")
     public Response status() {
         Monitor monitor = new Monitor(LOCALHOST_REST_API, dbAdaptorFactory);
-        Health health = monitor.run();
+        HealthStatus health = monitor.run();
 
         QueryResult queryResult = new QueryResult();
         queryResult.setId(STATUS);
         queryResult.setDbTime(-1);
-        Map<String, Health> healthMap = new HashMap<String, Health>(1);
+        Map<String, HealthStatus> healthMap = new HashMap<String, HealthStatus>(1);
         healthMap.put(HEALTH, health);
-        queryResult.setResult(healthMap);
+        queryResult.setResult(Collections.singletonList(healthMap));
 
         return createOkResponse(queryResult);
+
     }
 
 
