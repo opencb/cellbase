@@ -7,6 +7,7 @@ import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
+import org.opencb.commons.utils.StringUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -26,7 +27,7 @@ public class DOCMIndexer extends ClinicalIndexer {
     private static final String CHROMOSOME = "chromosome";
     private static final String START = "start";
     private static final String REFERENCE = "reference";
-    private static final String ALTERNATE = "alternate";
+    private static final String VARIANT = "variant";
     private static final String DISEASES = "diseases";
     private static final String DISEASE = "disease";
     private static final String SOURCE_PUBMED_ID = "source_pubmed_id";
@@ -50,6 +51,7 @@ public class DOCMIndexer extends ClinicalIndexer {
     private static final String STATUS = "Status";
     private static final String EVIDENCE = "Evidence";
     private static final String SOURCE = "Source";
+    private static final String NAME = "name";
     private final Path docmFile;
     private final String assembly;
 
@@ -103,8 +105,8 @@ public class DOCMIndexer extends ClinicalIndexer {
     private Variant parseVariant(String line) throws IOException {
         Map<String, Object> map = (HashMap<String, Object>) new ObjectMapper().readValue(line, HashMap.class);
         if (assembly.equalsIgnoreCase((String) map.get(REFERENCE_VERSION))) {
-            Variant variant = new Variant((String) map.get(CHROMOSOME), Integer.valueOf((String) map.get(START)),
-                    (String) map.get(REFERENCE), (String) map.get(ALTERNATE));
+            Variant variant = new Variant((String) map.get(CHROMOSOME), (Integer) map.get(START),
+                    (String) map.get(REFERENCE), (String) map.get(VARIANT));
 
             VariantAnnotation variantAnnotation = parseVariantAnnotation(map);
             variant.setAnnotation(variantAnnotation);
@@ -133,13 +135,14 @@ public class DOCMIndexer extends ClinicalIndexer {
 
                 VariantClassification variantClassification = getVariantClassification((List<String>) diseaseMap.get(TAGS));
 
-                Property property = new Property(null, TAGS_IN_SOURCE_FILE, (String) diseaseMap.get(TAGS));
+                Property property = new Property(null, TAGS_IN_SOURCE_FILE,
+                        String.join(",", (List<String>) diseaseMap.get(TAGS)));
 
                 evidenceEntry = new EvidenceEntry(evidenceSource, null, null, URL_PREFIX + (String) map.get(HGVS),
                         null, null, null, Collections.singletonList(heritableTrait), genomicFeatureList,
                         variantClassification, null, null, null, null, null, null, null,
                         Collections.singletonList(property),
-                        Collections.singletonList((String) diseaseMap.get(PMID +  (String) diseaseMap.get(SOURCE_PUBMED_ID))));
+                        Collections.singletonList(PMID +  String.valueOf(diseaseMap.get(SOURCE_PUBMED_ID))));
 
                 evidenceEntryMap.put((String) diseaseMap.get(DISEASE), evidenceEntry);
             }
@@ -161,37 +164,38 @@ public class DOCMIndexer extends ClinicalIndexer {
                         }
                     }
 
-                    Drug drug = new Drug();
-                    List<String> rows = (List<String>) ((Map) metaMap.get(DRUG_INTERACTION_DATA)).get(ROWS);
-                    int idx = fields.indexOf(THERAPEUTIC_CONTEXT);
-                    if (idx > -1) {
-                        drug.setTherapeuticContext(rows.get(idx));
+                    for (List<String> drugInfoList : (List<List<String>>) ((Map) metaMap.get(DRUG_INTERACTION_DATA)).get(ROWS)) {
+                        Drug drug = new Drug();
+                        int idx = fields.indexOf(THERAPEUTIC_CONTEXT);
+                        if (idx > -1) {
+                            drug.setTherapeuticContext(drugInfoList.get(idx));
+                        }
+                        idx = fields.indexOf(PATHWAY);
+                        if (idx > -1) {
+                            drug.setPathway(drugInfoList.get(idx));
+                        }
+                        idx = fields.indexOf(EFFECT);
+                        if (idx > -1) {
+                            drug.setEffect(drugInfoList.get(idx));
+                        }
+                        idx = fields.indexOf(ASSOCIATION);
+                        if (idx > -1) {
+                            drug.setAssociation(drugInfoList.get(idx));
+                        }
+                        idx = fields.indexOf(STATUS);
+                        if (idx > -1) {
+                            drug.setStatus(drugInfoList.get(idx));
+                        }
+                        idx = fields.indexOf(EVIDENCE);
+                        if (idx > -1) {
+                            drug.setEvidence(drugInfoList.get(idx));
+                        }
+                        idx = fields.indexOf(SOURCE);
+                        if (idx > -1) {
+                            drug.setBibliography(Collections.singletonList(PMID + drugInfoList.get(idx)));
+                        }
+                        drugList.add(drug);
                     }
-                    idx = fields.indexOf(PATHWAY);
-                    if (idx > -1) {
-                        drug.setPathway(rows.get(idx));
-                    }
-                    idx = fields.indexOf(EFFECT);
-                    if (idx > -1) {
-                        drug.setEffect(rows.get(idx));
-                    }
-                    idx = fields.indexOf(ASSOCIATION);
-                    if (idx > -1) {
-                        drug.setAssociation(rows.get(idx));
-                    }
-                    idx = fields.indexOf(STATUS);
-                    if (idx > -1) {
-                        drug.setStatus(rows.get(idx));
-                    }
-                    idx = fields.indexOf(EVIDENCE);
-                    if (idx > -1) {
-                        drug.setEvidence(rows.get(idx));
-                    }
-                    idx = fields.indexOf(SOURCE);
-                    if (idx > -1) {
-                        drug.setBibliography(Collections.singletonList(PMID + rows.get(idx)));
-                    }
-                    drugList.add(drug);
                 } else {
                     logger.warn("Meta field found but no drug interaction data");
                     logger.warn("Variant: {}:{}:{}:{}", map.get("chromosome"), map.get("start"), map.get("reference"),
@@ -219,7 +223,7 @@ public class DOCMIndexer extends ClinicalIndexer {
             genomicFeatureList.add(createGeneGenomicFeature((String) map.get(GENE)));
         }
         if (map.containsKey(TRANSCRIPT)) {
-            String symbol = (String) map.get(TRANSCRIPT);
+            String symbol = (String) ((Map) map.get(TRANSCRIPT)).get(NAME);
             if (symbol.startsWith(ENST)) {
                 genomicFeatureList.add(new GenomicFeature(FeatureTypes.transcript, symbol, null));
             } else {
