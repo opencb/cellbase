@@ -35,6 +35,21 @@ class CellBaseClient(object):
         """Returns current configuration parameters"""
         return self._configuration.configuration
 
+    def get_versions(self, species, **options):
+        """Returns source version metadata, including source urls"""
+        # This particular REST endpoint follows the structure
+        # /{version}/category/{species}/resource
+        # as opposed to the classical CellBase REST endpoint
+        # /{version}/{species}/category/subcategory/query_id/resource
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species='meta',
+                       category=species,
+                       subcategory='versions',
+                       resource='',
+                       options=options)
+        return response
+
     def get(self, category, subcategory, resource, query_id=None, **options):
         """Creates the URL for querying the REST service"""
         response = get(host=self._configuration.host,
@@ -45,7 +60,6 @@ class CellBaseClient(object):
                        query_id=query_id,
                        resource=resource,
                        options=options)
-
         return response
 
     def get_gene_client(self):
