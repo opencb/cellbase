@@ -12,14 +12,17 @@ class CellBaseClient(object):
         self._transcript_client = None
         self._protein_client = None
         self._variation_client = None
+        self._xref_client = None
         self._genomic_region_client = None
         self._variant_client = None
+        self._genome_sequence_client = None
+        self._clinical_client = None
 
         # Setting up config params
         if config_client is not None:
             try:
                 assert isinstance(config_client, ConfigClient)
-            except:
+            except AssertionError:
                 msg = ('CellBaseClient configuration not properly set.' +
                        ' "pycellbase.config.ConfigClient" object is needed as' +
                        ' parameter')
@@ -28,7 +31,7 @@ class CellBaseClient(object):
         else:
             self._configuration = ConfigClient()
 
-    def get_config(self):
+    def get_configuration(self):
         """Returns current configuration parameters"""
         return self._configuration.configuration
 
@@ -69,6 +72,12 @@ class CellBaseClient(object):
             self._variation_client = crc.VariationClient(self._configuration)
         return self._variation_client
 
+    def get_xref_client(self):
+        """Creates the xref client"""
+        if self._xref_client is None:
+            self._xref_client = crc.XrefClient(self._configuration)
+        return self._xref_client
+
     def get_genomic_region_client(self):
         """Creates the genomic region client"""
         if self._genomic_region_client is None:
@@ -81,3 +90,16 @@ class CellBaseClient(object):
         if self._variant_client is None:
             self._variant_client = crc.VariantClient(self._configuration)
         return self._variant_client
+
+    def get_genome_sequence_client(self):
+        """Creates the genome sequence client"""
+        if self._genome_sequence_client is None:
+            self._genome_sequence_client = \
+                crc.GenomeSequenceClient(self._configuration)
+        return self._genome_sequence_client
+
+    def get_clinical_client(self):
+        """Creates the clinical client"""
+        if self._clinical_client is None:
+            self._clinical_client = crc.ClinicalClient(self._configuration)
+        return self._clinical_client

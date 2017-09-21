@@ -53,6 +53,13 @@ class _Feature(_ParentRestClient):
         return self._get('search', None, options)
 
 
+class _Genomic(_ParentRestClient):
+    """Queries the RESTful service for genomic data"""
+    def __init__(self, configuration, subcategory):
+        _category = 'genomic'
+        super(_Genomic, self).__init__(configuration, subcategory, _category)
+
+
 class GeneClient(_Feature):
     """Queries the RESTful service for gene data"""
     def __init__(self, configuration):
@@ -68,6 +75,7 @@ class GeneClient(_Feature):
         return self._get('clinical', query_id, options)
 
     def get_list(self, **options):
+        """Returns all gene Ensembl IDs"""
         return self._get('list', None, options)
 
     def get_protein(self, query_id, **options):
@@ -140,13 +148,42 @@ class VariationClient(_Feature):
         return self._get('consequence_types', None, options)
 
 
-class GenomicRegionClient(_ParentRestClient):
+class XrefClient(_Feature):
+    """Queries the RESTful service for variation data"""
+    def __init__(self, configuration):
+        _subcategory = 'id'
+        super(XrefClient, self).__init__(configuration, _subcategory)
+
+    def get_dbnames(self, **options):
+        """Returns a list of databases from which xref ids were collected"""
+        return self._get('dbnames', None, options)
+
+    def get_contains(self, query_id, **options):
+        """Returns gene HGNC symbols containing the given ID"""
+        return self._get('contains', query_id, options)
+
+    def get_gene(self, query_id, **options):
+        """Returns the genes for the given IDs"""
+        return self._get('gene', query_id, options)
+
+    def get_info(self, query_id, **options):
+        """Returns general information"""
+        return self._get('info', query_id, options)
+
+    def get_starts_with(self, query_id, **options):
+        """Returns gene HGNC symbols starting with the given ID"""
+        return self._get('starts_with', query_id, options)
+
+    def get_xref(self, query_id, **options):
+        """Returns all the external references related with the given ID"""
+        return self._get('xref', query_id, options)
+
+
+class GenomicRegionClient(_Genomic):
     """Queries the RESTful service for genomic region data"""
     def __init__(self, configuration):
-        _category = 'genomic'
         _subcategory = 'region'
-        super(GenomicRegionClient, self).__init__(configuration, _subcategory,
-                                                  _category)
+        super(GenomicRegionClient, self).__init__(configuration, _subcategory)
 
     def get_clinical(self, query_id, **options):
         """Returns clinical data of the genomic region"""
@@ -163,6 +200,10 @@ class GenomicRegionClient(_ParentRestClient):
     def get_regulatory(self, query_id, **options):
         """Returns the regulatory element present in the genomic region"""
         return self._get('regulatory', query_id, options)
+
+    def get_repeat(self, query_id, **options):
+        """Returns repeats present in the genomic region"""
+        return self._get('repeat', query_id, options)
 
     def get_sequence(self, query_id, **options):
         """Returns the genomic region sequence"""
@@ -182,13 +223,11 @@ class GenomicRegionClient(_ParentRestClient):
         return self._get('variation', query_id, options)
 
 
-class VariantClient(_ParentRestClient):
-    """Queries the RESTful service for genomic region data"""
+class VariantClient(_Genomic):
+    """Queries the RESTful service for variant data"""
     def __init__(self, configuration):
-        _category = 'genomic'
         _subcategory = 'variant'
-        super(VariantClient, self).__init__(configuration, _subcategory,
-                                            _category)
+        super(VariantClient, self).__init__(configuration, _subcategory)
 
     def get_annotation(self, query_id, **options):
         """Returns annotation data of the variant"""
@@ -197,3 +236,55 @@ class VariantClient(_ParentRestClient):
     def get_cadd(self, query_id, **options):
         """Returns cadd score of the variant"""
         return self._get('cadd', query_id, options)
+
+
+class GenomeSequenceClient(_Genomic):
+    """Queries the RESTful service for genomic sequence data"""
+    def __init__(self, configuration):
+        _subcategory = 'chromosome'
+        super(GenomeSequenceClient, self).__init__(configuration, _subcategory)
+
+    def get_list(self, **options):
+        """Returns chromosomes names"""
+        return self._get('list', None, options)
+
+    def search(self, **options):
+        """Searches for specific entries given a set of filters"""
+        return self._get('search', None, options)
+
+    def get_info(self, query_id, **options):
+        """Returns general information"""
+        return self._get('info', query_id, options)
+
+
+class ClinicalClient(_ParentRestClient):
+    """Queries the RESTful service for clinical data"""
+    def __init__(self, configuration):
+        _category = 'clinical'
+        _subcategory = 'variant'
+        super(ClinicalClient, self).__init__(configuration, _subcategory,
+                                             _category)
+
+    def get_allele_origin_labels(self, **options):
+        """Returns all available allele origin labels"""
+        return self._get('allele_origin_labels', None, options)
+
+    def get_clinsig_labels(self, **options):
+        """Returns all available clinical significance labels"""
+        return self._get('clinsig_labels', None, options)
+
+    def get_consistency_labels(self, **options):
+        """Returns all available review consistency labels"""
+        return self._get('consistency_labels', None, options)
+
+    def get_mode_inheritance_labels(self, **options):
+        """Returns all available mode of inheritance labels"""
+        return self._get('mode_inheritance_labels', None, options)
+
+    def search(self, **options):
+        """Searches for specific entries given a set of filters"""
+        return self._get('search', None, options)
+
+    def get_type(self, **options):
+        """Returns all available variant types"""
+        return self._get('type', None, options)
