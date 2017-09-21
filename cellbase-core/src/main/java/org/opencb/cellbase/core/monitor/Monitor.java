@@ -27,7 +27,7 @@ public class Monitor {
     private static final String REST = "rest";
     private static final String VERSION = "v4";  // TODO: CAREFUL hardcoded to v4
     private static final String META = "meta";
-    private static final String SERVICE_DETAILS = "serviceDetails";
+    private static final String SERVICE_DETAILS = "service_details";
     private static ObjectMapper jsonObjectMapper;
 
     WebTarget webTarget;
@@ -50,13 +50,18 @@ public class Monitor {
     public HealthStatus run() {
         HealthStatus healthStatus = new HealthStatus();
 
-        healthStatus.setApplicationDetails(getApplicationDetails());
-        healthStatus.setDependenciesStatus(getDependenciesStatus());
-        healthStatus.setApisStatus(getApisStatus());
+        healthStatus.setApplication(getApplicationDetails());
+        healthStatus.setDependencies(getDependenciesStatus());
+        healthStatus.setApis(getApisStatus());
         healthStatus.setInfrastructure(new Infrastructure(1, NONE));
-        healthStatus.setServiceStatus(new ServiceStatus(CELLBASE, CELLBASE_GEL_ZONE, serviceStatus));
+        healthStatus.setService(new ServiceStatus(CELLBASE, CELLBASE_GEL_ZONE, serviceStatus));
 
         return healthStatus;
+    }
+
+    private HealthStatus.DependenciesStatus getDependenciesStatus() {
+        
+        return null;
     }
 
     private HealthStatus.ApplicationDetails getApplicationDetails() {

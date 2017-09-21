@@ -27,6 +27,7 @@ import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
@@ -44,6 +45,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.opencb.commons.datastore.core.QueryOptions.*;
@@ -124,6 +126,8 @@ public class GenericRestWSServer implements IWSServer {
 
     protected static ObjectMapper jsonObjectMapper;
     protected static ObjectWriter jsonObjectWriter;
+    protected static final String serviceStartDate;
+    protected static final StopWatch uptime;
 
     protected long startTime;
     protected long endTime;
@@ -151,6 +155,10 @@ public class GenericRestWSServer implements IWSServer {
     private static final String OK = "ok";
 
     static {
+        serviceStartDate = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        uptime = new StopWatch();
+        uptime.start();
+
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
         logger.info("Static block, creating MongoDBAdapatorFactory");
         try {

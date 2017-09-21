@@ -1,24 +1,35 @@
 package org.opencb.cellbase.core.monitor;
 
+import java.util.Map;
+
 /**
  * Created by fjlopez on 20/09/17.
  */
 public class HealthStatus {
 
-    private ApplicationDetails applicationDetails;
+    private ApplicationDetails application;
+    private DependenciesStatus dependencies;
 
     public HealthStatus() {
     }
 
-    public ApplicationDetails getApplicationDetails() {
-        return applicationDetails;
+    public DependenciesStatus getDependencies() {
+        return dependencies;
     }
 
-    public void setApplicationDetails(ApplicationDetails applicationDetails) {
-        this.applicationDetails = applicationDetails;
+    public void setDependencies(DependenciesStatus dependencies) {
+        this.dependencies = dependencies;
     }
 
-    public class ApplicationDetails {
+    public ApplicationDetails getApplication() {
+        return application;
+    }
+
+    public void setApplication(ApplicationDetails application) {
+        this.application = application;
+    }
+
+    public static class ApplicationDetails {
 
         private String maintainer;
         private String server;
@@ -69,11 +80,13 @@ public class HealthStatus {
             this.version = version;
         }
 
-        private class Version {
+        public static class Version {
             private String tagName;
             private String commit;
 
-            public Version() {
+            public Version(String tagName, String commit) {
+                this.tagName = tagName;
+                this.commit = commit;
             }
 
             public String getTagName() {
@@ -90,6 +103,54 @@ public class HealthStatus {
 
             public void setCommit(String commit) {
                 this.commit = commit;
+            }
+        }
+    }
+
+    private class DependenciesStatus {
+        private Map<String, DatastoreStatus> mongodb;
+
+        public DependenciesStatus() {
+        }
+
+        public Map<String, DatastoreStatus> getMongodb() {
+            return mongodb;
+        }
+
+        public void setMongodb(Map<String, DatastoreStatus> mongodb) {
+            this.mongodb = mongodb;
+        }
+
+        private class DatastoreStatus {
+            private String responseTime;
+            private String role;
+            private String repset;
+
+            public DatastoreStatus() {
+            }
+
+            public String getResponseTime() {
+                return responseTime;
+            }
+
+            public void setResponseTime(String responseTime) {
+                this.responseTime = responseTime;
+            }
+
+            public String getRole() {
+                return role;
+            }
+
+            public void setRole(String role) {
+                this.role = role;
+            }
+
+            public String getRepset() {
+                return repset;
+            }
+
+            public void setRepset(String repset) {
+                this.repset = repset;
             }
         }
     }

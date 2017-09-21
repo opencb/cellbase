@@ -19,7 +19,6 @@ package org.opencb.cellbase.server.ws;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.collections.map.HashedMap;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
@@ -41,10 +40,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by imedina on 04/08/15.
@@ -58,6 +60,7 @@ public class MetaWSServer extends GenericRestWSServer {
     private static final String STATUS = "status";
     private static final String HEALTH = "health";
     private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
+    private static final String MAINTAINER_EMAIL = "javier.lopez@genomicsengland.co.uk";
 
     public MetaWSServer(@PathParam("version")
                         @ApiParam(name = "version", value = "Possible values: v3, v4",
@@ -190,6 +193,40 @@ public class MetaWSServer extends GenericRestWSServer {
 
         return createOkResponse(queryResult);
 
+    }
+
+    @GET
+    @Path("/service_details")
+    @ApiOperation(httpMethod = "GET", value = "Returns details of this service such as maintainer email, serviceStartDate,"
+            + " version, commit, etc.",
+            response = SpeciesProperties.class, responseContainer = "QueryResponse")
+    public Response serviceDetails() {
+        HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
+        applicationDetails.setMaintainer(MAINTAINER_EMAIL);
+        applicationDetails.setServer(getServerName());
+        applicationDetails.setStarted(serviceStartDate);
+        applicationDetails.setUptime(TimeUnit.NANOSECONDS.toMinutes(uptime.getNanoTime()) + " minutes");
+        applicationDetails.setVersion(
+                new HealthStatus.ApplicationDetails.Version(GitRepositoryState.get().getBuildVersion(),
+                        GitRepositoryState.get().getCommitId().substring(0, 8)));
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId("service_details");
+        queryResult.setDbTime(0);
+        queryResult.setResult(Collections.singletonList(applicationDetails));
+
+        return createOkResponse(queryResult);
+
+    }
+
+    private String getServerName() {
+        try {
+            InetAddress addr;
+            addr = InetAddress.getLocalHost();
+            return addr.getHostName();
+        } catch (UnknownHostException ex) {
+            logger.warn("Hostname can not be resolved");
+            return null;
+        }
     }
 
 
