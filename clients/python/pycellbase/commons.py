@@ -1,3 +1,4 @@
+import sys
 import requests
 import threading
 import itertools
@@ -231,3 +232,12 @@ def get(host, version, species, category, subcategory, resource,
     final_response = list(itertools.chain.from_iterable(res))
 
     return final_response
+
+
+def deprecated(func):
+    """Prints a warning for functions marked as deprecated"""
+    def new_func(*args, **kwargs):
+        msg = 'Calling to deprecated function: "{}"\n'.format(func.__name__)
+        sys.stderr.write(msg)
+        return func(*args, **kwargs)
+    return new_func

@@ -1,4 +1,4 @@
-from pycellbase.commons import get
+from pycellbase.commons import get, deprecated
 
 
 class _ParentRestClient(object):
@@ -20,10 +20,6 @@ class _ParentRestClient(object):
                        options=options)
 
         return response
-
-    def get_help(self):
-        """Returns help for a specific element"""
-        return self._get('help')
 
     def get_model(self):
         """Returns the model for a specific element"""
@@ -70,6 +66,11 @@ class GeneClient(_Feature):
         """Returns the different gene biotypes"""
         return self._get('biotype', None, options)
 
+    def get_group(self, **options):
+        """Returns the different gene biotypes"""
+        return self._get('group', None, options)
+
+    @deprecated
     def get_clinical(self, query_id, **options):
         """Returns clinical data of the gene"""
         return self._get('clinical', query_id, options)
@@ -78,21 +79,25 @@ class GeneClient(_Feature):
         """Returns all gene Ensembl IDs"""
         return self._get('list', None, options)
 
+    def get_ppi(self, query_id, **options):
+        """Returns the protein-protein interactions for this gene"""
+        return self._get('ppi', query_id, options)
+
     def get_protein(self, query_id, **options):
         """Returns the proteins codified by the gene"""
         return self._get('protein', query_id, options)
 
-    def get_transcript(self, query_id, **options):
-        """Returns the transcripts codified by the gene"""
-        return self._get('transcript', query_id, options)
+    def get_snp(self, query_id, **options):
+        """Returns the SNPs present in the gene"""
+        return self._get('snp', query_id, options)
 
     def get_tfbs(self, query_id, **options):
         """Returns the transcription factor binding sites (TFBSs) of the gene"""
         return self._get('tfbs', query_id, options)
 
-    def get_snp(self, query_id, **options):
-        """Returns the SNPs present in the gene"""
-        return self._get('snp', query_id, options)
+    def get_transcript(self, query_id, **options):
+        """Returns the transcripts codified by the gene"""
+        return self._get('transcript', query_id, options)
 
 
 class ProteinClient(_Feature):
@@ -165,10 +170,6 @@ class XrefClient(_Feature):
     def get_gene(self, query_id, **options):
         """Returns the genes for the given IDs"""
         return self._get('gene', query_id, options)
-
-    def get_info(self, query_id, **options):
-        """Returns general information"""
-        return self._get('info', query_id, options)
 
     def get_starts_with(self, query_id, **options):
         """Returns gene HGNC symbols starting with the given ID"""
