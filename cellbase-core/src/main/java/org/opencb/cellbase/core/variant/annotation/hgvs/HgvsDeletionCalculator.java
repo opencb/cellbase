@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
+import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
@@ -8,6 +9,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -49,8 +51,9 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
      */
     private String calculateProteinHgvs(Variant variant, Transcript transcript) {
         // Check if protein HGVS can be calculated
-        if (isCoding(transcript) && onlySpansCodingSequence(variant)) {
-            buildingComponents.setKind(variant.getReference().length() % 3 == 0 ? Kind.INFRAME : Kind.FRAMESHIFT);
+        if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
+            buildingComponents.setKind(variant.getReference().length() % 3 == 0
+                    ? BuildingComponents.Kind.INFRAME : BuildingComponents.Kind.FRAMESHIFT);
             buildingComponents.setProteinId(transcript.getProteinID());
             buildingComponents.setReference(getProteinReference());
             // Overwrites start; it'll never be used again
@@ -60,6 +63,29 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         }
 
         return null;
+    }
+
+    private String getProteinReference() {
+
+        return null;
+    }
+
+    private boolean onlySpansCodingSequence(Variant variant, Transcript transcript) {
+        if (buildingComponents.getCdnaStart().getReferencePosition() == 0  // Start falls within an exon
+                && buildingComponents.getCdnaEnd().getReferencePosition() == 0) { // End falls within an exon
+
+            List<Exon> exonList = transcript.getExons();
+            // Get the closest exon to the variant start, measured as the exon that presents the closest start OR end
+            // coordinate to the position
+            Exon nearestExon = exonList.stream().min(Comparator.comparing(exon ->
+                    Math.min(Math.abs(variant.getStart() - exon.getStart()),
+                            Math.abs(variant.getStart() - exon.getEnd())))).get();
+
+            // Check if the same exon contains the variant end
+            return variant.getEnd() >= nearestExon.getStart() && variant.getEnd() <= nearestExon.getEnd();
+
+        }
+        return false;
     }
 
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {

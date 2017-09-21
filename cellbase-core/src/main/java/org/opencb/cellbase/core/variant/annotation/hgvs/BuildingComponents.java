@@ -9,13 +9,14 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
  */
 public class BuildingComponents {
 
-    enum Kind { CODING, NON_CODING }
+    enum Kind { CODING, NON_CODING, INFRAME, FRAMESHIFT }
 
     // HGVS string parts
     private String prefix;
     private String chromosome;
-    private String transcriptId;
     private String geneId;
+    private String transcriptId;
+    private String proteinId;
     private Kind kind;
     private String mutationType;
     private int start;
@@ -47,6 +48,14 @@ public class BuildingComponents {
         this.chromosome = chromosome;
     }
 
+    public String getGeneId() {
+        return geneId;
+    }
+
+    public void setGeneId(String geneId) {
+        this.geneId = geneId;
+    }
+
     public String getTranscriptId() {
         return transcriptId;
     }
@@ -55,12 +64,12 @@ public class BuildingComponents {
         this.transcriptId = transcriptId;
     }
 
-    public String getGeneId() {
-        return geneId;
+    public String getProteinId() {
+        return proteinId;
     }
 
-    public void setGeneId(String geneId) {
-        this.geneId = geneId;
+    public void setProteinId(String proteinId) {
+        this.proteinId = proteinId;
     }
 
     public Kind getKind() {
