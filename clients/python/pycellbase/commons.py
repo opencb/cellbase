@@ -1,4 +1,5 @@
 import sys
+import warnings
 import requests
 import threading
 import itertools
@@ -237,7 +238,9 @@ def get(host, version, species, category, subcategory, resource,
 def deprecated(func):
     """Prints a warning for functions marked as deprecated"""
     def new_func(*args, **kwargs):
-        msg = 'Calling to deprecated function: "{}"\n'.format(func.__name__)
-        sys.stderr.write(msg)
+        warnings.simplefilter('always', DeprecationWarning) #turn off filter
+        warnings.warn('Call to deprecated function "{}".'.format(func.__name__),
+                      category=DeprecationWarning, stacklevel=2)
+        warnings.simplefilter('default', DeprecationWarning) #reset filter
         return func(*args, **kwargs)
     return new_func
