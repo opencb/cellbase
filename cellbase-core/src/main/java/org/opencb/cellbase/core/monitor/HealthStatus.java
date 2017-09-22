@@ -107,51 +107,68 @@ public class HealthStatus {
         }
     }
 
-    private class DependenciesStatus {
-        private Map<String, DatastoreStatus> mongodb;
+    public static class DependenciesStatus {
+
+        private DatastoreDependenciesStatus datastores;
 
         public DependenciesStatus() {
         }
 
-        public Map<String, DatastoreStatus> getMongodb() {
-            return mongodb;
+        public DatastoreDependenciesStatus getDatastores() {
+            return datastores;
         }
 
-        public void setMongodb(Map<String, DatastoreStatus> mongodb) {
-            this.mongodb = mongodb;
+        public void setDatastores(DatastoreDependenciesStatus datastores) {
+            this.datastores = datastores;
         }
 
-        private class DatastoreStatus {
-            private String responseTime;
-            private String role;
-            private String repset;
+        public static class DatastoreDependenciesStatus {
+            private Map<String, DatastoreStatus> mongodb;
 
-            public DatastoreStatus() {
+            public DatastoreDependenciesStatus() {
             }
 
-            public String getResponseTime() {
-                return responseTime;
+            public Map<String, DatastoreStatus> getMongodb() {
+                return mongodb;
             }
 
-            public void setResponseTime(String responseTime) {
-                this.responseTime = responseTime;
+            public void setMongodb(Map<String, DatastoreStatus> mongodb) {
+                this.mongodb = mongodb;
             }
 
-            public String getRole() {
-                return role;
-            }
+            public static class DatastoreStatus {
+                private String responseTime;
+                private String role;
+                private String repset;
 
-            public void setRole(String role) {
-                this.role = role;
-            }
+                public DatastoreStatus() {
+                }
 
-            public String getRepset() {
-                return repset;
-            }
+                public String getResponseTime() {
+                    return responseTime;
+                }
 
-            public void setRepset(String repset) {
-                this.repset = repset;
+                public void setResponseTime(String responseTime) {
+                    this.responseTime = responseTime;
+                }
+
+                public String getRole() {
+                    return role;
+                }
+
+                public void setRole(String role) {
+                    this.role = role;
+                }
+
+                public String getRepset() {
+                    return repset;
+                }
+
+                public void setRepset(String repset) {
+                    this.repset = repset;
+                }
             }
         }
+
     }
 }

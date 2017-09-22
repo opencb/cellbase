@@ -21,6 +21,7 @@ import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -28,17 +29,24 @@ import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
     private static final String SERVER_ADDRESS = "serverAddress";
+    private static final String MEMBERS = "members";
+    private static final String SET = "set";
+    private static final String STATE_STR = "stateStr";
+    private static final String NAME = "name";
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
     private MongoDataStoreManager mongoDataStoreManager;
+    private static Map<String, MongoDataStoreManager> memberDataStoreManagerMap = new HashMap<>();
 //    private static Map<String, MongoDataStore> mongoDatastoreFactory;
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
@@ -173,6 +181,38 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     @Override
     public void close() {
 
+    }
+
+    @Override
+    public Map<String, HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> getDatabaseStatus(
+            String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        Document statusDocument = mongoDatastore.getReplSetStatus();
+
+        for (Map memberStatus : (List<Map>) statusDocument.get(MEMBERS)) {
+            HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                    = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            datastoreStatus.setRepset((String) statusDocument.get(SET));
+            datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
+            datastoreStatus.setResponseTime(getResponseTime((String) memberStatus.get(NAME)));
+
+        }
+    }
+
+    private String getResponseTime(String memberName) {
+        MongoDataStoreManager dataStoreManager = getMemberDataStoreManager(memberName);
+        MongoDatastore mongoDatastore = dataStoreManager.get(database, mongoDBConfiguration);
+
+        return mongoDatastore.getResponseTime();
+    }
+
+    private MongoDataStoreManager getMemberDataStoreManager(String memberName) {
+
+        if (!memberDataStoreManagerMap.containsKey(memberName)) {
+            CREATE NEW DATASTOREMANAGER
+            memberDataStoreManagerMap.put(memberName, dataStoreManager);
+        }
+        return memberDataStoreManagerMap.get(memberName);
     }
 
 

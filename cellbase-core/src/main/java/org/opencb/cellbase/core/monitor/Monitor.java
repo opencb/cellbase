@@ -12,6 +12,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by fjlopez on 20/09/17.
@@ -43,7 +45,7 @@ public class Monitor {
 
     public Monitor(String host, DBAdaptorFactory dbAdaptorFactory) {
         Client client = ClientBuilder.newClient();
-        webTarget = client.target(URI.create(host));
+        this.webTarget = client.target(URI.create(host));
         this.dbAdaptorFactory = dbAdaptorFactory;
     }
 
@@ -60,8 +62,13 @@ public class Monitor {
     }
 
     private HealthStatus.DependenciesStatus getDependenciesStatus() {
-        
-        return null;
+        HealthStatus.DependenciesStatus.DatastoreDependenciesStatus datastores
+                = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus();
+        datastores.setMongodb(dbAdaptorFactory.getDatabaseStatus());
+        HealthStatus.DependenciesStatus dependenciesStatus = new HealthStatus.DependenciesStatus();
+        dependenciesStatus.setDatastores(datastores);
+
+        return dependenciesStatus;
     }
 
     private HealthStatus.ApplicationDetails getApplicationDetails() {
