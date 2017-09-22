@@ -12,6 +12,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,7 +24,7 @@ import static org.junit.Assert.*;
 @Ignore
 public class ClinicalLegacyMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
-    public ClinicalLegacyMongoDBAdaptorTest() { super(); }
+    public ClinicalLegacyMongoDBAdaptorTest() throws IOException { super(); }
 
     @Test
     public void testNativeGet() throws Exception {

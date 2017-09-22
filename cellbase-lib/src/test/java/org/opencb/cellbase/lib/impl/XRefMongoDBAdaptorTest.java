@@ -7,6 +7,7 @@ import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,9 @@ import static org.junit.Assert.*;
  * Created by fjlopez on 09/05/16.
  */
 public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+    public XRefMongoDBAdaptorTest() throws IOException {
+    }
+
     @Test
     public void contains() throws Exception {
         XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor("hsapiens", "GRCh37");

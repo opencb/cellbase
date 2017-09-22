@@ -160,7 +160,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         logger.debug("Chunk sizes '{}' used for collection '{}'", Arrays.toString(chunkSizes), collectionName);
 
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        dbAdaptor = getDBAdaptor(data);
+        // This is not currently used and should no longer be used. To be soon removed
+//        dbAdaptor = getDBAdaptor(data);
     }
 
     @Deprecated

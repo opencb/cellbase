@@ -9,6 +9,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +22,9 @@ import static org.junit.Assert.*;
  * Created by fjlopez on 27/04/16.
  */
 public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+    public TranscriptMongoDBAdaptorTest() throws IOException {
+    }
+
     @Test
     public void nativeGet() throws Exception {
 

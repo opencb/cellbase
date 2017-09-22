@@ -14,7 +14,12 @@ import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,13 +38,10 @@ public class GenericMongoDBAdaptorTest {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public GenericMongoDBAdaptorTest() {
+    public GenericMongoDBAdaptorTest() throws IOException {
 
-        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-        DatabaseCredentials credentials = new DatabaseCredentials(LOCALHOST, StringUtils.EMPTY, StringUtils.EMPTY,
-                null);
-        Databases databases = new Databases(credentials, null);
-        cellBaseConfiguration.setDatabases(databases);
+        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
+                .load(GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
     }

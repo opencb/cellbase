@@ -33,11 +33,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
+    public ClinicalMongoDBAdaptorTest() throws IOException {
+    }
+
     @Before
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
-                .getResource("/clinicalVariant/clinical_variants.full.test.json.gz").toURI());
+                .getResource("/clinical_variants.full.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
     }
 
@@ -119,7 +122,6 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     private boolean containsAccession(QueryResult<Variant> queryResult1, String accession) {
-        // FIXME: commented to enable compiling for priesgo. Must be uncommented and fixed
         boolean found = false;
         int i = 0;
         while (i < queryResult1.getNumResults() && !found) {

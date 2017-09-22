@@ -29,6 +29,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -37,6 +38,8 @@ import static org.junit.Assert.*;
  * Created by imedina on 12/02/16.
  */
 public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+    public VariantMongoDBAdaptorTest() throws IOException {
+    }
 
 //    private static DBAdaptorFactory dbAdaptorFactory;
 
@@ -44,7 +47,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //    @Test
 //    public VariantMongoDBAdaptorTest() {
 //        try {
-//            Path inputPath = Paths.get(getClass().getResource("/configuration.json").toURI());
+//            Path inputPath = Paths.get(getClass().getResource("/configuration.test.json").toURI());
 //            CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(new FileInputStream(inputPath.toFile()));
 //            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
 //        } catch (URISyntaxException | IOException e) {
