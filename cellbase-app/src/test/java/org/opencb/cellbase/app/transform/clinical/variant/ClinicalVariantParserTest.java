@@ -8,8 +8,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.EvidenceEntry;
-import org.opencb.biodata.models.variant.avro.VariantAvro;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -18,10 +17,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static junit.framework.Assert.assertNull;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,6 +31,9 @@ import static org.junit.Assert.assertThat;
  */
 @Ignore
 public class ClinicalVariantParserTest {
+    private static final String SYMBOL = "symbol";
+    private static final String DOCM = "docm";
+
     @Test
     public void parse() throws Exception {
         Path clinicalVariantFolder = Paths.get(getClass().getResource("/clinicalVariant").toURI());
@@ -42,12 +44,58 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> variantList = loadSerializedVariants("/tmp/clinical_variant.json.gz");
-        assertEquals(8, variantList.size());
+        assertEquals(11, variantList.size());
 
-        Variant variant = getVariantByAccession(variantList, "COSM1193237");
+        Variant variant = getVariantByVariant(variantList,
+                new Variant("1", 11169361, "C", "G"));
+        assertNotNull(variant);
+        EvidenceEntry checkEvidenceEntry = getEvidenceEntryBySource(variant.getAnnotation().getTraitAssociation(), DOCM);
+        assertNotNull(checkEvidenceEntry);
+        assertThat(checkEvidenceEntry.getGenomicFeatures().stream()
+                        .map(genomicFeature -> genomicFeature.getXrefs() != null ?
+                                genomicFeature.getXrefs().get(SYMBOL) : null).collect(Collectors.toList()),
+                CoreMatchers.hasItems("MTOR"));
+        assertThat(checkEvidenceEntry.getGenomicFeatures().stream()
+                        .map(genomicFeature -> genomicFeature.getEnsemblId()).collect(Collectors.toList()),
+                CoreMatchers.hasItems("ENST00000361445"));
+        assertEquals(1, checkEvidenceEntry.getHeritableTraits().size());
+        assertEquals("renal carcinoma", checkEvidenceEntry.getHeritableTraits().get(0).getTrait());
+        assertEquals(ClinicalSignificance.likely_pathogenic,
+                checkEvidenceEntry.getVariantClassification().getClinicalSignificance());
+        assertEquals(1, variant.getAnnotation().getDrugs().size());
+        assertEquals(new Drug("rapamycin", "activation", "gain-of-function",
+                null, "preclinical", "emerging", Collections.singletonList("PMID:24631838")),
+                variant.getAnnotation().getDrugs().get(0));
+
+        variant = getVariantByVariant(variantList,
+                new Variant("1", 11169375, "A", "C"));
+        assertNotNull(variant);
+        assertEquals(4, variant.getAnnotation().getTraitAssociation().size());
+        assertThat(getAllGeneSymbols(variant.getAnnotation().getTraitAssociation(), DOCM),
+                CoreMatchers.hasItems("MTOR"));
+        assertThat(getAllEnsemblIds(variant.getAnnotation().getTraitAssociation(), DOCM),
+                CoreMatchers.hasItems("ENST00000361445"));
+        assertThat(getAllTraitNames(variant.getAnnotation().getTraitAssociation(), DOCM),
+                CoreMatchers.hasItems("breast cancer", "uterine corpus endometrial carcinoma",
+                        "gastric adenocarcinoma", "renal clear cell carcinoma"));
+
+        variant = getVariantByVariant(variantList,
+                new Variant("1", 11169377, "T", "A"));
+        assertNotNull(variant);
+        assertEquals(4, variant.getAnnotation().getTraitAssociation().size());
+        assertThat(getAllGeneSymbols(variant.getAnnotation().getTraitAssociation(), DOCM),
+                CoreMatchers.hasItems("MTOR"));
+        assertThat(getAllEnsemblIds(variant.getAnnotation().getTraitAssociation(), DOCM),
+                CoreMatchers.hasItems("ENST00000361445"));
+        assertThat(getAllTraitNames(variant.getAnnotation().getTraitAssociation(), DOCM),
+                CoreMatchers.hasItems("gastric adenocarcinoma", "renal clear cell carcinoma", "breast cancer",
+                        "uterine corpus endometrial carcinoma"));
+
+        variant = getVariantByAccession(variantList, "COSM1193237");
         assertNotNull(variant);
         assertThat(variant.getAnnotation().getTraitAssociation().stream()
-                .map(evidenceEntry -> evidenceEntry.getId()).collect(Collectors.toList()),
+                .map(evidenceEntry -> evidenceEntry.getId() != null ? evidenceEntry.getId() : null)
+                        .collect(Collectors.toList()),
                 CoreMatchers.hasItems("RCV000148505"));
 
         variant = getVariantByAccession(variantList, "RCV000148485");
@@ -96,11 +144,69 @@ public class ClinicalVariantParserTest {
 
     }
 
+    private Set<String> getAllTraitNames(List<EvidenceEntry> evidenceEntryList, String source) {
+        Set<String> traitNameSet = new HashSet<>(evidenceEntryList.size());
+        for (EvidenceEntry evidenceEntry : evidenceEntryList) {
+            if (source.equals(evidenceEntry.getSource().getName())) {
+                traitNameSet.addAll(evidenceEntry.getHeritableTraits().stream()
+                        .map(heritableTrait -> heritableTrait.getTrait()).collect(Collectors.toSet()));
+            }
+        }
+        return traitNameSet;
+    }
+
+    private Set<String> getAllEnsemblIds(List<EvidenceEntry> evidenceEntryList, String source) {
+        Set<String> ensemblIdSet = new HashSet<>(evidenceEntryList.size());
+        for (EvidenceEntry evidenceEntry : evidenceEntryList) {
+            if (source.equals(evidenceEntry.getSource().getName())) {
+                ensemblIdSet.addAll(evidenceEntry.getGenomicFeatures().stream()
+                        .map(genomicFeature -> genomicFeature.getEnsemblId()).collect(Collectors.toSet()));
+            }
+        }
+        return ensemblIdSet;
+
+    }
+
+    private Set<String> getAllGeneSymbols(List<EvidenceEntry> evidenceEntryList, String source) {
+        Set<String> geneSymbolSet = new HashSet<>(evidenceEntryList.size());
+        for (EvidenceEntry evidenceEntry : evidenceEntryList) {
+            if (source.equals(evidenceEntry.getSource().getName())) {
+                geneSymbolSet.addAll(evidenceEntry.getGenomicFeatures().stream()
+                                .map(genomicFeature -> genomicFeature.getXrefs() != null ?
+                                        genomicFeature.getXrefs().get(SYMBOL) : null).collect(Collectors.toSet()));
+            }
+        }
+        return geneSymbolSet;
+    }
+
+    private EvidenceEntry getEvidenceEntryBySource(List<EvidenceEntry> evidenceEntryList, String sourceName) {
+        for (EvidenceEntry evidenceEntry : evidenceEntryList) {
+            if (sourceName.equals(evidenceEntry.getSource().getName())) {
+                return evidenceEntry;
+            }
+        }
+        return null;
+    }
+
+    private Variant getVariantByVariant(List<Variant> variantList, Variant variant) {
+        for (Variant variant1 : variantList) {
+            if (variant.getChromosome().equals(variant1.getChromosome())
+                    && variant.getStart().equals(variant1.getStart())
+                    && variant.getReference().equals(variant1.getReference())
+                    && variant.getAlternate().equals(variant1.getAlternate())) {
+                return variant1;
+            }
+        }
+        return null;
+    }
+
     private Variant getVariantByAccession(List<Variant> variantList, String accession) {
         for (Variant variant : variantList) {
             if (variant.getAnnotation().getTraitAssociation() != null) {
                 for (EvidenceEntry evidenceEntry : variant.getAnnotation().getTraitAssociation()) {
-                    if (evidenceEntry.getId().equals(accession)) {
+                    // DOCM does not provide IDs
+                    if (evidenceEntry.getId() != null
+                    && evidenceEntry.getId().equals(accession)) {
                         return variant;
                     }
                 }

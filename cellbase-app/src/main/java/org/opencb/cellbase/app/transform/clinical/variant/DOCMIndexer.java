@@ -98,7 +98,21 @@ public class DOCMIndexer extends ClinicalIndexer {
                 variant.getReference(), variant.getAlternate()).getBytes();
         VariantAnnotation variantAnnotation = getVariantAnnotation(key);
 //        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+
+        // Add EvidenceEntry objects
         variantAnnotation.getTraitAssociation().addAll(variant.getAnnotation().getTraitAssociation());
+
+        // Check if drug info is available
+        if (variant.getAnnotation().getDrugs() != null && !variant.getAnnotation().getDrugs().isEmpty()) {
+            // Drug info is stored at the VariantAnnotation root
+            if (variantAnnotation.getDrugs() == null) {
+                variantAnnotation.setDrugs(variant.getAnnotation().getDrugs());
+            } else {
+                variantAnnotation.getDrugs().addAll(variant.getAnnotation().getDrugs());
+            }
+
+        }
+
         rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
