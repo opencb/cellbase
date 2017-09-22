@@ -58,11 +58,31 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                     ? BuildingComponents.Kind.INFRAME : BuildingComponents.Kind.FRAMESHIFT);
             buildingComponents.setProteinId(transcript.getProteinID());
             setProteinLocationAndAminoacid(variant, transcript);
+            proteinHgvsNormalize(transcript.getProteinSequence());
 
             return formatProteinString(buildingComponents);
         }
 
         return null;
+    }
+
+    private String proteinHgvsNormalize(String sequence) {
+        // Create normalizedVariant and justify sequence to the right/left as appropriate
+        // This is likely to be misleading
+        // We are storing aa position within a Variant object. This is just a technical issue to be able to call the
+        // same "justify" method as for the transcript hgvs
+        Variant normalizedVariant = new Variant();
+        normalizedVariant.setStart(buildingComponents.getStart());
+        normalizedVariant.setEnd(buildingComponents.getEnd());
+
+        // startOffset must point to the position right before the actual variant start, since that's the position that
+        // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
+        // the position right after the actual variant end.
+        justify(normalizedVariant, normalizedVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
+                buildingComponents.getEnd() -1 - 1,
+                normalizedVariant.getReference(), sequence, transcript.getStrand());
+
+        return DEL;
     }
 
     private void setProteinLocationAndAminoacid(Variant variant, Transcript transcript) {
@@ -81,6 +101,10 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
         buildingComponents.setStart(((cdsVariantStart - 1) / 3) + 1);
+
+        int cdnaVariantEnd = buildingComponents.getCdnaEnd().getOffset() + cdnaCodingStart;
+        int cdsVariantEnd = cdnaVariantEnd - cdnaCodingStart + 1;
+        buildingComponents.setEnd(((cdsVariantEnd - 1) / 3) + 1);
     }
 
     private int getFirstCdsPhase(Transcript transcript) {
@@ -112,7 +136,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
         // Additional normalization required for insertions
         Variant normalizedVariant = new Variant();
-        String mutationType = hgvsNormalize(variant, transcript, normalizedVariant);
+        String mutationType = transcriptHgvsNormalize(variant, transcript, normalizedVariant);
 
         // Use cDNA coordinates.
         buildingComponents.setKind(isCoding(transcript) ? BuildingComponents.Kind.CODING : BuildingComponents.Kind.NON_CODING);
@@ -152,7 +176,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         return buildingComponents.getMutationType() + buildingComponents.getReference();
     }
 
-    private String hgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {
+    private String transcriptHgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {
         // Get genomic sequence around the lesion.
         int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
         int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
