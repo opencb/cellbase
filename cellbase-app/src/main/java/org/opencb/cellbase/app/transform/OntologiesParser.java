@@ -1,9 +1,7 @@
 package org.opencb.cellbase.app.transform;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.rdf.model.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 
@@ -41,15 +39,25 @@ public class OntologiesParser extends CellBaseParser {
         FileReader fr;
         f = new File(filePath.toString());
         fr = new FileReader(f);
-        Model model = ModelFactory.createDefaultModel();
-        model.read(fr, "RDFXML");
-        StmtIterator iter;
-        Statement statement;
-        iter = model.listStatements();
-        while (iter.hasNext()) {
-            statement = iter.next();
-            int a = 1;
-        }
+        logger.info("Creating ontology model...");
+        Model model = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
+        logger.info("Parsing file into ontology model");
+        model.read(fr, null);
+
+        NodeIterator nodeIterator = model.listObjects();
+        RDFNode rdfNode = nodeIterator.next();
+        logger.info(rdfNode.asResource().getLocalName());
+//        logger.info(rdfNode.asResource().getId().toString());
+//        logger.info(rdfNode.asResource().getNameSpace());
+        logger.info(rdfNode.asResource().getProperty(model.createProperty("id")).getString());
+
+
+//        NodeIterator nodeIterator = model.listObjects();
+
+//        while (iter.hasNext()) {
+//            statement = iter.next();
+//            int a = 1;
+//        }
 
     }
 }
