@@ -4,6 +4,7 @@ import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class HgvsDeletionCalculator extends HgvsCalculator {
 
     private static final String DEL = "del";
+    private static final String POSITIVE = "+";
     private BuildingComponents buildingComponents;
 
 
@@ -55,9 +57,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             buildingComponents.setKind(variant.getReference().length() % 3 == 0
                     ? BuildingComponents.Kind.INFRAME : BuildingComponents.Kind.FRAMESHIFT);
             buildingComponents.setProteinId(transcript.getProteinID());
-            buildingComponents.setReference(getProteinReference());
-            // Overwrites start; it'll never be used again
-            buildingComponents.setStart(buildingComponents.getCdnaStart().getReferencePosition() / 3);
+            setProteinLocationAndAminoacid(variant, transcript);
 
             return formatProteinString(buildingComponents);
         }
@@ -65,9 +65,30 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         return null;
     }
 
-    private String getProteinReference() {
+    private void setProteinLocationAndAminoacid(Variant variant, Transcript transcript) {
+        int cdnaCodingStart = transcript.getCdnaCodingStart();
+        // What buildingComponents.cdnaStart.offset really stores is the cdsStart
+        int cdnaVariantPosition = buildingComponents.getCdnaStart().getOffset() + cdnaCodingStart;
+        if (transcript.unconfirmedStart()) {
+            cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
+        }
+        int variantPhaseShift = (cdnaVariantPosition - cdnaCodingStart) % 3;
+        int modifiedCodonStart = cdnaVariantPosition - variantPhaseShift;
 
-        return null;
+        // -1 and +2 because of base 0 String indexing
+        String referenceCodon = transcript.getcDnaSequence().substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
+        buildingComponents.setReference(VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"), referenceCodon));
+
+        int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
+        buildingComponents.setStart(((cdsVariantStart - 1) / 3) + 1);
+    }
+
+    private int getFirstCdsPhase(Transcript transcript) {
+        if (transcript.getStrand().equals(POSITIVE)) {
+            transcript.getExons().get(0).getPhase();
+        } else {
+            transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
+        }
     }
 
     private boolean onlySpansCodingSequence(Variant variant, Transcript transcript) {
