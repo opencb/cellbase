@@ -152,7 +152,7 @@ A custom configuration can also be passed as a dictionary:
     >>> from pycellbase.cbconfig import ConfigClient
     >>> from pycellbase.cbclient import CellBaseClient
 
-    >>> custom_config = {'hosts': ['bioinfo.hpc.cam.ac.uk:80/cellbase'], 'version': 'v4', 'species': 'hsapiens'}
+    >>> custom_config = {'rest': {'hosts': ['bioinfo.hpc.cam.ac.uk:80/cellbase']}, 'version': 'v4', 'species': 'hsapiens'}
     >>> cc = ConfigClient(custom_config)
     >>> cbc = CellBaseClient(cc)
 
