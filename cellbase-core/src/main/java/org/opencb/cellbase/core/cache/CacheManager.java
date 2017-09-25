@@ -29,6 +29,7 @@ public class CacheManager {
     private CellBaseConfiguration cellBaseConfiguration;
     private Config redissonConfig;
     private RedissonClient redissonClient;
+    private CacheProperties cache;
     private boolean redisState;
 
     public CacheManager() {
@@ -36,24 +37,16 @@ public class CacheManager {
 
     public CacheManager(CellBaseConfiguration configuration) {
 
-        CacheProperties cache;
-
         if (configuration != null && configuration.getCache() != null) {
             this.cellBaseConfiguration = configuration;
             cache = configuration.getCache();
             redissonConfig = new Config();
             redisState = true;
-
             String host = (StringUtils.isNotEmpty(cache.getHost()))
-                    ? cache.getHost()
-                    : CacheProperties.DEFAULT_HOST;
+                    ? cache.getHost() : CacheProperties.DEFAULT_HOST;
             redissonConfig.useSingleServer().setAddress("redis://" + host);
-
             String codec = (StringUtils.isNotEmpty(cache.getSerialization()))
-                    ? cache.getSerialization()
-                    : CacheProperties.DEFAULT_SERIALIZATION;
-
-
+                    ? cache.getSerialization() : CacheProperties.DEFAULT_SERIALIZATION;
             if ("Kryo".equalsIgnoreCase(codec)) {
                 redissonConfig.setCodec(new KryoCodec());
             } else if ("JSON".equalsIgnoreCase(codec)) {
@@ -61,7 +54,6 @@ public class CacheManager {
             }
         }
     }
-
 
     public <T> QueryResult<T> get(String key, Class<T> clazz) {
 
@@ -71,9 +63,7 @@ public class CacheManager {
             redissonClient = getRedissonClient();
             RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
             Map<Integer, Map<String, Object>> result = new HashMap<Integer, Map<String, Object>>();
-
             Set<Integer> set = new HashSet<Integer>(Arrays.asList(0));
-
             try {
                 result = map.getAll(set);
             } catch (RedisConnectionException e) {
@@ -81,7 +71,6 @@ public class CacheManager {
                 queryResult.setWarningMsg("Unable to connect to Redis Cache, Please query WITHOUT Cache (Falling back to Database)");
                 return queryResult;
             }
-
             if (!result.isEmpty()) {
                 Object resultMap = result.get(0).get("result");
                 queryResult = (QueryResult<T>) resultMap;
@@ -93,7 +82,7 @@ public class CacheManager {
 
     public void set(String key, Query query, QueryResult queryResult) {
 
-        if (isActive() && queryResult.getDbTime() > cellBaseConfiguration.getCache().getSlowThreshold()) {
+        if (isActive() && queryResult.getDbTime() > cache.getSlowThreshold()) {
             redissonClient = getRedissonClient();
             RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
             Map<String, Object> record = new HashMap<String, Object>();
@@ -115,24 +104,20 @@ public class CacheManager {
         key.append(cellBaseConfiguration.getVersion()).append(":").append(species).append(":")
                 .append(subcategory);
         SortedMap<String, SortedSet<Object>> map = new TreeMap<String, SortedSet<Object>>();
-
         for (String item : query.keySet()) {
             map.put(item.toLowerCase(), new TreeSet<Object>(query.getAsStringList(item)));
         }
-
         for (String item : queryOptions.keySet()) {
             map.put(item.toLowerCase(), new TreeSet<Object>(queryOptions.getAsStringList(item)));
         }
-
         String sha1 = DigestUtils.sha1Hex(map.toString());
         key.append(":").append(sha1);
         queryOptions.add("cache", "true");
-
         return key.toString();
     }
 
     public boolean isActive() {
-        return cellBaseConfiguration.getCache().isActive() && redisState;
+        return cache.isActive() && redisState;
     }
 
     public void clear() {
