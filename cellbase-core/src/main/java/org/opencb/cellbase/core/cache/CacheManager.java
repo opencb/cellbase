@@ -43,10 +43,10 @@ public class CacheManager {
             redissonConfig = new Config();
             redisState = true;
             String host = (StringUtils.isNotEmpty(cache.getHost()))
-                    ? cache.getHost() : CacheProperties.DEFAULT_HOST;
+                    ? cache.getHost() : cache.DEFAULT_HOST;
             redissonConfig.useSingleServer().setAddress("redis://" + host);
             String codec = (StringUtils.isNotEmpty(cache.getSerialization()))
-                    ? cache.getSerialization() : CacheProperties.DEFAULT_SERIALIZATION;
+                    ? cache.getSerialization() : cache.DEFAULT_SERIALIZATION;
             if ("Kryo".equalsIgnoreCase(codec)) {
                 redissonConfig.setCodec(new KryoCodec());
             } else if ("JSON".equalsIgnoreCase(codec)) {
