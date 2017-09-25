@@ -2,6 +2,7 @@ package org.opencb.cellbase.core.cache;
 
 import java.util.*;
 import java.util.regex.Pattern;
+
 import org.redisson.Redisson;
 import org.redisson.api.RKeys;
 import org.redisson.api.RMap;
@@ -36,7 +37,7 @@ public class CacheManager {
         if (configuration != null && configuration.getCache() != null) {
             this.cellBaseConfiguration = configuration;
             redissonConfig = new Config();
-            redissonConfig.useSingleServer().setAddress(configuration.getCache().getHost());
+            redissonConfig.useSingleServer().setAddress("redis://" + configuration.getCache().getHost());
             String codec = configuration.getCache().getSerialization();
             redisState = true;
 
@@ -67,8 +68,8 @@ public class CacheManager {
         }
 
         if (!result.isEmpty()) {
-            Object resultMap= result.get(0).get("result");
-            queryResult =(QueryResult<T>) resultMap;
+            Object resultMap = result.get(0).get("result");
+            queryResult = (QueryResult<T>) resultMap;
             queryResult.setDbTime((int) (System.currentTimeMillis() - start));
         }
         redissonClient.shutdown();
@@ -98,14 +99,14 @@ public class CacheManager {
         queryOptions.remove("cache");
         StringBuilder key = new StringBuilder(DATABASE);
         key.append(cellBaseConfiguration.getVersion()).append(":").append(species).append(":")
-                    .append(subcategory);
+                .append(subcategory);
         SortedMap<String, SortedSet<Object>> map = new TreeMap<String, SortedSet<Object>>();
 
-        for (String item: query.keySet()) {
+        for (String item : query.keySet()) {
             map.put(item.toLowerCase(), new TreeSet<Object>(query.getAsStringList(item)));
         }
 
-        for (String item: queryOptions.keySet()) {
+        for (String item : queryOptions.keySet()) {
             map.put(item.toLowerCase(), new TreeSet<Object>(queryOptions.getAsStringList(item)));
         }
 
