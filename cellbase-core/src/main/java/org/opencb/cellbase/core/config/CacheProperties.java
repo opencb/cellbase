@@ -20,6 +20,7 @@ public class CacheProperties {
 
     public static final boolean DEFAULT_ACTVE = true;
     public static final String DEFAULT_SERIALIZATION = "JSON";
+    public static final String DEFAULT_HOST = "localhost:6379";
 
     public CacheProperties() {
         this("", DEFAULT_ACTVE, DEFAULT_SERIALIZATION, 50);

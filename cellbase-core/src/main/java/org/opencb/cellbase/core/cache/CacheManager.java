@@ -3,6 +3,8 @@ package org.opencb.cellbase.core.cache;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.core.config.CacheProperties;
 import org.redisson.Redisson;
 import org.redisson.api.RKeys;
 import org.redisson.api.RMap;
@@ -34,12 +36,23 @@ public class CacheManager {
 
     public CacheManager(CellBaseConfiguration configuration) {
 
+        CacheProperties cache;
+
         if (configuration != null && configuration.getCache() != null) {
             this.cellBaseConfiguration = configuration;
+            cache = configuration.getCache();
             redissonConfig = new Config();
-            redissonConfig.useSingleServer().setAddress("redis://" + configuration.getCache().getHost());
-            String codec = configuration.getCache().getSerialization();
             redisState = true;
+
+            String host = (StringUtils.isNotEmpty(cache.getHost()))
+                    ? cache.getHost()
+                    : CacheProperties.DEFAULT_HOST;
+            redissonConfig.useSingleServer().setAddress("redis://" + host);
+
+            String codec = (StringUtils.isNotEmpty(cache.getSerialization()))
+                    ? cache.getSerialization()
+                    : CacheProperties.DEFAULT_SERIALIZATION;
+
 
             if ("Kryo".equalsIgnoreCase(codec)) {
                 redissonConfig.setCodec(new KryoCodec());
@@ -52,34 +65,36 @@ public class CacheManager {
 
     public <T> QueryResult<T> get(String key, Class<T> clazz) {
 
-        long start = System.currentTimeMillis();
-        redissonClient = Redisson.create(redissonConfig);
-        RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
-        Map<Integer, Map<String, Object>> result = new HashMap<Integer, Map<String, Object>>();
         QueryResult<T> queryResult = new QueryResult<T>();
-        Set<Integer> set = new HashSet<Integer>(Arrays.asList(0));
+        if (isActive()) {
+            long start = System.currentTimeMillis();
+            redissonClient = getRedissonClient();
+            RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
+            Map<Integer, Map<String, Object>> result = new HashMap<Integer, Map<String, Object>>();
 
-        try {
-            result = map.getAll(set);
-        } catch (RedisConnectionException e) {
-            redisState = false;
-            queryResult.setWarningMsg("Unable to connect to Redis Cache, Please query WITHOUT Cache (Falling back to Database)");
-            return queryResult;
-        }
+            Set<Integer> set = new HashSet<Integer>(Arrays.asList(0));
 
-        if (!result.isEmpty()) {
-            Object resultMap = result.get(0).get("result");
-            queryResult = (QueryResult<T>) resultMap;
-            queryResult.setDbTime((int) (System.currentTimeMillis() - start));
+            try {
+                result = map.getAll(set);
+            } catch (RedisConnectionException e) {
+                redisState = false;
+                queryResult.setWarningMsg("Unable to connect to Redis Cache, Please query WITHOUT Cache (Falling back to Database)");
+                return queryResult;
+            }
+
+            if (!result.isEmpty()) {
+                Object resultMap = result.get(0).get("result");
+                queryResult = (QueryResult<T>) resultMap;
+                queryResult.setDbTime((int) (System.currentTimeMillis() - start));
+            }
         }
-        redissonClient.shutdown();
         return queryResult;
     }
 
     public void set(String key, Query query, QueryResult queryResult) {
 
-        if (queryResult.getDbTime() > cellBaseConfiguration.getCache().getSlowThreshold()) {
-            redissonClient = Redisson.create(redissonConfig);
+        if (isActive() && queryResult.getDbTime() > cellBaseConfiguration.getCache().getSlowThreshold()) {
+            redissonClient = getRedissonClient();
             RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
             Map<String, Object> record = new HashMap<String, Object>();
             record.put("query", query);
@@ -90,7 +105,6 @@ public class CacheManager {
                 redisState = false;
                 queryResult.setWarningMsg("Unable to connect to Redis Cache, Please query WITHOUT Cache (Falling back to Database)");
             }
-            redissonClient.shutdown();
         }
     }
 
@@ -122,17 +136,26 @@ public class CacheManager {
     }
 
     public void clear() {
-        redissonClient = Redisson.create(redissonConfig);
-        RKeys redisKeys = redissonClient.getKeys();
+        RKeys redisKeys = getRedissonClient().getKeys();
         redisKeys.deleteByPattern(DATABASE + "*");
-        redissonClient.shutdown();
     }
 
     public void clear(Pattern pattern) {
-        redissonClient = Redisson.create(redissonConfig);
-        RKeys redisKeys = redissonClient.getKeys();
+        RKeys redisKeys = getRedissonClient().getKeys();
         redisKeys.deleteByPattern(pattern.toString());
-        redissonClient.shutdown();
     }
 
+    public void close() {
+        if (redissonClient != null) {
+            redissonClient.shutdown();
+            redissonClient = null;
+        }
+    }
+
+    private synchronized RedissonClient getRedissonClient() {
+        if (redissonClient == null) {
+            redissonClient = Redisson.create(redissonConfig);
+        }
+        return redissonClient;
+    }
 }
