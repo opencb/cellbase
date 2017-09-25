@@ -7,7 +7,6 @@ import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
-import org.opencb.commons.utils.StringUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -138,9 +137,11 @@ public class DOCMIndexer extends ClinicalIndexer {
         for (Map diseaseMap : ((List<Map>) map.get(DISEASES))) {
             EvidenceEntry evidenceEntry;
             // An object with current disease string has already been parsed for this variant
-            if (evidenceEntryMap.containsKey(diseaseMap.get(DISEASE))) {
-                evidenceEntry = evidenceEntryMap.get(DISEASE);
-                evidenceEntry.getBibliography().add(PMID +  (String) diseaseMap.get(SOURCE_PUBMED_ID));
+            if (evidenceEntryMap.containsKey(diseaseMap.get(DISEASE))
+                    && diseaseMap.containsKey(SOURCE_PUBMED_ID)) {
+                evidenceEntry = evidenceEntryMap.get(diseaseMap.get(DISEASE));
+                List<String> bibliography = getBibliography(evidenceEntry);
+                bibliography.add(PMID + diseaseMap.get(SOURCE_PUBMED_ID));
             } else {
                 EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.DOCM_DATA, null, null);
                 HeritableTrait heritableTrait = new HeritableTrait((String) diseaseMap.get(DISEASE), null);
@@ -152,11 +153,13 @@ public class DOCMIndexer extends ClinicalIndexer {
                 Property property = new Property(null, TAGS_IN_SOURCE_FILE,
                         String.join(",", (List<String>) diseaseMap.get(TAGS)));
 
+                List<String> bibliography = new ArrayList<>();
+                bibliography.add(PMID + String.valueOf(diseaseMap.get(SOURCE_PUBMED_ID)));
                 evidenceEntry = new EvidenceEntry(evidenceSource, null, null, URL_PREFIX + (String) map.get(HGVS),
                         null, null, null, Collections.singletonList(heritableTrait), genomicFeatureList,
                         variantClassification, null, null, null, null, null, null, null,
                         Collections.singletonList(property),
-                        Collections.singletonList(PMID +  String.valueOf(diseaseMap.get(SOURCE_PUBMED_ID))));
+                        bibliography);
 
                 evidenceEntryMap.put((String) diseaseMap.get(DISEASE), evidenceEntry);
             }
@@ -228,6 +231,17 @@ public class DOCMIndexer extends ClinicalIndexer {
                 .collect(Collectors.toList()));
 
         return variantAnnotation;
+
+    }
+
+    private List<String> getBibliography(EvidenceEntry evidenceEntry) {
+
+        if (evidenceEntry.getBibliography() == null) {
+            List<String> bibliography = new ArrayList<>(1);
+            evidenceEntry.setBibliography(bibliography);
+        }
+
+        return evidenceEntry.getBibliography();
 
     }
 

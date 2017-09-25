@@ -9,6 +9,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -29,7 +30,6 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by fjlopez on 07/10/16.
  */
-@Ignore
 public class ClinicalVariantParserTest {
     private static final String SYMBOL = "symbol";
     private static final String DOCM = "docm";
@@ -40,11 +40,11 @@ public class ClinicalVariantParserTest {
         Path genomeSequenceFilePath = Paths.get(getClass()
                 .getResource("/clinicalVariant/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI());
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "clinical_variant", true);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
         (new ClinicalVariantParser(clinicalVariantFolder, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
-        List<Variant> variantList = loadSerializedVariants("/tmp/clinical_variant.json.gz");
-        assertEquals(11, variantList.size());
+        List<Variant> variantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        assertEquals(12, variantList.size());
 
         Variant variant = getVariantByVariant(variantList,
                 new Variant("1", 11169361, "C", "G"));
