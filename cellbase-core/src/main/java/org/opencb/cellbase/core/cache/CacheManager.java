@@ -2,11 +2,11 @@ package org.opencb.cellbase.core.cache;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import org.redisson.Config;
 import org.redisson.Redisson;
-import org.redisson.core.RMap;
-import org.redisson.core.RKeys;
-import org.redisson.RedissonClient;
+import org.redisson.api.RKeys;
+import org.redisson.api.RMap;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.redisson.codec.KryoCodec;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.client.RedisConnectionException;
