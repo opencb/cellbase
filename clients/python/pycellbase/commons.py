@@ -28,7 +28,8 @@ def _create_rest_url(host, version, species, category, subcategory,
     # If subcategory is queried, query_id can be absent
     if query_id is not None:
         url += '/' + query_id
-    url += '/' + resource
+    if resource is not None:
+        url += '/' + resource
 
     # Checking optional params
     if options is not None:

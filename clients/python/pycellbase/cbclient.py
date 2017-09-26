@@ -38,15 +38,26 @@ class CellBaseClient(object):
     def get_versions(self, species, **options):
         """Returns source version metadata, including source urls"""
         # This particular REST endpoint follows the structure
-        # /{version}/category/{species}/resource
-        # as opposed to the classical CellBase REST endpoint
-        # /{version}/{species}/category/subcategory/query_id/resource
+        # /{version}/meta/{species}/version
         response = get(host=self._configuration.host,
                        version=self._configuration.version,
                        species='meta',
                        category=species,
                        subcategory='versions',
-                       resource='',
+                       resource=None,
+                       options=options)
+        return response
+
+    def get_species(self, **options):
+        """Returns source version metadata, including source urls"""
+        # This particular REST endpoint follows the structure
+        # /{version}/meta/species
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species='meta',
+                       category='species',
+                       subcategory='',
+                       resource=None,
                        options=options)
         return response
 
