@@ -77,7 +77,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query5.put(ClinicalDBAdaptor.QueryParams.CLINICALSIGNIFICANCE.key(), "likely_pathogenic");
         QueryOptions queryOptions5 = new QueryOptions();
         QueryResult queryResult5 = clinicalDBAdaptor.nativeGet(query5, queryOptions5);
-        assertEquals(2, queryResult4.getNumTotalResults());
+        assertEquals(2, queryResult5.getNumTotalResults());
 
         Query query6 = new Query();
         query6.put(ClinicalDBAdaptor.QueryParams.FEATURE.key(), "APOE");
@@ -90,16 +90,15 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         for (Document document : (List<Document>) queryResult6.getResult()) {
             assertTrue(previousStart < document.getInteger("start"));
         }
-        assertEquals(3, queryResult4.getNumTotalResults());
 
         queryOptions6.remove(QueryOptions.SORT);
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar");
         QueryResult queryResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
-        assertEquals(33, queryResult7.getNumTotalResults()); // TODO: FIX
+        assertEquals(2, queryResult7.getNumTotalResults());
 
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic");
         QueryResult<Variant> queryResult8 = clinicalDBAdaptor.get(query6, queryOptions6);
-        assertTrue(queryResult8.getNumTotalResults() > 60);
+        assertEquals(1, queryResult8.getNumTotalResults());
         List<String> geneSymbols = queryResult8.getResult().get(0).getAnnotation().getTraitAssociation().stream()
                 .map((evidenceEntry) -> evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"))
                 .collect(Collectors.toList());
