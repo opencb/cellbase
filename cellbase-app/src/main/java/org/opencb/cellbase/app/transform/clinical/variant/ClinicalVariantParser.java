@@ -2,7 +2,6 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.EvidenceEntry;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.app.transform.CellBaseParser;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 /**
  * Created by fjlopez on 26/09/16.
@@ -125,13 +123,12 @@ public class ClinicalVariantParser extends CellBaseParser {
                 logger.warn("One or more of required IARCTP53 files are missing. Skipping IARCTP53 data.");
             }
 
-            // FIXME: finish implementation of the DOCM parser
-//            if (this.docmFile != null && Files.exists(docmFile)) {
-//                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, assembly, rdb);
-//                docmIndexer.index();
-//            } else {
-//                logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);
-//            }
+            if (this.docmFile != null && Files.exists(docmFile)) {
+                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, assembly, rdb);
+                docmIndexer.index();
+            } else {
+                logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);
+            }
 
             serializeRDB(rdb);
             closeIndex(rdb, dbOption, dbLocation);
@@ -154,11 +151,13 @@ public class ClinicalVariantParser extends CellBaseParser {
                 serializer.getOutdir().resolve(serializer.getFileName()));
         int counter = 0;
         for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-            List<EvidenceEntry> evidenceEntryList
-                    = mapper.readValue(rocksIterator.value(), List.class);
+            VariantAnnotation variantAnnotation
+                    = mapper.readValue(rocksIterator.value(), VariantAnnotation.class);
+//            List<EvidenceEntry> evidenceEntryList
+//                    = mapper.readValue(rocksIterator.value(), List.class);
             Variant variant = parseVariantFromVariantId(new String(rocksIterator.key()));
-            VariantAnnotation variantAnnotation = new VariantAnnotation();
-            variantAnnotation.setTraitAssociation(evidenceEntryList);
+//            VariantAnnotation variantAnnotation = new VariantAnnotation();
+//            variantAnnotation.setTraitAssociation(evidenceEntryList);
             variant.setAnnotation(variantAnnotation);
             serializer.serialize(variant);
             counter++;
