@@ -7,6 +7,10 @@ from itertools import islice
 from pycellbase.cbclient import ConfigClient
 from pycellbase.cbclient import CellBaseClient
 
+_DEFAULT_HOST = 'bioinfo.hpc.cam.ac.uk:80/cellbase'
+_DEFAULT_API_VERSION = 'v4'
+_DEFAULT_SPECIES = 'hsapiens'
+
 
 def _parse_configuration(parser):
     """Parse configuration arguments"""
@@ -16,13 +20,23 @@ def _parse_configuration(parser):
         help='reference genome assembly (default: %(default)s)'
     )
     parser.add_argument(
+        '--species', dest='species',
+        help=('species name (default:' + _DEFAULT_SPECIES +
+              '). Override configuration provided with --config parameter')
+    )
+    parser.add_argument(
         '--host', dest='host',
-        default='bioinfo.hpc.cam.ac.uk:80/cellbase',
-        help='web services host (default: %(default)s)'
+        help=('web services host (default: ' + _DEFAULT_HOST +
+              '). Override configuration provided with --config parameter')
     )
     parser.add_argument(
         '--version', dest='api_version',
-        default='v4', help='api version (default: %(default)s)'
+        help=('api version (default: ' + _DEFAULT_API_VERSION +
+              '). Override configuration provided with --config parameter')
+    )
+    parser.add_argument(
+        '--config', dest='config',
+        help='CellBase configuration. Override default values.'
     )
 
 
@@ -57,10 +71,6 @@ def _parse_arguments():
         '-o', '--output', dest='output_fpath', default=sys.stdout,
         help='output file path (default: stdout)'
     )
-    parser_convert.add_argument(
-        '--species', dest='species', default='hsapiens',
-        help='species name (default: %(default)s)'
-    )
     inex_group = parser_convert.add_mutually_exclusive_group()
     inex_group.add_argument(
         '--include', dest='include', help='include databases'
@@ -71,16 +81,16 @@ def _parse_arguments():
 
     # Creating the parser for the "list" command
     parser_list = subparsers.add_parser('list', help='list available sources')
-    parser_list.set_defaults(which='list', species='hsapiens')
+    parser_list.set_defaults(which='list')
     _parse_basic(parser_list)
     _parse_configuration(parser_list)
     lists_group = parser_list.add_mutually_exclusive_group(required=True)
     lists_group.add_argument(
-        '-d', '--databases', dest='list_databases', action='store_true',
+        '-D', '--dbs', dest='list_databases', action='store_true',
         help='show list of available databases'
     )
     lists_group.add_argument(
-        '-s', '--species', dest='list_species', action='store_true',
+        '-S', '--sps', dest='list_species', action='store_true',
         help='show list of available species'
     )
 
@@ -222,14 +232,25 @@ def main():
 
     # Getting args
     args = _parse_arguments()
+    print args
 
     # Setting up logging system
     _set_logger(args.verbosity)
 
     # Setting up PyCellBase clients
-    cc = ConfigClient({"species": args.species,
-                       "version": args.api_version,
-                       "rest": {"hosts": [args.host]}})
+    cc = ConfigClient(
+        {"species": _DEFAULT_SPECIES, "version": _DEFAULT_API_VERSION,
+         "rest": {"hosts": [_DEFAULT_HOST]}}
+    )
+
+    if args.config is not None:
+        cc = ConfigClient(args.config)
+    if args.species is not None:
+        cc.species = args.species
+    if args.api_version is not None:
+        cc.version = args.api_version
+    if args.host is not None:
+        cc.host = args.host
     cbc = CellBaseClient(cc)
     xc = cbc.get_xref_client()
 
@@ -263,3 +284,5 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
+
+
