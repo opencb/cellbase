@@ -232,7 +232,6 @@ def main():
 
     # Getting args
     args = _parse_arguments()
-    print args
 
     # Setting up logging system
     _set_logger(args.verbosity)
