@@ -1214,7 +1214,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         Path ontologiesFolder = common.resolve(EtlCommons.ONTOLOGIES_FOLDER);
         makeDir(ontologiesFolder);
         downloadFile(url, ontologiesFolder.resolve(EtlCommons.GO_FILE).toString());
-        saveVersionData(EtlCommons.ONTOLOGIES_DATA, GO_NAME, getGeneOntologyRelease(common.resolve(EtlCommons.GO_FILE)),
+        saveVersionData(EtlCommons.ONTOLOGIES_DATA, GO_NAME, getGeneOntologyRelease(ontologiesFolder.resolve(EtlCommons.GO_FILE)),
                 getTimeStamp(), Collections.singletonList(url), ontologiesFolder.resolve(EtlCommons.GO_VERSION_FILE));
     }
 
