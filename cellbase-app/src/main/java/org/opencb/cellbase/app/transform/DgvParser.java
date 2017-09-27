@@ -211,7 +211,7 @@ public class DgvParser extends CellBaseParser {
                 null, null, null, null,
                 null, null, null, null,
                 null, null, null, null,
-                null, null, additionalAttributes);
+                null, null, null, additionalAttributes);
 
         return annotation;
     }
