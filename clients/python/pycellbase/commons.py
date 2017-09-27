@@ -105,7 +105,7 @@ def _fetch(host, version, species, category, subcategory, resource,
                                query_id=current_query_id,
                                resource=resource,
                                options=opts)
-        # print(url)  # DEBUG
+        print(url)  # DEBUG
 
         # Getting REST response
         r = requests.get(url, headers={"Accept-Encoding": "gzip"})
