@@ -73,9 +73,9 @@ public class RepeatsParser extends CellBaseParser {
     private Repeat parseTrfLine(String line) {
         String[] parts = line.split("\t");
 
-        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1, Integer.valueOf(parts[3]),
-                Integer.valueOf(parts[5]), Float.valueOf(parts[6]), Float.valueOf(parts[8]) / 100, Float.valueOf(parts[10]),
-                parts[16], TRF);
+        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
+                Integer.valueOf(parts[3]), Integer.valueOf(parts[5]), Integer.valueOf(parts[7]),
+                Float.valueOf(parts[6]), Float.valueOf(parts[8]) / 100, Float.valueOf(parts[10]), parts[16], TRF);
     }
 
     private void parseGsdFile(Path filePath) throws IOException {
@@ -96,7 +96,7 @@ public class RepeatsParser extends CellBaseParser {
         String[] parts = line.split("\t");
 
         return new Repeat(parts[11], Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
-                Integer.valueOf(parts[3]), null, 2f, Float.valueOf(parts[26]), null,
+                Integer.valueOf(parts[3]), null, null, 2f, Float.valueOf(parts[26]), null,
                 null, GSD);
 
     }
@@ -118,7 +118,7 @@ public class RepeatsParser extends CellBaseParser {
     private Repeat parseWmLine(String line) {
         String[] parts = line.split("\t");
 
-        return new Repeat(null, Region.normalizeChromosome(parts[1]), Integer.valueOf(parts[2]) + 1,
-                Integer.valueOf(parts[3]), null, null, null, null, null, WM);
+        return new Repeat(parts[4].replace("\t", ""), Region.normalizeChromosome(parts[1]),
+                Integer.valueOf(parts[2]) + 1, Integer.valueOf(parts[3]), null, null, null, null, null, null, WM);
     }
 }

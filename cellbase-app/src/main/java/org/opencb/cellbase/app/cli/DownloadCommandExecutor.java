@@ -884,7 +884,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
                         conservationFolder.resolve("phastConsVersion.json"));
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                        conservationFolder.resolve("phastConsVersion.json"));
+                        conservationFolder.resolve("phyloPVersion.json"));
 //                String phastConsUrl = url + "/phastCons7way/hg38.phastCons100way.wigFix.gz";
 //                Path outFile = conservationFolder.resolve("phastCons").resolve("hg38.phastCons100way.wigFix.gz");
 //                downloadFile(phastConsUrl, outFile.toString());
@@ -972,22 +972,20 @@ public class DownloadCommandExecutor extends CommandExecutor {
 //            saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, DBSNP_NAME, getDbsnpVersion(), getTimeStamp(), dbsnpUrls,
 //                    clinicalFolder.resolve("dbsnpVersion.json"));
 
-//            FIXME: re-enable; it's perfectly funcional and working fine. Was disabled for the 4.5.0 release since the
-//            FIXME: corresponding builder is not yet finished
-//            List<String> hgvsList = getDocmHgvsList();
-//            if (!hgvsList.isEmpty()) {
-//                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
-//                downloadFile(configuration.getDownload().getDocmVersion().getHost(),
-//                        clinicalFolder.resolve("docmIndex.html").toString());
-//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
-//                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
-//                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
-//                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
-//                        clinicalFolder.resolve("docmVersion.json"));
-//            } else {
-//                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
-//                        + "assembly");
-//            }
+            List<String> hgvsList = getDocmHgvsList();
+            if (!hgvsList.isEmpty()) {
+                downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
+                downloadFile(configuration.getDownload().getDocmVersion().getHost(),
+                        clinicalFolder.resolve("docmIndex.html").toString());
+                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
+                        getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
+                        Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
+                                configuration.getDownload().getDocm().getHost() + "v1/variants/{hgvs}.json"),
+                        clinicalFolder.resolve("docmVersion.json"));
+            } else {
+                logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
+                        + "assembly");
+            }
 
             if (assembly.equalsIgnoreCase("grch37")) {
                 url = configuration.getDownload().getIarctp53().getHost();

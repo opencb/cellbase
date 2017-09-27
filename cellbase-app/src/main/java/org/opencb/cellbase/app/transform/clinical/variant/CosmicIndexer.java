@@ -148,12 +148,14 @@ public class CosmicIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        addNewEntry(evidenceEntryList, evidenceEntry);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+        addNewEntry(variantAnnotation, evidenceEntry);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
-    private void addNewEntry(List<EvidenceEntry> evidenceEntryList, EvidenceEntry evidenceEntry) {
+    private void addNewEntry(VariantAnnotation variantAnnotation, EvidenceEntry evidenceEntry) {
+        List<EvidenceEntry> evidenceEntryList = variantAnnotation.getTraitAssociation();
         // There are cosmic records which share all the fields but the bibliography. In some occassions (COSM12600)
         // the redundancy is such that the document becomes much bigger than 16MB and cannot be loaded into MongoDB.
         // This merge reduces redundancy.

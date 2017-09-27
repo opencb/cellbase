@@ -51,6 +51,8 @@ import java.util.Map;
 @Api(value = "Meta", description = "Meta RESTful Web Services API")
 public class MetaWSServer extends GenericRestWSServer {
 
+    private static final String PONG = "pong";
+
     public MetaWSServer(@PathParam("version")
                         @ApiParam(name = "version", value = "Possible values: v3, v4",
                                 defaultValue = "v4") String version,
@@ -147,6 +149,19 @@ public class MetaWSServer extends GenericRestWSServer {
         queryResult.setId("about");
         queryResult.setDbTime(0);
         queryResult.setResult(Collections.singletonList(info));
+
+        return createOkResponse(queryResult);
+    }
+
+    @GET
+    @Path("/ping")
+    @ApiOperation(httpMethod = "GET", value = "Checks if the app is alive. Returns pong.",
+            response = SpeciesProperties.class, responseContainer = "QueryResponse")
+    public Response ping() {
+        QueryResult queryResult = new QueryResult();
+        queryResult.setId(PONG);
+        queryResult.setDbTime(0);
+        queryResult.setResult(Collections.emptyList());
 
         return createOkResponse(queryResult);
     }
