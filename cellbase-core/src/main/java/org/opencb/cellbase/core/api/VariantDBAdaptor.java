@@ -88,7 +88,11 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
 //        if (VariantType.CNV.equals(variant.getType())) {
 
         // Queries for CNVs,SVs are different from simple short variants queries
-        if (variant.getSv() != null) {
+        if (variant.getSv() != null
+                && variant.getSv().getCiStartLeft() != null
+                && variant.getSv().getCiStartRight() != null
+                && variant.getSv().getCiEndLeft() != null
+                && variant.getSv().getCiEndRight() != null) {
             query = new Query(QueryParams.CHROMOSOME.key(), variant.getChromosome());
             // Imprecise queries can just be enabled for structural variants providing CIPOS positions. Imprecise queries
             // can be disabled by using the imprecise=false query option
