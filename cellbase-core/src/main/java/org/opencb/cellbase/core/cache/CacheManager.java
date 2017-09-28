@@ -1,23 +1,23 @@
 package org.opencb.cellbase.core.cache;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.config.CacheProperties;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.redisson.Redisson;
 import org.redisson.api.RKeys;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.redisson.codec.KryoCodec;
-import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.client.RedisConnectionException;
-import org.opencb.commons.datastore.core.Query;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.redisson.codec.JsonJacksonCodec;
+import org.redisson.codec.KryoCodec;
+import org.redisson.config.Config;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 
 /**
@@ -28,7 +28,7 @@ public class CacheManager {
     private final String DATABASE = "cb:";
     private CellBaseConfiguration cellBaseConfiguration;
     private Config redissonConfig;
-    private RedissonClient redissonClient;
+    private static RedissonClient redissonClient;
     private CacheProperties cache;
     private boolean redisState;
 
@@ -60,10 +60,10 @@ public class CacheManager {
         QueryResult<T> queryResult = new QueryResult<T>();
         if (isActive()) {
             long start = System.currentTimeMillis();
-            redissonClient = getRedissonClient();
-            RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
+            RMap<Integer, Map<String, Object>> map = getRedissonClient().getMap(key);
             Map<Integer, Map<String, Object>> result = new HashMap<Integer, Map<String, Object>>();
             Set<Integer> set = new HashSet<Integer>(Arrays.asList(0));
+
             try {
                 result = map.getAll(set);
             } catch (RedisConnectionException e) {
@@ -72,8 +72,9 @@ public class CacheManager {
                 return queryResult;
             }
             if (!result.isEmpty()) {
-                Object resultMap = result.get(0).get("result");
-                queryResult = (QueryResult<T>) resultMap;
+                queryResult = (QueryResult<T>) result.get(0).get("result");
+                // we are getting two objects, second one is query, not used at the moment
+                queryResult.setWarningMsg("Data is originated from Redis Cache !!!");
                 queryResult.setDbTime((int) (System.currentTimeMillis() - start));
             }
         }
@@ -83,8 +84,7 @@ public class CacheManager {
     public void set(String key, Query query, QueryResult queryResult) {
 
         if (isActive() && queryResult.getDbTime() > cache.getSlowThreshold()) {
-            redissonClient = getRedissonClient();
-            RMap<Integer, Map<String, Object>> map = redissonClient.getMap(key);
+            RMap<Integer, Map<String, Object>> map = getRedissonClient().getMap(key);
             Map<String, Object> record = new HashMap<String, Object>();
             record.put("query", query);
             record.put("result", queryResult);

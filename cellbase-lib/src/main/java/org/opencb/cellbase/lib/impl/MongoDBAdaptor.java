@@ -56,11 +56,11 @@ public class MongoDBAdaptor {
     protected String species;
     protected String assembly;
 
-    protected MongoDataStoreManager mongoDataStoreManager;
+    protected static MongoDataStoreManager mongoDataStoreManager;
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
     protected CellBaseConfiguration cellBaseConfiguration;
-    private CacheManager cacheManager;
+    private static CacheManager cacheManager;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
