@@ -230,9 +230,10 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> existingEvidenceEntryList = getEvidenceEntryList(key);
-        existingEvidenceEntryList.addAll(evidenceEntryList);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> existingEvidenceEntryList = getVariantAnnotation(key);
+        variantAnnotation.getTraitAssociation().addAll(evidenceEntryList);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
     /**
