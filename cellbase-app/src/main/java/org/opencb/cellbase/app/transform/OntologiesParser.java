@@ -47,9 +47,14 @@ public class OntologiesParser extends CellBaseParser {
         NodeIterator nodeIterator = model.listObjects();
         RDFNode rdfNode = nodeIterator.next();
         logger.info(rdfNode.asResource().getLocalName());
-//        logger.info(rdfNode.asResource().getId().toString());
+        StmtIterator stmtIterator = rdfNode.asResource().listProperties();
+        while (stmtIterator.hasNext()) {
+            Statement statement = stmtIterator.nextStatement();
+            logger.info(statement.getString());
+        }
+        //        logger.info(rdfNode.asResource().getId().toString());
 //        logger.info(rdfNode.asResource().getNameSpace());
-        logger.info(rdfNode.asResource().getProperty(model.createProperty("id")).getString());
+//        logger.info(rdfNode.asResource().getProperty(model.createProperty("id")).getString());
 
 
 //        NodeIterator nodeIterator = model.listObjects();
