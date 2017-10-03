@@ -50,7 +50,9 @@ public class OntologiesParser extends CellBaseParser {
         StmtIterator stmtIterator = rdfNode.asResource().listProperties();
         while (stmtIterator.hasNext()) {
             Statement statement = stmtIterator.nextStatement();
-            if ("http://www.w3.org/2001/XMLSchema#string".equals(statement.getPredicate().getNameSpace())) {
+            if (statement.getPredicate().getLocalName().equals("subClassOf")) {
+                logger.info("{}: {}", statement.getPredicate().getLocalName(), statement.getResource().getLocalName());
+            } else {
                 logger.info("{}: {}", statement.getPredicate().getLocalName(), statement.getString());
             }
 //            Literal literal = statement.getLiteral();
