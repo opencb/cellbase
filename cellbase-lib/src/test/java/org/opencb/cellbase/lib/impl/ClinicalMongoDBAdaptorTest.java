@@ -94,7 +94,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         queryOptions6.remove(QueryOptions.SORT);
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar");
         QueryResult queryResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
-        assertEquals(2, queryResult7.getNumTotalResults());
+        assertEquals(1, queryResult7.getNumTotalResults());
 
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic");
         QueryResult<Variant> queryResult8 = clinicalDBAdaptor.get(query6, queryOptions6);
