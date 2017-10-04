@@ -16,6 +16,10 @@
 
 package org.opencb.cellbase.lib.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
@@ -34,9 +38,11 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 25/11/15.
@@ -99,13 +105,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public QueryResult<Gene> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Gene.class);
-
-/*TODO: Wasim Check with Javier
-        options = addPrivateExcludeOptions(options);
 
         if (postDBFilteringParametersEnabled(query)) {
-            QueryResult<Document> nativeQueryResult = postDBFiltering(query, mongoDBCollection.find(bson, options));
+            QueryResult<Document> nativeQueryResult = postDBFiltering(query,
+                    executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class));
             QueryResult<Gene> queryResult = new QueryResult<>(nativeQueryResult.getId(),
                     nativeQueryResult.getDbTime(), nativeQueryResult.getNumResults(),
                     nativeQueryResult.getNumTotalResults(), nativeQueryResult.getWarningMsg(),
@@ -128,11 +131,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                     }).collect(Collectors.toList()));
             return queryResult;
         } else {
-            logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-            return mongoDBCollection.find(bson, null, Gene.class, options);
+            logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+            return executeBsonQuery(bson, null, query, options, mongoDBCollection, Gene.class);
         }
-*/
-
     }
 
     @Override

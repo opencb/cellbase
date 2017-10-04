@@ -97,12 +97,11 @@ public class CacheManager {
         }
     }
 
-    public String createKey(String species, String subcategory, Query query, QueryOptions queryOptions) {
+    public String createKey(String species, Query query, QueryOptions queryOptions) {
 
         queryOptions.remove("cache");
         StringBuilder key = new StringBuilder(DATABASE);
-        key.append(cellBaseConfiguration.getVersion()).append(":").append(species).append(":")
-                .append(subcategory);
+        key.append(cellBaseConfiguration.getVersion()).append(":").append(species);
         SortedMap<String, SortedSet<Object>> map = new TreeMap<String, SortedSet<Object>>();
         for (String item : query.keySet()) {
             map.put(item.toLowerCase(), new TreeSet<Object>(query.getAsStringList(item)));

@@ -579,8 +579,7 @@ public class MongoDBAdaptor {
         QueryResult<T> result = null;
 
         if (options.getBoolean("cache") && cacheManager.isActive()) {
-            //TODO: replace harcoded sub category <gene>
-            String key = cacheManager.createKey(this.species, "gene", query, options);
+            String key = cacheManager.createKey(this.species, query, options);
             result = cacheManager.get(key, clazz);
             if (result.getResult().size() != 0) {
                 return result;
