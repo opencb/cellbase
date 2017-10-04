@@ -24,10 +24,10 @@ import org.opencb.biodata.models.variant.avro.Cosmic;
 import org.opencb.biodata.models.variant.avro.Gwas;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
 @Deprecated
 public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<ClinicalVariant> {
 
-    public ClinicalLegacyMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public ClinicalLegacyMongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("clinical");
 
         logger.debug("ClinicalLegacyMongoDBAdaptor: in 'constructor'");

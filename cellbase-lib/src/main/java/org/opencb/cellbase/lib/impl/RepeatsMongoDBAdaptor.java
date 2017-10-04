@@ -6,11 +6,11 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.RepeatsDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,8 +23,8 @@ import java.util.function.Consumer;
 public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAdaptor {
     private static final String REPEAT_COLLECTION = "repeats";
 
-    public RepeatsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDatastore) {
-        super(species, assembly, mongoDatastore);
+    public RepeatsMongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection(REPEAT_COLLECTION);
 
         logger.debug("RepeatsMongoDBAdaptor: in 'constructor'");

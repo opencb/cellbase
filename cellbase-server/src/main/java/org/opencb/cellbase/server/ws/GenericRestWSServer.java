@@ -271,6 +271,10 @@ public class GenericRestWSServer implements IWSServer {
         queryOptions.put(SKIP, (skip >= 0) ? skip : -1);
         queryOptions.put(SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
         queryOptions.put(COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
+        queryOptions.put("cache", (multivaluedMap.get("cache") != null)
+                ? Boolean.parseBoolean(multivaluedMap.get("cache").get(0))
+                : false);
+
 //        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
 
         // Add all the others QueryParams from the URL

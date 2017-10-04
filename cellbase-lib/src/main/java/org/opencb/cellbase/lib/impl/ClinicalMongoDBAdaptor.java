@@ -8,10 +8,10 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -26,10 +26,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
     private static final String SEPARATOR = ",";
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public ClinicalMongoDBAdaptor(String species, String assembly,
+                                  CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
-
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
 
@@ -75,13 +75,13 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     @Override
     public QueryResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        return count(bson, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        return distinct(field, bson, mongoDBCollection);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
-        return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
+        return executeBsonQuery(bson, null, query, parsedOptions, mongoDBCollection, Variant.class);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
-        return mongoDBCollection.find(bson, parsedOptions);
+        return executeBsonQuery(bson, null, query, parsedOptions, mongoDBCollection, Document.class);
     }
 
     @Override

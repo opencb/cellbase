@@ -16,18 +16,17 @@
 
 package org.opencb.cellbase.lib.impl;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,8 +38,9 @@ import java.util.function.Consumer;
  */
 public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<RegulatoryFeature> {
 
-    public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public RegulationMongoDBAdaptor(String species, String assembly,
+                                    CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
         logger.debug("RegulationMongoDBAdaptor: in 'constructor'");
@@ -92,13 +92,13 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     @Override
     public QueryResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.count(bsonDocument);
+        return count(bsonDocument, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.distinct(field, bsonDocument);
+        return distinct(field, bsonDocument, mongoDBCollection);
     }
 
     @Override
@@ -110,14 +110,13 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     public QueryResult<RegulatoryFeature> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         options = addPrivateExcludeOptions(options);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return mongoDBCollection.find(bson, null, RegulatoryFeature.class, options);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, RegulatoryFeature.class);
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

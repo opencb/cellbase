@@ -31,12 +31,12 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.io.IOException;
 import java.util.*;
@@ -49,14 +49,14 @@ import java.util.stream.Collectors;
  */
 public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<Gene> {
 
+
     private static final String TRANSCRIPTS = "transcripts";
     private static final String GENE = "gene";
     private static final String ANNOTATION_FLAGS = "annotationFlags";
 
-    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public GeneMongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection(GENE);
-
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");
     }
 
@@ -88,13 +88,13 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public QueryResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.count(bsonDocument);
+        return count(bsonDocument, mongoDBCollection);
     }
 
     @Override
     public QueryResult<String> distinct(Query query, String field) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.distinct(field, bsonDocument);
+        return distinct(field, bsonDocument, mongoDBCollection);
     }
 
     @Override
@@ -105,10 +105,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public QueryResult<Gene> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        options = addPrivateExcludeOptions(options);
 
         if (postDBFilteringParametersEnabled(query)) {
-            QueryResult<Document> nativeQueryResult = postDBFiltering(query, mongoDBCollection.find(bson, options));
+            QueryResult<Document> nativeQueryResult = postDBFiltering(query,
+                    executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class));
             QueryResult<Gene> queryResult = new QueryResult<>(nativeQueryResult.getId(),
                     nativeQueryResult.getDbTime(), nativeQueryResult.getNumResults(),
                     nativeQueryResult.getNumTotalResults(), nativeQueryResult.getWarningMsg(),
@@ -131,16 +131,16 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                     }).collect(Collectors.toList()));
             return queryResult;
         } else {
-            logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-            return mongoDBCollection.find(bson, null, Gene.class, options);
+            logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+            return executeBsonQuery(bson, null, query, options, mongoDBCollection, Gene.class);
         }
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return postDBFiltering(query, mongoDBCollection.find(bson, options));
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        return postDBFiltering(query, executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class));
     }
 
     @Override

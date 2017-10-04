@@ -33,6 +33,7 @@ public class CellBaseConfiguration {
     private String wiki;
     private String defaultOutdir;
     private Databases databases;
+    private CacheProperties cache;
     private DownloadProperties download;
     private SpeciesProperties species;
 
@@ -42,28 +43,66 @@ public class CellBaseConfiguration {
         return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
     }
 
+ /*   public List<Species> getAllSpecies() {
+        List<Species> allSpecies = new ArrayList<>();
+        allSpecies.addAll(species.getVertebrates());
+        allSpecies.addAll(species.getMetazoa());
+        allSpecies.addAll(species.getFungi());
+        allSpecies.addAll(species.getProtist());
+        allSpecies.addAll(species.getPlants());
+
+        return allSpecies;
+    }*/
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CellBaseConfiguration{");
+        sb.append("version='").append(version).append('\'');
+        sb.append(", apiVersion='").append(apiVersion).append('\'');
+        sb.append(", wiki='").append(wiki).append('\'');
+        sb.append(", defaultOutdir='").append(defaultOutdir).append('\'');
+        sb.append(", databases=").append(databases);
+        sb.append(", cache=").append(cache);
+        sb.append(", download=").append(download);
+        sb.append(", species=").append(species);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public CellBaseConfiguration setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     public String getApiVersion() {
         return apiVersion;
     }
 
-    public void setApiVersion(String apiVersion) {
+    public CellBaseConfiguration setApiVersion(String apiVersion) {
         this.apiVersion = apiVersion;
+        return this;
     }
 
     public String getWiki() {
         return wiki;
     }
 
-    public void setWiki(String wiki) {
+    public CellBaseConfiguration setWiki(String wiki) {
         this.wiki = wiki;
+        return this;
+    }
+
+    public String getDefaultOutdir() {
+        return defaultOutdir;
+    }
+
+    public CellBaseConfiguration setDefaultOutdir(String defaultOutdir) {
+        this.defaultOutdir = defaultOutdir;
+        return this;
     }
 
     public Databases getDatabases() {
@@ -75,28 +114,31 @@ public class CellBaseConfiguration {
         return this;
     }
 
-    public String getDefaultOutdir() {
-        return defaultOutdir;
+    public CacheProperties getCache() {
+        return cache;
     }
 
-    public void setDefaultOutdir(String defaultOutdir) {
-        this.defaultOutdir = defaultOutdir;
+    public CellBaseConfiguration setCache(CacheProperties cache) {
+        this.cache = cache;
+        return this;
     }
 
     public DownloadProperties getDownload() {
         return download;
     }
 
-    public void setDownload(DownloadProperties download) {
+    public CellBaseConfiguration setDownload(DownloadProperties download) {
         this.download = download;
+        return this;
     }
 
     public SpeciesProperties getSpecies() {
         return species;
     }
 
-    public void setSpecies(SpeciesProperties species) {
+    public CellBaseConfiguration setSpecies(SpeciesProperties species) {
         this.species = species;
+        return this;
     }
 
     public List<Species> getAllSpecies() {

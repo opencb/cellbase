@@ -26,12 +26,12 @@ import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -71,8 +71,9 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     }
 
 
-    public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public ProteinMongoDBAdaptor(String species, String assembly,
+                                 CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
 
@@ -307,13 +308,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     @Override
     public QueryResult<Long> count(Query query) {
         Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        return count(document, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson document = parseQuery(query);
-        return mongoDBCollection.distinct(field, document);
+        return distinct(field, document, mongoDBCollection);
     }
 
     @Override
@@ -324,13 +325,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     @Override
     public QueryResult<Entry> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, null, Entry.class, options);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Entry.class);
     }
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

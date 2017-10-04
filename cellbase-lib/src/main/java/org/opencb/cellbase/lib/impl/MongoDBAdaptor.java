@@ -19,50 +19,69 @@ package org.opencb.cellbase.lib.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.*;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.cache.CacheManager;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DatabaseCredentials;
+import org.opencb.cellbase.core.config.Species;
+import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.security.InvalidParameterException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MongoDBAdaptor {
+
+    private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
 
     enum QueryValueType {INTEGER, STRING}
 
     protected String species;
     protected String assembly;
 
+    protected static MongoDataStoreManager mongoDataStoreManager;
     protected MongoDataStore mongoDataStore;
     protected MongoDBCollection mongoDBCollection;
+    protected CellBaseConfiguration cellBaseConfiguration;
+    private static CacheManager cacheManager;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected ObjectMapper objectMapper;
 
-    public MongoDBAdaptor(MongoDataStore mongoDataStore) {
-        this("", "", mongoDataStore);
+    public MongoDBAdaptor(CellBaseConfiguration cellBaseConfiguration) {
+        this("", "", cellBaseConfiguration);
     }
 
-    public MongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public MongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
         this.species = species;
         this.assembly = assembly;
-        this.mongoDataStore = mongoDataStore;
+        this.cellBaseConfiguration = cellBaseConfiguration;
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
         objectMapper = new ObjectMapper();
 
         initSpeciesAssembly(species, assembly);
-//        jsonObjectMapper = new ObjectMapper();
+        init();
+        this.mongoDataStore = createMongoDBDatastore(species, assembly);
+        this.cacheManager = new CacheManager(cellBaseConfiguration);
     }
 
     private void initSpeciesAssembly(String species, String assembly) {
@@ -72,6 +91,148 @@ public class MongoDBAdaptor {
                 this.assembly = "default";
             }
         }
+    }
+
+    private void init() {
+        if (mongoDataStoreManager == null) {
+//            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
+            String[] hosts = cellBaseConfiguration.getDatabases().getMongodb().getHost().split(",");
+            List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
+            for (String host : hosts) {
+                String[] hostPort = host.split(":");
+                if (hostPort.length == 1) {
+                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], 27017));
+                } else {
+                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], Integer.parseInt(hostPort[1])));
+                }
+            }
+            mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
+            logger.debug("MongoDBAdaptorFactory constructor, this should be only be printed once");
+        }
+
+//        logger = LoggerFactory.getLogger(this.getClass());
+    }
+
+    private MongoDataStore createMongoDBDatastore(String species, String assembly) {
+        /**
+         Database name has the following pattern in lower case and with no '.' in the name:
+         cellbase_speciesId_assembly_cellbaseVersion
+         Example:
+         cellbase_hsapiens_grch37_v3
+         **/
+
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
+
+        // We need to look for the species object in the configuration
+        Species speciesObject = getSpecies(species);
+        if (speciesObject != null) {
+            species = speciesObject.getId();
+            String cellbaseAssembly = getAssembly(speciesObject, assembly);
+
+            if (species != null && !species.isEmpty() && cellbaseAssembly != null && !cellbaseAssembly.isEmpty()) {
+                cellbaseAssembly = cellbaseAssembly.toLowerCase();
+                // Database name is built following the above pattern
+                String database = "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
+                        .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
+                logger.debug("Database for the species is '{}'", database);
+
+                MongoDBConfiguration mongoDBConfiguration;
+                MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
+
+                // For authenticated databases
+                if (!mongodbCredentials.getUser().isEmpty() && !mongodbCredentials.getPassword().isEmpty()) {
+                    // MongoDB could authenticate against different databases
+                    builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
+                    if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
+                        builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
+                                .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+                    }
+                }
+
+                if (mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE) != null
+                        && !mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE).isEmpty()) {
+                    builder.add(MongoDBConfiguration.READ_PREFERENCE,
+                            mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE));
+                }
+
+                String replicaSet = mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET);
+                if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
+                    builder.setReplicaSet(mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET));
+                }
+
+                String connectionsPerHost = mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST);
+                if (connectionsPerHost != null && !connectionsPerHost.isEmpty()) {
+                    builder.setConnectionsPerHost(Integer.valueOf(mongodbCredentials.getOptions()
+                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST)));
+                }
+
+                mongoDBConfiguration = builder.build();
+
+                logger.debug("*************************************************************************************");
+                logger.debug("MongoDataStore configuration parameters: ");
+                logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
+                        mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+                logger.debug("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
+                        mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
+                logger.debug("{} = {}", MongoDBConfiguration.REPLICA_SET,
+                        mongoDBConfiguration.get(MongoDBConfiguration.REPLICA_SET));
+                logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
+                        mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
+                logger.debug("*************************************************************************************");
+//                } else {
+//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+//                }
+
+                // A MongoDataStore to this host and database is returned
+                MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
+
+                // we return the MongoDataStore object
+                return mongoDatastore;
+            } else {
+                logger.error("Assembly is not valid, assembly '{}'. Valid assemblies: {}", assembly,
+                        String.join(",", speciesObject.getAssemblies().stream().map((assemblyObject)
+                                -> assemblyObject.getName()).collect(Collectors.toList())));
+                throw new InvalidParameterException("Assembly is not valid, assembly '" + assembly
+                        + "'. Please provide one of supported assemblies: {"
+                        + String.join(",", speciesObject.getAssemblies().stream().map((assemblyObject)
+                        -> assemblyObject.getName()).collect(Collectors.toList())) + "}");
+            }
+        } else {
+            logger.error("Species name is not valid: '{}'. Valid species: {}", species,
+                    String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
+                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                            .collect(Collectors.toList())));
+            throw new InvalidParameterException("Species name is not valid: '" + species + "'. Please provide one"
+                    + " of supported species: {"
+                    + String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
+                    -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
+                    .collect(Collectors.toList())) + "}");
+        }
+    }
+
+    protected Species getSpecies(String speciesName) {
+        Species species = null;
+        for (Species sp : cellBaseConfiguration.getAllSpecies()) {
+            if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
+                species = sp;
+                break;
+            }
+        }
+        return species;
+    }
+
+    protected String getAssembly(Species species, String assemblyName) {
+        String assembly = null;
+        if (assemblyName == null || assemblyName.isEmpty()) {
+            assembly = species.getAssemblies().get(0).getName();
+        } else {
+            for (Species.Assembly assembly1 : species.getAssemblies()) {
+                if (assemblyName.equalsIgnoreCase(assembly1.getName())) {
+                    assembly = assembly1.getName();
+                }
+            }
+        }
+        return assembly;
     }
 
     protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
@@ -265,7 +426,6 @@ public class MongoDBAdaptor {
     }
 
 
-
     public QueryResult getIntervalFrequencies(Bson query, Region region, int intervalSize, QueryOptions options) {
         //  MONGO QUERY TO IMPLEMENT
         //    db.variation.aggregate({$match: {$and: [{chromosome: "1"}, {start: {$gt: 251391, $lt: 2701391}}]}}, {$group:
@@ -393,39 +553,66 @@ public class MongoDBAdaptor {
         return queryResult;
     }
 
-
-
-
-
-
-    protected QueryResult executeDistinct(Object id, String fields, Document query) {
-//        long dbTimeStart, dbTimeEnd;
-//        dbTimeStart = System.currentTimeMillis();
-        QueryResult queryResult = mongoDBCollection.distinct(fields, query);
-//        List<Document> dbObjectList = new LinkedList<>();
-//        while (cursor.hasNext()) {
-//            dbObjectList.add(cursor.next());
-//        }
-//        dbTimeEnd = System.currentTimeMillis();
-        // setting queryResult fields
-        queryResult.setId(id.toString());
-//        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-//        queryResult.setNumResults(dbObjectList.size());
-        return queryResult;
+    protected QueryResult<Long> count(Bson query, MongoDBCollection mongoDBCollection) {
+//        QueryResult result = cacheManager.get();
+        QueryResult result = null;
+        if (result == null) {
+            result = mongoDBCollection.count(query);
+//            cacheManager.set(result);
+        }
+        return result;
     }
 
+
+    protected QueryResult distinct(String field, Bson query, MongoDBCollection mongoDBCollection) {
+//        QueryResult result = cacheManager.get();
+        QueryResult result = null;
+        if (result == null) {
+            result = mongoDBCollection.distinct(field, query);
+//            cacheManager.set(result);
+        }
+        return result;
+    }
+
+    protected <T> QueryResult<T> executeBsonQuery(Bson bsonQuery, Bson projection, Query query, QueryOptions options,
+                                                  MongoDBCollection mongoDBCollection, Class<T> clazz) {
+        QueryResult<T> result = null;
+
+        if (options.getBoolean("cache") && cacheManager.isActive()) {
+            String key = cacheManager.createKey(this.species, query, options);
+            result = cacheManager.get(key, clazz);
+            if (result.getResult().size() != 0) {
+                return result;
+            } else {
+                options.replace("cache", true, false);
+                options = addPrivateExcludeOptions(options);
+                result = mongoDBCollection.find(bsonQuery, projection, clazz, options);
+                cacheManager.set(key, query, result);
+            }
+        } else {
+            options = addPrivateExcludeOptions(options);
+            result = mongoDBCollection.find(bsonQuery, projection, clazz, options);
+        }
+        return result;
+    }
+
+
+    @Deprecated
     protected QueryResult executeQuery(Object id, Document query, QueryOptions options) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection).get(0);
     }
 
+    @Deprecated
     protected QueryResult executeQuery(Object id, Document query, QueryOptions options, MongoDBCollection mongoDBCollection2) {
         return executeQueryList2(Arrays.asList(id), Arrays.asList(query), options, mongoDBCollection2).get(0);
     }
 
+    @Deprecated
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options) {
         return executeQueryList2(ids, queries, options, mongoDBCollection);
     }
 
+    @Deprecated
     protected List<QueryResult> executeQueryList2(List<? extends Object> ids, List<Document> queries, QueryOptions options,
                                                   MongoDBCollection mongoDBCollection2) {
         List<QueryResult> queryResults = new ArrayList<>(ids.size());
@@ -525,9 +712,6 @@ public class MongoDBAdaptor {
     private int getChunkEnd(int id, int chunkSize) {
         return (id * chunkSize) + chunkSize - 1;
     }
-
-
-
 
 
     public QueryResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
@@ -694,9 +878,6 @@ public class MongoDBAdaptor {
 //        }
 //        return queryResult;
 //    }
-
-
-
 
 
     /*

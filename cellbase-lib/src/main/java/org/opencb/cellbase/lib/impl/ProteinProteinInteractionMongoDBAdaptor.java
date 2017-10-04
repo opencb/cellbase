@@ -21,10 +21,10 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.protein.Interaction;
 import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,8 +37,9 @@ import java.util.function.Consumer;
 public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor implements ProteinProteinInteractionDBAdaptor<Interaction> {
 
 
-    public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public ProteinProteinInteractionMongoDBAdaptor(String species, String assembly,
+                                                   CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
         mongoDBCollection = mongoDataStore.getCollection("variation");
 
         logger.debug("ProteinProteinInteractionMongoDBAdaptor: in 'constructor'");
@@ -66,12 +67,14 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
 
     @Override
     public QueryResult<Long> count(Query query) {
-        return mongoDBCollection.count(parseQuery(query));
+        Bson document = parseQuery(query);
+        return count(document, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
-        return mongoDBCollection.distinct(field, parseQuery(query));
+        Bson document = parseQuery(query);
+        return distinct(field, document, mongoDBCollection);
     }
 
     @Override
@@ -86,7 +89,8 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
 
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
-        return mongoDBCollection.find(parseQuery(query), options);
+        Bson bson = parseQuery(query);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

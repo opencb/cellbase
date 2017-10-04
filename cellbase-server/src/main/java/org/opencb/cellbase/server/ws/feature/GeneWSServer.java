@@ -474,7 +474,12 @@ public class GeneWSServer extends GenericRestWSServer {
                     value = "Comma separated list of gene names for which drug data is available, "
                             + "e.g.: BRCA2,TTN."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "list of strings", paramType = "query"),
+            @ApiImplicitParam(name = "cache",
+                    value = "Comma separated list of gene names for which drug data is available, "
+                            + "e.g.: BRCA2,TTN."
+                            + " Exact text matches will be returned",
+                    required = false, defaultValue = "false", dataType = "boolean", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("geneId")
                                    @ApiParam(name = "geneId",

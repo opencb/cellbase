@@ -20,18 +20,18 @@ import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -51,8 +51,8 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     private static final Object CHROMOSOMES = "chromosomes";
     private Document genomeInfo = null;
 
-    public GenomeMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
-        super(species, assembly, mongoDataStore);
+    public GenomeMongoDBAdaptor(String species, String assembly, CellBaseConfiguration cellBaseConfiguration) {
+        super(species, assembly, cellBaseConfiguration);
 
         genomeInfoMongoDBCollection = mongoDataStore.getCollection("genome_info");
         mongoDBCollection = mongoDataStore.getCollection("genome_sequence");
@@ -195,7 +195,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
             String sequence = stringBuilder.toString().substring(startIndex, startIndex + length);
 
             String strand = "1";
-            String queryStrand= (query.getString("strand") != null) ? query.getString("strand") : "1";
+            String queryStrand = (query.getString("strand") != null) ? query.getString("strand") : "1";
             if (queryStrand.equals("-1") || queryStrand.equals("-")) {
                 sequence = DNASequenceUtils.reverseComplement(sequence);
                 strand = "-1";
@@ -328,13 +328,13 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     @Override
     public QueryResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        return count(bson, mongoDBCollection);
     }
 
     @Override
     public QueryResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        return distinct(field, bson, mongoDBCollection);
     }
 
     @Override
@@ -350,7 +350,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     @Override
     public QueryResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        return executeBsonQuery(bson, null, query, options, mongoDBCollection, Document.class);
     }
 
     @Override

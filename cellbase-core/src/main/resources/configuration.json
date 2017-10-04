@@ -25,9 +25,17 @@
 				"user": "${CELLBASE.DB.USER}",
 				"password": "${CELLBASE.DB.PASSWORD}"
 			}
+
 		}
 	},
 	"defaultOutdir": "/tmp",
+	"cache": {
+		"host": "localhost:6379",
+		"active": true,
+		"serialization": "kryo",
+		"slowThreshold": 50
+	},
+
 	"download": {
 		"ensembl": {
 			"database": {

@@ -19,149 +19,21 @@ package org.opencb.cellbase.lib.impl;
 import org.bson.Document;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DatabaseCredentials;
-import org.opencb.cellbase.core.config.Species;
-import org.opencb.commons.datastore.core.DataStoreServerAddress;
-import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
-import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
-    private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
-    private static final String SERVER_ADDRESS = "serverAddress";
+
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
-    private MongoDataStoreManager mongoDataStoreManager;
+
+    private CellBaseConfiguration cellBaseConfiguration;
 //    private static Map<String, MongoDataStore> mongoDatastoreFactory;
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
         super(cellBaseConfiguration);
-
-        init();
-    }
-
-    private void init() {
-        if (mongoDataStoreManager == null) {
-//            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
-            String[] hosts = cellBaseConfiguration.getDatabases().getMongodb().getHost().split(",");
-            List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
-            for (String host : hosts) {
-                String[] hostPort = host.split(":");
-                if (hostPort.length == 1) {
-                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], 27017));
-                } else {
-                    dataStoreServerAddresses.add(new DataStoreServerAddress(hostPort[0], Integer.parseInt(hostPort[1])));
-                }
-            }
-            mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
-            logger.debug("MongoDBAdaptorFactory constructor, this should be only be printed once");
-        }
-
-//        logger = LoggerFactory.getLogger(this.getClass());
-    }
-
-    private MongoDataStore createMongoDBDatastore(String species, String assembly) {
-        /**
-         Database name has the following pattern in lower case and with no '.' in the name:
-         cellbase_speciesId_assembly_cellbaseVersion
-         Example:
-         cellbase_hsapiens_grch37_v3
-         **/
-
-        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
-
-        // We need to look for the species object in the configuration
-        Species speciesObject = getSpecies(species);
-        if (speciesObject != null) {
-            species = speciesObject.getId();
-            String cellbaseAssembly = getAssembly(speciesObject, assembly);
-
-            if (species != null && !species.isEmpty() && cellbaseAssembly != null && !cellbaseAssembly.isEmpty()) {
-                cellbaseAssembly = cellbaseAssembly.toLowerCase();
-                // Database name is built following the above pattern
-                String database = "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
-                        .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
-                logger.debug("Database for the species is '{}'", database);
-
-                MongoDBConfiguration mongoDBConfiguration;
-                MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
-
-                // For authenticated databases
-                if (!mongodbCredentials.getUser().isEmpty() && !mongodbCredentials.getPassword().isEmpty()) {
-                    // MongoDB could authenticate against different databases
-                    builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
-                    if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
-                        builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
-                                .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
-                    }
-                }
-
-                if (mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE) != null
-                        && !mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE).isEmpty()) {
-                    builder.add(MongoDBConfiguration.READ_PREFERENCE,
-                            mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE));
-                }
-
-                String replicaSet = mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET);
-                if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
-                    builder.setReplicaSet(mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET));
-                }
-
-                String connectionsPerHost = mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST);
-                if (connectionsPerHost != null && !connectionsPerHost.isEmpty()) {
-                    builder.setConnectionsPerHost(Integer.valueOf(mongodbCredentials.getOptions()
-                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST)));
-                }
-
-                mongoDBConfiguration = builder.build();
-
-                logger.debug("*************************************************************************************");
-                logger.debug("MongoDataStore configuration parameters: ");
-                logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
-                        mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
-                logger.debug("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
-                        mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
-                logger.debug("{} = {}", MongoDBConfiguration.REPLICA_SET,
-                        mongoDBConfiguration.get(MongoDBConfiguration.REPLICA_SET));
-                logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
-                        mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
-                logger.debug("*************************************************************************************");
-//                } else {
-//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
-//                }
-
-                // A MongoDataStore to this host and database is returned
-                MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
-
-                // we return the MongoDataStore object
-                return mongoDatastore;
-            } else {
-                logger.error("Assembly is not valid, assembly '{}'. Valid assemblies: {}", assembly,
-                        String.join(",", speciesObject.getAssemblies().stream().map((assemblyObject)
-                                -> assemblyObject.getName()).collect(Collectors.toList())));
-                throw new InvalidParameterException("Assembly is not valid, assembly '" + assembly
-                        + "'. Please provide one of supported assemblies: {"
-                        + String.join(",", speciesObject.getAssemblies().stream().map((assemblyObject)
-                        -> assemblyObject.getName()).collect(Collectors.toList())) + "}");
-            }
-        } else {
-            logger.error("Species name is not valid: '{}'. Valid species: {}", species,
-                    String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
-                            -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
-                            .collect(Collectors.toList())));
-            throw new InvalidParameterException("Species name is not valid: '" + species + "'. Please provide one"
-                    + " of supported species: {"
-                    + String.join(",", cellBaseConfiguration.getAllSpecies().stream().map((tmpSpeciesObject)
-                    -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
-                    .collect(Collectors.toList())) + "}");
-        }
+        this.cellBaseConfiguration = cellBaseConfiguration;
     }
 
 
@@ -183,8 +55,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public GenomeDBAdaptor getGenomeDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new GenomeMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new GenomeMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
     @Override
@@ -194,8 +65,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public CellBaseDBAdaptor<Document> getMetaDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new MetaMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new MetaMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
     @Override
@@ -205,9 +75,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public GeneDBAdaptor getGeneDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
-//        geneMongoDBAdaptor.setClinicalDBAdaptor(getClinicalLegacyDBAdaptor(species, assembly));
+        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, cellBaseConfiguration);
+//        geneMongoDBAdaptor.setClinicalDBAdaptor(getClinicalDBAdaptor(species, assembly));
         return geneMongoDBAdaptor;
     }
 
@@ -219,8 +88,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new TranscriptMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new TranscriptMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 
@@ -231,8 +99,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new ConservationMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 
@@ -243,8 +110,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public XRefDBAdaptor getXRefDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new XRefMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new XRefMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 
@@ -255,8 +121,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public VariantDBAdaptor getVariationDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new VariantMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 //    @Override
@@ -290,8 +155,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ClinicalLegacyMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new ClinicalLegacyMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
     @Override
@@ -301,14 +165,12 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new ClinicalMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
     @Override
     public RepeatsDBAdaptor getRepeatsDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new RepeatsMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new RepeatsMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 
@@ -345,8 +207,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new ProteinMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 
@@ -357,8 +218,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 
 
@@ -369,8 +229,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public RegulationDBAdaptor getRegulationDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new RegulationMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new RegulationMongoDBAdaptor(species, assembly, cellBaseConfiguration);
     }
 //
 //    @Override
