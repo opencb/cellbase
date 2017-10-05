@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
 import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,6 +31,8 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -56,8 +59,18 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //
 //    }
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/variation_chr22.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
+                .getResource("/variation_chr17.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
+                .getResource("/variation_chr10.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
     }
 
     // TODO: to be finished - properly implemented
@@ -76,7 +89,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions.put("limit", 3);
         QueryResult<Variant> result = variationDBAdaptor
                 .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "CTA-445C9.14"), queryOptions);
-        assertEquals(667, result.getNumResults());
+        assertEquals(21, result.getNumResults());
         assertThat(result.getResult().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842",
                         "rs192035553", "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199826190",
@@ -90,7 +103,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         // ENSEMBL transcript ids are also allowed for the GENE query parameter - this was done on purpose
         QueryResult<Variant> resultENSEMBLTranscript = variationDBAdaptor
                 .get(new Query(VariantDBAdaptor.QueryParams.GENE.key(), "ENST00000565764"), queryOptions);
-        assertEquals(630, resultENSEMBLTranscript.getNumResults());
+        assertEquals(20, resultENSEMBLTranscript.getNumResults());
         assertThat(resultENSEMBLTranscript.getResult().stream().map(variant -> variant.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("rs191188630", "rs191113747", "rs191348407", "rs191952842", "rs192035553",
                         "rs192722941", "rs192695313", "rs199730247", "rs199753073", "rs199934473", "rs200591220",
