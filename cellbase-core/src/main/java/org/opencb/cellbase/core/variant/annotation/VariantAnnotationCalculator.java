@@ -375,10 +375,8 @@ public class VariantAnnotationCalculator {
 
     private List<QueryResult<VariantAnnotation>> runAnnotationProcess(List<Variant> normalizedVariantList)
             throws InterruptedException, ExecutionException {
-        QueryOptions queryOptions;
         long globalStartTime = System.currentTimeMillis();
         long startTime;
-        queryOptions = new QueryOptions();
 
         // Object to be returned
         List<QueryResult<VariantAnnotation>> variantAnnotationResultList = new ArrayList<>(normalizedVariantList.size());
@@ -404,35 +402,35 @@ public class VariantAnnotationCalculator {
         FutureConservationAnnotator futureConservationAnnotator = null;
         Future<List<QueryResult>> conservationFuture = null;
         if (annotatorSet.contains("conservation")) {
-            futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, queryOptions);
+            futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty());
             conservationFuture = fixedThreadPool.submit(futureConservationAnnotator);
         }
 
         FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
         Future<List<QueryResult<Score>>> variantFunctionalScoreFuture = null;
         if (annotatorSet.contains("functionalScore")) {
-            futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, queryOptions);
+            futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, QueryOptions.empty());
             variantFunctionalScoreFuture = fixedThreadPool.submit(futureVariantFunctionalScoreAnnotator);
         }
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
         Future<List<QueryResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
-            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, queryOptions);
+            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, QueryOptions.empty());
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
 
         FutureRepeatsAnnotator futureRepeatsAnnotator = null;
         Future<List<QueryResult<Repeat>>> repeatsFuture = null;
         if (annotatorSet.contains("repeats")) {
-            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, queryOptions);
+            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, QueryOptions.empty());
             repeatsFuture = fixedThreadPool.submit(futureRepeatsAnnotator);
         }
 
         FutureCytobandAnnotator futureCytobandAnnotator = null;
         Future<List<QueryResult<Cytoband>>> cytobandFuture = null;
         if (annotatorSet.contains("cytoband")) {
-            futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, queryOptions);
+            futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, QueryOptions.empty());
             cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
         }
 
@@ -486,7 +484,7 @@ public class VariantAnnotationCalculator {
             if (annotatorSet.contains("consequenceType")) {
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i),
-                            geneList, true, queryOptions);
+                            geneList, true, QueryOptions.empty());
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
                         checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);

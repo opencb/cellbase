@@ -103,8 +103,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult<Gene> get(Query query, QueryOptions options) {
+    public QueryResult<Gene> get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
+        QueryOptions options = new QueryOptions(inputOptions);
         options = addPrivateExcludeOptions(options);
 
         if (postDBFilteringParametersEnabled(query)) {
