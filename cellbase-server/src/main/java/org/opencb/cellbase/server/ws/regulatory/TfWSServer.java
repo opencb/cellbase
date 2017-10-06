@@ -61,7 +61,7 @@ public class TfWSServer extends RegulatoryWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAllByTfbs(@PathParam("tfId")
                                              @ApiParam(name = "tfId", value = "String containing a comma separated list "
@@ -91,33 +91,33 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "transcripts.id",
                     value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992,ENST00000380152,"
                             + "ENST00000544455. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name",
                     value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.tfbs.name",
                     value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.diseases.id",
                     value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
                             + "OMIM:613390. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.diseases.name",
                     value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
                             + "kidney disease. Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.expression.tissue",
                     value = "Comma separated list of tissues for which expression values are available, "
                             + "e.g.: adipose tissue,heart atrium,tongue."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.name",
                     value = "Comma separated list of drug names, "
                             + "e.g.: BMN673,OLAPARIB,VELIPARIB."
                             + " Exact text matches will be returned",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getEnsemblGenes(@PathParam("tfId")
                                                 @ApiParam(name = "tfId", value = "String containing a comma separated "
