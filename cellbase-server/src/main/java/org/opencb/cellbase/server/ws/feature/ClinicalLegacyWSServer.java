@@ -64,42 +64,42 @@ public class ClinicalLegacyWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "source",
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "
                             + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "so",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
                     + "matches will be returned.",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene",
                     value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
                         + " ENSEMBL gene ids. Exact text matches will be returned.",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "phenotype",
                     value = "String to indicate the phenotypes to query. A text search will be run.",
-                            required = false, dataType = "list of strings", paramType = "query"),
+                            required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "clinvarId",
                     value = "Comma separated list of rcv ids, e.g.: RCV000033215",
-                            required = false, dataType = "list of strings", paramType = "query"),
+                            required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "rs",
                     value = "Comma separated list of rs ids, e.g.: rs6025",
-                            required = false, dataType = "list of strings", paramType = "query"),
+                            required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "cosmicId",
                     value = "Comma separated list of cosmic ids, e.g.: COSM306824",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "type",
                     value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
                         + "variants, e.g. \"single nucleotide variant\" ",
-                            required = false, dataType = "list of strings", paramType = "query"),
+                            required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "review",
                     value = "Comma separated list of review lables (only enabled for ClinVar variants), "
                         + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
-                            required = false, dataType = "list of strings", paramType = "query"),
+                            required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "clinvar-significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                         + "for ClinVar variants), e.g.: Benign",
-                            required = false, dataType = "list of strings", paramType = "query")
+                            required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll() {
         try {
@@ -124,42 +124,42 @@ public class ClinicalLegacyWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "source",
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "
                             + " are clinvar,cosmic or gwas. E.g.: clinvar,cosmic",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "so",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
                             + "matches will be returned.",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene",
                     value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
                             + " ENSEMBL gene ids. Exact text matches will be returned.",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "phenotype",
                     value = "String to indicate the phenotypes to query. A text search will be run.",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "clinvarId",
                     value = "Comma separated list of rcv ids, e.g.: RCV000033215",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "rs",
                     value = "Comma separated list of rs ids, e.g.: rs6025",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "cosmicId",
                     value = "Comma separated list of cosmic ids, e.g.: COSM306824",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "type",
                     value = "Comma separated list of variant types as stored in ClinVar (only enabled for ClinVar "
                             + "variants, e.g. \"single nucleotide variant\" ",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "review",
                     value = "Comma separated list of review lables (only enabled for ClinVar variants), "
                             + " e.g.: CRITERIA_PROVIDED_SINGLE_SUBMITTER",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "clinvar-significance",
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response groupBy(@DefaultValue("") @QueryParam("fields") @ApiParam(name = "fields",
             value = "Comma separated list of fields to group by. For example: alternate, "
