@@ -24,6 +24,12 @@ public class OntologiesParser extends CellBaseParser {
     private final Path filesDir;
     private final static String SUBCLASSOF = "subClassOf";
     private final static String IAO_0000115 = "IAO_0000115";
+    private final static String HASOBONAMESPACE = "hasOBONamespace";
+    private final static String ID = "id";
+    private final static String LABEL = "label";
+    private final static String HASDBXREF = "hasDbXref";
+    private final static String HASEXACTSYNONYM = "hasExactSynonym";
+    private final static String HASALTERNATIVEID = "hasAlternativeId";
 
     public OntologiesParser(Path filesDir, CellBaseFileSerializer serializer) {
         super(serializer);
@@ -43,10 +49,7 @@ public class OntologiesParser extends CellBaseParser {
     }
 
     private void parseGoFile(Path filePath) throws FileNotFoundException {
-        File f;
-        FileReader fr;
-        f = new File(filePath.toString());
-        fr = new FileReader(f);
+        FileReader fr = new FileReader(new File(filePath.toString()));
         logger.info("Parsing Gene Ontology...");
         logger.info("Creating ontology model...");
         Model model = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
@@ -57,8 +60,8 @@ public class OntologiesParser extends CellBaseParser {
         NodeIterator nodeIterator = model.listObjects();
         while (nodeIterator.hasNext()) {
             RDFNode rdfNode = nodeIterator.next();
-            OntologyTerm term = parseTermData(rdfNode.asResource());
-            serializer.serialize(term);
+            OntologyTerm ontologyTerm = parseTermData(rdfNode.asResource());
+            serializer.serialize(ontologyTerm);
             progressLogger.increment(1);
         }
     }
@@ -67,6 +70,9 @@ public class OntologiesParser extends CellBaseParser {
         OntologyTerm ontologyTerm = new OntologyTerm();
         StmtIterator stmtIterator = resource.listProperties();
         List<String> parentList = new ArrayList<>();
+        List<String> dbxrefList = new ArrayList<>();
+        List<String> synonymList = new ArrayList<>();
+        List<String> alternativeIdList = new ArrayList<>();
         while (stmtIterator.hasNext()) {
             Statement statement = stmtIterator.nextStatement();
             switch (statement.getPredicate().getLocalName()) {
@@ -78,29 +84,37 @@ public class OntologiesParser extends CellBaseParser {
                 case IAO_0000115:
                     ontologyTerm.setDefinition(statement.getString());
                     break;
-
+                case HASOBONAMESPACE:
+                    ontologyTerm.setNamespace(statement.getString());
+                    break;
+                case ID:
+                    ontologyTerm.setId(statement.getString());
+                    break;
+                case LABEL:
+                    ontologyTerm.setTerm(statement.getString());
+                    break;
+                case HASDBXREF:
+                    dbxrefList.add(statement.getString());
+                    break;
+                case HASEXACTSYNONYM:
+                    synonymList.add(statement.getString());
+                    break;
+                case HASALTERNATIVEID:
+                    alternativeIdList.add(statement.getString());
+                    break;
             }
-            term.setId();
-            if (statement.getPredicate().getLocalName().equals("subClassOf")) {
-                logger.info("{}: {}", statement.getPredicate().getLocalName(), statement.getResource().getLocalName());
-            } else {
-                logger.info("{}: {}", statement.getPredicate().getLocalName(), statement.getString());
-            }
+//            if (statement.getPredicate().getLocalName().equals("subClassOf")) {
+//                logger.info("{}: {}", statement.getPredicate().getLocalName(), statement.getResource().getLocalName());
+//            } else {
+//                logger.info("{}: {}", statement.getPredicate().getLocalName(), statement.getString());
+//            }
         }
-        ontologyTerm.setSubClassOf(parentList);
+        ontologyTerm.setSubClassOf(parentList.isEmpty() ? null : parentList);
+        ontologyTerm.setXrefs(dbxrefList.isEmpty() ? null : dbxrefList);
+        ontologyTerm.setSynonyms(synonymList.isEmpty() ? null : synonymList);
+        ontologyTerm.setAlternativeIds(alternativeIdList.isEmpty() ? null : alternativeIdList);
 
-        //        logger.info(rdfNode.asResource().getId().toString());
-//        logger.info(rdfNode.asResource().getNameSpace());
-//        logger.info(rdfNode.asResource().getProperty(model.createProperty("id")).getString());
-
-
-//        NodeIterator nodeIterator = model.listObjects();
-
-//        while (iter.hasNext()) {
-//            statement = iter.next();
-//            int a = 1;
-//        }
-
+        return ontologyTerm;
     }
 
 }
