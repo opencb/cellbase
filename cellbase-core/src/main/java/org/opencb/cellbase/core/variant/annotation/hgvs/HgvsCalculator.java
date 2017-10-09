@@ -334,7 +334,8 @@ public class HgvsCalculator {
                 // Within coding start and end
                 } else {
                     // no offset
-                    cdnaCoord.setReferencePosition(nearestExon.getCdsStart() + genomicPosition - nearestExon.getStart());
+                    cdnaCoord.setReferencePosition(nearestExon.getCdsStart()
+                            + genomicPosition - nearestExon.getGenomicCodingStart());
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
             // Non-exonic variant: intronic, intergenic
@@ -396,7 +397,7 @@ public class HgvsCalculator {
                 // Within coding start and end
                 } else {
                     // no offset
-                    cdnaCoord.setReferencePosition(nearestExon.getCdsStart() + nearestExon.getEnd() - genomicPosition);
+                    cdnaCoord.setReferencePosition(nearestExon.getCdsStart() + nearestExon.getGenomicCodingEnd() - genomicPosition);
                     cdnaCoord.setLandmark(CdnaCoord.Landmark.CDNA_START_CODON);
                 }
             // Non-exonic variant: intronic, intergenic

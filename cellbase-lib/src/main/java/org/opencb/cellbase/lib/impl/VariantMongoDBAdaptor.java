@@ -140,14 +140,14 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     @Override
-    public QueryResult<Variant> get(Query query, QueryOptions options) {
+    public QueryResult<Variant> get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
 
         // FIXME: patch to exclude annotation.additionalAttributes from the results - restore the call to the common
         // FIXME: addPrivateExcludeOptions as soon as the variation collection is updated with the new form of the
         // FIXME: additionalAttributes field
-        options = addVariantPrivateExcludeOptions(options);
+        QueryOptions options = addVariantPrivateExcludeOptions(new QueryOptions(inputOptions));
 //        options = addPrivateExcludeOptions(options);
 
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
@@ -179,9 +179,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     @Override
-    public Iterator<Variant> iterator(Query query, QueryOptions options) {
+    public Iterator<Variant> iterator(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
-        options = addPrivateExcludeOptions(options);
+        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
         return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, options).iterator());
     }
 

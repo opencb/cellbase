@@ -172,7 +172,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public void close() {
-
+        mongoDataStoreManager.close();
     }
 
 

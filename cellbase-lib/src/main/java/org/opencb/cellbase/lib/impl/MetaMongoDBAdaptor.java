@@ -52,8 +52,8 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseDBAdap
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
-        addPrivateExcludeOptions(options);
+    public QueryResult nativeGet(Query query, QueryOptions inputOptions) {
+        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
         return mongoDBCollection.find(new BsonDocument(), options);
     }
 
