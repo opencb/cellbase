@@ -132,7 +132,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                     }).collect(Collectors.toList()));
             return queryResult;
         } else {
-            logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+            logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
             return mongoDBCollection.find(bson, null, Gene.class, options);
         }
     }

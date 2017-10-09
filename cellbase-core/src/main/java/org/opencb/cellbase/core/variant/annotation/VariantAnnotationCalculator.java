@@ -89,7 +89,8 @@ public class VariantAnnotationCalculator {
     public enum AnnotationTimes {
         VARIATION_CALL, CONSERVATION_CALL, VARIANT_FUNCTIONAL_SCORE_CALL, CLINICAL_CALL, REPEATS_CALL, CYTOBAND_CALL,
         GENE_DEPENDENT_ANNOTATIONSET, GENE_DEPENDENT_ANNOTATIONSET_HGVS, GENE_DEPENDENT_ANNOTATIONSET_GENE_ANNOTATION,
-        GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE, TOTAL_ANNOTATION
+        GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE, GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_RUN,
+        TOTAL_ANNOTATION;
     }
 
     private static Map<AnnotationTimes, AtomicLong> times = new EnumMap<>(AnnotationTimes.class);
@@ -484,7 +485,9 @@ public class VariantAnnotationCalculator {
         /*
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
          */
+        StopWatch geneAnnotationWatch = createStarted();
         List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
+        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_GENE_ANNOTATION).addAndGet(geneAnnotationWatch.getNanoTime());
         Queue<Variant> variantBuffer = new LinkedList<>();
         startTime = System.nanoTime();
         for (int i = 0; i < normalizedVariantList.size(); i++) {
@@ -504,7 +507,7 @@ public class VariantAnnotationCalculator {
             variantAnnotation.setReference(normalizedVariantList.get(i).getReference());
             variantAnnotation.setAlternate(normalizedVariantList.get(i).getAlternate());
 
-            StopWatch geneAnnotationWatch = createStarted();
+            geneAnnotationWatch = createStarted();
             List<Gene> variantGeneList = setGeneAnnotation(batchGeneList, normalizedVariantList.get(i));
             times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_GENE_ANNOTATION).addAndGet(geneAnnotationWatch.getNanoTime());
 
@@ -1275,8 +1278,13 @@ public class VariantAnnotationCalculator {
             overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
+        StopWatch runWatch = createStarted();
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
                 overlapsRegulatoryRegion, queryOptions);
+        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_RUN)
+                .addAndGet(runWatch.getNanoTime());
+
+        StopWatch proteinAnnotationWatch = createStarted();
         if (variant.getType() == VariantType.SNV
                 || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
@@ -1285,6 +1293,9 @@ public class VariantAnnotationCalculator {
                 }
             }
         }
+        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_RUN)
+                .addAndGet(proteinAnnotationWatch.getNanoTime());
+
         return consequenceTypeList;
     }
 
