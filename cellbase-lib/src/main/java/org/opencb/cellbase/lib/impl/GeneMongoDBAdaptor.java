@@ -103,8 +103,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public QueryResult<Gene> get(Query query, QueryOptions options) {
+    public QueryResult<Gene> get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
+        QueryOptions options = new QueryOptions(inputOptions);
         options = addPrivateExcludeOptions(options);
 
         if (postDBFilteringParametersEnabled(query)) {
@@ -131,7 +132,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                     }).collect(Collectors.toList()));
             return queryResult;
         } else {
-            logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+            logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
             return mongoDBCollection.find(bson, null, Gene.class, options);
         }
     }

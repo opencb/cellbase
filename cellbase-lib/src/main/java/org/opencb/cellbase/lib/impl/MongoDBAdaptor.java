@@ -435,7 +435,8 @@ public class MongoDBAdaptor {
             Document query = queries.get(i);
             QueryResult queryResult = new QueryResult();
             queryResult.setId(ids.get(i).toString());
-
+            logger.debug("query: {}", query.toJson());
+            logger.debug("QueryOptions: {}", options.toJson());
             // Execute query and calculate time
             dbTimeStart = System.currentTimeMillis();
             if (options.containsKey("count") && options.getBoolean("count")) {

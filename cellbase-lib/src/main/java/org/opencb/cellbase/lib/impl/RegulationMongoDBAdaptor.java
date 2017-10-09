@@ -107,9 +107,9 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public QueryResult<RegulatoryFeature> get(Query query, QueryOptions options) {
+    public QueryResult<RegulatoryFeature> get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
-        options = addPrivateExcludeOptions(options);
+        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return mongoDBCollection.find(bson, null, RegulatoryFeature.class, options);
     }
