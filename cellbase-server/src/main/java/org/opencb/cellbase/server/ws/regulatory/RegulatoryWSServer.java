@@ -57,13 +57,13 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureClass",
                     value = "Comma separated list of regulatory region classes, e.g.: "
                             + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
                             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureClass",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureTypes() {
         try {
@@ -82,13 +82,13 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
                     value = "Comma separated list of regulatory region types, e.g.: "
                             + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
                             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureClasses() {
         try {
@@ -108,19 +108,19 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
                     value = "Comma separated list of regulatory region types, e.g.: "
                             + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
                             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
-                    required = false, dataType = "list of strings", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureClass",
                     value = "Comma separated list of regulatory region classes, e.g.: "
                             + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
                             + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureClass",
-                    required = false, dataType = "list of strings", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll() {
         try {

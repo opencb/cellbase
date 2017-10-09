@@ -34,8 +34,8 @@
         url = decodeURIComponent(url[1]);
         console.log(url);
       } else {
-        url = "http://" + window.location.hostname;
-        if (window.location.port != "80") {
+        url = window.location.protocol + "//" + window.location.hostname;
+        if (window.location.port !== "80") {
           url += ":" + window.location.port;
         }
 //        url += "/cellbase/webservices/rest/swagger.json";
