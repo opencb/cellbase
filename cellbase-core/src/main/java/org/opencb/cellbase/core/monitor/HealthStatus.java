@@ -9,6 +9,8 @@ public class HealthStatus {
 
     private ApplicationDetails application;
     private DependenciesStatus dependencies;
+    private Infrastructure infrastructure;
+    private Service service;
 
     public HealthStatus() {
     }
@@ -17,16 +19,36 @@ public class HealthStatus {
         return dependencies;
     }
 
-    public void setDependencies(DependenciesStatus dependencies) {
+    public HealthStatus setDependencies(DependenciesStatus dependencies) {
         this.dependencies = dependencies;
+        return this;
     }
 
     public ApplicationDetails getApplication() {
         return application;
     }
 
-    public void setApplication(ApplicationDetails application) {
+    public HealthStatus setApplication(ApplicationDetails application) {
         this.application = application;
+        return this;
+    }
+
+    public Infrastructure getInfrastructure() {
+        return infrastructure;
+    }
+
+    public HealthStatus setInfrastructure(Infrastructure infrastructure) {
+        this.infrastructure = infrastructure;
+        return this;
+    }
+
+    public Service getService() {
+        return service;
+    }
+
+    public HealthStatus setService(Service service) {
+        this.service = service;
+        return this;
     }
 
     public static class ApplicationDetails {
@@ -170,5 +192,69 @@ public class HealthStatus {
             }
         }
 
+    }
+
+    public static class Infrastructure {
+        private int endpointVersion;
+        private String serviceDiscovery;
+
+        public Infrastructure(int endpointVersion, String serviceDiscovery) {
+            this.endpointVersion = endpointVersion;
+            this.serviceDiscovery = serviceDiscovery;
+        }
+
+        public int getEndpointVersion() {
+            return endpointVersion;
+        }
+
+        public Infrastructure setEndpointVersion(int endpointVersion) {
+            this.endpointVersion = endpointVersion;
+            return this;
+        }
+
+        public String getServiceDiscovery() {
+            return serviceDiscovery;
+        }
+
+        public Infrastructure setServiceDiscovery(String serviceDiscovery) {
+            this.serviceDiscovery = serviceDiscovery;
+            return this;
+        }
+    }
+
+    public static class Service {
+
+        enum ServiceStatus { OK, DEGRADED, DOWN, MAINTENANCE }
+
+        private String name;
+        private String applicationTier;
+        private ServiceStatus status;
+
+        public String getName() {
+            return name;
+        }
+
+        public Service setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public String getApplicationTier() {
+            return applicationTier;
+        }
+
+        public Service setApplicationTier(String applicationTier) {
+            this.applicationTier = applicationTier;
+            return this;
+        }
+
+        public ServiceStatus getStatus() {
+            return status;
+        }
+
+        public Service setStatus(ServiceStatus status) {
+            this.status = status;
+            return this;
+        }
     }
 }

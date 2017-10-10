@@ -20,8 +20,6 @@ import java.util.Map;
  */
 public class Monitor {
 
-    enum ServiceStatus { OK, DEGRADED, DOWN, MAINTENANCE }
-
     private static final String CELLBASE = "CellBase";
     private static final String CELLBASE_GEL_ZONE = "cellbase.gel.zone";
     private static final String NONE = "None";
@@ -35,8 +33,6 @@ public class Monitor {
     WebTarget webTarget;
 
     private final DBAdaptorFactory dbAdaptorFactory;
-
-    private ServiceStatus serviceStatus = ServiceStatus.OK;
 
     static {
         jsonObjectMapper = new ObjectMapper();
@@ -54,10 +50,14 @@ public class Monitor {
 
         healthStatus.setApplication(getApplicationDetails());
         healthStatus.setDependencies(getDependenciesStatus(species, assembly));
-        healthStatus.setInfrastructure(new Infrastructure(1, NONE));
-        healthStatus.setService(new ServiceStatus(CELLBASE, CELLBASE_GEL_ZONE, serviceStatus));
+        healthStatus.setInfrastructure(new HealthStatus.Infrastructure(1, NONE));
+        healthStatus.setService(getServiceStatus(healthStatus.getDependencies()));
 
         return healthStatus;
+    }
+
+    private HealthStatus.Service getServiceStatus(HealthStatus.DependenciesStatus dependencies) {
+        return null;
     }
 
     private HealthStatus.DependenciesStatus getDependenciesStatus(String species, String assembly) {

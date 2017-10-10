@@ -230,6 +230,11 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return statusMap;
     }
 
+    private String getRepSetResponseTime(String species, String assembly) {
+        GeneDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
+        return geneDBAdaptor.first().getDbTime() + "ms";
+    }
+
     private String getResponseTime(String memberName) {
         try {
             StopWatch uptime = new StopWatch();
@@ -247,16 +252,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
         return null;
     }
-
-    private MongoDataStoreManager getMemberDataStoreManager(String memberName) {
-
-        if (!memberDataStoreManagerMap.containsKey(memberName)) {
-            CREATE NEW DATASTOREMANAGER
-            memberDataStoreManagerMap.put(memberName, dataStoreManager);
-        }
-        return memberDataStoreManagerMap.get(memberName);
-    }
-
 
     @Override
     public GenomeDBAdaptor getGenomeDBAdaptor(String species) {
