@@ -90,7 +90,8 @@ public class VariantAnnotationCalculator {
         VARIATION_CALL, CONSERVATION_CALL, VARIANT_FUNCTIONAL_SCORE_CALL, CLINICAL_CALL, REPEATS_CALL, CYTOBAND_CALL,
         GENE_DEPENDENT_ANNOTATIONSET, GENE_DEPENDENT_ANNOTATIONSET_HGVS, GENE_DEPENDENT_ANNOTATIONSET_GENE_ANNOTATION,
         GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE, GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_RUN,
-        TOTAL_ANNOTATION;
+        TOTAL_ANNOTATION, GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_PROTEIN_ANNOTATION,
+        GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_REGULATORY;
     }
 
     private static Map<AnnotationTimes, AtomicLong> times = new EnumMap<>(AnnotationTimes.class);
@@ -1275,25 +1276,25 @@ public class VariantAnnotationCalculator {
                                                          boolean regulatoryAnnotation, QueryOptions queryOptions) {
         boolean[] overlapsRegulatoryRegion = {false, false};
         if (regulatoryAnnotation) {
+            StopWatch regulatoryWatch = createStarted();
             overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);
+            times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_REGULATORY).addAndGet(regulatoryWatch.getNanoTime());
         }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         StopWatch runWatch = createStarted();
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
                 overlapsRegulatoryRegion, queryOptions);
-        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_RUN)
-                .addAndGet(runWatch.getNanoTime());
+        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_RUN).addAndGet(runWatch.getNanoTime());
 
         StopWatch proteinAnnotationWatch = createStarted();
-        if (variant.getType() == VariantType.SNV
-                || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
+        if (variant.getType() == VariantType.SNV || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
                 if (nonSynonymous(consequenceType, variant.getChromosome().equals("MT"))) {
                     consequenceType.setProteinVariantAnnotation(getProteinAnnotation(consequenceType));
                 }
             }
         }
-        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_RUN)
+        times.get(AnnotationTimes.GENE_DEPENDENT_ANNOTATIONSET_CONSEQUENCE_TYPE_PROTEIN_ANNOTATION)
                 .addAndGet(proteinAnnotationWatch.getNanoTime());
 
         return consequenceTypeList;
