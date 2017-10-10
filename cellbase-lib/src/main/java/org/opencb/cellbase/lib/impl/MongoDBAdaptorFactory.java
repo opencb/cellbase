@@ -16,6 +16,11 @@
 
 package org.opencb.cellbase.lib.impl;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.bson.Document;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -26,12 +31,19 @@ import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
@@ -42,6 +54,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     private static final String SET = "set";
     private static final String STATE_STR = "stateStr";
     private static final String NAME = "name";
+    private static final String COLON = ":";
+    private static final String REPLICA_SET = "replica_set";
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
@@ -188,22 +202,50 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         Document statusDocument = mongoDatastore.getReplSetStatus();
+        Map<String, HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
+                = new HashMap<>(4);
+
+        String repset = (String) statusDocument.get(SET);
+        if (StringUtils.isNotBlank(repset)) {
+            HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                    = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            datastoreStatus.setRepset(repset);
+            // Overall database response time is measured by raising a query to Gene collection
+            datastoreStatus.setResponseTime(getRepSetResponseTime(species, assembly));
+            datastoreStatus.setRole(REPLICA_SET);
+            statusMap.put(repset, datastoreStatus);
+        }
 
         for (Map memberStatus : (List<Map>) statusDocument.get(MEMBERS)) {
             HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
                     = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
-            datastoreStatus.setRepset((String) statusDocument.get(SET));
+            datastoreStatus.setRepset(repset);
             datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
-            datastoreStatus.setResponseTime(getResponseTime((String) memberStatus.get(NAME)));
-
+            String memberName = ((String) memberStatus.get(NAME)).split(COLON)[0];
+            // Per-machine response time is measured by doing ping to the machine
+            datastoreStatus.setResponseTime(getResponseTime(memberName));
+            statusMap.put(memberName, datastoreStatus);
         }
+
+        return statusMap;
     }
 
     private String getResponseTime(String memberName) {
-        MongoDataStoreManager dataStoreManager = getMemberDataStoreManager(memberName);
-        MongoDatastore mongoDatastore = dataStoreManager.get(database, mongoDBConfiguration);
+        try {
+            StopWatch uptime = new StopWatch();
+            uptime.start();
+            InetAddress address = InetAddress.getByName(memberName);
+            boolean chkConnection = address.isReachable(1000);
+            if (chkConnection) {
+                return String.valueOf(TimeUnit.NANOSECONDS.toMinutes(uptime.getNanoTime()));
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        return mongoDatastore.getResponseTime();
+        return null;
     }
 
     private MongoDataStoreManager getMemberDataStoreManager(String memberName) {

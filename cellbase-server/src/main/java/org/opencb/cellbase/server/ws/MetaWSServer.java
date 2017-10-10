@@ -182,7 +182,7 @@ public class MetaWSServer extends GenericRestWSServer {
             response = SpeciesProperties.class, responseContainer = "QueryResponse")
     public Response status() {
         Monitor monitor = new Monitor(LOCALHOST_REST_API, dbAdaptorFactory);
-        HealthStatus health = monitor.run();
+        HealthStatus health = monitor.run(this.species, this.assembly);
 
         QueryResult queryResult = new QueryResult();
         queryResult.setId(STATUS);
@@ -205,7 +205,7 @@ public class MetaWSServer extends GenericRestWSServer {
         applicationDetails.setMaintainer(MAINTAINER_EMAIL);
         applicationDetails.setServer(getServerName());
         applicationDetails.setStarted(serviceStartDate);
-        applicationDetails.setUptime(TimeUnit.NANOSECONDS.toMinutes(uptime.getNanoTime()) + " minutes");
+            applicationDetails.setUptime(TimeUnit.NANOSECONDS.toMinutes(uptime.getNanoTime()) + " minutes");
         applicationDetails.setVersion(
                 new HealthStatus.ApplicationDetails.Version(GitRepositoryState.get().getBuildVersion(),
                         GitRepositoryState.get().getCommitId().substring(0, 8)));

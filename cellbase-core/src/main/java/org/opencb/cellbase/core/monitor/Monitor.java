@@ -49,22 +49,21 @@ public class Monitor {
         this.dbAdaptorFactory = dbAdaptorFactory;
     }
 
-    public HealthStatus run() {
+    public HealthStatus run(String species, String assembly) {
         HealthStatus healthStatus = new HealthStatus();
 
         healthStatus.setApplication(getApplicationDetails());
-        healthStatus.setDependencies(getDependenciesStatus());
-        healthStatus.setApis(getApisStatus());
+        healthStatus.setDependencies(getDependenciesStatus(species, assembly));
         healthStatus.setInfrastructure(new Infrastructure(1, NONE));
         healthStatus.setService(new ServiceStatus(CELLBASE, CELLBASE_GEL_ZONE, serviceStatus));
 
         return healthStatus;
     }
 
-    private HealthStatus.DependenciesStatus getDependenciesStatus() {
+    private HealthStatus.DependenciesStatus getDependenciesStatus(String species, String assembly) {
         HealthStatus.DependenciesStatus.DatastoreDependenciesStatus datastores
                 = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus();
-        datastores.setMongodb(dbAdaptorFactory.getDatabaseStatus());
+        datastores.setMongodb(dbAdaptorFactory.getDatabaseStatus(species, assembly));
         HealthStatus.DependenciesStatus dependenciesStatus = new HealthStatus.DependenciesStatus();
         dependenciesStatus.setDatastores(datastores);
 
