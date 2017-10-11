@@ -1,7 +1,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -40,7 +40,8 @@ public final class VariantClient extends FeatureClient<Variant> {
 
     public QueryResponse<VariantAnnotation> getAnnotationByVariantIds(List<String> ids, QueryOptions options, boolean post)
             throws IOException {
-        return execute(ids, "annotation", options, VariantAnnotation.class, post);
+        QueryResponse<VariantAnnotation> result = execute(ids, "annotation", options, VariantAnnotation.class, post);
+        return initRequiredAnnotation(result);
     }
 
 
@@ -68,7 +69,9 @@ public final class VariantClient extends FeatureClient<Variant> {
     }
 
     public QueryResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
-        return execute(getVariantAnnotationIds(variants), "annotation", options, VariantAnnotation.class, post);
+        QueryResponse<VariantAnnotation> result = execute(getVariantAnnotationIds(variants), "annotation", options,
+                VariantAnnotation.class, post);
+        return initRequiredAnnotation(result);
     }
 
 
@@ -89,4 +92,72 @@ public final class VariantClient extends FeatureClient<Variant> {
         return variantIds;
     }
 
+    private QueryResponse<VariantAnnotation> initRequiredAnnotation(QueryResponse<VariantAnnotation> queryResponse) {
+        for (int i = 0; i < queryResponse.getResponse().size(); i++) {
+            VariantAnnotation annotation = queryResponse.getResponse().get(i).first();
+            // Patch to remove by updating the Evidence avdl model
+            if (annotation.getTraitAssociation() != null) {
+                for (EvidenceEntry evidenceEntry : annotation.getTraitAssociation()) {
+                    if (evidenceEntry.getSubmissions() == null) {
+                        evidenceEntry.setSubmissions(Collections.emptyList());
+                    }
+                    if (evidenceEntry.getHeritableTraits() == null) {
+                        evidenceEntry.setHeritableTraits(Collections.emptyList());
+                    } else {
+                        for (HeritableTrait heritableTrait : evidenceEntry.getHeritableTraits()) {
+                            if (heritableTrait.getInheritanceMode() == null) {
+                                heritableTrait.setInheritanceMode(ModeOfInheritance.unknown);
+                            }
+                        }
+                    }
+                    if (evidenceEntry.getGenomicFeatures() == null) {
+                        evidenceEntry.setGenomicFeatures(Collections.emptyList());
+                    }
+                    if (evidenceEntry.getAdditionalProperties() == null) {
+                        evidenceEntry.setAdditionalProperties(Collections.emptyList());
+                    }
+                    if (evidenceEntry.getEthnicity() == null) {
+                        evidenceEntry.setEthnicity(EthnicCategory.Z);
+                    }
+                    if (evidenceEntry.getBibliography() == null) {
+                        evidenceEntry.setBibliography(Collections.emptyList());
+                    }
+                    if (evidenceEntry.getSomaticInformation() != null) {
+                        if (evidenceEntry.getSomaticInformation().getSampleSource() == null) {
+                            evidenceEntry.getSomaticInformation().setSampleSource("");
+                        }
+                        if (evidenceEntry.getSomaticInformation().getTumourOrigin() == null) {
+                            evidenceEntry.getSomaticInformation().setTumourOrigin("");
+                        }
+                    }
+                }
+            }
+            // TODO This data model is obsolete, this code must be removed
+            if (annotation.getVariantTraitAssociation() != null) {
+                if (annotation.getVariantTraitAssociation().getCosmic() != null) {
+                    for (Cosmic cosmic : annotation.getVariantTraitAssociation().getCosmic()) {
+                        if (cosmic.getSiteSubtype() == null) {
+                            cosmic.setSiteSubtype("");
+                        }
+                        if (cosmic.getSampleSource() == null) {
+                            cosmic.setSampleSource("");
+                        }
+                        if (cosmic.getTumourOrigin() == null) {
+                            cosmic.setTumourOrigin("");
+                        }
+                        if (cosmic.getHistologySubtype() == null) {
+                            cosmic.setHistologySubtype("");
+                        }
+                        if (cosmic.getPrimarySite() == null) {
+                            cosmic.setPrimarySite("");
+                        }
+                        if (cosmic.getPrimaryHistology() == null) {
+                            cosmic.setPrimaryHistology("");
+                        }
+                    }
+                }
+            }
+        }
+        return queryResponse;
+    }
 }
