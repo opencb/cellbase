@@ -7,6 +7,8 @@ import java.util.Map;
  */
 public class HealthStatus {
 
+    public enum ServiceStatus { OK, DEGRADED, DOWN, MAINTENANCE }
+
     private ApplicationDetails application;
     private DependenciesStatus dependencies;
     private Infrastructure infrastructure;
@@ -58,6 +60,10 @@ public class HealthStatus {
         private String started;
         private String uptime;
         private Version version;
+        // this serviceStatus field is meant to provide UP, MAINTENANCE or DOWN i.e. information about the status of the
+        // app including if the maintenance file exists in the server, but does NOT check database status. In other words,
+        // DEGRADED value will never be used for this field and should be checked out in a different way
+        private ServiceStatus serviceStatus;
 
         public ApplicationDetails() {
         }
@@ -66,40 +72,54 @@ public class HealthStatus {
             return maintainer;
         }
 
-        public void setMaintainer(String maintainer) {
+        public ApplicationDetails setMaintainer(String maintainer) {
             this.maintainer = maintainer;
+            return this;
         }
 
         public String getServer() {
             return server;
         }
 
-        public void setServer(String server) {
+        public ApplicationDetails setServer(String server) {
             this.server = server;
+            return this;
         }
 
         public String getStarted() {
             return started;
         }
 
-        public void setStarted(String started) {
+        public ApplicationDetails setStarted(String started) {
             this.started = started;
+            return this;
         }
 
         public String getUptime() {
             return uptime;
         }
 
-        public void setUptime(String uptime) {
+        public ApplicationDetails setUptime(String uptime) {
             this.uptime = uptime;
+            return this;
         }
 
         public Version getVersion() {
             return version;
         }
 
-        public void setVersion(Version version) {
+        public ApplicationDetails setVersion(Version version) {
             this.version = version;
+            return this;
+        }
+
+        public ServiceStatus getServiceStatus() {
+            return serviceStatus;
+        }
+
+        public ApplicationDetails setServiceStatus(ServiceStatus serviceStatus) {
+            this.serviceStatus = serviceStatus;
+            return this;
         }
 
         public static class Version {
@@ -223,9 +243,6 @@ public class HealthStatus {
     }
 
     public static class Service {
-
-        enum ServiceStatus { OK, DEGRADED, DOWN, MAINTENANCE }
-
         private String name;
         private String applicationTier;
         private ServiceStatus status;

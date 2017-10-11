@@ -42,6 +42,8 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -124,7 +126,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/{category}/{subcategory}")
     @ApiOperation(httpMethod = "GET", value = "To be fixed",
-            response = SpeciesProperties.class, responseContainer = "QueryResponse", hidden = true)
+            response = String.class, responseContainer = "QueryResponse", hidden = true)
     public Response getSubcategory(@PathParam("category") String category,
                                    @PathParam("subcategory") String subcategory) {
         return getCategory(category);
@@ -146,7 +148,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/about")
     @ApiOperation(httpMethod = "GET", value = "Returns info about current CellBase code.",
-            response = SpeciesProperties.class, responseContainer = "QueryResponse")
+            response = Map.class, responseContainer = "QueryResponse")
     public Response getAbout() {
         Map<String, String> info = new HashMap<>(3);
         info.put("Program: ", "CellBase (OpenCB)");
@@ -165,7 +167,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/ping")
     @ApiOperation(httpMethod = "GET", value = "Checks if the app is alive. Returns pong.",
-            response = SpeciesProperties.class, responseContainer = "QueryResponse")
+            response = String.class, responseContainer = "QueryResponse")
     public Response ping() {
         QueryResult queryResult = new QueryResult();
         queryResult.setId(PONG);
@@ -179,14 +181,16 @@ public class MetaWSServer extends GenericRestWSServer {
     @Path("/status")
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other API's.",
-            response = SpeciesProperties.class, responseContainer = "QueryResponse")
+            response = Map.class, responseContainer = "QueryResponse")
     public Response status() {
         Monitor monitor = new Monitor(LOCALHOST_REST_API, dbAdaptorFactory);
         HealthStatus health = monitor.run(this.species, this.assembly);
 
-        QueryResult queryResult = new QueryResult();
+        QueryResult<Map<String, HealthStatus>> queryResult = new QueryResult();
         queryResult.setId(STATUS);
-        queryResult.setDbTime(-1);
+        queryResult.setDbTime(0);
+        queryResult.setNumTotalResults(1);
+        queryResult.setNumResults(1);
         Map<String, HealthStatus> healthMap = new HashMap<String, HealthStatus>(1);
         healthMap.put(HEALTH, health);
         queryResult.setResult(Collections.singletonList(healthMap));
@@ -197,21 +201,33 @@ public class MetaWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/service_details")
-    @ApiOperation(httpMethod = "GET", value = "Returns details of this service such as maintainer email, serviceStartDate,"
+    @ApiOperation(httpMethod = "GET", value = "Returns details of this service such as maintainer email, SERVICE_START_DATE,"
             + " version, commit, etc.",
-            response = SpeciesProperties.class, responseContainer = "QueryResponse")
+            response = HealthStatus.ApplicationDetails.class, responseContainer = "QueryResponse")
     public Response serviceDetails() {
         HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
         applicationDetails.setMaintainer(MAINTAINER_EMAIL);
         applicationDetails.setServer(getServerName());
-        applicationDetails.setStarted(serviceStartDate);
-            applicationDetails.setUptime(TimeUnit.NANOSECONDS.toMinutes(uptime.getNanoTime()) + " minutes");
+        applicationDetails.setStarted(SERVICE_START_DATE);
+        applicationDetails.setUptime(TimeUnit.NANOSECONDS.toMinutes(WATCH.getNanoTime()) + " minutes");
         applicationDetails.setVersion(
                 new HealthStatus.ApplicationDetails.Version(GitRepositoryState.get().getBuildVersion(),
                         GitRepositoryState.get().getCommitId().substring(0, 8)));
+
+        // this serviceStatus field is meant to provide UP, MAINTENANCE or DOWN i.e. information about the status of the
+        // app including if the maintenance file exists in the server, but does NOT check database status. In other words,
+        // DEGRADED value will never be used for this field and should be checked out in a different way
+        if (Files.exists(Paths.get(cellBaseConfiguration.getMaintenanceFlagFile()))) {
+            applicationDetails.setServiceStatus(HealthStatus.ServiceStatus.MAINTENANCE);
+        } else {
+            applicationDetails.setServiceStatus(HealthStatus.ServiceStatus.OK);
+        }
+
         QueryResult queryResult = new QueryResult();
         queryResult.setId("service_details");
         queryResult.setDbTime(0);
+        queryResult.setNumTotalResults(1);
+        queryResult.setNumResults(1);
         queryResult.setResult(Collections.singletonList(applicationDetails));
 
         return createOkResponse(queryResult);

@@ -12,7 +12,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,9 +27,11 @@ public class Monitor {
     private static final String VERSION = "v4";  // TODO: CAREFUL hardcoded to v4
     private static final String META = "meta";
     private static final String SERVICE_DETAILS = "service_details";
+    private static final String CELLBASE_TOMCAT = "CellBase-tomcat";
+    private static final String REPLICA_SET = "replica_set";
     private static ObjectMapper jsonObjectMapper;
 
-    WebTarget webTarget;
+    private WebTarget webTarget;
 
     private final DBAdaptorFactory dbAdaptorFactory;
 
@@ -51,13 +52,56 @@ public class Monitor {
         healthStatus.setApplication(getApplicationDetails());
         healthStatus.setDependencies(getDependenciesStatus(species, assembly));
         healthStatus.setInfrastructure(new HealthStatus.Infrastructure(1, NONE));
-        healthStatus.setService(getServiceStatus(healthStatus.getDependencies()));
+        healthStatus.setService(getService(healthStatus.getApplication(), healthStatus.getDependencies()));
 
         return healthStatus;
     }
 
-    private HealthStatus.Service getServiceStatus(HealthStatus.DependenciesStatus dependencies) {
-        return null;
+    private HealthStatus.Service getService(HealthStatus.ApplicationDetails applicationDetails,
+                                            HealthStatus.DependenciesStatus dependencies) {
+        HealthStatus.Service service = new HealthStatus.Service();
+        service.setName(CELLBASE)
+               .setApplicationTier(CELLBASE_TOMCAT);
+
+        // application details object provides just UP, MAINTENANCE or DOWN i.e. information about the status of the app
+        // including if the maintenance file exists in the server, but does not check database status
+        if (HealthStatus.ServiceStatus.OK.equals(applicationDetails.getServiceStatus())) {
+            service.setStatus(getOverallServiceStatus(dependencies));
+        } else {
+            service.setStatus(applicationDetails.getServiceStatus());
+        }
+        return service;
+    }
+
+    private HealthStatus.ServiceStatus getOverallServiceStatus(HealthStatus.DependenciesStatus dependencies) {
+        Map<String, HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> datastoreStatusMap
+                = dependencies.getDatastores().getMongodb();
+
+        if (datastoreStatusMap != null && datastoreStatusMap.size() == 0) {
+            int downServers = 0;
+            for (String datastoreDependencyName : datastoreStatusMap.keySet()) {
+                if (datastoreStatusMap.get(datastoreDependencyName).getResponseTime() == null) {
+                    downServers++;
+                    // entry with role "replica_set" represents the overall database and its response time is measured
+                    // by a direct query over one collection. If this response time is not there, the database is down
+                    if (REPLICA_SET.equals(datastoreStatusMap.get(datastoreDependencyName).getRole())) {
+                        return HealthStatus.ServiceStatus.DOWN;
+                    }
+                }
+            }
+
+            if (downServers == 0) {
+                return HealthStatus.ServiceStatus.OK;
+            // If the number of servers not responding is lower than the number of dependencies it's probably a
+            // repl set in which one or more machines are down, but not all of them
+            } else if (downServers < datastoreStatusMap.size()) {
+                return HealthStatus.ServiceStatus.DEGRADED;
+            } else {
+                return HealthStatus.ServiceStatus.DOWN;
+            }
+        } else {
+            return HealthStatus.ServiceStatus.DOWN;
+        }
     }
 
     private HealthStatus.DependenciesStatus getDependenciesStatus(String species, String assembly) {
@@ -83,10 +127,9 @@ public class Monitor {
             return parseResult(jsonString, HealthStatus.ApplicationDetails.class).getResponse().get(0).getResult().get(0);
         } catch (IOException e) {
             e.printStackTrace();
-            serviceStatus = ServiceStatus.DOWN;
+            HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
+            return applicationDetails.setServiceStatus(HealthStatus.ServiceStatus.DOWN);
         }
-
-        return null;
     }
 
     private <U> QueryResponse<U> parseResult(String json, Class<U> clazz) throws IOException {

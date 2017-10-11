@@ -126,8 +126,8 @@ public class GenericRestWSServer implements IWSServer {
 
     protected static ObjectMapper jsonObjectMapper;
     protected static ObjectWriter jsonObjectWriter;
-    protected static final String serviceStartDate;
-    protected static final StopWatch uptime;
+    protected static final String SERVICE_START_DATE;
+    protected static final StopWatch WATCH;
 
     protected long startTime;
     protected long endTime;
@@ -155,9 +155,9 @@ public class GenericRestWSServer implements IWSServer {
     private static final String OK = "ok";
 
     static {
-        serviceStartDate = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-        uptime = new StopWatch();
-        uptime.start();
+        SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        WATCH = new StopWatch();
+        WATCH.start();
 
         logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
         logger.info("Static block, creating MongoDBAdapatorFactory");

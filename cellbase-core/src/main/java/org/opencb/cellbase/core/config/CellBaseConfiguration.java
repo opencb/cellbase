@@ -31,6 +31,7 @@ public class CellBaseConfiguration {
     private String version;
     private String apiVersion;
     private String wiki;
+    private String maintenanceFlagFile;
     private String defaultOutdir;
     private Databases databases;
     private DownloadProperties download;
@@ -64,6 +65,14 @@ public class CellBaseConfiguration {
 
     public void setWiki(String wiki) {
         this.wiki = wiki;
+    }
+
+    public String getMaintenanceFlagFile() {
+        return maintenanceFlagFile;
+    }
+
+    public void setMaintenanceFlagFile(String maintenanceFlagFile) {
+        this.maintenanceFlagFile = maintenanceFlagFile;
     }
 
     public Databases getDatabases() {
