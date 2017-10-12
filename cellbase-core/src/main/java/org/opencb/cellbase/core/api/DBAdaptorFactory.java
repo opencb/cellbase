@@ -51,7 +51,7 @@ public abstract class DBAdaptorFactory {
 
     public abstract void close();
 
-    public abstract Map<String, HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
+    public abstract Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
     getDatabaseStatus(String species, String assembly);
 
     public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species);

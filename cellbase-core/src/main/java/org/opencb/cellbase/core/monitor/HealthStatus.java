@@ -10,20 +10,10 @@ public class HealthStatus {
     public enum ServiceStatus { OK, DEGRADED, DOWN, MAINTENANCE }
 
     private ApplicationDetails application;
-    private DependenciesStatus dependencies;
     private Infrastructure infrastructure;
     private Service service;
 
     public HealthStatus() {
-    }
-
-    public DependenciesStatus getDependencies() {
-        return dependencies;
-    }
-
-    public HealthStatus setDependencies(DependenciesStatus dependencies) {
-        this.dependencies = dependencies;
-        return this;
     }
 
     public ApplicationDetails getApplication() {
@@ -64,6 +54,7 @@ public class HealthStatus {
         // app including if the maintenance file exists in the server, but does NOT check database status. In other words,
         // DEGRADED value will never be used for this field and should be checked out in a different way
         private ServiceStatus serviceStatus;
+        private DependenciesStatus dependencies;
 
         public ApplicationDetails() {
         }
@@ -122,9 +113,21 @@ public class HealthStatus {
             return this;
         }
 
+        public DependenciesStatus getDependencies() {
+            return dependencies;
+        }
+
+        public ApplicationDetails setDependencies(DependenciesStatus dependencies) {
+            this.dependencies = dependencies;
+            return this;
+        }
+
         public static class Version {
             private String tagName;
             private String commit;
+
+            public Version() {
+            }
 
             public Version(String tagName, String commit) {
                 this.tagName = tagName;
@@ -147,71 +150,70 @@ public class HealthStatus {
                 this.commit = commit;
             }
         }
-    }
+        public static class DependenciesStatus {
 
-    public static class DependenciesStatus {
+            private DatastoreDependenciesStatus datastores;
 
-        private DatastoreDependenciesStatus datastores;
-
-        public DependenciesStatus() {
-        }
-
-        public DatastoreDependenciesStatus getDatastores() {
-            return datastores;
-        }
-
-        public void setDatastores(DatastoreDependenciesStatus datastores) {
-            this.datastores = datastores;
-        }
-
-        public static class DatastoreDependenciesStatus {
-            private Map<String, DatastoreStatus> mongodb;
-
-            public DatastoreDependenciesStatus() {
+            public DependenciesStatus() {
             }
 
-            public Map<String, DatastoreStatus> getMongodb() {
-                return mongodb;
+            public DatastoreDependenciesStatus getDatastores() {
+                return datastores;
             }
 
-            public void setMongodb(Map<String, DatastoreStatus> mongodb) {
-                this.mongodb = mongodb;
+            public void setDatastores(DatastoreDependenciesStatus datastores) {
+                this.datastores = datastores;
             }
 
-            public static class DatastoreStatus {
-                private String responseTime;
-                private String role;
-                private String repset;
+            public static class DatastoreDependenciesStatus {
+                private Map<String, DatastoreStatus> mongodb;
 
-                public DatastoreStatus() {
+                public DatastoreDependenciesStatus() {
                 }
 
-                public String getResponseTime() {
-                    return responseTime;
+                public Map<String, DatastoreStatus> getMongodb() {
+                    return mongodb;
                 }
 
-                public void setResponseTime(String responseTime) {
-                    this.responseTime = responseTime;
+                public void setMongodb(Map<String, DatastoreStatus> mongodb) {
+                    this.mongodb = mongodb;
                 }
 
-                public String getRole() {
-                    return role;
-                }
+                public static class DatastoreStatus {
+                    private String responseTime;
+                    private String role;
+                    private String repset;
 
-                public void setRole(String role) {
-                    this.role = role;
-                }
+                    public DatastoreStatus() {
+                    }
 
-                public String getRepset() {
-                    return repset;
-                }
+                    public String getResponseTime() {
+                        return responseTime;
+                    }
 
-                public void setRepset(String repset) {
-                    this.repset = repset;
+                    public void setResponseTime(String responseTime) {
+                        this.responseTime = responseTime;
+                    }
+
+                    public String getRole() {
+                        return role;
+                    }
+
+                    public void setRole(String role) {
+                        this.role = role;
+                    }
+
+                    public String getRepset() {
+                        return repset;
+                    }
+
+                    public void setRepset(String repset) {
+                        this.repset = repset;
+                    }
                 }
             }
+
         }
-
     }
 
     public static class Infrastructure {

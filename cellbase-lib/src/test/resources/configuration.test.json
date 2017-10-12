@@ -1,0 +1,615 @@
+{
+	"version": "v4",
+	"apiVersion": "${cellbase.version}",
+	"wiki": "https://github.com/opencb/cellbase/wiki",
+	"maintenanceFlagFile": "/tmp/maintenance",
+	"databases": {
+		"mongodb": {
+			"host": "localhost:27017",
+			"user": "",
+			"password": "",
+			"options": {
+				"authenticationDatabase": "",
+				"readPreference": "",
+				"replicaSet": "",
+				"connectionsPerHost": 20
+			}
+		},
+		"neo4j": {
+			"hsapiens": {
+				"host": "${CELLBASE.DB.NEO4J.HOST}",
+				"user": "${CELLBASE.DB.USER}",
+				"password": "${CELLBASE.DB.PASSWORD}"
+			},
+			"mmusculus": {
+				"host": "${CELLBASE.DB.NEO4J.HOST}",
+				"user": "${CELLBASE.DB.USER}",
+				"password": "${CELLBASE.DB.PASSWORD}"
+			}
+		}
+	},
+	"defaultOutdir": "/tmp",
+	"download": {
+		"ensembl": {
+			"database": {
+				"host": "ensembldb.ensembl.org:3306",
+				"user": "anonymous",
+				"password": ""
+			},
+			"libs": "${CELLBASE.ENSEMBL.LIBS}",
+			"url": {
+				"host": "ftp://ftp.ensembl.org/pub"
+			}
+		},
+		"ensemblGenomes":{
+			"database":{
+				"host": "mysql-eg-publicsql.ebi.ac.uk:4157",
+				"user": "anonymous",
+				"password": ""
+			},
+			"libs": "${CELLBASE.ENSEMBL.LIBS}",
+			"url":{
+				"host":"ftp://ftp.ensemblgenomes.org/pub"
+			}
+		},
+		"geneUniprotXref": {
+			"host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/by_organism/"
+		},
+		"geneExpressionAtlas": {
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz"
+		},
+		"mirbase": {
+			"host": "ftp://mirbase.org/pub/mirbase/CURRENT/"
+		},
+		"mirbaseReadme": {
+			"host": "ftp://mirbase.org/pub/mirbase/CURRENT/README"
+		},
+		"targetScan": {
+			"host": "http://hgdownload.cse.ucsc.edu/goldenPath/"
+		},
+		"miRTarBase": {
+			"host": "http://mirtarbase.mbc.nctu.edu.tw/cache/download/4.5/"
+		},
+		"uniprot": {
+			"host": "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz"
+		},
+		"uniprotRelNotes": {
+			"host": "ftp://ftp.uniprot.org/pub/databases/uniprot/relnotes.txt"
+		},
+		"intact": {
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt"
+		},
+		"interpro": {
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/current/protein2ipr.dat.gz"
+		},
+		"interproRelNotes": {
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/interpro/current/release_notes.txt"
+		},
+		"conservation": {
+			"host": "ftp://hgdownload.cse.ucsc.edu/goldenPath/"
+		},
+		"gerp": {
+			"host": "http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz"
+		},
+		"clinvar": {
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2017-07.xml.gz"
+		},
+		"clinvarSummary": {
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz"
+		},
+		"clinvarVariationAllele": {
+			"host": "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz"
+		},
+		"clinvarEfoTerms": {
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/eva/ClinVar/2015/ClinVar_Traits_EFO_Names_260615.csv"
+		},
+		"iarctp53": {
+			"host": "http://p53.iarc.fr/ajax/Zipper.ashx"
+		},
+		"docm": {
+			"host": "http://docm.genome.wustl.edu/api/"
+		},
+		"docmVersion": {
+			"host": "http://docm.genome.wustl.edu"
+		},
+		"dgv": {
+			"host": "http://dgv.tcag.ca/v106/docs"
+		},
+		"simpleRepeats": {
+			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
+		},
+		"windowMasker": {
+			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
+		},
+		"genomicSuperDups": {
+			"host": "http://hgdownload.cse.ucsc.edu/goldenPath"
+		},
+		"gwasCatalog": {
+			"host": "ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv"
+		},
+		"hpo": {
+			"host": "http://compbio.charite.de/hudson/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"
+		},
+		"disgenet": {
+			"host": "http://www.disgenet.org/ds/DisGeNET/results/all_gene_disease_associations.tsv.gz"
+		},
+		"disgenetReadme": {
+			"host": "http://www.disgenet.org/ds/DisGeNET/results/readme.txt"
+		},
+		"dgidb": {
+			"host": "http://dgidb.org/data/interactions.tsv"
+		},
+		"cadd": {
+			"host": "http://krishna.gs.washington.edu/download/CADD/v1.3/whole_genome_SNVs.tsv.gz"
+		},
+		"reactome": {
+			"host": "http://www.reactome.org/download/current/biopax.zip"
+		}
+	},
+	"species": {
+		"vertebrates": [
+			{
+				"id": "hsapiens",
+				"scientificName": "Homo sapiens",
+				"assemblies": [
+					{
+						"ensemblVersion":"82_37",
+						"name":"GRCh37"
+					},
+					{
+						"ensemblVersion":"89_38",
+						"name":"GRCh38"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"gene_disease_association",
+					"variation",
+					"variation_functional_score",
+					"regulation",
+					"protein",
+					"conservation",
+					"clinical_variants",
+					"clinical",
+					"svs",
+					"repeats"
+				]
+			},
+			{
+				"id":"mmusculus",
+				"scientificName":"Mus musculus",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_38",
+						"name":"GRCm38"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"regulation",
+					"protein",
+					"conservation"
+				]
+			},
+			{
+				"id":"drerio",
+				"scientificName":"Danio rerio",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_10",
+						"name":"GRCz10"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"rnorvegicus",
+				"scientificName":"Rattus norvegicus",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_6",
+						"name":"Rnor_6.0"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"ptroglodytes",
+				"scientificName":"Pan troglodytes",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_214",
+						"name":"CHIMP2.1.4"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation"
+				]
+			},
+			{
+				"id":"ggorilla",
+				"scientificName":"Gorilla gorilla",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_31",
+						"name":"gorGor3.1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene"
+				]
+			},
+			{
+				"id":"csabaeus",
+				"scientificName":"Chlorocebus sabaeus",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_1",
+						"name":"ChlSab1.1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene"
+				]
+			},
+			{
+				"id":"sscrofa",
+				"scientificName":"Sus scrofa",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_102",
+						"name":"Sscrofa10.2"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"cfamiliaris",
+				"scientificName":"Canis familiaris",
+				"assemblies":[
+					{
+						"ensemblVersion":"82_31",
+						"name":"CanFam3.1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation"
+				]
+			}
+		],
+		"metazoa":[
+			{
+				"id":"celegans",
+				"scientificName":"Caenorhabditis elegans",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_245",
+						"name":"WBcel235"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"dmelanogaster",
+				"scientificName":"Drosophila melanogaster",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_6",
+						"name":"BDGP6"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"agambiae",
+				"scientificName":"Anopheles gambiae",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_4",
+						"name":"AgamP4"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			}
+		],
+		"fungi":[
+			{
+				"id":"scerevisiae",
+				"scientificName":"Saccharomyces cerevisiae",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_4",
+						"name":"R64-1-1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"afumigatus",
+				"scientificName":"Aspergillus fumigatus",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_2",
+						"name":"CADRE"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene"
+				]
+			},
+			{
+				"id":"anidulans",
+				"scientificName":"Aspergillus nidulans",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_6",
+						"name":"ASM1142v1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene"
+				]
+			}
+		],
+		"protist":[
+			{
+				"id":"pfalciparum",
+				"scientificName":"Plasmodium falciparum",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_3",
+						"name":"ASM276v1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"lmajor",
+				"scientificName":"Leishmania major",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_2",
+						"name":"ASM272v2"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene"
+				]
+			}
+		],
+		"plants":[
+			{
+				"id":"athaliana",
+				"scientificName":"Arabidopsis thaliana",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_10",
+						"name":"TAIR10"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation",
+					"protein"
+				]
+			},
+			{
+				"id":"osativa",
+				"scientificName":"Oryza sativa",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_7",
+						"name":"IRGSP-1.0"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation"
+				]
+			},
+			{
+				"id":"gmax",
+				"scientificName":"Glycine max",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_1",
+						"name":"V1.0"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene"
+				]
+			},
+			{
+				"id":"vvinifera",
+				"scientificName":"Vitis vinifera",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_3",
+						"name":"IGGP_12x"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation"
+				]
+			},
+			{
+				"id":"zmays",
+				"scientificName":"Zea mays",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_6",
+						"name":"AGPv3"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation"
+				]
+			},
+			{
+				"id":"sbicolor",
+				"scientificName":"Sorghum bicolor",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_14",
+						"name":"Sorbi1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation"
+				]
+			},
+			{
+				"id":"slycopersicum",
+				"scientificName":"Solanum lycopersicum",
+				"assemblies":[
+					{
+						"ensemblVersion":"29_82_250",
+						"name":"GCA_000188115.2"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"variation"
+				]
+			}
+		],
+		"virus" : [
+			{
+				"id":"evirus",
+				"scientificName":"Ebola virus",
+				"assemblies":[
+					{
+						"name":"KM034562v1"
+					}
+				],
+				"data":[
+					"genome",
+					"gene"
+				]
+			}
+		],
+		"bacteria": [
+			{
+				"id": "mpneumoniae",
+				"scientificName": "Mycoplasma pneumoniae M129",
+				"assemblies": [
+					{
+						"ensemblVersion":"29_82_1",
+						"ensemblCollection":"bacteria_0_collection",
+						"name":"ASM2734v1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"protein"
+				]
+			},
+			{
+				"id": "ecoli",
+				"scientificName": "Escherichia coli",
+				"assemblies": [
+					{
+						"ensemblVersion":"29_82_1",
+						"ensemblCollection":"bacteria_91_collection",
+						"name":"HUSEC2011CHR1"
+					}
+				],
+				"data":[
+					"genome",
+					"genome_info",
+					"gene",
+					"protein"
+				]
+			}
+		]
+	}
+}

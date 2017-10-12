@@ -50,15 +50,15 @@ public class Monitor {
         HealthStatus healthStatus = new HealthStatus();
 
         healthStatus.setApplication(getApplicationDetails());
-        healthStatus.setDependencies(getDependenciesStatus(species, assembly));
+        healthStatus.getApplication().setDependencies(getDependenciesStatus(species, assembly));
         healthStatus.setInfrastructure(new HealthStatus.Infrastructure(1, NONE));
-        healthStatus.setService(getService(healthStatus.getApplication(), healthStatus.getDependencies()));
+        healthStatus.setService(getService(healthStatus.getApplication()));
 
         return healthStatus;
     }
 
-    private HealthStatus.Service getService(HealthStatus.ApplicationDetails applicationDetails,
-                                            HealthStatus.DependenciesStatus dependencies) {
+    private HealthStatus.Service getService(HealthStatus.ApplicationDetails applicationDetails) {
+        HealthStatus.ApplicationDetails.DependenciesStatus dependencies = applicationDetails.getDependencies();
         HealthStatus.Service service = new HealthStatus.Service();
         service.setName(CELLBASE)
                .setApplicationTier(CELLBASE_TOMCAT);
@@ -73,8 +73,8 @@ public class Monitor {
         return service;
     }
 
-    private HealthStatus.ServiceStatus getOverallServiceStatus(HealthStatus.DependenciesStatus dependencies) {
-        Map<String, HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> datastoreStatusMap
+    private HealthStatus.ServiceStatus getOverallServiceStatus(HealthStatus.ApplicationDetails.DependenciesStatus dependencies) {
+        Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> datastoreStatusMap
                 = dependencies.getDatastores().getMongodb();
 
         if (datastoreStatusMap != null && datastoreStatusMap.size() == 0) {
@@ -104,11 +104,11 @@ public class Monitor {
         }
     }
 
-    private HealthStatus.DependenciesStatus getDependenciesStatus(String species, String assembly) {
-        HealthStatus.DependenciesStatus.DatastoreDependenciesStatus datastores
-                = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus();
+    private HealthStatus.ApplicationDetails.DependenciesStatus getDependenciesStatus(String species, String assembly) {
+        HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus datastores
+                = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus();
         datastores.setMongodb(dbAdaptorFactory.getDatabaseStatus(species, assembly));
-        HealthStatus.DependenciesStatus dependenciesStatus = new HealthStatus.DependenciesStatus();
+        HealthStatus.ApplicationDetails.DependenciesStatus dependenciesStatus = new HealthStatus.ApplicationDetails.DependenciesStatus();
         dependenciesStatus.setDatastores(datastores);
 
         return dependenciesStatus;

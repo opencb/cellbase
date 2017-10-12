@@ -192,17 +192,27 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
-    public Map<String, HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> getDatabaseStatus(
+    public Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> getDatabaseStatus(
             String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+
+        if (mongoDatastore.isReplSet()) {
+            return getReplSetStatus(mongoDatastore, species, assembly);
+        } else {
+            return getSingleMachineDBStatus(mongoDatastore, species, assembly);
+        }
+    }
+
+    private Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
+    getReplSetStatus(MongoDataStore mongoDatastore, String species, String assembly) {
         Document statusDocument = mongoDatastore.getReplSetStatus();
-        Map<String, HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
+        Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
                 = new HashMap<>(4);
 
         String repset = (String) statusDocument.get(SET);
         if (StringUtils.isNotBlank(repset)) {
-            HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
-                    = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                    = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
             datastoreStatus.setRepset(repset);
             // Overall database response time is measured by raising a query to Gene collection
             datastoreStatus.setResponseTime(getRepSetResponseTime(species, assembly));
@@ -211,8 +221,8 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
 
         for (Map memberStatus : (List<Map>) statusDocument.get(MEMBERS)) {
-            HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
-                    = new HealthStatus.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                    = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
             datastoreStatus.setRepset(repset);
             datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
             String memberName = ((String) memberStatus.get(NAME)).split(COLON)[0];
@@ -220,7 +230,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             datastoreStatus.setResponseTime(getResponseTime(memberName));
             statusMap.put(memberName, datastoreStatus);
         }
-
         return statusMap;
     }
 
