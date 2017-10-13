@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
+import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
@@ -10,6 +11,8 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +25,15 @@ import static org.junit.Assert.*;
 public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public ProteinMongoDBAdaptorTest() throws IOException {
+        super();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/protein/protein.test.json.gz").toURI());
+        loadRunner.load(path, "protein");
     }
 
     @Test
@@ -32,7 +44,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put(QueryOptions.INCLUDE, "accession,name");
         QueryResult<Entry> queryResult = proteinDBAdaptor.get(new Query(), queryOptions);
         assertEquals(queryResult.getResult().size(), 3);
-        assertEquals(queryResult.getNumTotalResults(), 20193);
+        assertEquals(queryResult.getNumTotalResults(), 4);
         queryResult = proteinDBAdaptor.get(new Query(ProteinDBAdaptor.QueryParams.ACCESSION.key(),
                 "B2R8Q1,Q9UKT9"), queryOptions);
         assertEquals(queryResult.getResult().get(0).getAccession().get(1), "B2R8Q1");
@@ -49,7 +61,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryResult<Document> queryResult = proteinDBAdaptor.nativeGet(new Query(), queryOptions);
         assertEquals(queryResult.getResult().size(), 3);
         assertEquals(queryResult.getNumResults(), 3);
-        assertEquals(queryResult.getNumTotalResults(), 20193);
+        assertEquals(queryResult.getNumTotalResults(), 4);
         queryResult = proteinDBAdaptor.nativeGet(new Query(ProteinDBAdaptor.QueryParams.ACCESSION.key(),
                 "B2R8Q1,Q9UKT9"), queryOptions);
         assertEquals(((List) queryResult.getResult().get(0).get("accession")).get(0), "Q9UL59");
