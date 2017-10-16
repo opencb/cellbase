@@ -34,7 +34,10 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
                 .getResource("/genome/genome_info.json").toURI());
-        loadRunner.load(path, "genome");
+        loadRunner.load(path, "genome_info");
+        path = Paths.get(getClass()
+                .getResource("/genome/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence");
     }
 
     @Test
