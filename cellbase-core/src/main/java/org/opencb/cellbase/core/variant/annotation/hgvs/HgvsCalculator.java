@@ -450,7 +450,35 @@ public class HgvsCalculator {
     }
 
     /**
-     * Generate a HGVS string.
+     * Generate a protein HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+    protected String formatProteinString(BuildingComponents buildingComponents) {
+
+        StringBuilder allele = new StringBuilder();
+        allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
+        allele.append(":");
+
+        if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
+            allele.append("c.").append(formatCdnaCoords(buildingComponents)
+                    + formatDnaAllele(buildingComponents));
+        } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
+            allele.append("n.").append(formatCdnaCoords(buildingComponents)
+                    + formatDnaAllele(buildingComponents));
+        } else {
+            throw new NotImplementedException("HGVS calculation not implemented for variant "
+                    + buildingComponents.getChromosome() + ":"
+                    + buildingComponents.getStart() + ":" + buildingComponents.getReference() + ":"
+                    + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
+        }
+
+        return allele.toString();
+
+    }
+
+    /**
+     * Generate a transcript HGVS string.
      * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
      * @return String containing an HGVS formatted variant representation
      */

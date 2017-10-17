@@ -80,7 +80,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         // the position right after the actual variant end.
         justify(normalizedVariant, normalizedVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
                 buildingComponents.getEnd() -1 - 1,
-                normalizedVariant.getReference(), sequence, transcript.getStrand());
+                normalizedVariant.getReference(), sequence, POSITIVE);
 
         return DEL;
     }
