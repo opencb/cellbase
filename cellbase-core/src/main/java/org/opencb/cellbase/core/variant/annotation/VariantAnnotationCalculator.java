@@ -28,6 +28,7 @@ import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +57,8 @@ import java.util.stream.Collectors;
  * @author Javier Lopez fjlopez@ebi.ac.uk;
  */
 public class VariantAnnotationCalculator {
-    //extends MongoDBAdaptor implements VariantAnnotationDBAdaptor<VariantAnnotation> {
 
+    private static final QueryOptions REGULATORY_QUERY_OPTIONS;
     private GenomeDBAdaptor genomeDBAdaptor;
     private GeneDBAdaptor geneDBAdaptor;
     private RegulationDBAdaptor regulationDBAdaptor;
@@ -68,9 +69,7 @@ public class VariantAnnotationCalculator {
     private ConservationDBAdaptor conservationDBAdaptor;
     private Set<String> annotatorSet;
     private String includeGeneFields;
-
     private DBAdaptorFactory dbAdaptorFactory;
-    //    private ObjectMapper geneObjectMapper;
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
     private boolean useCache = false;
@@ -78,22 +77,21 @@ public class VariantAnnotationCalculator {
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
     private Integer cnvExtraPadding = 0;
-
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
     private static HgvsCalculator hgvsCalculator;
 
-    private static final String REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE = "featureType";
     private static final String TF_BINDING_SITE = RegulationDBAdaptor.FeatureType.TF_binding_site.name() + ","
             + RegulationDBAdaptor.FeatureType.TF_binding_site_motif;
     private static final String REGION = "region";
     private static final String MERGE = "merge";
 
-//    public VariantAnnotationCalculator(String species, String assembly, MongoDataStore mongoDataStore) {
-////        super(species, assembly, mongoDataStore);
-//
-//        normalizer = new VariantNormalizer(false);
-//        logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
-//    }
+    static {
+        // Just return required fields
+        // MERGE = true essential so that just one query will be raised with all regions
+        REGULATORY_QUERY_OPTIONS = new QueryOptions();
+        REGULATORY_QUERY_OPTIONS.add(QueryOptions.INCLUDE, "chromosome,start,end,featureType");
+        REGULATORY_QUERY_OPTIONS.put(MERGE, true);
+    }
 
     public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory) {
 //        this(species, assembly, dbAdaptorFactory, true);
@@ -450,6 +448,7 @@ public class VariantAnnotationCalculator {
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
          */
         List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
+        List<RegulatoryFeature> batchRegulatoryFeatureList = getBatchRegulatoryFeatureList(normalizedVariantList);
         Queue<Variant> variantBuffer = new LinkedList<>();
         startTime = System.currentTimeMillis();
         for (int i = 0; i < normalizedVariantList.size(); i++) {
@@ -489,7 +488,9 @@ public class VariantAnnotationCalculator {
             if (annotatorSet.contains("consequenceType")) {
                 try {
                     List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(normalizedVariantList.get(i),
-                        variantGeneList, true, QueryOptions.empty());
+                            variantGeneList,
+                            getAffectedRegulatoryFeatures(batchRegulatoryFeatureList, normalizedVariantList.get(i)),
+                            QueryOptions.empty());
                     variantAnnotation.setConsequenceTypes(consequenceTypeList);
                     if (phased) {
                         checkAndAdjustPhasedConsequenceTypes(normalizedVariantList.get(i), variantBuffer);
@@ -560,6 +561,26 @@ public class VariantAnnotationCalculator {
         logger.debug("Total batch annotation performance is {}ms for {} variants", System.currentTimeMillis()
                 - globalStartTime, normalizedVariantList.size());
         return variantAnnotationResultList;
+    }
+
+    private List<RegulatoryFeature> getAffectedRegulatoryFeatures(List<RegulatoryFeature> batchRegulatoryFeatureList,
+                                                                  Variant variant) {
+        List<RegulatoryFeature> regulatoryFeatureList = new ArrayList<>(batchRegulatoryFeatureList.size());
+        for (RegulatoryFeature regulatoryFeature : batchRegulatoryFeatureList) {
+            for (Region region : variantToRegionList(variant)) {
+                if (region.getChromosome().equals(regulatoryFeature.getChromosome())
+                        && regulatoryFeature.getStart() <= region.getEnd()
+                        && regulatoryFeature.getEnd() >= region.getStart()) {
+                    regulatoryFeatureList.add(regulatoryFeature);
+                }
+            }
+        }
+        return regulatoryFeatureList;
+    }
+
+    private List<RegulatoryFeature> getBatchRegulatoryFeatureList(List<Variant> variantList) {
+        List<Region> regionList = variantListToRegionList(variantList);
+        return ((QueryResult) regulationDBAdaptor.getByRegion(regionList, REGULATORY_QUERY_OPTIONS).get(0)).getResult();
     }
 
     private List<Gene> getBatchGeneList(List<Variant> variantList) {
