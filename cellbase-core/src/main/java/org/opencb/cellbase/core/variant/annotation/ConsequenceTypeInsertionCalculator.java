@@ -2,6 +2,7 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
@@ -30,7 +31,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         this.genomeDBAdaptor = genomeDBAdaptor;
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
+                                     List<RegulatoryFeature> regulatoryFeatureList,
                                      QueryOptions queryOptions) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
@@ -85,7 +87,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         }
 
         solveIntergenic(consequenceTypeList, isIntergenic);
-        solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
+        solveRegulatoryRegions(regulatoryFeatureList, consequenceTypeList);
 
         return consequenceTypeList;
     }

@@ -2,6 +2,7 @@ package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
@@ -9,6 +10,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -37,8 +39,10 @@ public abstract class ConsequenceTypeCalculator {
     protected static final String CNV_EXTRA_PADDING = "cnvExtraPadding";
     protected static final int NO_EXON_OVERLAP = 0;
 
-    public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList,
-                                              boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions);
+    public abstract List<ConsequenceType> run(Variant variant,
+                                              List<Gene> geneList,
+                                              List<RegulatoryFeature> overlapsRegulatoryRegion,
+                                              QueryOptions queryOptions);
 
     protected void parseQueryParam(QueryOptions queryOptions) {
         imprecise = queryOptions.get(IMPRECISE) != null ? (Boolean) queryOptions.get(IMPRECISE) : true;
@@ -177,42 +181,27 @@ public abstract class ConsequenceTypeCalculator {
         }
     }
 
-    protected void solveRegulatoryRegions(boolean[] overlapsRegulatoryRegion, List<ConsequenceType> consequenceTypeList) {
-        if (overlapsRegulatoryRegion[0]) {
+    protected void solveRegulatoryRegions(List<RegulatoryFeature> regulatoryFeatureList, List<ConsequenceType> consequenceTypeList) {
+        if (regulatoryFeatureList != null && !regulatoryFeatureList.isEmpty()) {
             ConsequenceType consequenceType = new ConsequenceType();
             SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
             consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
             consequenceTypeList.add(consequenceType);
-            if (overlapsRegulatoryRegion[1]) {
+            logger.debug("Checking {} regulatory regions for variant: {}:{}-{}:{}", regulatoryFeatureList.size(),
+                    variant.getChromosome(), variant.getStart(), variant.getEnd(), variant.getAlternate());
+            boolean tfbsFound = false;
+            for (int i = 0; (i < regulatoryFeatureList.size() && !tfbsFound); i++) {
+                String regulatoryRegionType = regulatoryFeatureList.get(i).getFeatureType();
+                tfbsFound = regulatoryRegionType != null && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site)
+                        || regulatoryFeatureList.get(i).getFeatureType().equals(RegulationDBAdaptor.FeatureType.TF_binding_site_motif));
+            }
+            if (tfbsFound) {
                 consequenceType = new ConsequenceType();
                 sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT);
                 consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
                 consequenceTypeList.add(consequenceType);
             }
         }
-
-
-
-//        if (regulatoryRegionList != null && !regulatoryRegionList.isEmpty()) {
-//            ConsequenceType consequenceType = new ConsequenceType();
-//            SequenceOntologyTerm sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.REGULATORY_REGION_VARIANT);
-//            consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
-//            consequenceTypeList.add(consequenceType);
-//            logger.debug("Checking {} regulatory regions for variant: {}:{}-{}:{}", regulatoryRegionList.size(),
-//                    variant.getChromosome(), variant.getStart(), variant.getEnd(), variant.getAlternate());
-//            boolean tfbsFound = false;
-//            for (int i = 0; (i < regulatoryRegionList.size() && !tfbsFound); i++) {
-//                String regulatoryRegionType = regulatoryRegionList.get(i).getFeatureType();
-//                tfbsFound = regulatoryRegionType != null && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site)
-//                        || regulatoryRegionList.get(i).getFeatureType().equals(RegulationDBAdaptor.FeatureType.TF_binding_site_motif));
-//            }
-//            if (tfbsFound) {
-//                consequenceType = new ConsequenceType();
-//                sequenceOntologyTerm = newSequenceOntologyTerm(VariantAnnotationUtils.TF_BINDING_SITE_VARIANT);
-//                consequenceType.setSequenceOntologyTerms(Collections.singletonList(sequenceOntologyTerm));
-//                consequenceTypeList.add(consequenceType);
-//            }
-//        }
     }
 
     protected void decideStopCodonModificationAnnotation(Set<String> soNames, String referenceCodon,

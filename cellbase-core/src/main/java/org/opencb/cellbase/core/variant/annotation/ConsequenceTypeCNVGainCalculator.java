@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
@@ -16,7 +17,8 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
 
     public ConsequenceTypeCNVGainCalculator() { }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
+                                     List<RegulatoryFeature> regulatoryFeatureList,
                                      QueryOptions queryOptions) {
         parseQueryParam(queryOptions);
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
@@ -76,7 +78,7 @@ public class ConsequenceTypeCNVGainCalculator extends ConsequenceTypeGenericRegi
         }
 
         solveIntergenic(consequenceTypeList, isIntergenic);
-        solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
+        solveRegulatoryRegions(regulatoryFeatureList, consequenceTypeList);
         return consequenceTypeList;
     }
 }

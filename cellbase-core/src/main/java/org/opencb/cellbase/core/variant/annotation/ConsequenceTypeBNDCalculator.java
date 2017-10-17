@@ -1,6 +1,7 @@
 package org.opencb.cellbase.core.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
@@ -21,16 +22,16 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
 
     @Override
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
-                                     boolean[] overlapsRegulatoryRegion, QueryOptions queryOptions) {
+                                     List<RegulatoryFeature> regulatoryFeatureList, QueryOptions queryOptions) {
         parseQueryParam(queryOptions);
 
-        List<ConsequenceType> consequenceTypeList1 = runBreakend(inputVariant, geneList, overlapsRegulatoryRegion);
+        List<ConsequenceType> consequenceTypeList1 = runBreakend(inputVariant, geneList, regulatoryFeatureList);
         Variant mate = Variant.getMateBreakend(inputVariant);
         if (mate == null) {
             return consequenceTypeList1;
         } else {
             Set<ConsequenceType> result = new HashSet<>(consequenceTypeList1);
-            result.addAll(runBreakend(mate, geneList, overlapsRegulatoryRegion));
+            result.addAll(runBreakend(mate, geneList, regulatoryFeatureList));
             return new ArrayList<>(result);
         }
     }
@@ -54,7 +55,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
     }
 
     private List<ConsequenceType> runBreakend(Variant currentVariant, List<Gene> geneList,
-                                              boolean[] overlapsRegulatoryRegion) {
+                                              List<RegulatoryFeature> regulatoryFeatureList) {
         variant = currentVariant;
         variantStart = getStart(variant);
         variantEnd = getEnd(variant);
@@ -106,7 +107,7 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
         }
 
         solveIntergenic(consequenceTypeList, isIntergenic);
-        solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
+        solveRegulatoryRegions(regulatoryFeatureList, consequenceTypeList);
         return consequenceTypeList;
 
     }

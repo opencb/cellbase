@@ -1,9 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation;
 
-import org.opencb.biodata.models.core.Exon;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.MiRNAGene;
-import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
@@ -21,7 +18,8 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
     public ConsequenceTypeSNVCalculator() {
     }
 
-    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
+    public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList,
+                                     List<RegulatoryFeature> regulatoryFeatureList,
                                      QueryOptions queryOptions) {
 
         List<ConsequenceType> consequenceTypeList = new ArrayList<>();
@@ -76,7 +74,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         }
 
         solveIntergenic(consequenceTypeList, isIntergenic);
-        solveRegulatoryRegions(overlapsRegulatoryRegion, consequenceTypeList);
+        solveRegulatoryRegions(regulatoryFeatureList, consequenceTypeList);
 
         return consequenceTypeList;
 

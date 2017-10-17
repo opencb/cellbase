@@ -26,9 +26,7 @@ import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,10 +129,12 @@ public class VariantAnnotationCalculator {
 
         parseQueryParam(queryOptions);
         List<Gene> batchGeneList = getBatchGeneList(Collections.singletonList(variant));
+        List<RegulatoryFeature> batchRegulatoryFeatureList = getBatchRegulatoryFeatureList(Collections.singletonList(variant));
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
+        List<RegulatoryFeature> regulatoryFeatureList = getAffectedRegulatoryFeatures(batchRegulatoryFeatureList, variant);
 
         // TODO the last 'true' parameter needs to be changed by annotatorSet.contains("regulatory") once is ready
-        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true,
+        List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, regulatoryFeatureList,
                 queryOptions);
 
         QueryResult queryResult = new QueryResult();
@@ -1093,137 +1093,6 @@ public class VariantAnnotationCalculator {
         }
     }
 
-//    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
-//        if (variant.getType() == null) {
-//            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
-//        }
-//        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
-//        // FIXME: insertions and deletions
-////        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
-//        if (variant.getType().equals(VariantType.INDEL)) {
-//            if (variant.getReference().isEmpty()) {
-////                variant.setType(VariantType.INSERTION);
-//                return VariantType.INSERTION;
-//            } else if (variant.getAlternate().isEmpty()) {
-////                variant.setType(VariantType.DELETION);
-//                return VariantType.DELETION;
-//            } else {
-//                return VariantType.MNV;
-//            }
-//        }
-//        return variant.getType();
-//        return getVariantType(variant.getReference(), variant.getAlternate());
-//    }
-
-//    private VariantType getVariantType(String reference, String alternate) {
-//        if (reference.isEmpty()) {
-//            return VariantType.INSERTION;
-//        } else if (alternate.isEmpty()) {
-//            return VariantType.DELETION;
-//        } else if (reference.length() == 1 && alternate.length() == 1) {
-//            return VariantType.SNV;
-//        } else {
-//            throw new UnsupportedURLVariantFormat();
-//        }
-//    }
-
-    private boolean[] getRegulatoryRegionOverlaps(Variant variant) {
-        // 0: overlaps any regulatory region type
-        // 1: overlaps transcription factor binding site
-        boolean[] overlapsRegulatoryRegion = {false, false};
-
-        // Variant type checked in expected order of frequency of occurrence to minimize number of checks
-        // Most queries will be SNVs - it's worth implementing an special case for them
-        if (VariantType.SNV.equals(variant.getType())) {
-            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart());
-        } else if (VariantType.INDEL.equals(variant.getType()) && StringUtils.isBlank(variant.getReference())) {
-            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart() - 1, variant.getEnd());
-        // Short deletions and symbolic variants except breakends
-        } else if (!VariantType.BREAKEND.equals(variant.getType())) {
-            return getRegulatoryRegionOverlaps(variant.getChromosome(), variant.getStart(), variant.getEnd());
-        // Breakend "variants" only annotate features overlapping the exact positions
-        } else  {
-            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant.getChromosome(), Math.max(1, variant.getStart()));
-            // If already found one overlapping regulatory region there's no need to keep checking
-            if (overlapsRegulatoryRegion[0]) {
-                return overlapsRegulatoryRegion;
-            // Otherwise check the other breakend in case exists
-            } else {
-                Variant breakendMate = Variant.getMateBreakend(variant);
-                if (breakendMate != null) {
-                    return getRegulatoryRegionOverlaps(breakendMate.getChromosome(), Math.max(1, breakendMate.getStart()));
-                } else {
-                    return overlapsRegulatoryRegion;
-                }
-            }
-        }
-
-//        List<RegulatoryFeature> regionList = new ArrayList<>(queryResult.getNumResults());
-//        for (RegulatoryFeature object : queryResult.getResult()) {
-//            regionList.add(object);
-//        }
-
-
-//        return regionList;
-    }
-
-    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position) {
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
-        // 0: overlaps any regulatory region type
-        // 1: overlaps transcription factor binding site
-        boolean[] overlapsRegulatoryRegion = {false, false};
-
-        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor
-                .get(new Query(REGION, toRegionString(chromosome, position)), queryOptions);
-
-        if (queryResult.getNumTotalResults() > 0) {
-            overlapsRegulatoryRegion[0] = true;
-            boolean tfbsFound = false;
-            for (int i = 0; (i < queryResult.getResult().size() && !tfbsFound); i++) {
-                String regulatoryRegionType = queryResult.getResult().get(i).getFeatureType();
-                tfbsFound = regulatoryRegionType != null
-                        && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site.name())
-                        || queryResult.getResult().get(i).getFeatureType()
-                            .equals(RegulationDBAdaptor.FeatureType.TF_binding_site_motif.name()));
-            }
-            overlapsRegulatoryRegion[1] = tfbsFound;
-        }
-
-        return overlapsRegulatoryRegion;
-    }
-
-    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end) {
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("exclude", "_id");
-        queryOptions.add("include", "chromosome");
-        queryOptions.add("limit", "1");
-        // 0: overlaps any regulatory region type
-        // 1: overlaps transcription factor binding site
-        boolean[] overlapsRegulatoryRegion = {false, false};
-        String regionString = toRegionString(chromosome, start, end);
-        Query query = new Query(REGION, regionString);
-
-        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor
-                .get(query.append(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE, TF_BINDING_SITE), queryOptions);
-
-        // Overlaps transcription factor binding site - it's therefore a regulatory variant
-        if (queryResult.getNumResults() == 1) {
-            overlapsRegulatoryRegion[0] = true;
-            overlapsRegulatoryRegion[1] = true;
-        // Does not overlap transcription factor binding site - check any other regulatory region type
-        } else {
-            query.remove(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
-            queryResult = regulationDBAdaptor.get(query, queryOptions);
-            // Does overlap other types of regulatory regions
-            if (queryResult.getNumResults() == 1) {
-                overlapsRegulatoryRegion[0] = true;
-            }
-        }
-
-        return overlapsRegulatoryRegion;
-    }
-
     private String toRegionString(String chromosome, Integer position) {
         return toRegionString(chromosome, position, position);
     }
@@ -1237,15 +1106,14 @@ public class VariantAnnotationCalculator {
         return stringBuilder.toString();
     }
 
-    private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList,
-                                                         boolean regulatoryAnnotation, QueryOptions queryOptions) {
+    private List<ConsequenceType> getConsequenceTypeList(Variant variant,
+                                                         List<Gene> geneList,
+                                                         List<RegulatoryFeature> regulatoryFeatureList,
+                                                         QueryOptions queryOptions) {
         boolean[] overlapsRegulatoryRegion = {false, false};
-        if (regulatoryAnnotation) {
-            overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);
-        }
         ConsequenceTypeCalculator consequenceTypeCalculator = getConsequenceTypeCalculator(variant);
         List<ConsequenceType> consequenceTypeList = consequenceTypeCalculator.run(variant, geneList,
-                overlapsRegulatoryRegion, queryOptions);
+                regulatoryFeatureList, queryOptions);
         if (variant.getType() == VariantType.SNV
                 || Variant.inferType(variant.getReference(), variant.getAlternate()) == VariantType.SNV) {
             for (ConsequenceType consequenceType : consequenceTypeList) {
