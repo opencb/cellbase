@@ -7,11 +7,14 @@ import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 /**
@@ -77,7 +80,7 @@ public class Monitor {
         Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> datastoreStatusMap
                 = dependencies.getDatastores().getMongodb();
 
-        if (datastoreStatusMap != null && datastoreStatusMap.size() == 0) {
+        if (datastoreStatusMap != null && datastoreStatusMap.size() > 0) {
             int downServers = 0;
             for (String datastoreDependencyName : datastoreStatusMap.keySet()) {
                 if (datastoreStatusMap.get(datastoreDependencyName).getResponseTime() == null) {
@@ -121,11 +124,13 @@ public class Monitor {
                                     .path(META)
                                     .path(SERVICE_DETAILS);
 
-        String jsonString = callUrl.request().get(String.class);
-
         try {
+            String jsonString = callUrl.request().get(String.class);
             return parseResult(jsonString, HealthStatus.ApplicationDetails.class).getResponse().get(0).getResult().get(0);
-        } catch (IOException e) {
+        // IOException controls response parsing exceptions, at least
+        // ProcessingException controls unknown host exceptions (cannot find specified host), at least
+        // NotFoundException controls that remote WS API provides meta/service_details method
+        } catch (IOException | ProcessingException | NotFoundException e) {
             e.printStackTrace();
             HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
             return applicationDetails.setServiceStatus(HealthStatus.ServiceStatus.DOWN);

@@ -16,15 +16,18 @@
 
 package org.opencb.cellbase.lib.impl;
 
+import com.mongodb.MongoTimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.bson.Document;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
@@ -50,6 +53,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     private static final String NAME = "name";
     private static final String COLON = ":";
     private static final String REPLICA_SET = "replica_set";
+    private static final String HOST = "host";
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
@@ -192,15 +196,32 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
-    public Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> getDatabaseStatus(
-            String species, String assembly) {
+    public Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
+    getDatabaseStatus(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-
-        if (mongoDatastore.isReplSet()) {
-            return getReplSetStatus(mongoDatastore, species, assembly);
-        } else {
-            return getSingleMachineDBStatus(mongoDatastore, species, assembly);
+        try {
+            if (mongoDatastore.isReplSet()) {
+                return getReplSetStatus(mongoDatastore, species, assembly);
+            } else {
+                return getSingleMachineDBStatus(mongoDatastore, species, assembly);
+            }
+        // Can happen if cannot find host, for example
+        } catch (MongoTimeoutException e) {
+            e.printStackTrace();
+            return null;
         }
+    }
+
+    private Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
+    getSingleMachineDBStatus(MongoDataStore mongoDatastore, String species, String assembly) {
+        Document statusDocument = mongoDatastore.getServerStatus();
+        Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
+                = new HashMap<>(1);
+        HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+        datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
+        statusMap.put((String) statusDocument.get(HOST), datastoreStatus);
+        return statusMap;
     }
 
     private Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
@@ -215,7 +236,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                     = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
             datastoreStatus.setRepset(repset);
             // Overall database response time is measured by raising a query to Gene collection
-            datastoreStatus.setResponseTime(getRepSetResponseTime(species, assembly));
+            datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
             datastoreStatus.setRole(REPLICA_SET);
             statusMap.put(repset, datastoreStatus);
         }
@@ -226,19 +247,31 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             datastoreStatus.setRepset(repset);
             datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
             String memberName = ((String) memberStatus.get(NAME)).split(COLON)[0];
-            // Per-machine response time is measured by doing ping to the machine
-            datastoreStatus.setResponseTime(getResponseTime(memberName));
+            // Per-machine response time is measured by doing ping to the machine. it's not possible to create a connection
+            // to one single machine in the rep set
+            datastoreStatus.setResponseTime(getPingResponseTime(memberName));
             statusMap.put(memberName, datastoreStatus);
         }
         return statusMap;
     }
 
-    private String getRepSetResponseTime(String species, String assembly) {
+    private String getQueryResponseTime(String species, String assembly) {
         GeneDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
-        return geneDBAdaptor.first().getDbTime() + "ms";
+        try {
+            QueryResult<Gene> queryResult = geneDBAdaptor.first();
+            // Query must return one gene. Otherwise there's a problem
+            if (queryResult.getNumResults() == 1) {
+                return queryResult.getDbTime() + "ms";
+            } else {
+                return null;
+            }
+        } catch (MongoTimeoutException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    private String getResponseTime(String memberName) {
+    private String getPingResponseTime(String memberName) {
         try {
             StopWatch uptime = new StopWatch();
             uptime.start();
