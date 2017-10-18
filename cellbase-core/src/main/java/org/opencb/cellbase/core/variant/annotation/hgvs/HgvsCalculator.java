@@ -23,6 +23,10 @@ import java.util.List;
  */
 public class HgvsCalculator {
 
+    private static final char COLON = ':';
+    private static final String CODING_TRANSCRIPT_CHAR = "c.";
+    private static final String NON_CODING_TRANSCRIPT_CHAR = "n.";
+    private static final String PROTEIN_CHAR = "p.";
     private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
@@ -457,10 +461,14 @@ public class HgvsCalculator {
     protected String formatProteinString(BuildingComponents buildingComponents) {
 
         StringBuilder allele = new StringBuilder();
-        allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
-        allele.append(":");
+        allele.append(buildingComponents.getProteinId());  // if use_prefix else ''
+        allele.append(COLON);
 
-        if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
+        if (buildingComponents.getKind().equals(BuildingComponents.Kind.INFRAME)) {
+            allele.append(PROTEIN_CHAR)
+                    .append(COLON)
+                    .append(buildingComponents.getReference())
+
             allele.append("c.").append(formatCdnaCoords(buildingComponents)
                     + formatDnaAllele(buildingComponents));
         } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
@@ -486,13 +494,13 @@ public class HgvsCalculator {
 
         StringBuilder allele = new StringBuilder();
         allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
-        allele.append(":");
+        allele.append(COLON);
 
         if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
-            allele.append("c.").append(formatCdnaCoords(buildingComponents)
+            allele.append(CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
                     + formatDnaAllele(buildingComponents));
         } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
-            allele.append("n.").append(formatCdnaCoords(buildingComponents)
+            allele.append(NON_CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
                     + formatDnaAllele(buildingComponents));
         } else {
             throw new NotImplementedException("HGVS calculation not implemented for variant "

@@ -109,9 +109,9 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
     private int getFirstCdsPhase(Transcript transcript) {
         if (transcript.getStrand().equals(POSITIVE)) {
-            transcript.getExons().get(0).getPhase();
+            return transcript.getExons().get(0).getPhase();
         } else {
-            transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
+            return transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
         }
     }
 
