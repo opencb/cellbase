@@ -14,7 +14,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.net.URI;
-import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -68,10 +68,10 @@ public class Monitor {
 
         // application details object provides just UP, MAINTENANCE or DOWN i.e. information about the status of the app
         // including if the maintenance file exists in the server, but does not check database status
-        if (HealthStatus.ServiceStatus.OK.equals(applicationDetails.getServiceStatus())) {
+        if (HealthStatus.ServiceStatus.OK.equals(applicationDetails.getApplicationStatus())) {
             service.setStatus(getOverallServiceStatus(dependencies));
         } else {
-            service.setStatus(applicationDetails.getServiceStatus());
+            service.setStatus(applicationDetails.getApplicationStatus());
         }
         return service;
     }
@@ -126,14 +126,21 @@ public class Monitor {
 
         try {
             String jsonString = callUrl.request().get(String.class);
-            return parseResult(jsonString, HealthStatus.ApplicationDetails.class).getResponse().get(0).getResult().get(0);
+            List<HealthStatus.ApplicationDetails> applicationDetailsList
+                    = parseResult(jsonString, HealthStatus.ApplicationDetails.class).getResponse().get(0).getResult();
+            // Old CellBase WS servers may return an empty result if they don't recognize the endpoint
+            if (!applicationDetailsList.isEmpty()) {
+                return applicationDetailsList.get(0);
+            } else {
+                return (new HealthStatus.ApplicationDetails()).setApplicationStatus(HealthStatus.ServiceStatus.DOWN);
+            }
         // IOException controls response parsing exceptions, at least
         // ProcessingException controls unknown host exceptions (cannot find specified host), at least
         // NotFoundException controls that remote WS API provides meta/service_details method
         } catch (IOException | ProcessingException | NotFoundException e) {
             e.printStackTrace();
             HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
-            return applicationDetails.setServiceStatus(HealthStatus.ServiceStatus.DOWN);
+            return applicationDetails.setApplicationStatus(HealthStatus.ServiceStatus.DOWN);
         }
     }
 

@@ -178,13 +178,18 @@ public class MetaWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/status")
+    @Path("/{species}/status")
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
             + "as database connections and the ability to access other API's.",
-            response = Map.class, responseContainer = "QueryResponse")
-    public Response status() {
+            response = DownloadProperties.class, responseContainer = "QueryResponse")
+    public Response status(@PathParam("species")
+                               @ApiParam(name = "species",
+                                       value = "Name of the species, e.g.: hsapiens. For a full list of potentially"
+                                               + "available species ids, please refer to: "
+                                               + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
+                                       required = true) String species) {
         Monitor monitor = new Monitor(LOCALHOST_REST_API, dbAdaptorFactory);
-        HealthStatus health = monitor.run(this.species, this.assembly);
+        HealthStatus health = monitor.run(species, this.assembly);
 
         QueryResult<Map<String, HealthStatus>> queryResult = new QueryResult();
         queryResult.setId(STATUS);
@@ -218,9 +223,9 @@ public class MetaWSServer extends GenericRestWSServer {
         // app including if the maintenance file exists in the server, but does NOT check database status. In other words,
         // DEGRADED value will never be used for this field and should be checked out in a different way
         if (Files.exists(Paths.get(cellBaseConfiguration.getMaintenanceFlagFile()))) {
-            applicationDetails.setServiceStatus(HealthStatus.ServiceStatus.MAINTENANCE);
+            applicationDetails.setApplicationStatus(HealthStatus.ServiceStatus.MAINTENANCE);
         } else {
-            applicationDetails.setServiceStatus(HealthStatus.ServiceStatus.OK);
+            applicationDetails.setApplicationStatus(HealthStatus.ServiceStatus.OK);
         }
 
         QueryResult queryResult = new QueryResult();

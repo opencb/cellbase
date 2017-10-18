@@ -50,10 +50,10 @@ public class HealthStatus {
         private String started;
         private String uptime;
         private Version version;
-        // this serviceStatus field is meant to provide UP, MAINTENANCE or DOWN i.e. information about the status of the
+        // this applicationStatus field is meant to provide UP, MAINTENANCE or DOWN i.e. information about the status of the
         // app including if the maintenance file exists in the server, but does NOT check database status. In other words,
         // DEGRADED value will never be used for this field and should be checked out in a different way
-        private ServiceStatus serviceStatus;
+        private ServiceStatus applicationStatus;
         private DependenciesStatus dependencies;
 
         public ApplicationDetails() {
@@ -104,12 +104,12 @@ public class HealthStatus {
             return this;
         }
 
-        public ServiceStatus getServiceStatus() {
-            return serviceStatus;
+        public ServiceStatus getApplicationStatus() {
+            return applicationStatus;
         }
 
-        public ApplicationDetails setServiceStatus(ServiceStatus serviceStatus) {
-            this.serviceStatus = serviceStatus;
+        public ApplicationDetails setApplicationStatus(ServiceStatus applicationStatus) {
+            this.applicationStatus = applicationStatus;
             return this;
         }
 
