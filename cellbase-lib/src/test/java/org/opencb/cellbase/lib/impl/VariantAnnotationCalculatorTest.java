@@ -189,7 +189,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         Variant variant = new Variant("1", 16877367, "", "[chr4:17481913[T");
         QueryResult<ConsequenceType> consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(4, consequenceTypeResult.getNumResults());
+        assertEquals(3, consequenceTypeResult.getNumResults());
         assertEquals(2, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000438396").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000438396").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -211,7 +211,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16344095:<CNV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
@@ -220,7 +220,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16344095:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
@@ -229,7 +229,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16344095:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
@@ -238,7 +238,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16344095:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
@@ -250,7 +250,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16339130:<CNV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(2, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -263,7 +263,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16339130:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(2, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -278,7 +278,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16339130:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(2, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -291,7 +291,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:16328960-16339130:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(2, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(3, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000435410").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001792",
@@ -307,7 +307,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17306871:<CNV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(3, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
@@ -316,7 +316,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17306871:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(3, consequenceTypeResult.getNumResults());
         assertEquals(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size(), 1);
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
@@ -325,7 +325,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17306871:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(3, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
@@ -334,7 +334,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17306871:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(5, consequenceTypeResult.getNumResults());
+        assertEquals(3, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001537",
@@ -346,7 +346,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17281248:<CNV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
@@ -361,7 +361,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17281248:<DEL>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(5, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001578",
@@ -378,7 +378,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17281248:<DUP>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
@@ -393,7 +393,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("22:17254012-17281248:<INV>");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(4, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001590",
@@ -449,7 +449,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant.getSv().setRightSvInsSeq("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(3, consequenceTypeResult.getNumResults());
+        assertEquals(1, consequenceTypeResult.getNumResults());
         assertEquals(1, getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms().size());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000331428").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001580",
@@ -480,7 +480,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant.setSv(structuralVariation);
         QueryResult<ConsequenceType> consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(11, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertThat(consequenceTypeResult.getResult(),
                 CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
                         "ENST00000417324", "-", "lincRNA", null,
@@ -500,7 +500,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant.setSv(structuralVariation);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(11, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms(),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001889",
                         "transcript_amplification"))));
@@ -523,7 +523,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant.setSv(structuralVariation);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(11, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertThat(consequenceTypeResult.getResult(),
                 CoreMatchers.hasItems(new ConsequenceType("FAM138A", "ENSG00000237613",
                         "ENST00000417324", "-", "lincRNA", null,
@@ -539,7 +539,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("imprecise", false);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
-        assertEquals(11, consequenceTypeResult.getNumResults());
+        assertEquals(2, consequenceTypeResult.getNumResults());
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000417324").getSequenceOntologyTerms(),
                 CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001893",
                         "transcript_ablation"))));
