@@ -21,7 +21,8 @@ public class BuildingComponents {
     private String mutationType;
     private int start;
     private int end;
-    private String reference; // reference allele
+    private String referenceStart; // reference allele/amino acid at variant start
+    private String referenceEnd; // reference allele/amino acid at variant end
     private String alternate; // alternate allele
 
     // cDNA-specific fields
@@ -104,12 +105,20 @@ public class BuildingComponents {
         this.end = end;
     }
 
-    public String getReference() {
-        return reference;
+    public String getReferenceStart() {
+        return referenceStart;
     }
 
-    public void setReference(String reference) {
-        this.reference = reference;
+    public void setReferenceStart(String referenceStart) {
+        this.referenceStart = referenceStart;
+    }
+
+    public String getReferenceEnd() {
+        return referenceEnd;
+    }
+
+    public void setReferenceEnd(String referenceEnd) {
+        this.referenceEnd = referenceEnd;
     }
 
     public String getAlternate() {
@@ -157,7 +166,7 @@ public class BuildingComponents {
 ////    allele = 'g.' + self.format_genome()
 //        } else {
 //            throw new NotImplementedException("HGVS calculation not implemented for variant " + chromosome + ":"
-//                    + start + ":" + reference + ":" + alternate + "; kind: " + kind);
+//                    + start + ":" + referenceStart + ":" + alternate + "; kind: " + kind);
 //        }
 ////            if prefix:
 //        return allele.toString();
@@ -207,17 +216,17 @@ public class BuildingComponents {
 //            // SNP.
 //            // example:
 //            // 101 A > C
-//            return reference + '>' + alternate;
+//            return referenceStart + '>' + alternate;
 //        } else if ("delins".equals(mutationType)) {
 //            // Indel.
 //            // example:
 //            // 112_117d elAGGTCAinsTG, 112_117d elinsTG
-//            return "del" + reference + "ins" + alternate;
+//            return "del" + referenceStart + "ins" + alternate;
 //        } else if ("del".equals(mutationType)) {
 //            // Delete, duplication.
 //            // example:
 //            // 1000_1003d elATG, 1000_1003d upATG
-//            return mutationType + reference;
+//            return mutationType + referenceStart;
 //        } else if ("dup".equals(mutationType)) {
 //            // Insertion normalized as duplication
 //            // example:

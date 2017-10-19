@@ -1064,13 +1064,13 @@ public class VariantAnnotationCalculator {
 
 //    private VariantType getVariantType(Variant variant) throws UnsupportedURLVariantFormat {
 //        if (variant.getType() == null) {
-//            variant.setType(Variant.inferType(variant.getReference(), variant.getAlternate()));
+//            variant.setType(Variant.inferType(variant.getReferenceStart(), variant.getAlternate()));
 //        }
 //        // FIXME: remove the if block below as soon as the Variant.inferType method is able to differentiate between
 //        // FIXME: insertions and deletions
 ////        if (variant.getType().equals(VariantType.INDEL) || variant.getType().equals(VariantType.SV)) {
 //        if (variant.getType().equals(VariantType.INDEL)) {
-//            if (variant.getReference().isEmpty()) {
+//            if (variant.getReferenceStart().isEmpty()) {
 ////                variant.setType(VariantType.INSERTION);
 //                return VariantType.INSERTION;
 //            } else if (variant.getAlternate().isEmpty()) {
@@ -1081,7 +1081,7 @@ public class VariantAnnotationCalculator {
 //            }
 //        }
 //        return variant.getType();
-//        return getVariantType(variant.getReference(), variant.getAlternate());
+//        return getVariantType(variant.getReferenceStart(), variant.getAlternate());
 //    }
 
 //    private VariantType getVariantType(String reference, String alternate) {

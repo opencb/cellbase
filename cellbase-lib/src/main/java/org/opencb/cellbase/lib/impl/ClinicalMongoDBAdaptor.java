@@ -313,8 +313,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        for (Variant genomicVariant : variantList) {
 //            QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
 //                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
-//            if (genomicVariant.getReference() != null) {
-//                builder = builder.and("reference").is(genomicVariant.getReference());
+//            if (genomicVariant.getReferenceStart() != null) {
+//                builder = builder.and("reference").is(genomicVariant.getReferenceStart());
 //            }
 //            queries.add(new Document(builder.get().toMap()));
 //            logger.debug(new Document(builder.get().toMap()).toJson());

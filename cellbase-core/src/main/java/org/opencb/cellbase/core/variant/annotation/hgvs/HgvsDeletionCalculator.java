@@ -20,6 +20,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
     private static final String DEL = "del";
     private static final String POSITIVE = "+";
+    private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
     private BuildingComponents buildingComponents;
 
 
@@ -54,8 +55,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     private String calculateProteinHgvs(Variant variant, Transcript transcript) {
         // Check if protein HGVS can be calculated
         if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
-            buildingComponents.setKind(variant.getReference().length() % 3 == 0
-                    ? BuildingComponents.Kind.INFRAME : BuildingComponents.Kind.FRAMESHIFT);
+            buildingComponents.setMutationType(DEL);
             buildingComponents.setProteinId(transcript.getProteinID());
             setProteinLocationAndAminoacid(variant, transcript);
             proteinHgvsNormalize(transcript.getProteinSequence());
@@ -87,24 +87,45 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
     private void setProteinLocationAndAminoacid(Variant variant, Transcript transcript) {
         int cdnaCodingStart = transcript.getCdnaCodingStart();
-        // What buildingComponents.cdnaStart.offset really stores is the cdsStart
-        int cdnaVariantPosition = buildingComponents.getCdnaStart().getOffset() + cdnaCodingStart;
         if (transcript.unconfirmedStart()) {
             cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
         }
-        int variantPhaseShift = (cdnaVariantPosition - cdnaCodingStart) % 3;
-        int modifiedCodonStart = cdnaVariantPosition - variantPhaseShift;
+        // reference amino acid at start position and protein start position must always be calculated, either if it's
+        // frameshift or inframe
+        buildingComponents.setReferenceStart(getReferenceCodon(variant.getChromosome(), transcript.getcDnaSequence(),
+                cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
+        buildingComponents.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
+        // Check frameshift/inframe
+        if (variant.getReference().length() % 3 == 0) {
+            buildingComponents.setKind(BuildingComponents.Kind.INFRAME);
+            // reference amino acid at end position and protein end position must ONLY be calculated for inframe
+            // deletions
+            buildingComponents.setReferenceEnd(getReferenceCodon(variant.getChromosome(), transcript.getcDnaSequence(),
+                    cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
+            buildingComponents.setEnd(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
+        } else {
+            buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+        }
+    }
+
+    private int getAminoAcidPosition(int cdnaCodingStart, int cdsPosition) {
+        int cdnaPosition = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
+        int cdsVariantStart = cdnaPosition - cdnaCodingStart + 1;
+        return ((cdsVariantStart - 1) / 3) + 1;
+    }
+
+    private String getReferenceCodon(String chromosome, String cdnaSequence, int cdnaCodingStart, int cdsPosition) {
+        // What buildingComponents.cdnaStart.offset really stores is the cdsStart
+        int cdnaPosition = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
+        int variantPhaseShift = (cdnaPosition - cdnaCodingStart) % 3;
+        int modifiedCodonStart = cdnaPosition - variantPhaseShift;
 
         // -1 and +2 because of base 0 String indexing
-        String referenceCodon = transcript.getcDnaSequence().substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
-        buildingComponents.setReference(VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"), referenceCodon));
+        String referenceCodon = cdnaSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
+        buildingComponents.setReferenceStart(VariantAnnotationUtils.getAminoacid(chromosome
+                .equals(MITOCHONDRIAL_CHROMOSOME_STRING), referenceCodon));
 
-        int cdsVariantStart = cdnaVariantPosition - cdnaCodingStart + 1;
-        buildingComponents.setStart(((cdsVariantStart - 1) / 3) + 1);
-
-        int cdnaVariantEnd = buildingComponents.getCdnaEnd().getOffset() + cdnaCodingStart;
-        int cdsVariantEnd = cdnaVariantEnd - cdnaCodingStart + 1;
-        buildingComponents.setEnd(((cdsVariantEnd - 1) / 3) + 1);
+        return null;
     }
 
     private int getFirstCdsPhase(Transcript transcript) {
@@ -173,7 +194,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         // Delete
         // example:
         // 1000_1003d elATG
-        return buildingComponents.getMutationType() + buildingComponents.getReference();
+        return buildingComponents.getMutationType() + buildingComponents.getReferenceStart();
     }
 
     private String transcriptHgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {

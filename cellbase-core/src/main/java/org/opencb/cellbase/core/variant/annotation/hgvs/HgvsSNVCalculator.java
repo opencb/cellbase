@@ -58,7 +58,7 @@ public class HgvsSNVCalculator extends HgvsCalculator {
 
         // Populate alleles.
         buildingComponents.setMutationType(mutationType);
-        buildingComponents.setReference(reference);
+        buildingComponents.setReferenceStart(reference);
         buildingComponents.setAlternate(alternate);
 
         return Collections.singletonList(formatTranscriptString(buildingComponents));
@@ -79,7 +79,7 @@ public class HgvsSNVCalculator extends HgvsCalculator {
      */
     @Override
     protected String formatDnaAllele(BuildingComponents buildingComponents) {
-        return buildingComponents.getReference() + '>' + buildingComponents.getAlternate();
+        return buildingComponents.getReferenceStart() + '>' + buildingComponents.getAlternate();
     }
 
 }

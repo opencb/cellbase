@@ -27,6 +27,7 @@ public class HgvsCalculator {
     private static final String CODING_TRANSCRIPT_CHAR = "c.";
     private static final String NON_CODING_TRANSCRIPT_CHAR = "n.";
     private static final String PROTEIN_CHAR = "p.";
+    private static final char UNDERSCORE = '_';
     private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
@@ -138,7 +139,7 @@ public class HgvsCalculator {
         if ("+".equals(transcript.getStrand())) {
             start = genomicStart;
             // TODO: probably needs +-1 bp adjust
-//            end = variant.getStart() + variant.getReference().length() - 1;
+//            end = variant.getStart() + variant.getReferenceStart().length() - 1;
             end = genomicEnd;
             reference = genomicReference.length() > MAX_ALLELE_LENGTH
                     ? String.valueOf(genomicReference.length()) : genomicReference;
@@ -148,7 +149,7 @@ public class HgvsCalculator {
             end = genomicStart;
             // TODO: probably needs +-1 bp adjust
             start = genomicEnd;
-//            start = variant.getStart() + variant.getReference().length() - 1;
+//            start = variant.getStart() + variant.getReferenceStart().length() - 1;
             reference = genomicReference.length() > MAX_ALLELE_LENGTH
                     ? String.valueOf(genomicReference.length())
                     : reverseComplementary(genomicReference);
@@ -156,7 +157,7 @@ public class HgvsCalculator {
                     ? String.valueOf(genomicAlternate.length())
                     : reverseComplementary(genomicAlternate);
         }
-        buildingComponents.setReference(reference);
+        buildingComponents.setReferenceStart(reference);
         buildingComponents.setAlternate(alternate);
         buildingComponents.setCdnaStart(genomicToCdnaCoord(transcript, start));
         buildingComponents.setCdnaEnd(genomicToCdnaCoord(transcript, end));
@@ -467,17 +468,19 @@ public class HgvsCalculator {
         if (buildingComponents.getKind().equals(BuildingComponents.Kind.INFRAME)) {
             allele.append(PROTEIN_CHAR)
                     .append(COLON)
-                    .append(buildingComponents.getReference())
-
-            allele.append("c.").append(formatCdnaCoords(buildingComponents)
-                    + formatDnaAllele(buildingComponents));
+                    .append(buildingComponents.getReferenceStart())
+                    .append(buildingComponents.getStart())
+                    .append(UNDERSCORE)
+                    .append(buildingComponents.getReferenceEnd())
+                    .append(buildingComponents.getEnd())
+                    .append(buildingComponents.getMutationType());
         } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
             allele.append("n.").append(formatCdnaCoords(buildingComponents)
                     + formatDnaAllele(buildingComponents));
         } else {
             throw new NotImplementedException("HGVS calculation not implemented for variant "
                     + buildingComponents.getChromosome() + ":"
-                    + buildingComponents.getStart() + ":" + buildingComponents.getReference() + ":"
+                    + buildingComponents.getStart() + ":" + buildingComponents.getReferenceStart() + ":"
                     + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
         }
 
@@ -505,7 +508,7 @@ public class HgvsCalculator {
         } else {
             throw new NotImplementedException("HGVS calculation not implemented for variant "
                     + buildingComponents.getChromosome() + ":"
-                    + buildingComponents.getStart() + ":" + buildingComponents.getReference() + ":"
+                    + buildingComponents.getStart() + ":" + buildingComponents.getReferenceStart() + ":"
                     + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
         }
 

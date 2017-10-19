@@ -572,7 +572,7 @@ public class VariantAnnotationUtils {
             }
         }
         return variant.getType();
-//        return getVariantType(variant.getReference(), variant.getAlternate());
+//        return getVariantType(variant.getReferenceStart(), variant.getAlternate());
     }
 
 }
