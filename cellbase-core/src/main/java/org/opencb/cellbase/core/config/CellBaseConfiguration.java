@@ -32,6 +32,7 @@ public class CellBaseConfiguration {
     private String apiVersion;
     private String wiki;
     private String maintenanceFlagFile;
+    private String maintainerContact;
     private String defaultOutdir;
     private Databases databases;
     private DownloadProperties download;
@@ -73,6 +74,14 @@ public class CellBaseConfiguration {
 
     public void setMaintenanceFlagFile(String maintenanceFlagFile) {
         this.maintenanceFlagFile = maintenanceFlagFile;
+    }
+
+    public String getMaintainerContact() {
+        return maintainerContact;
+    }
+
+    public void setMaintainerContact(String maintainerContact) {
+        this.maintainerContact = maintainerContact;
     }
 
     public Databases getDatabases() {

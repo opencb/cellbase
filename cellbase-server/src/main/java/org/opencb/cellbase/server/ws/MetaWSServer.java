@@ -62,7 +62,6 @@ public class MetaWSServer extends GenericRestWSServer {
     private static final String STATUS = "status";
     private static final String HEALTH = "health";
     private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
-    private static final String MAINTAINER_EMAIL = "javier.lopez@genomicsengland.co.uk";
 
     public MetaWSServer(@PathParam("version")
                         @ApiParam(name = "version", value = "Possible values: v3, v4",
@@ -211,7 +210,7 @@ public class MetaWSServer extends GenericRestWSServer {
             response = HealthStatus.ApplicationDetails.class, responseContainer = "QueryResponse")
     public Response serviceDetails() {
         HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
-        applicationDetails.setMaintainer(MAINTAINER_EMAIL);
+        applicationDetails.setMaintainer(cellBaseConfiguration.getMaintainerContact());
         applicationDetails.setServer(getServerName());
         applicationDetails.setStarted(SERVICE_START_DATE);
         applicationDetails.setUptime(TimeUnit.NANOSECONDS.toMinutes(WATCH.getNanoTime()) + " minutes");

@@ -3,6 +3,7 @@
 	"apiVersion": "${cellbase.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
 	"maintenanceFlagFile": "/tmp/maintenance",
+	"maintainerContact": "javier.lopez@genomicsengland.co.uk",
 	"databases": {
 		"mongodb": {
 			"host": "${CELLBASE.DB.MONGODB.HOST}",
