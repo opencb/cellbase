@@ -105,6 +105,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private List<String> dbLocations;
     private List<String> customFileIds;
     private List<List<String>> customFileFields;
+    private int maxOpenFiles = -1;
     private FileFormat inputFormat;
     private FileFormat outputFormat;
 
@@ -562,6 +563,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // the Options class contains a set of configurable DB options
         // that determines the behavior of a database.
         Options options = new Options().setCreateIfMissing(true);
+        if (maxOpenFiles > 0) {
+            options.setMaxOpenFiles(maxOpenFiles);
+        }
+
         RocksDB db = null;
         try {
             // a factory method that returns a RocksDB instance
@@ -840,6 +845,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             for (String fieldString : customFileFieldStrings) {
                 customFileFields.add(Arrays.asList(fieldString.split(",")));
             }
+            // MaxOpenFiles parameter for RocksDB indexation of custom files
+            maxOpenFiles = variantAnnotationCommandOptions.maxOpenFiles;
         }
 
         // Semi-private build parameter for us to build the variation collection including population frequencies

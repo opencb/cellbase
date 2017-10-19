@@ -61,7 +61,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
             logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
             QueryResponse<VariantAnnotation> response;
             try {
-                response = variantClient.getAnnotations(variantList.stream().map(Variant::toString).collect(Collectors.toList()),
+                response = variantClient.getAnnotationByVariantIds(variantList.stream().map(Variant::toString).collect(Collectors.toList()),
                         queryOptions, true);
             } catch (IOException e) {
                 e.printStackTrace();
