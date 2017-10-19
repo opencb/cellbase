@@ -272,6 +272,7 @@ public class ParentRestClient<T> {
                 Response.Status status = Response.Status.fromStatusCode(((WebApplicationException) e).getResponse().getStatus());
                 switch (status) {
                     case GATEWAY_TIMEOUT:
+                    case INTERNAL_SERVER_ERROR:
                         // Do not propagate this error
                         // TODO: Add a counter?
                         break;

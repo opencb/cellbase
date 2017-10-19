@@ -2,6 +2,8 @@
 	"version": "v4",
 	"apiVersion": "${cellbase.version}",
 	"wiki": "https://github.com/opencb/cellbase/wiki",
+	"maintenanceFlagFile": "/tmp/maintenance",
+	"maintainerContact": "javier.lopez@genomicsengland.co.uk",
 	"databases": {
 		"mongodb": {
 			"host": "${CELLBASE.DB.MONGODB.HOST}",
@@ -136,7 +138,7 @@
 			"host": "http://www.disgenet.org/ds/DisGeNET/results/readme.txt"
 		},
 		"dgidb": {
-			"host": "http://dgidb.genome.wustl.edu/downloads/interactions.tsv"
+			"host": "http://dgidb.org/data/interactions.tsv"
 		},
 		"cadd": {
 			"host": "http://krishna.gs.washington.edu/download/CADD/v1.3/whole_genome_SNVs.tsv.gz"

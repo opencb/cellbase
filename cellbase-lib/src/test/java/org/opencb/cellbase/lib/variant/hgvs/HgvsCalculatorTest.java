@@ -48,7 +48,19 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void run() throws Exception {
 
-        List<String> hgvsList = getVariantHgvs(new Variant("19", 45411941, "T", "C"));
+        List<String> hgvsList = getVariantHgvs(new Variant("22", 38308486, "C", "T"));
+        assertEquals(3, hgvsList.size());
+        // There may be more than these, but these 4 are the ones that I can actually validate
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000445494(ENSG00000100139):c.72C>T",
+                "ENST00000215957(ENSG00000100139):c.324C>T", "ENST00000489812(ENSG00000100139):n.775C>T"));
+
+        hgvsList = getVariantHgvs(new Variant("22", 38379525, "G", "-"));
+        // There may be more than these, but these 4 are the ones that I can actually validate
+        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000396884(ENSG00000100146):c.267delC",
+                "ENST00000360880(ENSG00000100146):c.267delC", "ENST00000427770(ENSG00000100146):c.267delC",
+                "ENST00000470555(ENSG00000100146):n.70+821delC"));
+
+        hgvsList = getVariantHgvs(new Variant("19", 45411941, "T", "C"));
         assertEquals(4, hgvsList.size());
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000252486(ENSG00000130203):c.388T>C",
                 "ENST00000446996(ENSG00000130203):c.388T>C", "ENST00000434152(ENSG00000130203):c.466T>C",
@@ -203,6 +215,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                         + "transcripts.strand,transcripts.name,transcripts.start,transcripts.end,"
                         + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
                         + "transcripts.cdnaCodingEnd,transcripts.exons.start,"
+                        + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
                         + "transcripts.exons.cdsStart,transcripts.exons.cdsEnd,"
                         + "transcripts.exons.end")).getResult();
 
