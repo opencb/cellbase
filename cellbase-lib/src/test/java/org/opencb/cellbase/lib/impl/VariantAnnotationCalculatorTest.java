@@ -73,7 +73,9 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         Path path = Paths.get(getClass()
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
-
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
                 dbAdaptorFactory);
 
