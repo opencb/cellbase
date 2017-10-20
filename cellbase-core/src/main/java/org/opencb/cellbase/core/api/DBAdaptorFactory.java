@@ -47,6 +47,10 @@ public abstract class DBAdaptorFactory {
         }
     }
 
+    public CellBaseConfiguration getCellBaseConfiguration() {
+        return cellBaseConfiguration;
+    }
+
     public abstract void open(String species, String version);
 
     public abstract void close();
