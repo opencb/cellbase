@@ -31,6 +31,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.*;
@@ -148,6 +149,7 @@ public class GenericRestWSServer implements IWSServer {
      */
 //    protected static DBAdaptorFactory dbAdaptorFactory;
     protected static DBAdaptorFactory dbAdaptorFactory;
+    protected static Monitor monitor;
 
     private static final int LIMIT_DEFAULT = 1000;
     private static final int LIMIT_MAX = 5000;
@@ -185,6 +187,9 @@ public class GenericRestWSServer implements IWSServer {
 //        jsonObjectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
+
+        // Initialize Monitor
+        monitor = new Monitor(dbAdaptorFactory);
     }
 
 

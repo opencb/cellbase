@@ -24,7 +24,6 @@ import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.monitor.HealthStatus;
-import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Query;
@@ -40,15 +39,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by imedina on 04/08/15.
@@ -187,67 +181,16 @@ public class MetaWSServer extends GenericRestWSServer {
                                                + "available species ids, please refer to: "
                                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
                                        required = true) String species) {
-        Monitor monitor = new Monitor(LOCALHOST_REST_API, dbAdaptorFactory);
         HealthStatus health = monitor.run(species, this.assembly);
-
-        QueryResult<Map<String, HealthStatus>> queryResult = new QueryResult();
+        QueryResult<HealthStatus> queryResult = new QueryResult();
         queryResult.setId(STATUS);
         queryResult.setDbTime(0);
         queryResult.setNumTotalResults(1);
         queryResult.setNumResults(1);
-        Map<String, HealthStatus> healthMap = new HashMap<String, HealthStatus>(1);
-        healthMap.put(HEALTH, health);
-        queryResult.setResult(Collections.singletonList(healthMap));
+        queryResult.setResult(Collections.singletonList(health));
 
         return createOkResponse(queryResult);
 
     }
-
-    @GET
-    @Path("/service_details")
-    @ApiOperation(httpMethod = "GET", value = "Returns details of this service such as maintainer email, SERVICE_START_DATE,"
-            + " version, commit, etc.",
-            response = HealthStatus.ApplicationDetails.class, responseContainer = "QueryResponse")
-    public Response serviceDetails() {
-        HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
-        applicationDetails.setMaintainer(cellBaseConfiguration.getMaintainerContact());
-        applicationDetails.setServer(getServerName());
-        applicationDetails.setStarted(SERVICE_START_DATE);
-        applicationDetails.setUptime(TimeUnit.NANOSECONDS.toMinutes(WATCH.getNanoTime()) + " minutes");
-        applicationDetails.setVersion(
-                new HealthStatus.ApplicationDetails.Version(GitRepositoryState.get().getBuildVersion(),
-                        GitRepositoryState.get().getCommitId().substring(0, 8)));
-
-        // this serviceStatus field is meant to provide UP, MAINTENANCE or DOWN i.e. information about the status of the
-        // app including if the maintenance file exists in the server, but does NOT check database status. In other words,
-        // DEGRADED value will never be used for this field and should be checked out in a different way
-        if (Files.exists(Paths.get(cellBaseConfiguration.getMaintenanceFlagFile()))) {
-            applicationDetails.setApplicationStatus(HealthStatus.ServiceStatus.MAINTENANCE);
-        } else {
-            applicationDetails.setApplicationStatus(HealthStatus.ServiceStatus.OK);
-        }
-
-        QueryResult queryResult = new QueryResult();
-        queryResult.setId("service_details");
-        queryResult.setDbTime(0);
-        queryResult.setNumTotalResults(1);
-        queryResult.setNumResults(1);
-        queryResult.setResult(Collections.singletonList(applicationDetails));
-
-        return createOkResponse(queryResult);
-
-    }
-
-    private String getServerName() {
-        try {
-            InetAddress addr;
-            addr = InetAddress.getLocalHost();
-            return addr.getHostName();
-        } catch (UnknownHostException ex) {
-            logger.warn("Hostname can not be resolved");
-            return null;
-        }
-    }
-
 
 }
