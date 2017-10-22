@@ -59,7 +59,6 @@ public class CaddScoreParser extends CellBaseParser {
     public void parse() throws Exception {
         FileUtils.checkPath(caddFilePath);
 
-        BufferedReader bufferedReader = FileUtils.newBufferedReader(caddFilePath);
         List<Long> rawValues = new ArrayList<>(CHUNK_SIZE);
         List<Long> scaledValues = new ArrayList<>(CHUNK_SIZE);
 
@@ -81,127 +80,103 @@ public class CaddScoreParser extends CellBaseParser {
         long scaledLongValue = 0;
         Map<String, Float> rawScoreValuesMap = new HashMap<>();
         Map<String, Float> scaledScoreValuesMap = new HashMap<>();
-        while ((line = bufferedReader.readLine()) != null) {
-            if (!line.startsWith("#")) {
-                fields = line.split("\t");
-                newPosition = Integer.parseInt(fields[1]);
-//                if (fields[0].equals("1") && fields[1].equals("249240621")) {
-//                if (fields[0].equals("1") && fields[1].equals("69100")) {
-//                if (fields[0].equals("1") && fields[1].equals("144854598")) {
-//                    logger.debug("line {} reached", line);
-//                    logger.debug("Associated chunk count {}", serializedChunks);
-//                    logger.debug("start {}", start);
-//                    logger.debug("end {}", end);
-//                    logger.debug("chunk size {}", CHUNK_SIZE);
-//                }
-                // this only happens the first time, when we start reading the file
-                if (chromosome == null) {
-                    logger.info("Parsing chr {} ", fields[0]);
-                    chromosome = fields[0];
 
-                    start = newPosition;
-                    previousPosition = newPosition;
-                    end = start + CHUNK_SIZE - 2;
-                }
+        try (BufferedReader bufferedReader = FileUtils.newBufferedReader(caddFilePath)) {
+            while ((line = bufferedReader.readLine()) != null) {
+                if (!line.startsWith("#")) {
+                    fields = line.split("\t");
+                    newPosition = Integer.parseInt(fields[1]);
+                    // this only happens the first time, when we start reading the file
+                    if (chromosome == null) {
+                        logger.info("Parsing chr {} ", fields[0]);
+                        chromosome = fields[0];
 
-                if (!chromosome.equals(fields[0])) {
-                    logger.info("Parsing chr {} ", fields[0]);
-                    // both raw and scaled are serialized
-                    GenomicScoreRegion<Long> genomicScoreRegion =
-                            new GenomicScoreRegion<>(chromosome, start, previousPosition, "cadd_raw", rawValues);
-                    serializer.serialize(genomicScoreRegion);
-
-                    genomicScoreRegion = new GenomicScoreRegion<>(chromosome, start, previousPosition, "cadd_scaled", scaledValues);
-                    serializer.serialize(genomicScoreRegion);
-
-                    serializedChunks++;
-                    chromosome = fields[0];
-                    start = newPosition;
-//                    end = CHUNK_SIZE - 1;
-                    end = start + CHUNK_SIZE - 2;
-
-                    counter = 0;
-                    rawValues.clear();
-                    scaledValues.clear();
-//                    rawLongValue = 0;
-//                    lineCount = 0;
-//                    rawScoreValuesMap.clear();
-//                    scaledScoreValuesMap.clear();
-                // The series of cadd scores is not continuous through the whole chromosome
-                } else if (end < newPosition || (newPosition - previousPosition) > 1) {
-                    // both raw and scaled are serialized
-                    GenomicScoreRegion genomicScoreRegion
-                            = new GenomicScoreRegion<>(fields[0], start, previousPosition, "cadd_raw", rawValues);
-                    serializer.serialize(genomicScoreRegion);
-
-                    genomicScoreRegion
-                            = new GenomicScoreRegion<>(fields[0], start, previousPosition, "cadd_scaled", scaledValues);
-                    serializer.serialize(genomicScoreRegion);
-
-                    serializedChunks++;
-                    start = newPosition;
-//                    start = end + 1;
-//                    end += CHUNK_SIZE;
-                    end = (start / CHUNK_SIZE) * CHUNK_SIZE + CHUNK_SIZE - 1;
-
-                    counter = 0;
-                    rawValues.clear();
-                    scaledValues.clear();
-                }
-
-                rawScoreValuesMap.put(fields[3], Float.valueOf(fields[4]));
-                scaledScoreValuesMap.put(fields[3], Float.valueOf(fields[5]));
-
-                if (++lineCount == 3) {
-//                    if (fields[0].equals("1") && fields[1].equals("249240621")) {
-//                    if (fields[0].equals("1") && fields[1].equals("69100")) {
-//                    if (fields[0].equals("1") && fields[1].equals("144854598")) {
-//                        logger.info("offset: {}", rawValues.size());
-//                    }
-
-                    for (String nucleotide : nucleotides) {
-                        // raw CADD score values can be negative, we add 10 to make positive
-                        float a = rawScoreValuesMap.getOrDefault(nucleotide, 10f) + 10.0f;
-                        v = (short) (a * DECIMAL_RESOLUTION);
-                        rawLongValue = (rawLongValue << 16) | v;
-
-                        // scaled CADD scores are always positive
-                        a = scaledScoreValuesMap.getOrDefault(nucleotide, 0f);
-                        v = (short) (a * DECIMAL_RESOLUTION);
-                        scaledLongValue = (scaledLongValue << 16) | v;
+                        start = newPosition;
+                        previousPosition = newPosition;
+                        end = start + CHUNK_SIZE - 2;
                     }
 
-//                    if (rawLongValue < 0 || scaledLongValue < 0) {
-//                        logger.error("raw/scaled Long Values cannot be 0");
-//                        logger.error("Last read line {}", line);
-//                        System.exit(1);
-//                    }
-                    rawValues.add(rawLongValue);
-                    scaledValues.add(scaledLongValue);
+                    if (!chromosome.equals(fields[0])) {
+                        logger.info("Parsing chr {} ", fields[0]);
+                        // both raw and scaled are serialized
+                        GenomicScoreRegion<Long> genomicScoreRegion =
+                                new GenomicScoreRegion<>(chromosome, start, previousPosition, "cadd_raw", rawValues);
+                        serializer.serialize(genomicScoreRegion);
 
-                    counter++;
-                    rawLongValue = 0;
-                    lineCount = 0;
-                    rawScoreValuesMap.clear();
-                    scaledScoreValuesMap.clear();
+                        genomicScoreRegion = new GenomicScoreRegion<>(chromosome, start, previousPosition, "cadd_scaled", scaledValues);
+                        serializer.serialize(genomicScoreRegion);
+
+                        serializedChunks++;
+                        chromosome = fields[0];
+                        start = newPosition;
+                        end = start + CHUNK_SIZE - 2;
+
+                        counter = 0;
+                        rawValues.clear();
+                        scaledValues.clear();
+                        // The series of cadd scores is not continuous through the whole chromosome
+                    } else if (end < newPosition || (newPosition - previousPosition) > 1) {
+                        // both raw and scaled are serialized
+                        GenomicScoreRegion genomicScoreRegion
+                                = new GenomicScoreRegion<>(fields[0], start, previousPosition, "cadd_raw", rawValues);
+                        serializer.serialize(genomicScoreRegion);
+
+                        genomicScoreRegion
+                                = new GenomicScoreRegion<>(fields[0], start, previousPosition, "cadd_scaled", scaledValues);
+                        serializer.serialize(genomicScoreRegion);
+
+                        serializedChunks++;
+                        start = newPosition;
+                        end = (start / CHUNK_SIZE) * CHUNK_SIZE + CHUNK_SIZE - 1;
+
+                        counter = 0;
+                        rawValues.clear();
+                        scaledValues.clear();
+                    }
+
+                    rawScoreValuesMap.put(fields[3], Float.valueOf(fields[4]));
+                    scaledScoreValuesMap.put(fields[3], Float.valueOf(fields[5]));
+
+                    if (++lineCount == 3) {
+
+                        for (String nucleotide : nucleotides) {
+                            // raw CADD score values can be negative, we add 10 to make positive
+                            float a = rawScoreValuesMap.getOrDefault(nucleotide, 10f) + 10.0f;
+                            v = (short) (a * DECIMAL_RESOLUTION);
+                            rawLongValue = (rawLongValue << 16) | v;
+
+                            // scaled CADD scores are always positive
+                            a = scaledScoreValuesMap.getOrDefault(nucleotide, 0f);
+                            v = (short) (a * DECIMAL_RESOLUTION);
+                            scaledLongValue = (scaledLongValue << 16) | v;
+                        }
+
+                        rawValues.add(rawLongValue);
+                        scaledValues.add(scaledLongValue);
+
+                        counter++;
+                        rawLongValue = 0;
+                        lineCount = 0;
+                        rawScoreValuesMap.clear();
+                        scaledScoreValuesMap.clear();
+                    }
+                    previousPosition = newPosition;
                 }
-                previousPosition = newPosition;
             }
-        }
 
-        // Last chunks can be incomplete for both raw and scaled are serialized
+            // Last chunks can be incomplete for both raw and scaled are serialized
 //        GenomicScoreRegion<Long> genomicScoreRegion =
 //                new GenomicScoreRegion<>(fields[0], start, start + rawValues.size() - 1, "cadd_raw", rawValues);
-        GenomicScoreRegion<Long> genomicScoreRegion =
-                new GenomicScoreRegion<>(fields[0], start, newPosition, "cadd_raw", rawValues);
-        serializer.serialize(genomicScoreRegion);
+            GenomicScoreRegion<Long> genomicScoreRegion =
+                    new GenomicScoreRegion<>(fields[0], start, newPosition, "cadd_raw", rawValues);
+            serializer.serialize(genomicScoreRegion);
 
 //        genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, start + scaledValues.size() - 1, "cadd_scaled", scaledValues);
-        genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, newPosition, "cadd_scaled", scaledValues);
-        serializer.serialize(genomicScoreRegion);
+            genomicScoreRegion = new GenomicScoreRegion<>(fields[0], start, newPosition, "cadd_scaled", scaledValues);
+            serializer.serialize(genomicScoreRegion);
 
-        serializer.close();
-        bufferedReader.close();
-        logger.info("Parsing finished.");
+            serializer.close();
+            logger.info("Parsing finished.");
+        }
     }
 }

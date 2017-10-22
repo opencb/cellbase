@@ -67,22 +67,24 @@ public class GeneExpressionAtlasParser extends CellBaseParser {
     }
 
     private void readFile(Map<String, GeneExpressionAtlas> geneAtlasMap, String experiment) throws IOException {
-        DirectoryStream<Path> directoryStream = Files.newDirectoryStream(this.geneAtlasDirectoryPath.resolve(experiment));
-        for (Path filePath : directoryStream) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath.toFile())));
-            String line;
-            String metainfo = "";
-            String[] header = null;
-            while ((line = reader.readLine()) != null) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(this.geneAtlasDirectoryPath.resolve(experiment))) {
+            for (Path filePath : directoryStream) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath.toFile())))) {
+                    String line;
+                    String metainfo = "";
+                    String[] header = null;
+                    while ((line = reader.readLine()) != null) {
 
-                if (line.startsWith("#")) {
-                    metainfo = metainfo + line;
-                }
+                        if (line.startsWith("#")) {
+                            metainfo = metainfo + line;
+                        }
 
-                if (line.startsWith("Gene ID")) {
-                    header = line.split("\t");
-                } else {
-                    updateGeneAtlasMap(geneAtlasMap, experiment, line, header);
+                        if (line.startsWith("Gene ID")) {
+                            header = line.split("\t");
+                        } else {
+                            updateGeneAtlasMap(geneAtlasMap, experiment, line, header);
+                        }
+                    }
                 }
             }
         }

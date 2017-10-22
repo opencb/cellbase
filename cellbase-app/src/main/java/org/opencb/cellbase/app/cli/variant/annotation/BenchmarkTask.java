@@ -8,6 +8,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.opencb.commons.utils.CollectionUtils;
 import org.rocksdb.RocksDBException;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class BenchmarkTask implements
 
     private FastaIndexManager fastaIndexManager;
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
-//    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CNV>)|(<INV>)|(<DEL>)|(<INS>)|(<DUP:TANDEM>)";
+    //    private static final String VARIANT_STRING_PATTERN = "([ACGT]*)|(<CNV>)|(<INV>)|(<DEL>)|(<INS>)|(<DUP:TANDEM>)";
     private VariantAnnotator variantAnnotator;
 
     public BenchmarkTask(VariantAnnotator variantAnnotator, FastaIndexManager fastaIndexManager) {
@@ -85,7 +86,7 @@ public class BenchmarkTask implements
      * Checks whether a variant is valid.
      *
      * @param variantAnnotation Variant object to be checked.
-     * @return   true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
+     * @return true/false depending on whether 'variant' does contain valid values. Currently just a simple check of
      * reference/alternate attributes being strings of [A,C,G,T] of length >= 0 is performed to detect cases such as
      * 19:13318673:(CAG)4:(CAG)5 which are not currently supported by CellBase. Ref and alt alleles must be different
      * as well for the variant to be valid. Functionality of the method may be improved in the future.
@@ -111,14 +112,21 @@ public class BenchmarkTask implements
         Set<SequenceOntologyTermComparisonObject> sequenceOntologySet1 = getSequenceOntologySet(consequenceTypeList1);
         Set<SequenceOntologyTermComparisonObject> sequenceOntologySet2 = getSequenceOntologySet(consequenceTypeList2);
         Set<SequenceOntologyTermComparisonObject> sequenceOntologySet1bak = new HashSet<>(sequenceOntologySet1);
-        sequenceOntologySet1.removeAll(sequenceOntologySet2);
-        sequenceOntologySet2.removeAll(sequenceOntologySet1bak);
-        if (sequenceOntologySet1.size() > 0) {
+
+        if (sequenceOntologySet1 != null) {
+            sequenceOntologySet1.removeAll(sequenceOntologySet2);
+        }
+        if (sequenceOntologySet2 != null) {
+            sequenceOntologySet2.removeAll(sequenceOntologySet1bak);
+        }
+
+        if (CollectionUtils.isNotEmpty(sequenceOntologySet1)) {
             result.getLeft().setSequenceOntology(new ArrayList(sequenceOntologySet1));
         }
-        if (sequenceOntologySet2.size() > 0) {
+        if (CollectionUtils.isNotEmpty(sequenceOntologySet2)) {
             result.getRight().setSequenceOntology(new ArrayList(sequenceOntologySet2));
         }
+
     }
 
     private Set<SequenceOntologyTermComparisonObject> getSequenceOntologySet(List<ConsequenceType> consequenceTypeList) {
