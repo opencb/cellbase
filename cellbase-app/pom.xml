@@ -85,7 +85,7 @@
                     <repositoryName>libs</repositoryName>
                     <repositoryLayout>flat</repositoryLayout>
                     <useWildcardClassPath>true</useWildcardClassPath>
-                    <extraJvmArguments>-Xms256m -Xmx16384m</extraJvmArguments>
+                    <extraJvmArguments>-Xms256m -Xmx16384m -Dfile.encoding=UTF-8</extraJvmArguments>
                     <programs>
                         <program>
                             <name>cellbase.sh</name>
