@@ -24,6 +24,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
@@ -477,8 +478,13 @@ public class VariantAnnotationCalculator {
             // Given that the number of indels is expected to be negligible if compared to the number of SNVs, the
             // decision is to run it synchronously
             if (annotatorSet.contains("hgvs")) {
-                // No need to carry out normalization if it has already been done
-                variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
+                try {
+                    // No need to carry out normalization if it has already been done
+                    variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
+                } catch (VariantNormalizerException e) {
+                    logger.error("Unable to normalize variant {}. Leaving empty HGVS.",
+                            normalizedVariantList.get(i).toString());
+                }
             }
 
             if (annotatorSet.contains("consequenceType")) {
