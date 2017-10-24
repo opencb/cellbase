@@ -589,16 +589,17 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private void indexCustomVcfFile(int customFileNumber, RocksDB db) {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
-
+        int lineCounter = -1;
+        VariantContext variantContext = null;
         try {
             VCFFileReader vcfFileReader = new VCFFileReader(customFiles.get(customFileNumber).toFile(), false);
             Iterator<VariantContext> iterator = vcfFileReader.iterator();
             VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "",
                     vcfFileReader.getFileHeader().getSampleNamesInOrder());
             VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
-            int lineCounter = 0;
+            lineCounter = 0;
             while (iterator.hasNext()) {
-                VariantContext variantContext = iterator.next();
+                variantContext = iterator.next();
                 // Reference positions will not be indexed
                 if (variantContext.getAlternateAlleles().size() > 0) {
                     List<Variant> variantList = normalizer.normalize(converter.apply(Collections.singletonList(variantContext)), true);
@@ -617,6 +618,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         } catch (IOException | RocksDBException | NonStandardCompliantSampleField e) {
             e.printStackTrace();
             System.exit(1);
+        } catch (Exception e) {
+            if (lineCounter >= 0 && variantContext != null) {
+                logger.error("Error fond while trying to parse {}:{}:{}:{}", variantContext.getContig(),
+                        variantContext.getStart(), variantContext.getReference(), variantContext.getAlternateAlleles());
+            } else {
+                logger.error("Error found while parsing {}", customFiles.get(customFileNumber).toString());
+            }
+            throw e;
         }
     }
 
