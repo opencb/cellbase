@@ -479,8 +479,23 @@ public class VariantAnnotationCalculator {
             // decision is to run it synchronously
             if (annotatorSet.contains("hgvs")) {
                 try {
-                    // No need to carry out normalization if it has already been done
-                    variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, !normalize));
+                    // Decided to always set normalize = false for a number of reasons:
+                    //   * was raising problems with the normalizer - it could potentially fail in weird multiallelic
+                    //     cases if the normalizer is called twice over the same variant,
+                    //     i.e. normalize(normalize(variant)). Calling the normalizer twice happens when annotating from
+                    //     a VCF, since normalization is carried out before sending variant to the VariantAnnotationCalculator.
+                    //     Therefore, normalize would be false within the VariantAnnotationCalculator, it kept as it was
+                    //     before, !normalize for hgvsCalculator, it'd run normalization twice.
+                    //     This incorrect behaviour of the normalizer must and will be fixed in the future, it was decided not to
+                    //     include it as a hotfix since touches the very core of the normalizer
+                    //   * if normalize = true, the variants in normalizedVariantList are already normalized for sure
+                    //     and should not be normalized again.
+                    //   * if normalize = false, then we could potentially find things like CT/C. In this case, the
+                    //     annotator will consider this as an MNV and the rest of annotation will not exactly be what
+                    //     a typical user would expect for the deletion of the T (which is what it is). Thus, we don't
+                    //     really care that much at this point if the hgvs is not perfectly normalized. Knowing that
+                    //     variants are not normalized the user should always select normalize=true.
+                    variantAnnotation.setHgvs(hgvsCalculator.run(normalizedVariantList.get(i), geneList, false));
                 } catch (VariantNormalizerException e) {
                     logger.error("Unable to normalize variant {}. Leaving empty HGVS.",
                             normalizedVariantList.get(i).toString());
