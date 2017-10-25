@@ -12,6 +12,7 @@ _DEFAULT_HOST = 'bioinfo.hpc.cam.ac.uk:80/cellbase'
 _DEFAULT_API_VERSION = 'v4'
 _DEFAULT_SPECIES = 'hsapiens'
 
+# Reference sequence notation
 # http://www.hgvs.org/mutnomen/standards.html
 _HGVS_REF_SEQ_LETTER = {
     'genomic': 'g.', 'cdna': 'c.', 'rna': 'r.', 'protein': 'p.',
