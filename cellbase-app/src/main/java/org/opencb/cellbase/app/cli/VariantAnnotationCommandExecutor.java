@@ -815,6 +815,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Assembly
         if (variantAnnotationCommandOptions.assembly != null) {
             assembly = variantAnnotationCommandOptions.assembly;
+            // In case annotation is made through WS assembly must be set in the queryOptions
+            queryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
         } else {
             assembly = null;
             logger.warn("No assembly provided. Using default assembly for {}", species);
