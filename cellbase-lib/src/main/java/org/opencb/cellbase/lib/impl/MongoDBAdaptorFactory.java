@@ -16,29 +16,50 @@
 
 package org.opencb.cellbase.lib.impl;
 
+import com.mongodb.MongoTimeoutException;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.bson.Document;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
+import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
     private static final String SERVER_ADDRESS = "serverAddress";
+    private static final String MEMBERS = "members";
+    private static final String SET = "set";
+    private static final String STATE_STR = "stateStr";
+    private static final String NAME = "name";
+    private static final String COLON = ":";
+    private static final String REPLICA_SET = "replica_set";
+    private static final String HOST = "host";
+    private static final String ADMIN_DATABASE = "admin";
     /**
      * MongoDataStoreManager acts as singleton by keeping a reference to all databases connections created.
      */
     private MongoDataStoreManager mongoDataStoreManager;
+    private static Map<String, MongoDataStoreManager> memberDataStoreManagerMap = new HashMap<>();
 //    private static Map<String, MongoDataStore> mongoDatastoreFactory;
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
@@ -75,8 +96,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          cellbase_hsapiens_grch37_v3
          **/
 
-        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
-
         // We need to look for the species object in the configuration
         Species speciesObject = getSpecies(species);
         if (speciesObject != null) {
@@ -89,59 +108,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 String database = "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
                         .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
                 logger.debug("Database for the species is '{}'", database);
-
-                MongoDBConfiguration mongoDBConfiguration;
-                MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
-
-                // For authenticated databases
-                if (!mongodbCredentials.getUser().isEmpty() && !mongodbCredentials.getPassword().isEmpty()) {
-                    // MongoDB could authenticate against different databases
-                    builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
-                    if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
-                        builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
-                                .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
-                    }
-                }
-
-                if (mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE) != null
-                        && !mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE).isEmpty()) {
-                    builder.add(MongoDBConfiguration.READ_PREFERENCE,
-                            mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE));
-                }
-
-                String replicaSet = mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET);
-                if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
-                    builder.setReplicaSet(mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET));
-                }
-
-                String connectionsPerHost = mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST);
-                if (connectionsPerHost != null && !connectionsPerHost.isEmpty()) {
-                    builder.setConnectionsPerHost(Integer.valueOf(mongodbCredentials.getOptions()
-                            .get(MongoDBConfiguration.CONNECTIONS_PER_HOST)));
-                }
-
-                mongoDBConfiguration = builder.build();
-
-                logger.debug("*************************************************************************************");
-                logger.debug("MongoDataStore configuration parameters: ");
-                logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
-                        mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
-                logger.debug("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
-                        mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
-                logger.debug("{} = {}", MongoDBConfiguration.REPLICA_SET,
-                        mongoDBConfiguration.get(MongoDBConfiguration.REPLICA_SET));
-                logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
-                        mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
-                logger.debug("*************************************************************************************");
-//                } else {
-//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
-//                }
-
-                // A MongoDataStore to this host and database is returned
-                MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
-
-                // we return the MongoDataStore object
-                return mongoDatastore;
+                return createMongoDBDatastore(database);
             } else {
                 logger.error("Assembly is not valid, assembly '{}'. Valid assemblies: {}", assembly,
                         String.join(",", speciesObject.getAssemblies().stream().map((assemblyObject)
@@ -164,6 +131,62 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
+    private MongoDataStore createMongoDBDatastore(String database) {
+        DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
+        MongoDBConfiguration mongoDBConfiguration;
+        MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
+
+        // For authenticated databases
+        if (!mongodbCredentials.getUser().isEmpty() && !mongodbCredentials.getPassword().isEmpty()) {
+            // MongoDB could authenticate against different databases
+            builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
+            if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
+                builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
+                        .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+            }
+        }
+
+        if (mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE) != null
+                && !mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE).isEmpty()) {
+            builder.add(MongoDBConfiguration.READ_PREFERENCE,
+                    mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE));
+        }
+
+        String replicaSet = mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET);
+        if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
+            builder.setReplicaSet(mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET));
+        }
+
+        String connectionsPerHost = mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST);
+        if (connectionsPerHost != null && !connectionsPerHost.isEmpty()) {
+            builder.setConnectionsPerHost(Integer.valueOf(mongodbCredentials.getOptions()
+                    .get(MongoDBConfiguration.CONNECTIONS_PER_HOST)));
+        }
+
+        mongoDBConfiguration = builder.build();
+
+        logger.debug("*************************************************************************************");
+        logger.debug("MongoDataStore configuration parameters: ");
+        logger.debug("{} = {}", MongoDBConfiguration.AUTHENTICATION_DATABASE,
+                mongoDBConfiguration.get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+        logger.debug("{} = {}", MongoDBConfiguration.READ_PREFERENCE,
+                mongoDBConfiguration.get(MongoDBConfiguration.READ_PREFERENCE));
+        logger.debug("{} = {}", MongoDBConfiguration.REPLICA_SET,
+                mongoDBConfiguration.get(MongoDBConfiguration.REPLICA_SET));
+        logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
+                mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
+        logger.debug("*************************************************************************************");
+//                } else {
+//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
+//                }
+
+        // A MongoDataStore to this host and database is returned
+        MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
+
+        // we return the MongoDataStore object
+        return mongoDatastore;
+    }
+
 
     @Override
     public void open(String species, String assembly) {
@@ -172,9 +195,105 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     @Override
     public void close() {
-
+        mongoDataStoreManager.close();
     }
 
+    @Override
+    public Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
+    getDatabaseStatus(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        try {
+            if (mongoDatastore.isReplSet()) {
+                // This mongoDatastore object is not valid for a RS since will be used to run replSetGetStatus which
+                // can only be run against the "admin" database
+                return getReplSetStatus(species, assembly);
+            } else {
+                return getSingleMachineDBStatus(mongoDatastore, species, assembly);
+            }
+        // Can happen if cannot find host, for example
+        } catch (MongoTimeoutException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
+    getSingleMachineDBStatus(MongoDataStore mongoDatastore, String species, String assembly) {
+        Document statusDocument = mongoDatastore.getServerStatus();
+        Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
+                = new HashMap<>(1);
+        HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+        datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
+        statusMap.put((String) statusDocument.get(HOST), datastoreStatus);
+        return statusMap;
+    }
+
+    private Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
+    getReplSetStatus(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(ADMIN_DATABASE);
+        Document statusDocument = mongoDatastore.getReplSetStatus();
+        Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> statusMap
+                = new HashMap<>(4);
+
+        String repset = (String) statusDocument.get(SET);
+        if (StringUtils.isNotBlank(repset)) {
+            HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                    = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            datastoreStatus.setRepset(repset);
+            // Overall database response time is measured by raising a query to Gene collection
+            datastoreStatus.setResponseTime(getQueryResponseTime(species, assembly));
+            datastoreStatus.setRole(REPLICA_SET);
+            statusMap.put(repset, datastoreStatus);
+        }
+
+        for (Map memberStatus : (List<Map>) statusDocument.get(MEMBERS)) {
+            HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus datastoreStatus
+                    = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus();
+            datastoreStatus.setRepset(repset);
+            datastoreStatus.setRole(((String) memberStatus.get(STATE_STR)).toLowerCase());
+            String memberName = ((String) memberStatus.get(NAME)).split(COLON)[0];
+            // Per-machine response time is measured by doing ping to the machine. it's not possible to create a connection
+            // to one single machine in the rep set
+            datastoreStatus.setResponseTime(getPingResponseTime(memberName));
+            statusMap.put(memberName, datastoreStatus);
+        }
+        return statusMap;
+    }
+
+    private String getQueryResponseTime(String species, String assembly) {
+        GeneDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
+        try {
+            QueryResult<Gene> queryResult = geneDBAdaptor.first();
+            // Query must return one gene. Otherwise there's a problem
+            if (queryResult.getNumResults() == 1) {
+                return queryResult.getDbTime() + "ms";
+            } else {
+                return null;
+            }
+        } catch (MongoTimeoutException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String getPingResponseTime(String memberName) {
+        try {
+            StopWatch uptime = new StopWatch();
+            uptime.start();
+            InetAddress address = InetAddress.getByName(memberName);
+            boolean chkConnection = address.isReachable(1000);
+            if (chkConnection) {
+                return String.valueOf(TimeUnit.NANOSECONDS.toMillis(uptime.getNanoTime())) + "ms";
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
     @Override
     public GenomeDBAdaptor getGenomeDBAdaptor(String species) {
