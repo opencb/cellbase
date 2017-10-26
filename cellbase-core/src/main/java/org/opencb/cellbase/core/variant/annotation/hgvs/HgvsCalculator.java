@@ -23,11 +23,11 @@ import java.util.List;
  */
 public class HgvsCalculator {
 
-    private static final char COLON = ':';
+    protected static final char COLON = ':';
     private static final String CODING_TRANSCRIPT_CHAR = "c.";
     private static final String NON_CODING_TRANSCRIPT_CHAR = "n.";
-    private static final String PROTEIN_CHAR = "p.";
-    private static final char UNDERSCORE = '_';
+    protected static final String PROTEIN_CHAR = "p.";
+    protected static final char UNDERSCORE = '_';
     private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
@@ -460,32 +460,7 @@ public class HgvsCalculator {
      * @return String containing an HGVS formatted variant representation
      */
     protected String formatProteinString(BuildingComponents buildingComponents) {
-
-        StringBuilder allele = new StringBuilder();
-        allele.append(buildingComponents.getProteinId());  // if use_prefix else ''
-        allele.append(COLON);
-
-        if (buildingComponents.getKind().equals(BuildingComponents.Kind.INFRAME)) {
-            allele.append(PROTEIN_CHAR)
-                    .append(COLON)
-                    .append(buildingComponents.getReferenceStart())
-                    .append(buildingComponents.getStart())
-                    .append(UNDERSCORE)
-                    .append(buildingComponents.getReferenceEnd())
-                    .append(buildingComponents.getEnd())
-                    .append(buildingComponents.getMutationType());
-        } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
-            allele.append("n.").append(formatCdnaCoords(buildingComponents)
-                    + formatDnaAllele(buildingComponents));
-        } else {
-            throw new NotImplementedException("HGVS calculation not implemented for variant "
-                    + buildingComponents.getChromosome() + ":"
-                    + buildingComponents.getStart() + ":" + buildingComponents.getReferenceStart() + ":"
-                    + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
-        }
-
-        return allele.toString();
-
+        return null;
     }
 
     /**

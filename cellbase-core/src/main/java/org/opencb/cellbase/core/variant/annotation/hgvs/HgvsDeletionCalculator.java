@@ -1,5 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
@@ -21,6 +22,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     private static final String DEL = "del";
     private static final String POSITIVE = "+";
     private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
+    private static final String FRAMESHIFT_TAG = "fs";
     private BuildingComponents buildingComponents;
 
 
@@ -65,6 +67,39 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         return null;
     }
+
+    /**
+     * Generate a protein HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+    protected String formatProteinString(BuildingComponents buildingComponents) {
+
+        StringBuilder allele = new StringBuilder();
+        allele.append(buildingComponents.getProteinId());  // if use_prefix else ''
+        allele.append(COLON);
+
+        if (buildingComponents.getKind().equals(BuildingComponents.Kind.INFRAME)) {
+            allele.append(PROTEIN_CHAR)
+                    .append(COLON)
+                    .append(buildingComponents.getReferenceStart())
+                    .append(buildingComponents.getStart())
+                    .append(UNDERSCORE)
+                    .append(buildingComponents.getReferenceEnd())
+                    .append(buildingComponents.getEnd())
+                    .append(buildingComponents.getMutationType());
+        } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.FRAMESHIFT)) {
+            allele.append(PROTEIN_CHAR)
+                    .append(COLON)
+                    .append(buildingComponents.getReferenceStart())
+                    .append(buildingComponents.getStart())
+                    .append(FRAMESHIFT_TAG);
+        }
+
+        return allele.toString();
+
+    }
+
 
     private String proteinHgvsNormalize(String sequence) {
         // Create normalizedVariant and justify sequence to the right/left as appropriate
