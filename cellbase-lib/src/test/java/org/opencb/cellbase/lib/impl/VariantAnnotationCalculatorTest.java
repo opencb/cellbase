@@ -74,8 +74,26 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
         path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chr2.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/variation_chr19.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chrMT.full.test.json.gz").toURI());
         loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/structuralVariants.json.gz").toURI());
+        loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
+                .getResource("/genome/genome_info.json").toURI());
+        loadRunner.load(path, "genome_info");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/repeats.json.gz").toURI());
+        loadRunner.load(path, "repeats");
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
                 dbAdaptorFactory);
 
@@ -835,7 +853,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(22, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.hasItems(new Repeat("10420", "19", 60001, 172445, null,
                                 null, 2f, 0.991464f, null,
