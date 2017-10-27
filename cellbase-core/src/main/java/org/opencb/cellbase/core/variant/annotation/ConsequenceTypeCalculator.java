@@ -276,8 +276,9 @@ public abstract class ConsequenceTypeCalculator {
     protected void addNonCodingSOs(boolean isIntronicVariant) {
         if (!isIntronicVariant) {  // Exon variant
             SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
+        } else {
+            SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
         }
-        SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
     }
 
     protected List<SequenceOntologyTerm> getSequenceOntologyTerms(HashSet<String> soNames) {
