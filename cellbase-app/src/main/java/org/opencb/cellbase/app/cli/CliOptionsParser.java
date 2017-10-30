@@ -125,7 +125,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
-                + "gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, "
+                + "variation, variation_functional_score, regulation, protein, conservation, "
                 + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
         public String data;
 
