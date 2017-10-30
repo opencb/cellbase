@@ -223,11 +223,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case EtlCommons.GENE_DATA:
                         downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder, ensemblHostUrl);
                         break;
-                    case EtlCommons.GENE_DISEASE_ASSOCIATION_DATA:
-                        if (speciesHasInfoToDownload(sp, "gene_disease_association")) {
-                            downloadGeneDiseaseAssociation(sp, spFolder);
-                        }
-                        break;
                     case EtlCommons.VARIATION_DATA:
                         if (speciesHasInfoToDownload(sp, "variation")) {
                             downloadVariation(sp, spShortName, spFolder, ensemblHostUrl);
@@ -1095,30 +1090,6 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private String getClinVarVersion() {
         // ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2015-12.xml.gz
         return configuration.getDownload().getClinvar().getHost().split("_")[1].split("\\.")[0];
-    }
-
-    private void downloadGeneDiseaseAssociation(Species species, Path speciesFolder) throws IOException, InterruptedException {
-        if (species.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading gene to disease information ...");
-
-            Path gene2diseaseFolder = speciesFolder.resolve("gene_disease_association");
-            makeDir(gene2diseaseFolder);
-
-            // Downloads DisGeNET
-            String url = configuration.getDownload().getDisgenet().getHost();
-            String readmeUrl = configuration.getDownload().getDisgenetReadme().getHost();
-            downloadFile(url, gene2diseaseFolder.resolve("all_gene_disease_associations.txt.gz").toString());
-            downloadFile(readmeUrl, gene2diseaseFolder.resolve("disgenetReadme.txt").toString());
-            saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
-                    getVersionFromVersionLine(gene2diseaseFolder.resolve("disgenetReadme.txt"), "(version"),
-                    getTimeStamp(), Collections.singletonList(url), gene2diseaseFolder.resolve("disgenetVersion.json"));
-
-            // Downloads HPO
-            url = configuration.getDownload().getHpo().getHost();
-            downloadFile(url, gene2diseaseFolder.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").toString());
-            saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    gene2diseaseFolder.resolve("hpoVersion.json"));
-        }
     }
 
     private void downloadCaddScores(Species species, String assembly, Path speciesFolder) throws IOException, InterruptedException {
