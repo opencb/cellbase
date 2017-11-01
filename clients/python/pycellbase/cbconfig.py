@@ -32,8 +32,11 @@ class ConfigClient(object):
         config_dict = None
         if config_fpath.endswith('.yml') or config_fpath.endswith('.yaml'):
             config_dict = yaml.safe_load(config_fhand)
-        if config_fpath.endswith('.json'):
+        elif config_fpath.endswith('.json'):
             config_dict = json.loads(config_fhand.read())
+        else:
+            msg = 'Configuration file must end in ".json", ".yml" or ".yaml"'
+            raise IOError(msg)
 
         self._override_config_params_from_dict(config_dict)
 
