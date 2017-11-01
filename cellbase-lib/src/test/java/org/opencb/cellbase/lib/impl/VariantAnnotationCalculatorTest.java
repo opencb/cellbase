@@ -74,6 +74,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/variant-annotation/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
         path = Paths.get(getClass()
+                .getResource("/variant-annotation/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
+        loadRunner.load(path, "regulatory_region");
+        path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
         loadRunner.load(path, "variation");
         path = Paths.get(getClass()
@@ -853,7 +859,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.hasItems(new Repeat("10420", "19", 60001, 172445, null,
                                 null, 2f, 0.991464f, null,
@@ -869,7 +875,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
                         null, 2f, 0.997228f, null, null,
@@ -878,7 +884,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.remove("cnvExtraPadding");
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
                         82344, null, null, 2f, 0.997228f,
@@ -891,7 +897,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(6, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.hasItems(new Repeat("15610", "19", 60001, 82344, null,
                         null, 2f, 0.997228f, null, null,
@@ -900,7 +906,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.remove("svExtraPadding");
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(2, queryResult.getResult().get(0).getRepeat().size());
+        assertEquals(1, queryResult.getResult().get(0).getRepeat().size());
         assertThat(queryResult.getResult().get(0).getRepeat(),
                 CoreMatchers.not(CoreMatchers.hasItems(new Repeat("15610", "19", 60001,
                         82344, null, null, 2f, 0.997228f,
