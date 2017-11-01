@@ -29,7 +29,6 @@ class ConfigClient(object):
             msg = 'Unable to read file "' + config_fpath + '"'
             raise IOError(msg)
 
-        config_dict = None
         if config_fpath.endswith('.yml') or config_fpath.endswith('.yaml'):
             config_dict = yaml.safe_load(config_fhand)
         elif config_fpath.endswith('.json'):
