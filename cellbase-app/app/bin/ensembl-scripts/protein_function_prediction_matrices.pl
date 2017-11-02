@@ -10,6 +10,7 @@ use JSON;
 
 
 my $species = 'Homo sapiens';
+my $assembly = 'GRCh37';
 my $outdir = "/tmp/$species";
 my $chrom = '22';
 my $ensembl_libs;
@@ -22,7 +23,7 @@ my $help = '0';
 # USAGE: ./core.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
-GetOptions ('species=s' => \$species, 'chrom|chromosome=s' => \$chrom, 'outdir=s' => \$outdir, 
+GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly,  'chrom|chromosome=s' => \$chrom, 'outdir=s' => \$outdir,
             'ensembl-libs=s' => \$ensembl_libs, 'verbose' => \$verbose, 'help' => \$help);
 #            'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
 #            'ensembl-host=s' => \$ENSEMBL_HOST,
@@ -35,7 +36,7 @@ GetOptions ('species=s' => \$species, 'chrom|chromosome=s' => \$chrom, 'outdir=s
 print_usage() if $help;
 
 ## Printing parameters
-print_parameters() if $verbose;
+#print_parameters() if $verbose;
 
 ## Checking outdir parameter exist, otherwise create it
 if(-d $outdir){
@@ -63,16 +64,35 @@ use Bio::EnsEMBL::Funcgen::DBSQL::DBAdaptor;
 
 ## loading the registry with the adaptors 
 #Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
-Bio::EnsEMBL::Registry->load_registry_from_db(
-    -host => 'mysql-eg-publicsql.ebi.ac.uk',
-    -port => 4157,
-    -user => 'anonymous'
-);
-Bio::EnsEMBL::Registry->load_registry_from_db(
-  -host    => 'ensembldb.ensembl.org',
-  -user    => 'anonymous',
-  -verbose => '0'
-);
+#Bio::EnsEMBL::Registry->load_registry_from_db(
+#    -host => 'mysql-eg-publicsql.ebi.ac.uk',
+#    -port => 4157,
+#    -user => 'anonymous'
+#);
+#Bio::EnsEMBL::Registry->load_registry_from_db(
+#  -host    => 'ensembldb.ensembl.org',
+#  -user    => 'anonymous',
+#  -verbose => '0'
+#);
+
+print "Connecting...\n";
+if($species eq "Homo sapiens" && ($assembly eq "" || $assembly eq "GRCh37")) {
+	print ("Human selected, assembly ".$assembly." selected, connecting to port 3337\n");
+	Bio::EnsEMBL::Registry->load_registry_from_db(
+		-host    => 'ensembldb.ensembl.org',
+		-user    => 'anonymous',
+		-port => 3337,
+		-verbose => '0'
+	);
+}else {
+	print ("Human selected, assembly ".$assembly." selected, connecting to default port\n");
+	Bio::EnsEMBL::Registry->load_registry_from_db(
+		-host    => 'ensembldb.ensembl.org',
+		-user    => 'anonymous',
+		-verbose => '0'
+	);
+}
+
 ####################################################################
 
 my $slice_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Slice");
