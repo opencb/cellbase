@@ -247,7 +247,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         try {
             String outputFileName = output.resolve("genome_info.json").toAbsolutePath().toString();
             List<String> args = new ArrayList<>();
-            args.addAll(Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
+            args.addAll(Arrays.asList("--species", species.getScientificName(),
+                    "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
+                    "-o", outputFileName,
                     "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
             if (!configuration.getSpecies().getVertebrates().contains(species)
                     && !species.getScientificName().equals("Drosophila melanogaster")) {
