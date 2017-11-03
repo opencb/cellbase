@@ -6,6 +6,7 @@ import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,10 +28,33 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     protected List<String> run(Variant variant, Transcript transcript, String geneId, boolean normalize) {
         buildingComponents = new BuildingComponents();
         Variant normalizedVariant = normalize(variant, normalize);
-        return calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
+        String transcriptHgvs = calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
+        String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
+
+        if (proteinHgvs == null) {
+            return Collections.singletonList(transcriptHgvs);
+        } else {
+            return Arrays.asList(transcriptHgvs, proteinHgvs);
+        }
+
     }
 
-    private List<String> calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
+    private String calculateProteinHgvs(Variant normalizedVariant, Transcript transcript) {
+        // Check if protein HGVS can be calculated
+        if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
+            buildingComponents.setProteinId(transcript.getProteinID());
+            proteinHgvsNormalize(transcript.getProteinSequence());
+            setProteinLocationAndAminoacid(variant, transcript);
+            // Additional normalization required for insertions
+            Variant normalizedVariant = new Variant();
+
+            return return formatProteinString(buildingComponents);
+
+        }
+        return null;
+    }
+
+    private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
         // Additional normalization required for insertions
         Variant normalizedVariant = new Variant();
         String mutationType = hgvsNormalize(variant, transcript, normalizedVariant);
@@ -63,7 +87,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         buildingComponents.setTranscriptId(transcript.getId());
         buildingComponents.setGeneId(geneId);
 
-        return Collections.singletonList(formatTranscriptString(buildingComponents));
+        return formatTranscriptString(buildingComponents);
 //        return Collections.singletonList(buildingComponents.format());
     }
 

@@ -60,7 +60,11 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             buildingComponents.setMutationType(DEL);
             buildingComponents.setProteinId(transcript.getProteinID());
             setProteinLocationAndAminoacid(variant, transcript);
-            proteinHgvsNormalize(transcript.getProteinSequence());
+            // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
+            // be able to re-use methods and available objects
+            Variant normalizedVariant = proteinHgvsNormalize(transcript.getProteinSequence());
+            buildingComponents.setStart(normalizedVariant.getStart());
+            buildingComponents.setEnd(normalizedVariant.getEnd());
 
             return formatProteinString(buildingComponents);
         }
@@ -101,7 +105,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     }
 
 
-    private String proteinHgvsNormalize(String sequence) {
+    private Variant proteinHgvsNormalize(String sequence) {
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         // This is likely to be misleading
         // We are storing aa position within a Variant object. This is just a technical issue to be able to call the
@@ -113,11 +117,11 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         // startOffset must point to the position right before the actual variant start, since that's the position that
         // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
         // the position right after the actual variant end.
-        justify(normalizedVariant, normalizedVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
+        justifyProteinSequence(normalizedVariant, normalizedVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
                 buildingComponents.getEnd() -1 - 1,
                 normalizedVariant.getReference(), sequence, POSITIVE);
 
-        return DEL;
+        return normalizedVariant;
     }
 
     private void setProteinLocationAndAminoacid(Variant variant, Transcript transcript) {
