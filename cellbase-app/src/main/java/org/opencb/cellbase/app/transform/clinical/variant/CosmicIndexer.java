@@ -405,11 +405,11 @@ public class CosmicIndexer extends ClinicalIndexer {
 
         List<String> bibliography = getBibliography(fields[pubmedPMIDColumn]);
 
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, somaticInformation, null,
-                fields[ID_COLUMN], null,
-                getAlleleOriginList(Collections.singletonList(fields[mutationSomaticStatusColumn])), null,
-                genomicFeatureList, null, null, null, null,
-                null, null, null, null, additionalProperties,
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, Collections.emptyList(), somaticInformation,
+                null, fields[ID_COLUMN], null,
+                getAlleleOriginList(Collections.singletonList(fields[mutationSomaticStatusColumn])),
+                Collections.emptyList(), genomicFeatureList, null, null, null, null,
+                EthnicCategory.Z, null, null, null, additionalProperties,
                 bibliography);
 
         return evidenceEntry;
@@ -450,7 +450,7 @@ public class CosmicIndexer extends ClinicalIndexer {
             return Collections.singletonList("PMID:" + bibliographyString);
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     private List<GenomicFeature> getGenomicFeature(String[] fields) {

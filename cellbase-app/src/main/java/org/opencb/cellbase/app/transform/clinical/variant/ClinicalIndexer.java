@@ -80,7 +80,7 @@ public abstract class ClinicalIndexer {
                 logger.debug("No SO term found for allele origin {}. Skipping.", originString);
             }
         }
-        return !alleleOrigin.isEmpty() ? alleleOrigin : null;
+        return alleleOrigin;
     }
 
     class SequenceLocation {
