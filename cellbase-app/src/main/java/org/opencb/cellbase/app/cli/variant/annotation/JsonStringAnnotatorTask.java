@@ -25,8 +25,11 @@ import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,6 +37,7 @@ import java.util.List;
  */
 public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private List<VariantAnnotator> variantAnnotatorList;
     private boolean normalize;
     private static ObjectMapper jsonObjectMapper;
@@ -67,7 +71,16 @@ public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcep
         List<Variant> variantList = parseVariantList(batch);
         List<Variant> normalizedVariantList;
         if (normalize) {
-            normalizedVariantList = normalizer.apply(variantList);
+            normalizedVariantList = new ArrayList<>(variantList.size());
+            for (Variant variant : variantList) {
+                try {
+                    normalizedVariantList.addAll(normalizer.apply(Collections.singletonList(variant)));
+                } catch (RuntimeException e) {
+                    logger.warn("Error found during variant normalization. Variant: {}", variant.toString());
+                    logger.warn("This variant will be skipped and annotation will continue");
+                    logger.warn("Full stack trace below", e);
+                }
+            }
         } else {
             normalizedVariantList = variantList;
         }
