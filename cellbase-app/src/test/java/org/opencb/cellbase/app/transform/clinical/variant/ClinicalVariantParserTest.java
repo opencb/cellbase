@@ -42,7 +42,7 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> variantList = loadSerializedVariants("/tmp/clinical_variant.json.gz");
-        assertEquals(8, variantList.size());
+        assertEquals(9, variantList.size());
 
         Variant variant = getVariantByAccession(variantList, "COSM1193237");
         assertNotNull(variant);
