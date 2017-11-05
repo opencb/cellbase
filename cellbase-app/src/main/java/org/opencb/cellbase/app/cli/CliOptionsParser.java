@@ -415,7 +415,10 @@ public class CliOptionsParser {
         @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
                 + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
                 + "documents that include lists of population frequencies objects. Will allow annotating the input file "
-                + "(-i) with the population frequencies present in this json file; sv-extra-padding=Integer to optionally "
+                + "(-i) with the population frequencies present in this json file; complete-input-population=for internal "
+                + "purposes only. To be used together with population-frequencies. Boolean to indicate whether variants "
+                + "in the population-frequencies file but not in the input file (-i) should be included in the output. "
+                + "sv-extra-padding=Integer to optionally "
                 + "provide the size of the extra padding to be used when annotating noImprecision (or not) "
                 + "structural variants}; cnv-extra-padding=Integer to optionally provide the size of the extra padding "
                 + "to be used when annotating noImprecision (or not) structural variants}")
@@ -424,6 +427,7 @@ public class CliOptionsParser {
         public VariantAnnotationCommandOptions() {
             buildParams = new HashMap<>();
             buildParams.put("population-frequencies", null);
+            buildParams.put("complete-input-population", "true");
             buildParams.put("sv-extra-padding", "0");
             buildParams.put("cnv-extra-padding", "0");
         }
