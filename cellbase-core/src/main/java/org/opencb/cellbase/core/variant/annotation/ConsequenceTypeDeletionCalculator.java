@@ -114,7 +114,17 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart < 1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                    // We just consider doing a fancier prediction with the start codon if both variant start and end
+                    // fall within the transcript sequence
+                    // ---NNNNNNNNCATTTTTTT
+                    //    deletion  |---|
+                    if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
+                        && transcript.getCdnaCodingStart() - cdnaVariantEnd < 3) {
+                        SoNames.add(solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(),
+                                cdnaVariantStart, cdnaVariantEnd));
+                    } else {
+                        SoNames.add(VariantAnnotationUtils.START_LOST);
+                    }
                 }
                 if (variantStart < (transcript.getGenomicCodingStart() + 3)) {
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -158,6 +168,39 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
         }
     }
 
+    private String solveStartCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
+                                                int cdnaVariantEnd) {
+        // Not necessary to include % 3 since if we get here we already know that the difference is < 3
+        Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
+        char[] referenceCodonArray = {'T', 'A', 'C'}; // Complementary of start codon ATG - Met (already reversed)
+        int i = transcriptSequence.length() - cdnaVariantStart + 1;  // Position (0 based index) in transcriptSequence of
+                                                                     // the first nt after the deletion
+        int codonPosition;
+        // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+        // calling this method
+        for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
+            char substitutingNt;
+            // Means we've reached the transcript.start
+            if (i >= transcriptSequence.length()) {
+                int genomicCoordinate = transcript.getEnd() + (transcriptSequence.length() - i + 1); // + 1 since i moves
+                                                                                                     // in base 0 (see above)
+                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                        + ":" + genomicCoordinate
+                        + "-" + (genomicCoordinate + 1));
+                substitutingNt = genomeDBAdaptor
+                        .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
+            } else {
+                // Paste reference nts after deletion in the corresponding codon position
+                substitutingNt = transcriptSequence.charAt(i);
+            }
+            if (referenceCodonArray[codonPosition] != substitutingNt) {
+                return VariantAnnotationUtils.START_LOST;
+            }
+            i++;
+        }
+        return VariantAnnotationUtils.START_RETAINED_VARIANT;
+    }
+
     @Override
     protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
@@ -170,7 +213,17 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart<1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                    // We just consider doing a fancier prediction with the start codon if both variant start and end
+                    // fall within the transcript sequence
+                    // ---NNNNNNNNCATTTTTTT
+                    //    deletion  |---|
+                    if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
+                            && transcript.getCdnaCodingStart() - cdnaVariantEnd < 3) {
+                        SoNames.add(solveStartCodonPositiveVariant(transcriptSequence, transcript.getCdnaCodingStart(),
+                                cdnaVariantStart, cdnaVariantEnd));
+                    } else {
+                        SoNames.add(VariantAnnotationUtils.START_LOST);
+                    }
                 }
                 if (variantEnd > (transcript.getGenomicCodingEnd() - 3)) {
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -212,6 +265,38 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
         } else if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedEnd()) {
             SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
         }
+    }
+
+    private String solveStartCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
+                                                  int cdnaVariantEnd) {
+        // Not necessary to include % 3 since if we get here we already know that the difference is < 3
+        Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
+        char[] referenceCodonArray = {'A', 'T', 'G'}; // start codon ATG - Met
+        int i = cdnaVariantStart - 1 - 1;  // - 1 to get the first position right before the deletion. An additional
+                                            // - 1 to set base 0
+        int codonPosition;
+        // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+        // calling this method
+        for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
+            char substitutingNt;
+            // Means we've reached the beginning of the transcript, i.e. transcript.start
+            if (i < 0) {
+                int genomicCoordinate = transcript.getStart() + i; // recall that i is negative if we get here
+                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                        + ":" + genomicCoordinate
+                        + "-" + (genomicCoordinate + 1));
+                substitutingNt = genomeDBAdaptor
+                        .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
+            } else {
+                // Paste reference nts after deletion in the corresponding codon position
+                substitutingNt = transcriptSequence.charAt(i);
+            }
+            if (referenceCodonArray[codonPosition] != substitutingNt) {
+                return VariantAnnotationUtils.START_LOST;
+            }
+            i--;
+        }
+        return VariantAnnotationUtils.START_RETAINED_VARIANT;
     }
 
     @Override

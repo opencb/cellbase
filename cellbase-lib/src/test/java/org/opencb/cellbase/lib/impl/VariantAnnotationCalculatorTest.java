@@ -1128,7 +1128,99 @@ public class VariantAnnotationCalculatorTest {
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
+        // Deletion affecting start codon on positive transcript. Variant end falls within start codon; variant start
+        // falls outside coding region on the first base of the transcript.
+        // ----XXXXXXXXX------------GGAGCTCCGCGATGXXXXXX-------
+        //     |--------------------------------|
         QueryResult<ConsequenceType> consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152486978-152487861:<DEL>"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                        "start_lost")));
+
+        // Deletion affecting start codon on positive transcript. Variant end falls within start codon; variant start
+        // falls outside coding region but within an exon (inside transcript). Not all deleted bases on the start codon are
+        // replaced by the same bases
+        // -------------------------GGAGCTCCGCGATGXXXXXX-------
+        //                                |-----|
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 152487855, "CCGCGAT", "-"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                        "start_lost")));
+
+        // Deletion affecting start codon on positive transcript. Variant end falls within start codon; variant start
+        // falls outside coding region but within an exon (inside transcript). Deleted base on the start codon is
+        // replaced by same base
+        // -------------------------GGAGCTCCGCGATGXXXXXX-------
+        //                            |--------|
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 152487852, "GCTCCGCGA", "-"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002019",
+                        "start_retained_variant")));
+
+        // Deletion affecting start codon on negative transcript. Variant start falls within start codon; variant end
+        // falls outside the transcript.
+        // --------------------------XXXXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                                        |---------------------------------|
+        consequenceTypeResult =
+            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195728-152196682:<DEL>"),
+                    new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                                "start_lost")));
+
+        // Deletion affecting start codon on negative transcript. Variant start falls within start codon; variant end
+        // falls outside coding region on the last base of the transcript.
+        // ------------------------------XXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                                        |--------------------------|
+        consequenceTypeResult =
+            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195728-152196669:<DEL>"),
+                    new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                                "start_lost")));
+
+        // Deletion affecting start codon on negative transcript. Variant start falls within start codon; variant end
+        // falls outside coding region within an intron.
+        // ------------------------------XXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                                        |------------|
+        consequenceTypeResult =
+            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 152195729, "TTTTTTTTTTTGCAAGTTTGAGTAACCTAAAGGGAGGAAAAAGAGA", "-"),
+                    new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                                "start_lost")));
+
+        // Deletion affecting start codon on negative transcript. Variant start falls within start codon; variant end
+        // falls outside coding region but within an exon (inside transcript). Not all deleted bases on the start codon are
+        // replaced by same bases (just the first A)
+        // -----------------------------XXXXXXXXCATTTTTTTTTTTGCAAG-------------
+        //                                       |------------|
+        consequenceTypeResult =
+            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 152195728, "ATTTTTTTTTTTGC", "-"),
+                    new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                                "start_lost")));
+
+        // Deletion affecting start codon on negative transcript. Variant start falls within start codon; variant end
+        // falls outside coding region but within an exon (inside transcript). Deleted bases on the start codon are
+        // replaced by same bases
+        // -----------------------------XXXXXXXXCATTTTTT-------------
+        //                                        |---|
+        consequenceTypeResult =
+            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1", 152195729, "TTT", "-"),
+                    new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002019",
+                                "start_retained_variant")));
+
+        consequenceTypeResult =
             variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("19", 33167329, "AC", "TT"),
                     new QueryOptions("normalize", false));
         assertObjectListEquals("[{\"geneName\":\"ANKRD27\",\"ensemblGeneId\":\"ENSG00000105186\",\"ensemblTranscriptId\":\"ENST00000306065\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001636\",\"name\":\"2KB_upstream_variant\"}]},{\"geneName\":\"ANKRD27\",\"ensemblGeneId\":\"ENSG00000105186\",\"ensemblTranscriptId\":\"ENST00000587352\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001636\",\"name\":\"2KB_upstream_variant\"}]},{\"geneName\":\"ANKRD27\",\"ensemblGeneId\":\"ENSG00000105186\",\"ensemblTranscriptId\":\"ENST00000586463\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001636\",\"name\":\"2KB_upstream_variant\"}]},{\"geneName\":\"ANKRD27\",\"ensemblGeneId\":\"ENSG00000105186\",\"ensemblTranscriptId\":\"ENST00000588700\",\"strand\":\"-\",\"biotype\":\"nonsense_mediated_decay\",\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001636\",\"name\":\"2KB_upstream_variant\"}]},{\"geneName\":\"ANKRD27\",\"ensemblGeneId\":\"ENSG00000105186\",\"ensemblTranscriptId\":\"ENST00000586693\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001636\",\"name\":\"2KB_upstream_variant\"}]},{\"geneName\":\"ANKRD27\",\"ensemblGeneId\":\"ENSG00000105186\",\"ensemblTranscriptId\":\"ENST00000590519\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":0.24630541871921183,\"number\":\"1/4\"}],\"transcriptAnnotationFlags\":[\"mRNA_end_NF\",\"cds_end_NF\"],\"cdnaPosition\":174,\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001623\",\"name\":\"5_prime_UTR_variant\"}]},{\"geneName\":\"CTC-379B2.4\",\"ensemblGeneId\":\"ENSG00000267557\",\"ensemblTranscriptId\":\"ENST00000589127\",\"strand\":\"+\",\"biotype\":\"antisense\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_variant\"}]},{\"geneName\":\"RGS9BP\",\"ensemblGeneId\":\"ENSG00000186326\",\"ensemblTranscriptId\":\"ENST00000334176\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":0.0691085003455425,\"number\":\"1/1\"}],\"transcriptAnnotationFlags\":[\"CCDS\",\"basic\"],\"cdnaPosition\":1017,\"cdsPosition\":160,\"codon\":\"ACC/TTC\",\"proteinVariantAnnotation\":{\"position\":54,\"reference\":\"THR\",\"alternate\":\"PHE\"},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001650\",\"name\":\"inframe_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001782\",\"name\":\"TF_binding_site_variant\"}]}]",
