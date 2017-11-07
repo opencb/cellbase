@@ -1,6 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
@@ -23,6 +23,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     private static final String POSITIVE = "+";
     private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
     private static final String FRAMESHIFT_TAG = "fs";
+    private static final String EMPTY_STRING = "";
     private BuildingComponents buildingComponents;
 
 
@@ -59,17 +60,36 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
             buildingComponents.setMutationType(DEL);
             buildingComponents.setProteinId(transcript.getProteinID());
-            setProteinLocationAndAminoacid(variant, transcript);
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
-            Variant normalizedVariant = proteinHgvsNormalize(transcript.getProteinSequence());
-            buildingComponents.setStart(normalizedVariant.getStart());
-            buildingComponents.setEnd(normalizedVariant.getEnd());
+            Variant proteinVariant = createProteinVariant(variant, transcript);
+            if (variant != null) {
+                // startOffset must point to the position right before the actual variant start, since that's the position that
+                // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
+                // the position right after the actual variant end.
+                justify(proteinVariant, proteinVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
+                        proteinVariant.getEnd() - 1 - 1, proteinVariant.getReference(),
+                        transcript.getProteinSequence(), POSITIVE);
 
-            return formatProteinString(buildingComponents);
+                buildingComponents.setStart(proteinVariant.getStart());
+                buildingComponents.setEnd(proteinVariant.getEnd());
+                buildingComponents.setReferenceStart(String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getStart() - 1)));
+                buildingComponents.setReferenceEnd(String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getEnd() - 1)));
+
+                // Check frameshift/inframe
+                if (variant.getReference().length() % 3 == 0) {
+                    buildingComponents.setKind(BuildingComponents.Kind.INFRAME);
+                } else {
+                    buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+                }
+
+                return formatProteinString(buildingComponents);
+            }
         }
-
         return null;
+        
     }
 
     /**
@@ -105,46 +125,33 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     }
 
 
-    private Variant proteinHgvsNormalize(String sequence) {
-        // Create normalizedVariant and justify sequence to the right/left as appropriate
-        // This is likely to be misleading
-        // We are storing aa position within a Variant object. This is just a technical issue to be able to call the
-        // same "justify" method as for the transcript hgvs
-        Variant normalizedVariant = new Variant();
-        normalizedVariant.setStart(buildingComponents.getStart());
-        normalizedVariant.setEnd(buildingComponents.getEnd());
+    private Variant createProteinVariant(Variant variant, Transcript transcript) {
+        Variant proteinVariant = new Variant();
 
-        // startOffset must point to the position right before the actual variant start, since that's the position that
-        // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
-        // the position right after the actual variant end.
-        justifyProteinSequence(normalizedVariant, normalizedVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
-                buildingComponents.getEnd() -1 - 1,
-                normalizedVariant.getReference(), sequence, POSITIVE);
-
-        return normalizedVariant;
-    }
-
-    private void setProteinLocationAndAminoacid(Variant variant, Transcript transcript) {
         int cdnaCodingStart = transcript.getCdnaCodingStart();
         if (transcript.unconfirmedStart()) {
             cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
         }
-        // reference amino acid at start position and protein start position must always be calculated, either if it's
-        // frameshift or inframe
-        buildingComponents.setReferenceStart(getReferenceCodon(variant.getChromosome(), transcript.getcDnaSequence(),
-                cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
-        buildingComponents.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
-        // Check frameshift/inframe
-        if (variant.getReference().length() % 3 == 0) {
-            buildingComponents.setKind(BuildingComponents.Kind.INFRAME);
-            // reference amino acid at end position and protein end position must ONLY be calculated for inframe
-            // deletions
-            buildingComponents.setReferenceEnd(getReferenceCodon(variant.getChromosome(), transcript.getcDnaSequence(),
-                    cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
-            buildingComponents.setEnd(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
-        } else {
-            buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+        proteinVariant.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
+        proteinVariant.setEnd(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
+
+        // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
+        // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
+        // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
+        if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
+            proteinVariant.setAlternate(EMPTY_STRING);
+            proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                    proteinVariant.getEnd() - 1));
+
+            return proteinVariant;
         }
+        logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
+                        + " not happen and protein HGVS will not be returned. Could be expected for "
+                        +"unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
+                buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
+                transcript.getProteinSequence().length());
+
+        return null;
     }
 
     private int getAminoAcidPosition(int cdnaCodingStart, int cdsPosition) {

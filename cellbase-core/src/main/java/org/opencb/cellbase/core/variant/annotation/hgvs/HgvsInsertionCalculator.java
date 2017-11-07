@@ -48,7 +48,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // Additional normalization required for insertions
             Variant normalizedVariant = new Variant();
 
-            return return formatProteinString(buildingComponents);
+            return formatProteinString(buildingComponents);
 
         }
         return null;

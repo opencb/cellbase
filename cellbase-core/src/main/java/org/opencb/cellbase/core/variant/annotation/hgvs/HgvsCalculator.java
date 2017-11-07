@@ -28,7 +28,7 @@ public class HgvsCalculator {
     private static final String NON_CODING_TRANSCRIPT_CHAR = "n.";
     protected static final String PROTEIN_CHAR = "p.";
     protected static final char UNDERSCORE = '_';
-    private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
+    protected static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
 
