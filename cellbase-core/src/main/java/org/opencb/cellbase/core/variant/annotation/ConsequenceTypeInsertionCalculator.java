@@ -397,7 +397,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if (variantEnd > (transcript.getStart() - 5001) && variantStart < transcript.getStart()) {
             // Variant within -2kb region
             if (variantEnd > (transcript.getStart() - 2001)) {
-                SoNames.add("2KB_" + leftRegionTag);
+                SoNames.add("2KB_" + leftRegionTag.replace(DOWN_UP_STREAM_GENE_TAG, ""));
             } else {
                 SoNames.add(leftRegionTag);
             }
@@ -406,7 +406,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if (variantEnd > transcript.getEnd() && variantStart < (transcript.getEnd() + 5001)) {
             // Variant within +2kb region
             if (variantStart < (transcript.getEnd() + 2001)) {
-                SoNames.add("2KB_" + rightRegionTag);
+                SoNames.add("2KB_" + rightRegionTag.replace(DOWN_UP_STREAM_GENE_TAG, ""));
             } else {
                 SoNames.add(rightRegionTag);
             }

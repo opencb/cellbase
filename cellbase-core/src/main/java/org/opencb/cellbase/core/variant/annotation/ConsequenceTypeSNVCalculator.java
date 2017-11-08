@@ -305,7 +305,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (variant.getStart() > (transcript.getStart() - 5001) && variant.getStart() < transcript.getStart()) {
             // Variant within -2kb region
             if (variant.getStart() > (transcript.getStart() - 2001)) {
-                SoNames.add("2KB_" + leftRegionTag);
+                SoNames.add("2KB_" + leftRegionTag.replace(DOWN_UP_STREAM_GENE_TAG, ""));
             } else {
                 SoNames.add(leftRegionTag);
             }
@@ -314,7 +314,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         if (variant.getStart() > transcript.getEnd() && variant.getStart() < (transcript.getEnd() + 5001)) {
             // Variant within +2kb region
             if (variant.getStart() < (transcript.getEnd() + 2001)) {
-                SoNames.add("2KB_" + rightRegionTag);
+                SoNames.add("2KB_" + rightRegionTag.replace(DOWN_UP_STREAM_GENE_TAG, ""));
             } else {
                 SoNames.add(rightRegionTag);
             }

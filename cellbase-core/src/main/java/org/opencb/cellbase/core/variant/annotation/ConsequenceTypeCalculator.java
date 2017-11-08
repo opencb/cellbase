@@ -35,6 +35,7 @@ public abstract class ConsequenceTypeCalculator {
     protected static final String IMPRECISE = "imprecise";
     protected static final String SV_EXTRA_PADDING = "svExtraPadding";
     protected static final String CNV_EXTRA_PADDING = "cnvExtraPadding";
+    protected static final String DOWN_UP_STREAM_GENE_TAG = "_gene";
     protected static final int NO_EXON_OVERLAP = 0;
 
     public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList,

@@ -18,7 +18,6 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
 
     protected int variantStart;
     protected int variantEnd;
-
     protected static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,
@@ -95,7 +94,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         if (regionsOverlap(transcript.getStart() - 5000, transcript.getStart() - 1, variantStart, variantEnd)) {
             // Variant overlaps with -2kb region
             if (regionsOverlap(transcript.getStart() - 2000, transcript.getStart() - 1, variantStart, variantEnd)) {
-                SoNames.add("2KB_" + leftRegionTag);
+                SoNames.add("2KB_" + leftRegionTag.replace(DOWN_UP_STREAM_GENE_TAG, ""));
             } else {
                 SoNames.add(leftRegionTag);
             }
@@ -104,7 +103,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
         if (regionsOverlap(transcript.getEnd() + 1, transcript.getEnd() + 5000, variantStart, variantEnd)) {
             // Variant overlaps with +2kb region
             if (regionsOverlap(transcript.getEnd() + 1, transcript.getEnd() + 2000, variantStart, variantEnd)) {
-                SoNames.add("2KB_" + rightRegionTag);
+                SoNames.add("2KB_" + rightRegionTag.replace(DOWN_UP_STREAM_GENE_TAG, ""));
             } else {
                 SoNames.add(rightRegionTag);
             }

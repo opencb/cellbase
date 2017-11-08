@@ -442,9 +442,9 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("NMD_transcript_variant", 16);
         SO_SEVERITY.put("non_coding_transcript_variant", 15);
         SO_SEVERITY.put("2KB_upstream_variant", 14);
-        SO_SEVERITY.put("upstream_variant", 13);
+        SO_SEVERITY.put("upstream_gene_variant", 13);
         SO_SEVERITY.put("2KB_downstream_variant", 12);
-        SO_SEVERITY.put("downstream_variant", 11);
+        SO_SEVERITY.put("downstream_gene_variant", 11);
         SO_SEVERITY.put("TFBS_ablation", 10);
         SO_SEVERITY.put("TFBS_amplification", 9);
         SO_SEVERITY.put("TF_binding_site_variant", 8);
