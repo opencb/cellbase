@@ -12,8 +12,6 @@ import java.util.List;
  * Created by fjlopez on 15/06/17.
  */
 public class HgvsSNVCalculator extends HgvsCalculator {
-    private BuildingComponents buildingComponents;
-
     public HgvsSNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
     }

@@ -20,11 +20,8 @@ import java.util.List;
 public class HgvsDeletionCalculator extends HgvsCalculator {
 
     private static final String DEL = "del";
-    private static final String POSITIVE = "+";
-    private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
     private static final String FRAMESHIFT_TAG = "fs";
     private static final String EMPTY_STRING = "";
-    private BuildingComponents buildingComponents;
 
 
     public HgvsDeletionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
@@ -63,7 +60,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
             Variant proteinVariant = createProteinVariant(variant, transcript);
-            if (variant != null) {
+            if (proteinVariant != null) {
                 // startOffset must point to the position right before the actual variant start, since that's the position that
                 // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
                 // the position right after the actual variant end.
@@ -152,52 +149,6 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                 transcript.getProteinSequence().length());
 
         return null;
-    }
-
-    private int getAminoAcidPosition(int cdnaCodingStart, int cdsPosition) {
-        int cdnaPosition = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
-        int cdsVariantStart = cdnaPosition - cdnaCodingStart + 1;
-        return ((cdsVariantStart - 1) / 3) + 1;
-    }
-
-    private String getReferenceCodon(String chromosome, String cdnaSequence, int cdnaCodingStart, int cdsPosition) {
-        // What buildingComponents.cdnaStart.offset really stores is the cdsStart
-        int cdnaPosition = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
-        int variantPhaseShift = (cdnaPosition - cdnaCodingStart) % 3;
-        int modifiedCodonStart = cdnaPosition - variantPhaseShift;
-
-        // -1 and +2 because of base 0 String indexing
-        String referenceCodon = cdnaSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
-        buildingComponents.setReferenceStart(VariantAnnotationUtils.getAminoacid(chromosome
-                .equals(MITOCHONDRIAL_CHROMOSOME_STRING), referenceCodon));
-
-        return null;
-    }
-
-    private int getFirstCdsPhase(Transcript transcript) {
-        if (transcript.getStrand().equals(POSITIVE)) {
-            return transcript.getExons().get(0).getPhase();
-        } else {
-            return transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
-        }
-    }
-
-    private boolean onlySpansCodingSequence(Variant variant, Transcript transcript) {
-        if (buildingComponents.getCdnaStart().getReferencePosition() == 0  // Start falls within an exon
-                && buildingComponents.getCdnaEnd().getReferencePosition() == 0) { // End falls within an exon
-
-            List<Exon> exonList = transcript.getExons();
-            // Get the closest exon to the variant start, measured as the exon that presents the closest start OR end
-            // coordinate to the position
-            Exon nearestExon = exonList.stream().min(Comparator.comparing(exon ->
-                    Math.min(Math.abs(variant.getStart() - exon.getStart()),
-                            Math.abs(variant.getStart() - exon.getEnd())))).get();
-
-            // Check if the same exon contains the variant end
-            return variant.getEnd() >= nearestExon.getStart() && variant.getEnd() <= nearestExon.getEnd();
-
-        }
-        return false;
     }
 
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {

@@ -3,6 +3,7 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -17,8 +18,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     private static final String INS = "ins";
     private static final String DUP = "dup";
-
-    private BuildingComponents buildingComponents;
+    private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
 
     public HgvsInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
@@ -39,18 +39,66 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
     }
 
-    private String calculateProteinHgvs(Variant normalizedVariant, Transcript transcript) {
+    private String calculateProteinHgvs(Variant variant, Transcript transcript) {
         // Check if protein HGVS can be calculated
         if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
             buildingComponents.setProteinId(transcript.getProteinID());
-            proteinHgvsNormalize(transcript.getProteinSequence());
-            setProteinLocationAndAminoacid(variant, transcript);
-            // Additional normalization required for insertions
-            Variant normalizedVariant = new Variant();
+            // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
+            // be able to re-use methods and available objects
+            Variant proteinVariant = createProteinVariant(variant, transcript);
+            if (proteinVariant != null) {
+                proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
+                setProteinLocationAndAminoacid(variant, transcript);
+                // Additional normalization required for insertions
+                Variant normalizedVariant = new Variant();
 
-            return formatProteinString(buildingComponents);
+                return formatProteinString(buildingComponents);
+            }
 
         }
+        return null;
+    }
+
+    private Variant createProteinVariant(Variant variant, Transcript transcript) {
+        Variant proteinVariant = new Variant();
+
+        int cdnaCodingStart = transcript.getCdnaCodingStart();
+        if (transcript.unconfirmedStart()) {
+            cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
+        }
+        proteinVariant.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
+        proteinVariant.setEnd(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
+
+        // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
+        // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
+        // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
+        if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
+            proteinVariant.setAlternate(EMPTY_STRING);
+            proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                    proteinVariant.getEnd() - 1));
+
+            return proteinVariant;
+        }
+        logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
+                        + " not happen and protein HGVS will not be returned. Could be expected for "
+                        +"unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
+                buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
+                transcript.getProteinSequence().length());
+
+        return null;
+    }
+
+    private String getReferenceCodon(String chromosome, String cdnaSequence, int cdnaCodingStart, int cdsPosition) {
+        // What buildingComponents.cdnaStart.offset really stores is the cdsStart
+        int cdnaPosition = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
+        int variantPhaseShift = (cdnaPosition - cdnaCodingStart) % 3;
+        int modifiedCodonStart = cdnaPosition - variantPhaseShift;
+
+        // -1 and +2 because of base 0 String indexing
+        String referenceCodon = cdnaSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
+        buildingComponents.setReferenceStart(VariantAnnotationUtils.getAminoacid(chromosome
+                .equals(MITOCHONDRIAL_CHROMOSOME_STRING), referenceCodon));
+
         return null;
     }
 

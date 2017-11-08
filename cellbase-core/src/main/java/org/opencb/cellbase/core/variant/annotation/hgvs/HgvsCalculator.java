@@ -28,9 +28,11 @@ public class HgvsCalculator {
     private static final String NON_CODING_TRANSCRIPT_CHAR = "n.";
     protected static final String PROTEIN_CHAR = "p.";
     protected static final char UNDERSCORE = '_';
+    protected static final String POSITIVE = "+";
     protected static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
+    protected BuildingComponents buildingComponents;
 
     public HgvsCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         this.genomeDBAdaptor = genomeDBAdaptor;
@@ -493,6 +495,38 @@ public class HgvsCalculator {
 
     protected String formatDnaAllele(BuildingComponents buildingComponents) {
         return null;
+    }
+
+    protected boolean onlySpansCodingSequence(Variant variant, Transcript transcript) {
+        if (buildingComponents.getCdnaStart().getReferencePosition() == 0  // Start falls within an exon
+                && buildingComponents.getCdnaEnd().getReferencePosition() == 0) { // End falls within an exon
+
+            List<Exon> exonList = transcript.getExons();
+            // Get the closest exon to the variant start, measured as the exon that presents the closest start OR end
+            // coordinate to the position
+            Exon nearestExon = exonList.stream().min(Comparator.comparing(exon ->
+                    Math.min(Math.abs(variant.getStart() - exon.getStart()),
+                            Math.abs(variant.getStart() - exon.getEnd())))).get();
+
+            // Check if the same exon contains the variant end
+            return variant.getEnd() >= nearestExon.getStart() && variant.getEnd() <= nearestExon.getEnd();
+
+        }
+        return false;
+    }
+
+    protected int getFirstCdsPhase(Transcript transcript) {
+        if (transcript.getStrand().equals(POSITIVE)) {
+            return transcript.getExons().get(0).getPhase();
+        } else {
+            return transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
+        }
+    }
+
+    protected int getAminoAcidPosition(int cdnaCodingStart, int cdsPosition) {
+        int cdnaPosition = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
+        int cdsVariantStart = cdnaPosition - cdnaCodingStart + 1;
+        return ((cdsVariantStart - 1) / 3) + 1;
     }
 
     protected String formatCdnaCoords(BuildingComponents buildingComponents) {
