@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
@@ -79,6 +80,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/regulatory_region.test.json.gz").toURI());
         loadRunner.load(path, "regulatory_region");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/protein.test.json.gz").toURI());
+        loadRunner.load(path, "protein");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction");
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/variation_chr1.full.test.json.gz").toURI());
         loadRunner.load(path, "variation");
