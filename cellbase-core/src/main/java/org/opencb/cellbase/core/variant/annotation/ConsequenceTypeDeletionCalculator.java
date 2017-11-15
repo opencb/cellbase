@@ -120,8 +120,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                     //    deletion  |---|
                     if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
                         && transcript.getCdnaCodingStart() - cdnaVariantEnd < 3) {
-                        SoNames.add(solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(),
-                                cdnaVariantStart, cdnaVariantEnd));
+                        solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(),
+                                cdnaVariantStart, cdnaVariantEnd);
                     } else {
                         SoNames.add(VariantAnnotationUtils.START_LOST);
                     }
@@ -168,7 +168,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
         }
     }
 
-    private String solveStartCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
+    private void solveStartCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
                                                 int cdnaVariantEnd) {
         // Not necessary to include % 3 since if we get here we already know that the difference is < 3
         Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
@@ -194,11 +194,15 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 substitutingNt = transcriptSequence.charAt(i);
             }
             if (referenceCodonArray[codonPosition] != substitutingNt) {
-                return VariantAnnotationUtils.START_LOST;
+                SoNames.add(VariantAnnotationUtils.START_LOST);
+                break;
             }
             i++;
         }
-        return VariantAnnotationUtils.START_RETAINED_VARIANT;
+        // End of codon has been reached, all positions found equal to the referenceCodonArray
+        if (codonPosition < 0) {
+            SoNames.add(VariantAnnotationUtils.START_RETAINED_VARIANT);
+        }
     }
 
     @Override
