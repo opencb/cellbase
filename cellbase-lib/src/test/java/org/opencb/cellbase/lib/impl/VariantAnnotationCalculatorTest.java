@@ -84,6 +84,15 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/variant-annotation/protein.test.json.gz").toURI());
         loadRunner.load(path, "protein");
         path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_13.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_18.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/prot_func_pred_chr_19.test.json.gz").toURI());
+        loadRunner.load(path, "protein_functional_prediction");
+        path = Paths.get(getClass()
                 .getResource("/variant-annotation/prot_func_pred_chr_MT.test.json.gz").toURI());
         loadRunner.load(path, "protein_functional_prediction");
         path = Paths.get(getClass()
