@@ -980,6 +980,7 @@ public class VariantAnnotationCalculator {
                 + "transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.cdsStart,transcripts.exons.end,"
                 + "transcripts.exons.cdsEnd,transcripts.exons.sequence,transcripts.exons.phase,"
                 + "transcripts.exons.exonNumber,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,"
+                + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
                 + "mirna.matures.cdnaEnd";
 
         if (annotatorSet.contains("expression")) {
