@@ -117,12 +117,6 @@ public class BuildCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if (buildCommandOptions.data.equals("all")) {
-//                    buildOptions = new String[]{EtlCommons.GENOME_INFO_DATA, EtlCommons.GENOME_DATA, EtlCommons.GENE_DATA,
-//                            EtlCommons.DISGENET_DATA, EtlCommons.HPO_DATA, EtlCommons.CONSERVATION_DATA,
-//                            EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
-//                            EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
-//                            EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINVAR_DATA, EtlCommons.COSMIC_DATA,
-//                            EtlCommons.GWAS_DATA, };
                     buildOptions = species.getData().toArray(new String[0]);
                 } else {
                     buildOptions = buildCommandOptions.data.split(",");
@@ -143,12 +137,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.GENE_DATA:
                             parser = buildGene();
                             break;
-//                        case EtlCommons.DISGENET_DATA:
-//                            parser = buildDisgenet();
-//                            break;
-//                        case EtlCommons.HPO_DATA:
-//                            parser = buildHpo();
-//                            break;
                         case EtlCommons.VARIATION_DATA:
                             parser = buildVariation();
                             break;
@@ -259,7 +247,9 @@ public class BuildCommandExecutor extends CommandExecutor {
         try {
             String outputFileName = output.resolve("genome_info.json").toAbsolutePath().toString();
             List<String> args = new ArrayList<>();
-            args.addAll(Arrays.asList("--species", species.getScientificName(), "-o", outputFileName,
+            args.addAll(Arrays.asList("--species", species.getScientificName(),
+                    "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
+                    "-o", outputFileName,
                     "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
             if (!configuration.getSpecies().getVertebrates().contains(species)
                     && !species.getScientificName().equals("Drosophila melanogaster")) {
@@ -453,26 +443,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         FileUtils.checkPath(dbsnpFile);
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gwas");
         return new GwasParser(gwasFile, dbsnpFile, serializer);
-    }
-
-    @Deprecated
-    private CellBaseParser buildDisgenet() throws IOException {
-        Path inputDir = getInputDirFromCommandLine().resolve("gene_disease_association");
-        copyVersionFiles(Collections.singletonList(inputDir.resolve("disgenetVersion.json")));
-        Path disgenetFile = inputDir.resolve(DISGENET_INPUT_FILE_NAME);
-        FileUtils.checkPath(disgenetFile);
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "disgenet");
-        return new DisgenetParser(disgenetFile, serializer);
-    }
-
-    @Deprecated
-    private CellBaseParser buildHpo() throws IOException {
-        Path inputDir = getInputDirFromCommandLine().resolve("gene_disease_association");
-        copyVersionFiles(Collections.singletonList(inputDir.resolve("hpoVersion.json")));
-        Path hpoFilePath = inputDir.resolve(HPO_INPUT_FILE_NAME);
-        FileUtils.checkPath(hpoFilePath);
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "hpo");
-        return new DisgenetParser(hpoFilePath, serializer);
     }
 
     private Path getInputDirFromCommandLine() {

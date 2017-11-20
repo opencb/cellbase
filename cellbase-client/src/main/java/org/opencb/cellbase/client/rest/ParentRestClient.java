@@ -330,11 +330,11 @@ public class ParentRestClient<T> {
                 callUrl = callUrl.queryParam(s, queryOptions.get(s));
             }
             if (assembly != null && StringUtils.isEmpty(queryOptions.getString("assembly"))) {
-                callUrl.queryParam("assembly", assembly);
+                callUrl = callUrl.queryParam("assembly", assembly);
             }
         } else {
             if (assembly != null) {
-                callUrl.queryParam("assembly", assembly);
+                callUrl = callUrl.queryParam("assembly", assembly);
             }
         }
 

@@ -33,7 +33,8 @@ public class HgvsCalculator {
     // If allele is greater than this use allele length.
     private static final int MAX_ALLELE_LENGTH = 4;
 
-    private static final VariantNormalizer NORMALIZER = new VariantNormalizer(false, false, true);
+    private static final VariantNormalizer NORMALIZER = new VariantNormalizer(false, false,
+            false);
 
 
     public List<String> run(Variant variant, List<Gene> geneList) {
