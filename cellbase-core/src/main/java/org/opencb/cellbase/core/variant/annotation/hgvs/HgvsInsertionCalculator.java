@@ -73,9 +73,15 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
         if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
-            proteinVariant.setAlternate(EMPTY_STRING);
-            proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                    proteinVariant.getEnd() - 1));
+            proteinVariant.setAlternate(getPredictedProteinSequence());
+            // If insertion affects two different aa, paste both of them in the reference
+            if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
+                proteinVariant.setReference((new StringBuilder(transcript.getProteinSequence().charAt(proteinVariant.getStart())))
+                        .append(transcript.getProteinSequence().charAt(proteinVariant.getEnd())).toString());
+            // If it just affects one aa, paste just that aa in the reference
+            } else {
+                proteinVariant.setReference(String.valueOf(transcript.getProteinSequence().charAt(proteinVariant.getStart())));
+            }
 
             return proteinVariant;
         }
@@ -84,6 +90,58 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                         +"unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
                 buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
                 transcript.getProteinSequence().length());
+
+        return null;
+    }
+
+    private String getPredictedProteinSequence() {
+        // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates:
+        // cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
+        Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3;
+        int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
+        if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
+            String alternate = getLeftAlternate();
+            // -1 and +2 because of base 0 String indexing
+            String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
+            char[] modifiedCodonArray = referenceCodon.toCharArray();
+            int i = 0;
+            // indexing over transcriptSequence is 0 based, transcriptSequencePosition points to cdnaVariantEnd actually
+            int transcriptSequencePosition = cdnaVariantStart;
+            int modifiedCodonPosition;
+            int modifiedCodonPositionStart = variantPhaseShift;
+
+            // Char arrays to contain the upper/lower-case formatted strings for the codon change, e.g. aGT/ATG
+            char[] formattedReferenceCodonArray = referenceCodon.toLowerCase().toCharArray();
+            char[] formattedModifiedCodonArray = referenceCodon.toLowerCase().toCharArray();
+            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
+            boolean firstCodon = true;
+
+            do {
+                for (modifiedCodonPosition = modifiedCodonPositionStart;
+                    // Paste alternative nt in the corresponding codon position
+                     (modifiedCodonPosition < 3 && i < variant.getAlternate().length()); modifiedCodonPosition++) {
+                    modifiedCodonArray[modifiedCodonPosition] = alternate.toCharArray()[i];
+
+                    // Edit modified nt to make it upper-case in the formatted strings
+                    formattedReferenceCodonArray[modifiedCodonPosition]
+                            = Character.toUpperCase(formattedReferenceCodonArray[modifiedCodonPosition]);
+                    formattedModifiedCodonArray[modifiedCodonPosition]
+                            = Character.toUpperCase(alternate.toCharArray()[i]);
+
+                    i++;
+                }
+                transcriptSequencePosition = updatePositiveInsertionCodonArrays(transcriptSequence, modifiedCodonArray,
+                        transcriptSequencePosition, modifiedCodonPosition, formattedReferenceCodonArray,
+                        formattedModifiedCodonArray);
+
+                firstCodon = setInsertionAlleleAminoacidChange(referenceCodon, modifiedCodonArray,
+                        formattedReferenceCodonArray, formattedModifiedCodonArray, useMitochondrialCode, firstCodon);
+
+                decideStopCodonModificationAnnotation(SoNames, referenceCodon, String.valueOf(modifiedCodonArray),
+                        useMitochondrialCode);
+                modifiedCodonPositionStart = 0;  // Reset the position where the next modified codon must be started to be filled
+            } while (i < variant.getAlternate().length());  // All posible new codons generated by the inserted sequence must be checked
+        }
 
         return null;
     }
