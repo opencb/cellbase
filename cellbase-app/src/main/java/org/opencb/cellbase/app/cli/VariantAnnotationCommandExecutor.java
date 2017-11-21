@@ -100,6 +100,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private int batchSize;
     private List<Path> customFiles;
     private Path populationFrequenciesFile = null;
+    private Boolean completeInputPopulation;
     private List<RocksDB> dbIndexes;
     private List<Options> dbOptions;
     private List<String> dbLocations;
@@ -286,7 +287,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     private void writeRemainingPopFrequencies() throws IOException {
         // For internal use only - will only be run when -Dpopulation-frequencies is activated
-        if (populationFrequenciesFile != null) {
+        if (populationFrequenciesFile != null && completeInputPopulation) {
             DataWriter dataWriter = new JsonAnnotationWriter(output.toString(), APPEND);
             dataWriter.open();
             dataWriter.pre();
@@ -315,7 +316,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             dataWriter.post();
             dataWriter.close();
             logger.info("Done.");
-
+        } else if (!completeInputPopulation) {
+            logger.warn("complete-input-population set to false, variants in population frequencies file {} not in "
+                    + "input file {} will not be appended to output file.", populationFrequenciesFile, input);
         }
     }
 
@@ -869,6 +872,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Population frequencies file must be a .json (.json.gz) file containing"
                         + " Variant objects.");
             }
+            completeInputPopulation = Boolean.valueOf(variantAnnotationCommandOptions.buildParams.get("complete-input-population"));
         }
 
         // Enable/Disable imprecise annotation
