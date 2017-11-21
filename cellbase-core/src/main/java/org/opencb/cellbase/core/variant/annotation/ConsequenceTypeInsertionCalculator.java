@@ -321,15 +321,16 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
         char[] referenceCodonArray = getReverseCodon(transcriptSequence, modifiedCodonStart); // Complementary of start codon ATG - Met (already reversed)
         int i = transcriptSequence.length() - cdnaVariantStart + 1;  // Position (0 based index) in transcriptSequence of
+        String reverseAlternate = (new StringBuilder(variant.getAlternate())).reverse().toString();
         // the first nt after the deletion
         int codonPosition;
+        int alternatePosition = 0;
         // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
         // calling this method
-        for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
+        for (codonPosition = variantPhaseShift; codonPosition < 3; codonPosition++) {
             char substitutingNt;
-            USAR ALTERNATE EN LUGAR DEL TRANS SEQ PARA COGER EL substitutingNt
             // Means we've reached the transcript.start
-            if (i >= transcriptSequence.length()) {
+            if (alternatePosition >= reverseAlternate.length()) {
                 int genomicCoordinate = transcript.getEnd() + (transcriptSequence.length() - i + 1); // + 1 since i moves
                 // in base 0 (see above)
                 Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
@@ -337,14 +338,15 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                         + "-" + (genomicCoordinate + 1));
                 substitutingNt = genomeDBAdaptor
                         .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
+                i++;
             } else {
-                // Paste reference nts after deletion in the corresponding codon position
-                substitutingNt = transcriptSequence.charAt(i);
+                // Paste alternae nts after deletion in the corresponding codon position
+                substitutingNt = reverseAlternate.charAt(alternatePosition);
+                alternatePosition++;
             }
             if (referenceCodonArray[codonPosition] != substitutingNt) {
                 SoNames.add(VariantAnnotationUtils.START_LOST);
             }
-            i++;
         }
         // Do nothing it the start codon is somehow maintained
     }

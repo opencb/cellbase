@@ -1128,11 +1128,22 @@ public class VariantAnnotationCalculatorTest {
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
+        // Insertion affecting start codon on negative transcript. Start codon last nt replaced by first insertion nt
+        // --------------------------XXXXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                                       ^
+        //                                       C
+        QueryResult<ConsequenceType> consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195728:-:C"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                        "start_lost")));
+
         // Deletion affecting start codon on positive transcript. Variant end falls within start codon; variant start
         // falls outside coding region on the first base of the transcript.
         // ----XXXXXXXXX------------GGAGCTCCGCGATGXXXXXX-------
         //     |--------------------------------|
-        QueryResult<ConsequenceType> consequenceTypeResult =
+        consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152486978-152487861:<DEL>"),
                         new QueryOptions("normalize", false));
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
