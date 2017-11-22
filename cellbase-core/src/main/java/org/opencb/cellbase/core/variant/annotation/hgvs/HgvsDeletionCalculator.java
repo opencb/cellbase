@@ -125,10 +125,8 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
         Variant proteinVariant = new Variant();
 
-        int cdnaCodingStart = transcript.getCdnaCodingStart();
-        if (transcript.unconfirmedStart()) {
-            cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
-        }
+        int cdnaCodingStart = getCdnaCodingStart(transcript);
+
         proteinVariant.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
         proteinVariant.setEnd(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
 

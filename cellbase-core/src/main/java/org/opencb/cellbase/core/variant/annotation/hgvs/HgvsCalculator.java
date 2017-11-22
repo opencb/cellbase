@@ -529,6 +529,14 @@ public class HgvsCalculator {
         return ((cdsVariantStart - 1) / 3) + 1;
     }
 
+    protected int getCdnaCodingStart(Transcript transcript) {
+        int cdnaCodingStart = transcript.getCdnaCodingStart();
+        if (transcript.unconfirmedStart()) {
+            cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
+        }
+        return cdnaCodingStart;
+    }
+
     protected String formatCdnaCoords(BuildingComponents buildingComponents) {
         return null;
     }

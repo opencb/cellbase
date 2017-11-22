@@ -128,6 +128,7 @@ public class VariantAnnotationUtils {
     public static final HashMap<String, ConsistencyStatus> CLINVAR_REVIEW_TO_CONSISTENCY_STATUS = new HashMap<>();
     public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
+    public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(22); // 22 AA
 
     static {
 
@@ -396,6 +397,33 @@ public class VariantAnnotationUtils {
                 }
             }
         }
+
+        /*
+        Aminoacid abbreviation map
+         */
+        TO_ABBREVIATED_AA.put("ALA", "A");
+        TO_ABBREVIATED_AA.put("ARG", "R");
+        TO_ABBREVIATED_AA.put("ASN", "N");
+        TO_ABBREVIATED_AA.put("ASP", "D");
+        TO_ABBREVIATED_AA.put("ASX", "B");
+        TO_ABBREVIATED_AA.put("CYS", "C");
+        TO_ABBREVIATED_AA.put("GLU", "E");
+        TO_ABBREVIATED_AA.put("GLN", "Q");
+        TO_ABBREVIATED_AA.put("GLX", "Z");
+        TO_ABBREVIATED_AA.put("GLY", "G");
+        TO_ABBREVIATED_AA.put("HIS", "H");
+        TO_ABBREVIATED_AA.put("ILE", "I");
+        TO_ABBREVIATED_AA.put("LEU", "L");
+        TO_ABBREVIATED_AA.put("LYS", "K");
+        TO_ABBREVIATED_AA.put("MET", "M");
+        TO_ABBREVIATED_AA.put("PHE", "F");
+        TO_ABBREVIATED_AA.put("PRO", "P");
+        TO_ABBREVIATED_AA.put("SER", "S");
+        TO_ABBREVIATED_AA.put("THR", "T");
+        TO_ABBREVIATED_AA.put("TRP", "W");
+        TO_ABBREVIATED_AA.put("TYR", "Y");
+        TO_ABBREVIATED_AA.put("VAL", "V");
+
 
         COMPLEMENTARY_NT.put('A', 'T');
         COMPLEMENTARY_NT.put('C', 'G');
