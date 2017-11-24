@@ -30,7 +30,8 @@ Test
 |GET|/feature/variation/search?limit=1&chromosome=X&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 13207779 |
 |GET|/feature/variation/search?limit=1&chromosome=Y&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 215365 |
 |GET|/feature/variation/search?limit=1&chromosome=MT&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 5370 |
--!|
+
+
 
 !3 Get all Sequence Ontology Terms Describing Consequence Type
 | Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
