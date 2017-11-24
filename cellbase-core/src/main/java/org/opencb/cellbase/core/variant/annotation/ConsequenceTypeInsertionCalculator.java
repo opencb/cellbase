@@ -7,7 +7,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -23,6 +22,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
     private static final String SYMBOLIC_START = "<";
     private static final float INVALID_OVERLAP_PERCENTAGE = -1;
+    private static final String COMPLEMENTARY_START_CODON = "TAC";
+    private static final String START_CODON = "ATG";
     private int variantStart;
     private int variantEnd;
 //    private GenomeDBAdaptor genomeDBAdaptor;
@@ -285,8 +286,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         if (cdnaVariantStart != -1) {  // Insertion
             // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
             if (cdnaVariantStart < (cdnaCodingStart + 2) && !transcript.unconfirmedStart()) {
-                solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(),
-                        cdnaVariantStart, cdnaVariantEnd);
+                solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(), cdnaVariantEnd);
             }
 //            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
             int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
@@ -315,40 +315,41 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
     }
 
-    private void solveStartCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart, int cdnaVariantEnd) {
+    private void solveStartCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantEnd) {
         // Not necessary to include % 3 since if we get here we already know that the difference is < 3
         Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
-        char[] referenceCodonArray = getReverseCodon(transcriptSequence, modifiedCodonStart); // Complementary of start codon ATG - Met (already reversed)
-        int i = transcriptSequence.length() - cdnaVariantStart + 1;  // Position (0 based index) in transcriptSequence of
-        String reverseAlternate = (new StringBuilder(variant.getAlternate())).reverse().toString();
-        // the first nt after the deletion
-        int codonPosition;
-        int alternatePosition = 0;
-        // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
-        // calling this method
-        for (codonPosition = variantPhaseShift; codonPosition < 3; codonPosition++) {
-            char substitutingNt;
-            // Means we've reached the transcript.start
-            if (alternatePosition >= reverseAlternate.length()) {
-                int genomicCoordinate = transcript.getEnd() + (transcriptSequence.length() - i + 1); // + 1 since i moves
-                // in base 0 (see above)
-                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                        + ":" + genomicCoordinate
-                        + "-" + (genomicCoordinate + 1));
-                substitutingNt = genomeDBAdaptor
-                        .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
-                i++;
-            } else {
-                // Paste alternae nts after deletion in the corresponding codon position
-                substitutingNt = reverseAlternate.charAt(alternatePosition);
-                alternatePosition++;
+        // Complementary of start codon ATG - Met (already reversed)
+        String referenceCodonArray = getReverseCodon(transcriptSequence, modifiedCodonStart).toString();
+        // Both MT and non-MT code use same codification for Metionine
+        if (referenceCodonArray.equals(COMPLEMENTARY_START_CODON)) {
+            int i = transcriptSequence.length() - cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of
+            String reverseAlternate = (new StringBuilder(variant.getAlternate())).reverse().toString();
+            // the first nt after the deletion
+            int codonPosition;
+            int alternatePosition = 0;
+            // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+            // calling this method
+            for (codonPosition = variantPhaseShift; codonPosition < 3; codonPosition++) {
+                char substitutingNt;
+                // Means we've reached the end of the alternate. This can only happen if it's an insertion of one nt and
+                // it occurs between the first and second start codon base. THEREFORE, it can enter in this if one time
+                // at most
+                if (alternatePosition >= reverseAlternate.length()) {
+                    // cdnaVariantStart is base 1 and the string is base 0, therefore this is actually getting base at
+                    // position cdnaVariantEnd
+                    substitutingNt = transcriptSequence.charAt(i);
+                } else {
+                    // Paste alternae nts after deletion in the corresponding codon position
+                    substitutingNt = reverseAlternate.charAt(alternatePosition);
+                    alternatePosition++;
+                }
+                if (referenceCodonArray.charAt(codonPosition) != substitutingNt) {
+                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                }
             }
-            if (referenceCodonArray[codonPosition] != substitutingNt) {
-                SoNames.add(VariantAnnotationUtils.START_LOST);
-            }
+            // Do nothing it the start codon is somehow maintained
         }
-        // Do nothing it the start codon is somehow maintained
     }
 
     private void solveStopCodonNegativeInsertion(String transcriptSequence, Integer cdnaCodingStart,
@@ -642,7 +643,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             int cdnaCodingStart = transcript.getCdnaCodingStart();
             cdnaCodingStart = setCdsAndProteinPosition(cdnaVariantStart, firstCdsPhase, cdnaCodingStart);
             if (variantEnd <= transcript.getGenomicCodingEnd()) {  // Variant end also within coding region
-                solveCodingExonVariantInPositiveTranscript(transcriptSequence, cdnaCodingStart, cdnaVariantStart);
+                solveCodingExonVariantInPositiveTranscript(transcriptSequence, cdnaCodingStart, cdnaVariantStart,
+                        cdnaVariantEnd);
             } else if (transcript.getEnd() > transcript.getGenomicCodingEnd()
                     || transcript.unconfirmedEnd()) { // Check transcript has 3 UTR)
                 SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
@@ -653,12 +655,12 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     }
 
     private void solveCodingExonVariantInPositiveTranscript(String transcriptSequence, int cdnaCodingStart,
-                                                            int cdnaVariantStart) {
+                                                            int cdnaVariantStart, int cdnaVariantEnd) {
         // Insertion. Be careful: insertion coordinates are special, alternative nts are pasted between cdnaVariantStart and cdnaVariantEnd
         if (cdnaVariantStart != -1) {
             // cdnaVariantStart=null if variant is intronic. cdnaCodingStart<1 if cds_start_NF and phase!=0
             if (cdnaVariantStart < (cdnaCodingStart + 2) && !transcript.unconfirmedStart()) {
-                SoNames.add(VariantAnnotationUtils.START_LOST);
+                solveStartCodonPositiveVariant(transcriptSequence, transcript.getCdnaCodingStart(), cdnaVariantEnd);
             }
 //            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
             int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
@@ -681,6 +683,43 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
             solveStopCodonPositiveInsertion(transcriptSequence, cdnaCodingStart, cdnaVariantStart);
         } else {
             SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
+        }
+    }
+
+    private void solveStartCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantEnd) {
+        // Not necessary to include % 3 since if we get here we already know that the difference is < 3
+        Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
+        int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
+        // Complementary of start codon ATG - Met (already reversed)
+        String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart - 1 + 3);
+        // Both MT and non-MT code use same codification for Metionine
+        if (referenceCodon.equals(START_CODON)) {
+            int i = cdnaVariantEnd - 1;  // Position (0 based index) in transcriptSequence of
+            String alternate = variant.getAlternate();
+            // the first nt after the deletion
+            int codonPosition;
+            int alternatePosition = 0;
+            // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+            // calling this method
+            for (codonPosition = variantPhaseShift; codonPosition < 3; codonPosition++) {
+                char substitutingNt;
+                // Means we've reached the end of the alternate. This can only happen if it's an insertion of one nt and
+                // it occurs between the first and second start codon base. THEREFORE, it can enter in this if one time
+                // at most
+                if (alternatePosition >= alternate.length()) {
+                    // cdnaVariantStart is base 1 and the string is base 0, therefore this is actually getting base at
+                    // position cdnaVariantEnd
+                    substitutingNt = transcriptSequence.charAt(i);
+                } else {
+                    // Paste alternae nts after deletion in the corresponding codon position
+                    substitutingNt = alternate.charAt(alternatePosition);
+                    alternatePosition++;
+                }
+                if (referenceCodon.charAt(codonPosition) != substitutingNt) {
+                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                }
+            }
+            // Do nothing it the start codon is somehow maintained
         }
     }
 

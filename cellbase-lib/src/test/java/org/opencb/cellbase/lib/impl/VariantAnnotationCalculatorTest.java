@@ -1128,17 +1128,99 @@ public class VariantAnnotationCalculatorTest {
     @Test
     public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
 
+        /**
+         * start codon insertions on positive transcript
+         */
+        // Insertion of ONE nt affecting start codon on negative transcript. Start codon middle nt replaced by SAME alternate nt
+        // --------------------------ATGXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                            ^
+        //                            T
+        QueryResult<ConsequenceType> consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152487861:-:T"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012","start_lost")));
+
+        // Insertion affecting start codon on negative transcript. Start codon two last nts replaced by DIFFERENT two last alternate nts
+        // --------------------------ATGXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                            ^
+        //                            TAGGACCCT
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152487861:-:TAGGACCCT"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012","start_lost")));
+
+        // Insertion affecting start codon on negative transcript. Start codon two last nts replaced SAME two last alternate nts
+        // --------------------------ATGXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                            ^
+        //                            TGGGACCCT
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152487861:-:TGGGACCCT"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
+                CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                        "start_lost"))));
+
+        // Insertion affecting start codon on positive transcript. Start codon last nt replaced by first insertion nt
+        // --------------------------ATGXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                             ^
+        //                             G
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152487862:-:G"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368790").getSequenceOntologyTerms(),
+                CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                        "start_lost"))));
+
+        /**
+         * start codon insertions on negative transcript
+         */
+        // Insertion of ONE nt affecting start codon on negative transcript. Start codon middle nt replaced by SAME alternate nt
+        // --------------------------XXXXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                                        ^
+        //                                AACTTCTGA
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195729:-:A"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012","start_lost")));
+
+        // Insertion affecting start codon on negative transcript. Start codon two last nts replaced by DIFFERENT two last alternate nts
+        // --------------------------XXXXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                                        ^
+        //                                AACTTCTGA
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195729:-:AACTTCTGA"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012","start_lost")));
+
+        // Insertion affecting start codon on negative transcript. Start codon two last nts replaced SAME two last alternate nts
+        // --------------------------XXXXXXXXXXXCATTTTTT------------XXXXXXXXXX
+        //                                        ^
+        //                                AACTTCTCA
+        consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195729:-:AACTTCTCA"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
+                CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                        "start_lost"))));
+
         // Insertion affecting start codon on negative transcript. Start codon last nt replaced by first insertion nt
         // --------------------------XXXXXXXXXXXCATTTTTT------------XXXXXXXXXX
         //                                       ^
         //                                       C
-        QueryResult<ConsequenceType> consequenceTypeResult =
+        consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195728:-:C"),
                         new QueryOptions("normalize", false));
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
-                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
-                        "start_lost")));
+                CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
+                        "start_lost"))));
 
+        /**
+         * start codon deletions on positive transcript
+         */
         // Deletion affecting start codon on positive transcript. Variant end falls within start codon; variant start
         // falls outside coding region on the first base of the transcript.
         // ----XXXXXXXXX------------GGAGCTCCGCGATGXXXXXX-------
@@ -1174,6 +1256,9 @@ public class VariantAnnotationCalculatorTest {
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002019",
                         "start_retained_variant")));
 
+        /**
+         * start codon deletions on negative transcript
+         */
         // Deletion affecting start codon on negative transcript. Variant start falls within start codon; variant end
         // falls outside the transcript.
         // --------------------------XXXXXXXXXXXCATTTTTT------------XXXXXXXXXX
