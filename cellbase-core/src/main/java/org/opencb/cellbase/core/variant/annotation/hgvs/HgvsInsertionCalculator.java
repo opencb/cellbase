@@ -51,15 +51,61 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             Variant proteinVariant = createProteinVariant(variant, transcript);
             if (proteinVariant != null) {
                 proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
-                setProteinLocationAndAminoacid(variant, transcript);
-                // Additional normalization required for insertions
-                Variant normalizedVariant = new Variant();
+                buildingComponents.setStart(proteinVariant.getStart());
+                buildingComponents.setEnd(proteinVariant.getEnd());
+                buildingComponents.setReferenceStart(String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getStart() - 1)));
+                buildingComponents.setReferenceEnd(String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getStart())));
+                buildingComponents.setAlternate(proteinVariant.getAlternate());
 
                 return formatProteinString(buildingComponents);
             }
 
         }
         return null;
+    }
+
+    private String proteinHgvsNormalize(Variant proteinVariant, String proteinSequence) {
+        // It's not worth calling the justify method of the super class, too complicated and the code is relatively
+        // simple
+        // Justify
+        // TODO: assuming this is justificaxtion sense; might need adjusting
+        StringBuilder stringBuilder = new StringBuilder(proteinVariant.getAlternate());
+        int end = proteinVariant.getEnd();
+        while ((end + 1) < proteinSequence.length() && proteinSequence.charAt(end + 1) == stringBuilder.charAt(0)) {
+            stringBuilder.deleteCharAt(0);
+            stringBuilder.append(proteinSequence.charAt(end + 1));
+            proteinVariant.setStart(proteinVariant.getStart() + 1);
+            proteinVariant.setEnd(proteinVariant.getEnd() + 1);
+            end = proteinVariant.getEnd();
+        }
+        proteinVariant.setAlternate(stringBuilder.toString());
+
+        // Check duplication
+        // TODO: Assuming end = start - 1; might need adjusting
+        String previousSequence = proteinSequence.substring(Math.max(0, proteinVariant.getStart()
+                - proteinVariant.getAlternate().length()), proteinVariant.getStart());
+        // normalized one in order to take into
+        // account potential
+        // normalization/lef-right alignment
+        // differences
+        if (previousSequence.equals(proteinVariant.getAlternate())) {
+            return DUP;
+        } else {
+            // TODO: Assuming end = start - 1; might need adjusting
+            String nextSequence = proteinSequence.substring(proteinVariant.getStart(),
+                    Math.min(proteinSequence.length(), proteinVariant.getEnd() + proteinSequence.length()));
+            // normalized one in order to take into
+            // account potential
+            // normalization/lef-right alignment
+            // differences
+            if (nextSequence.equals(proteinVariant.getAlternate())) {
+                return DUP;
+            }
+        }
+        return INS;
+
     }
 
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
@@ -118,15 +164,10 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // -1 and +2 because of base 0 String indexing
             String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
             char[] modifiedCodonArray = referenceCodon.toCharArray();
-            int i = 0;
 
             // First modified position within the codon corresponds to the phase shift
             int modifiedCodonPosition = variantPhaseShift;
-
-            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
-            boolean firstCodon = true;
             StringBuilder predictedProteinSequence = new StringBuilder();
-
             for (int alternatePosition = 0; alternatePosition < alternate.length(); alternatePosition++) {
                 modifiedCodonArray[modifiedCodonPosition] = alternate.toCharArray()[alternatePosition];
                 if (modifiedCodonPosition == 2) {
