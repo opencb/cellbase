@@ -95,6 +95,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        logger.debug("queryOptions: {}", options.toJson());
         return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
     }
 
@@ -103,7 +104,8 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
-        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
+        logger.debug("queryOptions: {}", options.toJson());
         return mongoDBCollection.find(bson, parsedOptions);
     }
 
@@ -128,30 +130,33 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private QueryOptions parseQueryOptions(QueryOptions options, Query query) {
-        List<String> sortFields = options.getAsStringList(QueryOptions.SORT);
-        if (sortFields != null) {
-            Document sortDocument = new Document();
-            for (String field : sortFields) {
-                sortDocument.put(field, 1);
+        if (options != null && !options.isEmpty()) {
+            QueryOptions parsedQueryOptions = new QueryOptions(options);
+            List<String> sortFields = options.getAsStringList(QueryOptions.SORT);
+            if (sortFields != null && !sortFields.isEmpty()) {
+                Document sortDocument = new Document();
+                for (String field : sortFields) {
+                    sortDocument.put(field, 1);
+                }
+                parsedQueryOptions.put(QueryOptions.SORT, sortDocument);
             }
-            options.put(QueryOptions.SORT, sortDocument);
+            // TODO: Improve
+            // numTotalResults cannot be enabled when including multiple clinsig values
+            // search is too slow and would otherwise raise timeouts
+            List<String> clinsigList = query.getAsStringList(QueryParams.CLINICALSIGNIFICANCE.key());
+            if (clinsigList != null && clinsigList.size() > 1) {
+                parsedQueryOptions.put(QueryOptions.SKIP_COUNT, true);
+            }
+            // TODO: Improve
+            // numTotalResults cannot be enabled when including multiple trait values
+            // search is too slow and would otherwise raise timeouts
+            List<String> traitList = query.getAsStringList(QueryParams.TRAIT.key());
+            if (traitList != null && traitList.size() > 1) {
+                parsedQueryOptions.put(QueryOptions.SKIP_COUNT, true);
+            }
+            return parsedQueryOptions;
         }
-        // TODO: Improve
-        // numTotalResults cannot be enabled when including multiple clinsig values
-        // search is too slow and would otherwise raise timeouts
-        List<String> clinsigList = query.getAsStringList(QueryParams.CLINICALSIGNIFICANCE.key());
-        if (clinsigList != null && clinsigList.size() > 1) {
-            options.put(QueryOptions.SKIP_COUNT, true);
-        }
-        // TODO: Improve
-        // numTotalResults cannot be enabled when including multiple trait values
-        // search is too slow and would otherwise raise timeouts
-        List<String> traitList = query.getAsStringList(QueryParams.TRAIT.key());
-        if (traitList != null && traitList.size() > 1) {
-            options.put(QueryOptions.SKIP_COUNT, true);
-        }
-
-        return options;
+        return new QueryOptions();
     }
 
     private Bson parseQuery(Query query) {

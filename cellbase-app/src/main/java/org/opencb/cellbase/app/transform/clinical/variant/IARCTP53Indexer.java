@@ -230,9 +230,10 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> existingEvidenceEntryList = getEvidenceEntryList(key);
-        existingEvidenceEntryList.addAll(evidenceEntryList);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> existingEvidenceEntryList = getVariantAnnotation(key);
+        variantAnnotation.getTraitAssociation().addAll(evidenceEntryList);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
     /**
@@ -421,17 +422,19 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             somaticInformation = getSomaticInformation(fields);
         }
 
-        List<HeritableTrait> heritableTraitList = null;
+        List<HeritableTrait> heritableTraitList;
         if (!isGermline) {
             heritableTraitList = getHeritableTrait(fields);
+        } else {
+            heritableTraitList = Collections.emptyList();
         }
 
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, somaticInformation,
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, Collections.emptyList(), somaticInformation,
                 null, fields[isGermline ? GERMLINE_ID_COLUMN : SOMATIC_ID_COLUMN], null,
                 Collections.singletonList(isGermline ? AlleleOrigin.germline_variant : AlleleOrigin.somatic_variant),
                 heritableTraitList, Collections.singletonList(createGeneGenomicFeature(TP53)), null,
-                null, null, null, null, null,
-                null, null, null, null);
+                null, null, null, EthnicCategory.Z, null,
+                null, null, Collections.emptyList(), Collections.emptyList());
 
         return evidenceEntry;
     }

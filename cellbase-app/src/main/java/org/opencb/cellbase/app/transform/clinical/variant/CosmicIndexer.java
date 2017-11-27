@@ -148,12 +148,14 @@ public class CosmicIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        addNewEntry(evidenceEntryList, evidenceEntry);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+        addNewEntry(variantAnnotation, evidenceEntry);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
-    private void addNewEntry(List<EvidenceEntry> evidenceEntryList, EvidenceEntry evidenceEntry) {
+    private void addNewEntry(VariantAnnotation variantAnnotation, EvidenceEntry evidenceEntry) {
+        List<EvidenceEntry> evidenceEntryList = variantAnnotation.getTraitAssociation();
         // There are cosmic records which share all the fields but the bibliography. In some occassions (COSM12600)
         // the redundancy is such that the document becomes much bigger than 16MB and cannot be loaded into MongoDB.
         // This merge reduces redundancy.
@@ -405,11 +407,11 @@ public class CosmicIndexer extends ClinicalIndexer {
 
         List<String> bibliography = getBibliography(fields[pubmedPMIDColumn]);
 
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, somaticInformation, null,
-                fields[ID_COLUMN], null,
-                getAlleleOriginList(Collections.singletonList(fields[mutationSomaticStatusColumn])), null,
-                genomicFeatureList, null, null, null, null,
-                null, null, null, null, additionalProperties,
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, Collections.emptyList(), somaticInformation,
+                null, fields[ID_COLUMN], null,
+                getAlleleOriginList(Collections.singletonList(fields[mutationSomaticStatusColumn])),
+                Collections.emptyList(), genomicFeatureList, null, null, null, null,
+                EthnicCategory.Z, null, null, null, additionalProperties,
                 bibliography);
 
         return evidenceEntry;
@@ -450,7 +452,7 @@ public class CosmicIndexer extends ClinicalIndexer {
             return Collections.singletonList("PMID:" + bibliographyString);
         }
 
-        return null;
+        return Collections.emptyList();
     }
 
     private List<GenomicFeature> getGenomicFeature(String[] fields) {

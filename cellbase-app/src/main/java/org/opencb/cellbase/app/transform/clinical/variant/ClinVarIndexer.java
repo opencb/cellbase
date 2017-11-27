@@ -116,9 +116,10 @@ public class ClinVarIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        addNewEntries(evidenceEntryList, variationId, lineFields, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
+        addNewEntries(variantAnnotation, variationId, lineFields, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
     private void updateRocksDB(SequenceLocation sequenceLocation, PublicSetType publicSet,
@@ -127,12 +128,13 @@ public class ClinVarIndexer extends ClinicalIndexer {
         byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate()).getBytes();
-        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        addNewEntries(evidenceEntryList, publicSet, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(evidenceEntryList));
+        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+        addNewEntries(variantAnnotation, publicSet, traitsToEfoTermsMap);
+        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
     }
 
-    private void addNewEntries(List<EvidenceEntry> evidenceEntryList, String variationId, String[] lineFields,
+    private void addNewEntries(VariantAnnotation variantAnnotation, String variationId, String[] lineFields,
                                Map<String, EFO> traitsToEfoTermsMap) {
 
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
@@ -144,7 +146,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             alleleOrigin = getAlleleOriginList(new ArrayList<>(originSet));
         }
 
-        List<HeritableTrait> heritableTraitList = null;
+        List<HeritableTrait> heritableTraitList = Collections.emptyList();
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])) {
             Set<String> phenotypeSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]
                     .toLowerCase().split(";")));
@@ -152,7 +154,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     .map((phenotype) -> new HeritableTrait(phenotype, null)).collect(Collectors.toList());
         }
 
-        List<GenomicFeature> genomicFeatureList = null;
+        List<GenomicFeature> genomicFeatureList = Collections.emptyList();
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])) {
             String[] geneList = lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(",");
             genomicFeatureList = new ArrayList<>(geneList.length);
@@ -164,7 +166,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<Property> additionalProperties = new ArrayList<>(2);
         VariantClassification variantClassification = null;
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN])) {
-            variantClassification = getVariantClassification(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]);
+            variantClassification = getVariantClassification(Arrays.asList(lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN].split("[,/;]")));
             additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE,
                     lineFields[VARIANT_SUMMARY_CLINSIG_COLUMN]));
         }
@@ -176,14 +178,14 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     lineFields[VARIANT_SUMMARY_REVIEW_COLUMN]));
         }
 
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, Collections.emptyList(), null,
                 "https://www.ncbi.nlm.nih.gov/clinvar/variation/" + variationId, variationId, null,
                 !(alleleOrigin == null || alleleOrigin.isEmpty()) ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
                 variantClassification, null,
-                null, consistencyStatus, null, null, null,
-                null, additionalProperties, null);
+                null, consistencyStatus, EthnicCategory.Z, null, null,
+                null, additionalProperties, Collections.emptyList());
 
-        evidenceEntryList.add(evidenceEntry);
+        variantAnnotation.getTraitAssociation().add(evidenceEntry);
     }
 
     private ConsistencyStatus getConsistencyStatus(String lineField) {
@@ -196,52 +198,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
         return null;
     }
 
-    private VariantClassification getVariantClassification(String lineField) {
-        VariantClassification variantClassification = new VariantClassification();
-        for (String value : lineField.split("[,/;]")) {
-            value = value.toLowerCase().trim();
-            if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.containsKey(value)) {
-                // No value set
-                if (variantClassification.getClinicalSignificance() == null) {
-                    variantClassification.setClinicalSignificance(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.get(value));
-                // Seen cases like Benign;Pathogenic;association;not provided;risk factor for the same record
-                } else if (isBenign(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_ACMG.get(value))
-                        && isPathogenic(variantClassification.getClinicalSignificance())) {
-                    logger.warn("Benign and Pathogenic clinical significances found for the same record");
-                    logger.warn("Will set uncertain_significance instead");
-                    variantClassification.setClinicalSignificance(ClinicalSignificance.uncertain_significance);
-                }
-            } else if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.containsKey(value)) {
-                variantClassification.setTraitAssociation(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.get(value));
-            } else if (VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.containsKey(value)) {
-                variantClassification.setDrugResponseClassification(VariantAnnotationUtils.CLINVAR_CLINSIG_TO_DRUG_RESPONSE.get(value));
-            } else {
-                logger.debug("No mapping found for referenceClinVarAssertion.clinicalSignificance {}", value);
-                logger.debug("No value will be set at EvidenceEntry.variantClassification for this term");
-            }
-        }
-        return variantClassification;
-    }
-
-    private boolean isPathogenic(ClinicalSignificance clinicalSignificance) {
-        return ClinicalSignificance.pathogenic.equals(clinicalSignificance)
-                || ClinicalSignificance.likely_pathogenic.equals(clinicalSignificance);
-    }
-
-    private boolean isBenign(ClinicalSignificance clinicalSignificance) {
-        return ClinicalSignificance.benign.equals(clinicalSignificance)
-                || ClinicalSignificance.likely_benign.equals(clinicalSignificance);
-    }
-
-    private void addNewEntries(List<EvidenceEntry> evidenceEntryList, PublicSetType publicSet,
+    private void addNewEntries(VariantAnnotation variantAnnotation, PublicSetType publicSet,
                                Map<String, EFO> traitsToEfoTermsMap) throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
         String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
-        VariantClassification variantClassification = getVariantClassification(publicSet.getReferenceClinVarAssertion()
-                .getClinicalSignificance().getDescription());
+        VariantClassification variantClassification = getVariantClassification(
+                Arrays.asList(publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getDescription().split("[,/;]")));
         additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE, publicSet.getReferenceClinVarAssertion()
                 .getClinicalSignificance().getDescription()));
 
@@ -272,10 +237,10 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession, null,
                 !(alleleOrigin == null || alleleOrigin.isEmpty()) ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
                 variantClassification, null,
-                null, consistencyStatus, null, null, null,
+                null, consistencyStatus, EthnicCategory.Z, null, null,
                 null, additionalProperties, bibliography);
 
-        evidenceEntryList.add(evidenceEntry);
+        variantAnnotation.getTraitAssociation().add(evidenceEntry);
 
     }
 
@@ -410,11 +375,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 }
             }
         }
-        if (genomicFeatureSet.size() > 0) {
-            return new ArrayList<>(genomicFeatureSet);
-        } else {
-            return null;
-        }
+        return new ArrayList<>(genomicFeatureSet);
     }
 
     private List<HeritableTrait> getHeritableTrait(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap,
@@ -450,17 +411,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
             }
         }
 
-
         if (heritableTraitList.size() == 0) {
             logger.warn("Entry {}. No \"disease\" entry found among the traits",
                     publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
             numberNoDiseaseTrait++;
-            return null;
         } else {
             propertyList.add(new Property(null, MODE_OF_INHERITANCE,
                     jsonObjectWriter.writeValueAsString(sourceInheritableTraitList)));
-            return heritableTraitList;
         }
+        return heritableTraitList;
     }
 
     private List<String> addBibliographyFromObservationSet(List<String> germlineBibliography, ObservationSet observationSet) {

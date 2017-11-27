@@ -51,6 +51,7 @@ public class EtlCommons {
     public static final String PPI_DATA = "ppi";
     public static final String DRUG_DATA = "drug";
     public static final String CLINVAR_DATA = "clinvar";
+    public static final String DOCM_DATA = "docm";
     public static final String COSMIC_DATA = "cosmic";
     public static final String GWAS_DATA = "gwas";
     public static final String IARCTP53_GERMLINE_FILE = "germlineMutationDataIARC TP53 Database, R18.txt";

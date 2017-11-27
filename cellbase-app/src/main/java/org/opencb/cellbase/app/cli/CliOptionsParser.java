@@ -125,7 +125,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
-                + "gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, "
+                + "variation, variation_functional_score, regulation, protein, conservation, "
                 + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
         public String data;
 
@@ -187,7 +187,9 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
+                + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
+                + "clinical_variants, repeats, svs. 'all' loads everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded. Can also be used to specify a" +
@@ -349,6 +351,9 @@ public class CliOptionsParser {
         @Parameter(names = {"--custom-file-fields"}, description = "String containing a colon separated list (no spaces in between) of field lists which indicate the info fields to be taken from each VCF file. For example: field1File1,field2File1:field1File2,field3File2", required = false, arity = 1)
         public String customFileFields;
 
+        @Parameter(names = {"--max-open-files"}, description = "Integer containing the maximum number of files that can remain open at a certain time point. This option is just used when providing custom annotation files. Custom annotation indexation may create and keep hundreds of files open at the same time for efficiency purposes. This parameter limits that number of open files: -1 indicates no limit and may be OK in most cases.", required = false, arity = 1)
+        public int maxOpenFiles = -1;
+
         @Parameter(names = {"--output-format"}, description = "Variant annotation output format. Values: JSON, Avro, VEP", required = false, arity = 1)
         public String outputFormat = "JSON";
 
@@ -412,7 +417,10 @@ public class CliOptionsParser {
         @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
                 + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
                 + "documents that include lists of population frequencies objects. Will allow annotating the input file "
-                + "(-i) with the population frequencies present in this json file; sv-extra-padding=Integer to optionally "
+                + "(-i) with the population frequencies present in this json file; complete-input-population=for internal "
+                + "purposes only. To be used together with population-frequencies. Boolean to indicate whether variants "
+                + "in the population-frequencies file but not in the input file (-i) should be included in the output. "
+                + "sv-extra-padding=Integer to optionally "
                 + "provide the size of the extra padding to be used when annotating noImprecision (or not) "
                 + "structural variants}; cnv-extra-padding=Integer to optionally provide the size of the extra padding "
                 + "to be used when annotating noImprecision (or not) structural variants}")
@@ -421,6 +429,7 @@ public class CliOptionsParser {
         public VariantAnnotationCommandOptions() {
             buildParams = new HashMap<>();
             buildParams.put("population-frequencies", null);
+            buildParams.put("complete-input-population", "true");
             buildParams.put("sv-extra-padding", "0");
             buildParams.put("cnv-extra-padding", "0");
         }
