@@ -4,7 +4,7 @@ Test
 !define TEST_SYSTEM {slim}
 
 !define CELLBASE_WAR {cellbase}
-#!define CELLBASE_WAR {cellbase-4.6.0-SNAPSHOT}
+#!define CELLBASE_WAR {cellbase-4.5.0-rc.4-SNAPSHOT}
 !define CELLBASE_VERSION {v4}
 !define TEST_HOST {bioinfo.hpc.cam.ac.uk}
 #!define TEST_HOST {bioinfodev.hpc.cam.ac.uk}
@@ -16,6 +16,7 @@ Test
 !|Table: Rest Fixture | http://bioinfoint.hpc.cam.ac.uk/|
 |let|baseURL|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}||
 |let|baseURL_hsapiens|const|http://${TEST_HOST}/${CELLBASE_WAR}/webservices/rest/${CELLBASE_VERSION}/hsapiens||
+|let|GEL_URL|const|http://cellbase.gel.zone/cellbase/webservices/rest/v4/hsapiens/||
 |let|useCache|const|false|false|
 
 | Table: Rest Fixture Config |  with-compareJSON.js |
@@ -26,9 +27,6 @@ Test
 
 | Table: Rest Fixture Config |  contains.js |
 | restfixture.javascript.imports.map | !- contains=fitnesse/FitNesseRoot/files/javascript/contains.js-! |
-| restfixture.display.toggle.for.cells.larger.than|200|
-| restfixture.display.actual.on.right | false |
-| http.client.connection.timeout| 200000|
 
 | Table: Rest Fixture Config |  isPresent.js |
 | restfixture.javascript.imports.map | !- isPresent=fitnesse/FitNesseRoot/files/javascript/isPresent.js-! |

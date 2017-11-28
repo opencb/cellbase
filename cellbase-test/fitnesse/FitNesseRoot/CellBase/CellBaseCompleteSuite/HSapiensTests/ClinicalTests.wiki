@@ -1,4 +1,5 @@
 ---
+Prune
 Test
 ---
 !define TEST_SYSTEM {slim}
@@ -6,19 +7,6 @@ Test
 !3 Get All Clinical Objects 
 | Table: Rest Fixture |$baseURL_hsapiens|isPresent.js|
 |GET|/feature/clinical/search?limit=1|200|Content-Type : application/json|jsonbody.response[0].numTotalResults == '4597100'|
-
-!3 Get Clinical Var Set (Phenotype Alzheimer)
-| Table: Rest Fixture |$baseURL_hsapiens|isPresent.js|
-|GET|/feature/clinical/search?include=clinvarSet.referenceClinVarAssertion.clinVarAccession.acc&limit=30&phenotype=alzheimer|200|Content-Type : application/json| !- /* javascript */
-var isPresent = false;
-  for(count = 0; count < jsonbody.response[0].numResults; count++){
-    if ('RCV000019769' == jsonbody.response[0].result[count].clinvarSet.referenceClinVarAssertion.clinVarAccession.acc){
-		isPresent = true;
-    	break;
-    }
-  }
-isPresent && jsonbody.response[0].numTotalResults == 89 && jsonbody.response[0].numResults == 30;
--!|
 
 !3 Get Clinical Var Set (Phenotype Alzheimer)
 | Table: Rest Fixture |$baseURL_hsapiens|isPresent.js|
