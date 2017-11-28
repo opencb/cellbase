@@ -129,6 +129,7 @@ public class VariantAnnotationUtils {
     public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
     public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(22); // 22 AA
+    public static final HashMap<String, String> TO_LONG_AA = new HashMap<>(22); // 22 AA
 
     static {
 
@@ -424,6 +425,9 @@ public class VariantAnnotationUtils {
         TO_ABBREVIATED_AA.put("TYR", "Y");
         TO_ABBREVIATED_AA.put("VAL", "V");
 
+        for (String aa : TO_ABBREVIATED_AA.keySet()) {
+            TO_LONG_AA.put(TO_ABBREVIATED_AA.get(aa), buildUpperLowerCaseString(aa));
+        }
 
         COMPLEMENTARY_NT.put('A', 'T');
         COMPLEMENTARY_NT.put('C', 'G');
@@ -492,6 +496,14 @@ public class VariantAnnotationUtils {
 
         SO_NAMES_CORRECTIONS.put("nc_transcript_variant", "non_coding_transcript_variant");
         SO_NAMES_CORRECTIONS.put("non_coding_exon_variant", "non_coding_transcript_exon_variant");
+    }
+
+    public static String buildUpperLowerCaseString(String aa) {
+        StringBuilder stringBuilder = new StringBuilder(aa);
+        stringBuilder.setCharAt(1, String.valueOf(stringBuilder.charAt(1)).toLowerCase().charAt(0));
+        stringBuilder.setCharAt(2, String.valueOf(stringBuilder.charAt(2)).toLowerCase().charAt(0));
+
+        return stringBuilder.toString();
     }
 
     public static Boolean isSynonymousCodon(String codon1, String codon2) {

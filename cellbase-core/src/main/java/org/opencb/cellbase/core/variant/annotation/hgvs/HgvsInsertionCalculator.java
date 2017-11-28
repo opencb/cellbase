@@ -22,6 +22,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private static final String MITOCHONDRIAL_CHROMOSOME_STRING = "MT";
     private static final char UNKNOWN_AA = 'X';
     private static final String STOP_STRING = "STOP";
+    private static final String FRAMESHIFT_SUFFIX = "fs";
 
     public HgvsInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
@@ -50,7 +51,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // be able to re-use methods and available objects
             Variant proteinVariant = createProteinVariant(variant, transcript);
             if (proteinVariant != null) {
-                proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
+                String mutationType = proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
                 buildingComponents.setStart(proteinVariant.getStart());
                 buildingComponents.setEnd(proteinVariant.getEnd());
                 buildingComponents.setReferenceStart(String.valueOf(transcript.getProteinSequence()
@@ -58,12 +59,63 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                 buildingComponents.setReferenceEnd(String.valueOf(transcript.getProteinSequence()
                         .charAt(proteinVariant.getStart())));
                 buildingComponents.setAlternate(proteinVariant.getAlternate());
+                buildingComponents.setMutationType(mutationType);
+                buildingComponents.setKind(variant.getAlternate().length() % 3 == 0 ? BuildingComponents.Kind.INFRAME
+                        : BuildingComponents.Kind.FRAMESHIFT);
 
                 return formatProteinString(buildingComponents);
             }
 
         }
         return null;
+    }
+
+    /**
+     * Generate a protein HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+    protected String formatProteinString(BuildingComponents buildingComponents) {
+        StringBuilder stringBuilder = new StringBuilder('p');
+        if (DUP.equals(buildingComponents.getMutationType())) {
+            if (buildingComponents.getAlternate().length() == 1) {
+                // assuming end = start - 1
+                stringBuilder.append(buildingComponents.getEnd());
+            } else {
+                // assuming end = start - 1
+                stringBuilder.append(buildingComponents.getStart() - buildingComponents.getAlternate().length())
+                        .append(UNDERSCORE)
+                        .append(buildingComponents.getEnd());
+            }
+            stringBuilder.append(buildingComponents.getAlternate())
+                    .append(DUP);
+
+        } else if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())){
+            // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
+            stringBuilder.append(VariantAnnotationUtils.TO_LONG_AA.get(buildingComponents.getAlternate().charAt(0)))
+                    .append(buildingComponents.getStart())
+                    .append(FRAMESHIFT_SUFFIX);
+        } else {
+            // assuming end = start - 1
+            stringBuilder.append(buildingComponents.getReferenceStart())
+                    .append(buildingComponents.getEnd())
+                    .append(UNDERSCORE)
+                    .append(buildingComponents.getReferenceEnd())
+                    .append(buildingComponents.getStart())
+                    .append(INS)
+                    .append(formatAaSequence(buildingComponents.getAlternate()));
+        }
+
+        return stringBuilder.toString();
+
+    }
+
+    private String formatAaSequence(String alternate) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < alternate.length(); i++) {
+            stringBuilder.append(VariantAnnotationUtils.buildUpperLowerCaseString(VariantAnnotationUtils.TO_LONG_AA.get(alternate.charAt(i))));
+        }
+        return stringBuilder.toString();
     }
 
     private String proteinHgvsNormalize(Variant proteinVariant, String proteinSequence) {
