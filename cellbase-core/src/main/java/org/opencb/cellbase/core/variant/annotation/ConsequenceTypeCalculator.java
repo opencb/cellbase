@@ -21,6 +21,8 @@ import java.util.*;
  */
 public abstract class ConsequenceTypeCalculator {
 
+    protected static final String START_CODON = "ATG";
+    protected static final String COMPLEMENTARY_START_CODON = "TAC";
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected HashSet<String> SoNames = new HashSet<>();
     protected ConsequenceType consequenceType;

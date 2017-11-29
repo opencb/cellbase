@@ -22,8 +22,6 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
     private static final String SYMBOLIC_START = "<";
     private static final float INVALID_OVERLAP_PERCENTAGE = -1;
-    private static final String COMPLEMENTARY_START_CODON = "TAC";
-    private static final String START_CODON = "ATG";
     private int variantStart;
     private int variantEnd;
 //    private GenomeDBAdaptor genomeDBAdaptor;
@@ -320,7 +318,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
         // Complementary of start codon ATG - Met (already reversed)
-        String referenceCodonArray = getReverseCodon(transcriptSequence, modifiedCodonStart).toString();
+        String referenceCodonArray = String.valueOf(getReverseCodon(transcriptSequence, modifiedCodonStart));
         // Both MT and non-MT code use same codification for Metionine
         if (referenceCodonArray.equals(COMPLEMENTARY_START_CODON)) {
             int i = transcriptSequence.length() - cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of

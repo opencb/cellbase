@@ -264,7 +264,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
                         }
                     } else {
-                        if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
+                        if (cdnaVariantPosition < (cdnaCodingStart + 3) && COMPLEMENTARY_START_CODON.equals(reverseCodon)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
@@ -493,13 +493,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
         // This will indicate whether it is needed to add the "coding_sequence_variant" annotation or not
         boolean codingAnnotationAdded = false;
         if (cdnaVariantPosition != -1) {
-//            int finalNtPhase = (transcriptSequence.length() - cdnaCodingStart) % 3;
             int finalNtPhase = (transcript.getCdnaCodingEnd() - cdnaCodingStart) % 3;
             if (!splicing) {
-//                if ((cdnaVariantPosition >= (transcriptSequence.length() - finalNtPhase)) &&
                 //  Variant in the last codon of a transcript without stop codon. finalNtPhase==2 if the cds length is multiple of 3.
                 if ((cdnaVariantPosition >= (transcript.getCdnaCodingEnd() - finalNtPhase)) && finalNtPhase != 2) {
-//                        (transcript.getEnd()==transcript.getGenomicCodingEnd()) && finalNtPhase != 2) {
                     // If not, avoid calculating reference/modified codon
                     SoNames.add(VariantAnnotationUtils.INCOMPLETE_TERMINAL_CODON_VARIANT);
                 } else if (cdnaVariantPosition > (cdnaCodingStart + 2)
@@ -525,7 +522,7 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
                         }
                     } else {
-                        if (cdnaVariantPosition < (cdnaCodingStart + 3)) {
+                        if (cdnaVariantPosition < (cdnaCodingStart + 3) && START_CODON.equals(referenceCodon)) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
@@ -543,7 +540,6 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         }
                     }
                     // Set consequenceTypeTemplate.aChange
-//                    consequenceType.setAaChange(referenceA + "/" + alternativeA);
                     consequenceType.getProteinVariantAnnotation().setReference(referenceA);
                     consequenceType.getProteinVariantAnnotation().setAlternate(alternativeA);
                     // Set consequenceTypeTemplate.codon leaving only the nt that changes in uppercase.
