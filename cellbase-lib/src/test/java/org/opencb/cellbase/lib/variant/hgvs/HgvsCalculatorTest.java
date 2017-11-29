@@ -10,10 +10,13 @@ import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
+import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,23 +25,24 @@ import static org.junit.Assert.*;
 /**
  * Created by fjlopez on 14/02/17.
  */
-public class HgvsCalculatorTest {
+public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     private HgvsCalculator hgvsCalculator;
     private GeneDBAdaptor geneDBAdaptor;
 
+    public HgvsCalculatorTest() throws IOException {
+    }
+
     @Before
-    public void init() {
-        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
-        try {
-            cellBaseConfiguration = CellBaseConfiguration
-                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+    public void init() throws Exception {
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/hgvs/gene.test.json.gz").toURI());
+        loadRunner.load(path, "gene");
+        path = Paths.get(getClass()
+                .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence");
         hgvsCalculator = new HgvsCalculator(dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37"));
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
-
     }
 
     @Test
