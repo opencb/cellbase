@@ -247,7 +247,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     }
 
     private boolean addNewAa(Variant variant, String transcriptSequence, char[] modifiedCodonArray, StringBuilder predictedProteinSequence) {
-        String aa = VariantAnnotationUtils.CODON_TO_A.get(String.valueOf(modifiedCodonArray));
+        String aa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), String.valueOf(modifiedCodonArray));
         if (aa != null) {
             // If STOP codon is gained prediction is interrupted and returned sequence is only predicted until
             // aa position before the STOP codon
