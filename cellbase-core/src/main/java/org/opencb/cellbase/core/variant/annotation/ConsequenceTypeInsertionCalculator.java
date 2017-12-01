@@ -318,9 +318,9 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
         int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
         // Complementary of start codon ATG - Met (already reversed)
-        String referenceCodonArray = String.valueOf(getReverseCodon(transcriptSequence, modifiedCodonStart));
+        char[] referenceCodonArray = getReverseComplementaryCodon(transcriptSequence, modifiedCodonStart);
         // Both MT and non-MT code use same codification for Metionine
-        if (referenceCodonArray.equals(COMPLEMENTARY_START_CODON)) {
+        if (VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()), String.valueOf(referenceCodonArray))) {
             int i = transcriptSequence.length() - cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of
             String reverseAlternate = (new StringBuilder(variant.getAlternate())).reverse().toString();
             // the first nt after the deletion
@@ -342,7 +342,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                     substitutingNt = reverseAlternate.charAt(alternatePosition);
                     alternatePosition++;
                 }
-                if (referenceCodonArray.charAt(codonPosition) != substitutingNt) {
+                if (referenceCodonArray[codonPosition] != substitutingNt) {
                     SoNames.add(VariantAnnotationUtils.START_LOST);
                 }
             }
@@ -362,10 +362,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
                                     : 0,  // Be careful reaching the end of the transcript sequence
                             // Rigth limit of the substring sums +1 because substring does not include that position
                             transcriptSequence.length() - cdnaVariantEnd + 1)).reverse().toString();
-            char[] referenceCodonArray = getReverseCodon(transcriptSequence, modifiedCodonStart);
-            referenceCodonArray[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodonArray[0]);
-            referenceCodonArray[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodonArray[1]);
-            referenceCodonArray[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodonArray[2]);
+            char[] referenceCodonArray = getReverseComplementaryCodon(transcriptSequence, modifiedCodonStart);
             String referenceCodon = String.valueOf(referenceCodonArray);
             char[] modifiedCodonArray = referenceCodonArray.clone();
             char[] altArray = (new StringBuilder(alternate).reverse().toString()).toCharArray();
@@ -412,11 +409,15 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
 
     }
 
-    private char[] getReverseCodon(String transcriptSequence, int modifiedCodonStart) {
-        String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
+    private char[] getReverseComplementaryCodon(String transcriptSequence, int modifiedCodonStart) {
+        char[] reverseCodon = (new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
                 // Rigth limit of the substring sums +1 because substring does not include that position
-                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString();
-        return reverseCodon.toCharArray();
+                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString()).toCharArray();
+        reverseCodon[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[0]);
+        reverseCodon[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[1]);
+        reverseCodon[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[2]);
+
+        return reverseCodon;
     }
 
     private String getRightAlternate() {
@@ -691,7 +692,7 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
         // Complementary of start codon ATG - Met (already reversed)
         String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart - 1 + 3);
         // Both MT and non-MT code use same codification for Metionine
-        if (referenceCodon.equals(START_CODON)) {
+        if (VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()), referenceCodon)) {
             int i = cdnaVariantEnd - 1;  // Position (0 based index) in transcriptSequence of
             String alternate = variant.getAlternate();
             // the first nt after the deletion

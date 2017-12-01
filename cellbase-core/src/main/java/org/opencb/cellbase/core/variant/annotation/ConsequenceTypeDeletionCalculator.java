@@ -410,7 +410,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
             consequenceType.setCodon(String.valueOf(formattedReferenceCodon1Array) + "/"
                     + String.valueOf(modifiedCodonArray).toUpperCase());
             String modifiedCodon = String.valueOf(modifiedCodonArray);
-            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
+            boolean useMitochondrialCode = variant.getChromosome().equals(MT);
             // Assumes proteinVariantAnnotation attribute is already initialized
             consequenceType
                     .getProteinVariantAnnotation()
@@ -513,7 +513,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
             consequenceType.setCodon(String.valueOf(formattedReferenceCodon1Array) + "/"
                     + String.valueOf(modifiedCodonArray).toUpperCase());
             String modifiedCodon = String.valueOf(modifiedCodonArray);
-            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
+            boolean useMitochondrialCode = variant.getChromosome().equals(MT);
             // Assumes proteinVariantAnnotation attribute is already initialized
             consequenceType
                     .getProteinVariantAnnotation()

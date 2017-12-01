@@ -15,7 +15,6 @@ import java.util.List;
  * Created by fjlopez on 29/03/17.
  */
 public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalculator {
-
     protected int variantStart;
     protected int variantEnd;
     protected static final int BIG_VARIANT_SIZE_THRESHOLD = 50;

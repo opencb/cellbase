@@ -8,6 +8,8 @@ import org.opencb.biodata.models.variant.avro.*;
 
 import java.util.*;
 
+import static org.apache.tools.ant.taskdefs.Antlib.TAG;
+
 /**
  * Created by fjlopez on 22/06/15.
  */
@@ -129,6 +131,13 @@ public class VariantAnnotationUtils {
     public static final HashMap<String, ConsistencyStatus> CLINVAR_REVIEW_TO_CONSISTENCY_STATUS = new HashMap<>();
     public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
+    private static final String ATG = "ATG";
+    private static final String ATA = "ATA";
+    private static final String TAA = "TAA";
+    private static final String TAG = "TAG";
+    private static final String AGA = "AGA";
+    private static final String AGG = "AGG";
+    private static final String TGA = "TGA";
 
     static {
 
@@ -488,16 +497,30 @@ public class VariantAnnotationUtils {
 
     public static Boolean isStopCodon(boolean mitochondrialCode, String codon) {
         if (mitochondrialCode) {
-            if (codon.equals("TAA") || codon.equals("TAG") || codon.equals("AGA") || codon.equals("AGG")) {
+            if (codon.equals(TAA) || codon.equals(TAG) || codon.equals(AGA) || codon.equals(AGG)) {
                 return true;
             }
         } else {
-            if (codon.equals("TAA") || codon.equals("TGA") || codon.equals("TAG")) {
+            if (codon.equals(TAA) || codon.equals(TGA) || codon.equals(TAG)) {
                 return true;
             }
         }
         return false;
     }
+
+    public static boolean isStartCodon(boolean mitochondrialCode, String codon) {
+        if (mitochondrialCode) {
+            if (codon.equals(ATG) || codon.equals(ATA)) {
+                return true;
+            }
+        } else {
+            if (codon.equals(ATG)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public static String getAminoacid(boolean mitochondrialCode, String codon) {
         if (mitochondrialCode) {
@@ -577,5 +600,4 @@ public class VariantAnnotationUtils {
         return variant.getType();
 //        return getVariantType(variant.getReference(), variant.getAlternate());
     }
-
 }
