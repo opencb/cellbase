@@ -14,6 +14,10 @@ import java.util.List;
  * Created by fjlopez on 15/06/17.
  */
 public class HgvsSNVCalculator extends HgvsCalculator {
+    private static final String METIONINE = "M";
+    private static final String STOP = "Stop";
+    private static final String STOP_GAINED_TAG = "Ter";
+
     public HgvsSNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
     }
@@ -39,23 +43,35 @@ public class HgvsSNVCalculator extends HgvsCalculator {
             // be able to re-use methods and available objects
             Variant proteinVariant = createProteinVariant(variant, transcript);
             if (proteinVariant != null) {
-                String mutationType = proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
                 buildingComponents.setStart(proteinVariant.getStart());
                 buildingComponents.setEnd(proteinVariant.getEnd());
-                buildingComponents.setReferenceStart(String.valueOf(transcript.getProteinSequence()
-                        .charAt(proteinVariant.getStart() - 1)));
-                buildingComponents.setReferenceEnd(String.valueOf(transcript.getProteinSequence()
-                        .charAt(proteinVariant.getStart())));
-                buildingComponents.setAlternate(proteinVariant.getAlternate());
-                buildingComponents.setMutationType(mutationType);
-                buildingComponents.setKind(variant.getAlternate().length() % 3 == 0 ? BuildingComponents.Kind.INFRAME
-                        : BuildingComponents.Kind.FRAMESHIFT);
+                buildingComponents.setReferenceStart(VariantAnnotationUtils.TO_LONG_AA.get(proteinVariant.getReference()));
+                buildingComponents.setAlternate(VariantAnnotationUtils.TO_LONG_AA.get(proteinVariant.getAlternate()));
 
                 return formatProteinString(buildingComponents);
             }
-
         }
         return null;
+    }
+
+    /**
+     * Generate a protein HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+    protected String formatProteinString(BuildingComponents buildingComponents) {
+        StringBuilder stringBuilder = (new StringBuilder(buildingComponents.getTranscriptId()))
+                .append(PROTEIN_CHAR)
+                .append(buildingComponents.getReferenceStart())
+                .append(buildingComponents.getStart());
+        // Stop gained variant
+        if (STOP.equals(buildingComponents.getAlternate())) {
+            stringBuilder.append(STOP_GAINED_TAG);
+        // missense_variant
+        } else {
+            stringBuilder.append(buildingComponents.getAlternate());
+        }
+        return stringBuilder.toString();
     }
 
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
@@ -65,25 +81,31 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         proteinVariant.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
         proteinVariant.setEnd(proteinVariant.getStart());
 
-        // We expect buildingComponents.getStart() to be within the sequence boundaries.
-        // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
-        // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-        if (proteinVariant.getStart() > 0 && proteinVariant.getStart() < transcript.getProteinSequence().length()) {
-            proteinVariant.setReference(String.valueOf(transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)));
-            String predictedAa = getPredictedAa(variant, transcript);
-            if (StringUtils.isNotBlank(predictedAa)) {
-                proteinVariant.setAlternate(predictedAa);
-                return proteinVariant;
-            } else {
-                logger.warn("Could not predict new Aa. This should, in principle, not happen and protein HGVS "
-                                + "will not be returned. Please, check variant {}, transcript {}, protein {}",
-                        variant.toString(), transcript.getId(), transcript.getProteinID());
+        // Only non-synonymous variants shall have protein hgvs
+        if (!proteinVariant.getReference().equals(proteinVariant.getAlternate())) {
+            // We expect buildingComponents.getStart() to be within the sequence boundaries.
+            // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
+            // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
+            if (proteinVariant.getStart() > 0 && proteinVariant.getStart() < transcript.getProteinSequence().length()) {
+                proteinVariant.setReference(String.valueOf(transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)));
+                String predictedAa = getPredictedAa(variant, transcript);
+                if (StringUtils.isNotBlank(predictedAa)) {
+                    // Start codon is not translated and there shall be no protein hgvs
+                    if (!METIONINE.equals(predictedAa)) {
+                        proteinVariant.setAlternate(predictedAa);
+                        return proteinVariant;
+                    }
+                } else {
+                    logger.warn("Could not predict new Aa. This should, in principle, not happen and protein HGVS "
+                                    + "will not be returned. Please, check variant {}, transcript {}, protein {}",
+                            variant.toString(), transcript.getId(), transcript.getProteinID());
+                }
             }
+            logger.warn("Protein start/end out of protein seq boundaries: {}, {}, prot length: {}. This should, in principle,"
+                            + " not happen and protein HGVS will not be returned. Could be expected for "
+                            + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
+                    buildingComponents.getProteinId(), proteinVariant.getStart(), transcript.getProteinSequence().length());
         }
-        logger.warn("Protein start/end out of protein seq boundaries: {}, {}, prot length: {}. This should, in principle,"
-                        + " not happen and protein HGVS will not be returned. Could be expected for "
-                        +"unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
-                buildingComponents.getProteinId(), proteinVariant.getStart(), transcript.getProteinSequence().length());
 
         return null;
 

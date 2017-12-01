@@ -424,6 +424,7 @@ public class VariantAnnotationUtils {
         TO_ABBREVIATED_AA.put("TRP", "W");
         TO_ABBREVIATED_AA.put("TYR", "Y");
         TO_ABBREVIATED_AA.put("VAL", "V");
+        TO_ABBREVIATED_AA.put("STOP", "O");
 
         for (String aa : TO_ABBREVIATED_AA.keySet()) {
             TO_LONG_AA.put(TO_ABBREVIATED_AA.get(aa), buildUpperLowerCaseString(aa));

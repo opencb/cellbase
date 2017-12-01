@@ -76,7 +76,9 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
      * @return String containing an HGVS formatted variant representation
      */
     protected String formatProteinString(BuildingComponents buildingComponents) {
-        StringBuilder stringBuilder = new StringBuilder('p');
+        StringBuilder stringBuilder = (new StringBuilder(buildingComponents.getTranscriptId()))
+                .append(PROTEIN_CHAR);
+
         if (DUP.equals(buildingComponents.getMutationType())) {
             if (buildingComponents.getAlternate().length() == 1) {
                 // assuming end = start - 1

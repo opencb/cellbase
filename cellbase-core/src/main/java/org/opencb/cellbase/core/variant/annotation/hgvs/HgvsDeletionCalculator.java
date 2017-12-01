@@ -98,7 +98,6 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         StringBuilder allele = new StringBuilder();
         allele.append(buildingComponents.getProteinId());  // if use_prefix else ''
-        allele.append(COLON);
 
         if (buildingComponents.getKind().equals(BuildingComponents.Kind.INFRAME)) {
             allele.append(PROTEIN_CHAR)
