@@ -202,7 +202,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     }
 
     private String getPredictedProteinSequence(Variant variant, Transcript transcript) {
-        int cdsPosition = buildingComponents.getCdnaStart().getReferencePosition()n;
+        int cdsPosition = buildingComponents.getCdnaStart().getReferencePosition();
         int cdnaCodingStart = getCdnaCodingStart(transcript);
         String transcriptSequence = transcript.getcDnaSequence();
 

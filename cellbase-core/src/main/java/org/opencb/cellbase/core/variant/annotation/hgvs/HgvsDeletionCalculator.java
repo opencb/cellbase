@@ -155,8 +155,31 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
         if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
             proteinVariant.setAlternate(EMPTY_STRING);
-            proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                    proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+            char generatedAa = getGeneratedAa();
+            // generatedAa == 0 if whole codons (3 nts) are removed from the start and end of the variant
+            if (generatedAa != 0) {
+                // Generated aa after pasting the two ends of remaining sequence coincides with the aa at start position
+                // on the original seq
+                if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
+                    // Skip the first aa since coincides with the generated one
+                    proteinVariant.setStart(proteinVariant.getStart() + 1);
+                    proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart(),
+                            proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                // Generated aa after pasting the two ends of remaining sequence coincides with the aa at end position
+                // on the original seq
+                } else if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getEnd() - 1)) {
+                    // Skip the last aa since coincides with the generated one
+                    proteinVariant.setEnd(proteinVariant.getEnd() - 1);
+                    proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                            proteinVariant.getEnd() - 1));
+                } else {
+                    proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                            proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                }
+            } else {
+                proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                        proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+            }
 
             return proteinVariant;
         }
@@ -167,6 +190,52 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                 transcript.getProteinSequence().length());
 
         return null;
+    }
+
+    private char getGeneratedAa(Transcript transcript) {
+        if (POSITIVE.equals(transcript.getStrand())) {
+            return getGeneratedAaPositiveTranscript(transcript);
+        } else {
+            return getGeneratedAaNegativeTranscript(transcript);
+        }
+    }
+
+    private char getGeneratedAaPositiveTranscript(Transcript transcript) {
+        Integer variantPhaseShift = (buildingComponents.getCdnaEnd().getReferencePosition() - 1) % 3;
+        char[] referenceCodonArray = {'T', 'A', 'C'}; // Complementary of start codon ATG - Met (already reversed)
+        String transcriptSequence = transcript.getcDnaSequence();
+        int i = transcriptSequence.length() - cdnaVariantStart + 1;  // Position (0 based index) in transcriptSequence of
+        // the first nt after the deletion
+        int codonPosition;
+        // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+        // calling this method
+        for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
+            char substitutingNt;
+            // Means we've reached the transcript.start
+            if (i >= transcriptSequence.length()) {
+                int genomicCoordinate = transcript.getEnd() + (transcriptSequence.length() - i + 1); // + 1 since i moves
+                // in base 0 (see above)
+                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                        + ":" + genomicCoordinate
+                        + "-" + (genomicCoordinate + 1));
+                substitutingNt = genomeDBAdaptor
+                        .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
+            } else {
+                // Paste reference nts after deletion in the corresponding codon position
+                substitutingNt = transcriptSequence.charAt(i);
+            }
+            if (referenceCodonArray[codonPosition] != substitutingNt) {
+                SoNames.add(VariantAnnotationUtils.START_LOST);
+                break;
+            }
+            i++;
+        }
+        // End of codon has been reached, all positions found equal to the referenceCodonArray
+        if (codonPosition < 0) {
+            SoNames.add(VariantAnnotationUtils.START_RETAINED_VARIANT);
+        }
+
+        return 0;
     }
 
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
