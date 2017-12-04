@@ -165,9 +165,9 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
         Variant proteinVariant = new Variant();
 
-        int cdnaCodingStart = getCdnaCodingStart(transcript);
-        proteinVariant.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
-        proteinVariant.setEnd(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
+//        int cdnaCodingStart = getCdnaCodingStart(transcript);
+        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getOffset()));
+        proteinVariant.setEnd(getAminoAcidPosition(buildingComponents.getCdnaEnd().getOffset()));
 
         // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
@@ -202,7 +202,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     }
 
     private String getPredictedProteinSequence(Variant variant, Transcript transcript) {
-        int cdsPosition = buildingComponents.getCdnaStart().getOffset();
+        int cdsPosition = buildingComponents.getCdnaStart().getReferencePosition()n;
         int cdnaCodingStart = getCdnaCodingStart(transcript);
         String transcriptSequence = transcript.getcDnaSequence();
 

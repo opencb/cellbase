@@ -64,16 +64,21 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                 // startOffset must point to the position right before the actual variant start, since that's the position that
                 // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
                 // the position right after the actual variant end.
-                justify(proteinVariant, proteinVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
-                        proteinVariant.getEnd() - 1 - 1, proteinVariant.getReference(),
-                        transcript.getProteinSequence(), POSITIVE);
+//                justify(proteinVariant, proteinVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
+//                        proteinVariant.getEnd() - 1 - 1, proteinVariant.getReference(),
+//                        transcript.getProteinSequence(), POSITIVE);
+                proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
 
                 buildingComponents.setStart(proteinVariant.getStart());
                 buildingComponents.setEnd(proteinVariant.getEnd());
-                buildingComponents.setReferenceStart(String.valueOf(transcript.getProteinSequence()
-                        .charAt(proteinVariant.getStart() - 1)));
-                buildingComponents.setReferenceEnd(String.valueOf(transcript.getProteinSequence()
-                        .charAt(proteinVariant.getEnd() - 1)));
+                buildingComponents.setReferenceStart(VariantAnnotationUtils
+                        .buildUpperLowerCaseString(VariantAnnotationUtils
+                                .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
+                                        .charAt(proteinVariant.getStart() - 1)))));
+                buildingComponents.setReferenceEnd(VariantAnnotationUtils
+                        .buildUpperLowerCaseString(VariantAnnotationUtils
+                                .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getEnd() - 1)))));
 
                 // Check frameshift/inframe
                 if (variant.getReference().length() % 3 == 0) {
@@ -89,11 +94,29 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         
     }
 
-    /**
-     * Generate a protein HGVS string.
-     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
-     * @return String containing an HGVS formatted variant representation
-     */
+    private void proteinHgvsNormalize(Variant proteinVariant, String proteinSequence) {
+        // It's not worth calling the justify method of the super class, too complicated and the code is relatively
+        // simple
+        // Justify
+        // TODO: assuming this is justificaxtion sense; might need adjusting
+        StringBuilder stringBuilder = new StringBuilder(proteinVariant.getReference());
+        int end = proteinVariant.getEnd() - 1;
+        while ((end + 1) < proteinSequence.length() && proteinSequence.charAt(end + 1) == stringBuilder.charAt(0)) {
+            stringBuilder.deleteCharAt(0);
+            stringBuilder.append(proteinSequence.charAt(end + 1));
+            proteinVariant.setStart(proteinVariant.getStart() + 1);
+            proteinVariant.setEnd(proteinVariant.getEnd() + 1);
+            end = proteinVariant.getEnd();
+        }
+        proteinVariant.setReference(stringBuilder.toString());
+
+    }
+
+        /**
+         * Generate a protein HGVS string.
+         * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+         * @return String containing an HGVS formatted variant representation
+         */
     protected String formatProteinString(BuildingComponents buildingComponents) {
 
         StringBuilder allele = new StringBuilder();
@@ -101,7 +124,6 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         if (buildingComponents.getKind().equals(BuildingComponents.Kind.INFRAME)) {
             allele.append(PROTEIN_CHAR)
-                    .append(COLON)
                     .append(buildingComponents.getReferenceStart())
                     .append(buildingComponents.getStart())
                     .append(UNDERSCORE)
@@ -110,7 +132,6 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                     .append(buildingComponents.getMutationType());
         } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.FRAMESHIFT)) {
             allele.append(PROTEIN_CHAR)
-                    .append(COLON)
                     .append(buildingComponents.getReferenceStart())
                     .append(buildingComponents.getStart())
                     .append(FRAMESHIFT_TAG);
@@ -124,10 +145,10 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
         Variant proteinVariant = new Variant();
 
-        int cdnaCodingStart = getCdnaCodingStart(transcript);
+        //int cdnaCodingStart = getCdnaCodingStart(transcript);
 
-        proteinVariant.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
-        proteinVariant.setEnd(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaEnd().getOffset()));
+        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getReferencePosition()));
+        proteinVariant.setEnd(getAminoAcidPosition(buildingComponents.getCdnaEnd().getReferencePosition()));
 
         // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
@@ -135,7 +156,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
             proteinVariant.setAlternate(EMPTY_STRING);
             proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                    proteinVariant.getEnd() - 1));
+                    proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
 
             return proteinVariant;
         }

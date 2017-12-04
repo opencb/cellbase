@@ -501,8 +501,8 @@ public class HgvsCalculator {
     }
 
     protected boolean onlySpansCodingSequence(Variant variant, Transcript transcript) {
-        if (buildingComponents.getCdnaStart().getReferencePosition() == 0  // Start falls within an exon
-                && buildingComponents.getCdnaEnd().getReferencePosition() == 0) { // End falls within an exon
+        if (buildingComponents.getCdnaStart().getOffset() == 0  // Start falls within coding exon
+                && buildingComponents.getCdnaEnd().getOffset() == 0) { // End falls within coding exon
 
             List<Exon> exonList = transcript.getExons();
             // Get the closest exon to the variant start, measured as the exon that presents the closest start OR end
@@ -526,10 +526,8 @@ public class HgvsCalculator {
         }
     }
 
-    protected int getAminoAcidPosition(int cdnaCodingStart, int cdsPosition) {
-        int cdnaPosition = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
-        int cdsVariantStart = cdnaPosition - cdnaCodingStart + 1;
-        return ((cdsVariantStart - 1) / 3) + 1;
+    protected int getAminoAcidPosition(int cdsPosition) {
+        return ((cdsPosition - 1) / 3) + 1;
     }
 
     protected int getCdnaCodingStart(Transcript transcript) {

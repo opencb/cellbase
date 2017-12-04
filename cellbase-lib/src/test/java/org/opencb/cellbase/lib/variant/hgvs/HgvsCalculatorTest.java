@@ -48,7 +48,12 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void run() throws Exception {
 
-        List<String> hgvsList = getVariantHgvs(new Variant("22", 38308486, "C", "T"));
+        List<String> hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
+        assertEquals(3, hgvsList.size());
+        // There may be more than these, but these 4 are the ones that I can actually validate
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
+
+        hgvsList = getVariantHgvs(new Variant("22", 38308486, "C", "T"));
         assertEquals(3, hgvsList.size());
         // There may be more than these, but these 4 are the ones that I can actually validate
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000445494(ENSG00000100139):c.72C>T",
@@ -211,8 +216,9 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
         List<Gene> geneList = geneDBAdaptor
                 .getByRegion(new Region(variant.getChromosome(), variant.getStart(),
-                        variant.getEnd()), new QueryOptions("include", "name,id,transcripts.id,"
+                        variant.getEnd()), new QueryOptions("include", "name,id,transcripts.id,transcripts.proteinID,"
                         + "transcripts.strand,transcripts.name,transcripts.start,transcripts.end,"
+                        + "transcripts.proteinSequence,"
                         + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
                         + "transcripts.cdnaCodingEnd,transcripts.exons.start,"
                         + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"

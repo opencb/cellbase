@@ -77,8 +77,8 @@ public class HgvsSNVCalculator extends HgvsCalculator {
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
         Variant proteinVariant = new Variant();
 
-        int cdnaCodingStart = getCdnaCodingStart(transcript);
-        proteinVariant.setStart(getAminoAcidPosition(cdnaCodingStart, buildingComponents.getCdnaStart().getOffset()));
+//        int cdnaCodingStart = getCdnaCodingStart(transcript);
+        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getOffset()));
         proteinVariant.setEnd(proteinVariant.getStart());
 
         // Only non-synonymous variants shall have protein hgvs
