@@ -1,0 +1,3 @@
+|CellBase.CellBaseCompleteSuite.HSapiensTests.VariantTests||10:21:33 Fri, Nov 24, 2017|
+|CellBase.CellBaseCompleteSuite.SuiteSetUp||18:00:59 Wed, Nov 22, 2017|
+|CellBase.CellBaseCompleteSuite.HSapiensTests.VariationTests||17:23:32 Wed, Nov 22, 2017|
