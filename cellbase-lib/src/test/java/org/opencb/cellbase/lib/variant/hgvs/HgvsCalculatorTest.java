@@ -218,7 +218,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 .getByRegion(new Region(variant.getChromosome(), variant.getStart(),
                         variant.getEnd()), new QueryOptions("include", "name,id,transcripts.id,transcripts.proteinID,"
                         + "transcripts.strand,transcripts.name,transcripts.start,transcripts.end,"
-                        + "transcripts.proteinSequence,"
+                        + "transcripts.cDnaSequence,transcripts.proteinSequence,"
                         + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
                         + "transcripts.cdnaCodingEnd,transcripts.exons.start,"
                         + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
