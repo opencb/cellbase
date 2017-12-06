@@ -147,6 +147,17 @@ public abstract class ConsequenceTypeCalculator {
 
     protected abstract void solveCodingNegativeTranscript();
 
+    protected char[] getReverseComplementaryCodon(String transcriptSequence, int modifiedCodonStart) {
+        char[] reverseCodon = (new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
+                // Rigth limit of the substring sums +1 because substring does not include that position
+                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString()).toCharArray();
+        reverseCodon[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[0]);
+        reverseCodon[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[1]);
+        reverseCodon[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[2]);
+
+        return reverseCodon;
+    }
+
     protected abstract void solveNonCodingPositiveTranscript();
 
     protected abstract void solveCodingPositiveTranscript();

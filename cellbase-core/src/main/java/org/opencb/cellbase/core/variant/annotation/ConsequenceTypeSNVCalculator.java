@@ -264,7 +264,12 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                             SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
                         }
                     } else {
-                        if (cdnaVariantPosition < (cdnaCodingStart + 3) && COMPLEMENTARY_START_CODON.equals(reverseCodon)) {
+                        // The !transcript.unconfirmedStart condition may seem weird but it's correct. If coding start
+                        // is clearly defined, can be considered start_lost variant
+                        if (cdnaVariantPosition < (cdnaCodingStart + 3)
+                                && (!transcript.unconfirmedStart()
+                                    || VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()),
+                                                                            String.valueOf(referenceCodon)))) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
@@ -508,33 +513,35 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                     char[] modifiedCodonArray = referenceCodon.toCharArray();
                     modifiedCodonArray[variantPhaseShift] = variant.getAlternate().toCharArray()[0];
                     String referenceA =
-                            VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"), referenceCodon);
+                            VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), referenceCodon);
                     String alternativeA =
-                            VariantAnnotationUtils.getAminoacid(variant.getChromosome().equals("MT"),
+                            VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()),
                                     String.valueOf(modifiedCodonArray));
                     codingAnnotationAdded = true;
-                    if (VariantAnnotationUtils.isSynonymousCodon(variant.getChromosome().equals("MT"),
+                    if (VariantAnnotationUtils.isSynonymousCodon(MT.equals(variant.getChromosome()),
                             referenceCodon, String.valueOf(modifiedCodonArray))) {
-                        if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"), referenceCodon)) {
+                        if (VariantAnnotationUtils.isStopCodon(MT.equals(variant.getChromosome()), referenceCodon)) {
                             SoNames.add(VariantAnnotationUtils.STOP_RETAINED_VARIANT);
                         } else {  // coding end may be not correctly annotated (incomplete_terminal_codon_variant),
                             // but if the length of the cds%3=0, annotation should be synonymous variant
                             SoNames.add(VariantAnnotationUtils.SYNONYMOUS_VARIANT);
                         }
                     } else {
-                        if (cdnaVariantPosition < (cdnaCodingStart + 3) && START_CODON.equals(referenceCodon)) {
+                        if (cdnaVariantPosition < (cdnaCodingStart + 3)
+                                && (!transcript.unconfirmedStart()
+                                    || VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()), referenceCodon))) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.START_LOST);
-                            if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                            if (VariantAnnotationUtils.isStopCodon(MT.equals(variant.getChromosome()),
                                     String.valueOf(modifiedCodonArray))) {
                                 // Gary - initiator codon SO terms not compatible with the terms below
                                 SoNames.add(VariantAnnotationUtils.STOP_GAINED);
                             }
-                        } else if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                        } else if (VariantAnnotationUtils.isStopCodon(MT.equals(variant.getChromosome()),
                                 String.valueOf(referenceCodon))) {
                             SoNames.add(VariantAnnotationUtils.STOP_LOST);
                         } else {
-                            SoNames.add(VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
+                            SoNames.add(VariantAnnotationUtils.isStopCodon(MT.equals(variant.getChromosome()),
                                     String.valueOf(modifiedCodonArray))
                                     ? VariantAnnotationUtils.STOP_GAINED : VariantAnnotationUtils.MISSENSE_VARIANT);
                         }

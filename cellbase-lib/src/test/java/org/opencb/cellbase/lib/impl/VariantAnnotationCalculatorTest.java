@@ -1169,6 +1169,17 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // --------------------------AACAGTATGCCATTTCAT------------XXXXXXXXXX
         //                                            C
         QueryResult<ConsequenceType> consequenceTypeResult =
+                variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("7:6713425:G:A"),
+                        new QueryOptions("normalize", false));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000401847").getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012","start_lost")));
+        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000401847").getSequenceOntologyTerms(),
+                CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001583","missense_variant"))));
+
+        //  first codon IS indeed a start codon (ATG)
+        // --------------------------AACAGTATGCCATTTCAT------------XXXXXXXXXX
+        //                                            C
+        consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("1:152195729:T:C"),
                         new QueryOptions("normalize", false));
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
@@ -1371,6 +1382,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000368801").getSequenceOntologyTerms(),
                 CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012",
                                 "start_lost")));
+
 
         // Deletion affecting start codon on negative transcript. Variant start falls within start codon; variant end
         // falls outside coding region but within an exon (inside transcript). Not all deleted bases on the start codon are
