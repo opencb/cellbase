@@ -186,7 +186,7 @@ public class ParentRestClient<T> {
         }
         options.putIfAbsent("limit", LIMIT);
 
-        Map<Integer, Integer> idMap = new HashMap<>();
+        Map<String, Integer> idMap = new HashMap<>();
         List<String> prevIdList = idList;
         List<String> newIdsList = null;
         boolean call = true;
@@ -197,13 +197,21 @@ public class ParentRestClient<T> {
             queryResponse = robustRestCall(idList, resource, options, clazz, post);
 
             // First iteration we set the response object, no merge needed
+            // Create id -> finalQueryResponse-position map, so that we can know in forthcoming iterations where to
+            // save corresponding lists of query results
             if (finalQueryResponse == null) {
                 finalQueryResponse = queryResponse;
+                idMap = new HashMap<>();
+                // WARN: assuming the order of QueryResults in queryResponse corresponds to the order of ids in idList
+                // i.e. queryResponse[0] contains queryResult for idList[0], queryResponse[1] for idList[1], etc.
+                for (int i = 0; i < idList.size(); i++) {
+                    idMap.put(idList.get(i), i);
+                }
             } else {    // merge query responses
 //                if (newIdsList != null && newIdsList.size() > 0) {
                 if (newIdsList.size() > 0) {
                     for (int i = 0; i < newIdsList.size(); i++) {
-                        finalQueryResponse.getResponse().get(idMap.get(i)).getResult()
+                        finalQueryResponse.getResponse().get(idMap.get(newIdsList.get(i))).getResult()
                                 .addAll(queryResponse.getResponse().get(i).getResult());
                     }
                 }
@@ -214,10 +222,8 @@ public class ParentRestClient<T> {
                 prevIdList = newIdsList;
             }
             newIdsList = new ArrayList<>();
-            idMap = new HashMap<>();
             for (int i = 0; i < queryResponse.getResponse().size(); i++) {
                 if (queryResponse.getResponse().get(i).getNumResults() == LIMIT) {
-                    idMap.put(newIdsList.size(), i);
                     newIdsList.add(prevIdList.get(i));
                 }
             }

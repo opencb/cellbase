@@ -3,6 +3,35 @@ Test
 ---
 !define TEST_SYSTEM {slim}
 
+!3 Get and check number variants for each chr
+| Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
+|GET|/feature/variation/search?limit=1&chromosome=1&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 27008746 |
+|GET|/feature/variation/search?limit=1&chromosome=2&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 28554875 |
+|GET|/feature/variation/search?limit=1&chromosome=3&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 23290117 |
+|GET|/feature/variation/search?limit=1&chromosome=4&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 22393941 |
+|GET|/feature/variation/search?limit=1&chromosome=5&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 21040703 |
+|GET|/feature/variation/search?limit=1&chromosome=6&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 19856384 |
+|GET|/feature/variation/search?limit=1&chromosome=7&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 19142089 |
+|GET|/feature/variation/search?limit=1&chromosome=8&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 18146893 |
+|GET|/feature/variation/search?limit=1&chromosome=9&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 14889746 |
+|GET|/feature/variation/search?limit=1&chromosome=10&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 15809271 |
+|GET|/feature/variation/search?limit=1&chromosome=11&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 16426814 |
+|GET|/feature/variation/search?limit=1&chromosome=12&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 15782745 |
+|GET|/feature/variation/search?limit=1&chromosome=13&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 11156006 |
+|GET|/feature/variation/search?limit=1&chromosome=14&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 10776020 |
+|GET|/feature/variation/search?limit=1&chromosome=15&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 10117969 |
+|GET|/feature/variation/search?limit=1&chromosome=16&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 11439664 |
+|GET|/feature/variation/search?limit=1&chromosome=17&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 10122567 |
+|GET|/feature/variation/search?limit=1&chromosome=18&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 8852462 |
+|GET|/feature/variation/search?limit=1&chromosome=19&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 8474717 |
+|GET|/feature/variation/search?limit=1&chromosome=20&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 7357771 |
+|GET|/feature/variation/search?limit=1&chromosome=21&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 4506502 |
+|GET|/feature/variation/search?limit=1&chromosome=22&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 4760642 |
+|GET|/feature/variation/search?limit=1&chromosome=X&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 13207779 |
+|GET|/feature/variation/search?limit=1&chromosome=Y&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 215365 |
+|GET|/feature/variation/search?limit=1&chromosome=MT&include=id|200|Content-Type : application/json| jsonbody.response[0].numTotalResults >= 5370 |
+-!|
+
 !3 Get all Sequence Ontology Terms Describing Consequence Type
 | Table: Rest Fixture |$baseURL_hsapiens|with-compareJSON.js|
 |GET|/feature/variation/consequence_types|200|Content-Type : application/json| !- /* javascript */
