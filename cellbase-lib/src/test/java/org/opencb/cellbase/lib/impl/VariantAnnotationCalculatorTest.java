@@ -1026,6 +1026,22 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
+    @Test
+    public void testRegulatoryAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "consequenceType");
+
+        List<Variant> variantList = Arrays.asList(new Variant("19", 33167329, "AC", "TT"),
+                new Variant("19", 33321526, "TTAC", "CC"),
+                new Variant("18", 30913143, "T", ""));
+        List<QueryResult<VariantAnnotation>> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariantList(variantList, queryOptions);
+        // First must be TF_bindin_site
+        // Second must be regulatory_variant
+        // Third is not TF_binding_site nor regulatory_variant
+
+    }
+
     private void assertVariantAnnotationQueryResultEquals(List<QueryResult<VariantAnnotation>> actualQueryResultList,
                                                           List expectedObjectList) {
         assertEquals(actualQueryResultList.size(), expectedObjectList.size());
