@@ -267,9 +267,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         // The !transcript.unconfirmedStart condition may seem weird but it's correct. If coding start
                         // is clearly defined, can be considered start_lost variant
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)
-                                && (!transcript.unconfirmedStart()
-                                    || VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()),
-                                                                            String.valueOf(referenceCodon)))) {
+                                && !transcript.unconfirmedStart()) {
+//                                && (!transcript.unconfirmedStart()
+//                                    || VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()),
+//                                                                            String.valueOf(referenceCodon)))) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(variant.getChromosome().equals("MT"),
@@ -528,8 +529,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                         }
                     } else {
                         if (cdnaVariantPosition < (cdnaCodingStart + 3)
-                                && (!transcript.unconfirmedStart()
-                                    || VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()), referenceCodon))) {
+                                && !transcript.unconfirmedStart()) {
+
+//                                && (!transcript.unconfirmedStart()
+//                                    || VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()), referenceCodon))) {
                             // Gary - initiator codon SO terms not compatible with the terms below
                             SoNames.add(VariantAnnotationUtils.START_LOST);
                             if (VariantAnnotationUtils.isStopCodon(MT.equals(variant.getChromosome()),
