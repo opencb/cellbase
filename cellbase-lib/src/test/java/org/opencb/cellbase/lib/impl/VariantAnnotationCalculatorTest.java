@@ -34,8 +34,10 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -51,9 +53,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 
 public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
@@ -600,7 +600,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     private ConsequenceType getConsequenceType(List<ConsequenceType> consequenceTypeList, String transcriptId) {
         for (ConsequenceType consequenceType : consequenceTypeList) {
-            if (transcriptId.equals(consequenceType.getEnsemblTranscriptId())) {
+            if ((transcriptId == null && consequenceType.getEnsemblTranscriptId() == null)
+                    || (transcriptId != null && transcriptId.equals(consequenceType.getEnsemblTranscriptId()))) {
                 return consequenceType;
             }
         }
@@ -1034,12 +1035,50 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         List<Variant> variantList = Arrays.asList(new Variant("19", 33167329, "AC", "TT"),
                 new Variant("19", 33321526, "TTAC", "CC"),
                 new Variant("18", 30913143, "T", ""));
-        List<QueryResult<VariantAnnotation>> queryResult = variantAnnotationCalculator
+        List<QueryResult<VariantAnnotation>> queryResultList = variantAnnotationCalculator
                 .getAnnotationByVariantList(variantList, queryOptions);
-        // First must be TF_bindin_site
-        // Second must be regulatory_variant
-        // Third is not TF_binding_site nor regulatory_variant
 
+        /**
+         *  First must be TF_binding_site
+          */
+        List<ConsequenceType> firstConsequenceTypeList = queryResultList.get(0).getResult().get(0).getConsequenceTypes();
+        int i = 0;
+        while (i < firstConsequenceTypeList.size()
+                && !VariantAnnotationUtils.TF_BINDING_SITE_VARIANT.equals(firstConsequenceTypeList
+                                                                                            .get(i)
+                                                                                            .getSequenceOntologyTerms()
+                                                                                            .get(0)
+                                                                                            .getName())) {
+            i++;
+        }
+        // means a consequence type with TF_binding_site name was found within firstConsequenceTypeList
+        assertTrue(i < firstConsequenceTypeList.size());
+
+        /**
+         *  Second must be regulatory_variant but NOT TF_binding_site
+          */
+        List<ConsequenceType> secondConsequenceTypeList = queryResultList.get(1).getResult().get(0).getConsequenceTypes();
+        i = 0;
+        while (i < secondConsequenceTypeList.size()
+                && !VariantAnnotationUtils.TF_BINDING_SITE_VARIANT.equals(secondConsequenceTypeList
+                .get(i)
+                .getSequenceOntologyTerms()
+                .get(0)
+                .getName())) {
+            i++;
+        }
+        // means a consequence type with TF_binding_site name was NOT found within firstConsequenceTypeList
+        assertTrue(i == secondConsequenceTypeList.size());
+        // regulatory SO terms are the only consequence types without a transcript id assigned (null).
+        assertThat(getConsequenceType(queryResultList.get(1).getResult().get(0).getConsequenceTypes(), null).getSequenceOntologyTerms(),
+                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001566","regulatory_region_variant")));
+
+        /**
+         * Third is not TF_binding_site nor regulatory_variant
+          */
+        // regulatory SO terms are the only consequence types without a transcript id assigned (null). There shall be no
+        // consequence type with null transcript id
+        assertNull(getConsequenceType(queryResultList.get(2).getResult().get(0).getConsequenceTypes(), null));
     }
 
     private void assertVariantAnnotationQueryResultEquals(List<QueryResult<VariantAnnotation>> actualQueryResultList,
