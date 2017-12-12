@@ -192,8 +192,12 @@ public abstract class ConsequenceTypeCalculator {
             boolean tfbsFound = false;
             for (int i = 0; (i < regulatoryFeatureList.size() && !tfbsFound); i++) {
                 String regulatoryRegionType = regulatoryFeatureList.get(i).getFeatureType();
-                tfbsFound = regulatoryRegionType != null && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site)
-                        || regulatoryFeatureList.get(i).getFeatureType().equals(RegulationDBAdaptor.FeatureType.TF_binding_site_motif));
+                tfbsFound = regulatoryRegionType != null
+                    && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site.name())
+                        || regulatoryFeatureList.get(i).getFeatureType().equals(RegulationDBAdaptor
+                                                                                                .FeatureType
+                                                                                                .TF_binding_site_motif
+                                                                                                .name()));
             }
             if (tfbsFound) {
                 consequenceType = new ConsequenceType();

@@ -146,7 +146,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             alleleOrigin = getAlleleOriginList(new ArrayList<>(originSet));
         }
 
-        List<HeritableTrait> heritableTraitList = null;
+        List<HeritableTrait> heritableTraitList = Collections.emptyList();
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])) {
             Set<String> phenotypeSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]
                     .toLowerCase().split(";")));
@@ -154,7 +154,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     .map((phenotype) -> new HeritableTrait(phenotype, null)).collect(Collectors.toList());
         }
 
-        List<GenomicFeature> genomicFeatureList = null;
+        List<GenomicFeature> genomicFeatureList = Collections.emptyList();
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])) {
             String[] geneList = lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(",");
             genomicFeatureList = new ArrayList<>(geneList.length);
