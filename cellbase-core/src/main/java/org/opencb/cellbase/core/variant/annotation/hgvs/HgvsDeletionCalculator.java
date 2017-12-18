@@ -61,14 +61,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // be able to re-use methods and available objects
             Variant proteinVariant = createProteinVariant(variant, transcript);
             if (proteinVariant != null) {
-                // startOffset must point to the position right before the actual variant start, since that's the position that
-                // will be looked at for coincidences within the variant reference sequence. Likewise, endOffset must point tho
-                // the position right after the actual variant end.
-//                justify(proteinVariant, proteinVariant.getStart() - 1 - 1, // -1 in order to convert to base 0
-//                        proteinVariant.getEnd() - 1 - 1, proteinVariant.getReference(),
-//                        transcript.getProteinSequence(), POSITIVE);
                 proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
-
                 buildingComponents.setStart(proteinVariant.getStart());
                 buildingComponents.setEnd(proteinVariant.getEnd());
                 buildingComponents.setReferenceStart(VariantAnnotationUtils
@@ -100,13 +93,13 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         // Justify
         // TODO: assuming this is justificaxtion sense; might need adjusting
         StringBuilder stringBuilder = new StringBuilder(proteinVariant.getReference());
-        int end = proteinVariant.getEnd() - 1;
+        int end = proteinVariant.getEnd() - 1; // base 0 for string indexing
         while ((end + 1) < proteinSequence.length() && proteinSequence.charAt(end + 1) == stringBuilder.charAt(0)) {
             stringBuilder.deleteCharAt(0);
             stringBuilder.append(proteinSequence.charAt(end + 1));
             proteinVariant.setStart(proteinVariant.getStart() + 1);
             proteinVariant.setEnd(proteinVariant.getEnd() + 1);
-            end = proteinVariant.getEnd();
+            end = proteinVariant.getEnd() - 1; // base 0 for string indexing
         }
         proteinVariant.setReference(stringBuilder.toString());
 
@@ -147,38 +140,47 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         //int cdnaCodingStart = getCdnaCodingStart(transcript);
 
-        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getReferencePosition()));
-        proteinVariant.setEnd(getAminoAcidPosition(buildingComponents.getCdnaEnd().getReferencePosition()));
+//        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getReferencePosition()));
+//        proteinVariant.setEnd(getAminoAcidPosition(buildingComponents.getCdnaEnd().getReferencePosition()));
+        proteinVariant.setStart(getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getStart()).getReferencePosition()));
+        proteinVariant.setEnd(getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getEnd()).getReferencePosition()));
 
         // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
         if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
             proteinVariant.setAlternate(EMPTY_STRING);
-            char generatedAa = getGeneratedAa(variant, transcript);
-            // generatedAa == 0 if whole codons (3 nts) are removed from the start and end of the variant
-            if (generatedAa != 0) {
-                // Generated aa after pasting the two ends of remaining sequence coincides with the aa at start position
-                // on the original seq
-                if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
-                    // Skip the first aa since coincides with the generated one
-                    proteinVariant.setStart(proteinVariant.getStart() + 1);
-                    proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart(),
-                            proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
-                // Generated aa after pasting the two ends of remaining sequence coincides with the aa at end position
-                // on the original seq
-                } else if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getEnd() - 1)) {
-                    // Skip the last aa since coincides with the generated one
-                    proteinVariant.setEnd(proteinVariant.getEnd() - 1);
-                    proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                            proteinVariant.getEnd() - 1));
+            // start and end fall within the same codon - affect the same aminoacid
+            if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
+                char generatedAa = getGeneratedAa(variant, transcript);
+                // generatedAa == 0 if whole codons (3 nts) are removed from the start and end of the variant
+                if (generatedAa != 0) {
+                    // Generated aa after pasting the two ends of remaining sequence coincides with the aa at start position
+                    // on the original seq
+                    if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
+                        // Skip the first aa since coincides with the generated one
+                        proteinVariant.setStart(proteinVariant.getStart() + 1);
+                        proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                                proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                        // Generated aa after pasting the two ends of remaining sequence coincides with the aa at end position
+                        // on the original seq
+                    } else if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getEnd() - 1)) {
+                        // Skip the last aa since coincides with the generated one
+                        proteinVariant.setEnd(proteinVariant.getEnd() - 1);
+                        proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                                proteinVariant.getEnd() - 1));
+                    } else {
+                        proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                                proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                    }
                 } else {
                     proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
                             proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
                 }
             } else {
-                proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                        proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                proteinVariant.setReference(String.valueOf(transcript
+                        .getProteinSequence()
+                        .charAt(proteinVariant.getStart() - 1))); // don't rest -1 since it's base 0 and substring does not include this nt
             }
 
             return proteinVariant;

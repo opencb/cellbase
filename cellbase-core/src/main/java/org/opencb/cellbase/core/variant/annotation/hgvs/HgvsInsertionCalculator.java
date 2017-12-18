@@ -126,13 +126,13 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         // Justify
         // TODO: assuming this is justificaxtion sense; might need adjusting
         StringBuilder stringBuilder = new StringBuilder(proteinVariant.getAlternate());
-        int end = proteinVariant.getEnd();
+        int end = proteinVariant.getEnd() - 1; // base 0 for string indexing
         while ((end + 1) < proteinSequence.length() && proteinSequence.charAt(end + 1) == stringBuilder.charAt(0)) {
             stringBuilder.deleteCharAt(0);
             stringBuilder.append(proteinSequence.charAt(end + 1));
             proteinVariant.setStart(proteinVariant.getStart() + 1);
             proteinVariant.setEnd(proteinVariant.getEnd() + 1);
-            end = proteinVariant.getEnd();
+            end = proteinVariant.getEnd() - 1; // base 0 for string indexing
         }
         proteinVariant.setAlternate(stringBuilder.toString());
 

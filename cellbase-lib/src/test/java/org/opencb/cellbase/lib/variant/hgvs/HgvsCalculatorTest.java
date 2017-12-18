@@ -46,14 +46,33 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void run() throws Exception {
+    public void testProteinHgvs() throws Exception {
+//        List<String> hgvsList = getVariantHgvs(new Variant("22", 38379525, "G", "-"));
+//        // There may be more than these, but these 4 are the ones that I can actually validate
+//        assertTrue(!hgvsList.);
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000396884(ENSG00000100146):c.267delC",
+//                "ENST00000360880(ENSG00000100146):c.267delC", "ENST00000427770(ENSG00000100146):c.267delC",
+//                "ENST00000470555(ENSG00000100146):n.70+821delC"));
 
-        List<String> hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
-        assertEquals(3, hgvsList.size());
+//        hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
+//        assertEquals(2, hgvsList.size());
+//        // There may be more than these, but these 4 are the ones that I can actually validate
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
+
+        List<String> hgvsList = getVariantHgvs(new Variant("21", 46074466, "GGGGACACAGCAC", "-"));
+        assertEquals(2, hgvsList.size());
         // There may be more than these, but these 4 are the ones that I can actually validate
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
 
-        hgvsList = getVariantHgvs(new Variant("22", 38308486, "C", "T"));
+        hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
+        assertEquals(2, hgvsList.size());
+        // There may be more than these, but these 4 are the ones that I can actually validate
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
+    }
+
+    @Test
+    public void testTranscriptHgvs() throws Exception {
+        List<String> hgvsList = getVariantHgvs(new Variant("22", 38308486, "C", "T"));
         assertEquals(3, hgvsList.size());
         // There may be more than these, but these 4 are the ones that I can actually validate
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000445494(ENSG00000100139):c.72C>T",
