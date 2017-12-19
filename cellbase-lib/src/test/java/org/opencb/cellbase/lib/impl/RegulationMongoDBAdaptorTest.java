@@ -1,5 +1,6 @@
 package org.opencb.cellbase.lib.impl;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Gene;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import static org.junit.Assert.*;
 
@@ -46,13 +48,42 @@ public class RegulationMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add(QueryOptions.INCLUDE, "chromosome,start,end,featureType");
 
-        QueryResult queryResultNoMerge = (QueryResult) regulationDBAdaptor.getByRegion(regionList, queryOptions).get(0);
+        List<QueryResult> queryResultListNoMerge = regulationDBAdaptor.getByRegion(regionList, queryOptions);
+        int numTotalResultsNoMerge = 0;
+        for (QueryResult queryResult : queryResultListNoMerge) {
+            numTotalResultsNoMerge += queryResult.getNumTotalResults();
+        }
 
         queryOptions.put("merge", true);
         QueryResult queryResultMerge = (QueryResult) regulationDBAdaptor.getByRegion(regionList, queryOptions).get(0);
 
-        assertEquals(queryResultNoMerge.getNumTotalResults(), queryResultMerge.getNumTotalResults());
+        assertEquals(numTotalResultsNoMerge, queryResultMerge.getNumTotalResults());
+
+        // First region (22:16049980-16050240) overlaps two regions. Second region (22:16050740-16054000) overlaps one
+        // regulatory feature. Last region (1:100-100000) does not overlap any regulatory feature.
+        for (QueryResult queryResultNoMerge : queryResultListNoMerge) {
+            for (RegulatoryFeature regulatoryFeature : (List<RegulatoryFeature>) queryResultNoMerge.getResult()) {
+                assertThatContainsRegulatoryFeature((List<RegulatoryFeature>) queryResultMerge.getResult(),
+                        regulatoryFeature);
+            }
+        }
 
     }
 
+    private void assertThatContainsRegulatoryFeature(List<RegulatoryFeature> regulatoryFeatureList,
+                                                     RegulatoryFeature regulatoryFeature) {
+        boolean found = false;
+        for (RegulatoryFeature regulatoryFeature1 : regulatoryFeatureList) {
+            if (regulatoryFeature1.getChromosome() != null
+                    && regulatoryFeature1.getChromosome().equals(regulatoryFeature.getChromosome())
+                && regulatoryFeature1.getStart() == regulatoryFeature.getStart()
+                && regulatoryFeature1.getEnd() == regulatoryFeature.getEnd()
+                && regulatoryFeature1.getFeatureType() != null
+                    && regulatoryFeature1.getFeatureType().equals(regulatoryFeature.getFeatureType())) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
+    }
 }
