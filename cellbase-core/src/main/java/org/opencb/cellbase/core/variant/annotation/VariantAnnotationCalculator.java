@@ -989,10 +989,14 @@ public class VariantAnnotationCalculator {
         String mostSevereConsequencetype = null;
         for (ConsequenceType consequenceType : consequenceTypeList) {
             for (SequenceOntologyTerm sequenceOntologyTerm : consequenceType.getSequenceOntologyTerms()) {
-                int rank = VariantAnnotationUtils.SO_SEVERITY.get(sequenceOntologyTerm.getName());
-                if (rank > max) {
-                    max = rank;
-                    mostSevereConsequencetype = sequenceOntologyTerm.getName();
+                try {
+                    int rank = VariantAnnotationUtils.SO_SEVERITY.get(sequenceOntologyTerm.getName());
+                    if (rank > max) {
+                        max = rank;
+                        mostSevereConsequencetype = sequenceOntologyTerm.getName();
+                    }
+                } catch (Exception e) {
+                    int a = 1;
                 }
             }
         }

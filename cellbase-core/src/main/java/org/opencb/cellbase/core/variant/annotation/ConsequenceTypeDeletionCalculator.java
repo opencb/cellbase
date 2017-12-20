@@ -68,8 +68,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                         }
                         solvePositiveTranscript(consequenceTypeList);
                     } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_VARIANT,
-                                VariantAnnotationUtils.DOWNSTREAM_VARIANT);
+                        solveTranscriptFlankingRegions(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT,
+                                VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just may have upstream/downstream annotations
 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
@@ -88,8 +88,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                         }
                         solveNegativeTranscript(consequenceTypeList);
                     } else {
-                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_VARIANT,
-                                VariantAnnotationUtils.UPSTREAM_VARIANT);
+                        solveTranscriptFlankingRegions(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT,
+                                VariantAnnotationUtils.UPSTREAM_GENE_VARIANT);
                         if (SoNames.size() > 0) { // Variant does not overlap gene region, just has upstream/downstream annotations
 //                            consequenceType.setSoTermsFromSoNames(new ArrayList<>(SoNames));
                             consequenceType.setSequenceOntologyTerms(getSequenceOntologyTerms(SoNames));
@@ -116,7 +116,17 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart < 1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                    // We just consider doing a fancier prediction with the start codon if both variant start and end
+                    // fall within the transcript sequence
+                    // ---NNNNNNNNCATTTTTTT
+                    //    deletion  |---|
+                    if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
+                        && transcript.getCdnaCodingStart() - cdnaVariantEnd < 3) {
+                        solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(),
+                                cdnaVariantStart, cdnaVariantEnd);
+                    } else {
+                        SoNames.add(VariantAnnotationUtils.START_LOST);
+                    }
                 }
                 if (variantStart < (transcript.getGenomicCodingStart() + 3)) {
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -160,6 +170,50 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
         }
     }
 
+    private void solveStartCodonNegativeVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
+                                                int cdnaVariantEnd) {
+        // Not necessary to include % 3 since if we get here we already know that the difference is < 3
+        Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
+        // Get reference codon
+        int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
+        char[] modifiedCodonArray = getReverseComplementaryCodon(transcriptSequence, modifiedCodonStart);
+        String referenceCodon = String.valueOf(modifiedCodonArray);
+        // Continue checking only if reference codon is an actual start codon (Met)
+        if (VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()), String.valueOf(modifiedCodonArray))) {
+            int i = transcriptSequence.length() - cdnaVariantStart + 1;  // Position (0 based index) in transcriptSequence of
+            // the first nt after the deletion
+            int codonPosition;
+            // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+            // calling this method
+            for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
+                char substitutingNt;
+                // Means we've reached the transcript.start
+                if (i >= transcriptSequence.length()) {
+                    int genomicCoordinate = transcript.getEnd() + (transcriptSequence.length() - i + 1); // + 1 since i moves
+                    // in base 0 (see above)
+                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                            + ":" + genomicCoordinate
+                            + "-" + (genomicCoordinate + 1));
+                    substitutingNt = VariantAnnotationUtils.COMPLEMENTARY_NT
+                            .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0)
+                                    .getSequence().charAt(0));
+                } else {
+                    // Paste reference nts after deletion in the corresponding codon position
+                    substitutingNt = VariantAnnotationUtils.COMPLEMENTARY_NT.get(transcriptSequence.charAt(i));
+                }
+                modifiedCodonArray[codonPosition] = substitutingNt;
+                i++;
+            }
+            // End of codon has been reached, all positions found equal to the referenceCodonArray
+            if (VariantAnnotationUtils.isSynonymousCodon(MT.equals(variant.getChromosome()), referenceCodon,
+                    String.valueOf(modifiedCodonArray))) {
+                SoNames.add(VariantAnnotationUtils.START_RETAINED_VARIANT);
+            } else {
+                SoNames.add(VariantAnnotationUtils.START_LOST);
+            }
+        }
+    }
+
     @Override
     protected void solveExonVariantInPositiveTranscript(boolean splicing, String transcriptSequence,
                                                       int cdnaVariantStart, int cdnaVariantEnd, int firstCdsPhase) {
@@ -172,7 +226,17 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                 SoNames.add(VariantAnnotationUtils.CODING_SEQUENCE_VARIANT);
                 // cdnaCodingStart<1 if cds_start_NF and phase!=0
                 if (transcript.getCdnaCodingStart() > 0 || !transcript.unconfirmedStart()) {
-                    SoNames.add(VariantAnnotationUtils.START_LOST);
+                    // We just consider doing a fancier prediction with the start codon if both variant start and end
+                    // fall within the transcript sequence
+                    // ---NNNNNNNNCATTTTTTT
+                    //    deletion  |---|
+                    if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
+                            && transcript.getCdnaCodingStart() - cdnaVariantEnd < 3) {
+                        solveStartCodonPositiveVariant(transcriptSequence, transcript.getCdnaCodingStart(),
+                                cdnaVariantStart, cdnaVariantEnd);
+                    } else {
+                        SoNames.add(VariantAnnotationUtils.START_LOST);
+                    }
                 }
                 if (variantEnd > (transcript.getGenomicCodingEnd() - 3)) {
                     SoNames.add(VariantAnnotationUtils.STOP_LOST);
@@ -213,6 +277,47 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
             // Check transcript has 3 UTR)
         } else if (transcript.getEnd() > transcript.getGenomicCodingEnd() || transcript.unconfirmedEnd()) {
             SoNames.add(VariantAnnotationUtils.THREE_PRIME_UTR_VARIANT);
+        }
+    }
+
+    private void solveStartCodonPositiveVariant(String transcriptSequence, int cdnaCodingStart, int cdnaVariantStart,
+                                                  int cdnaVariantEnd) {
+        // Not necessary to include % 3 since if we get here we already know that the difference is < 3
+        Integer variantPhaseShift = cdnaVariantEnd - cdnaCodingStart;
+        int modifiedCodonStart = cdnaVariantEnd - variantPhaseShift;
+        // Complementary of start codon ATG - Met (already reversed)
+        String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart - 1 + 3);
+        char[] modifiedCodonArray = referenceCodon.toCharArray();
+        // Continue checking only if reference codon is actually a start codon (Met)
+        if (VariantAnnotationUtils.isStartCodon(MT.equals(variant.getChromosome()), referenceCodon)) {
+            int i = cdnaVariantStart - 1 - 1;  // - 1 to get the first position right before the deletion. An additional
+            // - 1 to set base 0
+            int codonPosition;
+            // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+            // calling this method
+            for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
+                char substitutingNt;
+                // Means we've reached the beginning of the transcript, i.e. transcript.start
+                if (i < 0) {
+                    int genomicCoordinate = transcript.getStart() + i; // recall that i is negative if we get here
+                    Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                            + ":" + genomicCoordinate
+                            + "-" + (genomicCoordinate + 1));
+                    substitutingNt = genomeDBAdaptor
+                            .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
+                } else {
+                    // Paste reference nts after deletion in the corresponding codon position
+                    substitutingNt = transcriptSequence.charAt(i);
+                }
+                modifiedCodonArray[codonPosition] = substitutingNt;
+                i--;
+            }
+            if (VariantAnnotationUtils.isSynonymousCodon(MT.equals(variant.getChromosome()), referenceCodon,
+                    String.valueOf(modifiedCodonArray))) {
+                SoNames.add(VariantAnnotationUtils.START_RETAINED_VARIANT);
+            } else {
+                SoNames.add(VariantAnnotationUtils.START_LOST);
+            }
         }
     }
 
@@ -323,7 +428,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
             consequenceType.setCodon(String.valueOf(formattedReferenceCodon1Array) + "/"
                     + String.valueOf(modifiedCodonArray).toUpperCase());
             String modifiedCodon = String.valueOf(modifiedCodonArray);
-            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
+            boolean useMitochondrialCode = variant.getChromosome().equals(MT);
             // Assumes proteinVariantAnnotation attribute is already initialized
             consequenceType
                     .getProteinVariantAnnotation()
@@ -426,7 +531,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
             consequenceType.setCodon(String.valueOf(formattedReferenceCodon1Array) + "/"
                     + String.valueOf(modifiedCodonArray).toUpperCase());
             String modifiedCodon = String.valueOf(modifiedCodonArray);
-            boolean useMitochondrialCode = variant.getChromosome().equals("MT");
+            boolean useMitochondrialCode = variant.getChromosome().equals(MT);
             // Assumes proteinVariantAnnotation attribute is already initialized
             consequenceType
                     .getProteinVariantAnnotation()
