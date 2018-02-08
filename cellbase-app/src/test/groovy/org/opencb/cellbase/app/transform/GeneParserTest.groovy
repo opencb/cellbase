@@ -65,6 +65,14 @@ class GeneParserTest extends Specification {
         expect:
         serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).size() == 1
         def gene = serializedGenes.findAll({gene -> gene.getId().equals(geneId)}).first()
+        def transcript = gene.transcripts.first()
+        transcript.xrefs != null
+        transcript.xrefs.size() >= 4
+        transcript.xrefs.findAll({xref -> xref.id == transcript.getId()}).size() == 1
+        transcript.xrefs.findAll({xref -> xref.id == transcript.getName()}).size() == 1
+        transcript.xrefs.findAll({xref -> xref.id == geneId}).size() == 1
+        transcript.xrefs.findAll({xref -> xref.id == geneName}).size() == 1
+
         gene.name == geneName
         gene.biotype == biotype
         gene.chromosome == chromosome
@@ -91,6 +99,11 @@ class GeneParserTest extends Specification {
         transcript.end == end
         transcript.exons.size() == exonsNumber
         transcript.tfbs.size() == tfbsNumber
+        transcript.xrefs != null
+        transcript.xrefs.size() >= 4
+        transcript.xrefs.findAll({xref -> xref.id == transcript.getId()}).size() == 1
+        transcript.xrefs.findAll({xref -> xref.id == transcript.getName()}).size() == 1
+        transcript.xrefs.findAll({xref -> xref.id == geneId}).size() == 1
 
         where:
         transcriptId     || geneId            | name             | biotype   | chromosome | start | end   | strand | exonsNumber | tfbsNumber

@@ -8,6 +8,8 @@ import org.opencb.biodata.models.variant.avro.*;
 
 import java.util.*;
 
+import static org.apache.tools.ant.taskdefs.Antlib.TAG;
+
 /**
  * Created by fjlopez on 22/06/15.
  */
@@ -72,9 +74,9 @@ public class VariantAnnotationUtils {
     public static final String INTERGENIC_VARIANT = "intergenic_variant";
     public static final String REGULATORY_REGION_VARIANT = "regulatory_region_variant";
     public static final String TF_BINDING_SITE_VARIANT = "TF_binding_site_variant";
-    public static final String UPSTREAM_VARIANT = "upstream_variant";
+    public static final String UPSTREAM_GENE_VARIANT = "upstream_gene_variant";
     public static final String TWOKB_UPSTREAM_VARIANT = "2KB_upstream_variant";
-    public static final String DOWNSTREAM_VARIANT = "downstream_variant";
+    public static final String DOWNSTREAM_GENE_VARIANT = "downstream_gene_variant";
     public static final String TWOKB_DOWNSTREAM_VARIANT = "2KB_downstream_variant";
     public static final String SPLICE_DONOR_VARIANT = "splice_donor_variant";
     public static final String SPLICE_ACCEPTOR_VARIANT = "splice_acceptor_variant";
@@ -84,6 +86,7 @@ public class VariantAnnotationUtils {
     public static final String THREE_PRIME_UTR_VARIANT = "3_prime_UTR_variant";
     public static final String INCOMPLETE_TERMINAL_CODON_VARIANT = "incomplete_terminal_codon_variant";
     public static final String STOP_RETAINED_VARIANT = "stop_retained_variant";
+    public static final String START_RETAINED_VARIANT = "start_retained_variant";
     public static final String SYNONYMOUS_VARIANT = "synonymous_variant";
     public static final String INITIATOR_CODON_VARIANT = "initiator_codon_variant";
     public static final String START_LOST = "start_lost";
@@ -130,6 +133,13 @@ public class VariantAnnotationUtils {
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
     public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(22); // 22 AA
     public static final HashMap<String, String> TO_LONG_AA = new HashMap<>(22); // 22 AA
+    private static final String ATG = "ATG";
+    private static final String ATA = "ATA";
+    private static final String TAA = "TAA";
+    private static final String TAG = "TAG";
+    private static final String AGA = "AGA";
+    private static final String AGG = "AGG";
+    private static final String TGA = "TGA";
 
     static {
 
@@ -444,25 +454,26 @@ public class VariantAnnotationUtils {
         SIFT_DESCRIPTIONS.put(0, "tolerated");
         SIFT_DESCRIPTIONS.put(1, "deleterious");
 
-        SO_SEVERITY.put("copy_number_change", 41);
-        SO_SEVERITY.put("transcript_ablation", 40);
-        SO_SEVERITY.put("structural_variant", 39);
-        SO_SEVERITY.put("splice_acceptor_variant", 38);
-        SO_SEVERITY.put("splice_donor_variant", 37);
-        SO_SEVERITY.put("stop_gained", 36);
-        SO_SEVERITY.put("frameshift_variant", 35);
-        SO_SEVERITY.put("stop_lost", 34);
-        SO_SEVERITY.put("terminator_codon_variant", 33);
-        SO_SEVERITY.put("start_lost", 33);
-        SO_SEVERITY.put("initiator_codon_variant", 32);
-        SO_SEVERITY.put("transcript_amplification", 31);
-        SO_SEVERITY.put("inframe_insertion", 30);
-        SO_SEVERITY.put("inframe_deletion", 29);
-        SO_SEVERITY.put("inframe_variant", 28);
-        SO_SEVERITY.put("missense_variant", 27);
-        SO_SEVERITY.put("splice_region_variant", 26);
-        SO_SEVERITY.put("incomplete_terminal_codon_variant", 25);
-        SO_SEVERITY.put("stop_retained_variant", 24);
+        SO_SEVERITY.put("copy_number_change", 42);
+        SO_SEVERITY.put("transcript_ablation", 41);
+        SO_SEVERITY.put("structural_variant", 40);
+        SO_SEVERITY.put("splice_acceptor_variant", 39);
+        SO_SEVERITY.put("splice_donor_variant", 38);
+        SO_SEVERITY.put("stop_gained", 37);
+        SO_SEVERITY.put("frameshift_variant", 36);
+        SO_SEVERITY.put("stop_lost", 35);
+        SO_SEVERITY.put("terminator_codon_variant", 34);
+        SO_SEVERITY.put("start_lost", 34);
+        SO_SEVERITY.put("initiator_codon_variant", 33);
+        SO_SEVERITY.put("transcript_amplification", 32);
+        SO_SEVERITY.put("inframe_insertion", 31);
+        SO_SEVERITY.put("inframe_deletion", 30);
+        SO_SEVERITY.put("inframe_variant", 29);
+        SO_SEVERITY.put("missense_variant", 28);
+        SO_SEVERITY.put("splice_region_variant", 27);
+        SO_SEVERITY.put("incomplete_terminal_codon_variant", 26);
+        SO_SEVERITY.put("stop_retained_variant", 25);
+        SO_SEVERITY.put("start_retained_variant", 24);
         SO_SEVERITY.put("synonymous_variant", 23);
         SO_SEVERITY.put("coding_sequence_variant", 22);
         SO_SEVERITY.put("mature_miRNA_variant", 21);
@@ -473,9 +484,9 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("NMD_transcript_variant", 16);
         SO_SEVERITY.put("non_coding_transcript_variant", 15);
         SO_SEVERITY.put("2KB_upstream_variant", 14);
-        SO_SEVERITY.put("upstream_variant", 13);
+        SO_SEVERITY.put("upstream_gene_variant", 13);
         SO_SEVERITY.put("2KB_downstream_variant", 12);
-        SO_SEVERITY.put("downstream_variant", 11);
+        SO_SEVERITY.put("downstream_gene_variant", 11);
         SO_SEVERITY.put("TFBS_ablation", 10);
         SO_SEVERITY.put("TFBS_amplification", 9);
         SO_SEVERITY.put("TF_binding_site_variant", 8);
@@ -488,6 +499,7 @@ public class VariantAnnotationUtils {
         SO_SEVERITY.put("intergenic_variant", 1);
 
         CODING_SO_NAMES.add(STOP_RETAINED_VARIANT);
+        CODING_SO_NAMES.add(START_RETAINED_VARIANT);
         CODING_SO_NAMES.add(SYNONYMOUS_VARIANT);
         CODING_SO_NAMES.add(STOP_GAINED);
         CODING_SO_NAMES.add(INITIATOR_CODON_VARIANT);
@@ -526,16 +538,30 @@ public class VariantAnnotationUtils {
 
     public static Boolean isStopCodon(boolean mitochondrialCode, String codon) {
         if (mitochondrialCode) {
-            if (codon.equals("TAA") || codon.equals("TAG") || codon.equals("AGA") || codon.equals("AGG")) {
+            if (codon.equals(TAA) || codon.equals(TAG) || codon.equals(AGA) || codon.equals(AGG)) {
                 return true;
             }
         } else {
-            if (codon.equals("TAA") || codon.equals("TGA") || codon.equals("TAG")) {
+            if (codon.equals(TAA) || codon.equals(TGA) || codon.equals(TAG)) {
                 return true;
             }
         }
         return false;
     }
+
+    public static boolean isStartCodon(boolean mitochondrialCode, String codon) {
+        if (mitochondrialCode) {
+            if (codon.equals(ATG) || codon.equals(ATA)) {
+                return true;
+            }
+        } else {
+            if (codon.equals(ATG)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public static String getAminoacid(boolean mitochondrialCode, String codon) {
         if (mitochondrialCode) {
@@ -615,5 +641,4 @@ public class VariantAnnotationUtils {
         return variant.getType();
 //        return getVariantType(variant.getReferenceStart(), variant.getAlternate());
     }
-
 }

@@ -1,7 +1,6 @@
 package org.opencb.cellbase.core.variant.annotation.hgvs;
 
 import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
@@ -11,7 +10,6 @@ import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -84,7 +82,6 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             }
         }
         return null;
-        
     }
 
     private void proteinHgvsNormalize(Variant proteinVariant, String proteinSequence) {
@@ -187,7 +184,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         }
         logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
                         + " not happen and protein HGVS will not be returned. Could be expected for "
-                        +"unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
+                        + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
                 buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
                 transcript.getProteinSequence().length());
 

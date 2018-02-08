@@ -743,11 +743,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // output file
         if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
-//            Path outputDir = output.getParent();
-            try {
-                FileUtils.checkDirectory(output.getParent());
-            } catch (IOException e) {
-                throw new ParameterException(e);
+            // output.getParent may be null if for example the output is specified with no path at all, i.e
+            // -o test.vcf rather than -o ./test.vcf
+            if (output.getParent() != null) {
+                try {
+                    FileUtils.checkDirectory(output.getParent());
+                } catch (IOException e) {
+                    throw new ParameterException(e);
+                }
             }
 //            if (!outputDir.toFile().exists()) {
 //                throw new ParameterException("Output directory " + outputDir + " doesn't exist");

@@ -92,7 +92,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             stringBuilder.append(buildingComponents.getAlternate())
                     .append(DUP);
 
-        } else if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())){
+        } else if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
             // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
             stringBuilder.append(VariantAnnotationUtils.TO_LONG_AA.get(buildingComponents.getAlternate().charAt(0)))
                     .append(buildingComponents.getStart())
@@ -115,7 +115,8 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private String formatAaSequence(String alternate) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < alternate.length(); i++) {
-            stringBuilder.append(VariantAnnotationUtils.buildUpperLowerCaseString(VariantAnnotationUtils.TO_LONG_AA.get(alternate.charAt(i))));
+            stringBuilder.append(VariantAnnotationUtils
+                    .buildUpperLowerCaseString(VariantAnnotationUtils.TO_LONG_AA.get(alternate.charAt(i))));
         }
         return stringBuilder.toString();
     }
@@ -194,7 +195,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         }
         logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
                         + " not happen and protein HGVS will not be returned. Could be expected for "
-                        +"unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
+                        + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
                 buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
                 transcript.getProteinSequence().length());
 
@@ -248,7 +249,8 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         return null;
     }
 
-    private boolean addNewAa(Variant variant, String transcriptSequence, char[] modifiedCodonArray, StringBuilder predictedProteinSequence) {
+    private boolean addNewAa(Variant variant, String transcriptSequence, char[] modifiedCodonArray,
+                             StringBuilder predictedProteinSequence) {
         String aa = VariantAnnotationUtils.getAminoacid(MT.equals(variant.getChromosome()), String.valueOf(modifiedCodonArray));
         if (aa != null) {
             // If STOP codon is gained prediction is interrupted and returned sequence is only predicted until

@@ -392,6 +392,7 @@ public class GeneParser extends CellBaseParser {
         List<Xref> xrefList = transcript.getXrefs();
         if (xrefList == null) {
             xrefList = new ArrayList<>();
+            transcript.setXrefs(xrefList);
         }
         xrefList.add(new Xref(gene.getId(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));
         xrefList.add(new Xref(gene.getName(), ENSEMBL_GTF_DBNAME, ENSEMBL_GTF_DISPLAY));

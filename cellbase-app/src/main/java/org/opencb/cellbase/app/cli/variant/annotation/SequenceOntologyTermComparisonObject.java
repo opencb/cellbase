@@ -85,12 +85,18 @@ public class SequenceOntologyTermComparisonObject {
     private boolean equalsName(String name1, String name2) {
         if (name1.equals(name2)) {
             return true;
-        } else if (((name1.equals("2KB_upstream_variant") || name1.equals(VariantAnnotationUtils.UPSTREAM_VARIANT))
-                    && (name2.equals("2KB_upstream_variant") || name2.equals("upstream_variant")))
-                || ((name1.equals("2KB_downstream_variant") || name1.equals("downstream_variant"))
-                    && (name2.equals("2KB_downstream_variant") || name2.equals("downstream_variant")))
-                || ((name1.equals("nc_transcript_variant") || name1.equals("non_coding_transcript_variant"))
-                    && (name2.equals("nc_transcript_variant") || name2.equals("non_coding_transcript_variant")))
+        } else if (((name1.equals(VariantAnnotationUtils.TWOKB_UPSTREAM_VARIANT)
+                      || name1.equals(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT))
+                    && (name2.equals(VariantAnnotationUtils.TWOKB_UPSTREAM_VARIANT)
+                      || name2.equals(VariantAnnotationUtils.UPSTREAM_GENE_VARIANT)))
+                || ((name1.equals(VariantAnnotationUtils.TWOKB_DOWNSTREAM_VARIANT)
+                      || name1.equals(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT))
+                    && (name2.equals(VariantAnnotationUtils.TWOKB_DOWNSTREAM_VARIANT)
+                      || name2.equals(VariantAnnotationUtils.DOWNSTREAM_GENE_VARIANT)))
+                || ((name1.equals("nc_transcript_variant")
+                      || name1.equals(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT))
+                    && (name2.equals("nc_transcript_variant")
+                      || name2.equals(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT)))
                 ) {
             return true;
         }
