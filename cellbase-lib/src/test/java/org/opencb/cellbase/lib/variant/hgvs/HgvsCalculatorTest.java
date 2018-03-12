@@ -59,13 +59,18 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 //        // There may be more than these, but these 4 are the ones that I can actually validate
 //        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
 
-//        List<String> hgvsList = getVariantHgvs(new Variant("21", 46074466, "GGGGACACAGCAC", "-"));
-//        assertEquals(2, hgvsList.size());
+//        List<String> hgvsList = getVariantHgvs(new Variant("21", 46074291, "ACAAA", "-"));
+//        assertEquals(3, hgvsList.size());
 //        // There may be more than these, but these 4 are the ones that I can actually validate
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000375476:p.Leu80fs"));
+//
+//        hgvsList = getVariantHgvs(new Variant("21", 46074466, "GGGGACACAGCAC", "-"));
+//        assertEquals(3, hgvsList.size());
+//        // There may be more than these, but these 4 are the ones that I can actually validate
+//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000375476:p.Cys19fs"));
 
         List<String> hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
-        assertEquals(2, hgvsList.size());
+        assertEquals(3, hgvsList.size());
         // There may be more than these, but these 4 are the ones that I can actually validate
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
     }

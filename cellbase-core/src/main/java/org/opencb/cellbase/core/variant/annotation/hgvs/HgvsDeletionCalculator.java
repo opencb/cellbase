@@ -139,8 +139,20 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
 //        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getReferencePosition()));
 //        proteinVariant.setEnd(getAminoAcidPosition(buildingComponents.getCdnaEnd().getReferencePosition()));
-        proteinVariant.setStart(getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getStart()).getReferencePosition()));
-        proteinVariant.setEnd(getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getEnd()).getReferencePosition()));
+
+        // NOTE: protein coordinates set at the protein variant object are NOT the ones from buildingComponent, i.e.
+        // before hgvs normalization. HOWEVER, within getGeneratedAa the buildingComponents ones will be used which
+        // already reflect hgvs normalization
+        int aminoAcidPosition1 = getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getStart()).getReferencePosition());
+        int aminoAcidPosition2 = getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getEnd()).getReferencePosition());
+        if (POSITIVE.equals(transcript.getStrand())) {
+            proteinVariant.setStart(aminoAcidPosition1);
+            proteinVariant.setEnd(aminoAcidPosition2);
+        } else {
+            proteinVariant.setStart(aminoAcidPosition2);
+            proteinVariant.setEnd(aminoAcidPosition1);
+        }
+
 
         // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
@@ -192,75 +204,25 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     }
 
     private char getGeneratedAa(Variant variant, Transcript transcript) {
-        if (POSITIVE.equals(transcript.getStrand())) {
-            return getGeneratedAaPositiveTranscript(variant, transcript);
-        } else {
-            return getGeneratedAaNegativeTranscript(variant, transcript);
-        }
-    }
 
-    private char getGeneratedAaNegativeTranscript(Variant variant, Transcript transcript) {
+        // There's no need to differentiate between + and - strands since the Transcript object contains the transcript
+        // sequence already complementary-reversed if necessary.
+        // NOTE: coordinates from the buildingComponents which were already hgvs-normalized when generating the
+        // transcript hgvs
         Integer variantPhaseShift = (buildingComponents.getCdnaStart().getReferencePosition() - 1) % 3;
         int cdnaVariantStart = getCdnaCodingStart(transcript) + buildingComponents.getCdnaStart().getReferencePosition() - 1;
-        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
-        String transcriptSequence = transcript.getcDnaSequence();
-        String reverseCodon = new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
-                // Rigth limit of the substring sums +1 because substring does not include that position
-                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString();
-        char[] referenceCodonArray = reverseCodon.toCharArray();
-        referenceCodonArray[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodonArray[0]);
-        referenceCodonArray[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodonArray[1]);
-        referenceCodonArray[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(referenceCodonArray[2]);
-
-        int i = transcriptSequence.length() - cdnaVariantStart + 1;  // Position (0 based index) in transcriptSequence of
-        // the first nt after the deletion
-        int codonPosition;
-        // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
-        // calling this method
-        for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
-            char substitutingNt;
-            // Means we've reached the transcript.start
-            if (i >= transcriptSequence.length()) {
-                int genomicCoordinate = transcript.getEnd() + (transcriptSequence.length() - i + 1); // + 1 since i moves
-                // in base 0 (see above)
-                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
-                        + ":" + genomicCoordinate
-                        + "-" + (genomicCoordinate + 1));
-                substitutingNt = VariantAnnotationUtils.COMPLEMENTARY_NT.get(genomeDBAdaptor
-                        .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0));
-            } else {
-                // Paste reference nts after deletion in the corresponding codon position
-                substitutingNt = VariantAnnotationUtils.COMPLEMENTARY_NT.get(transcriptSequence.charAt(i));
-            }
-            referenceCodonArray[codonPosition] = substitutingNt;
-            i++;
-        }
-
-        String aa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(VariantAnnotationUtils.getAminoacid(MT.equals(variant),
-                String.valueOf(referenceCodonArray)));
-
-        if (StringUtils.isNotBlank(aa)) {
-            return aa.charAt(0);
-        } else {
-            return 0;
-        }
-    }
-
-    private char getGeneratedAaPositiveTranscript(Variant variant, Transcript transcript) {
-        Integer variantPhaseShift = (buildingComponents.getCdnaStart().getReferencePosition() - 1) % 3;
-        int cdnaVariantStart = getCdnaCodingStart(transcript) + buildingComponents.getCdnaStart().getReferencePosition() - 1;
+        int cdnaVariantEnd = getCdnaCodingStart(transcript) + buildingComponents.getCdnaEnd().getReferencePosition() - 1;
         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
         String transcriptSequence = transcript.getcDnaSequence();
         char[] referenceCodonArray = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2).toCharArray();
-        int i = cdnaVariantStart - 1 - 1;  // - 1 to get the first position right before the deletion. An additional
-        // - 1 to set base 0
+        int i = cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
         int codonPosition;
         // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
         // calling this method
-        for (codonPosition = variantPhaseShift; codonPosition >= 0; codonPosition--) {
+        for (codonPosition = variantPhaseShift; codonPosition < 3; codonPosition++) {
             char substitutingNt;
             // Means we've reached the beginning of the transcript, i.e. transcript.start
-            if (i < 0) {
+            if (i >=  transcriptSequence.length()) {
                 int genomicCoordinate = transcript.getStart() + i; // recall that i is negative if we get here
                 Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                         + ":" + genomicCoordinate
@@ -272,11 +234,11 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                 substitutingNt = transcriptSequence.charAt(i);
             }
             referenceCodonArray[codonPosition] = substitutingNt;
-            i--;
+            i++;
         }
 
-        String aa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(VariantAnnotationUtils.getAminoacid(MT.equals(variant),
-                String.valueOf(referenceCodonArray)));
+        String aa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(VariantAnnotationUtils
+                .getAminoacid(MT.equals(variant.getChromosome()), String.valueOf(referenceCodonArray)));
 
         if (StringUtils.isNotBlank(aa)) {
             return aa.charAt(0);
