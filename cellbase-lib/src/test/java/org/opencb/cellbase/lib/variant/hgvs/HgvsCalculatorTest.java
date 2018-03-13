@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 /**
  * Created by fjlopez on 14/02/17.
  */
-public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
+public class    HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     private HgvsCalculator hgvsCalculator;
     private GeneDBAdaptor geneDBAdaptor;
 
@@ -54,22 +54,22 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 //                "ENST00000360880(ENSG00000100146):c.267delC", "ENST00000427770(ENSG00000100146):c.267delC",
 //                "ENST00000470555(ENSG00000100146):n.70+821delC"));
 
-//        hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
+//        List<String> hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
 //        assertEquals(2, hgvsList.size());
-//        // There may be more than these, but these 4 are the ones that I can actually validate
+        // There may be more than these, but these 4 are the ones that I can actually validate
 //        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
 
-//        List<String> hgvsList = getVariantHgvs(new Variant("21", 46074291, "ACAAA", "-"));
-//        assertEquals(3, hgvsList.size());
-//        // There may be more than these, but these 4 are the ones that I can actually validate
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000375476:p.Leu80fs"));
-//
-//        hgvsList = getVariantHgvs(new Variant("21", 46074466, "GGGGACACAGCAC", "-"));
-//        assertEquals(3, hgvsList.size());
-//        // There may be more than these, but these 4 are the ones that I can actually validate
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000375476:p.Cys19fs"));
+        List<String> hgvsList = getVariantHgvs(new Variant("21", 46074291, "ACAAA", "-"));
+        assertEquals(3, hgvsList.size());
+        // There may be more than these, but these 4 are the ones that I can actually validate
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000375476:p.Leu80fs"));
 
-        List<String> hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
+        hgvsList = getVariantHgvs(new Variant("21", 46074466, "GGGGACACAGCAC", "-"));
+        assertEquals(3, hgvsList.size());
+        // There may be more than these, but these 4 are the ones that I can actually validate
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000375476:p.Cys19fs"));
+
+        hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
         assertEquals(3, hgvsList.size());
         // There may be more than these, but these 4 are the ones that I can actually validate
         assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));

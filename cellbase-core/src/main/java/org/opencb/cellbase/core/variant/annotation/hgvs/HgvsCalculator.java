@@ -295,7 +295,7 @@ public class HgvsCalculator {
 
     }
 
-    private CdnaCoord genomicToCdnaCoordInCodingTranscript(Transcript transcript, int genomicPosition) {
+    private CdnaCoord   genomicToCdnaCoordInCodingTranscript(Transcript transcript, int genomicPosition) {
         CdnaCoord cdnaCoord = new CdnaCoord();
         List<Exon> exonList = transcript.getExons();
 

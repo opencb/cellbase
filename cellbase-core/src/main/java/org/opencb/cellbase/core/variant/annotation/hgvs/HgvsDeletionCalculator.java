@@ -140,78 +140,87 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 //        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getReferencePosition()));
 //        proteinVariant.setEnd(getAminoAcidPosition(buildingComponents.getCdnaEnd().getReferencePosition()));
 
-        // NOTE: protein coordinates set at the protein variant object are NOT the ones from buildingComponent, i.e.
-        // before hgvs normalization. HOWEVER, within getGeneratedAa the buildingComponents ones will be used which
-        // already reflect hgvs normalization
-        int aminoAcidPosition1 = getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getStart()).getReferencePosition());
-        int aminoAcidPosition2 = getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getEnd()).getReferencePosition());
-        if (POSITIVE.equals(transcript.getStrand())) {
-            proteinVariant.setStart(aminoAcidPosition1);
-            proteinVariant.setEnd(aminoAcidPosition2);
-        } else {
-            proteinVariant.setStart(aminoAcidPosition2);
-            proteinVariant.setEnd(aminoAcidPosition1);
-        }
+        int cdsPosition1 = genomicToCdnaCoord(transcript, variant.getStart()).getReferencePosition();
+        int cdsPosition2 = genomicToCdnaCoord(transcript, variant.getEnd()).getReferencePosition();
+        boolean checkNewShiftedPosition;
+        do {
+            checkNewShiftedPosition = false;
+            // NOTE: protein coordinates set at the protein variant object are NOT the ones from buildingComponent, i.e.
+            // before hgvs normalization. HOWEVER, within getGeneratedAa the buildingComponents ones will be used which
+            // already reflect hgvs normalization
+            int aminoAcidPosition1 = getAminoAcidPosition(cdsPosition1);
+            int aminoAcidPosition2 = getAminoAcidPosition(cdsPosition2);
+            int cdsStart;
+            int cdsEnd;
+            if (POSITIVE.equals(transcript.getStrand())) {
+                cdsStart = cdsPosition1;
+                cdsEnd = cdsPosition2;
+                proteinVariant.setStart(aminoAcidPosition1);
+                proteinVariant.setEnd(aminoAcidPosition2);
+            } else {
+                cdsStart = cdsPosition2;
+                cdsEnd = cdsPosition1;
+                proteinVariant.setStart(aminoAcidPosition2);
+                proteinVariant.setEnd(aminoAcidPosition1);
+            }
 
-
-        // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
-        // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
-        // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-        if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
-            proteinVariant.setAlternate(EMPTY_STRING);
-            // start and end fall within the same codon - affect the same aminoacid
-            if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
-                char generatedAa = getGeneratedAa(variant, transcript);
-                // generatedAa == 0 if whole codons (3 nts) are removed from the start and end of the variant
-                if (generatedAa != 0) {
-                    // Generated aa after pasting the two ends of remaining sequence coincides with the aa at start position
-                    // on the original seq
-                    if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
-                        // Skip the first aa since coincides with the generated one
-                        proteinVariant.setStart(proteinVariant.getStart() + 1);
-                        proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                                proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
-                        // Generated aa after pasting the two ends of remaining sequence coincides with the aa at end position
+            char generatedAa = 0;
+            // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
+            // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
+            // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
+            if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
+                proteinVariant.setAlternate(EMPTY_STRING);
+                // start and end fall within the same codon - affect the same aminoacid
+                if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
+                    generatedAa = getGeneratedAa(variant.getChromosome(), cdsStart, cdsEnd, transcript);
+                    // generatedAa == 0 if whole codons (3 nts) are removed from the start and end of the variant
+                    if (generatedAa != 0) {
+                        // Generated aa after pasting the two ends of remaining sequence coincides with the aa at start position
                         // on the original seq
-                    } else if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getEnd() - 1)) {
-                        // Skip the last aa since coincides with the generated one
-                        proteinVariant.setEnd(proteinVariant.getEnd() - 1);
-                        proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                                proteinVariant.getEnd() - 1));
+                        if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
+                            // Skip the first aa since coincides with the generated one
+                            //proteinVariant.setStart(proteinVariant.getStart() + 1);
+                            cdsPosition1 ++;
+                            cdsPosition2 ++;
+                            checkNewShiftedPosition = true;
+                        } else {
+                            proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                                    proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                        }
                     } else {
                         proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
                                 proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
                     }
                 } else {
-                    proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                            proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                    proteinVariant.setReference(String.valueOf(transcript
+                            .getProteinSequence()
+                            .charAt(proteinVariant.getStart() - 1))); // don't rest -1 since it's base 0 and substring does not include this nt
                 }
             } else {
-                proteinVariant.setReference(String.valueOf(transcript
-                        .getProteinSequence()
-                        .charAt(proteinVariant.getStart() - 1))); // don't rest -1 since it's base 0 and substring does not include this nt
+                logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
+                                + " not happen and protein HGVS will not be returned. Could be expected for "
+                                + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
+                        buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
+                        transcript.getProteinSequence().length());
+
+                return null;
             }
+        } while (checkNewShiftedPosition);
 
-            return proteinVariant;
-        }
-        logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
-                        + " not happen and protein HGVS will not be returned. Could be expected for "
-                        + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
-                buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
-                transcript.getProteinSequence().length());
+        return proteinVariant;
 
-        return null;
     }
 
-    private char getGeneratedAa(Variant variant, Transcript transcript) {
+    private char getGeneratedAa(String chromosome, int cdsStart, int cdsEnd, Transcript transcript) {
 
         // There's no need to differentiate between + and - strands since the Transcript object contains the transcript
         // sequence already complementary-reversed if necessary.
-        // NOTE: coordinates from the buildingComponents which were already hgvs-normalized when generating the
-        // transcript hgvs
-        Integer variantPhaseShift = (buildingComponents.getCdnaStart().getReferencePosition() - 1) % 3;
-        int cdnaVariantStart = getCdnaCodingStart(transcript) + buildingComponents.getCdnaStart().getReferencePosition() - 1;
-        int cdnaVariantEnd = getCdnaCodingStart(transcript) + buildingComponents.getCdnaEnd().getReferencePosition() - 1;
+        Integer variantPhaseShift = (cdsStart - 1) % 3;
+        int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsStart - 1;
+        int cdnaVariantEnd = getCdnaCodingStart(transcript) + cdsEnd - 1;
+//        Integer variantPhaseShift = (buildingComponents.getCdnaStart().getReferencePosition() - 1) % 3;
+//        int cdnaVariantStart = getCdnaCodingStart(transcript) + buildingComponents.getCdnaStart().getReferencePosition() - 1;
+//        int cdnaVariantEnd = getCdnaCodingStart(transcript) + buildingComponents.getCdnaEnd().getReferencePosition() - 1;
         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
         String transcriptSequence = transcript.getcDnaSequence();
         char[] referenceCodonArray = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2).toCharArray();
@@ -224,7 +233,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // Means we've reached the beginning of the transcript, i.e. transcript.start
             if (i >=  transcriptSequence.length()) {
                 int genomicCoordinate = transcript.getStart() + i; // recall that i is negative if we get here
-                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
+                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), chromosome
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
                 substitutingNt = genomeDBAdaptor
@@ -238,7 +247,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         }
 
         String aa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(VariantAnnotationUtils
-                .getAminoacid(MT.equals(variant.getChromosome()), String.valueOf(referenceCodonArray)));
+                .getAminoacid(MT.equals(chromosome), String.valueOf(referenceCodonArray)));
 
         if (StringUtils.isNotBlank(aa)) {
             return aa.charAt(0);
