@@ -49,23 +49,25 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
-    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
+//    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
+    private VariantNormalizer normalizer;
     private boolean normalize;
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
                                   List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext) {
-        this(header, version, variantAnnotatorList, sharedContext, true);
+        this(header, version, variantAnnotatorList, sharedContext, true, true);
     }
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
                                   List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext,
-                                  boolean normalize) {
+                                  boolean normalize, boolean decompose) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
         this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
         this.sharedContext = sharedContext;
         this.normalize = normalize;
+        normalizer = new VariantNormalizer(true, false, decompose);
     }
 
     @Override
