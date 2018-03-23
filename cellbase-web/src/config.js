@@ -16,7 +16,7 @@
 
 var application = {
     title: "CellBase Data Portal",
-    hosts: ["bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-SNAPSHOT"], //"localhost:8080/cellbase-4.5.0-SNAPSHOT", "www.ebi.ac.uk/cellbase"
+    hosts: ["bioinfodev.hpc.cam.ac.uk/cellbase-4.5.5"], //"localhost:8080/cellbase-4.5.5", "www.ebi.ac.uk/cellbase"
     version: "v4",
     defaultSpecies: {
         name: "Homo sapiens",
