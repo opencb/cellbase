@@ -1,6 +1,7 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Expression;
@@ -11,6 +12,9 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -20,12 +24,21 @@ import static org.junit.Assert.*;
  */
 public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
-    public GeneMongoDBAdaptorTest() { super(); }
+    public GeneMongoDBAdaptorTest() throws IOException { super(); }
 
-    @Test
-    public void testGetStatsById() throws Exception {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
-        // TODO: enable when new adaptors are implemented
+    @Before
+    public void setUp() throws Exception {
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/gene.test.json.gz").toURI());
+        loadRunner.load(path, "gene");
+    }
+
+// The functionality below is no longer available
+//    @Test
+//    public void testGetStatsById() throws Exception {
+//        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+//        // TODO: enable when new adaptors are implemented
 //        QueryResult queryResult = geneDBAdaptor.getStatsById("BRCA2", new QueryOptions());
 //        Map resultDBObject = (Map) queryResult.getResult().get(0);
 //        assertEquals((String)resultDBObject.get("chromosome"),"13");
@@ -43,8 +56,8 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        assertTrue((Integer)clinicalSignificanceDBObject.get("Benign")==362);
 //        assertTrue((Integer) clinicalSignificanceDBObject.get("Likely pathogenic")==35);
 //        assertTrue((Integer) clinicalSignificanceDBObject.get("conflicting data from submitters")==279);
-
-    }
+//
+//    }
 
     @Test
     public void get() throws Exception {
@@ -54,7 +67,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions = new QueryOptions("include", "id,name");
         QueryResult<Gene> queryResult = geneDBAdaptor.get(query, queryOptions);
         // WARNING: these values below may slightly change from one data version to another
-        assertEquals(8485, queryResult.getNumTotalResults());
+        assertEquals(22, queryResult.getNumTotalResults());
         assertThat(queryResult.getResult().stream().map(gene -> gene.getName()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("BRCA2", "TTN", "MTATP8P1", "PLEKHN1", "HES4", "AGRN",
                         "TNFRSF18", "FAM132A", "UBE2J2", "SCNN1D", "ACAP3", "GLTPD1"));

@@ -19,8 +19,8 @@ package org.opencb.cellbase.client.rest;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -59,7 +59,7 @@ public class CellBaseClient {
             throw new IllegalArgumentException("version and host must be provided in a ClienConfiguration object"
                     + " when building a CellBase client and cannot be empty");
         }
-        clients = new HashMap<>();
+        clients = new ConcurrentHashMap<>();
 
     }
 
@@ -102,14 +102,7 @@ public class CellBaseClient {
     @SuppressWarnings("unchecked")
     private <T extends ParentRestClient> T getClient(String key, Supplier<T> constructorIfAbsent) {
         // Avoid concurrent modifications
-        if (!clients.containsKey(key)) {
-            synchronized (clients) {
-                if (!clients.containsKey(key)) {
-                    clients.put(key, constructorIfAbsent.get());
-                }
-            }
-        }
-        return (T) clients.get(key);
+        return (T) clients.computeIfAbsent(key, s -> constructorIfAbsent.get());
     }
 
 

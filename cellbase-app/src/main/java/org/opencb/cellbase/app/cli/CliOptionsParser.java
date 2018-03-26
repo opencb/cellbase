@@ -125,7 +125,7 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
-                + "gene_disease_association, variation, variation_functional_score, regulation, protein, conservation, "
+                + "variation, variation_functional_score, regulation, protein, conservation, "
                 + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
         public String data;
 
@@ -187,7 +187,9 @@ public class CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
 
-        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
+        @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
+                + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
+                + "clinical_variants, repeats, svs. 'all' loads everything", required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded. Can also be used to specify a" +
@@ -381,13 +383,22 @@ public class CliOptionsParser {
                 required = false, arity = 1)
         public String referenceFasta;
 
-        @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of input variants. Normalization"
-                + " includes splitting multi-allele positions read from a VCF, allele trimming and decomposing MNVs. Has"
+        @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of input variants. Should not be used"
+                + " when the input (-i, --input-file) is a VCF file. Normalization includes splitting multi-allele positions "
+                + "read from a VCF, allele trimming and decomposing MNVs. Has"
                 + " no effect if reading variants from a CellBase variation collection "
                 + "(\"--input-variation-collection\") or running a variant annotation benchmark (\"--benchmark\"): in"
                 + " these two cases variant normalization is never carried out.",
                 required = false, arity = 0)
-        public boolean skipNormalize;
+        public boolean skipNormalize = false;
+
+        @Parameter(names = {"--skip-decompose"}, description = "Use this flag to avoid decomposition of "
+                + "multi-nucleotide-variants (MNVs) / block substitutions as part of the normalization process. If this"
+                + " flag is NOT activated, as a step during the normalization process reference and alternate alleles"
+                + " from MNVs/Block substitutions will be aligned and decomposed into their forming simple variants. "
+                + " This flag has no effect if --skip-normalize is present.",
+                required = false, arity = 0)
+        public boolean skipDecompose = false;
 
         @Parameter(names = {"--server-cache"}, description = "Use of this parameter is discouraged unless the "
                 + "server administrator advises so. Annotation was already pre-calculated and cached in "
@@ -415,7 +426,10 @@ public class CliOptionsParser {
         @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
                 + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
                 + "documents that include lists of population frequencies objects. Will allow annotating the input file "
-                + "(-i) with the population frequencies present in this json file; sv-extra-padding=Integer to optionally "
+                + "(-i) with the population frequencies present in this json file; complete-input-population=for internal "
+                + "purposes only. To be used together with population-frequencies. Boolean to indicate whether variants "
+                + "in the population-frequencies file but not in the input file (-i) should be included in the output. "
+                + "sv-extra-padding=Integer to optionally "
                 + "provide the size of the extra padding to be used when annotating noImprecision (or not) "
                 + "structural variants}; cnv-extra-padding=Integer to optionally provide the size of the extra padding "
                 + "to be used when annotating noImprecision (or not) structural variants}")
@@ -424,6 +438,7 @@ public class CliOptionsParser {
         public VariantAnnotationCommandOptions() {
             buildParams = new HashMap<>();
             buildParams.put("population-frequencies", null);
+            buildParams.put("complete-input-population", "true");
             buildParams.put("sv-extra-padding", "0");
             buildParams.put("cnv-extra-padding", "0");
         }

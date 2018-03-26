@@ -155,6 +155,7 @@ public class MongoDBAdaptor {
         List<String> chunkIds = new ArrayList<>(endChunkId - startChunkId + 1);
         for (int chunkId = startChunkId; chunkId <= endChunkId; chunkId++) {
             chunkIds.add(region.getChromosome() + "_" + chunkId + "_" + chunkSize / 1000 + "k");
+            logger.debug(region.getChromosome() + "_" + chunkId + "_" + chunkSize / 1000 + "k");
         }
 
         Bson chunk = Filters.in("_chunkIds", chunkIds);

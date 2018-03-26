@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.cli.variant.annotation;
 
+import htsjdk.tribble.TribbleException;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFConstants;
@@ -28,6 +29,8 @@ import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.converters.avro.VariantContextToVariantConverter;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -41,27 +44,30 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
     private static final String MATEID = "MATEID";
     private static final String MATE_CIPOS = "MATE_CIPOS";
     private static final String CIPOS = "CIPOS";
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final SharedContext sharedContext;
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
-    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
+//    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
+    private VariantNormalizer normalizer;
     private boolean normalize;
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
                                   List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext) {
-        this(header, version, variantAnnotatorList, sharedContext, true);
+        this(header, version, variantAnnotatorList, sharedContext, true, true);
     }
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
                                   List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext,
-                                  boolean normalize) {
+                                  boolean normalize, boolean decompose) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
         this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
         this.sharedContext = sharedContext;
         this.normalize = normalize;
+        normalizer = new VariantNormalizer(true, false, decompose);
     }
 
     @Override
@@ -80,7 +86,16 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
     private List<Variant> normalizeAndAnnotate(List<Variant> variantList) throws InterruptedException, ExecutionException {
         List<Variant> normalizedVariantList;
         if (normalize) {
-            normalizedVariantList = normalizer.apply(variantList);
+            normalizedVariantList = new ArrayList<>(variantList.size());
+            for (Variant variant : variantList) {
+                try {
+                    normalizedVariantList.addAll(normalizer.apply(Collections.singletonList(variant)));
+                } catch (RuntimeException e) {
+                    logger.warn("Error found during variant normalization. Variant: {}", variant.toString());
+                    logger.warn("This variant will be skipped and annotation will continue");
+                    logger.warn("Full stack trace", e);
+                }
+            }
         } else {
             normalizedVariantList = variantList;
         }
@@ -107,7 +122,15 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
         for (String line : batch) {
             // It's not a header line
             if (!line.startsWith("#") && !line.trim().isEmpty()) {
-                VariantContext variantContext = vcfCodec.decode(line);
+                VariantContext variantContext;
+                try {
+                    variantContext = vcfCodec.decode(line);
+                } catch (TribbleException e) {
+                    logger.warn("Error found while parsing VCF line {} ", line);
+                    logger.warn("This line will be skipped and process will continue");
+                    logger.warn("Full stack trace", e);
+                    continue;
+                }
                 if (variantContext.getAlternateAlleles() != null && !variantContext.getAlternateAlleles().isEmpty()) {
                     byte[] alternateBytes = variantContext.getAlternateAllele(0).toString().getBytes();
                     // Symbolic allele: CNV, DEL, DUP, INS, INV, BND

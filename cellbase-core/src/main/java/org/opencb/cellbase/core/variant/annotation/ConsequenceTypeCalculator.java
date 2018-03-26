@@ -21,6 +21,9 @@ import java.util.*;
  */
 public abstract class ConsequenceTypeCalculator {
 
+    protected static final String START_CODON = "ATG";
+    protected static final String COMPLEMENTARY_START_CODON = "TAC";
+    protected static final String MT = "MT";
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected HashSet<String> SoNames = new HashSet<>();
     protected ConsequenceType consequenceType;
@@ -35,6 +38,7 @@ public abstract class ConsequenceTypeCalculator {
     protected static final String IMPRECISE = "imprecise";
     protected static final String SV_EXTRA_PADDING = "svExtraPadding";
     protected static final String CNV_EXTRA_PADDING = "cnvExtraPadding";
+    protected static final String DOWN_UP_STREAM_GENE_TAG = "_gene";
     protected static final int NO_EXON_OVERLAP = 0;
 
     public abstract List<ConsequenceType> run(Variant variant, List<Gene> geneList,
@@ -142,6 +146,17 @@ public abstract class ConsequenceTypeCalculator {
     protected abstract void solveNonCodingNegativeTranscript();
 
     protected abstract void solveCodingNegativeTranscript();
+
+    protected char[] getReverseComplementaryCodon(String transcriptSequence, int modifiedCodonStart) {
+        char[] reverseCodon = (new StringBuilder(transcriptSequence.substring(transcriptSequence.length() - modifiedCodonStart - 2,
+                // Rigth limit of the substring sums +1 because substring does not include that position
+                transcriptSequence.length() - modifiedCodonStart + 1)).reverse().toString()).toCharArray();
+        reverseCodon[0] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[0]);
+        reverseCodon[1] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[1]);
+        reverseCodon[2] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseCodon[2]);
+
+        return reverseCodon;
+    }
 
     protected abstract void solveNonCodingPositiveTranscript();
 
@@ -276,8 +291,9 @@ public abstract class ConsequenceTypeCalculator {
     protected void addNonCodingSOs(boolean isIntronicVariant) {
         if (!isIntronicVariant) {  // Exon variant
             SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_EXON_VARIANT);
+        } else {
+            SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
         }
-        SoNames.add(VariantAnnotationUtils.NON_CODING_TRANSCRIPT_VARIANT);
     }
 
     protected List<SequenceOntologyTerm> getSequenceOntologyTerms(HashSet<String> soNames) {

@@ -2,6 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
+import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
@@ -12,6 +13,9 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +25,21 @@ import static org.junit.Assert.assertEquals;
  * Created by fjlopez on 18/04/16.
  */
 public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+    public GenomeMongoDBAdaptorTest() throws IOException {
+        super();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/genome/genome_info.json").toURI());
+        loadRunner.load(path, "genome_info");
+        path = Paths.get(getClass()
+                .getResource("/genome/genome_sequence.test.json.gz").toURI());
+        loadRunner.load(path, "genome_sequence");
+    }
+
     @Test
     public void getChromosomeInfo() throws Exception {
         GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");

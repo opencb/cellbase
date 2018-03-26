@@ -92,6 +92,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private boolean benchmark;
     private Path referenceFasta;
     private boolean normalize;
+    private boolean decompose;
     private List<String> chromosomeList;
     private int port;
     private String species;
@@ -100,6 +101,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private int batchSize;
     private List<Path> customFiles;
     private Path populationFrequenciesFile = null;
+    private Boolean completeInputPopulation;
     private List<RocksDB> dbIndexes;
     private List<Options> dbOptions;
     private List<String> dbLocations;
@@ -287,35 +289,39 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private void writeRemainingPopFrequencies() throws IOException {
         // For internal use only - will only be run when -Dpopulation-frequencies is activated
         if (populationFrequenciesFile != null) {
-            DataWriter dataWriter = new JsonAnnotationWriter(output.toString(), APPEND);
-            dataWriter.open();
-            dataWriter.pre();
+            if (completeInputPopulation) {
+                DataWriter dataWriter = new JsonAnnotationWriter(output.toString(), APPEND);
+                dataWriter.open();
+                dataWriter.pre();
 
-            // Population frequencies rocks db will always be the last one in the list. DO NOT change the name of the
-            // rocksIterator variable - for some unexplainable reason Java VM crashes if it's named "iterator"
-            RocksIterator rocksIterator = dbIndexes.get(dbIndexes.size() - 1).newIterator();
+                // Population frequencies rocks db will always be the last one in the list. DO NOT change the name of the
+                // rocksIterator variable - for some unexplainable reason Java VM crashes if it's named "iterator"
+                RocksIterator rocksIterator = dbIndexes.get(dbIndexes.size() - 1).newIterator();
 
-            ObjectMapper mapper = new ObjectMapper();
-            logger.info("Writing variants with frequencies that were not found within the input file to {}",
-                    populationFrequenciesFile.toString(), output.toString());
-            int counter = 0;
-            for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-                VariantAvro variantAvro = mapper.readValue(rocksIterator.value(), VariantAvro.class);
-                // The additional attributes field initialized with an empty map is used as the flag to indicate that
-                // this variant was not visited during the annotation process
-                if (variantAvro.getAnnotation().getAdditionalAttributes() == null) {
-                    dataWriter.write(new Variant(variantAvro));
+                ObjectMapper mapper = new ObjectMapper();
+                logger.info("Writing variants with frequencies that were not found within the input file to {}",
+                        populationFrequenciesFile.toString(), output.toString());
+                int counter = 0;
+                for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+                    VariantAvro variantAvro = mapper.readValue(rocksIterator.value(), VariantAvro.class);
+                    // The additional attributes field initialized with an empty map is used as the flag to indicate that
+                    // this variant was not visited during the annotation process
+                    if (variantAvro.getAnnotation().getAdditionalAttributes() == null) {
+                        dataWriter.write(new Variant(variantAvro));
+                    }
+
+                    counter++;
+                    if (counter % 10000 == 0) {
+                        logger.info("{} written", counter);
+                    }
                 }
-
-                counter++;
-                if (counter % 10000 == 0) {
-                    logger.info("{} written", counter);
-                }
+                dataWriter.post();
+                dataWriter.close();
+                logger.info("Done.");
+            } else {
+                logger.warn("complete-input-population set to false, variants in population frequencies file {} not in "
+                        + "input file {} will not be appended to output file.", populationFrequenciesFile, input);
             }
-            dataWriter.post();
-            dataWriter.close();
-            logger.info("Done.");
-
         }
     }
 
@@ -374,14 +380,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
                         variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
-                                variantAnnotatorList, sharedContext, normalize));
+                                variantAnnotatorList, sharedContext, normalize, decompose));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
                     break;
                 case JSON:
                     logger.info("Using a JSON parser to read variants...");
-                    variantAnnotatorTaskList.add(new JsonStringAnnotatorTask(variantAnnotatorList, normalize));
+                    variantAnnotatorTaskList.add(new JsonStringAnnotatorTask(variantAnnotatorList, normalize, decompose));
                     break;
                 default:
                     break;
@@ -589,18 +595,24 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private void indexCustomVcfFile(int customFileNumber, RocksDB db) {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
-
+        int lineCounter = -1;
+        VariantContext variantContext = null;
         try {
             VCFFileReader vcfFileReader = new VCFFileReader(customFiles.get(customFileNumber).toFile(), false);
             Iterator<VariantContext> iterator = vcfFileReader.iterator();
             VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "",
                     vcfFileReader.getFileHeader().getSampleNamesInOrder());
-            VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
-            int lineCounter = 0;
+            // Currently, only VCF files are supported for custom-annotation so makes no sense to allow no normalisation
+            // of variants.
+            // However, decomposition of MNVs/Block substitutions can still be optional
+            VariantNormalizer normalizer = new VariantNormalizer(true, false, decompose);
+            lineCounter = 0;
             while (iterator.hasNext()) {
-                VariantContext variantContext = iterator.next();
+                variantContext = iterator.next();
                 // Reference positions will not be indexed
                 if (variantContext.getAlternateAlleles().size() > 0) {
+                    // Currently, only VCF files are supported for custom-annotation so makes no sense to allow no normalisation
+                    // of variants.
                     List<Variant> variantList = normalizer.normalize(converter.apply(Collections.singletonList(variantContext)), true);
                     for (Variant variant : variantList) {
                         db.put((variant.getChromosome() + "_" + variant.getStart() + "_" + variant.getReference() + "_"
@@ -617,6 +629,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         } catch (IOException | RocksDBException | NonStandardCompliantSampleField e) {
             e.printStackTrace();
             System.exit(1);
+        } catch (Exception e) {
+            if (lineCounter >= 0 && variantContext != null) {
+                logger.error("Error fond while trying to parse {}:{}:{}:{}", variantContext.getContig(),
+                        variantContext.getStart(), variantContext.getReference(), variantContext.getAlternateAlleles());
+            } else {
+                logger.error("Error found while parsing {}", customFiles.get(customFileNumber).toString());
+            }
+            throw e;
         }
     }
 
@@ -726,14 +746,19 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             normalize = false;
         }
 
+        decompose = !variantAnnotationCommandOptions.skipDecompose;
+
         // output file
         if (variantAnnotationCommandOptions.output != null) {
             output = Paths.get(variantAnnotationCommandOptions.output);
-//            Path outputDir = output.getParent();
-            try {
-                FileUtils.checkDirectory(output.getParent());
-            } catch (IOException e) {
-                throw new ParameterException(e);
+            // output.getParent may be null if for example the output is specified with no path at all, i.e
+            // -o test.vcf rather than -o ./test.vcf
+            if (output.getParent() != null) {
+                try {
+                    FileUtils.checkDirectory(output.getParent());
+                } catch (IOException e) {
+                    throw new ParameterException(e);
+                }
             }
 //            if (!outputDir.toFile().exists()) {
 //                throw new ParameterException("Output directory " + outputDir + " doesn't exist");
@@ -806,6 +831,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Assembly
         if (variantAnnotationCommandOptions.assembly != null) {
             assembly = variantAnnotationCommandOptions.assembly;
+            // In case annotation is made through WS assembly must be set in the queryOptions
+            queryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
         } else {
             assembly = null;
             logger.warn("No assembly provided. Using default assembly for {}", species);
@@ -858,6 +885,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Population frequencies file must be a .json (.json.gz) file containing"
                         + " Variant objects.");
             }
+            completeInputPopulation = Boolean.valueOf(variantAnnotationCommandOptions.buildParams.get("complete-input-population"));
         }
 
         // Enable/Disable imprecise annotation

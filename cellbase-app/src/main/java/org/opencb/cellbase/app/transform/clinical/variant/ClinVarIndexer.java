@@ -146,7 +146,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             alleleOrigin = getAlleleOriginList(new ArrayList<>(originSet));
         }
 
-        List<HeritableTrait> heritableTraitList = null;
+        List<HeritableTrait> heritableTraitList = Collections.emptyList();
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN])) {
             Set<String> phenotypeSet = new HashSet<String>(Arrays.asList(lineFields[VARIANT_SUMMARY_PHENOTYPE_COLUMN]
                     .toLowerCase().split(";")));
@@ -154,7 +154,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     .map((phenotype) -> new HeritableTrait(phenotype, null)).collect(Collectors.toList());
         }
 
-        List<GenomicFeature> genomicFeatureList = null;
+        List<GenomicFeature> genomicFeatureList = Collections.emptyList();
         if (!EtlCommons.isMissing(lineFields[VARIANT_SUMMARY_GENE_COLUMN])) {
             String[] geneList = lineFields[VARIANT_SUMMARY_GENE_COLUMN].split(",");
             genomicFeatureList = new ArrayList<>(geneList.length);
@@ -178,12 +178,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     lineFields[VARIANT_SUMMARY_REVIEW_COLUMN]));
         }
 
-        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, null, null,
+        EvidenceEntry evidenceEntry = new EvidenceEntry(evidenceSource, Collections.emptyList(), null,
                 "https://www.ncbi.nlm.nih.gov/clinvar/variation/" + variationId, variationId, null,
                 !(alleleOrigin == null || alleleOrigin.isEmpty()) ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
                 variantClassification, null,
-                null, consistencyStatus, null, null, null,
-                null, additionalProperties, null);
+                null, consistencyStatus, EthnicCategory.Z, null, null,
+                null, additionalProperties, Collections.emptyList());
 
         variantAnnotation.getTraitAssociation().add(evidenceEntry);
     }
@@ -237,7 +237,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 "https://www.ncbi.nlm.nih.gov/clinvar/" + accession, accession, null,
                 !(alleleOrigin == null || alleleOrigin.isEmpty()) ? alleleOrigin : null, heritableTraitList, genomicFeatureList,
                 variantClassification, null,
-                null, consistencyStatus, null, null, null,
+                null, consistencyStatus, EthnicCategory.Z, null, null,
                 null, additionalProperties, bibliography);
 
         variantAnnotation.getTraitAssociation().add(evidenceEntry);
@@ -375,11 +375,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 }
             }
         }
-        if (genomicFeatureSet.size() > 0) {
-            return new ArrayList<>(genomicFeatureSet);
-        } else {
-            return null;
-        }
+        return new ArrayList<>(genomicFeatureSet);
     }
 
     private List<HeritableTrait> getHeritableTrait(PublicSetType publicSet, Map<String, EFO> traitsToEfoTermsMap,
@@ -415,17 +411,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
             }
         }
 
-
         if (heritableTraitList.size() == 0) {
             logger.warn("Entry {}. No \"disease\" entry found among the traits",
                     publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
             numberNoDiseaseTrait++;
-            return null;
         } else {
             propertyList.add(new Property(null, MODE_OF_INHERITANCE,
                     jsonObjectWriter.writeValueAsString(sourceInheritableTraitList)));
-            return heritableTraitList;
         }
+        return heritableTraitList;
     }
 
     private List<String> addBibliographyFromObservationSet(List<String> germlineBibliography, ObservationSet observationSet) {
