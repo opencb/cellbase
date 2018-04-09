@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,16 +45,27 @@ public class ClinicalVariantParserTest {
         List<Variant> variantList = loadSerializedVariants("/tmp/clinical_variant.json.gz");
         assertEquals(9, variantList.size());
 
-        Variant variant = getVariantByAccession(variantList, "COSM1193237");
+        // This RCV does not have any genomic feature associated with it (Gene). ClinVar record provides GenotypeSet
+        // in this case rather than MeasureSet
+        Variant variant = getVariantByAccession(variantList, "RCV000169692");
         assertNotNull(variant);
         assertThat(variant.getAnnotation().getTraitAssociation().stream()
-                .map(evidenceEntry -> evidenceEntry.getId()).collect(Collectors.toList()),
+                        .map(evidenceEntry -> evidenceEntry.getId()).collect(Collectors.toList()),
+                CoreMatchers.hasItems("RCV000169692"));
+        EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000169692");
+        assertTrue(evidenceEntry.getGenomicFeatures().isEmpty());
+
+
+        variant = getVariantByAccession(variantList, "COSM1193237");
+        assertNotNull(variant);
+        assertThat(variant.getAnnotation().getTraitAssociation().stream()
+                .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("RCV000148505"));
 
         variant = getVariantByAccession(variantList, "RCV000148485");
         assertNotNull(variant);
         assertThat(variant.getAnnotation().getTraitAssociation().stream()
-                        .map(evidenceEntry -> evidenceEntry.getId()).collect(Collectors.toList()),
+                        .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("COSM5745645"));
 
         variant = getVariantByAccession(variantList, "COSM4059225");
@@ -96,6 +108,15 @@ public class ClinicalVariantParserTest {
 
     }
 
+    private EvidenceEntry getEvidenceEntryByAccession(Variant variant, String accession) {
+        for (EvidenceEntry evidenceEntry : variant.getAnnotation().getTraitAssociation()) {
+            if (evidenceEntry.getId().equals(accession)) {
+                return evidenceEntry;
+            }
+        }
+        return null;
+    }
+
     private Variant getVariantByAccession(List<Variant> variantList, String accession) {
         for (Variant variant : variantList) {
             if (variant.getAnnotation().getTraitAssociation() != null) {
@@ -106,7 +127,6 @@ public class ClinicalVariantParserTest {
                 }
             }
         }
-
         return null;
     }
 

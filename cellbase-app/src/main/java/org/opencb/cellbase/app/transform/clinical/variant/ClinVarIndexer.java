@@ -2,7 +2,8 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
+import org.opencb.biodata.formats.variant.clinvar.v53jaxb.*;
+//import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -25,6 +26,8 @@ import java.util.stream.Stream;
  * Created by fjlopez on 28/09/16.
  */
 public class ClinVarIndexer extends ClinicalIndexer {
+
+    private static final String CLINVAR_CONTEXT_V53 = "org.opencb.biodata.formats.variant.clinvar.v53jaxb";
 
     private static final String CLINVAR_NAME = "clinvar";
     private static final int VARIANT_SUMMARY_CLINSIG_COLUMN = 6;
@@ -239,6 +242,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
         String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+        logger.info("accession = {}", accession);
 
         VariantClassification variantClassification = getVariantClassification(publicSet.getReferenceClinVarAssertion()
                 .getClinicalSignificance().getDescription());
@@ -395,9 +399,9 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
     private List<GenomicFeature> getGenomicFeature(PublicSetType publicSet) {
         Set<GenomicFeature> genomicFeatureSet = new HashSet<>();
-        for (MeasureSetType.Measure measure : publicSet.getReferenceClinVarAssertion().getMeasureSet().getMeasure()) {
+        for (MeasureType measure : publicSet.getReferenceClinVarAssertion().getMeasureSet().getMeasure()) {
             if (measure.getMeasureRelationship() != null) {
-                for (MeasureSetType.Measure.MeasureRelationship measureRelationship : measure.getMeasureRelationship()) {
+                for (MeasureType.MeasureRelationship measureRelationship : measure.getMeasureRelationship()) {
                     if (measureRelationship.getSymbol() != null) {
                         for (SetElementSetType setElementSet : measureRelationship.getSymbol()) {
                             if (setElementSet.getElementValue() != null) {
@@ -561,7 +565,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException, IOException {
-        return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), ClinvarParser.CLINVAR_CONTEXT_v24);
+        return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), CLINVAR_CONTEXT_V53);
     }
 
     class EFO {
