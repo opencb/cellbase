@@ -115,11 +115,13 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         if (buildingComponents.getKind().equals(BuildingComponents.Kind.INFRAME)) {
             allele.append(PROTEIN_CHAR)
                     .append(buildingComponents.getReferenceStart())
-                    .append(buildingComponents.getStart())
-                    .append(UNDERSCORE)
+                    .append(buildingComponents.getStart());
+            if (buildingComponents.getStart() != buildingComponents.getEnd()) {
+                allele.append(UNDERSCORE)
                     .append(buildingComponents.getReferenceEnd())
-                    .append(buildingComponents.getEnd())
-                    .append(buildingComponents.getMutationType());
+                    .append(buildingComponents.getEnd());
+            }
+            allele.append(buildingComponents.getMutationType());
         } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.FRAMESHIFT)) {
             allele.append(PROTEIN_CHAR)
                     .append(buildingComponents.getReferenceStart())
@@ -180,8 +182,8 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                         if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
                             // Skip the first aa since coincides with the generated one
                             //proteinVariant.setStart(proteinVariant.getStart() + 1);
-                            cdsPosition1 ++;
-                            cdsPosition2 ++;
+                            cdsPosition1++;
+                            cdsPosition2++;
                             checkNewShiftedPosition = true;
                         } else {
                             proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
@@ -189,12 +191,14 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                         }
                     } else {
                         proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                                proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                                proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not
+                                                           // include this nt
                     }
                 } else {
                     proteinVariant.setReference(String.valueOf(transcript
                             .getProteinSequence()
-                            .charAt(proteinVariant.getStart() - 1))); // don't rest -1 since it's base 0 and substring does not include this nt
+                            .charAt(proteinVariant.getStart() - 1))); // don't rest -1 since it's base 0 and substring
+                                                                      // does not include this nt
                 }
             } else {
                 logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
@@ -283,8 +287,13 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
      */
     @Override
     protected String formatCdnaCoords(BuildingComponents buildingComponents) {
-        return buildingComponents.getCdnaStart().toString() + "_"
-                + buildingComponents.getCdnaEnd().toString();
+        if (buildingComponents.getCdnaStart() != null
+                && buildingComponents.getCdnaStart().equals(buildingComponents.getCdnaEnd())) {
+            return buildingComponents.getCdnaStart().toString();
+        } else {
+            return buildingComponents.getCdnaStart().toString() + "_"
+                    + buildingComponents.getCdnaEnd().toString();
+        }
     }
 
     /**
