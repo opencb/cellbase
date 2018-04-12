@@ -72,7 +72,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     public void index() throws RocksDBException {
         try {
             Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
-            Map<String, SequenceLocation> rcvTo37SequenceLocation = parseVariantSummary(traitsToEfoTermsMap);
+            Map<String, List<AlleleLocationData>> rcvToAlleleLocationData = parseVariantSummary(traitsToEfoTermsMap);
 
             logger.info("Unmarshalling clinvar file " + clinvarXMLFile + " ...");
             JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile);
@@ -82,10 +82,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
             ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", clinvarRelease.getValue().getClinVarSet().size(),
                     200).setBatchSize(10000);
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
-                SequenceLocation sequenceLocation =
-                        rcvTo37SequenceLocation.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
-                if (sequenceLocation != null) {
-                    updateRocksDB(sequenceLocation, publicSet, traitsToEfoTermsMap);
+                List<AlleleLocationData> alleleLocationDataList =
+                        rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+                if (alleleLocationDataList != null) {
+                    for (AlleleLocationData alleleLocationData : alleleLocationDataList) {
+                        updateRocksDB(alleleLocationData, publicSet, traitsToEfoTermsMap);
+                    }
                     numberIndexedRecords++;
                 }
                 progressLogger.increment(1);
@@ -477,7 +479,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         return germlineBibliography;
     }
 
-    private Map<String, SequenceLocation> parseVariantSummary(Map<String, EFO> traitsToEfoTermsMap) throws IOException, RocksDBException {
+    private Map<String, List<AlleleLocationData>> parseVariantSummary(Map<String, EFO> traitsToEfoTermsMap) throws IOException, RocksDBException {
 
         logger.info("Loading AlleleID -> variation ID map...");
         Map<String, String> alleleIdToVariationId = loadAlleleIdToVariationId();
@@ -489,7 +491,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         ProgressLogger progressLogger = new ProgressLogger("Parsed variant summary lines:",
                 () -> EtlCommons.countFileLines(clinvarSummaryFile), 200).setBatchSize(10000);
 
-        Map<String, SequenceLocation> rcvToSequenceLocation = new HashMap<>();
+        Map<String, List<AlleleLocationData>> rcvToAlelleLocationData = new HashMap<>();
         // Skip header, read first data line
         bufferedReader.readLine();
         String line = bufferedReader.readLine();
@@ -502,10 +504,28 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
                 String[] rcvArray = parts[11].split(";");
                 for (String rcv : rcvArray) {
-                    rcvToSequenceLocation.put(rcv, sequenceLocation);
-                }
+                    List<AlleleLocationData> alleleLocationDataList;
+                    if (rcvToAlelleLocationData.get(rcv) == null) {
+                        alleleLocationDataList = new ArrayList<>();
+                        rcvToAlelleLocationData.put(rcv, alleleLocationDataList);
+                    } else {
+                        alleleLocationDataList = rcvToAlelleLocationData.get(rcv);
 
+                        if (alleleLocationDataList.size() == 2) {
+                            logger.error("More than two variants found under the same RCV id. Parser is not ready "
+                                    + "for handling this situation. Please, check. Line: {}", line);
+                        }
+                    }
+                    // Allele ID assumed to always be present
+                    if (EtlCommons.isMissing(parts[0])) {
+                        logger.error("Allele id missing from variant_summary.txt. Aborting parsing. Line: {}", line);
+                    } else {
+                        alleleLocationDataList.add(new AlleleLocationData(parts[0], sequenceLocation));
+                    }
+                }
                 // Index the Germline/Somatic documents corresponding to the aggregated variation object
+                // !EtlCommons.isMissing(parts[0]) is also checked above and therefore redundant but kept it here
+                // just in case
                 if (!EtlCommons.isMissing(parts[0]) && alleleIdToVariationId.containsKey(parts[0])) {
                     updateRocksDB(sequenceLocation, alleleIdToVariationId.get(parts[0]), parts, traitsToEfoTermsMap);
                     numberIndexedRecords++;
@@ -518,7 +538,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
         bufferedReader.close();
 
-        return rcvToSequenceLocation;
+        return rcvToAlelleLocationData;
     }
 
     private Map<String, String> loadAlleleIdToVariationId() throws IOException {
@@ -580,4 +600,29 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
     }
 
+    private class AlleleLocationData {
+        private String alleleId;
+        private SequenceLocation sequenceLocation;
+
+        public AlleleLocationData(String alleleId, SequenceLocation sequenceLocation) {
+            this.alleleId = alleleId;
+            this.sequenceLocation = sequenceLocation;
+        }
+
+        public String getAlleleId() {
+            return alleleId;
+        }
+
+        public void setAlleleId(String alleleId) {
+            this.alleleId = alleleId;
+        }
+
+        public SequenceLocation getSequenceLocation() {
+            return sequenceLocation;
+        }
+
+        public void setSequenceLocation(SequenceLocation sequenceLocation) {
+            this.sequenceLocation = sequenceLocation;
+        }
+    }
 }

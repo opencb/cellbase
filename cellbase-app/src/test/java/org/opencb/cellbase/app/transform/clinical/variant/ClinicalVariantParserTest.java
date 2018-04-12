@@ -50,7 +50,6 @@ public class ClinicalVariantParserTest {
         // This RCV does not have any genomic feature associated with it (Gene). ClinVar record provides GenotypeSet
         // in this case rather than MeasureSet
         List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000169692");
-        assertNotNull(variantList);
         assertEquals(2, variantList.size());
         // First variant in the genotype set
         Variant variant = variantList.get(0);
@@ -92,56 +91,79 @@ public class ClinicalVariantParserTest {
         assertEquals("18:56390278:A:G", property.getValue());
 
 
-        variant = getVariantByAccession(parsedVariantList, "COSM1193237");
-        assertNotNull(variant);
+        variantList = getVariantByAccession(parsedVariantList, "COSM1193237");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
         assertThat(variant.getAnnotation().getTraitAssociation().stream()
                 .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("RCV000148505"));
 
-        variant = getVariantByAccession(parsedVariantList, "RCV000148485");
+        variantList = getVariantByAccession(parsedVariantList, "RCV000148485");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
         assertNotNull(variant);
         assertThat(variant.getAnnotation().getTraitAssociation().stream()
                         .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("COSM5745645"));
 
-        variant = getVariantByAccession(parsedVariantList, "COSM4059225");
-        assertNotNull(variant);
+        variantList = getVariantByAccession(parsedVariantList, "COSM4059225");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
 
-        variant = getVariantByAccession(parsedVariantList, "3259");
+        variantList = getVariantByAccession(parsedVariantList, "3259");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
         assertEquals(Integer.valueOf(7577545), variant.getStart());
         assertEquals("T", variant.getReference());
         assertEquals("C", variant.getAlternate());
         assertEquals("PMID:0008075648",
                 variant.getAnnotation().getTraitAssociation().get(0).getBibliography().get(0));
 
-        variant = getVariantByAccession(parsedVariantList, "5223");
+        variantList = getVariantByAccession(parsedVariantList, "5223");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
         assertEquals(Integer.valueOf(4), variant.getStart());
         assertEquals("CTTCTCACCCT", variant.getReference());
         assertEquals("", variant.getAlternate());
         assertEquals("PMID:0008479743",
                 variant.getAnnotation().getTraitAssociation().get(0).getBibliography().get(0));
 
-        variant = getVariantByAccession(parsedVariantList, "1590");
+        variantList = getVariantByAccession(parsedVariantList, "1590");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
         assertEquals(Integer.valueOf(7578502), variant.getStart());
         assertEquals("A", variant.getReference());
         assertEquals("G", variant.getAlternate());
         assertEquals("PMID:0002649981",
                 variant.getAnnotation().getTraitAssociation().get(0).getBibliography().get(0));
 
-        variant = getVariantByAccession(parsedVariantList, "2143");
+        variantList = getVariantByAccession(parsedVariantList, "2143");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
         assertEquals(Integer.valueOf(7578406), variant.getStart());
         assertEquals("C", variant.getReference());
         assertEquals("T", variant.getAlternate());
         assertEquals("PMID:0002649981",
                 variant.getAnnotation().getTraitAssociation().get(0).getBibliography().get(0));
 
-        variant = getVariantByAccession(parsedVariantList, "1407");
+        variantList = getVariantByAccession(parsedVariantList, "1407");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
         assertEquals(Integer.valueOf(7578536), variant.getStart());
         assertEquals("T", variant.getReference());
         assertEquals("G", variant.getAlternate());
         assertEquals("PMID:0001694291",
                 variant.getAnnotation().getTraitAssociation().get(0).getBibliography().get(0));
 
+    }
+
+    private Property getProperty(List<Property> propertyList, String propertyName) {
+        for (Property property : propertyList) {
+            if (propertyName.equals(property.getName())) {
+                return property;
+            }
+        }
+        return null;
     }
 
     private EvidenceEntry getEvidenceEntryByAccession(Variant variant, String accession) {
@@ -153,17 +175,18 @@ public class ClinicalVariantParserTest {
         return null;
     }
 
-    private Variant getVariantByAccession(List<Variant> variantList, String accession) {
+    private List<Variant> getVariantByAccession(List<Variant> variantList, String accession) {
+        List<Variant> returnVariantList = new ArrayList<>();
         for (Variant variant : variantList) {
             if (variant.getAnnotation().getTraitAssociation() != null) {
                 for (EvidenceEntry evidenceEntry : variant.getAnnotation().getTraitAssociation()) {
                     if (evidenceEntry.getId().equals(accession)) {
-                        return variant;
+                        returnVariantList.add(variant);
                     }
                 }
             }
         }
-        return null;
+        return returnVariantList;
     }
 
     private List<Variant> loadSerializedVariants(String fileName) {
