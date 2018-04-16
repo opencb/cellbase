@@ -2,6 +2,12 @@ import requests
 import json
 import yaml
 
+_DEFAULT_CONFIG = {
+    "species": "hsapiens",
+    "version": "v4",
+    "rest": {"hosts": ["http://bioinfo.hpc.cam.ac.uk:80/cellbase"]}
+}
+
 
 class ConfigClient(object):
     """Sets up the default configuration for the CellBase client"""
@@ -9,9 +15,9 @@ class ConfigClient(object):
     def __init__(self, config_input=None):
         # Default config params
         self._config = {
-            'host': 'http://bioinfo.hpc.cam.ac.uk:80/cellbase',
-            'version': 'v4',
-            'species': 'hsapiens',
+            'host': _DEFAULT_CONFIG['rest']['hosts'][0],
+            'version': _DEFAULT_CONFIG['version'],
+            'species': _DEFAULT_CONFIG['species']
         }
 
         # If config info is provided, override default config params
@@ -56,13 +62,15 @@ class ConfigClient(object):
             msg = 'No configuration parameters found'
             raise ValueError(msg)
 
-    def _format_url(self, url):
+    @staticmethod
+    def _format_url(url):
         """"Formats URL strings"""
         if not (url.startswith('http://') or url.startswith('https://')):
             url = 'http://' + url
         return url
 
-    def _check_host(self, host):
+    @staticmethod
+    def _check_host(host):
         """Checks host availability"""
         try:
             r = requests.head(host, timeout=1)
@@ -87,6 +95,10 @@ class ConfigClient(object):
             raise requests.ConnectionError(msg)
         else:
             return available_host
+
+    @staticmethod
+    def get_default_configuration():
+        return _DEFAULT_CONFIG
 
     @property
     def version(self):

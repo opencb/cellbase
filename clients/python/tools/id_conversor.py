@@ -10,33 +10,33 @@ from pycellbase.cbclient import CellBaseClient
 _DEFAULT_HOST = 'bioinfo.hpc.cam.ac.uk:80/cellbase'
 _DEFAULT_API_VERSION = 'v4'
 _DEFAULT_SPECIES = 'hsapiens'
+_DEFAULT_ASSEMBLY = 'GRCh38'
 
 
 def _parse_configuration(parser):
     """Parse configuration arguments"""
     parser.add_argument(
-        '--assembly', dest='assembly',
-        default='grch38', choices=['grch37', 'grch38'],
-        help='reference genome assembly (default: %(default)s)'
+        '--assembly', dest='assembly', choices=['grch37', 'grch38'],
+        help='reference genome assembly (default: ' + _DEFAULT_ASSEMBLY + ')'
     )
     parser.add_argument(
         '--species', dest='species',
         help=('species name (default:' + _DEFAULT_SPECIES +
-              '). Override configuration provided with --config parameter')
+              '). Overrides configuration provided with "--config" parameter')
     )
     parser.add_argument(
         '--host', dest='host',
         help=('web services host (default: ' + _DEFAULT_HOST +
-              '). Override configuration provided with --config parameter')
+              '). Overrides configuration provided with "--config" parameter')
     )
     parser.add_argument(
         '--version', dest='api_version',
         help=('api version (default: ' + _DEFAULT_API_VERSION +
-              '). Override configuration provided with --config parameter')
+              '). Overrides configuration provided with "--config" parameter')
     )
     parser.add_argument(
         '--config', dest='config',
-        help='CellBase configuration. Override default values.'
+        help='CellBase configuration. Overrides default values.'
     )
 
 
@@ -45,6 +45,37 @@ def _parse_basic(parser):
     parser.add_argument(
         '-v', '--verbose', dest='verbosity', action='store_true',
         help='increase output verbosity'
+    )
+
+
+def _parse_convert(parser):
+    """Parse convert arguments"""
+    parser.add_argument(
+        '-i', dest='input_fpath', help='input file path'
+    )
+    parser.add_argument(
+        '-o', '--output', dest='output_fpath', default=sys.stdout,
+        help='output file path (default: stdout)'
+    )
+    inex_group = parser.add_mutually_exclusive_group()
+    inex_group.add_argument(
+        '--include', dest='include', help='include databases'
+    )
+    inex_group.add_argument(
+        '--exclude', dest='exclude', help='exclude databases'
+    )
+
+
+def _parse_list(parser):
+    """Parse list arguments"""
+    lists_group = parser.add_mutually_exclusive_group()
+    lists_group.add_argument(
+        '-D', '--dbs', dest='list_databases', action='store_true',
+        help='show list of available databases'
+    )
+    lists_group.add_argument(
+        '-S', '--sps', dest='list_species', action='store_true',
+        help='show list of available species'
     )
 
 
@@ -57,44 +88,27 @@ def _parse_arguments():
         formatter_class=argparse.RawTextHelpFormatter
     )
 
-    subparsers = parser.add_subparsers()
-
-    # Creating the parser for the "convert" command
-    parser_convert = subparsers.add_parser('convert', help='convert IDs')
-    parser_convert.set_defaults(which='convert')
-    _parse_basic(parser_convert)
-    _parse_configuration(parser_convert)
-    parser_convert.add_argument(
-        'input_fpath', help='input file path'
-    )
-    parser_convert.add_argument(
-        '-o', '--output', dest='output_fpath', default=sys.stdout,
-        help='output file path (default: stdout)'
-    )
-    inex_group = parser_convert.add_mutually_exclusive_group()
-    inex_group.add_argument(
-        '--include', dest='include', help='include databases'
-    )
-    inex_group.add_argument(
-        '--exclude', dest='exclude', help='exclude databases'
-    )
-
-    # Creating the parser for the "list" command
-    parser_list = subparsers.add_parser('list', help='list available sources')
-    parser_list.set_defaults(which='list')
-    _parse_basic(parser_list)
-    _parse_configuration(parser_list)
-    lists_group = parser_list.add_mutually_exclusive_group(required=True)
-    lists_group.add_argument(
-        '-D', '--dbs', dest='list_databases', action='store_true',
-        help='show list of available databases'
-    )
-    lists_group.add_argument(
-        '-S', '--sps', dest='list_species', action='store_true',
-        help='show list of available species'
-    )
-
+    _parse_basic(parser)
+    _parse_configuration(parser)
+    _parse_convert(parser)
+    _parse_list(parser)
     args = parser.parse_args()
+    return args
+
+
+def _check_arguments(args):
+    """Check arguments validity"""
+
+    if args.config and any([args.species, args.host, args.api_version]):
+        msg = ('Parameter "-config" will override any other introduced config'
+               ' parameter')
+        logging.warning(msg)
+
+    if not args.input_fpath and not any([args.list_species,
+                                         args.list_databases]):
+        msg = 'Input file path is required ("-i" option)'
+        raise ValueError(msg)
+
     return args
 
 
@@ -131,20 +145,15 @@ def _read_file_in_chunks(fhand, number_of_lines=100, remove_empty=True):
 
 def _get_species_list(cbc, assembly):
     """Return all available species in CellBase"""
-    sps = []
     res = cbc.get_species(assembly=assembly)[0]['result'][0]
-    for kingdom in res:
-        for species in res[kingdom]:
-            sps.append(species['id'])
+    sps = [species['id'] for kingdom in res for species in res[kingdom]]
     return sorted(sps)
 
 
 def _get_databases_list(xc, assembly):
     """Return all available databases for xrefs in CellBase"""
-    dbs = []
     databases = xc.get_dbnames(assembly=assembly)[0]['result']
-    for database in databases:
-        dbs.append(database)
+    dbs = [database for database in databases]
     return sorted(dbs)
 
 
@@ -233,6 +242,9 @@ def main():
     # Getting args
     args = _parse_arguments()
 
+    # Check arguments
+    args = _check_arguments(args)
+
     # Setting up logging system
     _set_logger(args.verbosity)
 
@@ -242,6 +254,7 @@ def main():
          "rest": {"hosts": [_DEFAULT_HOST]}}
     )
 
+    # Overriding config
     if args.config is not None:
         cc = ConfigClient(args.config)
     if args.species is not None:
@@ -250,38 +263,42 @@ def main():
         cc.version = args.api_version
     if args.host is not None:
         cc.host = args.host
+    if args.assembly is not None:
+        assembly = args.assembly
+    else:
+        assembly = _DEFAULT_ASSEMBLY
+
+    # Setting up pycellbase clients
     cbc = CellBaseClient(cc)
     xc = cbc.get_xref_client()
 
-    # Getting available databases
-    databases = _get_databases_list(xc, args.assembly)
-
     # Printing available species and databases lists
-    if args.which == 'list':
-        if args.list_species:
-            for species in _get_species_list(cbc, args.assembly):
-                print(species)
-        if args.list_databases:
-            for database in databases:
-                print(database)
+    if args.list_species:
+        for species in _get_species_list(cbc, assembly):
+            print(species)
+        return
+    if args.list_databases:
+        for database in _get_databases_list(xc, assembly):
+            print(database)
+        return
+
+    # Getting available databases
+    databases = _get_databases_list(xc, assembly)
 
     # Converting IDs
-    elif args.which == 'convert':
-        # Filtering databases with include and exclude
-        include = args.include.split(',') if args.include is not None else None
-        exclude = args.exclude.split(',') if args.exclude is not None else None
-        databases = _filter_databases(databases, include=include,
-                                      exclude=exclude)
+    # Filtering databases with include and exclude
+    include = args.include.split(',') if args.include is not None else None
+    exclude = args.exclude.split(',') if args.exclude is not None else None
+    databases = _filter_databases(databases, include=include,
+                                  exclude=exclude)
 
-        # Converting IDs
-        convert_ids(input_fpath=args.input_fpath,
-                    output_fpath=args.output_fpath,
-                    cellbase_client=cbc,
-                    assembly=args.assembly,
-                    databases=databases)
+    # Converting IDs
+    convert_ids(input_fpath=args.input_fpath,
+                output_fpath=args.output_fpath,
+                cellbase_client=cbc,
+                assembly=assembly,
+                databases=databases)
 
 
 if __name__ == '__main__':
     sys.exit(main())
-
-
