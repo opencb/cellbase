@@ -11,6 +11,7 @@ from pycellbase.cbclient import CellBaseClient
 _DEFAULT_HOST = 'bioinfo.hpc.cam.ac.uk:80/cellbase'
 _DEFAULT_API_VERSION = 'v4'
 _DEFAULT_SPECIES = 'hsapiens'
+_DEFAULT_ASSEMBLY = 'GRCh38'
 
 # Reference sequence notation
 # http://www.hgvs.org/mutnomen/standards.html
@@ -47,28 +48,27 @@ def _parse_arguments():
         help='reference sequence type'
     )
     parser.add_argument(
-        '--assembly', dest='assembly',
-        default='grch38', choices=['grch37', 'grch38'],
-        help='reference genome assembly (default: %(default)s)'
+        '--assembly', dest='assembly', choices=['grch37', 'grch38'],
+        help='reference genome assembly (default: ' + _DEFAULT_ASSEMBLY + ')'
     )
     parser.add_argument(
         '--species', dest='species',
         help=('species name (default:' + _DEFAULT_SPECIES +
-              ').\nOverride configuration provided with --config parameter')
+              ').\nOverrides configuration provided with "--config" parameter')
     )
     parser.add_argument(
         '--host', dest='host',
         help=('web services host (default: ' + _DEFAULT_HOST +
-              ').\nOverride configuration provided with --config parameter')
+              ').\nOverrides configuration provided with "--config" parameter')
     )
     parser.add_argument(
         '--version', dest='api_version',
         help=('api version (default: ' + _DEFAULT_API_VERSION +
-              ').\nOverride configuration provided with --config parameter')
+              ').\nOverrides configuration provided with "--config" parameter')
     )
     parser.add_argument(
         '--config', dest='config',
-        help='CellBase configuration. Override default values.'
+        help='CellBase configuration. Overrides default values.'
     )
 
     args = parser.parse_args()
@@ -106,12 +106,12 @@ def _read_file_in_chunks(fhand, number_of_lines=100, remove_empty=True):
         yield n_lines
 
 
-def _get_hgvs(query, cellbase_client, ref_seq_type):
+def _get_hgvs(query, cellbase_client, ref_seq_type, assembly):
 
     # Setting up CellBase Variant client
     vc = cellbase_client.get_variant_client()
 
-    response = vc.get_annotation(query, include='hgvs')
+    response = vc.get_annotation(query, include='hgvs', assembly=assembly)
 
     for i, query_response in enumerate(response):
         hgvs_list = []
@@ -134,7 +134,7 @@ def _get_hgvs(query, cellbase_client, ref_seq_type):
                [hgvs for i, hgvs in enumerate(hgvs_list) if filtering[i]])
 
 
-def calculate_hgvs(input_data, output_fpath, cbc, ref_seq_type):
+def calculate_hgvs(input_data, output_fpath, cbc, ref_seq_type, assembly):
 
     # Checking output
     if output_fpath is sys.stdout:
@@ -156,7 +156,7 @@ def calculate_hgvs(input_data, output_fpath, cbc, ref_seq_type):
 
     for query in input_gen:
         query = ','.join(query)
-        for variant, hgvs in _get_hgvs(query, cbc, ref_seq_type):
+        for variant, hgvs in _get_hgvs(query, cbc, ref_seq_type, assembly):
             if not hgvs:
                 hgvs = ['.']
             output_fhand.write('\t'.join([variant, ';'.join(hgvs)]) + '\n')
@@ -188,9 +188,14 @@ def main():
         cc.version = args.api_version
     if args.host is not None:
         cc.host = args.host
+    if args.assembly is not None:
+        assembly = args.assembly
+    else:
+        assembly = _DEFAULT_ASSEMBLY
     cbc = CellBaseClient(cc)
 
-    calculate_hgvs(args.input, args.output_fpath, cbc, args.ref_seq_type)
+    calculate_hgvs(args.input, args.output_fpath, cbc, args.ref_seq_type,
+                   assembly)
 
 
 if __name__ == '__main__':

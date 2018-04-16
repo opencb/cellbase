@@ -100,8 +100,8 @@ def _check_arguments(args):
     """Check arguments validity"""
 
     if args.config and any([args.species, args.host, args.api_version]):
-        msg = ('Parameter "-config" will override any other introduced config'
-               ' parameter')
+        msg = ('Parameter "--config" will be overridden by any other introduced'
+               ' config parameter')
         logging.warning(msg)
 
     if not args.input_fpath and not any([args.list_species,

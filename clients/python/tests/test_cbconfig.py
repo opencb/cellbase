@@ -14,12 +14,12 @@ class ConfigClientTest(unittest.TestCase):
         assert cc.version == 'v4'
 
         # Retrieving config params from YAML config file
-        cc = ConfigClient('../resources/config.yml')
+        cc = ConfigClient('./testresources/config.yml')
         assert cc.species == 'mmusculus'
         assert cc.version == 'v4'
 
         # Retrieving config params from JSON config file
-        cc = ConfigClient('../resources/config.json')
+        cc = ConfigClient('./testresources/config.json')
         assert cc.species == 'celegans'
         assert cc.version == 'v3'
 
@@ -34,8 +34,7 @@ class ConfigClientTest(unittest.TestCase):
         cc = ConfigClient({'species': 'mmusculus'})
         assert cc.species == 'mmusculus'
         assert cc.version == 'v4'
-        cc = ConfigClient({'species': 'mmusculus',
-                           'version': 'v3'})
+        cc = ConfigClient({'species': 'mmusculus', 'version': 'v3'})
         assert cc.species == 'mmusculus'
         assert cc.version == 'v3'
 
@@ -46,14 +45,21 @@ class ConfigClientTest(unittest.TestCase):
         cbc = CellBaseClient(cc)
 
         # Checking some default config params
-        assert cbc.get_config()['species'] == 'hsapiens'
-        assert cbc.get_config()['version'] == 'v4'
+        assert cbc.show_configuration()['species'] == 'hsapiens'
+        assert cbc.show_configuration()['version'] == 'v4'
 
         # Checking some setters for config params
         cc.species = 'mmusculus'
-        assert cbc.get_config()['species'] == 'mmusculus'
+        assert cbc.show_configuration()['species'] == 'mmusculus'
         cc.version = 'v3'
-        assert cbc.get_config()['version'] == 'v3'
+        assert cbc.show_configuration()['version'] == 'v3'
+
+    def test_get_default_config(self):
+        # Initialization
+        cc = ConfigClient()
+        cbc = CellBaseClient(cc)
+
+        assert cc.get_default_configuration() == cbc.get_default_configuration()
 
 
 if __name__ == '__main__':
