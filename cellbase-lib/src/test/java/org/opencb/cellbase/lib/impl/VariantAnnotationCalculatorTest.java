@@ -1845,7 +1845,6 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
             if (consequenceType.getProteinVariantAnnotation() != null
                     && consequenceType.getProteinVariantAnnotation().getFeatures() != null) {
                 Collections.sort(consequenceType.getProteinVariantAnnotation().getFeatures());
-                System.out.println("hola");
             }
         }
     }
