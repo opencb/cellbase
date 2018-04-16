@@ -289,3 +289,61 @@ class ClinicalClient(_ParentRestClient):
     def get_type(self, **options):
         """Returns all available variant types"""
         return self._get('type', None, options)
+
+
+class MetaClient:
+    """Queries the RESTful service for metadata"""
+    def __init__(self, configuration):
+        self._configuration = configuration
+
+    def about(self, **options):
+        """Returns source version metadata, including source urls"""
+        # This particular REST endpoint follows the structure
+        # /{version}/meta/about
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species='meta',
+                       category='about',
+                       subcategory='',
+                       resource=None,
+                       options=options)
+        return response
+
+    def ping(self, **options):
+        """Returns source version metadata, including source urls"""
+        # This particular REST endpoint follows the structure
+        # /{version}/meta/ping
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species='meta',
+                       category='ping',
+                       subcategory='',
+                       resource=None,
+                       options=options)
+        return response
+
+    def get_species(self, **options):
+        """Returns source version metadata, including source urls"""
+        # This particular REST endpoint follows the structure
+        # /{version}/meta/species
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species='meta',
+                       category='species',
+                       subcategory='',
+                       resource=None,
+                       options=options)
+        return response
+
+    def get_versions(self, **options):
+        """Returns source version metadata, including source urls"""
+        # This particular REST endpoint follows the structure
+        # /{version}/meta/{species}/versions
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species='meta',
+                       category=self._configuration.species,
+                       subcategory='versions',
+                       resource=None,
+                       options=options)
+        return response

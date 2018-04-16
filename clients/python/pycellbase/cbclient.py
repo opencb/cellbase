@@ -17,49 +17,26 @@ class CellBaseClient(object):
         self._variant_client = None
         self._genome_sequence_client = None
         self._clinical_client = None
+        self._meta_client = None
 
         # Setting up config params
         if config_client is not None:
-            try:
-                assert isinstance(config_client, ConfigClient)
-            except AssertionError:
+            if isinstance(config_client, ConfigClient):
+                self._configuration = config_client
+            else:
                 msg = ('CellBaseClient configuration not properly set.' +
                        ' "pycellbase.config.ConfigClient" object is needed as' +
                        ' parameter')
                 raise ValueError(msg)
-            self._configuration = config_client
         else:
             self._configuration = ConfigClient()
 
-    def get_configuration(self):
+    def show_configuration(self):
         """Returns current configuration parameters"""
         return self._configuration.configuration
 
-    def get_versions(self, species, **options):
-        """Returns source version metadata, including source urls"""
-        # This particular REST endpoint follows the structure
-        # /{version}/meta/{species}/version
-        response = get(host=self._configuration.host,
-                       version=self._configuration.version,
-                       species='meta',
-                       category=species,
-                       subcategory='versions',
-                       resource=None,
-                       options=options)
-        return response
-
-    def get_species(self, **options):
-        """Returns source version metadata, including source urls"""
-        # This particular REST endpoint follows the structure
-        # /{version}/meta/species
-        response = get(host=self._configuration.host,
-                       version=self._configuration.version,
-                       species='meta',
-                       category='species',
-                       subcategory='',
-                       resource=None,
-                       options=options)
-        return response
+    def get_default_configuration(self):
+        return self._configuration.get_default_configuration()
 
     def get(self, category, subcategory, resource, query_id=None, **options):
         """Creates the URL for querying the REST service"""
@@ -128,3 +105,9 @@ class CellBaseClient(object):
         if self._clinical_client is None:
             self._clinical_client = crc.ClinicalClient(self._configuration)
         return self._clinical_client
+
+    def get_meta_client(self):
+        """Creates the clinical client"""
+        if self._meta_client is None:
+            self._meta_client = crc.MetaClient(self._configuration)
+        return self._meta_client
