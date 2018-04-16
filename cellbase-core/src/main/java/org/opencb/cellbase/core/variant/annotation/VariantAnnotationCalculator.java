@@ -21,6 +21,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
@@ -1153,9 +1154,10 @@ public class VariantAnnotationCalculator {
                 return overlapsRegulatoryRegion;
             // Otherwise check the other breakend in case exists
             } else {
-                Variant breakendMate = Variant.getMateBreakend(variant);
-                if (breakendMate != null) {
-                    return getRegulatoryRegionOverlaps(breakendMate.getChromosome(), Math.max(1, breakendMate.getStart()));
+                if (variant.getSv() != null && variant.getSv().getBreakend() != null
+                    && variant.getSv().getBreakend().getMate() != null) {
+                    return getRegulatoryRegionOverlaps(variant.getSv().getBreakend().getMate().getChromosome(),
+                            Math.max(1, variant.getSv().getBreakend().getMate().getPosition()));
                 } else {
                     return overlapsRegulatoryRegion;
                 }
@@ -1331,7 +1333,7 @@ public class VariantAnnotationCalculator {
         } else if (VariantType.BREAKEND.equals(variant.getType())) {
             List<Region> regionList = new ArrayList<>(2);
             regionList.add(startBreakpointToRegion(variant));
-            Variant breakendMate = Variant.getMateBreakend(variant);
+            Variant breakendMate = VariantBuilder.getMateBreakend(variant);
             if (breakendMate != null) {
                 regionList.add(startBreakpointToRegion(breakendMate));
             }
@@ -1371,7 +1373,7 @@ public class VariantAnnotationCalculator {
                 break;
             case BREAKEND:
                 regionList.add(startBreakpointToRegion(variant));
-                Variant breakendMate = Variant.getMateBreakend(variant);
+                Variant breakendMate = VariantBuilder.getMateBreakend(variant);
                 if (breakendMate != null) {
                     regionList.add(startBreakpointToRegion(breakendMate));
                 }

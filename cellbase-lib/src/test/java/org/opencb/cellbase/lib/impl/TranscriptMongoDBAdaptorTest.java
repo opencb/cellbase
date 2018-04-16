@@ -53,11 +53,11 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertTrue(transcriptIdEquals(queryResult, Arrays.asList("ENST00000417324", "ENST00000461467")));
 
         query = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), "Q9UL59");
-        QueryOptions queryOptions = new QueryOptions("include", "transcripts.id");
+        QueryOptions queryOptions = new QueryOptions("include", "id");
         queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
         assertEquals(queryResult.getNumResults(), 2);
-        assertEquals(((Document) queryResult.getResult().get(0)).size(), 1);
-        assertEquals(((Document) queryResult.getResult().get(1)).size(), 1);
+        assertEquals(1, ((Document) queryResult.getResult().get(0)).size());
+        assertEquals(1, ((Document) queryResult.getResult().get(1)).size());
         assertTrue(transcriptIdEquals(queryResult, Arrays.asList("ENST00000278314", "ENST00000536068")));
 
         query = new Query(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "protein_coding");
