@@ -1,4 +1,6 @@
 include README.rst
 include LICENSE.txt
 recursive-include pycellbase/test *
+recursive-include pycellbase/test/testresources *
 recursive-include pycellbase/resources *
+recursive-include pycellbase/tools *
