@@ -75,6 +75,27 @@ def _parse_arguments():
     return args
 
 
+def _check_arguments(args):
+    """Check arguments validity"""
+
+    if args.config and args.species:
+        msg = ('Overriding species parameter provided in "--config" argument'
+               ' with "--species" argument')
+        logging.warning(msg)
+
+    if args.config and args.host:
+        msg = ('Overriding host parameter provided in "--config" argument'
+               ' with "--host" argument')
+        logging.warning(msg)
+
+    if args.config and args.api_version:
+        msg = ('Overriding api_version parameter provided in "--config"'
+               ' argument with "--api_version" argument')
+        logging.warning(msg)
+
+    return args
+
+
 def _set_logger(verbosity=False):
     """Set logging system"""
 
@@ -170,6 +191,9 @@ def main():
 
     # Getting args
     args = _parse_arguments()
+
+    # Check arguments
+    args = _check_arguments(args)
 
     # Setting up logging system
     _set_logger(args.verbosity)

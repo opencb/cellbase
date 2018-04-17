@@ -99,9 +99,19 @@ def _parse_arguments():
 def _check_arguments(args):
     """Check arguments validity"""
 
-    if args.config and any([args.species, args.host, args.api_version]):
-        msg = ('Parameter "--config" will be overridden by any other introduced'
-               ' config parameter')
+    if args.config and args.species:
+        msg = ('Overriding species parameter provided in "--config" argument'
+               ' with "--species" argument')
+        logging.warning(msg)
+
+    if args.config and args.host:
+        msg = ('Overriding host parameter provided in "--config" argument'
+               ' with "--host" argument')
+        logging.warning(msg)
+
+    if args.config and args.api_version:
+        msg = ('Overriding api_version parameter provided in "--config"'
+               ' argument with "--api_version" argument')
         logging.warning(msg)
 
     if not args.input_fpath and not any([args.list_species,
@@ -145,7 +155,8 @@ def _read_file_in_chunks(fhand, number_of_lines=100, remove_empty=True):
 
 def _get_species_list(cbc, assembly):
     """Return all available species in CellBase"""
-    res = cbc.get_species(assembly=assembly)[0]['result'][0]
+    mc = cbc.get_meta_client()
+    res = mc.get_species(assembly=assembly)[0]['result'][0]
     sps = [species['id'] for kingdom in res for species in res[kingdom]]
     return sorted(sps)
 
