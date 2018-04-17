@@ -1,4 +1,4 @@
-import sys
+import time
 import warnings
 import requests
 import threading
@@ -114,6 +114,7 @@ def _fetch(host, version, species, category, subcategory, resource,
                 msg = 'Server not responding in time'
                 raise requests.ConnectionError(msg)
             time_out_counter += 1
+            time.sleep(1)
             continue
         time_out_counter = 0
         try:
