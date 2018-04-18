@@ -17,6 +17,9 @@ class CellBaseClient(object):
         self._variant_client = None
         self._genome_sequence_client = None
         self._clinical_client = None
+        self._tfbs_client = None
+        self._regulation_client = None
+        self._species_client = None
         self._meta_client = None
 
         # Setting up config params
@@ -105,6 +108,24 @@ class CellBaseClient(object):
         if self._clinical_client is None:
             self._clinical_client = crc.ClinicalClient(self._configuration)
         return self._clinical_client
+
+    def get_tfbs_client(self):
+        """Creates the TFBS client"""
+        if self._tfbs_client is None:
+            self._tfbs_client = crc.TFBSClient(self._configuration)
+        return self._tfbs_client
+
+    def get_regulation_client(self):
+        """Creates the regulatory client"""
+        if self._regulation_client is None:
+            self._regulation_client = crc.RegulationClient(self._configuration)
+        return self._regulation_client
+
+    def get_species_client(self):
+        """Creates the regulatory client"""
+        if self._species_client is None:
+            self._species_client = crc.SpeciesClient(self._configuration)
+        return self._species_client
 
     def get_meta_client(self):
         """Creates the clinical client"""
