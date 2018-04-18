@@ -26,9 +26,7 @@ import java.util.stream.Collectors;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * Created by fjlopez on 07/10/16.
@@ -57,17 +55,25 @@ public class ClinicalVariantParserTest {
         assertEquals(Integer.valueOf(56390278), variant.getStart());
         assertEquals("A", variant.getReference());
         assertEquals("G", variant.getAlternate());
-        // One evidenceEntry for the variation record, another for the RCV
-        assertEquals(2, variant.getAnnotation().getTraitAssociation().size());
-        // Check proper variation record is there
-        assertThat(variant.getAnnotation().getTraitAssociation().stream()
-                        .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
-                CoreMatchers.hasItems("187140"));
-        EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000169692");
+        // Two evidenceEntry for the two variation records, another for the RCV
+        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        // Check variation records are there
+        EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "242617");
         assertNotNull(evidenceEntry);
-        assertTrue(evidenceEntry.getGenomicFeatures().isEmpty());
-        // Check it's properly flagged as part of the genotype set
         Property property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNull(property);
+        evidenceEntry = getEvidenceEntryByAccession(variant, "424712");
+        assertNotNull(evidenceEntry);
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:56390321:C:-", property.getValue());
+        evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000169692");
+        assertNotNull(evidenceEntry);
+        assertEquals(1, evidenceEntry.getGenomicFeatures().size());
+        assertEquals("MALT1", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNotNull(property.getValue());
         assertEquals("18:56390321:C:-", property.getValue());
         // Second variant in the genotype set
@@ -76,15 +82,23 @@ public class ClinicalVariantParserTest {
         assertEquals(Integer.valueOf(56390321), variant.getStart());
         assertEquals("C", variant.getReference());
         assertEquals("", variant.getAlternate());
-        // One evidenceEntry for the variation record, another for the RCV
-        assertEquals(2, variant.getAnnotation().getTraitAssociation().size());
+        // Two evidenceEntry for the two variation records, another for the RCV
+        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
         // Check proper variation record is there
-        assertThat(variant.getAnnotation().getTraitAssociation().stream()
-                        .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
-                CoreMatchers.hasItems("187141"));
+        evidenceEntry = getEvidenceEntryByAccession(variant, "242616");
+        assertNotNull(evidenceEntry);
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNull(property);
+        evidenceEntry = getEvidenceEntryByAccession(variant, "424712");
+        assertNotNull(evidenceEntry);
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:56390278:A:G", property.getValue());
         evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000169692");
         assertNotNull(evidenceEntry);
-        assertTrue(evidenceEntry.getGenomicFeatures().isEmpty());
+        assertEquals(1, evidenceEntry.getGenomicFeatures().size());
+        assertEquals("MALT1", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
         // Check it's properly flagged as part of the genotype set
         property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNotNull(property.getValue());
