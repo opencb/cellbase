@@ -46,7 +46,7 @@ def _create_rest_url(host, version, species, category, subcategory,
 
 
 def _fetch(host, version, species, category, subcategory, resource,
-           query_id=None, options=None):
+           query_id=None, options=None, method='get', data=None):
     """Queries the REST service retrieving results until exhaustion or limit"""
     # HERE BE DRAGONS
     final_response = None
@@ -108,7 +108,15 @@ def _fetch(host, version, species, category, subcategory, resource,
         print(url)  # DEBUG
 
         # Getting REST response
-        r = requests.get(url, headers={"Accept-Encoding": "gzip"})
+        headers = {"Accept-Encoding": "gzip"}
+        if method == 'get':
+            r = requests.get(url, headers=headers)
+        elif method == 'post':
+            r = requests.post(url, data=data, headers=headers)
+        else:
+            msg = 'Method "' + method + '" not implemented'
+            raise NotImplementedError(msg)
+
         if r.status_code == 504:  # Gateway Time-out
             if time_out_counter == 99:
                 msg = 'Server not responding in time'
@@ -117,6 +125,7 @@ def _fetch(host, version, species, category, subcategory, resource,
             time.sleep(1)
             continue
         time_out_counter = 0
+
         try:
             response = r.json()['response']
         except ValueError:
@@ -165,13 +174,13 @@ def _fetch(host, version, species, category, subcategory, resource,
 
 
 def _worker(queue, results, host, version, species, category,
-            subcategory, resource, options=None):
+            subcategory, resource, options=None, method='get', data=None):
     """Manages the queue system for the threads"""
     while True:
         # Fetching new element from the queue
         index, query_id = queue.get()
         response = _fetch(host, version, species, category, subcategory,
-                          resource, query_id, options)
+                          resource, query_id, options, method, data)
         # Store data in results at correct index
         results[index] = response
         # Signaling to the queue that task has been processed
@@ -179,7 +188,7 @@ def _worker(queue, results, host, version, species, category,
 
 
 def get(host, version, species, category, subcategory, resource,
-        query_id=None, options=None):
+        query_id=None, options=None, method='get', data=None):
     """Queries the REST service using multiple threads if needed"""
 
     # If query_id is an array, convert to comma-separated string
@@ -189,7 +198,7 @@ def get(host, version, species, category, subcategory, resource,
     # Multithread if the number of queries is greater than _CALL_BATCH_SIZE
     if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
         response = _fetch(host, version, species, category, subcategory,
-                          resource, query_id, options)
+                          resource, query_id, options, method, data)
         return response
     else:
         if options is not None and 'num_threads' in options:
@@ -218,7 +227,9 @@ def get(host, version, species, category, subcategory, resource,
                                          'category': category,
                                          'subcategory': subcategory,
                                          'resource': resource,
-                                         'options': options})
+                                         'options': options,
+                                         'method': method,
+                                         'data': data})
             # Setting threads as "daemon" allows main program to exit eventually
             # even if these do not finish correctly
             t.setDaemon(True)

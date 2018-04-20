@@ -21,6 +21,21 @@ class _ParentRestClient(object):
 
         return response
 
+    def _post(self, resource, query_id=None, options=None, data=None):
+        """Queries the REST service and returns the result"""
+        response = get(host=self._configuration.host,
+                       version=self._configuration.version,
+                       species=self._configuration.species,
+                       category=self._category,
+                       subcategory=self._subcategory,
+                       query_id=query_id,
+                       resource=resource,
+                       options=options,
+                       method='post',
+                       data=data)
+
+        return response
+
 
 class _Feature(_ParentRestClient):
     """Queries the RESTful service for feature data"""
@@ -274,9 +289,12 @@ class VariantClient(_Genomic):
         _subcategory = 'variant'
         super(VariantClient, self).__init__(configuration, _subcategory)
 
-    def get_annotation(self, query_id, **options):
+    def get_annotation(self, query_id, method='get', **options):
         """Returns annotation data of the variant"""
-        return self._get('annotation', query_id, options)
+        if method == 'get':
+            return self._get('annotation', query_id, options)
+        else:
+            return self._post('annotation', None, data=query_id, options=options)
 
     def get_cadd(self, query_id, **options):
         """Returns cadd score of the variant"""
