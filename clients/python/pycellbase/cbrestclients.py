@@ -1,3 +1,5 @@
+import sys
+
 from pycellbase.commons import get, deprecated
 
 
@@ -18,7 +20,6 @@ class _ParentRestClient(object):
                        query_id=query_id,
                        resource=resource,
                        options=options)
-
         return response
 
     def _post(self, resource, query_id=None, options=None, data=None):
@@ -33,8 +34,55 @@ class _ParentRestClient(object):
                        options=options,
                        method='post',
                        data=data)
-
         return response
+
+    def get_help(self, method_name=None, show_params=False):
+
+        # Getting swagger documentation
+        response = get(host=self._configuration.host,
+                       version='swagger.json',
+                       species=None,
+                       category=None,
+                       subcategory=None,
+                       resource=None)
+        sys.stdout.write(self.__class__.__name__ + '\n')
+
+        # Getting class methods
+        methods = [
+            func for func in dir(self)
+            if callable(getattr(self, func)) and not func.startswith('_')
+        ]
+
+        text = '{indent}{bullet} {name}: {desc}\n'
+        for method in methods:
+            if method_name is not None and method_name != method:
+                continue
+            # Getting method info
+            method_swag = (method[4:] if method.startswith('get_') else method)
+            path_info = [response['paths'][path] for path in response['paths']
+                         if self._category in path and method_swag in path]
+            if not path_info:
+                continue
+            desc = path_info[0]['get']['summary']
+            desc = desc.replace('http://bioinfo.hpc.cam.ac.uk/cellbase',
+                                self._configuration.host)
+            sys.stdout.write(text.format(indent=' ' * 4,
+                                         bullet='-',
+                                         name=method,
+                                         desc=desc))
+            # Getting method parameters
+            if not show_params:
+                continue
+            for param in path_info[0]['get']['parameters']:
+                if param['name'] in ['version', 'species', 'Output format']:
+                    continue
+                desc = param['description']
+                desc = desc.replace('http://bioinfo.hpc.cam.ac.uk/cellbase',
+                                    self._configuration.host)
+                sys.stdout.write(text.format(indent=' ' * 8,
+                                             bullet='*',
+                                             name=param['name'],
+                                             desc=desc))
 
 
 class _Feature(_ParentRestClient):
@@ -239,11 +287,11 @@ class XrefClient(_Feature):
         return self._get('starts_with', query_id, options)
 
 
-class GenomicRegionClient(_Genomic):
+class RegionClient(_Genomic):
     """Queries the RESTful service for genomic region data"""
     def __init__(self, configuration):
         _subcategory = 'region'
-        super(GenomicRegionClient, self).__init__(configuration, _subcategory)
+        super(RegionClient, self).__init__(configuration, _subcategory)
 
     def get_clinical(self, query_id, **options):
         """Returns clinical data of the genomic region"""
@@ -396,8 +444,8 @@ class RegulationClient:
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
-                       subcategory='featureClass',
-                       resource=None,
+                       subcategory=None,
+                       resource='featureClass',
                        options=options)
         return response
 
@@ -409,8 +457,8 @@ class RegulationClient:
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
-                       subcategory='featureType',
-                       resource=None,
+                       subcategory=None,
+                       resource='featureType',
                        options=options)
         return response
 
@@ -422,8 +470,8 @@ class RegulationClient:
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
-                       subcategory='search',
-                       resource=None,
+                       subcategory=None,
+                       resource='search',
                        options=options)
         return response
 
@@ -440,9 +488,9 @@ class SpeciesClient:
         response = get(host=self._configuration.host,
                        version=self._configuration.version,
                        species=self._configuration.species,
-                       category='info',
-                       subcategory='',
-                       resource=None,
+                       category=None,
+                       subcategory=None,
+                       resource='info',
                        options=options)
         return response
 
@@ -454,33 +502,33 @@ class MetaClient:
         self._category = 'meta'
 
     def about(self, **options):
-        """Returns info about CellBase code"""
         # This particular REST endpoint follows the structure
         # /{version}/meta/about
+        """Returns info about CellBase code"""
         response = get(host=self._configuration.host,
                        version=self._configuration.version,
-                       species=self._category,
-                       category='about',
-                       subcategory='',
-                       resource=None,
+                       species=None,
+                       category=self._category,
+                       subcategory=None,
+                       resource='about',
                        options=options)
         return response
 
     def get_category(self, query_id, **options):
+        # This particular REST endpoint follows the structure
+        # /{version}/meta/{category}
         """Returns source version metadata, including source urls"""
         categories = ['feature', 'genomic', 'network', 'regulatory']
         if query_id not in categories:
             msg = 'Query has to be one of the following: ' + str(categories)
             raise ValueError(msg)
 
-        # This particular REST endpoint follows the structure
-        # /{version}/meta/{category}
         response = get(host=self._configuration.host,
                        version=self._configuration.version,
-                       species=self._category,
-                       category=query_id,
-                       subcategory='',
-                       resource=None,
+                       species=None,
+                       category=self._category,
+                       subcategory=None,
+                       resource=query_id,
                        options=options)
         return response
 
@@ -490,23 +538,23 @@ class MetaClient:
         # /{version}/meta/species
         response = get(host=self._configuration.host,
                        version=self._configuration.version,
-                       species=self._category,
-                       category='species',
-                       subcategory='',
-                       resource=None,
+                       species=None,
+                       category=self._category,
+                       subcategory=None,
+                       resource='species',
                        options=options)
         return response
 
     def get_versions(self, **options):
-        """Returns source version metadata, including source urls"""
         # This particular REST endpoint follows the structure
         # /{version}/meta/{species}/versions
+        """Returns source version metadata, including source urls"""
         response = get(host=self._configuration.host,
                        version=self._configuration.version,
-                       species=self._category,
-                       category=self._configuration.species,
-                       subcategory='versions',
-                       resource=None,
+                       species=None,
+                       category=self._category,
+                       subcategory=self._configuration.species,
+                       resource='versions',
                        options=options)
         return response
 
@@ -516,9 +564,9 @@ class MetaClient:
         # /{version}/meta/ping
         response = get(host=self._configuration.host,
                        version=self._configuration.version,
-                       species=self._category,
-                       category='ping',
-                       subcategory='',
-                       resource=None,
+                       species=None,
+                       category=self._category,
+                       subcategory=None,
+                       resource='ping',
                        options=options)
         return response

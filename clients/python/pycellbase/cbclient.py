@@ -1,6 +1,6 @@
 import pycellbase.cbrestclients as crc
 from pycellbase.cbconfig import ConfigClient
-from pycellbase.commons import get
+from pycellbase.commons import get, deprecated
 
 
 class CellBaseClient(object):
@@ -13,7 +13,7 @@ class CellBaseClient(object):
         self._protein_client = None
         self._variation_client = None
         self._xref_client = None
-        self._genomic_region_client = None
+        self._region_client = None
         self._variant_client = None
         self._genome_sequence_client = None
         self._clinical_client = None
@@ -83,12 +83,15 @@ class CellBaseClient(object):
             self._xref_client = crc.XrefClient(self._configuration)
         return self._xref_client
 
+    def get_region_client(self):
+        """Creates the region client"""
+        if self._region_client is None:
+            self._region_client = crc.RegionClient(self._configuration)
+        return self._region_client
+
+    @deprecated
     def get_genomic_region_client(self):
-        """Creates the genomic region client"""
-        if self._genomic_region_client is None:
-            self._genomic_region_client = \
-                crc.GenomicRegionClient(self._configuration)
-        return self._genomic_region_client
+        return self.get_region_client()
 
     def get_variant_client(self):
         """Creates the variant client"""

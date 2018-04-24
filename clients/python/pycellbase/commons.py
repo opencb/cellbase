@@ -3,6 +3,7 @@ import warnings
 import requests
 import threading
 import itertools
+import re
 try:
     from Queue import Queue
 except ImportError:
@@ -17,19 +18,10 @@ def _create_rest_url(host, version, species, category, subcategory,
     """Creates the URL for querying the REST service"""
 
     # Creating the basic URL
-    url = ('/'.join([host,
-                     'webservices/rest',
-                     version,
-                     species,
-                     category,
-                     subcategory
-                     ]))
-
-    # If subcategory is queried, query_id can be absent
-    if query_id is not None:
-        url += '/' + query_id
-    if resource is not None:
-        url += '/' + resource
+    url_items = [host, 'webservices/rest', version, species, category,
+                 subcategory, query_id, resource]
+    url_items = filter(None, url_items)  # Some url items can be empty
+    url = ('/'.join(url_items))
 
     # Checking optional params
     if options is not None:
@@ -127,7 +119,11 @@ def _fetch(host, version, species, category, subcategory, resource,
         time_out_counter = 0
 
         try:
-            response = r.json()['response']
+            json_obj = r.json()
+            if 'response' in json_obj:
+                response = json_obj['response']
+            else:
+                return json_obj
         except ValueError:
             msg = 'Bad JSON format retrieved from server'
             raise ValueError(msg)
