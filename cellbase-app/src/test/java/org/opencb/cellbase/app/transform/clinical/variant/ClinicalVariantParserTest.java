@@ -43,14 +43,111 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/clinical_variant.json.gz");
-        assertEquals(11, parsedVariantList.size());
+        assertEquals(14, parsedVariantList.size());
 
-        // This RCV does not have any genomic feature associated with it (Gene). ClinVar record provides GenotypeSet
+        // ClinVar record with three variants in an Haplotype
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000000591");
+        assertEquals(3, variantList.size());
+        // First variant in the haplotype
+        Variant variant = variantList.get(0);
+        assertEquals("18", variant.getChromosome());
+        assertEquals(Integer.valueOf(55217985), variant.getStart());
+        assertEquals("A", variant.getReference());
+        assertEquals("C", variant.getAlternate());
+        // Two evidenceEntry for the two variation records, another for the RCV
+        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        // Check proper variation record is there
+        // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
+        EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "242756");
+        assertNotNull(evidenceEntry);
+        Property property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNull(property);
+        // This is the variation record that corresponds to the compound record: the mate variant string must be within
+        // the GenotypeSet property
+        evidenceEntry = getEvidenceEntryByAccession(variant, "561");
+        assertNotNull(evidenceEntry);
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:55217992:A:T,18:55217991:G:A", property.getValue());
+        evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000000591");
+        assertNotNull(evidenceEntry);
+        assertEquals(1, evidenceEntry.getGenomicFeatures().size());
+        assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:55217992:A:T,18:55217991:G:A", property.getValue());
+        // Second variant in the haplotype
+        variant = variantList.get(1);
+        assertEquals("18", variant.getChromosome());
+        assertEquals(Integer.valueOf(55217991), variant.getStart());
+        assertEquals("G", variant.getReference());
+        assertEquals("A", variant.getAlternate());
+        // Two evidenceEntry for the two variation records, another for the RCV
+        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        // Check proper variation record is there
+        // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
+        evidenceEntry = getEvidenceEntryByAccession(variant, "242755");
+        assertNotNull(evidenceEntry);
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNull(property);
+        // This is the variation record that corresponds to the compound record: the mate variant string must be within
+        // the GenotypeSet property
+        evidenceEntry = getEvidenceEntryByAccession(variant, "561");
+        assertNotNull(evidenceEntry);
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:55217992:A:T,18:55217985:A:C", property.getValue());
+        evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000000591");
+        assertNotNull(evidenceEntry);
+        assertEquals(1, evidenceEntry.getGenomicFeatures().size());
+        assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:55217992:A:T,18:55217985:A:C", property.getValue());
+        // Third variant in the haplotype
+        variant = variantList.get(2);
+        assertEquals("18", variant.getChromosome());
+        assertEquals(Integer.valueOf(55217992), variant.getStart());
+        assertEquals("A", variant.getReference());
+        assertEquals("T", variant.getAlternate());
+        // Two evidenceEntry for the two variation records, another for the RCV
+        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        // Check variation records are there
+        // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
+        evidenceEntry = getEvidenceEntryByAccession(variant, "242821");
+        assertNotNull(evidenceEntry);
+        // This is the variation record that corresponds to the compound record: the mate variant string must be within
+        // the GenotypeSet property
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNull(property);
+        evidenceEntry = getEvidenceEntryByAccession(variant, "561");
+        assertNotNull(evidenceEntry);
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:55217985:A:C,18:55217991:G:A", property.getValue());
+        evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000000591");
+        assertNotNull(evidenceEntry);
+        assertEquals(1, evidenceEntry.getGenomicFeatures().size());
+        assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
+        // Check it's properly flagged as part of the genotype set
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        assertNotNull(property.getValue());
+        assertEquals("18:55217985:A:C,18:55217991:G:A", property.getValue());
+
+
+
+
+        // ClinVar record provides GenotypeSet
         // in this case rather than MeasureSet
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000169692");
+        variantList = getVariantByAccession(parsedVariantList, "RCV000169692");
         assertEquals(2, variantList.size());
         // First variant in the genotype set
-        Variant variant = variantList.get(0);
+        variant = variantList.get(0);
         assertEquals("18", variant.getChromosome());
         assertEquals(Integer.valueOf(56390278), variant.getStart());
         assertEquals("A", variant.getReference());
@@ -58,16 +155,19 @@ public class ClinicalVariantParserTest {
         // Two evidenceEntry for the two variation records, another for the RCV
         assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
         // Check variation records are there
-        EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "242617");
+        // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
+        evidenceEntry = getEvidenceEntryByAccession(variant, "242617");
         assertNotNull(evidenceEntry);
-        Property property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
+        // This is the variation record that corresponds to the compound record: the mate variant string must be within
+        // the GenotypeSet property
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNull(property);
         evidenceEntry = getEvidenceEntryByAccession(variant, "424712");
         assertNotNull(evidenceEntry);
         // Check it's properly flagged as part of the genotype set
         property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNotNull(property.getValue());
-        assertEquals("18:56390321:C:-", property.getValue());
+        assertEquals("18:56390321:C:", property.getValue());
         evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000169692");
         assertNotNull(evidenceEntry);
         assertEquals(1, evidenceEntry.getGenomicFeatures().size());
@@ -75,9 +175,9 @@ public class ClinicalVariantParserTest {
         // Check it's properly flagged as part of the genotype set
         property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNotNull(property.getValue());
-        assertEquals("18:56390321:C:-", property.getValue());
+        assertEquals("18:56390321:C:", property.getValue());
         // Second variant in the genotype set
-        variant = variantList.get(0);
+        variant = variantList.get(1);
         assertEquals("18", variant.getChromosome());
         assertEquals(Integer.valueOf(56390321), variant.getStart());
         assertEquals("C", variant.getReference());
@@ -85,10 +185,13 @@ public class ClinicalVariantParserTest {
         // Two evidenceEntry for the two variation records, another for the RCV
         assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
         // Check proper variation record is there
+        // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
         evidenceEntry = getEvidenceEntryByAccession(variant, "242616");
         assertNotNull(evidenceEntry);
         property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNull(property);
+        // This is the variation record that corresponds to the compound record: the mate variant string must be within
+        // the GenotypeSet property
         evidenceEntry = getEvidenceEntryByAccession(variant, "424712");
         assertNotNull(evidenceEntry);
         // Check it's properly flagged as part of the genotype set
@@ -122,7 +225,6 @@ public class ClinicalVariantParserTest {
 
         variantList = getVariantByAccession(parsedVariantList, "COSM4059225");
         assertEquals(1, variantList.size());
-        variant = variantList.get(0);
 
         variantList = getVariantByAccession(parsedVariantList, "3259");
         assertEquals(1, variantList.size());
@@ -193,10 +295,13 @@ public class ClinicalVariantParserTest {
         List<Variant> returnVariantList = new ArrayList<>();
         for (Variant variant : variantList) {
             if (variant.getAnnotation().getTraitAssociation() != null) {
-                for (EvidenceEntry evidenceEntry : variant.getAnnotation().getTraitAssociation()) {
-                    if (evidenceEntry.getId().equals(accession)) {
-                        returnVariantList.add(variant);
-                    }
+                int i = 0;
+                while (i < variant.getAnnotation().getTraitAssociation().size()
+                        && !variant.getAnnotation().getTraitAssociation().get(i).getId().equals(accession)) {
+                    i++;
+                }
+                if (i < variant.getAnnotation().getTraitAssociation().size()) {
+                    returnVariantList.add(variant);
                 }
             }
         }

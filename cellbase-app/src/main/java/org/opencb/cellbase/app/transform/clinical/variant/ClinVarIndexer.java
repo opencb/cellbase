@@ -32,6 +32,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final String CLINVAR_CONTEXT_V53 = "org.opencb.biodata.formats.variant.clinvar.v53jaxb";
 
     private static final String CLINVAR_NAME = "clinvar";
+    private static final int VARIANT_SUMMARY_CHR_COLUMN = 18;
+    private static final int VARIANT_SUMMARY_START_COLUMN = 19;
+    private static final int VARIANT_SUMMARY_END_COLUMN = 20;
+    private static final int VARIANT_SUMMARY_REFERENCE_COLUMN = 21;
+    private static final int VARIANT_SUMMARY_ALTERNATE_COLUMN = 22;
     private static final int VARIANT_SUMMARY_CLINSIG_COLUMN = 6;
     private static final int VARIANT_SUMMARY_GENE_COLUMN = 4;
     private static final int VARIANT_SUMMARY_REVIEW_COLUMN = 24;
@@ -48,6 +53,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final String GENOTYPESET = "GenotypeSet";
     private static final String COMPOUND_HETEROZYGOTE = "CompoundHeterozygote";
     private static final String DIPLOTYPE = "Diplotype";
+    private static final String VARIANT = "Variant";
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
     private final Path clinvarVariationAlleleFile;
@@ -93,15 +99,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 if (alleleLocationDataList != null) {
                     // Actually this list is currently not allowed to be > 2
                     for (int i = 0; i < alleleLocationDataList.size(); i++) {
-                        String mateVariantString = null;
-                        if (alleleLocationDataList.size() > 1) {
-                            // Maximum allowed size for alleleLocationDataList is currently 2. We need to get the mate
-                            // of this var, which can only be in the other available position of the list
-                            SequenceLocation sequenceLocation  = alleleLocationDataList.get((i + 1) % 2).getSequenceLocation();
-                            mateVariantString = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
-                                    sequenceLocation.getStart(), sequenceLocation.getReference(),
-                                    sequenceLocation.getAlternate());
-                        }
+                        String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
                         updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString, traitsToEfoTermsMap);
                     }
                     numberIndexedRecords++;
@@ -119,6 +117,25 @@ public class ClinVarIndexer extends ClinicalIndexer {
         } catch (IOException e) {
             logger.error("Error indexing clinvar Xml file: " + e.getMessage());
         }
+    }
+
+    private String getMateVariantStringByAlleleLocationData(int i, List<AlleleLocationData> alleleLocationDataList) {
+        StringBuilder mateVariantString = new StringBuilder();
+        // Generate a string with comma separated list of variant strings including all other variants but the one
+        // in position i
+        for (int j = 0; j < alleleLocationDataList.size(); j++) {
+            if (j != i) {
+                SequenceLocation sequenceLocation = alleleLocationDataList.get(j).getSequenceLocation();
+                // First variant string must avoid including the separator
+                if (mateVariantString.length() > 0) {
+                    mateVariantString.append(",");
+                }
+                mateVariantString.append(VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
+                        sequenceLocation.getStart(), sequenceLocation.getReference(),
+                        sequenceLocation.getAlternate()).replace(" ", ""));
+            }
+        }
+        return mateVariantString.length() == 0 ? null : mateVariantString.toString();
     }
 
     private void printSummary() {
@@ -269,7 +286,6 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
         String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
-        logger.info("accession = {}", accession);
 
         VariantClassification variantClassification = getVariantClassification(publicSet.getReferenceClinVarAssertion()
                 .getClinicalSignificance().getDescription());
@@ -545,6 +561,14 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 () -> EtlCommons.countFileLines(clinvarSummaryFile), 200).setBatchSize(10000);
 
         Map<String, List<AlleleLocationData>> rcvToAlelleLocationData = new HashMap<>();
+        // variationID -> [lineFields1, lineFields2] where lineFields* correspond to the two associated lines in
+        // variant_summary.txt splitted by \t
+        Map<String, List<String[]>> compoundVariationRecords = new HashMap<>();
+
+        // Parse line by line variant_summary.txt. "Simple" lines corresponding to records involving just one variant
+        // will be directly indexed in RocksDB. Lines corresponding to compound records will be saved in memory for
+        // posterior parsing and indexing. This was decided to be done in this way in order to avoid saving all lines
+        // in memory since may become too much in a near future.
         // Skip header, read first data line
         bufferedReader.readLine();
         String line = bufferedReader.readLine();
@@ -552,37 +576,23 @@ public class ClinVarIndexer extends ClinicalIndexer {
             String[] parts = line.split("\t");
             // Check assembly
             if (parts[16].equals(assembly)) {
-                SequenceLocation sequenceLocation = new SequenceLocation(parts[18], Integer.valueOf(parts[19]),
-                        Integer.valueOf(parts[20]), parts[21], parts[22]);
-                String mateVariantString = null;
+                SequenceLocation sequenceLocation = new SequenceLocation(parts[VARIANT_SUMMARY_CHR_COLUMN],
+                        Integer.valueOf(parts[VARIANT_SUMMARY_START_COLUMN]),
+                        Integer.valueOf(parts[VARIANT_SUMMARY_END_COLUMN]),
+                        parts[VARIANT_SUMMARY_REFERENCE_COLUMN],
+                        parts[VARIANT_SUMMARY_ALTERNATE_COLUMN]);
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
-                String[] rcvArray = parts[11].split(";");
-                for (String rcv : rcvArray) {
+                // Also, RCV ids may be repeated in the same line!!! e.g RCV000540418;RCV000540418;RCV000540418;RCV000000066
+                Set<String> rcvSet = new HashSet<>(Arrays.asList(parts[11].split(";")));
+                // Fill in rcvToAlleleLocationData map
+                for (String rcv : rcvSet) {
                     List<AlleleLocationData> alleleLocationDataList;
+                    // One RCV may appear in multiple lines e.g. compound heterozygote
                     if (rcvToAlelleLocationData.get(rcv) == null) {
                         alleleLocationDataList = new ArrayList<>();
                         rcvToAlelleLocationData.put(rcv, alleleLocationDataList);
                     } else {
                         alleleLocationDataList = rcvToAlelleLocationData.get(rcv);
-                        if (alleleLocationDataList.size() == 2) {
-                            throw new RuntimeException("More than two variants found under the same RCV id. Parser is "
-                                    + " not ready for handling this situation. Please, check. Line: " + line);
-
-                        }
-                        // mateVariantString had already been set in a previous iteration of this for
-                        if (mateVariantString != null) {
-                            throw new RuntimeException("One variant found in multiple RCVs having more than one"
-                                    + " different mate. Only one mate is currently allowed per variant. Please, check."
-                                    + " Line: " + line);
-                        }
-                        // No more than two alleles are currently allowed pero RCV - see above - so there can only be
-                        // one other allele
-                        mateVariantString = VariantAnnotationUtils
-                                .buildVariantId(alleleLocationDataList.get(0).getSequenceLocation().getChromosome(),
-                                alleleLocationDataList.get(0).getSequenceLocation().getStart(),
-                                alleleLocationDataList.get(0).getSequenceLocation().getReference(),
-                                alleleLocationDataList.get(0).getSequenceLocation().getAlternate());
-
                     }
                     // Allele ID assumed to always be present
                     if (EtlCommons.isMissing(parts[0])) {
@@ -598,11 +608,29 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 if (!EtlCommons.isMissing(parts[0])) {
                     // One allele ID may be associated with multiple variation records e.g. 187140 -> [242617, 424712]
                     for (VariationData variationData : alleleIdToVariationData.get(parts[0])) {
-                        updateRocksDB(sequenceLocation, variationData.getId(), parts,
-                                (COMPOUND_HETEROZYGOTE.equals(variationData.getType())
-                                        || DIPLOTYPE.equals(variationData.getType())) ? mateVariantString : null,
-                                traitsToEfoTermsMap);
-                        numberIndexedRecords++;
+                        // This is a "normal" line with just one variant being involved in this/these RCV records
+                        if (VARIANT.equals(variationData.getType())) {
+                            updateRocksDB(sequenceLocation, variationData.getId(), parts, null,
+                                    traitsToEfoTermsMap);
+                            numberIndexedRecords++;
+                        // Save lines forming a compound variation/RCV record in memory, within a HashMap for
+                        // posterior processing.
+                        // In order to generate the EvidenceEntry object of compound variation records we need first to
+                        // collect all the lines associated with it, so that we are able to generate mate variant
+                        // strings for each of the forming variants
+                        } else {
+                            List<String[]> lineList;
+                            // Check if there was a list of lines already initialised for this variation id
+                            if (compoundVariationRecords.containsKey(variationData.getId())) {
+                                lineList = compoundVariationRecords.get(variationData.getId());
+                            } else {
+                                 lineList = new ArrayList<>(2);
+                                 compoundVariationRecords.put(variationData.getId(), lineList);
+                            }
+                            // Add current - splitted - line to the list for this variation id
+                            lineList.add(parts);
+
+                        }
                     }
                 }
                 totalNumberRecords++;
@@ -610,10 +638,45 @@ public class ClinVarIndexer extends ClinicalIndexer {
             progressLogger.increment(1);
             line = bufferedReader.readLine();
         }
-
         bufferedReader.close();
 
+        // Drain compoundVariationRecords map by parsing the lines in it and creating corresponding EvidenceEntry objects
+        logger.info("{} compound variation records found.", compoundVariationRecords.size());
+        logger.info("Indexing compound variation records");
+        for (String variationId : compoundVariationRecords.keySet()) {
+            for (int i = 0; i < compoundVariationRecords.get(variationId).size(); i++) {
+                String[] currentVarFields = compoundVariationRecords.get(variationId).get(i);
+                updateRocksDB(new SequenceLocation(currentVarFields[VARIANT_SUMMARY_CHR_COLUMN],
+                                Integer.valueOf(currentVarFields[VARIANT_SUMMARY_START_COLUMN]),
+                                Integer.valueOf(currentVarFields[VARIANT_SUMMARY_END_COLUMN]),
+                                currentVarFields[VARIANT_SUMMARY_REFERENCE_COLUMN],
+                                currentVarFields[VARIANT_SUMMARY_ALTERNATE_COLUMN]), variationId, currentVarFields,
+                        getMateVariantStringByVariantSummaryRecord(i, compoundVariationRecords.get(variationId)), traitsToEfoTermsMap);
+                numberIndexedRecords++;
+            }
+        }
+
         return rcvToAlelleLocationData;
+    }
+
+    private String getMateVariantStringByVariantSummaryRecord(int i, List<String[]> splitLineList) {
+        StringBuilder mateVariantString = new StringBuilder();
+        // Generate a string with comma separated list of variant strings including all other variants but the one
+        // in position i
+        for (int j = 0; j < splitLineList.size(); j++) {
+            if (j != i) {
+                // First variant string must avoid including the separator
+                if (mateVariantString.length() > 0) {
+                    mateVariantString.append(",");
+                }
+                String[] mateFields = splitLineList.get(j);
+                mateVariantString.append(VariantAnnotationUtils.buildVariantId(mateFields[VARIANT_SUMMARY_CHR_COLUMN],
+                        Integer.valueOf(mateFields[VARIANT_SUMMARY_START_COLUMN]),
+                        mateFields[VARIANT_SUMMARY_REFERENCE_COLUMN],
+                        mateFields[VARIANT_SUMMARY_ALTERNATE_COLUMN]).replace(" ", ""));
+            }
+        }
+        return mateVariantString.length() == 0 ? null : mateVariantString.toString();
     }
 
     private Map<String, List<VariationData>> loadAlleleIdToVariationData() throws IOException {
@@ -627,17 +690,18 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
         while (line != null) {
             String[] parts = line.split("\t");
-            List<VariationData> variationDataList ;
+            List<VariationData> variationDataList;
             variationDataList = alleleIdToVariationId.get(parts[VARIATION_ALLELE_ALLELE_COLUMN]);
             // One allele ID may be associated with multiple variation records e.g. 187140 -> [242617, 424712]
             if (variationDataList == null) {
-                variationDataList = new ArrayList<>(2);
+                variationDataList = new ArrayList<>();
                 alleleIdToVariationId.put(parts[VARIATION_ALLELE_ALLELE_COLUMN], variationDataList);
-            } else if (variationDataList.size() == 2) {
-                throw new RuntimeException("No more than two variation records per allele ID are currently modelled." +
-                        " Pleasee check line \n" + line + "\n of file " + clinvarVariationAlleleFile.toString());
-
             }
+//            else if (variationDataList.size() == 2) {
+//                throw new RuntimeException("No more than two variation records per allele ID are currently modelled."
+//                        + " Pleasee check line \n" + line + "\n of file " + clinvarVariationAlleleFile.toString());
+//
+//            }
             variationDataList.add(new VariationData(parts[VARIATION_ALLELE_VARIATION_COLUMN],
                     parts[VARIATION_ALLELE_TYPE_COLUMN]));
             line = bufferedReader.readLine();
@@ -716,24 +780,24 @@ public class ClinVarIndexer extends ClinicalIndexer {
         private String id;
         private String type;
 
-        public VariationData(String id, String type) {
+        VariationData(String id, String type) {
             this.id = id;
             this.type = type;
         }
 
-        public String getId() {
+        String getId() {
             return id;
         }
 
-        public void setId(String id) {
+        void setId(String id) {
             this.id = id;
         }
 
-        public String getType() {
+        String getType() {
             return type;
         }
 
-        public void setType(String type) {
+        void setType(String type) {
             this.type = type;
         }
     }
