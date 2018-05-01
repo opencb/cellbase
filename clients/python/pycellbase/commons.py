@@ -3,7 +3,6 @@ import warnings
 import requests
 import threading
 import itertools
-import re
 try:
     from Queue import Queue
 except ImportError:
@@ -37,7 +36,7 @@ def _create_rest_url(host, version, species, category, subcategory,
     return url
 
 
-def _fetch(host, version, species, category, subcategory, resource,
+def _fetch(session, host, version, species, category, subcategory, resource,
            query_id=None, options=None, method='get', data=None):
     """Queries the REST service retrieving results until exhaustion or limit"""
     # HERE BE DRAGONS
@@ -102,9 +101,9 @@ def _fetch(host, version, species, category, subcategory, resource,
         # Getting REST response
         headers = {"Accept-Encoding": "gzip"}
         if method == 'get':
-            r = requests.get(url, headers=headers)
+            r = session.get(url, headers=headers)
         elif method == 'post':
-            r = requests.post(url, data=data, headers=headers)
+            r = session.post(url, data=data, headers=headers)
         else:
             msg = 'Method "' + method + '" not implemented'
             raise NotImplementedError(msg)
@@ -169,21 +168,22 @@ def _fetch(host, version, species, category, subcategory, resource,
     return final_response
 
 
-def _worker(queue, results, host, version, species, category,
+def _worker(queue, results, session, host, version, species, category,
             subcategory, resource, options=None, method='get', data=None):
     """Manages the queue system for the threads"""
     while True:
         # Fetching new element from the queue
         index, query_id = queue.get()
-        response = _fetch(host, version, species, category, subcategory,
-                          resource, query_id, options, method, data)
+        response = _fetch(session, host, version, species, category,
+                          subcategory, resource, query_id, options, method,
+                          data)
         # Store data in results at correct index
         results[index] = response
         # Signaling to the queue that task has been processed
         queue.task_done()
 
 
-def get(host, version, species, category, subcategory, resource,
+def get(session, host, version, species, category, subcategory, resource,
         query_id=None, options=None, method='get', data=None):
     """Queries the REST service using multiple threads if needed"""
 
@@ -193,8 +193,9 @@ def get(host, version, species, category, subcategory, resource,
 
     # Multithread if the number of queries is greater than _CALL_BATCH_SIZE
     if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
-        response = _fetch(host, version, species, category, subcategory,
-                          resource, query_id, options, method, data)
+        response = _fetch(session, host, version, species, category,
+                          subcategory, resource, query_id, options, method,
+                          data)
         return response
     else:
         if options is not None and 'num_threads' in options:
@@ -217,6 +218,7 @@ def get(host, version, species, category, subcategory, resource,
             t = threading.Thread(target=_worker,
                                  kwargs={'queue': q,
                                          'results': res,
+                                         'session': session,
                                          'host': host,
                                          'version': version,
                                          'species': species,

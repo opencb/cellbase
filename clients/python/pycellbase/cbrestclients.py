@@ -5,14 +5,16 @@ from pycellbase.commons import get, deprecated
 
 class _ParentRestClient(object):
     """Queries the REST service given the different query params"""
-    def __init__(self, configuration, subcategory, category):
+    def __init__(self, session, configuration, subcategory, category):
+        self._session = session
         self._configuration = configuration
         self._subcategory = subcategory
         self._category = category
 
     def _get(self, resource, query_id=None, options=None):
         """Queries the REST service and returns the result"""
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
@@ -24,7 +26,8 @@ class _ParentRestClient(object):
 
     def _post(self, resource, query_id=None, options=None, data=None):
         """Queries the REST service and returns the result"""
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
@@ -39,7 +42,8 @@ class _ParentRestClient(object):
     def get_help(self, method_name=None, show_params=False):
 
         # Getting swagger documentation
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version='swagger.json',
                        species=None,
                        category=None,
@@ -87,9 +91,10 @@ class _ParentRestClient(object):
 
 class _Feature(_ParentRestClient):
     """Queries the RESTful service for feature data"""
-    def __init__(self, configuration, subcategory):
+    def __init__(self, session, configuration, subcategory):
         _category = 'feature'
-        super(_Feature, self).__init__(configuration, subcategory, _category)
+        super(_Feature, self).__init__(session, configuration, subcategory,
+                                       _category)
 
     def get_model(self):
         """Returns the model for a specific element"""
@@ -98,9 +103,10 @@ class _Feature(_ParentRestClient):
 
 class _Genomic(_ParentRestClient):
     """Queries the RESTful service for genomic data"""
-    def __init__(self, configuration, subcategory):
+    def __init__(self, session, configuration, subcategory):
         _category = 'genomic'
-        super(_Genomic, self).__init__(configuration, subcategory, _category)
+        super(_Genomic, self).__init__(session, configuration, subcategory,
+                                       _category)
 
     def get_model(self):
         """Returns the model for a specific element"""
@@ -109,9 +115,9 @@ class _Genomic(_ParentRestClient):
 
 class GeneClient(_Feature):
     """Queries the RESTful service for gene data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'gene'
-        super(GeneClient, self).__init__(configuration, _subcategory)
+        super(GeneClient, self).__init__(session, configuration, _subcategory)
 
     def count(self):
         """Returns the number of entries"""
@@ -169,9 +175,10 @@ class GeneClient(_Feature):
 
 class ProteinClient(_Feature):
     """Queries the RESTful service for protein data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'protein'
-        super(ProteinClient, self).__init__(configuration, _subcategory)
+        super(ProteinClient, self).__init__(session, configuration,
+                                            _subcategory)
 
     def get_info(self, query_id, **options):
         """Returns general information"""
@@ -192,9 +199,10 @@ class ProteinClient(_Feature):
 
 class TranscriptClient(_Feature):
     """Queries the RESTful service for transcript data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'transcript'
-        super(TranscriptClient, self).__init__(configuration, _subcategory)
+        super(TranscriptClient, self).__init__(session, configuration,
+                                               _subcategory)
 
     def count(self):
         """Returns the number of entries"""
@@ -227,9 +235,10 @@ class TranscriptClient(_Feature):
 
 class VariationClient(_Feature):
     """Queries the RESTful service for variation data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'variation'
-        super(VariationClient, self).__init__(configuration, _subcategory)
+        super(VariationClient, self).__init__(session, configuration,
+                                              _subcategory)
 
     def count(self):
         """Returns the number of entries"""
@@ -258,9 +267,9 @@ class VariationClient(_Feature):
 
 class XrefClient(_Feature):
     """Queries the RESTful service for xref data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'id'
-        super(XrefClient, self).__init__(configuration, _subcategory)
+        super(XrefClient, self).__init__(session, configuration, _subcategory)
 
     def contains(self, query_id, **options):
         """Returns gene HGNC symbols containing the given ID"""
@@ -289,9 +298,9 @@ class XrefClient(_Feature):
 
 class RegionClient(_Genomic):
     """Queries the RESTful service for genomic region data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'region'
-        super(RegionClient, self).__init__(configuration, _subcategory)
+        super(RegionClient, self).__init__(session, configuration, _subcategory)
 
     def get_clinical(self, query_id, **options):
         """Returns clinical data of the genomic region"""
@@ -333,16 +342,18 @@ class RegionClient(_Genomic):
 
 class VariantClient(_Genomic):
     """Queries the RESTful service for variant data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'variant'
-        super(VariantClient, self).__init__(configuration, _subcategory)
+        super(VariantClient, self).__init__(session, configuration,
+                                            _subcategory)
 
     def get_annotation(self, query_id, method='get', **options):
         """Returns annotation data of the variant"""
         if method == 'get':
             return self._get('annotation', query_id, options)
         else:
-            return self._post('annotation', None, data=query_id, options=options)
+            return self._post('annotation', None, data=query_id,
+                              options=options)
 
     def get_cadd(self, query_id, **options):
         """Returns cadd score of the variant"""
@@ -351,9 +362,10 @@ class VariantClient(_Genomic):
 
 class GenomeSequenceClient(_Genomic):
     """Queries the RESTful service for genomic sequence data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _subcategory = 'chromosome'
-        super(GenomeSequenceClient, self).__init__(configuration, _subcategory)
+        super(GenomeSequenceClient, self).__init__(session, configuration,
+                                                   _subcategory)
 
     def get_info(self, query_id, **options):
         """Returns general information"""
@@ -370,11 +382,11 @@ class GenomeSequenceClient(_Genomic):
 
 class ClinicalClient(_ParentRestClient):
     """Queries the RESTful service for clinical data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _category = 'clinical'
         _subcategory = 'variant'
-        super(ClinicalClient, self).__init__(configuration, _subcategory,
-                                             _category)
+        super(ClinicalClient, self).__init__(session, configuration,
+                                             _subcategory, _category)
 
     def get_allele_origin_labels(self, **options):
         """Returns all available allele origin labels"""
@@ -403,10 +415,10 @@ class ClinicalClient(_ParentRestClient):
 
 class TFBSClient(_ParentRestClient):
     """Queries the RESTful service for TFBS data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
         _category = 'regulation'
         _subcategory = 'tf'
-        super(TFBSClient, self).__init__(configuration, _subcategory,
+        super(TFBSClient, self).__init__(session, configuration, _subcategory,
                                          _category)
 
     def get_feature_class(self, **options):
@@ -432,7 +444,8 @@ class TFBSClient(_ParentRestClient):
 
 class RegulationClient:
     """Queries the RESTful service for regulation data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
+        self._session = session
         self._configuration = configuration
         self._category = 'regulatory'
 
@@ -440,7 +453,8 @@ class RegulationClient:
         """Returns list of available regulatory feature classes"""
         # This particular REST endpoint follows the structure
         # /{version}/{species}/regulatory/featureClass
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
@@ -453,7 +467,8 @@ class RegulationClient:
         """Returns list of available regulatory feature types"""
         # This particular REST endpoint follows the structure
         # /{version}/{species}/regulatory/featureType
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
@@ -466,7 +481,8 @@ class RegulationClient:
         """Returns regulatory elements"""
         # This particular REST endpoint follows the structure
         # /{version}/{species}/regulatory/search
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=self._category,
@@ -478,14 +494,16 @@ class RegulationClient:
 
 class SpeciesClient:
     """Queries the RESTful service for species data"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
+        self._session = session
         self._configuration = configuration
 
     def get_info(self, **options):
         """Returns general information"""
         # This particular REST endpoint follows the structure
         # /{version}/{species}/info
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=self._configuration.species,
                        category=None,
@@ -497,7 +515,8 @@ class SpeciesClient:
 
 class MetaClient:
     """Queries the RESTful service for metadata"""
-    def __init__(self, configuration):
+    def __init__(self, session, configuration):
+        self._session = session
         self._configuration = configuration
         self._category = 'meta'
 
@@ -505,7 +524,8 @@ class MetaClient:
         # This particular REST endpoint follows the structure
         # /{version}/meta/about
         """Returns info about CellBase code"""
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=None,
                        category=self._category,
@@ -523,7 +543,8 @@ class MetaClient:
             msg = 'Query has to be one of the following: ' + str(categories)
             raise ValueError(msg)
 
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=None,
                        category=self._category,
@@ -536,7 +557,8 @@ class MetaClient:
         """Returns available species"""
         # This particular REST endpoint follows the structure
         # /{version}/meta/species
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=None,
                        category=self._category,
@@ -549,7 +571,8 @@ class MetaClient:
         # This particular REST endpoint follows the structure
         # /{version}/meta/{species}/versions
         """Returns source version metadata, including source urls"""
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=None,
                        category=self._category,
@@ -562,7 +585,8 @@ class MetaClient:
         """Checks if service is alive"""
         # This particular REST endpoint follows the structure
         # /{version}/meta/ping
-        response = get(host=self._configuration.host,
+        response = get(session=self._session,
+                       host=self._configuration.host,
                        version=self._configuration.version,
                        species=None,
                        category=self._category,
