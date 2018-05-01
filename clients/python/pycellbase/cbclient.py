@@ -10,6 +10,7 @@ class CellBaseClient(object):
     def __init__(self, config_client=None):
         # Initializing session
         self._session = requests.Session()
+        self._session.headers.update({"Accept-Encoding": "gzip"})
 
         # CellBase REST clients
         self._gene_client = None

@@ -1,3 +1,4 @@
+import sys
 import time
 import warnings
 import requests
@@ -26,6 +27,8 @@ def _create_rest_url(host, version, species, category, subcategory,
     if options is not None:
         opts = []
         for k, v in options.items():
+            if k == 'debug':
+                continue
             if isinstance(v, list):
                 opts.append(k + '=' + ','.join(map(str, v)))
             else:
@@ -96,14 +99,16 @@ def _fetch(session, host, version, species, category, subcategory, resource,
                                query_id=current_query_id,
                                resource=resource,
                                options=opts)
-        print(url)  # DEBUG
+
+        # DEBUG
+        if 'debug' in options and options['debug']:
+            sys.stderr.write(url + '\n')
 
         # Getting REST response
-        headers = {"Accept-Encoding": "gzip"}
         if method == 'get':
-            r = session.get(url, headers=headers)
+            r = session.get(url)
         elif method == 'post':
-            r = session.post(url, data=data, headers=headers)
+            r = session.post(url)
         else:
             msg = 'Method "' + method + '" not implemented'
             raise NotImplementedError(msg)
