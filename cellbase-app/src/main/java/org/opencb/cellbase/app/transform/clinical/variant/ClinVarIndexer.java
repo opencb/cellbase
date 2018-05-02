@@ -381,12 +381,15 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
 //    private List<String> getInheritanceModel(PublicSetType publicSet) {
-    private ModeOfInheritance getInheritanceModel(TraitType trait, Map<String, String> sourceInheritableTrait)
+//    private ModeOfInheritance getInheritanceModel(TraitType trait, Map<String, String> sourceInheritableTrait)
+    private ModeOfInheritance getInheritanceModel(List<ReferenceAssertionType.AttributeSet> attributeSetList,
+                                                  Map<String, String> sourceInheritableTrait)
             throws JsonProcessingException {
         Set<String> inheritanceModelSet = new HashSet<>();
 //        for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
-        if (trait.getAttributeSet() != null) {
-            for (TraitType.AttributeSet attributeSet : trait.getAttributeSet()) {
+//        if (trait.getAttributeSet() != null) {
+        if (attributeSetList != null) {
+            for (ReferenceAssertionType.AttributeSet attributeSet : attributeSetList) {
                 if (attributeSet.getAttribute().getType() != null
                         && attributeSet.getAttribute().getType().equalsIgnoreCase("modeofinheritance")) {
                     inheritanceModelSet.add(attributeSet.getAttribute().getValue().toLowerCase());
@@ -496,6 +499,13 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<Map<String, String>> sourceInheritableTraitList
                 = new ArrayList<>(publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait().size());
 
+        Map<String, String> sourceInheritableTraitMap = new HashMap<>();
+        // WARNING: in version 53 onwards of ClinVar schema the mode of inheritance is provided at the
+        // root of the ReferenceClinvarAssertion rather than for each trait
+        ModeOfInheritance modeOfInheritance
+                = getInheritanceModel(publicSet.getReferenceClinVarAssertion().getAttributeSet(),
+                        sourceInheritableTraitMap);
+
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
             // Look for the preferred trait name
             int i = 0;
@@ -506,13 +516,26 @@ public class ClinVarIndexer extends ClinicalIndexer {
             // WARN: assuming there will always be a preferred trait name
             // Found preferred trait name
             if (i < trait.getName().size()) {
-                Map<String, String> sourceInheritableTraitMap = new HashMap<>();
-                sourceInheritableTraitMap.put(TRAIT, trait.getName().get(i).getElementValue().getValue());
+                Map<String, String> currentSourceInheritableTraitMap = new HashMap<>(sourceInheritableTraitMap);
+                // WARNING: overwrites previous TRAIT entry if present in order to reuse the same object in each
+                // iteration - in version 53 onwards of ClinVar schema the mode of inheritance is provided at the
+                // root of the ReferenceClinvarAssertion rather than for each trait
+                currentSourceInheritableTraitMap.put(TRAIT, trait.getName().get(i).getElementValue().getValue());
 
+//                heritableTraitList.add(new HeritableTrait(trait.getName().get(i).getElementValue().getValue(),
+//                        getInheritanceModel(trait, sourceInheritableTraitMap)));
                 heritableTraitList.add(new HeritableTrait(trait.getName().get(i).getElementValue().getValue(),
-                        getInheritanceModel(trait, sourceInheritableTraitMap)));
+                        modeOfInheritance));
 
-                sourceInheritableTraitList.add(sourceInheritableTraitMap);
+                // This is to double-confirm that the new ClinVar (v53) schema is properly read. It will just check
+                // that there are no inheritance modes provided within the trait
+                if (traitInheritanceModesPresent(trait.getAttributeSet())) {
+                    throw new RuntimeException("ClinVar record found providing inheritance mode withint the trait."
+                            + " After ClinVar schema v53 inheritance mode is expected to be provided at the root"
+                            + " of the ReferenceClinvarAssertion field.");
+                }
+
+                sourceInheritableTraitList.add(currentSourceInheritableTraitMap);
             } else {
                 throw new IllegalArgumentException("ClinVar record found "
                         + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()
@@ -529,6 +552,19 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     jsonObjectWriter.writeValueAsString(sourceInheritableTraitList)));
         }
         return heritableTraitList;
+    }
+
+    private boolean traitInheritanceModesPresent(List<TraitType.AttributeSet> attributeSetList) {
+        if (attributeSetList != null) {
+            for (TraitType.AttributeSet attributeSet : attributeSetList) {
+                if (attributeSet.getAttribute().getType() != null
+                        && attributeSet.getAttribute().getType().equalsIgnoreCase("modeofinheritance")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private List<String> addBibliographyFromObservationSet(List<String> germlineBibliography, ObservationSet observationSet) {

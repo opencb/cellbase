@@ -3,6 +3,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.hamcrest.CoreMatchers;
@@ -10,10 +11,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.EvidenceEntry;
+import org.opencb.biodata.models.variant.avro.ModeOfInheritance;
 import org.opencb.biodata.models.variant.avro.Property;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -22,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static junit.framework.Assert.assertTrue;
@@ -33,6 +37,15 @@ import static org.junit.Assert.*;
  */
 @Ignore
 public class ClinicalVariantParserTest {
+
+    private ObjectMapper jsonObjectMapper;
+
+    public ClinicalVariantParserTest() {
+        jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
     @Test
     public void parse() throws Exception {
         Path clinicalVariantFolder = Paths.get(getClass().getResource("/clinicalVariant").toURI());
@@ -72,6 +85,7 @@ public class ClinicalVariantParserTest {
         assertEquals("18:55217992:A:T,18:55217991:G:A", property.getValue());
         evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000000591");
         assertNotNull(evidenceEntry);
+        // Check affected feature (gene symbol) properly parsed
         assertEquals(1, evidenceEntry.getGenomicFeatures().size());
         assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
         // Check it's properly flagged as part of the genotype set
@@ -102,6 +116,7 @@ public class ClinicalVariantParserTest {
         assertEquals("18:55217992:A:T,18:55217985:A:C", property.getValue());
         evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000000591");
         assertNotNull(evidenceEntry);
+        // Check affected feature (gene symbol) properly parsed
         assertEquals(1, evidenceEntry.getGenomicFeatures().size());
         assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
         // Check it's properly flagged as part of the genotype set
@@ -132,6 +147,7 @@ public class ClinicalVariantParserTest {
         assertEquals("18:55217985:A:C,18:55217991:G:A", property.getValue());
         evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000000591");
         assertNotNull(evidenceEntry);
+        // Check affected feature (gene symbol) properly parsed
         assertEquals(1, evidenceEntry.getGenomicFeatures().size());
         assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
         // Check it's properly flagged as part of the genotype set
@@ -222,6 +238,15 @@ public class ClinicalVariantParserTest {
         assertThat(variant.getAnnotation().getTraitAssociation().stream()
                         .map(evidenceEntryItem -> evidenceEntryItem.getId()).collect(Collectors.toList()),
                 CoreMatchers.hasItems("COSM5745645"));
+        // Check mode of inheritance is properly parsed
+        evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000148485");
+        assertEquals(1, evidenceEntry.getHeritableTraits().size());
+        assertEquals(ModeOfInheritance.monoallelic, evidenceEntry.getHeritableTraits().get(0).getInheritanceMode());
+        property = getProperty(evidenceEntry.getAdditionalProperties(), "modeOfInheritance");
+        ObjectReader reader = jsonObjectMapper.readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(List.class, null, Map.class));
+        List<Map<String, String>> traitMapList = reader.readValue(property.getValue());
+        assertEquals("autosomal dominant inheritance", traitMapList.get(0).get("modeOfInheritance"));
+
 
         variantList = getVariantByAccession(parsedVariantList, "COSM4059225");
         assertEquals(1, variantList.size());
@@ -313,9 +338,6 @@ public class ClinicalVariantParserTest {
 
         try {
             BufferedReader bufferedReader = FileUtils.newBufferedReader(Paths.get(fileName));
-            ObjectMapper jsonObjectMapper = new ObjectMapper();
-            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.startsWith("#") || line.trim().isEmpty()) {
