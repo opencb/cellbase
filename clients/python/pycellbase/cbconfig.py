@@ -58,6 +58,9 @@ class ConfigClient(object):
                 self._config['version'] = config_dict['version']
             if 'species' in config_dict:
                 self._config['species'] = config_dict['species']
+            # Compatibility with java client config
+            if 'defaultSpecies' in config_dict:
+                self._config['species'] = config_dict['defaultSpecies']
         else:
             msg = 'No configuration parameters found'
             raise ValueError(msg)
