@@ -13,8 +13,45 @@ _DEFAULT_SPECIES = 'hsapiens'
 _DEFAULT_ASSEMBLY = 'GRCh38'
 
 
-def _parse_configuration(parser):
-    """Parse configuration arguments"""
+def _parse_arguments():
+    """Parse arguments"""
+
+    desc = 'This tool returns all available IDs in CellBase for given IDs'
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+
+    lists_group = parser.add_mutually_exclusive_group()
+    lists_group.add_argument(
+        '-D', '--dbs', dest='list_databases', action='store_true',
+        help='show list of available databases'
+    )
+    lists_group.add_argument(
+        '-S', '--sps', dest='list_species', action='store_true',
+        help='show list of available species'
+    )
+
+    parser.add_argument(
+        '-i', dest='input_fpath', help='input file path'
+    )
+    parser.add_argument(
+        '-o', '--output', dest='output_fpath', default=sys.stdout,
+        help='output file path (default: stdout)'
+    )
+
+    inex_group = parser.add_mutually_exclusive_group()
+    inex_group.add_argument(
+        '--include', dest='include', help='include databases'
+    )
+    inex_group.add_argument(
+        '--exclude', dest='exclude', help='exclude databases'
+    )
+
+    parser.add_argument(
+        '-v', '--verbose', dest='verbosity', action='store_true',
+        help='increase output verbosity'
+    )
     parser.add_argument(
         '--assembly', dest='assembly', choices=['grch37', 'grch38'],
         help='reference genome assembly (default: ' + _DEFAULT_ASSEMBLY + ')'
@@ -39,59 +76,6 @@ def _parse_configuration(parser):
         help='CellBase configuration. Overrides default values.'
     )
 
-
-def _parse_basic(parser):
-    """Parse basic arguments"""
-    parser.add_argument(
-        '-v', '--verbose', dest='verbosity', action='store_true',
-        help='increase output verbosity'
-    )
-
-
-def _parse_convert(parser):
-    """Parse convert arguments"""
-    parser.add_argument(
-        '-i', dest='input_fpath', help='input file path'
-    )
-    parser.add_argument(
-        '-o', '--output', dest='output_fpath', default=sys.stdout,
-        help='output file path (default: stdout)'
-    )
-    inex_group = parser.add_mutually_exclusive_group()
-    inex_group.add_argument(
-        '--include', dest='include', help='include databases'
-    )
-    inex_group.add_argument(
-        '--exclude', dest='exclude', help='exclude databases'
-    )
-
-
-def _parse_list(parser):
-    """Parse list arguments"""
-    lists_group = parser.add_mutually_exclusive_group()
-    lists_group.add_argument(
-        '-D', '--dbs', dest='list_databases', action='store_true',
-        help='show list of available databases'
-    )
-    lists_group.add_argument(
-        '-S', '--sps', dest='list_species', action='store_true',
-        help='show list of available species'
-    )
-
-
-def _parse_arguments():
-    """Parse arguments"""
-
-    desc = 'This tool returns all available IDs in CellBase for given IDs'
-    parser = argparse.ArgumentParser(
-        description=desc,
-        formatter_class=argparse.RawTextHelpFormatter
-    )
-
-    _parse_basic(parser)
-    _parse_configuration(parser)
-    _parse_convert(parser)
-    _parse_list(parser)
     args = parser.parse_args()
     return args
 
