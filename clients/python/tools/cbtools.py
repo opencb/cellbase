@@ -113,6 +113,7 @@ _ANNOT = {
 
 
 def _parse_xref(subparser):
+    """Parse xref tool arguments"""
     xref_parser = subparser.add_parser(
         'xref',
         description='Returns all available IDs in CellBase for any given ID',
@@ -140,6 +141,7 @@ def _parse_xref(subparser):
 
 
 def _parse_hgvs(subparser):
+    """Parse hgvs tool arguments"""
     hgvs_parser = subparser.add_parser(
         'hgvs',
         description='Returns variant HGVS notation',
@@ -166,6 +168,7 @@ def _parse_hgvs(subparser):
 
 
 def _parse_annotate(subparser):
+    """Parse annotate tool arguments"""
     annotate_parser = subparser.add_parser(
         'annotate',
         description='Annotates VCF files',
@@ -197,6 +200,7 @@ def _parse_annotate(subparser):
 
 
 def _parse_config(parser):
+    """Parse config arguments"""
     parser.add_argument(
         '-v', '--verbose', dest='verbosity', action='store_true',
         help='increase output verbosity'
