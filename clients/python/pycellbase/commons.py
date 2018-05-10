@@ -1,3 +1,6 @@
+import sys
+import time
+import warnings
 import requests
 import threading
 import itertools
@@ -15,23 +18,17 @@ def _create_rest_url(host, version, species, category, subcategory,
     """Creates the URL for querying the REST service"""
 
     # Creating the basic URL
-    url = ('/'.join([host,
-                     'webservices/rest',
-                     version,
-                     species,
-                     category,
-                     subcategory
-                     ]))
-
-    # If subcategory is queried, query_id can be absent
-    if query_id is not None:
-        url += '/' + query_id
-    url += '/' + resource
+    url_items = [host, 'webservices/rest', version, species, category,
+                 subcategory, query_id, resource]
+    url_items = filter(None, url_items)  # Some url items can be empty
+    url = ('/'.join(url_items))
 
     # Checking optional params
     if options is not None:
         opts = []
         for k, v in options.items():
+            if k == 'debug':
+                continue
             if isinstance(v, list):
                 opts.append(k + '=' + ','.join(map(str, v)))
             else:
@@ -42,8 +39,8 @@ def _create_rest_url(host, version, species, category, subcategory,
     return url
 
 
-def _fetch(host, version, species, category, subcategory, resource,
-           query_id=None, options=None):
+def _fetch(session, host, version, species, category, subcategory, resource,
+           query_id=None, options=None, method='get', data=None):
     """Queries the REST service retrieving results until exhaustion or limit"""
     # HERE BE DRAGONS
     final_response = None
@@ -102,19 +99,35 @@ def _fetch(host, version, species, category, subcategory, resource,
                                query_id=current_query_id,
                                resource=resource,
                                options=opts)
-        # print(url)  # DEBUG
+
+        # DEBUG
+        if 'debug' in options and options['debug']:
+            sys.stderr.write(url + '\n')
 
         # Getting REST response
-        r = requests.get(url, headers={"Accept-Encoding": "gzip"})
+        if method == 'get':
+            r = session.get(url)
+        elif method == 'post':
+            r = session.post(url)
+        else:
+            msg = 'Method "' + method + '" not implemented'
+            raise NotImplementedError(msg)
+
         if r.status_code == 504:  # Gateway Time-out
             if time_out_counter == 99:
                 msg = 'Server not responding in time'
                 raise requests.ConnectionError(msg)
             time_out_counter += 1
+            time.sleep(1)
             continue
         time_out_counter = 0
+
         try:
-            response = r.json()['response']
+            json_obj = r.json()
+            if 'response' in json_obj:
+                response = json_obj['response']
+            else:
+                return json_obj
         except ValueError:
             msg = 'Bad JSON format retrieved from server'
             raise ValueError(msg)
@@ -160,22 +173,23 @@ def _fetch(host, version, species, category, subcategory, resource,
     return final_response
 
 
-def _worker(queue, results, host, version, species, category,
-            subcategory, resource, options=None):
+def _worker(queue, results, session, host, version, species, category,
+            subcategory, resource, options=None, method='get', data=None):
     """Manages the queue system for the threads"""
     while True:
         # Fetching new element from the queue
         index, query_id = queue.get()
-        response = _fetch(host, version, species, category, subcategory,
-                          resource, query_id, options)
+        response = _fetch(session, host, version, species, category,
+                          subcategory, resource, query_id, options, method,
+                          data)
         # Store data in results at correct index
         results[index] = response
         # Signaling to the queue that task has been processed
         queue.task_done()
 
 
-def get(host, version, species, category, subcategory, resource,
-        query_id=None, options=None):
+def get(session, host, version, species, category, subcategory, resource,
+        query_id=None, options=None, method='get', data=None):
     """Queries the REST service using multiple threads if needed"""
 
     # If query_id is an array, convert to comma-separated string
@@ -184,8 +198,9 @@ def get(host, version, species, category, subcategory, resource,
 
     # Multithread if the number of queries is greater than _CALL_BATCH_SIZE
     if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
-        response = _fetch(host, version, species, category, subcategory,
-                          resource, query_id, options)
+        response = _fetch(session, host, version, species, category,
+                          subcategory, resource, query_id, options, method,
+                          data)
         return response
     else:
         if options is not None and 'num_threads' in options:
@@ -208,13 +223,16 @@ def get(host, version, species, category, subcategory, resource,
             t = threading.Thread(target=_worker,
                                  kwargs={'queue': q,
                                          'results': res,
+                                         'session': session,
                                          'host': host,
                                          'version': version,
                                          'species': species,
                                          'category': category,
                                          'subcategory': subcategory,
                                          'resource': resource,
-                                         'options': options})
+                                         'options': options,
+                                         'method': method,
+                                         'data': data})
             # Setting threads as "daemon" allows main program to exit eventually
             # even if these do not finish correctly
             t.setDaemon(True)
@@ -231,3 +249,14 @@ def get(host, version, species, category, subcategory, resource,
     final_response = list(itertools.chain.from_iterable(res))
 
     return final_response
+
+
+def deprecated(func):
+    """Prints a warning for functions marked as deprecated"""
+    def new_func(*args, **kwargs):
+        warnings.simplefilter('always', DeprecationWarning)  # turn off filter
+        warnings.warn('Call to deprecated function "{}".'.format(func.__name__),
+                      category=DeprecationWarning, stacklevel=2)
+        warnings.simplefilter('default', DeprecationWarning)  # reset filter
+        return func(*args, **kwargs)
+    return new_func
