@@ -13,7 +13,7 @@ _DEFAULT_SPECIES = 'hsapiens'
 _DEFAULT_ASSEMBLY = 'GRCh38'
 _CANONICAL_CHROMOSOMES = map(str, range(1, 23)) + ['X', 'Y', 'MT']
 _INFO_TEMPLATE = ('##INFO=<ID={id},Number=.,Type=String,Description="{desc}'
-                  ' from CellBase. Format: {fields}"')
+                  ' from CellBase. Format: {fields}">')
 _ANNOT = {
     'consequences': {
         'id': 'CBCT',
@@ -108,7 +108,7 @@ _ANNOT = {
 def _parse_arguments():
     """Parse arguments"""
 
-    desc = 'This tool returns all available IDs in CellBase for given IDs'
+    desc = 'This tool annotates VCF files'
     parser = argparse.ArgumentParser(
         description=desc,
         formatter_class=argparse.RawTextHelpFormatter
@@ -372,12 +372,12 @@ def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
             new_header = add_info_to_vcf_header(vcf_header, include)
             print_header = False
             for header_line in new_header:
-                output_fpath.write(header_line + '\n')
+                output_fhand.write(header_line + '\n')
 
         # Skipping non-canonical chromosomes
         chromosome = get_chromosome(line_split[0])
         if chromosome not in _CANONICAL_CHROMOSOMES:
-            output_fpath.write(line + '\n')
+            output_fhand.write(line + '\n')
             continue
 
         # Querying CellBase
@@ -388,7 +388,7 @@ def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
         # Adding annotation to variant
         line_split[7] = ';'.join([line_split[7]] + annotation)
         line = '\t'.join(line_split)
-        output_fpath.write(line + '\n')
+        output_fhand.write(line + '\n')
 
     input_fhand.close()
     output_fhand.close()
