@@ -39,7 +39,7 @@ setup_kwargs = {
     },
     'packages': ['pycellbase'],
     'install_requires': ['requests', 'pyyaml'],
-    'scripts': ['tools/hgvs_calculator.py', 'tools/id_conversor.py']
+    'scripts': ['tools/cbtools.py']
 }
 
 setup(**setup_kwargs)

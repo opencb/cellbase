@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import argparse
 import logging
@@ -11,7 +12,13 @@ _DEFAULT_HOST = 'bioinfo.hpc.cam.ac.uk:80/cellbase'
 _DEFAULT_API_VERSION = 'v4'
 _DEFAULT_SPECIES = 'hsapiens'
 _DEFAULT_ASSEMBLY = 'GRCh38'
-_CANONICAL_CHROMOSOMES = map(str, range(1, 23)) + ['X', 'Y', 'MT']
+# Reference sequence notation
+# http://www.hgvs.org/mutnomen/standards.html
+_HGVS_REF_SEQ_LETTER = {
+    'genomic': 'g.', 'cdna': 'c.', 'rna': 'r.', 'protein': 'p.',
+    'mitochondrial': 'm.', 'noncoding': 'n.'
+}
+_CANONICAL_CHROMOSOMES = list(map(str, range(1, 23))) + ['X', 'Y', 'MT']
 _INFO_TEMPLATE = ('##INFO=<ID={id},Number=.,Type=String,Description="{desc}'
                   ' from CellBase. Format: {fields}">')
 _ANNOT = {
@@ -105,35 +112,91 @@ _ANNOT = {
 }
 
 
-def _parse_arguments():
-    """Parse arguments"""
-
-    desc = 'This tool annotates VCF files'
-    parser = argparse.ArgumentParser(
-        description=desc,
+def _parse_xref(subparser):
+    xref_parser = subparser.add_parser(
+        'xref',
+        description='Returns all available IDs in CellBase for any given ID',
         formatter_class=argparse.RawTextHelpFormatter
     )
+    xref_parser.set_defaults(which='xref')
 
-    parser.add_argument(
-        dest='input_fpath', help='input file path'
+    _parse_config(xref_parser)
+
+    xref_parser.add_argument(
+        'input_fpath', help='IDs file path'
     )
-    parser.add_argument(
+    xref_parser.add_argument(
         '-o', '--output', dest='output_fpath', default=sys.stdout,
         help='output file path (default: stdout)'
     )
 
-    inex_group = parser.add_mutually_exclusive_group()
+    inex_group = xref_parser.add_mutually_exclusive_group()
+    inex_group.add_argument(
+        '--include', dest='include', help='include databases'
+    )
+    inex_group.add_argument(
+        '--exclude', dest='exclude', help='exclude databases'
+    )
+
+
+def _parse_hgvs(subparser):
+    hgvs_parser = subparser.add_parser(
+        'hgvs',
+        description='Returns variant HGVS notation',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    hgvs_parser.set_defaults(which='hgvs')
+
+    _parse_config(hgvs_parser)
+
+    hgvs_parser.add_argument(
+        'input',
+        help=('input file path or comma-separated string'
+              '\n(e.g. "19:45411941:T:C")')
+    )
+    hgvs_parser.add_argument(
+        '-o', '--output', dest='output_fpath', default=sys.stdout,
+        help='output file path (default: stdout)'
+    )
+    hgvs_parser.add_argument(
+        '-r', '--ref_seq_type', dest='ref_seq_type',
+        choices=_HGVS_REF_SEQ_LETTER.keys(),
+        help='reference sequence type'
+    )
+
+
+def _parse_annotate(subparser):
+    annotate_parser = subparser.add_parser(
+        'annotate',
+        description='Annotates VCF files',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    annotate_parser.set_defaults(which='annotate')
+
+    _parse_config(annotate_parser)
+
+    annotate_parser.add_argument(
+        'input_fpath', help='VCF file path'
+    )
+    annotate_parser.add_argument(
+        '-o', '--output', dest='output_fpath', default=sys.stdout,
+        help='output file path (default: stdout)'
+    )
+
+    inex_group = annotate_parser.add_mutually_exclusive_group()
     inex_group.add_argument(
         '--include', dest='include',
         help=('comma-separated list of annotation features to include.'
-              ' Choices: ' + str(_ANNOT.keys())),
+              '\nChoices: {' + ','.join(_ANNOT.keys()) + '}'),
     )
     inex_group.add_argument(
         '--exclude', dest='exclude',
         help=('comma-separated list of annotation features to exclude.'
-              ' Choices: ' + str(_ANNOT.keys())),
+              '\nChoices: {' + ','.join(_ANNOT.keys()) + '}'),
     )
 
+
+def _parse_config(parser):
     parser.add_argument(
         '-v', '--verbose', dest='verbosity', action='store_true',
         help='increase output verbosity'
@@ -162,6 +225,26 @@ def _parse_arguments():
         help='CellBase configuration. Overrides default values.'
     )
 
+
+def _parse_arguments():
+    """Parse arguments"""
+
+    desc = 'This script provides different PyCellBase bioinformatics tools'
+    parser = argparse.ArgumentParser(
+        description=desc,
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    subparsers = parser.add_subparsers(help='available tools')
+
+    # XREF conversor
+    _parse_xref(subparsers)
+
+    # HGVS calculator
+    _parse_hgvs(subparsers)
+
+    # VCF annotator
+    _parse_annotate(subparsers)
+
     args = parser.parse_args()
     return args
 
@@ -184,11 +267,6 @@ def _check_arguments(args):
                ' argument with "--api_version" argument')
         logging.warning(msg)
 
-    if not args.input_fpath and not any([args.list_species,
-                                         args.list_databases]):
-        msg = 'Input file path is required ("-i" option)'
-        raise ValueError(msg)
-
     return args
 
 
@@ -201,6 +279,157 @@ def _set_logger(verbosity=False):
     else:
         logging.basicConfig(format="[%(levelname)s] %(message)s",
                             level=logging.WARNING)
+
+
+def _get_species_list(cbc, assembly):
+    """Return all available species in CellBase"""
+    mc = cbc.get_meta_client()
+    res = mc.get_species(assembly=assembly)[0]['result'][0]
+    sps = [species['id'] for kingdom in res for species in res[kingdom]]
+    return sorted(sps)
+
+
+def _get_databases_list(cbc, assembly):
+    """Return all available databases for xrefs in CellBase"""
+    xc = cbc.get_xref_client()
+    databases = xc.get_dbnames(assembly=assembly)[0]['result']
+    dbs = [database for database in databases]
+    return sorted(dbs)
+
+
+def _filter_databases(databases, include=None, exclude=None):
+    """Filter a list of databases given an inclusion/exclusion list"""
+    dbs = []
+
+    if include is not None:
+        for db in include:
+            if db in databases:
+                dbs.append(db)
+            else:
+                msg = ('Database not found in CellBase: "' + str(db) + '"')
+                logging.warning(msg)
+        databases = sorted(dbs)
+
+    if exclude is not None:
+        for database in databases:
+            if database not in exclude:
+                dbs.append(database)
+        databases = sorted(dbs)
+
+    if not databases:
+        msg = 'No databases selected'
+        logging.warning(msg)
+
+    return databases
+
+
+def convert_ids(input_fpath, output_fpath, cellbase_client, assembly,
+                databases):
+    """Prints all IDs for a given a file with one ID per line"""
+
+    if not databases:
+        return
+
+    # Getting xref client
+    xc = cellbase_client.get_xref_client()
+
+    # Checking output
+    if output_fpath is sys.stdout:
+        output_fhand = output_fpath
+    else:
+        output_fhand = open(output_fpath, 'w')
+
+    # Writing header
+    output_fhand.write('\t'.join([db for db in databases]) + '\n')
+
+    # Querying CellBase and writing results
+    with open(input_fpath, 'r') as input_fhand:
+        for line in input_fhand:
+            query = line.rstrip()
+            response = xc.get_xref(query,
+                                   assembly=assembly,
+                                   limit=5000)
+            for query_response in response:
+                ids = {}
+                id_list = []
+
+                # Skipping if ID is not found in CellBase
+                if not query_response['result']:
+                    msg = 'ID not found in CellBase: "' + str(query) + '"'
+                    logging.warning(msg)
+                    continue
+
+                # Getting list of all IDs
+                for item in query_response['result']:
+                    ids.setdefault(item['dbName'], []).append(item['id'])
+                    id_list = [set(ids[db]) if db in ids else ['.']
+                               for db in databases]
+
+                # Writing output
+                if id_list:
+                    id_list = [';'.join(id_group) for id_group in id_list]
+                    output_fhand.write('\t'.join(id_list) + '\n')
+
+    output_fhand.close()
+
+
+def _get_hgvs(query, cellbase_client, ref_seq_type, assembly):
+
+    # Setting up CellBase Variant client
+    vc = cellbase_client.get_variant_client()
+
+    response = vc.get_annotation(query, include='hgvs', assembly=assembly)
+
+    for i, query_response in enumerate(response):
+        hgvs_list = []
+
+        # Getting list of all hgvs notations
+        for hgvs in query_response['result'][0]['hgvs']:
+            hgvs_list.append(hgvs)
+
+        # Setting up list to filter hgvs notations
+        filtering = [1]*len(hgvs_list)
+
+        # Checking reference sequence type
+        if ref_seq_type is not None:
+            for j, hgvs in enumerate(hgvs_list):
+                notation = hgvs.split(':')[1]
+                if _HGVS_REF_SEQ_LETTER[ref_seq_type] not in notation:
+                    filtering[j] = 0
+
+        yield (query.split(',')[i],
+               [hgvs for i, hgvs in enumerate(hgvs_list) if filtering[i]])
+
+
+def calculate_hgvs(input_data, output_fpath, cbc, ref_seq_type, assembly):
+
+    # Checking output
+    if output_fpath is sys.stdout:
+        output_fhand = output_fpath
+    else:
+        output_fhand = open(output_fpath, 'w')
+
+    # Creating input generator
+    number_of_items = 100
+    input_fhand = None
+    if os.path.isfile(input_data):
+        input_fhand = open(input_data, 'r')
+        input_gen = ([line.rstrip()] for line in input_fhand)
+    else:
+        input_data = input_data.split(',')
+        input_gen = [input_data[i:i+number_of_items]
+                     for i in range(0, len(input_data), number_of_items)]
+
+    for query in input_gen:
+        query = ','.join(query)
+        for variant, hgvs in _get_hgvs(query, cbc, ref_seq_type, assembly):
+            if not hgvs:
+                hgvs = ['.']
+            output_fhand.write('\t'.join([variant, ';'.join(hgvs)]) + '\n')
+
+    output_fhand.close()
+    if input_fhand is not None:
+        input_fhand.close()
 
 
 def get_chromosome(chrom):
@@ -347,7 +576,7 @@ def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
 
     # Opening file
     if input_fpath.endswith('.vcf.gz'):
-        input_fhand = gzip.open(input_fpath, 'r')
+        input_fhand = gzip.open(input_fpath, 'rt')
     elif input_fpath.endswith('.vcf'):
         input_fhand = open(input_fpath, 'r')
     else:
@@ -359,7 +588,7 @@ def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
     vcf_header = []
     print_header = True
     for line in input_fhand:
-        line = line.rstrip()
+        line = str(line.rstrip())
         line_split = line.split()
 
         # Getting VCF header
@@ -434,15 +663,40 @@ def main():
         assembly = args.assembly
     else:
         assembly = _DEFAULT_ASSEMBLY
-
-    # Setting up pycellbase clients
     cbc = CellBaseClient(cc)
 
-    # Getting the list of annotations to add
-    include = get_include_annots(args.include, args.exclude)
+    if args.which == 'xref':
+        # Getting available databases
+        databases = _get_databases_list(cbc, assembly)
 
-    # Annotate VCF
-    annotate_vcf(cbc, args.input_fpath, args.output_fpath, include, assembly)
+        # Filtering databases with include and exclude
+        include = args.include.split(',') if args.include is not None else None
+        exclude = args.exclude.split(',') if args.exclude is not None else None
+        databases = _filter_databases(databases, include=include,
+                                      exclude=exclude)
+
+        # Converting IDs
+        convert_ids(input_fpath=args.input_fpath,
+                    output_fpath=args.output_fpath,
+                    cellbase_client=cbc,
+                    assembly=assembly,
+                    databases=databases)
+    if args.which == 'hgvs':
+        calculate_hgvs(input_data=args.input,
+                       output_fpath=args.output_fpath,
+                       cbc=cbc,
+                       ref_seq_type=args.ref_seq_type,
+                       assembly=assembly)
+    if args.which == 'annotate':
+        # Getting the list of annotations to add
+        include = get_include_annots(args.include, args.exclude)
+
+        # Annotate VCF
+        annotate_vcf(cellbase_client=cbc,
+                     input_fpath=args.input_fpath,
+                     output_fpath=args.output_fpath,
+                     include=include,
+                     assembly=assembly)
 
 
 if __name__ == '__main__':
