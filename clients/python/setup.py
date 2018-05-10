@@ -45,7 +45,4 @@ setup_kwargs = {
     'scripts': ['tools/cbtools.py']
 }
 
-import sys
-sys.stdout.write(version)
-
 setup(**setup_kwargs)
