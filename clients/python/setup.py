@@ -8,10 +8,13 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
+# Get version from __init__.py
+with open(path.join(here, 'pycellbase', '__init__.py'), encoding='utf-8') as f:
+    version = f.readline()
 
 setup_kwargs = {
     'name': 'pycellbase',
-    'version': '4.5.1',
+    'version': version,
     'description': 'Python client for CellBase',
     'long_description': long_description,
     'long_description_content_type': 'text/x-rst',
@@ -41,5 +44,8 @@ setup_kwargs = {
     'install_requires': ['requests', 'pyyaml'],
     'scripts': ['tools/cbtools.py']
 }
+
+import sys
+sys.stdout.write(version)
 
 setup(**setup_kwargs)
