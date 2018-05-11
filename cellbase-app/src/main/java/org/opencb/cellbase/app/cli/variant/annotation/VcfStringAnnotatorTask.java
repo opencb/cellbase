@@ -49,23 +49,25 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
     private List<VariantAnnotator> variantAnnotatorList;
     private FullVcfCodec vcfCodec;
     private VariantContextToVariantConverter converter;
-    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
+//    private static VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
+    private VariantNormalizer normalizer;
     private boolean normalize;
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
                                   List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext) {
-        this(header, version, variantAnnotatorList, sharedContext, true);
+        this(header, version, variantAnnotatorList, sharedContext, true, true);
     }
 
     public VcfStringAnnotatorTask(VCFHeader header, VCFHeaderVersion version,
                                   List<VariantAnnotator> variantAnnotatorList, SharedContext sharedContext,
-                                  boolean normalize) {
+                                  boolean normalize, boolean decompose) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
         this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
         this.variantAnnotatorList = variantAnnotatorList;
         this.sharedContext = sharedContext;
         this.normalize = normalize;
+        normalizer = new VariantNormalizer(true, false, decompose);
     }
 
     @Override
@@ -179,6 +181,10 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
         // Get Variant object for the first BND
         Variant variant = converter.convert(variantContext);
 
+        // Set mate position
+        variant.getSv().getBreakend().getMate().setChromosome(variantContext1.getContig());
+        variant.getSv().getBreakend().getMate().setPosition(variantContext1.getStart());
+
         // Check the second BND does have CIPOS
         List ciposValue = variantContext1.getAttributeAsList(CIPOS);
         if (!ciposValue.isEmpty()) {
@@ -189,14 +195,17 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
             Map<String, String> attributesMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
             attributesMap.put(MATE_CIPOS, ciposString);
 
-            // CIPOS of the second breakend is saved at CiEnd
+            // CIPOS of the second breakend
             List ciposParts = variantContext1.getAttributeAsList(CIPOS);
-            variant.getSv().setCiEndLeft(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(0)));
-            variant.getSv().setCiEndRight(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(1)));
-        // If not, it's a precise call, just store the second BND coordinates in the SV CIEND field
-        } else {
-            variant.getSv().setCiEndLeft(variantContext1.getStart());
-            variant.getSv().setCiEndRight(variantContext1.getStart());
+            variant.getSv()
+                    .getBreakend()
+                    .getMate()
+                    .setCiPositionLeft(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(0)));
+            variant.getSv()
+                    .getBreakend()
+                    .getMate()
+                    .setCiPositionRight(variantContext1.getStart() + Integer.valueOf((String) ciposParts.get(1)));
+        // If not, it's a precise call, just position is stored (above)
         }
 
         return variant;

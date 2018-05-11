@@ -3,7 +3,8 @@ package org.opencb.cellbase.core.variant.annotation;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.ConsequenceType;
+import org.opencb.biodata.models.variant.VariantBuilder;
+import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -25,7 +26,8 @@ public class ConsequenceTypeBNDCalculator extends ConsequenceTypeGenericRegionCa
         parseQueryParam(queryOptions);
 
         List<ConsequenceType> consequenceTypeList1 = runBreakend(inputVariant, geneList, overlapsRegulatoryRegion);
-        Variant mate = Variant.getMateBreakend(inputVariant);
+//        Variant mate = Variant.getMateBreakend(inputVariant);
+        Variant mate = VariantBuilder.getMateBreakend(inputVariant);
         if (mate == null) {
             return consequenceTypeList1;
         } else {

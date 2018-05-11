@@ -119,7 +119,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                     // ---NNNNNNNNCATTTTTTT
                     //    deletion  |---|
                     if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
-                        && transcript.getCdnaCodingStart() - cdnaVariantEnd < 3) {
+                        && (cdnaVariantEnd - transcript.getCdnaCodingStart()) < 3
+                        && (cdnaVariantEnd - transcript.getCdnaCodingStart()) >= 0) {
                         solveStartCodonNegativeVariant(transcriptSequence, transcript.getCdnaCodingStart(),
                                 cdnaVariantStart, cdnaVariantEnd);
                     } else {
@@ -229,7 +230,8 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                     // ---NNNNNNNNCATTTTTTT
                     //    deletion  |---|
                     if (cdnaVariantStart != -1 && cdnaVariantEnd != -1
-                            && transcript.getCdnaCodingStart() - cdnaVariantEnd < 3) {
+                            && (cdnaVariantEnd - transcript.getCdnaCodingStart()) < 3
+                            && (cdnaVariantEnd - transcript.getCdnaCodingStart()) >= 0) {
                         solveStartCodonPositiveVariant(transcriptSequence, transcript.getCdnaCodingStart(),
                                 cdnaVariantStart, cdnaVariantEnd);
                     } else {

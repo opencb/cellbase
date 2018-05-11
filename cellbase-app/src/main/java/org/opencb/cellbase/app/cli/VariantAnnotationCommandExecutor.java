@@ -92,6 +92,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private boolean benchmark;
     private Path referenceFasta;
     private boolean normalize;
+    private boolean decompose;
     private List<String> chromosomeList;
     private int port;
     private String species;
@@ -379,14 +380,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                         VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
                         VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
                         variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
-                                variantAnnotatorList, sharedContext, normalize));
+                                variantAnnotatorList, sharedContext, normalize, decompose));
                     } catch (IOException e) {
                         throw new IOException("Unable to read VCFHeader");
                     }
                     break;
                 case JSON:
                     logger.info("Using a JSON parser to read variants...");
-                    variantAnnotatorTaskList.add(new JsonStringAnnotatorTask(variantAnnotatorList, normalize));
+                    variantAnnotatorTaskList.add(new JsonStringAnnotatorTask(variantAnnotatorList, normalize, decompose));
                     break;
                 default:
                     break;
@@ -601,12 +602,17 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             Iterator<VariantContext> iterator = vcfFileReader.iterator();
             VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "",
                     vcfFileReader.getFileHeader().getSampleNamesInOrder());
-            VariantNormalizer normalizer = new VariantNormalizer(true, false, true);
+            // Currently, only VCF files are supported for custom-annotation so makes no sense to allow no normalisation
+            // of variants.
+            // However, decomposition of MNVs/Block substitutions can still be optional
+            VariantNormalizer normalizer = new VariantNormalizer(true, false, decompose);
             lineCounter = 0;
             while (iterator.hasNext()) {
                 variantContext = iterator.next();
                 // Reference positions will not be indexed
                 if (variantContext.getAlternateAlleles().size() > 0) {
+                    // Currently, only VCF files are supported for custom-annotation so makes no sense to allow no normalisation
+                    // of variants.
                     List<Variant> variantList = normalizer.normalize(converter.apply(Collections.singletonList(variantContext)), true);
                     for (Variant variant : variantList) {
                         db.put((variant.getChromosome() + "_" + variant.getStart() + "_" + variant.getReference() + "_"
@@ -739,6 +745,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         } else {
             normalize = false;
         }
+
+        decompose = !variantAnnotationCommandOptions.skipDecompose;
 
         // output file
         if (variantAnnotationCommandOptions.output != null) {

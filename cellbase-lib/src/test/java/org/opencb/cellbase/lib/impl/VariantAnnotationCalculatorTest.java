@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,7 @@ import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
 
 import java.io.*;
@@ -505,8 +507,8 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         Variant variant = new Variant("1:33322-35865:<CN4>");
         queryOptions.put("cnvExtraPadding", 500);
-        StructuralVariation structuralVariation = new StructuralVariation(33322, 33322,
-                35865, 35865, 4, null, null, null);
+        StructuralVariation structuralVariation = new StructuralVariation(33322, 33322, 35865, 35865, 4, null, null,
+                null, null);
         variant.setSv(structuralVariation);
         QueryResult<ConsequenceType> consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
@@ -525,8 +527,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         variant = new Variant("1:33322-35865:<CN4>");
         queryOptions.remove("cnvExtraPadding");
-        structuralVariation = new StructuralVariation(33322, 33322,
-                35835, 35965, 4, null, null, null);
+        structuralVariation = new StructuralVariation(33322, 33322, 35835, 35965, 4, null, null, null, null);
         variant.setSv(structuralVariation);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
@@ -548,8 +549,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
 
         variant = new Variant("1:33322-35865:<DEL>");
-        structuralVariation = new StructuralVariation(33322, 33322,
-                36035, 36136, 0, null, null, null);
+        structuralVariation = new StructuralVariation(33322, 33322, 36035, 36136, 0, null, null, null, null);
         variant.setSv(structuralVariation);
         consequenceTypeResult =
                 variantAnnotationCalculator.getAllConsequenceTypesByVariant(variant, queryOptions);
@@ -822,8 +822,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("include", "variation");
         Variant variant = new Variant("1:10161-10291:<DEL>");
         StructuralVariation structuralVariation = new StructuralVariation(10161 - 10, 10161 + 50,
-                10291 - 100, 10291 + 10, 0, null, null,
-                null);
+                10291 - 100, 10291 + 10, 0, null, null, null, null);
         variant.setSv(structuralVariation);
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -833,7 +832,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("1:10401-127130:<CN10>");
         structuralVariation = new StructuralVariation(9000, 10401, 127130,
                 127630, 10, null, null,
-                StructuralVariantType.COPY_NUMBER_GAIN);
+                StructuralVariantType.COPY_NUMBER_GAIN, null);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
@@ -843,7 +842,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("1:10401-127130:<CN10>");
         structuralVariation = new StructuralVariation(9000, 10401, 127130,
                 127630, 10, null, null,
-                StructuralVariantType.COPY_NUMBER_GAIN);
+                StructuralVariantType.COPY_NUMBER_GAIN, null);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
@@ -857,8 +856,9 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         Variant variant = new Variant("19", 172450, "", "A]2:10000]");
         StructuralVariation structuralVariation = new StructuralVariation(172450 - 10, 172450 + 30,
-                10000 - 100, 10000 + 7, null, null, null,
-                null);
+                null, null, null, null, null,
+                null, new Breakend(new BreakendMate("2", 10000, 10000 - 100,
+                10000 + 7), BreakendOrientation.SS, null));
         variant.setSv(structuralVariation);
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
@@ -874,7 +874,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         variant = new Variant("19:82354-82444:<CN4>");
         structuralVariation = new StructuralVariation(82354, 82354,
-                82444, 82444, 0, null, null, null);
+                82444, 82444, 0, null, null, null, null);
         queryOptions.put("cnvExtraPadding", 150);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
@@ -896,7 +896,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         variant = new Variant("19:82354-82444:<DEL>");
         structuralVariation = new StructuralVariation(82354, 82354,
-                82444, 82444, 0, null, null, null);
+                82444, 82444, 0, null, null, null, null);
         queryOptions.put("svExtraPadding", 150);
         variant.setSv(structuralVariation);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
@@ -919,7 +919,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("1:1822100-1823770:<DEL>");
         structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
                 1823770 - 20, 1823770 + 10, 0, null, null,
-                null);
+                null, null);
         variant.setSv(structuralVariation);
         queryOptions.put("imprecise", false);
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
@@ -929,7 +929,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         variant = new Variant("1:1822100-1823770:<DEL>");
         structuralVariation = new StructuralVariation(1822100 - 10, 1822100 + 50,
                 1823770 - 20, 1823770 + 10, 0, null, null,
-                null);
+                null, null);
         variant.setSv(structuralVariation);
         queryOptions.remove("imprecise");
         queryResult = variantAnnotationCalculator.getAnnotationByVariant(variant, queryOptions);
@@ -1823,19 +1823,31 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     private <T> void assertObjectListEquals(String expectedConsequenceTypeJson, List<T> actualList,
-                                            Class<T> clazz) {
-        List expectedObjectList = jsonObjectMapper.convertValue(JSON.parse(expectedConsequenceTypeJson), List.class);
-        assertEquals(expectedObjectList.size(), actualList.size());
+                                            Class<T> clazz) throws IOException {
+        ObjectReader reader = jsonObjectMapper
+                .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(List.class, null, clazz));
+
+        Collection<? extends T> expectedList = reader.readValue(expectedConsequenceTypeJson);
+        if (ConsequenceType.class.equals(clazz)) {
+            sortProteinFeatureList((Collection<ConsequenceType>) expectedList);
+            sortProteinFeatureList((Collection<ConsequenceType>) actualList);
+        }
+
         Set<T> actual = new HashSet<>(actualList);
-        Set<T> expected = (Set) expectedObjectList.stream()
-                .map(result -> (jsonObjectMapper.convertValue(result, clazz))).collect(Collectors.toSet());
+        Set<T> expected = new HashSet<>(expectedList);
+        assertEquals(expected.size(), actualList.size());
 
         assertEquals(expected, actual);
-//        for (int i = 0; i < list.size(); i++) {
-//            assertEquals(list.get(i), jsonObjectMapper.convertValue(goldenObjectList.get(i), clazz));
-//        }
     }
 
+    private void sortProteinFeatureList(Collection<ConsequenceType> consequenceTypeSet) {
+        for (ConsequenceType consequenceType : consequenceTypeSet) {
+            if (consequenceType.getProteinVariantAnnotation() != null
+                    && consequenceType.getProteinVariantAnnotation().getFeatures() != null) {
+                Collections.sort(consequenceType.getProteinVariantAnnotation().getFeatures());
+            }
+        }
+    }
 
     private int getEndFromInfoField(VcfRecord vcfRecord) {
         String[] infoFields = vcfRecord.getInfo().split(";");
