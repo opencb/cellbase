@@ -61,9 +61,11 @@ public class    HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
         List<String> hgvsList = getVariantHgvs(new Variant("10", 135369109,
                 "CTTCTGCTGCTGTTGTTGGCA", "-"));
-        assertEquals(3, hgvsList.size());
+        assertEquals(9, hgvsList.size());
         // There may be more than these, but these 4 are the ones that I can actually validate
-        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000375476:p.Thr24del"));
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000341282:p.Cys268_Lys274del",
+                "ENSP00000357503:p.Cys232_Lys238del", "ENSP00000303978:p.Cys268_Lys274del",
+                "ENSP00000411779:p.Cys232_Lys238del"));
 
         hgvsList = getVariantHgvs(new Variant("21", 46074460, "GGT", "-"));
         assertEquals(3, hgvsList.size());
