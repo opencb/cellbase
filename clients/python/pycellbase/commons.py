@@ -101,8 +101,9 @@ def _fetch(session, host, version, species, category, subcategory, resource,
                                options=opts)
 
         # DEBUG
-        if 'debug' in options and options['debug']:
-            sys.stderr.write(url + '\n')
+        if options is not None:
+            if 'debug' in options and options['debug']:
+                sys.stderr.write(url + '\n')
 
         # Getting REST response
         if method == 'get':
