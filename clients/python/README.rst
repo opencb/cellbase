@@ -195,4 +195,4 @@ A use case where PyCellBase is used to obtain multiple kinds of data from differ
 .. _Python client: https://github.com/opencb/cellbase/wiki/Python-client
 .. _RESTful web services: https://github.com/opencb/cellbase/wiki/RESTful-web-services
 .. _CellBase web services: http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
-.. _Jupyter Notebook: http://nbviewer.jupyter.org/github/opencb/cellbase/blob/develop/clients/python/use_case.ipynb?flush_cache=True
+.. _Jupyter Notebook: http://nbviewer.jupyter.org/github/opencb/cellbase/blob/develop/clients/python/use_case.ipynb
