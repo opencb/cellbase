@@ -378,8 +378,11 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean benchmark;
 
-        @Parameter(names = {"--reference-fasta"}, description = "To use only with the --benchmark flag. Full path to a "
-                + " fasta file containing the reference genome.",
+        @Parameter(names = {"--reference-fasta"}, description = "Enables left-alignment normalisation: set this parameter"
+                + " to the full path to a fasta (not fasta.gz!) file containing the reference sequence if you want to enable"
+                + " lef-alignment during the normalisation process. If not set (default), left-alignment step will be skipped"
+                + " during normalisation. **NOTE**: this parameter is mandatory if the --benchmark flag is enabled (in "
+                + " this case fasta.gz files are allowed)",
                 required = false, arity = 1)
         public String referenceFasta;
 
