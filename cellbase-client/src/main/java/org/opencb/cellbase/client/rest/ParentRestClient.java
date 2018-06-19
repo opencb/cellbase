@@ -238,7 +238,6 @@ public class ParentRestClient<T> {
             }
         }
 
-        logger.debug("queryResponse = " + queryResponse);
         return finalQueryResponse;
     }
 
