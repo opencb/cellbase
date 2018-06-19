@@ -87,7 +87,7 @@ public class ParentRestClient<T> {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        logger = LoggerFactory.getLogger(this.getClass().toString());
+        logger = LoggerFactory.getLogger(this.getClass());
     }
 
 
