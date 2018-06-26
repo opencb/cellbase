@@ -3,14 +3,10 @@
 PyCellBase
 ==========
 
-- This Python package makes use of the exhaustive RESTful Web service API that has been implemented for the `CellBase`_ database.
-
-- It enables to query and obtain a wealth of biological information from a single database, saving a lot of time.
-
-- As all information is integrated, queries about different biological topics can be easily and all this information can be linked together.
-
-- Currently *Homo sapiens*, *Mus musculus* and a total of 48 species are available and many others will be included soon.
-
+- PyCellBase is a Python package that provides programmatic access to the comprehensive RESTful web service API that has been implemented for the `CellBase`_ database, providing an easy, lightweight, fast and intuitive access to it.
+- This package can be used to access to relevant biological information in a user-friendly way without the need of local databases installations.
+- Data is always available by a high-availability cluster and queries have been tuned to ensure a real-time performance.
+- PyCellBase offers the convenience of an object-oriented scripting language and provides the ability to integrate the obtained results into other Python applications.
 - More info about this package in the `Python client`_ section of the `CellBase Wiki`_
 
 Installation
@@ -26,6 +22,12 @@ Once you have downloaded the project you can install the library::
 
    $ cd cellbase/clients/python
    $ python setup.py install
+
+PyPI
+````
+PyCellBase is stored in PyPI and can be installed via pip::
+
+   $ pip install pycellbase
 
 Usage
 -----
@@ -149,7 +151,7 @@ Showing the configuration parameters being used at the moment:
      'version': 'v4',
      'species': 'hsapiens'}
 
-A **custom configuration** can be passed to CellBaseClient using a **ConfigClient object**. JSON and YML files are supported:
+A **custom configuration** can be passed to CellBaseClient using a **ConfigClient object**. JSON and YAML files are supported:
 
 .. code-block:: python
 
@@ -183,8 +185,14 @@ If you want to change the configuration **on the fly** you can directly modify t
     >>> cbc.show_configuration()['version']
     'v3'
 
+Use case
+````````
+A use case where PyCellBase is used to obtain multiple kinds of data from different sources can be found in this `Jupyter Notebook`_
+
+
 .. _CellBase: https://github.com/opencb/cellbase
 .. _CellBase Wiki: https://github.com/opencb/cellbase/wiki
 .. _Python client: https://github.com/opencb/cellbase/wiki/Python-client
 .. _RESTful web services: https://github.com/opencb/cellbase/wiki/RESTful-web-services
 .. _CellBase web services: http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/
+.. _Jupyter Notebook: http://nbviewer.jupyter.org/github/opencb/cellbase/blob/develop/clients/python/use_case.ipynb

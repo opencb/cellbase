@@ -39,7 +39,7 @@ class _ParentRestClient(object):
                        data=data)
         return response
 
-    def get_help(self, method_name=None, show_params=False):
+    def get_help(self, method_name=None, show_params=False, **options):
 
         # Getting swagger documentation
         response = get(session=self._session,
@@ -48,7 +48,8 @@ class _ParentRestClient(object):
                        species=None,
                        category=None,
                        subcategory=None,
-                       resource=None)
+                       resource=None,
+                       options=options)
         sys.stdout.write(self.__class__.__name__ + '\n')
 
         # Getting class methods
