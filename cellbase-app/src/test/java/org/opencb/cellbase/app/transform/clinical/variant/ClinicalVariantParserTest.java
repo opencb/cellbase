@@ -47,7 +47,7 @@ public class ClinicalVariantParserTest {
                 .getResource("/clinicalVariant/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI());
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
-        (new ClinicalVariantParser(clinicalVariantFolder, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
+        (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
         assertEquals(17, parsedVariantList.size());

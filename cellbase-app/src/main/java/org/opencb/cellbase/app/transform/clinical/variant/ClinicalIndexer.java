@@ -3,18 +3,20 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
+import org.opencb.cellbase.app.cli.variant.annotation.VcfStringAnnotatorTask;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Created by fjlopez on 04/10/16.
@@ -42,7 +44,27 @@ public abstract class ClinicalIndexer {
         jsonObjectWriter = mapper.writer();
     }
 
-    public ClinicalIndexer() {
+    protected Path genomeSequenceFilePath;
+    protected boolean normalize = true;
+    protected VariantNormalizer normalizer;
+
+    static {
+    }
+
+
+    public ClinicalIndexer(Path genomeSequenceFilePath) throws FileNotFoundException {
+        VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig = (new VariantNormalizer.VariantNormalizerConfig())
+                .setReuseVariants(true)
+                .setNormalizeAlleles(false)
+                .setDecomposeMNVs(false);
+
+        if (genomeSequenceFilePath != null) {
+            logger.info("Enabling left aligning by using sequence at {}", genomeSequenceFilePath.toString());
+            variantNormalizerConfig.enableLeftAlign(genomeSequenceFilePath.toString());
+        } else {
+            logger.info("Left alignment is NOT enabled.");
+        }
+        normalizer = new VariantNormalizer(variantNormalizerConfig);
     }
 
 
@@ -120,6 +142,36 @@ public abstract class ClinicalIndexer {
     private boolean isBenign(ClinicalSignificance clinicalSignificance) {
         return ClinicalSignificance.benign.equals(clinicalSignificance)
                 || ClinicalSignificance.likely_benign.equals(clinicalSignificance);
+    }
+
+    protected byte[] getNormalisedKey(String chromosome, int start, String reference, String alternate) {
+        String normalisedVariantString = getNormalisedVariantString(chromosome, start, reference, alternate);
+
+        if (normalisedVariantString != null) {
+            return normalisedVariantString.getBytes();
+        } else {
+            return null;
+        }
+    }
+
+    protected String getNormalisedVariantString(String chromosome, int start, String reference, String alternate) {
+        Variant variant = new Variant(chromosome, start, reference, alternate);
+        Variant normalizedVariant;
+        if (normalize) {
+            try {
+                // No decomposition allowed at the moment therefore only one variant in returned list of variants.
+                normalizedVariant = normalizer.apply(Collections.singletonList(variant)).get(0);
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                logger.warn("Error found during variant normalization. Skipping variant: {}", variant.toString());
+                return null;
+            }
+        } else {
+            normalizedVariant = variant;
+        }
+        return VariantAnnotationUtils.buildVariantId(normalizedVariant.getChromosome(),
+                normalizedVariant.getStart(), normalizedVariant.getReference(),
+                normalizedVariant.getAlternate());
     }
 
     class SequenceLocation {

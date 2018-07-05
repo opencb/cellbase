@@ -3,6 +3,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v53jaxb.*;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -14,6 +15,7 @@ import org.rocksdb.RocksDBException;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -71,13 +73,16 @@ public class ClinVarIndexer extends ClinicalIndexer {
             = new HashSet<>(Arrays.asList(ModeOfInheritance.biallelic));
 
     public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
-                          Path clinvarEFOFile, String assembly, RocksDB rdb) {
-        super();
+                          Path clinvarEFOFile, boolean normalize, Path genomeSequenceFilePath, String assembly,
+                          RocksDB rdb) throws FileNotFoundException {
+        super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;
         this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
         this.clinvarEFOFile = clinvarEFOFile;
+        this.normalize = normalize;
+        this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
     }
 
@@ -97,12 +102,17 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 List<AlleleLocationData> alleleLocationDataList =
                         rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
                 if (alleleLocationDataList != null) {
+                    boolean success = false;
                     // Actually this list is currently not allowed to be > 2
                     for (int i = 0; i < alleleLocationDataList.size(); i++) {
                         String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
-                        updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString, traitsToEfoTermsMap);
+                        // updateRocksDB may fail (false) if normalisation process fails
+                        success = success || updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
+                                traitsToEfoTermsMap);
                     }
-                    numberIndexedRecords++;
+                    if (success) {
+                        numberIndexedRecords++;
+                    }
                 }
                 progressLogger.increment(1);
                 totalNumberRecords++;
@@ -126,13 +136,17 @@ public class ClinVarIndexer extends ClinicalIndexer {
         for (int j = 0; j < alleleLocationDataList.size(); j++) {
             if (j != i) {
                 SequenceLocation sequenceLocation = alleleLocationDataList.get(j).getSequenceLocation();
-                // First variant string must avoid including the separator
-                if (mateVariantString.length() > 0) {
-                    mateVariantString.append(",");
-                }
-                mateVariantString.append(VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
+                String variantString = getNormalisedVariantString(sequenceLocation.getChromosome(),
                         sequenceLocation.getStart(), sequenceLocation.getReference(),
-                        sequenceLocation.getAlternate()).replace(" ", ""));
+                        sequenceLocation.getAlternate()).replace(" ", "");
+                // May be null if normalisation fails
+                if (variantString != null) {
+                    // First variant string must avoid including the separator
+                    if (mateVariantString.length() > 0) {
+                        mateVariantString.append(",");
+                    }
+                    mateVariantString.append(variantString);
+                }
             }
         }
         return mateVariantString.length() == 0 ? null : mateVariantString.toString();
@@ -149,32 +163,43 @@ public class ClinVarIndexer extends ClinicalIndexer {
         logger.info("Number of ClinVar records with multiple inheritance models: {}", numberMultipleInheritanceModels);
     }
 
-    private void updateRocksDB(SequenceLocation sequenceLocation, String variationId, String[] lineFields,
+    private boolean updateRocksDB(SequenceLocation sequenceLocation, String variationId, String[] lineFields,
                                String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
             throws RocksDBException, IOException {
-        byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
+        byte[] key = getNormalisedKey(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
-                sequenceLocation.getAlternate()).getBytes();
-        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
-//        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
-        addNewEntries(variantAnnotation, variationId, lineFields, mateVariantString, traitsToEfoTermsMap);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+                sequenceLocation.getAlternate());
+        // May be null if normalisation process failed
+        if (key != null) {
+            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+            //        List<EvidenceEntry> evidenceEntryList = getEvidenceEntryList(key);
+            addNewEntries(variantAnnotation, variationId, lineFields, mateVariantString, traitsToEfoTermsMap);
+            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            return true;
+        }
+
+        return false;
     }
 
-    private void updateRocksDB(AlleleLocationData alleleLocationData, PublicSetType publicSet,
+    private boolean updateRocksDB(AlleleLocationData alleleLocationData, PublicSetType publicSet,
                                String mateVariantString, Map<String, EFO> traitsToEfoTermsMap)
             throws RocksDBException, IOException {
 
-        byte[] key = VariantAnnotationUtils.buildVariantId(alleleLocationData.getSequenceLocation().getChromosome(),
+        byte[] key = getNormalisedKey(alleleLocationData.getSequenceLocation().getChromosome(),
                 alleleLocationData.getSequenceLocation().getStart(),
                 alleleLocationData.getSequenceLocation().getReference(),
-                alleleLocationData.getSequenceLocation().getAlternate()).getBytes();
-        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
-//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
-        addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
-                traitsToEfoTermsMap);
+                alleleLocationData.getSequenceLocation().getAlternate());
+        if (key != null) {
+            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+            //        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+            addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
+                    traitsToEfoTermsMap);
 
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            return true;
+        }
+
+        return false;
     }
 
     private void addNewEntries(VariantAnnotation variantAnnotation, String variationId, String[] lineFields,
@@ -649,9 +674,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     for (VariationData variationData : alleleIdToVariationData.get(parts[0])) {
                         // This is a "normal" line with just one variant being involved in this/these RCV records
                         if (VARIANT.equals(variationData.getType())) {
-                            updateRocksDB(sequenceLocation, variationData.getId(), parts, null,
+                            boolean success = updateRocksDB(sequenceLocation, variationData.getId(), parts, null,
                                     traitsToEfoTermsMap);
-                            numberIndexedRecords++;
+                            // updateRocksDB may fail (false) if normalisation process fails
+                            if (success) {
+                                numberIndexedRecords++;
+                            }
                         // Save lines forming a compound variation/RCV record in memory, within a HashMap for
                         // posterior processing.
                         // In order to generate the EvidenceEntry object of compound variation records we need first to
@@ -685,13 +713,17 @@ public class ClinVarIndexer extends ClinicalIndexer {
         for (String variationId : compoundVariationRecords.keySet()) {
             for (int i = 0; i < compoundVariationRecords.get(variationId).size(); i++) {
                 String[] currentVarFields = compoundVariationRecords.get(variationId).get(i);
-                updateRocksDB(new SequenceLocation(currentVarFields[VARIANT_SUMMARY_CHR_COLUMN],
+                boolean success = updateRocksDB(new SequenceLocation(currentVarFields[VARIANT_SUMMARY_CHR_COLUMN],
                                 Integer.valueOf(currentVarFields[VARIANT_SUMMARY_START_COLUMN]),
                                 Integer.valueOf(currentVarFields[VARIANT_SUMMARY_END_COLUMN]),
                                 currentVarFields[VARIANT_SUMMARY_REFERENCE_COLUMN],
                                 currentVarFields[VARIANT_SUMMARY_ALTERNATE_COLUMN]), variationId, currentVarFields,
-                        getMateVariantStringByVariantSummaryRecord(i, compoundVariationRecords.get(variationId)), traitsToEfoTermsMap);
-                numberIndexedRecords++;
+                        getMateVariantStringByVariantSummaryRecord(i, compoundVariationRecords.get(variationId)),
+                        traitsToEfoTermsMap);
+                // updateRocksDB may fail (false) if normalisation process fails
+                if (success) {
+                    numberIndexedRecords++;
+                }
             }
         }
 

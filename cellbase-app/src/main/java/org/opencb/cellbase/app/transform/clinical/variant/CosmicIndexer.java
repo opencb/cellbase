@@ -9,6 +9,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
@@ -52,8 +53,9 @@ public class CosmicIndexer extends ClinicalIndexer {
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
     private int ignoredCosmicLines = 0;
 
-    public CosmicIndexer(Path cosmicFile, String assembly, RocksDB rdb) {
-        super();
+    public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
+            throws FileNotFoundException {
+        super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.cosmicFile = cosmicFile;
         this.compileRegularExpressionPatterns();
@@ -94,8 +96,13 @@ public class CosmicIndexer extends ClinicalIndexer {
                 EvidenceEntry evidenceEntry = buildCosmic(line);
                 SequenceLocation sequenceLocation = new SequenceLocation();
                 if (parsePosition(sequenceLocation, line) && parseVariant(sequenceLocation, line)) {
-                    updateRocksDB(sequenceLocation, evidenceEntry);
-                    numberIndexedRecords++;
+                    boolean success = updateRocksDB(sequenceLocation, evidenceEntry);
+                    // updateRocksDB may fail (false) if normalisation process fails
+                    if (success) {
+                        numberIndexedRecords++;
+                    } else {
+                        ignoredCosmicLines++;
+                    }
                 } else {
                     ignoredCosmicLines++;
                 }
@@ -143,15 +150,19 @@ public class CosmicIndexer extends ClinicalIndexer {
         }
     }
 
-    private void updateRocksDB(SequenceLocation sequenceLocation, EvidenceEntry evidenceEntry) throws RocksDBException, IOException {
+    private boolean updateRocksDB(SequenceLocation sequenceLocation, EvidenceEntry evidenceEntry) throws RocksDBException, IOException {
 
-        byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
+        byte[] key = getNormalisedKey(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
-                sequenceLocation.getAlternate()).getBytes();
-        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
-//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
-        addNewEntry(variantAnnotation, evidenceEntry);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+                sequenceLocation.getAlternate());
+        if (key != null) {
+            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+            //        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+            addNewEntry(variantAnnotation, evidenceEntry);
+            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            return true;
+        }
+        return false;
     }
 
     private void addNewEntry(VariantAnnotation variantAnnotation, EvidenceEntry evidenceEntry) {

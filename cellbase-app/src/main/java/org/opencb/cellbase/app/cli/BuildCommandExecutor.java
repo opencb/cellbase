@@ -55,6 +55,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private Path input = null;
     private Path output = null;
     private Path common = null;
+    private boolean normalize = true;
 
     private File ensemblScriptsFolder;
     private File proteinScriptsFolder;
@@ -79,6 +80,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         } else {
             common = input.getParent().getParent().resolve("common");
         }
+        normalize = !buildCommandOptions.skipNormalize;
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
         this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
@@ -382,7 +384,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output,
                 EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
-        return new ClinicalVariantParser(clinicalVariantFolder, getFastaReferenceGenome(),
+        return new ClinicalVariantParser(clinicalVariantFolder, normalize, getFastaReferenceGenome(),
                 buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
                 serializer);
     }

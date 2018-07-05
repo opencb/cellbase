@@ -170,6 +170,13 @@ public class CliOptionsParser {
         @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
         public String common;
 
+        @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of clinical variants. Normalization"
+                + " includes allele trimming and left alignment. **NOTE** this parameter will only be used when building"
+                + " the clinical_variants dataset.",
+                required = false, arity = 0)
+        public boolean skipNormalize = false;
+
+
         @Parameter(names = {"--flexible-gtf-parsing"}, description = "By default, ENSEMBL GTF format is expected. "
                 + " Nevertheless, GTF specification is quite loose and other GTFs may be provided in which the order "
                 + "of the features is not as systematic as within the ENSEMBL's GTFs. Use this option to enable a more "
@@ -379,10 +386,9 @@ public class CliOptionsParser {
         public boolean benchmark;
 
         @Parameter(names = {"--reference-fasta"}, description = "Enables left-alignment normalisation: set this parameter"
-                + " to the full path to a fasta (not fasta.gz!) file containing the reference sequence if you want to enable"
+                + " to the full path to a fasta file containing the reference sequence if you want to enable"
                 + " lef-alignment during the normalisation process. If not set (default), left-alignment step will be skipped"
-                + " during normalisation. **NOTE**: this parameter is mandatory if the --benchmark flag is enabled (in "
-                + " this case fasta.gz files are allowed)",
+                + " during normalisation. **NOTE**: this parameter is mandatory if the --benchmark flag is enabled",
                 required = false, arity = 1)
         public String referenceFasta;
 

@@ -9,6 +9,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
@@ -55,8 +56,9 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private int nDuplications = 0;
 
     public IARCTP53Indexer(Path germlineFile, Path germlineReferencesFile, Path somaticFile,
-                           Path somaticReferencesFile, Path genomeSequenceFilePath, String assembly, RocksDB rdb) {
-        super();
+                           Path somaticReferencesFile, boolean normalize, Path genomeSequenceFilePath, String assembly,
+                           RocksDB rdb) throws FileNotFoundException {
+        super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.assembly = assembly;
         this.germlineFile = germlineFile;
@@ -111,8 +113,11 @@ public class IARCTP53Indexer extends ClinicalIndexer {
                     totalNumberRecords++;
                     // Do not update RocksDB on first iteration
                     if (previousVariantId != null && !skip) {
-                        updateRocksDB(sequenceLocation, evidenceEntryList);
-                        numberIndexedRecords++;
+                        boolean success = updateRocksDB(sequenceLocation, evidenceEntryList);
+                        // updateRocksDB may fail (false) if normalisation process fails
+                        if (success) {
+                            numberIndexedRecords++;
+                        }
                     }
                     sequenceLocation = parseVariant(fields, fastaIndexManager, isGermline);
                     if (sequenceLocation != null) {
@@ -151,8 +156,11 @@ public class IARCTP53Indexer extends ClinicalIndexer {
             // Write last variant
             // Do not update RocksDB on first iteration
             if (previousVariantId != null && !skip) {
-                updateRocksDB(sequenceLocation, evidenceEntryList);
-                numberIndexedRecords++;
+                boolean success = updateRocksDB(sequenceLocation, evidenceEntryList);
+                // updateRocksDB may fail (false) if normalisation process fails
+                if (success) {
+                    numberIndexedRecords++;
+                }
             }
         } catch (RocksDBException e) {
             logger.error("Error reading/writing from/to the RocksDB index while indexing IARCTP53");
@@ -224,16 +232,20 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         }
     }
 
-    private void updateRocksDB(SequenceLocation sequenceLocation, List<EvidenceEntry> evidenceEntryList)
+    private boolean updateRocksDB(SequenceLocation sequenceLocation, List<EvidenceEntry> evidenceEntryList)
             throws RocksDBException, IOException {
 
-        byte[] key = VariantAnnotationUtils.buildVariantId(sequenceLocation.getChromosome(),
+        byte[] key = getNormalisedKey(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
-                sequenceLocation.getAlternate()).getBytes();
-        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
-//        List<EvidenceEntry> existingEvidenceEntryList = getVariantAnnotation(key);
-        variantAnnotation.getTraitAssociation().addAll(evidenceEntryList);
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+                sequenceLocation.getAlternate());
+        if (key != null) {
+            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+            //        List<EvidenceEntry> existingEvidenceEntryList = getVariantAnnotation(key);
+            variantAnnotation.getTraitAssociation().addAll(evidenceEntryList);
+            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            return true;
+        }
+        return false;
     }
 
     /**

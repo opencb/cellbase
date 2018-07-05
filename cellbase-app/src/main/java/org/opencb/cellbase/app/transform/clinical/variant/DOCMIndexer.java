@@ -11,6 +11,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -54,8 +55,9 @@ public class DOCMIndexer extends ClinicalIndexer {
     private final Path docmFile;
     private final String assembly;
 
-    public DOCMIndexer(Path docmFile, String assembly, RocksDB rdb) {
-        super();
+    public DOCMIndexer(Path docmFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
+            throws FileNotFoundException {
+        super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.assembly = assembly;
         this.docmFile = docmFile;
@@ -70,8 +72,11 @@ public class DOCMIndexer extends ClinicalIndexer {
             while (line != null) {
                 Variant variant = parseVariant(line);
                 if (variant != null) {
-                    updateRocksDB(variant);
-                    numberIndexedRecords++;
+                    boolean success = updateRocksDB(variant);
+                    // updateRocksDB may fail (false) if normalisation process fails
+                    if (success) {
+                        numberIndexedRecords++;
+                    }
                 }
                 line = bufferedReader.readLine();
             }
@@ -92,27 +97,30 @@ public class DOCMIndexer extends ClinicalIndexer {
 
     }
 
-    private void updateRocksDB(Variant variant) throws RocksDBException, IOException {
-        byte[] key = VariantAnnotationUtils.buildVariantId(variant.getChromosome(), variant.getStart(),
-                variant.getReference(), variant.getAlternate()).getBytes();
-        VariantAnnotation variantAnnotation = getVariantAnnotation(key);
-//        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
+    private boolean updateRocksDB(Variant variant) throws RocksDBException, IOException {
+        byte[] key = getNormalisedKey(variant.getChromosome(), variant.getStart(),
+                variant.getReference(), variant.getAlternate());
+        if (key != null) {
+            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
 
-        // Add EvidenceEntry objects
-        variantAnnotation.getTraitAssociation().addAll(variant.getAnnotation().getTraitAssociation());
+            // Add EvidenceEntry objects
+            variantAnnotation.getTraitAssociation().addAll(variant.getAnnotation().getTraitAssociation());
 
-        // Check if drug info is available
-        if (variant.getAnnotation().getDrugs() != null && !variant.getAnnotation().getDrugs().isEmpty()) {
-            // Drug info is stored at the VariantAnnotation root
-            if (variantAnnotation.getDrugs() == null) {
-                variantAnnotation.setDrugs(variant.getAnnotation().getDrugs());
-            } else {
-                variantAnnotation.getDrugs().addAll(variant.getAnnotation().getDrugs());
+            // Check if drug info is available
+            if (variant.getAnnotation().getDrugs() != null && !variant.getAnnotation().getDrugs().isEmpty()) {
+                // Drug info is stored at the VariantAnnotation root
+                if (variantAnnotation.getDrugs() == null) {
+                    variantAnnotation.setDrugs(variant.getAnnotation().getDrugs());
+                } else {
+                    variantAnnotation.getDrugs().addAll(variant.getAnnotation().getDrugs());
+                }
+
             }
 
+            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            return true;
         }
-
-        rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+        return false;
     }
 
     private Variant parseVariant(String line) throws IOException {
