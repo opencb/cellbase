@@ -9,7 +9,6 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
@@ -57,7 +56,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
 
     public IARCTP53Indexer(Path germlineFile, Path germlineReferencesFile, Path somaticFile,
                            Path somaticReferencesFile, boolean normalize, Path genomeSequenceFilePath, String assembly,
-                           RocksDB rdb) throws FileNotFoundException {
+                           RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.assembly = assembly;

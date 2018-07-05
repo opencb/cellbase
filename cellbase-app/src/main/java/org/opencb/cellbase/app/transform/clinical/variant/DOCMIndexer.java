@@ -5,13 +5,11 @@ import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -56,7 +54,7 @@ public class DOCMIndexer extends ClinicalIndexer {
     private final String assembly;
 
     public DOCMIndexer(Path docmFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
-            throws FileNotFoundException {
+            throws IOException {
         super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.assembly = assembly;

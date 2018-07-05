@@ -9,7 +9,6 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
@@ -54,7 +53,7 @@ public class CosmicIndexer extends ClinicalIndexer {
     private int ignoredCosmicLines = 0;
 
     public CosmicIndexer(Path cosmicFile, boolean normalize, Path genomeSequenceFilePath, String assembly, RocksDB rdb)
-            throws FileNotFoundException {
+            throws IOException {
         super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.cosmicFile = cosmicFile;

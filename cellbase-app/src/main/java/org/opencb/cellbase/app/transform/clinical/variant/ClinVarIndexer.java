@@ -3,7 +3,6 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v53jaxb.*;
-import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -15,7 +14,6 @@ import org.rocksdb.RocksDBException;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -74,7 +72,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
     public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
                           Path clinvarEFOFile, boolean normalize, Path genomeSequenceFilePath, String assembly,
-                          RocksDB rdb) throws FileNotFoundException {
+                          RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
         this.rdb = rdb;
         this.clinvarXMLFile = clinvarXMLFile;

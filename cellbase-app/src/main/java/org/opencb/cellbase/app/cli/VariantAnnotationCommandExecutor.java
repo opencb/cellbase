@@ -397,7 +397,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorTaskList;
     }
 
-    private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() throws FileNotFoundException {
+    private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() throws IOException {
         VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig = (new VariantNormalizer.VariantNormalizerConfig())
                 .setReuseVariants(true)
                 .setNormalizeAlleles(false)

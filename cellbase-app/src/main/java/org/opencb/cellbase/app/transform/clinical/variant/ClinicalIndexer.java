@@ -6,14 +6,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
-import org.opencb.cellbase.app.cli.variant.annotation.VcfStringAnnotatorTask;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -48,11 +46,7 @@ public abstract class ClinicalIndexer {
     protected boolean normalize = true;
     protected VariantNormalizer normalizer;
 
-    static {
-    }
-
-
-    public ClinicalIndexer(Path genomeSequenceFilePath) throws FileNotFoundException {
+    public ClinicalIndexer(Path genomeSequenceFilePath) throws IOException {
         VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig = (new VariantNormalizer.VariantNormalizerConfig())
                 .setReuseVariants(true)
                 .setNormalizeAlleles(false)
