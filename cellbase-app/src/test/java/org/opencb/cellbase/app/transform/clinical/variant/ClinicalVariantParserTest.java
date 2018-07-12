@@ -47,12 +47,22 @@ public class ClinicalVariantParserTest {
                 .getResource("/clinicalVariant/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI());
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
-        (new ClinicalVariantParser(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
+        (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(17, parsedVariantList.size());
+        assertEquals(18, parsedVariantList.size());
 
-        Variant variant = getVariantByVariant(parsedVariantList,
+        // ClinVar record for an unnormalized variant. It appears in the variant_summary.txt as
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000000829");
+        assertEquals(1, variantList.size());
+        // First variant in the haplotype
+        Variant variant = variantList.get(0);
+        assertEquals("18", variant.getChromosome());
+        assertEquals(Integer.valueOf(55217985), variant.getStart());
+        assertEquals("A", variant.getReference());
+        assertEquals("C", variant.getAlternate());
+
+        variant = getVariantByVariant(parsedVariantList,
                 new Variant("1", 11169361, "C", "G"));
         assertNotNull(variant);
         EvidenceEntry checkEvidenceEntry = getEvidenceEntryBySource(variant.getAnnotation().getTraitAssociation(), DOCM);
@@ -98,7 +108,7 @@ public class ClinicalVariantParserTest {
                         "uterine corpus endometrial carcinoma"));
 
         // ClinVar record with three variants in an Haplotype
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000000591");
+        variantList = getVariantByAccession(parsedVariantList, "RCV000000591");
         assertEquals(3, variantList.size());
         // First variant in the haplotype
         variant = variantList.get(0);

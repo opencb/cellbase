@@ -105,8 +105,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     for (int i = 0; i < alleleLocationDataList.size(); i++) {
                         String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
                         // updateRocksDB may fail (false) if normalisation process fails
-                        success = success || updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
-                                traitsToEfoTermsMap);
+                        success = updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
+                                traitsToEfoTermsMap) || success;
                     }
                     if (success) {
                         numberIndexedRecords++;
