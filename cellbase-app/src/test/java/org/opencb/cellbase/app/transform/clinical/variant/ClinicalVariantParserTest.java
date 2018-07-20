@@ -52,12 +52,11 @@ public class ClinicalVariantParserTest {
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
         assertEquals(18, parsedVariantList.size());
 
-        // ClinVar record for an unnormalized variant. It appears in the variant_summary.txt as
+        // ClinVar record for an unnormalized variant. It appears in the variant_summary.txt as AG -
         List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000000829");
         assertEquals(1, variantList.size());
-        // First variant in the haplotype
         Variant variant = variantList.get(0);
-        assertEquals("18", variant.getChromosome());
+        assertEquals("5", variant.getChromosome());
         assertEquals(Integer.valueOf(55217985), variant.getStart());
         assertEquals("A", variant.getReference());
         assertEquals("C", variant.getAlternate());
