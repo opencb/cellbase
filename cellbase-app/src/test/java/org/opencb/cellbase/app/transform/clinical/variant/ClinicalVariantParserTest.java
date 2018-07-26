@@ -50,16 +50,29 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(18, parsedVariantList.size());
+        assertEquals(19, parsedVariantList.size());
 
-        // ClinVar record for an unnormalized variant. It appears in the variant_summary.txt as AG -
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000000829");
+        // ClinVar record for an un-normalised variant. It appears in the variant_summary.txt as 17 53	53	C	CC
+        // Genome sequence context for that position is TGTCCCTGCTGAA
+        //                                                   ^
+        //                                                   53
+        // After normalisation should be 17 51 -   C
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000488336");
         assertEquals(1, variantList.size());
         Variant variant = variantList.get(0);
-        assertEquals("5", variant.getChromosome());
-        assertEquals(Integer.valueOf(55217985), variant.getStart());
-        assertEquals("A", variant.getReference());
+        assertEquals("17", variant.getChromosome());
+        assertEquals(Integer.valueOf(51), variant.getStart());
+        assertEquals("", variant.getReference());
         assertEquals("C", variant.getAlternate());
+
+        // Arbitrary ClinVar record
+        variantList = getVariantByAccession(parsedVariantList, "RCV000000829");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
+        assertEquals("5", variant.getChromosome());
+        assertEquals(Integer.valueOf(112136976), variant.getStart());
+        assertEquals("AG", variant.getReference());
+        assertEquals("", variant.getAlternate());
 
         variant = getVariantByVariant(parsedVariantList,
                 new Variant("1", 11169361, "C", "G"));
