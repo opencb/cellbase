@@ -50,6 +50,7 @@ import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
+import org.opencb.cellbase.lib.impl.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.datastore.core.Query;
@@ -93,6 +94,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private Path referenceFasta;
     private boolean normalize;
     private boolean decompose;
+    private boolean leftAlign;
     private List<String> chromosomeList;
     private int port;
     private String species;
@@ -403,8 +405,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 .setNormalizeAlleles(false)
                 .setDecomposeMNVs(decompose);
 
-        if (referenceFasta != null) {
-            return variantNormalizerConfig.enableLeftAlign(referenceFasta.toString());
+        if (leftAlign) {
+            // dbAdaptorFactory may have been already initialized at execute if annotating CellBase variation collection
+            if (dbAdaptorFactory == null) {
+                dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+            }
+            return variantNormalizerConfig
+                    .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(dbAdaptorFactory
+                            .getGenomeDBAdaptor(species, assembly)));
         }
         return variantNormalizerConfig;
     }
@@ -770,6 +778,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         decompose = !variantAnnotationCommandOptions.skipDecompose;
+        leftAlign = !variantAnnotationCommandOptions.skipLeftAlign;
 
         // output file
         if (variantAnnotationCommandOptions.output != null) {

@@ -193,7 +193,12 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                     ? (region.getStart() - 1) % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE
                     : region.getStart() % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
             int length = region.getEnd() - region.getStart() + 1;
-            String sequence = stringBuilder.toString().substring(startIndex, startIndex + length);
+            // If end is out of the right boundary, there will be no chunks containing the right boundary. This means the
+            // length of stringBuilder will be < than "end", since the for above will have just appended the chunks
+            // available
+            String sequence = stringBuilder
+                    .toString()
+                    .substring(startIndex, Math.min(startIndex + length, stringBuilder.length()));
 
             String strand = "1";
             String queryStrand= (query.getString("strand") != null) ? query.getString("strand") : "1";

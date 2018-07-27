@@ -385,10 +385,8 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean benchmark;
 
-        @Parameter(names = {"--reference-fasta"}, description = "Enables left-alignment normalisation: set this parameter"
-                + " to the full path to a fasta file containing the reference sequence if you want to enable"
-                + " lef-alignment during the normalisation process. If not set (default), left-alignment step will be skipped"
-                + " during normalisation. **NOTE**: this parameter is mandatory if the --benchmark flag is enabled",
+        @Parameter(names = {"--reference-fasta"}, description = "To use only with the --benchmark flag. Full path to a "
+                + " fasta file containing the reference genome.",
                 required = false, arity = 1)
         public String referenceFasta;
 
@@ -408,6 +406,14 @@ public class CliOptionsParser {
                 + " This flag has no effect if --skip-normalize is present.",
                 required = false, arity = 0)
         public boolean skipDecompose = false;
+
+        @Parameter(names = {"--skip-left-align"}, description = "Use this flag to avoid left alignment as part of the"
+                + " normalization process. If this"
+                + " flag is NOT activated, as a step during the normalization process will left align the variant with"
+                + " respect to the reference genome."
+                + " This flag has no effect if --skip-normalize is present.",
+                required = false, arity = 0)
+        public boolean skipLeftAlign = false;
 
         @Parameter(names = {"--server-cache"}, description = "Use of this parameter is discouraged unless the "
                 + "server administrator advises so. Annotation was already pre-calculated and cached in "
