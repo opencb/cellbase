@@ -103,7 +103,7 @@ public class VariantAnnotationCalculator {
 //
 //    public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory,
 //                                       boolean normalize) {
-        this.normalizer = new VariantNormalizer(false, false, true);
+        this.normalizer = new VariantNormalizer(getNormalizerConfig());
 //        this.normalize = normalize;
 
         this.dbAdaptorFactory = dbAdaptorFactory;
@@ -120,6 +120,14 @@ public class VariantAnnotationCalculator {
          hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
+    }
+
+    private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() {
+        return (new VariantNormalizer.VariantNormalizerConfig())
+                .setReuseVariants(false)
+                .setNormalizeAlleles(false)
+                .setDecomposeMNVs(true)
+                .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeDBAdaptor));
     }
 
     @Deprecated

@@ -65,7 +65,6 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testGenomicSequenceChromosomeNotPresent() {
         QueryResult<GenomeSequenceFeature> queryResult = dbAdaptor.getSequence(new Region("1234:1-1999"), new QueryOptions());
-        assertEquals(-1, queryResult.getNumResults());
         assertEquals(0, queryResult.getResult().size());
     }
 

@@ -42,6 +42,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final int VARIANT_SUMMARY_REVIEW_COLUMN = 24;
     private static final int VARIANT_SUMMARY_ORIGIN_COLUMN = 14;
     private static final int VARIANT_SUMMARY_PHENOTYPE_COLUMN = 13;
+    private static final int VARIANT_SUMMARY_ASSEMBLY_COLUMN = 16;
     private static final int VARIATION_ALLELE_VARIATION_COLUMN = 0;
     private static final int VARIATION_ALLELE_TYPE_COLUMN = 1;
     private static final int VARIATION_ALLELE_ALLELE_COLUMN = 2;
@@ -637,7 +638,16 @@ public class ClinVarIndexer extends ClinicalIndexer {
         while (line != null) {
             String[] parts = line.split("\t");
             // Check assembly
-            if (parts[16].equals(assembly)) {
+            // Check coordinates fields are not missing
+            // Check reference != alternate
+            if (parts[VARIANT_SUMMARY_ASSEMBLY_COLUMN].equals(assembly)
+                    && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_CHR_COLUMN])
+                    && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_START_COLUMN])
+                    && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_END_COLUMN])
+                    && !missingAllele(parts[VARIANT_SUMMARY_REFERENCE_COLUMN])
+                    && !missingAllele(parts[VARIANT_SUMMARY_ALTERNATE_COLUMN])
+                    && !parts[VARIANT_SUMMARY_REFERENCE_COLUMN].equals(parts[VARIANT_SUMMARY_ALTERNATE_COLUMN])) {
+
                 SequenceLocation sequenceLocation = new SequenceLocation(parts[VARIANT_SUMMARY_CHR_COLUMN],
                         Integer.valueOf(parts[VARIANT_SUMMARY_START_COLUMN]),
                         Integer.valueOf(parts[VARIANT_SUMMARY_END_COLUMN]),
@@ -726,6 +736,24 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
 
         return rcvToAlelleLocationData;
+    }
+
+    /**
+     * Checks if a given allele is missing. An allele string can be empty (deletions, insertions), but cannot contain
+     * certain key words/values which would indicate that it's missing:
+     * {"not specified", "NS", "NA", "na", "NULL", "null", "."}
+     * @param alleleString
+     * @return true/false indicating whether the allele is missing or not.
+     */
+    private boolean missingAllele(String alleleString) {
+        return !((alleleString != null)
+                && !alleleString.replace("not specified", "")
+                .replace("NS", "")
+                .replace("NA", "")
+                .replace("na", "")
+                .replace("NULL", "")
+                .replace("null", "")
+                .replace(".", "").isEmpty());
     }
 
     private String getMateVariantStringByVariantSummaryRecord(int i, List<String[]> splitLineList) {

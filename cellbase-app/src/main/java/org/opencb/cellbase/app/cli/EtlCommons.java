@@ -133,6 +133,7 @@ public class EtlCommons {
                 .replace("not specified", "")
                 .replace("NS", "")
                 .replace("NA", "")
+                .replace("na", "")
                 .replace("NULL", "")
                 .replace("null", "")
                 .replace("\t", "")
