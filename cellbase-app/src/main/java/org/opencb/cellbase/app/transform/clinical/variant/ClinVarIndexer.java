@@ -638,11 +638,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             String[] parts = line.split("\t");
             // Check assembly
             if (parts[16].equals(assembly)) {
-                SequenceLocation sequenceLocation = new SequenceLocation(parts[VARIANT_SUMMARY_CHR_COLUMN],
-                        Integer.valueOf(parts[VARIANT_SUMMARY_START_COLUMN]),
-                        Integer.valueOf(parts[VARIANT_SUMMARY_END_COLUMN]),
-                        parts[VARIANT_SUMMARY_REFERENCE_COLUMN],
-                        parts[VARIANT_SUMMARY_ALTERNATE_COLUMN]);
+                SequenceLocation sequenceLocation = parseSequenceLocation(parts);
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
                 // Also, RCV ids may be repeated in the same line!!! e.g RCV000540418;RCV000540418;RCV000540418;RCV000000066
                 Set<String> rcvSet = new HashSet<>(Arrays.asList(parts[11].split(";")));
@@ -726,6 +722,20 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
 
         return rcvToAlelleLocationData;
+    }
+
+    private SequenceLocation parseSequenceLocation(String[] parts) {
+
+        String chromosome = parts[VARIANT_SUMMARY_CHR_COLUMN];
+        String reference = parts[VARIANT_SUMMARY_REFERENCE_COLUMN];
+        String alternate = parts[VARIANT_SUMMARY_ALTERNATE_COLUMN];
+
+        if ()
+        new SequenceLocation(chromosome,
+                Integer.valueOf(parts[VARIANT_SUMMARY_START_COLUMN]),
+                Integer.valueOf(parts[VARIANT_SUMMARY_END_COLUMN]),
+                reference,
+                alternate);
     }
 
     private String getMateVariantStringByVariantSummaryRecord(int i, List<String[]> splitLineList) {
