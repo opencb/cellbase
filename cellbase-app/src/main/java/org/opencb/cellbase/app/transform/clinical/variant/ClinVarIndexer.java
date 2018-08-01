@@ -42,6 +42,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final int VARIANT_SUMMARY_REVIEW_COLUMN = 24;
     private static final int VARIANT_SUMMARY_ORIGIN_COLUMN = 14;
     private static final int VARIANT_SUMMARY_PHENOTYPE_COLUMN = 13;
+    private static final int VARIANT_SUMMARY_ASSEMBLY_COLUMN = 16;
     private static final int VARIATION_ALLELE_VARIATION_COLUMN = 0;
     private static final int VARIATION_ALLELE_TYPE_COLUMN = 1;
     private static final int VARIATION_ALLELE_ALLELE_COLUMN = 2;
@@ -637,8 +638,18 @@ public class ClinVarIndexer extends ClinicalIndexer {
         while (line != null) {
             String[] parts = line.split("\t");
             // Check assembly
-            if (parts[16].equals(assembly)) {
+            // Check coordinates fields are not missing
+            // Check reference != alternate
+            if (parts[VARIANT_SUMMARY_ASSEMBLY_COLUMN].equals(assembly)
+                    && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_CHR_COLUMN])
+                    && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_START_COLUMN])
+                    && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_END_COLUMN])
+                    && !missingAllele(parts[VARIANT_SUMMARY_REFERENCE_COLUMN])
+                    && !missingAllele(parts[VARIANT_SUMMARY_ALTERNATE_COLUMN])
+                    && !parts[VARIANT_SUMMARY_REFERENCE_COLUMN].equals(parts[VARIANT_SUMMARY_ALTERNATE_COLUMN])) {
+
                 SequenceLocation sequenceLocation = parseSequenceLocation(parts);
+
                 // Each line may contain more than one RCV; e.g.: RCV000000019;RCV000000020;RCV000000021;RCV000000022;...
                 // Also, RCV ids may be repeated in the same line!!! e.g RCV000540418;RCV000540418;RCV000540418;RCV000000066
                 Set<String> rcvSet = new HashSet<>(Arrays.asList(parts[11].split(";")));
@@ -707,11 +718,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
         for (String variationId : compoundVariationRecords.keySet()) {
             for (int i = 0; i < compoundVariationRecords.get(variationId).size(); i++) {
                 String[] currentVarFields = compoundVariationRecords.get(variationId).get(i);
-                boolean success = updateRocksDB(new SequenceLocation(currentVarFields[VARIANT_SUMMARY_CHR_COLUMN],
-                                Integer.valueOf(currentVarFields[VARIANT_SUMMARY_START_COLUMN]),
-                                Integer.valueOf(currentVarFields[VARIANT_SUMMARY_END_COLUMN]),
-                                currentVarFields[VARIANT_SUMMARY_REFERENCE_COLUMN],
-                                currentVarFields[VARIANT_SUMMARY_ALTERNATE_COLUMN]), variationId, currentVarFields,
+                boolean success = updateRocksDB(parseSequenceLocation(currentVarFields), variationId, currentVarFields,
                         getMateVariantStringByVariantSummaryRecord(i, compoundVariationRecords.get(variationId)),
                         traitsToEfoTermsMap);
                 // updateRocksDB may fail (false) if normalisation process fails
@@ -729,13 +736,36 @@ public class ClinVarIndexer extends ClinicalIndexer {
         String chromosome = parts[VARIANT_SUMMARY_CHR_COLUMN];
         String reference = parts[VARIANT_SUMMARY_REFERENCE_COLUMN];
         String alternate = parts[VARIANT_SUMMARY_ALTERNATE_COLUMN];
+        Integer start = Integer.valueOf(parts[VARIANT_SUMMARY_START_COLUMN]);
+        Integer end = Integer.valueOf(parts[VARIANT_SUMMARY_END_COLUMN]);
 
-        if ()
-        new SequenceLocation(chromosome,
-                Integer.valueOf(parts[VARIANT_SUMMARY_START_COLUMN]),
-                Integer.valueOf(parts[VARIANT_SUMMARY_END_COLUMN]),
-                reference,
-                alternate);
+        // Insertion in which they do not provide any reference allele. The actual start according to opencb policies
+        // is end (start + 1). Only happens with some insertions (~4800) apparently. Some other insertions they provide
+        // include reference and alternate alleles.
+        if (missingAllele(reference) && !missingAllele(alternate) && end == (start + 1)) {
+            // NOTE! swapped start and end
+            return new SequenceLocation(chromosome, end, start, reference, alternate);
+        } else {
+            return new SequenceLocation(chromosome, start, end, reference, alternate);
+        }
+    }
+
+    /**
+     * Checks if a given allele is missing. An allele string can be empty (deletions, insertions), but cannot contain
+     * certain key words/values which would indicate that it's missing:
+     * {"not specified", "NS", "NA", "na", "NULL", "null", "."}
+     * @param alleleString
+     * @return true/false indicating whether the allele is missing or not.
+     */
+    private boolean missingAllele(String alleleString) {
+        return !((alleleString != null)
+                && !alleleString.replace("not specified", "")
+                .replace("NS", "")
+                .replace("NA", "")
+                .replace("na", "")
+                .replace("NULL", "")
+                .replace("null", "")
+                .replace(".", "").isEmpty());
     }
 
     private String getMateVariantStringByVariantSummaryRecord(int i, List<String[]> splitLineList) {

@@ -385,8 +385,12 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean benchmark;
 
-        @Parameter(names = {"--reference-fasta"}, description = "To use only with the --benchmark flag. Full path to a "
-                + " fasta file containing the reference genome.",
+        @Parameter(names = {"--reference-fasta"}, description = "Required for left aligning when annotating in remote"
+                + " mode, i.e. --local NOT present. It's strongly discouraged to use --reference-fasta together with "
+                + " the --local flag. IF however --reference-fasta is set together with --local, then the genome sequence "
+                + " in the fasta file will override CellBase database reference genome sequence. This --reference-fasta"
+                + " parameter will be ignored if --skip-normalize is present. Finally, this parameter is required when"
+                + " the --benchmark flag is enabled.",
                 required = false, arity = 1)
         public String referenceFasta;
 

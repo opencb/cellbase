@@ -50,7 +50,7 @@ import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
-import org.opencb.cellbase.lib.impl.CellBaseNormalizerSequenceAdaptor;
+import org.opencb.cellbase.core.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.datastore.core.Query;
@@ -405,14 +405,21 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 .setNormalizeAlleles(false)
                 .setDecomposeMNVs(decompose);
 
+        // Enable left align
         if (leftAlign) {
-            // dbAdaptorFactory may have been already initialized at execute if annotating CellBase variation collection
-            if (dbAdaptorFactory == null) {
-                dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+            // WARN: If --reference-fasta is present will override CellBase reference genome even if --local was present
+            if (referenceFasta != null) {
+                return variantNormalizerConfig.enableLeftAlign(referenceFasta.toString());
+            } else {
+                // dbAdaptorFactory may have been already initialized while creating CellBase annotators or at execute if
+                // annotating CellBase variation collection
+                if (dbAdaptorFactory == null) {
+                    dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+                }
+                return variantNormalizerConfig
+                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(dbAdaptorFactory
+                                .getGenomeDBAdaptor(species, assembly)));
             }
-            return variantNormalizerConfig
-                    .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(dbAdaptorFactory
-                            .getGenomeDBAdaptor(species, assembly)));
         }
         return variantNormalizerConfig;
     }
@@ -851,6 +858,21 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             } else {
                 throw new ParameterException("Please check command line sintax. Provide a valid URL to access CellBase web services.");
             }
+            // Left align in remote mode can only be enabled if a reference fasta is provided
+            if (leftAlign) {
+                if (referenceFasta == null) {
+                    throw new ParameterException("Please provide a valid reference fasta file. Left align when annotating"
+                            + " in remote mode (--local flag NOT present) can only be enabled if a fasta file with"
+                            + " the reference genome sequence is provided within --reference-fasta. Alternatively"
+                            + " you can disable left align by using --skip-left-align.");
+                }
+            }
+        // --local flag enabled
+        // Use of --reference-fasta and --local together will cause --reference-fasta to override the reference genome
+        // in CellBase database (DISCOURAGED!)
+        } else if (leftAlign && referenceFasta != null) {
+            logger.warn("--reference-fasta and --local parameters found together. This is strongly discouraged. Please"
+                    + " NOTE: the sequence within the fasta file will override CellBase reference sequence.");
         }
 
         // Species
