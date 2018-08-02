@@ -50,16 +50,27 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(19, parsedVariantList.size());
+        assertEquals(20, parsedVariantList.size());
+
+        // ClinVar record for an insertion with emtpy reference allele (some other insertions do provide reference nts)
+        // It appears in the variant_summary.txt as 3       37090475        37090476        -       TT
+        // No normalisation applies
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000221270");
+        assertEquals(1, variantList.size());
+        Variant variant = variantList.get(0);
+        assertEquals("3", variant.getChromosome());
+        assertEquals(Integer.valueOf(37090476), variant.getStart());
+        assertEquals("", variant.getReference());
+        assertEquals("TT", variant.getAlternate());
 
         // ClinVar record for an un-normalised variant. It appears in the variant_summary.txt as 17 53	53	C	CC
         // Genome sequence context for that position is TGTCCCTGCTGAA
         //                                                   ^
         //                                                   53
         // After normalisation should be 17 51 -   C
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000488336");
+        variantList = getVariantByAccession(parsedVariantList, "RCV000488336");
         assertEquals(1, variantList.size());
-        Variant variant = variantList.get(0);
+        variant = variantList.get(0);
         assertEquals("17", variant.getChromosome());
         assertEquals(Integer.valueOf(51), variant.getStart());
         assertEquals("", variant.getReference());

@@ -116,6 +116,9 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
         loadRunner.load(path, "repeats");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants");
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
                 dbAdaptorFactory);
 
@@ -1016,7 +1019,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     public void testClinicalAnnotation() throws Exception {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "clinical");
-        queryOptions.put("normalize", "true");
+        queryOptions.put("normalize", true);
 
         Variant variant = new Variant("5", 112136975, "GAG", "G");
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
@@ -1036,14 +1039,49 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
         assertTrue(containsAccession(queryResult, "RCV000161945"));
 
-        variant = new Variant("11", 64577375, "G", "GGGGGC");
+        variant = new Variant("3", 37090475, "C", "CTT");
         queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(64577376), queryResult.getResult().get(0).getStart());
+        assertEquals(Integer.valueOf(37090476), queryResult.getResult().get(0).getStart());
         assertEquals("", queryResult.getResult().get(0).getReference());
-        assertEquals("GGGGC", queryResult.getResult().get(0).getAlternate());
+        assertEquals("TT", queryResult.getResult().get(0).getAlternate());
         assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
-        assertTrue(containsAccession(queryResult, "RCV000161945"));
+        assertTrue(containsAccession(queryResult, "RCV000221270"));
+
+        // This example is peculiar. Was sent to me by Alona (slack 30th May). She expected this var below
+        // 3:37089111:TGTTGAGTTTCTGAA:T
+        // to match this other one in the variant_summary.txt
+        // 3  37089112  37089125  GTTGAGTTTCTGAA  T
+        // These two variants ARE NOT the same one! The first one is a deletion of GTTGAGTTTCTGAA. This second one is
+        // a SUBSTITUTION of GTTGAGTTTCTGAA by T. This second one adds an extra T to the sequence context, therefore
+        // are not the same and therefore should not be returned when annotating the first variant. The sequence context
+        // is:   ...CATTGTTGAGTTTCTGAAGAAGAAGGCT...
+        //             ^^
+        variant = new Variant("3", 37089111, "TGTTGAGTTTCTGAA", "T");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(37089112), queryResult.getResult().get(0).getStart());
+        assertEquals("GTTGAGTTTCTGAA", queryResult.getResult().get(0).getReference());
+        assertEquals("", queryResult.getResult().get(0).getAlternate());
+        assertNull(queryResult.getResult().get(0).getTraitAssociation());
+
+        variant = new Variant("3", 37045937, "A", "AAA");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(37045937), queryResult.getResult().get(0).getStart());
+        assertEquals("", queryResult.getResult().get(0).getReference());
+        assertEquals("AA", queryResult.getResult().get(0).getAlternate());
+        assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
+        assertTrue(containsAccession(queryResult, "RCV000075667"));
+
+        variant = new Variant("13", 32912901, "TAAGA", "T");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(32912902), queryResult.getResult().get(0).getStart());
+        assertEquals("AAGA", queryResult.getResult().get(0).getReference());
+        assertEquals("", queryResult.getResult().get(0).getAlternate());
+        assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
+        assertTrue(containsAccession(queryResult, "RCV000044410"));
 
 
     }

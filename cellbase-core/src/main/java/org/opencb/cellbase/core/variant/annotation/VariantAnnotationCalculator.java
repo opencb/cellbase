@@ -98,12 +98,6 @@ public class VariantAnnotationCalculator {
 //    }
 
     public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory) {
-//        this(species, assembly, dbAdaptorFactory, true);
-//    }
-//
-//    public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory,
-//                                       boolean normalize) {
-        this.normalizer = new VariantNormalizer(getNormalizerConfig());
 //        this.normalize = normalize;
 
         this.dbAdaptorFactory = dbAdaptorFactory;
@@ -116,6 +110,7 @@ public class VariantAnnotationCalculator {
         this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
         this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
         this.repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
+        this.normalizer = new VariantNormalizer(getNormalizerConfig());
 
          hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
 

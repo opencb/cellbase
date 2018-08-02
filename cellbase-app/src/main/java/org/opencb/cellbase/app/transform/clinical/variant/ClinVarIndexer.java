@@ -742,12 +742,16 @@ public class ClinVarIndexer extends ClinicalIndexer {
         // Insertion in which they do not provide any reference allele. The actual start according to opencb policies
         // is end (start + 1). Only happens with some insertions (~4800) apparently. Some other insertions they provide
         // include reference and alternate alleles.
-        if (missingAllele(reference) && !missingAllele(alternate) && end == (start + 1)) {
+        if (emptySequence(reference) && !emptySequence(alternate) && end == (start + 1)) {
             // NOTE! swapped start and end
             return new SequenceLocation(chromosome, end, start, reference, alternate);
         } else {
             return new SequenceLocation(chromosome, start, end, reference, alternate);
         }
+    }
+
+    private boolean emptySequence(String allele) {
+        return "".equals(allele) || "-".equals(allele);
     }
 
     /**
