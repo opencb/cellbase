@@ -459,21 +459,24 @@ def parse_list_of_dicts(result, feature, fields):
 def get_annotation(result, include):
     """Get VCF annotation"""
 
+    if not result:
+        return []
+
     annotation = []
 
     # Getting annotation from easily parseable sources
-    for annot in _ANNOT:
-        if _ANNOT[annot]['non-parseable']:
-            continue
-        if _ANNOT[annot]['cellbase_key'] is None:
-            continue
-        if annot not in include:
+    for annot in include:
+        if _ANNOT[annot]['non-parseable'] or \
+                _ANNOT[annot]['cellbase_key'] is None:
             continue
         key = _ANNOT[annot]['cellbase_key']
         if key in result and result[key]:
-            annotation.append(_ANNOT[annot]['id'] + '=' +
-                              parse_list_of_dicts(result, key,
-                                                  _ANNOT[annot]['parseable']))
+            annotation.append('{key}={value}'.format(
+                    key=_ANNOT[annot]['id'],
+                    value=parse_list_of_dicts(
+                        result, key, _ANNOT[annot]['parseable']
+                    )
+            ))
 
     # Consequences annotation
     if 'consequences' in include:
@@ -490,17 +493,16 @@ def get_annotation(result, include):
                     conseq.append('')
 
                 if 'sequenceOntologyTerms' in ct:
-                    so_terms = []
-                    for sot in ct['sequenceOntologyTerms']:
-                        so_terms.append(sot['accession'] + ':' + sot['name'])
+                    so_terms = [sot['accession'] + ':' + sot['name']
+                                for sot in ct['sequenceOntologyTerms']]
                     conseq.append('&'.join(so_terms))
                 else:
                     conseq.append('')
 
                 conseqs.append('|'.join(conseq))
-            annotation.append(
-                _ANNOT['consequences']['id'] + '=' + ','.join(conseqs)
-            )
+            annotation.append('{key}={value}'.format(
+                key=_ANNOT['consequences']['id'], value=','.join(conseqs)
+            ))
 
     # ClinVar
     if 'clinvar' in include:
@@ -526,9 +528,9 @@ def get_annotation(result, include):
                         vtrait.append('')
 
                     vtraits.append('|'.join(vtrait))
-                annotation.append(
-                    _ANNOT['clinvar']['id'] + '=' + ','.join(vtraits)
-                )
+                annotation.append('{key}={value}'.format(
+                    key=_ANNOT['clinvar']['id'], value=','.join(vtraits)
+                ))
 
     # COSMIC
     if 'cosmic' in include:
@@ -536,11 +538,12 @@ def get_annotation(result, include):
                 result['variantTraitAssociation']):
             vta = result['variantTraitAssociation']
             if 'cosmic' in vta and vta['cosmic']:
-                annotation.append(
-                    _ANNOT['cosmic']['id'] + '=' +
-                    parse_list_of_dicts(vta, 'cosmic',
-                                        _ANNOT['cosmic']['parseable'])
-                )
+                annotation.append('{key}={value}'.format(
+                    key=_ANNOT['cosmic']['id'],
+                    value=parse_list_of_dicts(
+                        vta, 'cosmic', _ANNOT['cosmic']['parseable']
+                    )
+                ))
 
     # Removing whitespaces
     for index, annot in enumerate(annotation):
@@ -569,6 +572,44 @@ def add_info_to_vcf_header(ori_header, include):
     return new_header
 
 
+def _get_vcf_header(vcf_fhand, include):
+    vcf_header = []
+    for line in vcf_fhand:
+        line = str(line.rstrip())
+        if line.startswith('#'):
+            vcf_header.append(line)
+        else:
+            break
+
+    new_header = []
+    if vcf_header:
+        new_header = add_info_to_vcf_header(vcf_header, include)
+
+    return new_header
+
+
+def _get_vcf_batches(vcf_fhand):
+    variants = []
+    split_lines = []
+    for line in vcf_fhand:
+        # Skipping header
+        if line.startswith('#'):
+            continue
+
+        # Return batch every 800 variants
+        if len(variants) == 800:
+            yield split_lines, variants
+            variants = []
+
+        # Get variants id
+        line_split = line.rstrip('\n').split('\t')
+        split_lines.append(line_split)
+        chrom = get_chromosome(line_split[0])
+        variants.append(':'.join([chrom] + [line_split[1]] + line_split[3:5]))
+
+    yield split_lines, variants
+
+
 def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
     """Annotate a VCF file"""
 
@@ -586,42 +627,32 @@ def annotate_vcf(cellbase_client, input_fpath, output_fpath, include, assembly):
     else:
         raise IOError('Input file must end in ".vcf" or ."vcf.gz"')
 
+    # Getting new VCF header
+    new_header = _get_vcf_header(input_fhand, include)
+    for header_line in new_header:
+        output_fhand.write(header_line + '\n')
+
     # Initializing variant client
     vc = cellbase_client.get_variant_client()
 
-    vcf_header = []
-    print_header = True
-    for line in input_fhand:
-        line = str(line.rstrip())
-        line_split = line.split()
-
-        # Getting VCF header
-        if line.startswith('#'):
-            vcf_header.append(line)
-            continue
-
-        # Adding CellBase header
-        if vcf_header and print_header:
-            new_header = add_info_to_vcf_header(vcf_header, include)
-            print_header = False
-            for header_line in new_header:
-                output_fhand.write(header_line + '\n')
-
-        # Skipping non-canonical chromosomes
-        chromosome = get_chromosome(line_split[0])
-        if chromosome not in _CANONICAL_CHROMOSOMES:
-            output_fhand.write(line + '\n')
-            continue
-
-        # Querying CellBase
-        var = ':'.join([chromosome] + [line_split[1]] + line_split[3:5])
-        response = vc.get_annotation(var, assembly=assembly)
-        annotation = get_annotation(response[0]['result'][0], include)
-
-        # Adding annotation to variant
-        line_split[7] = ';'.join([line_split[7]] + annotation)
-        line = '\t'.join(line_split)
-        output_fhand.write(line + '\n')
+    # Querying CellBase
+    input_fhand.seek(0)
+    for vcf_line_batch, variant_batch in _get_vcf_batches(input_fhand):
+        response = vc.get_annotation(variant_batch, assembly=assembly,
+                                     method='post')
+        while response:
+            line_split = vcf_line_batch.pop(0)
+            res = response.pop(0)
+            # Skipping non-canonical chromosomes
+            chromosome = get_chromosome(line_split[0])
+            if chromosome not in _CANONICAL_CHROMOSOMES:
+                output_fhand.write('\t'.join(line_split) + '\n')
+                continue
+            # Getting formatted annotation
+            annotation = get_annotation(res['result'][0], include)
+            # Writing
+            line_split[7] = ';'.join([line_split[7]] + annotation)
+            output_fhand.write('\t'.join(line_split) + '\n')
 
     input_fhand.close()
     output_fhand.close()
@@ -694,6 +725,7 @@ def main():
     if args.which == 'annotate':
         # Getting the list of annotations to add
         include = get_include_annots(args.include, args.exclude)
+        include = list(set(include).intersection(_ANNOT.keys()))
 
         # Annotate VCF
         annotate_vcf(cellbase_client=cbc,
