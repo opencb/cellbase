@@ -2,7 +2,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.v53jaxb.*;
+import org.opencb.biodata.formats.variant.clinvar.v54jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  */
 public class ClinVarIndexer extends ClinicalIndexer {
 
-    private static final String CLINVAR_CONTEXT_V53 = "org.opencb.biodata.formats.variant.clinvar.v53jaxb";
+    private static final String CLINVAR_CONTEXT = "org.opencb.biodata.formats.variant.clinvar.v54jaxb";
 
     private static final String CLINVAR_NAME = "clinvar";
     private static final int VARIANT_SUMMARY_CHR_COLUMN = 18;
@@ -448,8 +448,10 @@ public class ClinVarIndexer extends ClinicalIndexer {
         if (modeOfInheritanceSet.size() == 1
                 || (modeOfInheritanceSet.size() == 2 && modeOfInheritanceSet.contains(null))) {
             modeOfInheritanceSet.remove(null);
-            logger.warn("Selected inheritance model: {}", modeOfInheritanceSet.iterator().next());
-            return modeOfInheritanceSet.iterator().next();
+            if (modeOfInheritanceSet.size() > 0) {
+                logger.warn("Selected inheritance model: {}", modeOfInheritanceSet.iterator().next());
+                return modeOfInheritanceSet.iterator().next();
+            }
         } else {
             modeOfInheritanceSet.remove(null);
             modeOfInheritanceSet.removeAll(DOMINANT_TERM_SET);
@@ -848,7 +850,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private JAXBElement<ReleaseType> unmarshalXML(Path clinvarXmlFile) throws JAXBException, IOException {
-        return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), CLINVAR_CONTEXT_V53);
+        return (JAXBElement<ReleaseType>) ClinvarParser.loadXMLInfo(clinvarXmlFile.toString(), CLINVAR_CONTEXT);
     }
 
     class EFO {
