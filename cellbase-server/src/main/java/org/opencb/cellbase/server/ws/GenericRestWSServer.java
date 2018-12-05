@@ -111,6 +111,12 @@ public class GenericRestWSServer implements IWSServer {
             defaultValue = "false", allowableValues = "false,true")
     protected String count;
 
+    @DefaultValue("")
+    @QueryParam("sort")
+    @ApiParam(name = "sort", value = "Sort returned results by a certain data model attribute."
+            + " Please note that this option may not be available for all web services.")
+    protected String sort;
+
     @DefaultValue("json")
     @QueryParam("of")
     @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json",
@@ -278,6 +284,10 @@ public class GenericRestWSServer implements IWSServer {
             queryOptions.put(INCLUDE, (multivaluedMap.get(INCLUDE) != null)
                     ? Splitter.on(",").splitToList(multivaluedMap.get(INCLUDE).get(0))
                     : null);
+        }
+
+        if (sort != null && !sort.isEmpty()) {
+            queryOptions.put(SORT, sort);
         }
 
         queryOptions.put(LIMIT, (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
