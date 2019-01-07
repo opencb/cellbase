@@ -13,7 +13,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup_kwargs = {
     'name': 'pycellbase',
-    'version': '4.5.3',
+    'version': '4.5.4',
     'description': 'Python client for CellBase',
     'long_description': long_description,
     'long_description_content_type': 'text/x-rst',
