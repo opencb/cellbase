@@ -40,7 +40,7 @@ setup_kwargs = {
         'Bug Reports': 'https://github.com/opencb/cellbase/issues',
     },
     'packages': ['pycellbase'],
-    'install_requires': ['requests', 'pyyaml'],
+    'install_requires': ['requests', 'pyyaml', 'retrying'],
     'scripts': ['tools/cbtools.py']
 }
 
