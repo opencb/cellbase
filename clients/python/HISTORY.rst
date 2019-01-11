@@ -1,3 +1,7 @@
+Version 4.7.0
+=============
+- Make configuration checks retry cellbase connection if needed
+
 Version 4.5.3
 =============
 - Fixed POST requests
