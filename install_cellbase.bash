@@ -2,7 +2,7 @@ qseqdnamatch=`expr match "$(pwd)" '.*\(cellbase\)'`
 if [[ $qseqdnamatch = "cellbase" ]]
 then
     echo "Already in cellbase folder."
-    git pull origin master
+    git pull origin develop
 else
     #Now, this script, when executed from outside the qiaseq folder, it downloads the qiaseq repository and then executes the script 'install_qiaseq_dna.bash'.
     #This allows that the installer be updated and not to have to provide the updated installer script
