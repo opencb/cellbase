@@ -30,6 +30,6 @@ tar xzvf apache-maven-3.6.0-bin.tar.gz
 echo -e "PATH=\$PATH:$(pwd)/bin\n\$JAVA_HOME=$(ls /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/jre/bin/java)\n">>~/.bashrc
 source ~/.bashrc
 
-mkdir ~.m2
-cp mvn_default_settings.xml ~.m2/settings.xml
+mkdir ~/.m2
+cp mvn_default_settings.xml ~/.m2/settings.xml
 mvn clean install -DskipTests
