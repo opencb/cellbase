@@ -27,7 +27,7 @@ sudo yum install -y java-1.8.0-openjdk-devel
 # Install apache Maven
 wget https://www-us.apache.org/dist/maven/maven-3/3.6.0/binaries/apache-maven-3.6.0-bin.tar.gz
 tar xzvf apache-maven-3.6.0-bin.tar.gz
-echo -e "PATH=\$PATH:$(pwd)/bin\n\$JAVA_HOME=$(ls /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/jre/bin/java)\n">>~/.bashrc
+echo -e "PATH=\$PATH:$(pwd)/bin\n\JAVA_HOME=$(ls /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/jre/bin/java)\n">>~/.bashrc
 source ~/.bashrc
 
 mkdir ~/.m2
