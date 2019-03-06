@@ -1,6 +1,11 @@
+Version 4.7.1
+=============
+- Added new default hosts
+- Fixed help method
+
 Version 4.7.0
 =============
-- Make configuration checks retry cellbase connection if needed
+- Make configuration checks retry CellBase connection if needed
 
 Version 4.5.3
 =============
