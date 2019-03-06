@@ -1,13 +1,13 @@
 import requests
 import json
 import yaml
-import operator
 from retrying import retry
 
 _DEFAULT_CONFIG = {
     "species": "hsapiens",
     "version": "v4",
-    "rest": {"hosts": ["http://bioinfo.hpc.cam.ac.uk:80/cellbase"]}
+    "rest": {"hosts": ["http://bioinfo.hpc.cam.ac.uk:80/cellbase",
+                       "https://bioinfo.hpc.cam.ac.uk:80/cellbase"]}
 }
 
 

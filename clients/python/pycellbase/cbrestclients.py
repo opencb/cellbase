@@ -65,8 +65,11 @@ class _ParentRestClient(object):
             # Getting method info
             method_swag = (method[4:] if method.startswith('get_') else method)
             path_info = [response['paths'][path] for path in response['paths']
-                         if self._category in path and method_swag in path]
+                         if self._category in path and self._subcategory in path
+                         and method_swag in path]
             if not path_info:
+                continue
+            if 'summary' not in path_info[0]['get']:
                 continue
             desc = path_info[0]['get']['summary']
             desc = desc.replace('http://bioinfo.hpc.cam.ac.uk/cellbase',
@@ -81,7 +84,7 @@ class _ParentRestClient(object):
             for param in path_info[0]['get']['parameters']:
                 if param['name'] in ['version', 'species', 'Output format']:
                     continue
-                desc = param['description']
+                desc = param['description'] if 'description' in param else '-'
                 desc = desc.replace('http://bioinfo.hpc.cam.ac.uk/cellbase',
                                     self._configuration.host)
                 sys.stdout.write(text.format(indent=' ' * 8,
@@ -124,7 +127,11 @@ class GeneClient(_Feature):
         """Returns the number of entries"""
         return self._get('count')
 
+    @deprecated
     def get_biotypes(self, **options):
+        return self.get_biotype(**options)
+
+    def get_biotype(self, **options):
         """Returns the different gene biotypes"""
         return self._get('biotype', None, options)
 
