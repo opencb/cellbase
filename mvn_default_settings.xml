@@ -17,5 +17,5 @@
 				<CELLBASE.DB.MONGODB.REPLICASET></CELLBASE.DB.MONGODB.REPLICASET>
 			</properties>
 		</profile>
-	</profile>
+	</profiles>
 </settings>
