@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class MonitorTest extends GenericMongoDBAdaptorTest {
 
-    private static final String REST_API_HOST = "http://localhost:8080";
+    private static final String REST_API_HOST = "http://localhost:8080/cellbase";
 //    private static final String REST_API_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest";
     private static final String SPECIES = "hsapiens";
     private static final String ASSEMBLY = "GRCh37";
