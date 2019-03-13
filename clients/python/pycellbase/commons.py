@@ -109,7 +109,7 @@ def _fetch(session, host, version, species, category, subcategory, resource,
         if method == 'get':
             r = session.get(url)
         elif method == 'post':
-            r = session.post(url)
+            r = session.post(url, data=data)
         else:
             msg = 'Method "' + method + '" not implemented'
             raise NotImplementedError(msg)
@@ -196,6 +196,10 @@ def get(session, host, version, species, category, subcategory, resource,
     # If query_id is an array, convert to comma-separated string
     if query_id is not None and isinstance(query_id, list):
         query_id = ','.join(query_id)
+
+    # If data is an array, convert to comma-separated string
+    if data is not None and isinstance(data, list):
+        data = ','.join(data)
 
     # Multithread if the number of queries is greater than _CALL_BATCH_SIZE
     if query_id is None or len(query_id.split(',')) <= _CALL_BATCH_SIZE:
