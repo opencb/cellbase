@@ -23,11 +23,11 @@ import static org.junit.Assert.assertEquals;
  */
 public class MonitorTest extends GenericMongoDBAdaptorTest {
 
-    private static final String REST_API_HOST = "http://localhost:8080/cellbase-4.6.0-SNAPSHOT";
-//    private static final String REST_API_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase";
+    private static final String REST_API_HOST = "http://localhost:8080";
+//    private static final String REST_API_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest";
     private static final String SPECIES = "hsapiens";
     private static final String ASSEMBLY = "GRCh37";
-    private static final String UNKNOWN_HTTP_HOST = "http://foo:8080/cellbase-4.6.0-SNAPSHOT";
+    private static final String UNKNOWN_HTTP_HOST = "http://foo:8080/cellbase";
     private static final String REST_API_DOES_NOT_IMPLEMENT_STATUS = "http://bioinfo.hpc.cam.ac.uk/hgva";
     private static final String FAKE = "fake";
 
