@@ -1,0 +1,46 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+
+        "_artifactsLocation": {
+            "value":""
+        },
+        "_artifactsLocationSasToken": {
+            "value":""
+        },
+        "rgPrefix": {
+            "value":""
+        },
+        "rgLocation": {
+            "value":""
+        },
+        "sslCertificateEmail": {
+            "value":""
+        },
+        "adminUsername": {
+            "value":""
+        },
+        "sshAdminKeyData": {
+            "value":""
+        },
+        "mongoDBPassword": {
+            "value":""
+        },
+        "mongoDbDumpUrl": {
+            "value":""
+        },
+        "deploymentSize": {
+            "value":""
+        },
+        "LogAnalyticsWorkspaceID": {
+            "value":""
+        },
+        "logAnalyticsWorkSpaceKey": {
+            "value":""
+        },
+        "LogAnalyticsWorkspaceResourceID": {
+            "value":""
+        }
+    }
+}
