@@ -2,7 +2,7 @@
 
 ## Build Cellbase
 
-To build cellbase run the follwoing command fromt he root of the repository:
+To build cellbase run the following command from the root of the repository:
 
 ```
 docker run -it --rm \
@@ -10,12 +10,11 @@ docker run -it --rm \
     -w /src maven:3.5.3-jdk-8 \
     mvn clean install  \
     -DskipTests
-
 ```
 
 ## Build Cellbase image
 
-This includes cellbase build, but not tomcat.
+This includes the cellbase build, but not a tomcat installation.
 
 Run this command from the root of the repository:
 
@@ -33,9 +32,8 @@ docker build -t cellbase-app  ./cellbase-app/app/docker/cellbase-app/
 
 ## Run Cellbase server
 
-The command below runs cellbase and mounts configuration.json from the specified path. This alows configuration to be persisted outside of the container and also shared between containers.
+The command below runs cellbase and mounts `configuration.json` from the specified path. This allows configuration to be persisted outside of the container and also shared between containers.
 
 ```
 docker run --name cellbase-app-test --mount type=bind,src=/pathto/build/configuration.json,dst=/opt/cellbase/conf/configuration.json -d -p 8080:8080 cellbase-app
 ```
-

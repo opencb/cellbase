@@ -14,7 +14,7 @@ ARG buildPath="./build"
 WORKDIR /opt/cellbase
 ENV BASEDIR=/opt/cellbase
 
-RUN useradd -u 1001 cellbase
+RUN useradd -u 1001 --create-home cellbase
 
 COPY ${buildPath} /opt/cellbase
 
