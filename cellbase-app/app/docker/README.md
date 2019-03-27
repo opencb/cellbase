@@ -19,7 +19,7 @@ This includes the cellbase build, but not a tomcat installation.
 Run this command from the root of the repository:
 
 ```
-docker build -t cellbase -f  ./cellbase-app/app/docker/cellbase/Dockerfile
+docker build -t cellbase -f  ./cellbase-app/app/docker/cellbase/Dockerfile .
 ```
 
 ## Build Cellbase with tomcat image
