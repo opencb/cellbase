@@ -36,9 +36,7 @@ chown -R 1001:1001 /opt/tomcat/
 # Copy cellbase build to Tomcat server
 RUN cp /opt/cellbase/*.war /opt/tomcat/webapps/cellbase.war
 
-VOLUME /opt/cellbase/conf
-
-ENV CELLBASE_HOME /opt/cellbase/conf
+ENV CELLBASE_HOME /opt/cellbase/
 
 USER 1001:1001
 
