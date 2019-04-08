@@ -150,7 +150,7 @@
     "resources": [
       
         {
-            "comments": "The LB configured to send traffic to the web nodes in the VMSS. It monitors the health endpoint of OpenCGA removing unhealthy nodes from the LB",
+            "comments": "The LB configured to send traffic to the web nodes in the VMSS. It monitors the status endpoint of cellbase removing unhealthy nodes from the LB",
             "type": "Microsoft.Network/loadBalancers",
             "name": "[variables('loadBalancerName')]",
             "location": "[resourceGroup().location]",
@@ -269,7 +269,7 @@
                 ]
         },
         {
-            "comments": "This VMSS creates machines used to host the web components of OpenCGA, they are configured using the CloudInit found in the variables section of this ARM template",
+            "comments": "This VMSS creates machines used to host the web components of cellbase, they are configured using the CloudInit found in the variables section of this ARM template",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[variables('vmssName')]",
             "location": "[resourceGroup().location]",

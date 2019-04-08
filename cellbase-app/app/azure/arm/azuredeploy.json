@@ -83,7 +83,7 @@
         },
         "cellbaseContainerImage":{
             "type": "string",
-            "defaultValue":  "marrobi/cellbase-app"
+            "defaultValue":  "opencb/cellbase-app:a155404640ffaa08223a22afda3f6450592b40dd"
         },
         "customDeploymentSize": {
             "type": "object",
@@ -125,6 +125,7 @@
                 
     },
     "variables": {
+        "_comment": "The below URL specifies the Mongo DB deployment templates to use in the opencb/opencga repository.",
         "mongoTemplateURI":"https://raw.githubusercontent.com/opencb/opencga/052ea4e1be6d708f9dde14ee42ad85914382f8e6/opencga-app/app/scripts/azure/arm/mongodb/azuredeploy.json",
         "dnsNamePrefix": "[toLower(substring(concat('opencga', uniqueString(subscription().subscriptionId,parameters('rgPrefix'))), 0, 16))]",
         "sizingOptions": [
