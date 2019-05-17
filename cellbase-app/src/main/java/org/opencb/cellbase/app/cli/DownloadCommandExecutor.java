@@ -1165,7 +1165,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
 
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("-N", "--tries=10", url, "-O", outputFileName, "-o",
                 outputFileName + ".log"));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
