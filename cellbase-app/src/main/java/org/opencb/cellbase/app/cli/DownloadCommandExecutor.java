@@ -1166,10 +1166,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
             throws IOException, InterruptedException {
 
         File file = new File(outputFileName);
-        if (file.exists()){
-            logger.info("File "+outputFileName + " exists and will not be downloaded again");
+        if (file.exists()) {
+            logger.info("File " + outputFileName + " exists and will not be downloaded again");
+            return;
         }
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("-N", "--tries=10", url, "-O", outputFileName, "-o",
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
                 outputFileName + ".log"));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
