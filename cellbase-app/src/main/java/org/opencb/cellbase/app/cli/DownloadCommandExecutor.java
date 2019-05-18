@@ -1176,14 +1176,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
             long remotesize = remotefile.getSize();
             long localsize = file.length();
             long locallastmodified = file.lastModified();
-            logger.info("File " + outputFileName + " exists, with size " + localsize + "vs "
+            logger.info("File " + outputFileName + " exists, with size " + localsize + " vs "
                 + remotesize + " in remote and will not be downloaded again");
             if (remotesize == localsize) {
                 logger.info("Download avoided because the files have the same size");
                 return;
             }
             //If the filestamps differ, regardless of the timestamps downloads the file
-            Calendar remotets = FTPFile.getTimeStamp();
+            Calendar remotets = remotefile.getTimestamp();
             logger.info("local ts " + locallastmodified + "wheras remote ts is " + remotets.toString());
         }
         List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
