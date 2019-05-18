@@ -123,6 +123,11 @@
                 <artifactId>commons-datastore-core</artifactId>
                 <version>${java-common-libs.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.opencb.commons.net</groupId>
+                <artifactId>commons-datastore-net</artifactId>
+                <version>${java-common-libs.version}</version>
+            </dependency>
 
             <!-- General dependencies -->
             <dependency>
