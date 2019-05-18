@@ -1167,16 +1167,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         File file = new File(outputFileName);
         if (file.exists()) {
-        	FTPClient ftpClient = new FTPClient();
-			// code to connect and login....
-			 
-			FTPFile remotefile = ftpClient.mlistFile(outputFileName);
-			long remotesize = remotefile.getSize();
-			long localsize = file.length();
-            logger.info("File " + outputFileName + " exists, with size " +localsize + "vs " + remotesize + " in remote and will not be downloaded again");
+            FTPClient ftpClient = new FTPClient();
+            // code to connect and login....
+
+            FTPFile remotefile = ftpClient.mlistFile(outputFileName);
+            long remotesize = remotefile.getSize();
+            long localsize = file.length();
+            logger.info("File " + outputFileName + " exists, with size " + localsize + "vs " + 
+                remotesize + " in remote and will not be downloaded again");
             if (remotesize == localsize) {
-            	logger.info("Download avoided because the files has the same size");
-            	return;
+                logger.info("Download avoided because the files has the same size");
+                return;
             }
         }
         List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
