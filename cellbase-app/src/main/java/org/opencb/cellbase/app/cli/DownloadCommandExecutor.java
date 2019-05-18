@@ -1173,7 +1173,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
             FTPFile remotefile = ftpClient.mlistFile(outputFileName);
             long remotesize = remotefile.getSize();
             long localsize = file.length();
-            logger.info("File " + outputFileName + " exists, with size " + localsize + "vs " 
+            long locallastmodified = file.lastModified();
+            logger.info("File " + outputFileName + " exists, with size " + localsize + "vs "
                 + remotesize + " in remote and will not be downloaded again");
             if (remotesize == localsize) {
                 logger.info("Download avoided because the files has the same size");
