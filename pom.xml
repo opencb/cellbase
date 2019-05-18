@@ -25,6 +25,7 @@
         <cellbase.version>4.6.2</cellbase.version>
         <compileSource>1.8</compileSource>
         <java-common-libs.version>3.7.0</java-common-libs.version>
+        <commons-net.version>3.7.0</commons-net.version>
         <biodata.version>1.4.3</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.8.4</jackson.version>
@@ -124,9 +125,9 @@
                 <version>${java-common-libs.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.opencb.commons.net</groupId>
-                <artifactId>commons-datastore-net</artifactId>
-                <version>${java-common-libs.version}</version>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${commons-net.version}</version>
             </dependency>
 
             <!-- General dependencies -->
