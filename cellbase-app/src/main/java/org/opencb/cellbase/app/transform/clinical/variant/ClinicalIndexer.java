@@ -3,6 +3,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
@@ -15,12 +16,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by fjlopez on 04/10/16.
  */
 public abstract class ClinicalIndexer {
 
+    protected static final char HAPLOTYPE_STRING_SEPARATOR = ',';
+    protected static final String HAPLOTYPE_FIELD_NAME = "haplotype";
     protected static Logger logger
             = LoggerFactory.getLogger("org.opencb.cellbase.app.transform.clinical.variant.ClinicalIndexer");
 
@@ -47,10 +51,13 @@ public abstract class ClinicalIndexer {
     protected VariantNormalizer normalizer;
 
     public ClinicalIndexer(Path genomeSequenceFilePath) throws IOException {
-        VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig = (new VariantNormalizer.VariantNormalizerConfig())
+        // Forcing decomposition here in all cases - assuming the way CellBase stores clinical variants from here
+        // onwards will be decomposed and Adaptors will deal with phased/no-phased queries
+        VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig
+                = (new VariantNormalizer.VariantNormalizerConfig())
                 .setReuseVariants(true)
                 .setNormalizeAlleles(false)
-                .setDecomposeMNVs(false);
+                .setDecomposeMNVs(true);
 
         if (genomeSequenceFilePath != null) {
             logger.info("Enabling left aligning by using sequence at {}", genomeSequenceFilePath.toString());
@@ -138,34 +145,36 @@ public abstract class ClinicalIndexer {
                 || ClinicalSignificance.likely_benign.equals(clinicalSignificance);
     }
 
-    protected byte[] getNormalisedKey(String chromosome, int start, String reference, String alternate) {
-        String normalisedVariantString = getNormalisedVariantString(chromosome, start, reference, alternate);
-
-        if (normalisedVariantString != null) {
-            return normalisedVariantString.getBytes();
-        } else {
-            return null;
-        }
-    }
-
-    protected String getNormalisedVariantString(String chromosome, int start, String reference, String alternate) {
+     protected List<String> getNormalisedVariantString(String chromosome, int start, String reference, String alternate) {
         Variant variant = new Variant(chromosome, start, reference, alternate);
-        Variant normalizedVariant;
+        List<Variant> normalizedVariantList;
         if (normalize) {
             try {
                 // No decomposition allowed at the moment therefore only one variant in returned list of variants.
-                normalizedVariant = normalizer.apply(Collections.singletonList(variant)).get(0);
+                normalizedVariantList = normalizer.apply(Collections.singletonList(variant));
             } catch (RuntimeException e) {
                 e.printStackTrace();
                 logger.warn("Error found during variant normalization. Skipping variant: {}", variant.toString());
                 return null;
             }
         } else {
-            normalizedVariant = variant;
+            normalizedVariantList = Collections.singletonList(variant);
         }
-        return VariantAnnotationUtils.buildVariantId(normalizedVariant.getChromosome(),
-                normalizedVariant.getStart(), normalizedVariant.getReference(),
-                normalizedVariant.getAlternate());
+
+        return normalizedVariantList.stream().map((variant1) -> variant1.toString()).collect(Collectors.toList());
+    }
+
+    protected void addHaplotypeProperty(List<EvidenceEntry> evidenceEntryList, List<String> normalisedVariantStringList) {
+        // If more than one variant in the MNV (haplotype), create haplotype property in additionalProperties
+        if (normalisedVariantStringList.size() > 1 && evidenceEntryList != null) {
+            for (EvidenceEntry evidenceEntry : evidenceEntryList) {
+                // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV
+                // Assuming additionalProperties has already been created as per the upstream code
+                evidenceEntry.getAdditionalProperties().add(new Property(null,
+                        HAPLOTYPE_FIELD_NAME,
+                        StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR)));
+            }
+        }
     }
 
     class SequenceLocation {

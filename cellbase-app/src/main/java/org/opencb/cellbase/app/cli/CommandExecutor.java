@@ -79,7 +79,11 @@ public abstract class CommandExecutor {
 
         org.apache.log4j.Logger rootLogger = LogManager.getRootLogger();
         ConsoleAppender stderr = (ConsoleAppender) rootLogger.getAppender("stderr");
-        stderr.setThreshold(Level.toLevel(logLevel));
+
+        // Line above returning null - and causing NPE - in certain environments
+        if (stderr != null) {
+            stderr.setThreshold(Level.toLevel(logLevel));
+        }
 
         logger = LoggerFactory.getLogger(this.getClass().toString());
         this.logLevel = logLevel;

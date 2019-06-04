@@ -6,26 +6,26 @@
 	"maintainerContact": "javier.lopez@genomicsengland.co.uk",
 	"databases": {
 		"mongodb": {
-			"host": "${CELLBASE.DB.MONGODB.HOST}",
-			"user": "${CELLBASE.DB.USER}",
-			"password": "${CELLBASE.DB.PASSWORD}",
+			"host": "localhost:27017",
+			"user": "",
+			"password": "",
 			"options": {
-				"authenticationDatabase": "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}",
-				"readPreference": "${CELLBASE.DB.MONGODB.READPREFERENCE}",
-				"replicaSet": "${CELLBASE.DB.MONGODB.REPLICASET}",
+				"authenticationDatabase": "",
+				"readPreference": "",
+				"replicaSet": "",
 				"connectionsPerHost": 20
 			}
 		},
 		"neo4j": {
 			"hsapiens": {
-				"host": "${CELLBASE.DB.NEO4J.HOST}",
-				"user": "${CELLBASE.DB.USER}",
-				"password": "${CELLBASE.DB.PASSWORD}"
+				"host": "",
+				"user": "",
+				"password": ""
 			},
 			"mmusculus": {
-				"host": "${CELLBASE.DB.NEO4J.HOST}",
-				"user": "${CELLBASE.DB.USER}",
-				"password": "${CELLBASE.DB.PASSWORD}"
+				"host": "",
+				"user": "",
+				"password": ""
 			}
 		}
 	},

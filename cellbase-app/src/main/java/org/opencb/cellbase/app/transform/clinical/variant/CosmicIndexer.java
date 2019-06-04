@@ -1,5 +1,6 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.app.cli.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
@@ -58,6 +59,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         this.rdb = rdb;
         this.cosmicFile = cosmicFile;
         this.compileRegularExpressionPatterns();
+        this.normalize = normalize;
 
         // COSMIC v78 GRCh38 includes one more column at position 27 (1-based) "Resistance Mutation" which is not
         // provided in the GRCh37 file
@@ -151,17 +153,33 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private boolean updateRocksDB(SequenceLocation sequenceLocation, EvidenceEntry evidenceEntry) throws RocksDBException, IOException {
 
-        byte[] key = getNormalisedKey(sequenceLocation.getChromosome(),
+        // More than one variant being returned from the normalisation process would mean it's and MNV which has been
+        // decomposed
+        List<String> normalisedVariantStringList = getNormalisedVariantString(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate());
-        if (key != null) {
-            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
-            //        List<EvidenceEntry> evidenceEntryList = getVariantAnnotation(key);
-            addNewEntry(variantAnnotation, evidenceEntry);
-            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+
+        if (normalisedVariantStringList != null) {
+            for (String normalisedVariantString : normalisedVariantStringList) {
+                VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
+                addHaplotypeProperty(evidenceEntry, normalisedVariantStringList);
+                addNewEntry(variantAnnotation, evidenceEntry);
+                rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            }
             return true;
         }
         return false;
+    }
+
+    private void addHaplotypeProperty(EvidenceEntry evidenceEntry, List<String> normalisedVariantStringList) {
+        // If more than one variant in the MNV (haplotype), create haplotype property in additionalProperties
+        if (normalisedVariantStringList.size() > 1) {
+            // This variant is part of an MNV (haplotype). Leave a flag of all variants that form the MNV
+            // Assuming additionalProperties has already been created as per the upstream code
+            evidenceEntry.getAdditionalProperties().add(new Property(null,
+                    HAPLOTYPE_FIELD_NAME,
+                    StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR)));
+        }
     }
 
     private void addNewEntry(VariantAnnotation variantAnnotation, EvidenceEntry evidenceEntry) {
@@ -336,13 +354,19 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private boolean parseInsertion(String mutationCds, SequenceLocation sequenceLocation) {
         boolean validVariant = true;
-        String insertedNucleotides = mutationCds.split("ins")[1];
-        if (insertedNucleotides.matches("\\d+") || !insertedNucleotides.matches(VARIANT_STRING_PATTERN)) {
-            //c.503_508ins30
-            validVariant = false;
+        String[] insParts = mutationCds.split("ins");
+
+        if (insParts.length > 1) {
+            String insertedNucleotides = insParts[1];
+            if (insertedNucleotides.matches("\\d+") || !insertedNucleotides.matches(VARIANT_STRING_PATTERN)) {
+                //c.503_508ins30
+                validVariant = false;
+            } else {
+                sequenceLocation.setReference("");
+                sequenceLocation.setAlternate(getPositiveStrandString(insertedNucleotides, sequenceLocation.getStrand()));
+            }
         } else {
-            sequenceLocation.setReference("");
-            sequenceLocation.setAlternate(getPositiveStrandString(insertedNucleotides, sequenceLocation.getStrand()));
+            validVariant = false;
         }
 
         return validVariant;
@@ -412,7 +436,8 @@ public class CosmicIndexer extends ClinicalIndexer {
 
         List<GenomicFeature> genomicFeatureList = getGenomicFeature(fields);
 
-        List<Property> additionalProperties = Collections.singletonList(new Property(null,
+        List<Property> additionalProperties = new ArrayList<>(1);
+        additionalProperties.add(new Property(null,
                 MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE, fields[mutationSomaticStatusColumn]));
 
         List<String> bibliography = getBibliography(fields[pubmedPMIDColumn]);

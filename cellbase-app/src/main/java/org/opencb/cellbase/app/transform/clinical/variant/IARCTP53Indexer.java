@@ -64,6 +64,7 @@ public class IARCTP53Indexer extends ClinicalIndexer {
         this.germlineReferencesFile = germlineReferencesFile;
         this.somaticFile = somaticFile;
         this.somaticReferencesFile = somaticReferencesFile;
+        this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         snvPattern = Pattern.compile("g\\.\\d+(_\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
         kbSizePattern = Pattern.compile("\\d+((kb)|(Kb)|(KB))");
@@ -234,14 +235,24 @@ public class IARCTP53Indexer extends ClinicalIndexer {
     private boolean updateRocksDB(SequenceLocation sequenceLocation, List<EvidenceEntry> evidenceEntryList)
             throws RocksDBException, IOException {
 
-        byte[] key = getNormalisedKey(sequenceLocation.getChromosome(),
+        // More than one variant being returned from the normalisation process would mean it's and MNV which has been
+        // decomposed
+        List<String> normalisedVariantStringList = getNormalisedVariantString(sequenceLocation.getChromosome(),
                 sequenceLocation.getStart(), sequenceLocation.getReference(),
                 sequenceLocation.getAlternate());
-        if (key != null) {
-            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
-            //        List<EvidenceEntry> existingEvidenceEntryList = getVariantAnnotation(key);
-            variantAnnotation.getTraitAssociation().addAll(evidenceEntryList);
-            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+
+        if (normalisedVariantStringList != null) {
+            for (String normalisedVariantString : normalisedVariantStringList) {
+                VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
+
+                // Add haplotype property to all EvidenceEntry objects in variant if there are more than 1 variants in
+                // normalisedVariantStringList, i.e. if this variant is part of an MNV (haplotype)
+                addHaplotypeProperty(evidenceEntryList, normalisedVariantStringList);
+
+                variantAnnotation.getTraitAssociation().addAll(evidenceEntryList);
+                rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
+            }
+
             return true;
         }
         return false;

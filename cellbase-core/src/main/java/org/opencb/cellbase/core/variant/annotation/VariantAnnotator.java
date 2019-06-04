@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutionException;
  */
 public interface VariantAnnotator {
 
+    String PHASE = "phased";
+
     boolean open();
 
     void run(List<Variant> variantList) throws InterruptedException, ExecutionException;

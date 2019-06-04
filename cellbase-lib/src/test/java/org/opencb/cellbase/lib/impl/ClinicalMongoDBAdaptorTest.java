@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -19,6 +20,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -36,16 +39,450 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public ClinicalMongoDBAdaptorTest() throws IOException {
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @Test
+    public void phasedQueriesTest() throws Exception {
+
+        // Load test data
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
-                .getResource("/clinical_variants.full.test.json.gz").toURI());
+                .getResource("/clinicalMongoDBAdaptor/phasedQueries/clinical_variants.full.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
+
+        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens",
+                "GRCh37");
+
+        // Two variants being queried with PS and genotype. The PS is different in each of them. In the database, these
+        // variants form an MNV. Both of them should be returned since the fact of having different PS indicates that
+        // it's unknown if alternate alleles are in the same chromosome copy or not, i.e. could potentially  be in the
+        // same chromosome copy
+        VariantBuilder variantBuilder = new VariantBuilder("X",
+                100653362,
+                100653362,
+                "C",
+                "T");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        Variant variant = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("X",
+                100653363,
+                100653363,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653363", "0|1")));
+        Variant variant1 = variantBuilder.build();
+
+        List<QueryResult<Variant>> variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(variant, variant1),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(2, variantQueryResultList.size());
+        QueryResult<Variant> variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653362,
+                "C",
+                "T"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653363,
+                "T",
+                "C"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Two variants being queried with PS and genotype. Second is hom reference. Both have the same PS (100653362).
+        // In the database, these variants form an MNV. None should be returned.
+        variantBuilder = new VariantBuilder("X",
+                100653362,
+                100653362,
+                "C",
+                "T");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variant = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("X",
+                100653363,
+                100653363,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "0|0")));
+        variant1 = variantBuilder.build();
+
+         variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(variant, variant1),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(2, variantQueryResultList.size());
+        variantQueryResult = variantQueryResultList.get(0);
+        assertEquals(0, variantQueryResult.getNumResults());
+        assertEquals(0, variantQueryResult.getNumTotalResults());
+        assertTrue(variantQueryResult.getResult().isEmpty());
+
+        variantQueryResult = variantQueryResultList.get(1);
+        assertNotNull(variantQueryResult);
+        assertEquals(0, variantQueryResult.getNumResults());
+        assertEquals(0, variantQueryResult.getNumTotalResults());
+        assertTrue(variantQueryResult.getResult().isEmpty());
+
+        // Two X variants being queried with PS and genotype. First is haploid. Second is diploid (heterozygous) AND
+        // uses the phased genotype i.e. '|'. Both have the same PS (100653362). In the database, these variants form
+        // an MNV. Both of them should be returned.
+        variantBuilder = new VariantBuilder("X",
+                100653362,
+                100653362,
+                "C",
+                "T");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variant = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("X",
+                100653363,
+                100653363,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "0|1")));
+        variant1 = variantBuilder.build();
+
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(variant, variant1),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(2, variantQueryResultList.size());
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653362,
+                "C",
+                "T"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653363,
+                "T",
+                "C"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Two X variants being queried with PS and genotype. First is haploid. Second is diploid (heterozygous) AND
+        // uses the phased genotype i.e. '|'. Both have the same PS (100653362). Same as the one above but in this case
+        // the '1' of the diploid is placed on the other side of the '|'. In the database, these variants form
+        // an MNV. Both of them should be returned.
+        variantBuilder = new VariantBuilder("X",
+                100653362,
+                100653362,
+                "C",
+                "T");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variant = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("X",
+                100653363,
+                100653363,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1|0")));
+        variant1 = variantBuilder.build();
+
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(variant, variant1),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+
+        assertEquals(2, variantQueryResultList.size());
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653362,
+                "C",
+                "T"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653363,
+                "T",
+                "C"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Two X variants being queried with PS and genotype. First is haploid. Second is diploid (heterozygous) AND
+        // uses the non phased genotype - not sure if this is allowed in VCF - i.e. '/'. Both
+        // have the same PS (100653362). In the database, these variants form an MNV. Both of them should be returned.
+        variantBuilder = new VariantBuilder("X",
+                100653362,
+                100653362,
+                "C",
+                "T");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variant = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("X",
+                100653363,
+                100653363,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1/0")));
+        variant1 = variantBuilder.build();
+
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(variant, variant1),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+
+        assertEquals(2, variantQueryResultList.size());
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653362,
+                "C",
+                "T"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("X",
+                100653363,
+                "T",
+                "C"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(2, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Two variants being queried; one with PS and PHASED genotype, the other with PS but UN-PHASED genotype:
+        // in the database, these two variant form an MNV. Comparison of a phased genotype and un-phased genotype
+        // (as long as the alternate allele is present in both) considers that alternate allele could potentially be in
+        // the same copy. Therefore both variants should be returned with all their EvidenceEntries
+        variantBuilder = new VariantBuilder("1",
+                115256528,
+                115256528,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528", "0|1")));
+        variant = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("1",
+                115256529,
+                115256529,
+                "T",
+                "A");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528", "1/0")));
+        variant1 = variantBuilder.build();
+
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(variant, variant1),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(2, variantQueryResultList.size());
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("1",
+                115256528,
+                "T",
+                "C"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(1, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("1",
+                115256529,
+                "T",
+                "A"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(1, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Just one variant being queried with PS and genotype: in the database, this variant forms an MNV with
+        // another. Since just one of the two is being queried (input list) no results should be returned
+        variantBuilder = new VariantBuilder("1",
+                115256528,
+                115256528,
+                "T",
+                "C");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528", "0|1")));
+        variant = variantBuilder.build();
+
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Collections.singletonList(variant),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(1, variantQueryResultList.size());
+        variantQueryResult = variantQueryResultList.get(0);
+        assertEquals(0, variantQueryResult.getNumResults());
+        assertEquals(0, variantQueryResult.getNumTotalResults());
+        assertTrue(variantQueryResult.getResult().isEmpty());
+
+
+        // Two variants being queried; one with PS but NOT genotype, the other with missing phase data: in the database,
+        // these two variant forms an MNV. Both of them should be returned with all their EvidenceEntries
+        variantBuilder = new VariantBuilder("1",
+                115256528,
+                115256528,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528")));
+        variant = variantBuilder.build();
+        variant1 = new Variant("1", 115256529, "T", "A");
+
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(variant, variant1),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(2, variantQueryResultList.size());
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("1",
+                115256528,
+                "T",
+                "C"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(1, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("1",
+                115256529,
+                "T",
+                "A"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(1, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Just one variant being queried with PS but NOT genotype: in the database, this variant forms an MNV with
+        // another. Since just one of the two is being queried (input list) no results should be returned
+        variantBuilder = new VariantBuilder("1",
+                115256528,
+                115256528,
+                "T",
+                "C");
+        variantBuilder.setFormat("PS");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528")));
+        variant = variantBuilder.build();
+
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Collections.singletonList(variant),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(1, variantQueryResultList.size());
+        variantQueryResult = variantQueryResultList.get(0);
+        assertEquals(0, variantQueryResult.getNumResults());
+        assertEquals(0, variantQueryResult.getNumTotalResults());
+        assertTrue(variantQueryResult.getResult().isEmpty());
+
+        // Classic, simple query; one variant queried with missing phase data: in the database, same variant is stored,
+        // also without phase data for any of its three EvidenceEntries. That variant with its three EvidenceEntries
+        // should be returned
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Collections.singletonList(new Variant("14", 55369176, "G", "A")),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(1, variantQueryResultList.size());
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("14",
+                55369176,
+                "G",
+                "A"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(3, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Two variants with missing phase data (therefore potentially forming an MNV) being queried: in the database,
+        // these two variants also form an MNV. Results should be returned for both
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Arrays.asList(new Variant("1", 115256528, "T", "C"),
+                        new Variant("1", 115256529, "T", "A")),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(2, variantQueryResultList.size());
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("1",
+                115256528,
+                "T",
+                "C"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(1, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("1",
+                115256529,
+                "T",
+                "A"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(1, variantQueryResult.getResult().get(0).getAnnotation().getTraitAssociation().size());
+
+        // Just one variant being queried: in the database, this variant forms an MNV with another. Since just one of
+        // the two is being queried (input list) no results should be returned
+        variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                Collections.singletonList(new Variant("1", 115256528, "T", "C")),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(1, variantQueryResultList.size());
+        variantQueryResult = variantQueryResultList.get(0);
+        assertEquals(0, variantQueryResult.getNumResults());
+        assertEquals(0, variantQueryResult.getNumTotalResults());
+        assertTrue(variantQueryResult.getResult().isEmpty());
+
+        // Just one variant being queried: in the database, this variant is duplicated. An exception must be raised
+        // since variants are not expected to be repeated in the database
+        try {
+            variantQueryResultList = clinicalDBAdaptor.getByVariant(
+                    Collections.singletonList(new Variant("1", 1, "T", "A")),
+                    new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+            assert false;
+        } catch (RuntimeException runTimeException) {
+            assertEquals("Unexpected: more than one result found in the clinical variant "
+                    + "collection for variant 1:1:T:A. Please, check.", runTimeException.getMessage());
+        }
+
     }
 
     @Test
     public void nativeGet() throws Exception {
+
+        // Load test data
+        clearDB(GRCH37_DBNAME);
+        Path path = Paths.get(getClass()
+                .getResource("/clinicalMongoDBAdaptor/nativeGet/clinical_variants.full.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants");
+
         ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions1 = new QueryOptions();
 

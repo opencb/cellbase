@@ -101,7 +101,10 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
                     .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
                     .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
         }
-        return get(query, options);
+        QueryResult<T> queryResult = get(query, options);
+        queryResult.setId(variant.toString());
+
+        return queryResult;
     }
 
     default List<QueryResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {

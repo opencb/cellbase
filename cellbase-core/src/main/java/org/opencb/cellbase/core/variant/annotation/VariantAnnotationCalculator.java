@@ -426,7 +426,8 @@ public class VariantAnnotationCalculator {
         FutureClinicalAnnotator futureClinicalAnnotator = null;
         Future<List<QueryResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
-            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, QueryOptions.empty());
+            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList,
+                    new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased));
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
 
@@ -1429,7 +1430,8 @@ public class VariantAnnotationCalculator {
         public List<QueryResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
             logger.debug("Query variation");
-            List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(variantList, queryOptions);
+            List<QueryResult<Variant>> variationQueryResultList
+                    = variantDBAdaptor.getPopulationFrequencyByVariant(variantList, queryOptions);
             logger.debug("Variation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return variationQueryResultList;
         }

@@ -59,6 +59,7 @@ public class DOCMIndexer extends ClinicalIndexer {
         this.rdb = rdb;
         this.assembly = assembly;
         this.docmFile = docmFile;
+        this.normalize = normalize;
     }
 
     public void index() throws RocksDBException {
@@ -96,26 +97,38 @@ public class DOCMIndexer extends ClinicalIndexer {
     }
 
     private boolean updateRocksDB(Variant variant) throws RocksDBException, IOException {
-        byte[] key = getNormalisedKey(variant.getChromosome(), variant.getStart(),
-                variant.getReference(), variant.getAlternate());
-        if (key != null) {
-            VariantAnnotation variantAnnotation = getVariantAnnotation(key);
+        // More than one variant being returned from the normalisation process would mean it's and MNV which has been
+        // decomposed
+        List<String> normalisedVariantStringList = getNormalisedVariantString(variant.getChromosome(),
+                variant.getStart(),
+                variant.getReference(),
+                variant.getAlternate());
 
-            // Add EvidenceEntry objects
-            variantAnnotation.getTraitAssociation().addAll(variant.getAnnotation().getTraitAssociation());
+        if (normalisedVariantStringList != null) {
+            for (String normalisedVariantString : normalisedVariantStringList) {
+                VariantAnnotation variantAnnotation = getVariantAnnotation(normalisedVariantString.getBytes());
 
-            // Check if drug info is available
-            if (variant.getAnnotation().getDrugs() != null && !variant.getAnnotation().getDrugs().isEmpty()) {
-                // Drug info is stored at the VariantAnnotation root
-                if (variantAnnotation.getDrugs() == null) {
-                    variantAnnotation.setDrugs(variant.getAnnotation().getDrugs());
-                } else {
-                    variantAnnotation.getDrugs().addAll(variant.getAnnotation().getDrugs());
+                // Add haplotype property to all EvidenceEntry objects in variant if there are more than 1 variants in
+                // normalisedVariantStringList, i.e. if this variant is part of an MNV (haplotype)
+                addHaplotypeProperty(variant.getAnnotation().getTraitAssociation(), normalisedVariantStringList);
+
+                // Add EvidenceEntry objects
+                variantAnnotation.getTraitAssociation().addAll(variant.getAnnotation().getTraitAssociation());
+
+                // Check if drug info is available
+                if (variant.getAnnotation().getDrugs() != null && !variant.getAnnotation().getDrugs().isEmpty()) {
+                    // Drug info is stored at the VariantAnnotation root
+                    if (variantAnnotation.getDrugs() == null) {
+                        variantAnnotation.setDrugs(variant.getAnnotation().getDrugs());
+                    } else {
+                        variantAnnotation.getDrugs().addAll(variant.getAnnotation().getDrugs());
+                    }
+
                 }
 
+                rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
 
-            rdb.put(key, jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             return true;
         }
         return false;
@@ -158,13 +171,15 @@ public class DOCMIndexer extends ClinicalIndexer {
 
                 Property property = new Property(null, TAGS_IN_SOURCE_FILE,
                         String.join(",", (List<String>) diseaseMap.get(TAGS)));
+                List<Property> additionalProperties = new ArrayList<>();
+                additionalProperties.add(property);
 
                 List<String> bibliography = new ArrayList<>();
                 bibliography.add(PMID + String.valueOf(diseaseMap.get(SOURCE_PUBMED_ID)));
                 evidenceEntry = new EvidenceEntry(evidenceSource, null, null, URL_PREFIX + (String) map.get(HGVS),
                         null, null, null, Collections.singletonList(heritableTrait), genomicFeatureList,
                         variantClassification, null, null, null, null, null, null, null,
-                        Collections.singletonList(property),
+                        additionalProperties,
                         bibliography);
 
                 evidenceEntryMap.put((String) diseaseMap.get(DISEASE), evidenceEntry);
