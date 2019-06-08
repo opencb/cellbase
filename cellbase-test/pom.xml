@@ -22,7 +22,11 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase-test</artifactId>
+<<<<<<< HEAD
     <version>4.7.0-SNAPSHOT</version>
+=======
+    <version>4.6.3-SNAPSHOT</version>
+>>>>>>> hotfix-4.6.x
     <packaging>pom</packaging>
 
     <dependencies>
