@@ -21,7 +21,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.variant.avro.DrugResponseClassification;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.client.rest.models.mixin.DrugResponseClassificationMixIn;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
@@ -61,7 +63,7 @@ public class ParentRestClient<T> {
     protected final ClientConfiguration configuration;
 
     protected static ObjectMapper jsonObjectMapper;
-    protected static Logger logger;
+    protected final Logger logger;
 
     public static final int LIMIT = 1000;
     public static final int REST_CALL_BATCH_SIZE = 200;
@@ -84,10 +86,13 @@ public class ParentRestClient<T> {
         this.configuration = configuration;
 
         this.client = ClientBuilder.newClient();
+        logger = LoggerFactory.getLogger(this.getClass().toString());
+    }
+
+    static {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        logger = LoggerFactory.getLogger(this.getClass().toString());
+        jsonObjectMapper.addMixIn(DrugResponseClassification.class, DrugResponseClassificationMixIn.class);
     }
 
 
