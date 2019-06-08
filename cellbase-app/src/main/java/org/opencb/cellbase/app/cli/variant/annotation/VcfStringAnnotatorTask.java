@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by fjlopez on 02/03/15.
  */
+@Deprecated
 public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
     private static final String MATEID = "MATEID";

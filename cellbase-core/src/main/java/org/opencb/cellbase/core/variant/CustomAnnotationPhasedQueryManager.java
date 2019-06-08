@@ -7,7 +7,7 @@ import org.opencb.commons.datastore.core.QueryResult;
 import java.util.Collections;
 import java.util.List;
 
-public class CustomAnnotationPhasedQueryManager extends PhasedQueryManager<Variant> {
+public class CustomAnnotationPhasedQueryManager extends PhasedQueryManager {
 
     @Override
     public List<QueryResult<Variant>> run(List<Variant> variantList, List<QueryResult<Variant>> variantQueryResultList) {
@@ -48,8 +48,7 @@ public class CustomAnnotationPhasedQueryManager extends PhasedQueryManager<Varia
         return variantQueryResultList;
     }
 
-    @Override
-    protected List<Variant> getHaplotype(Variant variant) {
+    private List<Variant> getHaplotype(Variant variant) {
         String phaseSet = getSampleAttribute(variant, PHASE_SET_TAG);
 
         if (StringUtils.isNotBlank(phaseSet)) {
@@ -59,8 +58,4 @@ public class CustomAnnotationPhasedQueryManager extends PhasedQueryManager<Varia
         return Collections.emptyList();
     }
 
-    @Override
-    protected List<Variant> getAnnotationObjectList(Variant variant) {
-        return null;
-    }
 }

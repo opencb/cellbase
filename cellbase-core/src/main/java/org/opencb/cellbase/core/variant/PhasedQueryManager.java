@@ -8,90 +8,29 @@ import org.opencb.commons.datastore.core.QueryResult;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class PhasedQueryManager<T> {
+public abstract class PhasedQueryManager {
 
     public static final String PHASE_SET_TAG = "PS";
-    private static final String UNPHASED_GENOTYPE_SEPARATOR = "/";
-    private static final String PHASED_GENOTYPE_SEPARATOR = "|";
+    public static final String GENOTYPE_TAG = "GT";
+    public static final String UNPHASED_GENOTYPE_SEPARATOR = "/";
+    public static final String PHASED_GENOTYPE_SEPARATOR = "|";
+
     private static final String MISSING_VALUE = ".";
-    private static final String GENOTYPE_TAG = "GT";
     private static final String REFERENCE = "0";
 
 
-//    abstract List<QueryResult<Variant>> run(List<Variant> variantList, List<QueryResult<Variant>> variantQueryResult);
-
-    public List<QueryResult<Variant>> run(List<Variant> variantList, List<QueryResult<Variant>> variantQueryResultList) {
-        // Go through all input variants and their corresponding query results
-        for (int j = 0; j < variantQueryResultList.size(); j++) {
-            QueryResult<Variant> variantQueryResult = variantQueryResultList.get(j);
-            if (!variantQueryResult.getResult().isEmpty()) {
-                // Variants are normalised and data from each of the sources (COSMIC, ClinVar, DOCM, etc.) integrated
-                // during the build process. Only one variant record should be present per assembly.
-                if (variantQueryResult.getResult().size() > 1) {
-                    throw new RuntimeException("Unexpected: more than one result found in the clinical variant "
-                            + "collection for variant " + variantQueryResult.getId() + ". Please, check.");
-                }
-
-                Variant matchedVariant = variantQueryResult.getResult().get(0);
-                Variant queryVariant = variantList.get(j);
-                List<T> annotationObjectList = getAnnotationObjectList(matchedVariant);
-                // Phase is stored at the evidence entry/population frequency level, e.g.: there might be two ClinVar
-                // RCVs for one variant:
-                //   - In the first the variant is submitted as part of an MNV and therefore it is phased
-                //   - In the second one the variant is submitted singleton and therefore it is not phased
-                // both RCVs will be integrated in the same Variant object after decomposition as separate EvidenceEntry
-                // objects, each with its corresponding phase information
-                int i = 0;
-                while (i < annotationObjectList.size()) {
-                    T annotationObject = annotationObjectList.get(i);
-                    List<Variant> databaseHaplotype = getHaplotype(annotationObject);
-                    // Haplotype empty if EvidenceEntry/PopulationFrequency is not phased
-                    if (databaseHaplotype.isEmpty()) {
-                        i++;
-                    } else {
-                        // Sample   Cellbase  Match
-                        // -------------------------------
-                        // SNV      MNV       X
-                        // MNV      MNV       ✓
-                        // Missing genotypes in the input list will be considered as wildcards towards finding a
-                        // matching haplotype (MNV) in the input list, since otherwise the clinical variant would not be
-                        // returned
-                        if (sameHaplotype(queryVariant, variantList, databaseHaplotype)) {
-                            i++;
-                        } else {
-                            annotationObjectList.remove(i);
-                        }
-                        // Sample   Cellbase  Match
-                        // -------------------------------
-                        // SNV      SNV       ✓
-                        // MNV      SNV       ✓
-                    }
-                }
-
-                // Remove whole variant from the query result object if ended up without any evidence entry
-                if (annotationObjectList.isEmpty()) {
-                    reset(variantQueryResult);
-                }
-            }
-        }
-
-        return variantQueryResultList;
-    }
-
-    protected abstract List<Variant> getHaplotype(T annotationObject);
-
-    protected abstract List<T> getAnnotationObjectList(Variant variant);
+    abstract List<QueryResult<Variant>> run(List<Variant> variantList, List<QueryResult<Variant>> variantQueryResult);
 
     protected boolean sameHaplotype(Variant queryVariant, List<Variant> inputVariantList,
-                                    List<Variant> clinicalHaplotype) {
+                                    List<Variant> databaseHaplotype) {
         // TODO: phase depends on the sample. Phased queries constrained to just one sample. The code below is
         // TODO: arbitrarily selecting the first one
         String queryPhaseSet = getSampleAttribute(queryVariant, PHASE_SET_TAG);
         String queryGenotype = getSampleAttribute(queryVariant, GENOTYPE_TAG);
         // Checks whether each variant for this clinical MNV (haplotype) is in the input list AND if all those in phase
         // in the input list
-        for (Variant clinicalVariant : clinicalHaplotype) {
-            Variant queryVariant1 = getVariant(inputVariantList, clinicalVariant);
+        for (Variant databaseVariant : databaseHaplotype) {
+            Variant queryVariant1 = getVariant(inputVariantList, databaseVariant);
             // It is not the same haplotype (MNV) if current variant cannot be found in the input list OR it is not in
             // the same chromosome copy as the first query variant
             if (queryVariant1 == null || !potentiallyInPhase(queryPhaseSet, queryGenotype, queryVariant1)) {
@@ -99,6 +38,34 @@ public abstract class PhasedQueryManager<T> {
             }
         }
         return true;
+    }
+
+    public static String getSampleAttribute(Variant variant, String attributeName) {
+        List<StudyEntry> studyEntryList = variant.getStudies();
+        if (studyEntryList != null && !studyEntryList.isEmpty()) {
+            // TODO: phase depends on the sample. Phased queries constrained to just one sample. The code below is
+            // TODO: arbitrarily selecting the first one
+            StudyEntry studyEntry = studyEntryList.get(0);
+            int attributePosition = studyEntry.getFormat().indexOf(attributeName);
+            if (attributePosition != -1) {
+                List<List<String>> samplesData = studyEntry.getSamplesData();
+                if (samplesData != null && !samplesData.isEmpty()) {
+                    List<String> firstSampleData = samplesData.get(0);
+                    if (firstSampleData != null
+                            && !firstSampleData.isEmpty()
+                            && attributePosition < firstSampleData.size()
+                            && !isMissing(firstSampleData.get(attributePosition))) {
+                        return firstSampleData.get(attributePosition);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static boolean isMissing(String field) {
+        return StringUtils.isBlank(field) || field.equals(MISSING_VALUE);
     }
 
     private Variant getVariant(List<Variant> variantList, Variant variant) {
@@ -194,16 +161,16 @@ public abstract class PhasedQueryManager<T> {
                     return alternateAlleleMatch(genotypeParts[0], genotypeParts1[0])
                             || alternateAlleleMatch(genotypeParts[2], genotypeParts1[2]);
                 }
-            // At least one of the genotypes contains just reference alleles. Clearly, alleles cannot be in phase since
-            // one of them is not even present!
+                // At least one of the genotypes contains just reference alleles. Clearly, alleles cannot be in phase since
+                // one of them is not even present!
             } else {
                 return false;
             }
 
-        // If PS is different, as understood from VCF definition, this does not necessarily mean that both alleles
-        // are not in the same copy but rather that it's unknown, i.e. each of them falls in two distinct regions for
-        // which the phase was detected. Therefore, if the PS is different, still have to return true to stay on the
-        // safe side
+            // If PS is different, as understood from VCF definition, this does not necessarily mean that both alleles
+            // are not in the same copy but rather that it's unknown, i.e. each of them falls in two distinct regions for
+            // which the phase was detected. Therefore, if the PS is different, still have to return true to stay on the
+            // safe side
         } else {
             return true;
         }
@@ -219,7 +186,7 @@ public abstract class PhasedQueryManager<T> {
      */
     private boolean potentiallyPresentAlternate(String genotype) {
 
-                // Missing genotype
+        // Missing genotype
         return genotype == null
                 // Diploid e.g. 0/1
                 || (genotype.length() == 3 && StringUtils.countMatches(genotype, REFERENCE) < 2)
@@ -235,37 +202,14 @@ public abstract class PhasedQueryManager<T> {
                 && (allele.equals(allele1) || isMissing(allele) || isMissing(allele1));
     }
 
-    public static String getSampleAttribute(Variant variant, String attributeName) {
-        List<StudyEntry> studyEntryList = variant.getStudies();
-        if (studyEntryList != null && !studyEntryList.isEmpty()) {
-            // TODO: phase depends on the sample. Phased queries constrained to just one sample. The code below is
-            // TODO: arbitrarily selecting the first one
-            StudyEntry studyEntry = studyEntryList.get(0);
-            int attributePosition = studyEntry.getFormat().indexOf(attributeName);
-            if (attributePosition != -1) {
-                List<List<String>> samplesData = studyEntry.getSamplesData();
-                if (samplesData != null && !samplesData.isEmpty()) {
-                    List<String> firstSampleData = samplesData.get(0);
-                    if (firstSampleData != null
-                            && !firstSampleData.isEmpty()
-                            && attributePosition < firstSampleData.size()
-                            && !isMissing(firstSampleData.get(attributePosition))) {
-                        return firstSampleData.get(attributePosition);
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public static boolean isMissing(String field) {
-        return StringUtils.isBlank(field) || field.equals(MISSING_VALUE);
-    }
-
     protected void reset(QueryResult<Variant> variantQueryResult) {
         variantQueryResult.setResult(Collections.emptyList());
         variantQueryResult.setNumResults(0);
         variantQueryResult.setNumTotalResults(0);
     }
+
+
+
+
+
 }

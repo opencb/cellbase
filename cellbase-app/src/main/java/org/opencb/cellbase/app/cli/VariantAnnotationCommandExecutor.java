@@ -107,7 +107,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private FileFormat inputFormat;
     private FileFormat outputFormat;
 
-    private QueryOptions queryOptions;
+    // Only options meant to be sent to the server should be included in this serverQueryOptions
+    private QueryOptions serverQueryOptions;
 
     private DBAdaptorFactory dbAdaptorFactory = null;
 
@@ -120,7 +121,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 variantAnnotationCommandOptions.commonOptions.conf);
 
         this.variantAnnotationCommandOptions = variantAnnotationCommandOptions;
-        this.queryOptions = new QueryOptions();
+        this.serverQueryOptions = new QueryOptions();
 
         if (variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
@@ -210,7 +211,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     VariantAnnotationCalculator variantAnnotationCalculator =
                             new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
                     List<QueryResult<VariantAnnotation>> annotationByVariantList =
-                            variantAnnotationCalculator.getAnnotationByVariantList(variants, queryOptions);
+                            variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
                     ObjectMapper jsonObjectMapper = new ObjectMapper();
                     jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -283,17 +284,21 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private VariantReader getVariantReader(Path input) throws IOException {
+        return getVariantReader(input, serverQueryOptions.getBoolean("ignorePhase"));
+    }
+
+    private VariantReader getVariantReader(Path input, boolean ignorePhase) throws IOException {
         // Leaving variantNormalizer = null if CLI indicates to skip normalisation. If no normalizer is provided to
         // the readers they will NOT perform normalisation
         VariantNormalizer variantNormalizer = normalize ? new VariantNormalizer(getNormalizerConfig()) : null;
+
         switch (getFileFormat(input)) {
             case VCF:
                 logger.info("Using HTSJDK to read variants.");
                 return (new VariantVcfHtsjdkReader(input,
                         new VariantFileMetadata(input.getFileName().toString(),
                                 input.toAbsolutePath().toString()).toVariantStudyMetadata(input.getFileName()
-                                .toString()),
-                        variantNormalizer)).setIgnorePhaseSet(!(boolean) queryOptions.get("phased"));
+                                .toString()), variantNormalizer)).setIgnorePhaseSet(ignorePhase);
             case JSON:
                 logger.info("Using a JSON parser to read variants...");
                 return new VariantJsonReader(input, variantNormalizer);
@@ -443,7 +448,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     variantAnnotatorList.add(new VcfVariantAnnotator(customFiles.get(i).toString(),
                             variantIndexerList.get(i).getDbIndex(),
                             customFileIds.get(i),
-                            customFileFields.get(i), queryOptions));
+                            serverQueryOptions));
                 }
             }
         }
@@ -453,7 +458,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // Rocks db indexer for population frequencies  is always the last in the list
             int i = variantIndexerList.size() - 1;
             variantAnnotatorList.add(new PopulationFrequenciesAnnotator(populationFrequenciesFile.toString(),
-                    variantIndexerList.get(i).getDbIndex(), queryOptions));
+                    variantIndexerList.get(i).getDbIndex(), serverQueryOptions));
 
         }
 
@@ -471,7 +476,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    dbAdaptorFactory), queryOptions);
+                    dbAdaptorFactory), serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()
@@ -486,7 +491,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
                 // TODO: normalization must be carried out in the client - phase set must be sent together with the
                 // TODO: variant string to the server for proper phase annotation by REST
-                return new CellBaseWSVariantAnnotator(cellBaseClient.getVariantClient(), queryOptions);
+                return new CellBaseWSVariantAnnotator(cellBaseClient.getVariantClient(), serverQueryOptions);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -502,8 +507,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Index custom files if provided
         if (customFiles != null) {
             for (int i = 0; i < customFiles.size(); i++) {
+                // Setting ignorePhase=true since the reader for the custom annotation indexer does not care
+                // about batches splitting phase sets
                 VariantIndexer variantIndexer
-                        = new CustomAnnotationVariantIndexer(getVariantReader(customFiles.get(i)),
+                        = new CustomAnnotationVariantIndexer(getVariantReader(customFiles.get(i), true),
                         maxOpenFiles,
                         customFileFields.get(i));
                 variantIndexer.open();
@@ -545,21 +552,6 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             }
         }
 
-
-        // Use cache
-//        queryOptions.put("useCache", variantAnnotationCommandOptions.noCache ? "false" : "true");
-        if (variantAnnotationCommandOptions.noCache) {
-            logger.warn("********************************************************************************************");
-            logger.warn("PLEASE NOTE that parameter --no-server-cache is no longer in use. It is deprecated and "
-                    + "completely ignored by current implementation. Is just kept visible not to break scripts using "
-                    + "it and will soon be removed from the interface. Please, have a look at the --server-cache "
-                    + "parameter instead");
-            logger.warn("********************************************************************************************");
-        }
-
-        queryOptions.put("useCache", variantAnnotationCommandOptions.cache);
-        queryOptions.put("phased", variantAnnotationCommandOptions.phased);
-
         // input file
         if (variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
@@ -576,6 +568,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             normalize = false;
         }
 
+        parsePhaseConfiguration();
         decompose = !variantAnnotationCommandOptions.skipDecompose;
         leftAlign = !variantAnnotationCommandOptions.skipLeftAlign;
 
@@ -617,12 +610,18 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         }
 
+        // Normalisation nor decomposition are NEVER performed on the server. This QueryOptions is meant to be sent
+        // to the server. Actual normalization and decomposition options are set and processed here in the server code
+        // using this.decompose and this.normalize fields.
+        serverQueryOptions.add("normalize", false);
+        serverQueryOptions.add("skipDecompose", true);
+
         if (variantAnnotationCommandOptions.include != null && !variantAnnotationCommandOptions.include.isEmpty()) {
-            queryOptions.add("include", variantAnnotationCommandOptions.include);
+            serverQueryOptions.add("include", variantAnnotationCommandOptions.include);
         }
 
         if (variantAnnotationCommandOptions.exclude != null && !variantAnnotationCommandOptions.exclude.isEmpty()) {
-            queryOptions.add("exclude", variantAnnotationCommandOptions.exclude);
+            serverQueryOptions.add("exclude", variantAnnotationCommandOptions.exclude);
         }
 
         // Num threads
@@ -677,8 +676,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Assembly
         if (variantAnnotationCommandOptions.assembly != null) {
             assembly = variantAnnotationCommandOptions.assembly;
-            // In case annotation is made through WS assembly must be set in the queryOptions
-            queryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
+            // In case annotation is made through WS assembly must be set in the serverQueryOptions
+            serverQueryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
         } else {
             assembly = null;
             logger.warn("No assembly provided. Using default assembly for {}", species);
@@ -735,7 +734,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         // Enable/Disable imprecise annotation
-        queryOptions.put("imprecise", !variantAnnotationCommandOptions.noImprecision);
+        serverQueryOptions.put("imprecise", !variantAnnotationCommandOptions.noImprecision);
 
         // Parameter not expected to be very used - provide extra padding (bp) to be used for structural variant annotation
         if (variantAnnotationCommandOptions.buildParams.get("sv-extra-padding") != null) {
@@ -744,7 +743,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Extra padding for SV annotation cannot be < 0, value provided: "
                         + svExtraPadding + ". Please provide a value >= 0");
             }
-            queryOptions.put("svExtraPadding", svExtraPadding);
+            serverQueryOptions.put("svExtraPadding", svExtraPadding);
         }
 
         // Parameter not expected to be very used - provide extra padding (bp) to be used for CNV annotation
@@ -754,7 +753,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Extra padding for CNV annotation cannot be < 0, value provided: "
                         + cnvExtraPadding + ". Please provide a value >= 0");
             }
-            queryOptions.put("cnvExtraPadding", cnvExtraPadding);
+            serverQueryOptions.put("cnvExtraPadding", cnvExtraPadding);
         }
 
         // Annotate variation collection in CellBase
@@ -766,6 +765,22 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             setChromosomeList();
         }
 
+    }
+
+    private void parsePhaseConfiguration() {
+        // TODO: remove "phased" CLI parameter in next release. Default behavior from here onwards should be
+        //  ignorePhase = false
+        // If ignorePhase (new parameter) is present, then overrides presence of "phased"
+        if (variantAnnotationCommandOptions.ignorePhase != null) {
+            serverQueryOptions.put("ignorePhase", variantAnnotationCommandOptions.ignorePhase);
+        // If the new parameter (ignorePhase) is not present but old one ("phased") is, then follow old one - probably
+        // someone who has not moved to the new parameter yet
+        } else if (variantAnnotationCommandOptions.phased != null) {
+            serverQueryOptions.put("ignorePhase", !variantAnnotationCommandOptions.phased);
+        // Default behavior is to perform phased annotation
+        } else {
+            serverQueryOptions.put("ignorePhase", false);
+        }
     }
 
     private FileFormat getFileFormat(Path path) {

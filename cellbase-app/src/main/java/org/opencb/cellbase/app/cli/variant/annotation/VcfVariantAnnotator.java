@@ -2,7 +2,6 @@ package org.opencb.cellbase.app.cli.variant.annotation;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.AdditionalAttribute;
@@ -25,28 +24,22 @@ import java.util.*;
 public class VcfVariantAnnotator implements VariantAnnotator {
 
     private static ObjectMapper mapper = new ObjectMapper();
-    private static ObjectWriter jsonObjectWriter;
 
     static {
         mapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-        jsonObjectWriter = mapper.writer();
     }
 
     private final QueryOptions queryOptions;
     private String fileName;
     private RocksDB dbIndex;
     private String fileId;
-    private List<String> infoFields;
     private RandomAccessFile reader;
-    private List<VariantAnnotation> variantAnnotationList;
     private static CustomAnnotationPhasedQueryManager phasedQueryManager = new CustomAnnotationPhasedQueryManager();
 
-    public VcfVariantAnnotator(String fileName, RocksDB dbIndex, String fileId, List<String> infoFields,
-                               QueryOptions queryOptions) {
+    public VcfVariantAnnotator(String fileName, RocksDB dbIndex, String fileId, QueryOptions queryOptions) {
         this.fileName = fileName;
         this.dbIndex = dbIndex;
         this.fileId = fileId;
-        this.infoFields = infoFields;
         this.queryOptions = queryOptions;
     }
 
@@ -73,7 +66,7 @@ public class VcfVariantAnnotator implements VariantAnnotator {
             variantQueryResult.add(getCustomAnnotation(variant));
         }
 
-        if (queryOptions.get(PHASE) != null && (Boolean) queryOptions.get(PHASE)) {
+        if (queryOptions.get(IGNORE_PHASE) != null && !queryOptions.getBoolean(IGNORE_PHASE)) {
             variantQueryResult = phasedQueryManager.run(variantList, variantQueryResult);
         }
 

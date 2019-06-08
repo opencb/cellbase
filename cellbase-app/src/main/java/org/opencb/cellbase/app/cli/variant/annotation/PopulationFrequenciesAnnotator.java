@@ -31,7 +31,6 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
     private RocksDB dbIndex;
     private RandomAccessFile reader;
     private final QueryOptions queryOptions;
-    private List<VariantAnnotation> variantAnnotationList;
 
 
     private static ObjectMapper mapper = new ObjectMapper();
@@ -72,7 +71,7 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
             variantQueryResult.add(getPopulationFrequencies(variant));
         }
 
-        if (queryOptions.get(PHASE) != null && (Boolean) queryOptions.get(PHASE)) {
+        if (queryOptions.get(IGNORE_PHASE) != null && !queryOptions.getBoolean(IGNORE_PHASE)) {
             variantQueryResult = phasedQueryManager.run(variantList, variantQueryResult);
         }
 

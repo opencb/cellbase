@@ -576,7 +576,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             results.add(getByVariant(variant, queryOptions));
         }
 
-        if (queryOptions.get(QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(QueryParams.PHASE.key())) {
+        if (queryOptions.get(QueryParams.PHASE.key()) != null && queryOptions.getBoolean(QueryParams.PHASE.key())) {
             results = populationFrequencyPhasedQueryManager.run(variants, results);
 
         }

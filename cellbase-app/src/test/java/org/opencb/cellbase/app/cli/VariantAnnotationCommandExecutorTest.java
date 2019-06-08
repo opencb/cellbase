@@ -6,11 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.util.JSON;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
-import org.opencb.cellbase.core.variant.PhasedQueryManager;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -321,18 +319,19 @@ public class VariantAnnotationCommandExecutorTest {
         variantAnnotationCommandExecutor.execute();
         List<Variant> variantList = loadResult();
 
-        // One deletion, one MNV (both from the input VCF file) AND one SNV (1:62165740:T:G) from the json.gz population
-        // frequencies file. This last SNV is part of input MNV (1:62165739:AT:TG) but since decomposition is off
-        // remains "unvisited" in the RocksDB by any input variant; since the complete-input-population option is on,
-        // this SNV should be appended at the end of the output file as is in the RocksDB
-        assertEquals(3, variantList.size());
+        // One deletion, two MNVs (both from the input VCF file and the pop freqs file) AND one SNV (1:62165740:T:G)
+        // from the json.gz population frequencies file. This last SNV is part of input MNV (1:62165739:AT:TG) but
+        // since decomposition is off remains "unvisited" in the RocksDB by any input variant; since the
+        // complete-input-population option is on, this SNV should be appended at the end of the output file as is in
+        // the RocksDB
+        assertEquals(4, variantList.size());
 
         // Single SNV (1:62165740:T:G) which is part of the larger MNV (1:62165739:AT:TG) but since decomposition is off
         // does get appended as an independent variant at the end of the file. Only one pop freq object belongs to this
         // SNV alone
         Variant variant = getByVariant(variantList, new Variant("1:62165740:T:G"));
         assertNotNull(variant);
-        String phaseSet = PhasedQueryManager.getSampleAttribute(variant, "PS");
+        String phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
         assertNull(phaseSet);
         assertNotNull(variant.getAnnotation());
         assertNotNull(variant.getAnnotation().getPopulationFrequencies());
@@ -355,7 +354,7 @@ public class VariantAnnotationCommandExecutorTest {
         // Deletion in a multiallelic position. This deletion does not have pop freqs - should be left to null
         variant = getByVariant(variantList, new Variant("1:62165739:AT:-"));
         assertNotNull(variant);
-        phaseSet = PhasedQueryManager.getSampleAttribute(variant, "PS");
+        phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
         assertNull(phaseSet);
         assertNotNull(variant.getAnnotation());
         assertNull(variant.getAnnotation().getPopulationFrequencies());
@@ -364,7 +363,7 @@ public class VariantAnnotationCommandExecutorTest {
         // freqs and three PopulationFrequency objects should be returned.
         variant = getByVariant(variantList, new Variant("1:62165739:AT:TG"));
         assertNotNull(variant);
-        phaseSet = PhasedQueryManager.getSampleAttribute(variant, "PS");
+        phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
         assertNull(phaseSet);
         assertNotNull(variant.getAnnotation());
         assertNotNull(variant.getAnnotation().getPopulationFrequencies());
@@ -431,13 +430,112 @@ public class VariantAnnotationCommandExecutorTest {
         variantAnnotationCommandExecutor.execute();
         List<Variant> variantList = loadResult();
 
-        // One deletion which is not part of any MNV, two SNVs obtained as the result of decomposing an MNV.
-        assertEquals(3, variantList.size());
+        // One deletion which is not part of any MNV, two SNVs obtained as the result of decomposing an MNV and another
+        // two from a second MNV.
+        assertEquals(5, variantList.size());
+
+        // Deletion forms part of MNV AATT:TTGG. The deletion and posterior insertion in this MNV form another MNV in
+        // the database: does have pop freqs and three PopulationFrequency objects should be returned.
+        Variant variant = getByVariant(variantList, new Variant("2:1:AA:-"));
+        assertNotNull(variant);
+        String phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
+        assertEquals("2:1:AA:-,2:5:-:GG", phaseSet);
+        assertNotNull(variant.getAnnotation());
+        assertNotNull(variant.getAnnotation().getPopulationFrequencies());
+        assertEquals(3, variant.getAnnotation().getPopulationFrequencies().size());
+        List<PopulationFrequency> populationFrequencyList
+                = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AFR",
+                        "AAnn--",
+                        "--nngg",
+                        (float) 0.8,
+                        (float) 0.1,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AMR",
+                        "AAnn--",
+                        "--nngg",
+                        (float) 0.8,
+                        (float) 0.1,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "EUR",
+                        "AAnn--",
+                        "--nngg",
+                        (float) 0.8,
+                        (float) 0.1,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+
+        // Insertion forms part of MNV AATT:TTGG. The deletion and posterior insertion in this MNV form another MNV in
+        // the database: does have pop freqs and three PopulationFrequency objects should be returned.
+        variant = getByVariant(variantList, new Variant("2:5:-:GG"));
+        assertNotNull(variant);
+        phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
+        assertEquals("2:1:AA:-,2:5:-:GG", phaseSet);
+        assertNotNull(variant.getAnnotation());
+        assertNotNull(variant.getAnnotation().getPopulationFrequencies());
+        assertEquals(3, variant.getAnnotation().getPopulationFrequencies().size());
+        populationFrequencyList
+                = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AFR",
+                        "aann--",
+                        "--nnGG",
+                        (float) 0.8,
+                        (float) 0.1,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AMR",
+                        "aann--",
+                        "--nnGG",
+                        (float) 0.8,
+                        (float) 0.1,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "EUR",
+                        "aann--",
+                        "--nnGG",
+                        (float) 0.8,
+                        (float) 0.1,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
 
         // Deletion in a multiallelic position. This deletion does not have pop freqs - should be left to null
-        Variant variant = getByVariant(variantList, new Variant("1:62165739:AT:-"));
+        variant = getByVariant(variantList, new Variant("1:62165739:AT:-"));
         assertNotNull(variant);
-        String phaseSet = PhasedQueryManager.getSampleAttribute(variant, "PS");
+        phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
         assertNull(phaseSet);
         assertNotNull(variant.getAnnotation());
         assertNull(variant.getAnnotation().getPopulationFrequencies());
@@ -446,17 +544,17 @@ public class VariantAnnotationCommandExecutorTest {
         // freqs and three PopulationFrequency objects should be returned.
         variant = getByVariant(variantList, new Variant("1:62165739:A:T"));
         assertNotNull(variant);
-        phaseSet = PhasedQueryManager.getSampleAttribute(variant, "PS");
+        phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
         assertEquals("1:62165739:A:T,1:62165740:T:G", phaseSet);
         assertNotNull(variant.getAnnotation());
         assertNotNull(variant.getAnnotation().getPopulationFrequencies());
         assertEquals(3, variant.getAnnotation().getPopulationFrequencies().size());
-        List<PopulationFrequency> populationFrequencyList
+        populationFrequencyList
                 = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
                 new PopulationFrequency("1kG_phase3",
                         "AFR",
-                        "AT",
-                        "1:62165739:A:T,1:62165740:T:G",
+                        "At",
+                        "Tg",
                         (float) 0.9849,
                         (float) 0.0151,
                         null,
@@ -468,8 +566,8 @@ public class VariantAnnotationCommandExecutorTest {
                 = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
                 new PopulationFrequency("1kG_phase3",
                         "AMR",
-                        "AT",
-                        "1:62165739:A:T,1:62165740:T:G",
+                        "At",
+                        "Tg",
                         (float) 0.9957,
                         (float) 0.0043,
                         null,
@@ -481,8 +579,8 @@ public class VariantAnnotationCommandExecutorTest {
                 = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
                 new PopulationFrequency("1kG_phase3",
                         "EUR",
-                        "AT",
-                        "1:62165739:A:T,1:62165740:T:G",
+                        "At",
+                        "Tg",
                         (float) 0.999,
                         (float) 0.001,
                         null,
@@ -497,7 +595,7 @@ public class VariantAnnotationCommandExecutorTest {
         // PopulationFrequency value; this object must also be appended to the population frequencies list
         variant = getByVariant(variantList, new Variant("1:62165740:T:G"));
         assertNotNull(variant);
-        phaseSet = PhasedQueryManager.getSampleAttribute(variant, "PS");
+        phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, "PS");
         assertEquals("1:62165739:A:T,1:62165740:T:G", phaseSet);
         assertNotNull(variant.getAnnotation());
         assertNotNull(variant.getAnnotation().getPopulationFrequencies());
@@ -519,8 +617,8 @@ public class VariantAnnotationCommandExecutorTest {
                 = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
                 new PopulationFrequency("1kG_phase3",
                         "AFR",
-                        "AT",
-                        "1:62165739:A:T,1:62165740:T:G",
+                        "aT",
+                        "tG",
                         (float) 0.9849,
                         (float) 0.0151,
                         null,
@@ -532,8 +630,8 @@ public class VariantAnnotationCommandExecutorTest {
                 = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
                 new PopulationFrequency("1kG_phase3",
                         "AMR",
-                        "AT",
-                        "1:62165739:A:T,1:62165740:T:G",
+                        "aT",
+                        "tG",
                         (float) 0.9957,
                         (float) 0.0043,
                         null,
@@ -545,8 +643,8 @@ public class VariantAnnotationCommandExecutorTest {
                 = getPopulationFrequency(variant.getAnnotation().getPopulationFrequencies(),
                 new PopulationFrequency("1kG_phase3",
                         "EUR",
-                        "AT",
-                        "1:62165739:A:T,1:62165740:T:G",
+                        "aT",
+                        "tG",
                         (float) 0.999,
                         (float) 0.001,
                         null,
@@ -622,8 +720,7 @@ public class VariantAnnotationCommandExecutorTest {
                                        String customFileFields,
                                        String populationFrequencyFilename,
                                        Boolean completeInputPopulation,
-                                       int maxOpenFiles)
-            throws URISyntaxException {
+                                       int maxOpenFiles) {
 
         CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
                 = new CliOptionsParser().getVariantAnnotationCommandOptions();
@@ -631,7 +728,6 @@ public class VariantAnnotationCommandExecutorTest {
         variantAnnotationCommandOptions.referenceFasta = resourcesFolder
                 .resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toString();
         variantAnnotationCommandOptions.benchmark = false;
-        variantAnnotationCommandOptions.cache = false;
         variantAnnotationCommandOptions.phased = true;
         variantAnnotationCommandOptions.input = inputFilename;
         variantAnnotationCommandOptions.skipNormalize = false;

@@ -7,7 +7,7 @@ import org.opencb.biodata.models.variant.avro.Property;
 import java.util.Collections;
 import java.util.List;
 
-public class ClinicalPhasedQueryManager extends PhasedQueryManager<EvidenceEntry> {
+public class ClinicalPhasedQueryManager extends AnnotationBasedPhasedQueryManager<EvidenceEntry> {
 
     private static final String HAPLOTYPE_PROPERTY = "haplotype";
 
@@ -86,7 +86,7 @@ public class ClinicalPhasedQueryManager extends PhasedQueryManager<EvidenceEntry
 //    }
 
     @Override
-    protected List<Variant> getHaplotype(EvidenceEntry evidenceEntry) {
+    protected List<Variant> getHaplotype(EvidenceEntry evidenceEntry, Variant variant) {
         List<Property> additionalProperties = evidenceEntry.getAdditionalProperties();
         if (additionalProperties != null && !additionalProperties.isEmpty()) {
             for (Property property : additionalProperties) {

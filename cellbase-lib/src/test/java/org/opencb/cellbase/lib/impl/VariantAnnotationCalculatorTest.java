@@ -50,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -693,6 +694,91 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //    }
 
     @Test
+    public void testQueryResultGroupingDecomposedMNVs() throws Exception {
+
+        QueryOptions queryOptions = (new QueryOptions("normalize", true));
+        queryOptions.put("skipDecompose", false);
+
+        // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
+        // option to true which probably breaks some other tests.
+        VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens",
+                "GRCh37",
+                dbAdaptorFactory);
+
+        // One MNV and one singleton SNV. Two QueryResults must be returned: first with two VariantAnnotation objects
+        // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
+        List<QueryResult<VariantAnnotation>> queryResultList =
+                localScopeCalculator
+                        .getAnnotationByVariantList(Arrays.asList(new Variant("19:33167329:AC:TT"),
+                                new Variant("MT:1438:A:G")),
+                                queryOptions);
+
+        assertEquals(2, queryResultList.size());
+
+        // First QueryResult (MNV one)
+        QueryResult<VariantAnnotation> queryResult = queryResultList.get(0);
+        assertNotNull(queryResult.getResult());
+        assertEquals(2, queryResult.getNumTotalResults());
+        assertEquals(2, queryResult.getNumResults());
+        assertEquals("19:33167329:AC:TT", queryResult.getId());
+
+        VariantAnnotation variantAnnotation =  queryResult.getResult().get(0);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167329"), variantAnnotation.getStart());
+        assertEquals("A", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+        variantAnnotation =  queryResult.getResult().get(1);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167330"), variantAnnotation.getStart());
+        assertEquals("C", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+        // Second QueryResult (singleton SNV)
+        queryResult = queryResultList.get(1);
+        assertNotNull(queryResult.getResult());
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(1, queryResult.getNumResults());
+        assertEquals("MT:1438:A:G", queryResult.getId());
+
+        variantAnnotation =  queryResult.getResult().get(0);
+        assertEquals("MT", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("1438"), variantAnnotation.getStart());
+        assertEquals("A", variantAnnotation.getReference());
+        assertEquals("G", variantAnnotation.getAlternate());
+
+        // One MNV gets decomposed into two SNVs; Only one QueryResult to be returned. This QueryResult must contain
+        // two annotation objects, one for each decomposed SNV. Id of the query result must be equal to the .toString()
+        // of the original MNV
+        queryResultList =
+                localScopeCalculator
+                        .getAnnotationByVariantList(Arrays.asList(new Variant("19:33167329:AC:TT")),
+                                queryOptions);
+
+        assertEquals(1, queryResultList.size());
+        queryResult = queryResultList.get(0);
+        assertNotNull(queryResult.getResult());
+        assertEquals(2, queryResult.getNumTotalResults());
+        assertEquals(2, queryResult.getNumResults());
+        assertEquals("19:33167329:AC:TT", queryResult.getId());
+
+        variantAnnotation =  queryResult.getResult().get(0);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167329"), variantAnnotation.getStart());
+        assertEquals("A", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+        variantAnnotation =  queryResult.getResult().get(1);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167330"), variantAnnotation.getStart());
+        assertEquals("C", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+
+
+    }
+
+    @Test
     public void testPopulationFrequencies() throws Exception {
 
         QueryOptions queryOptions = new QueryOptions("normalize", true);
@@ -1106,153 +1192,22 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         return found;
     }
 
-    private void assertVariantAnnotationQueryResultEquals(List<QueryResult<VariantAnnotation>> actualQueryResultList,
-                                                          List expectedObjectList) {
-        assertEquals(actualQueryResultList.size(), expectedObjectList.size());
-        for (int i = 0; i < actualQueryResultList.size(); i++) {
-            VariantAnnotation expected = jsonObjectMapper.convertValue(((List) ((Map) expectedObjectList.get(i)).get("result")).get(0),
-                    VariantAnnotation.class);
-            VariantAnnotation actual = actualQueryResultList.get(i).getResult().get(0);
-            assertEquals(expected, actual);
-        }
-    }
-
-    private int countLines(String fileName) throws IOException {
-        System.out.println("Counting lines...");
-        BufferedReader reader = new BufferedReader(new FileReader(fileName));
-        int lines = 0;
-        while (reader.readLine() != null) lines++;
-        reader.close();
-
-        return lines;
-    }
-
-    public class ConsequenceTypeComparator implements Comparator<ConsequenceType> {
-        public int compare(ConsequenceType consequenceType1, ConsequenceType consequenceType2) {
-            String geneId1 = consequenceType1.getEnsemblGeneId()==null?"":consequenceType1.getEnsemblGeneId();
-            String geneId2 = consequenceType2.getEnsemblGeneId()==null?"":consequenceType2.getEnsemblGeneId();
-
-            int geneComparison = geneId1.compareTo(geneId2);
-            if(geneComparison == 0 && !geneId1.equals("")) {
-                return consequenceType1.getEnsemblTranscriptId().compareTo(consequenceType2.getEnsemblTranscriptId());
-            } else {
-                return geneComparison;
-            }
-        }
-    }
-
-    private class AnnotationComparisonObject {
-        String chr;
-        String pos;
-        String alt;
-        String ensemblGeneId;
-        String ensemblTranscriptId;
-        String biotype;
-        String SOname;
-
-        public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId,
-                                          String ensemblTranscriptId, String SOname) {
-            this(chr, pos, alt, ensemblGeneId, ensemblTranscriptId, "-", SOname);
-        }
-
-        public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId,
-                                          String ensemblTranscriptId, String biotype, String SOname) {
-            this.chr = chr;
-            this.pos = pos;
-            this.alt = alt;
-            this.ensemblGeneId = ensemblGeneId;
-            this.ensemblTranscriptId = ensemblTranscriptId;
-            this.biotype = biotype;
-            this.SOname = SOname;
-        }
-
-        public String getChr() {
-            return chr;
-        }
-
-        public String getPos() {
-            return pos;
-        }
-
-        public String getAlt() {
-            return alt;
-        }
-
-        public String getEnsemblGeneId() {
-            return ensemblGeneId;
-        }
-
-        public String getSOname() {
-            return SOname;
-        }
-
-        public String getEnsemblTranscriptId() {
-            return ensemblTranscriptId;
-        }
-
-        public void setEnsemblTranscriptId(String ensemblTranscriptId) {
-            this.ensemblTranscriptId = ensemblTranscriptId;
-        }
-
-        public String getBiotype() {
-            return biotype;
-        }
-
-        public void setBiotype(String biotype) {
-            this.biotype = biotype;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof AnnotationComparisonObject)) return false;
-
-            AnnotationComparisonObject that = (AnnotationComparisonObject) o;
-
-            if (SOname != null ? !SOname.equals(that.SOname) : that.SOname != null) return false;
-            if (alt != null ? !alt.equals(that.alt) : that.alt != null) return false;
-            if (chr != null ? !chr.equals(that.chr) : that.chr != null) return false;
-            if (ensemblGeneId != null ? !ensemblGeneId.equals(that.ensemblGeneId) : that.ensemblGeneId != null)
-                return false;
-            if (ensemblTranscriptId != null ? !ensemblTranscriptId.equals(that.ensemblTranscriptId) : that.ensemblTranscriptId != null)
-                return false;
-            if (pos != null ? !pos.equals(that.pos) : that.pos != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = chr != null ? chr.hashCode() : 0;
-            result = 31 * result + (pos != null ? pos.hashCode() : 0);
-            result = 31 * result + (alt != null ? alt.hashCode() : 0);
-            result = 31 * result + (ensemblGeneId != null ? ensemblGeneId.hashCode() : 0);
-            result = 31 * result + (ensemblTranscriptId != null ? ensemblTranscriptId.hashCode() : 0);
-            result = 31 * result + (SOname != null ? SOname.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return chr+"\t"+pos+"\t"+alt+"\t"+ensemblGeneId+"\t"+ensemblTranscriptId+"\t"+biotype+"\t"+SOname+"\n";
-        }
-    }
-
-    public class AnnotationComparisonObjectComparator implements Comparator<AnnotationComparisonObject> {
-        public int compare(AnnotationComparisonObject annotationComparisonObject1, AnnotationComparisonObject annotationComparisonObject2) {
-
-            int chrComparison = annotationComparisonObject1.getChr().compareTo(annotationComparisonObject2.getChr());
-            if(chrComparison == 0) {
-                return annotationComparisonObject1.getPos().compareTo(annotationComparisonObject2.getPos());
-            } else {
-                return chrComparison;
-            }
-        }
-
-    }
-
     @Test
-    public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
+    public void testGetAllConsequenceTypesByVariant() throws IOException {
+
+
+//        try {
+//            List<QueryResult<VariantAnnotation>> consequenceTypeResult = variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("19:45411941:TG:CC")),
+//                    new QueryOptions("normalize", true));
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000401847").getSequenceOntologyTerms(),
+//                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012","start_lost")));
+//        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000401847").getSequenceOntologyTerms(),
+//                CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001583","missense_variant"))));
 
         /**
          * start codon SNV on negative transcript
@@ -1948,18 +1903,5 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         }
     }
 
-    private int getEndFromInfoField(VcfRecord vcfRecord) {
-        String[] infoFields = vcfRecord.getInfo().split(";");
-        int i = 0;
-        while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
-            i++;
-        }
-
-        if(i<infoFields.length) {
-            return Integer.parseInt(infoFields[i].split("=")[1]);
-        } else {
-            return -1;
-        }
-    }
 
 }

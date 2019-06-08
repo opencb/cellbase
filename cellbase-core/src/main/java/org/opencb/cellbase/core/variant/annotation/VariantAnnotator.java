@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
  */
 public interface VariantAnnotator {
 
-    String PHASE = "phased";
+    String IGNORE_PHASE = "ignorePhase";
 
     boolean open();
 

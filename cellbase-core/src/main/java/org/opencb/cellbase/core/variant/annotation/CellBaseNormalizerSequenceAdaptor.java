@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
-    private static final String EMPTY_STRING = "";
     private final GenomeDBAdaptor genomeDBAdaptor;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

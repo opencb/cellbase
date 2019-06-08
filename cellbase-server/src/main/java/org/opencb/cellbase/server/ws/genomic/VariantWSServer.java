@@ -19,11 +19,12 @@ package org.opencb.cellbase.server.ws.genomic;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -38,7 +39,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +49,11 @@ import java.util.Map;
 @Api(value = "Variant", description = "Variant RESTful Web Services API")
 public class VariantWSServer extends GenericRestWSServer {
 
-    protected static final HashMap<String, List<Transcript>> CACHE_TRANSCRIPT = new HashMap<>();
+    private static final String PHASE_DATA_URL_SEPARATOR = "\\+";
+    private static final String VARIANT_STRING_FORMAT = "(chr)"
+            + ":[(cipos_left)<](start)[<(cipos_right)]" + "[-[(ciend_left)<](end)[<(ciend_right)]]"
+            + "[:(ref)]"
+            + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
 
     public VariantWSServer(@PathParam("version")
                            @ApiParam(name = "version", value = "Possible values: v3, v4",
@@ -169,55 +175,155 @@ public class VariantWSServer extends GenericRestWSServer {
                                                 @QueryParam("normalize")
                                                 @ApiParam(name = "normalize",
                                                         value = "Boolean to indicate whether input variants shall be "
-                                                                + "normalized or not. Normalization process includes "
-                                                                + "decomposing MNVs", allowableValues = "false,true",
+                                                                + "normalized or not. Normalization process does NOT "
+                                                                + "include decomposing ", allowableValues = "false,true",
                                                         defaultValue = "false", required = false) Boolean normalize,
+                                                @QueryParam("skipDecompose")
+                                                @ApiParam(name = "skipDecompose",
+                                                        value = "Boolean to indicate whether input MNVs should be "
+                                                                + "decomposed or not as part of the normalisation step."
+                                                                + " MNV decomposition is strongly encouraged.",
+                                                        allowableValues = "false,true",
+                                                        defaultValue = "false", required = false) Boolean skipDecompose,
+                                                @QueryParam("ignorePhase")
+                                                @ApiParam(name = "ignorePhase",
+                                                        value = "Boolean to indicate whether phase data should be "
+                                                                + "taken into account.", allowableValues = "false,true",
+                                                        required = false) Boolean ignorePhase,
+                                                @Deprecated
                                                 @QueryParam("phased")
-                                                    @ApiParam(name = "phased",
-                                                            value = "Boolean to indicate whether phase should be considered "
-                                                                    + "during the annotation process",
-                                                            allowableValues = "false,true", defaultValue = "false",
-                                                            required = false) Boolean phased,
-                                                @QueryParam("useCache")
-                                                    @ApiParam(name = "useCache",
-                                                            value = "useCache=true is discouraged unless the server"
-                                                                    + " administrator advises so. Boolean to indicate"
-                                                                    + " whether cached annotation should be"
-                                                                    + " used or not", allowableValues = "false,true",
-                                                            defaultValue = "false", required = false) Boolean useCache,
+                                                @ApiParam(name = "phased",
+                                                        value = "DEPRECATED. Will be removed in next release. "
+                                                                + "Please, use ignorePhase instead. Boolean to "
+                                                                + "indicate whether phase should be considered "
+                                                                + "during the annotation process",
+                                                        allowableValues = "false,true",
+                                                        required = false) Boolean phased,
                                                 @QueryParam("imprecise")
-                                                    @ApiParam(name = "imprecise",
-                                                            value = "Boolean to indicate whether imprecise search must be"
-                                                                    + " used or not", allowableValues = "false,true",
-                                                            defaultValue = "true", required = false) Boolean imprecise,
+                                                @ApiParam(name = "imprecise",
+                                                        value = "Boolean to indicate whether imprecise search must be"
+                                                                + " used or not", allowableValues = "false,true",
+                                                        defaultValue = "true", required = false) Boolean imprecise,
                                                 @QueryParam("svExtraPadding")
-                                                    @ApiParam(name = "svExtraPadding",
-                                                            value = "Integer to optionally provide the size of the extra"
-                                                                    + " padding to be used when annotating imprecise (or not)"
-                                                                    + " structural variants",
-                                                            defaultValue = "0", required = false) Integer svExtraPadding,
+                                                @ApiParam(name = "svExtraPadding",
+                                                        value = "Integer to optionally provide the size of the extra"
+                                                                + " padding to be used when annotating imprecise (or not)"
+                                                                + " structural variants",
+                                                        defaultValue = "0", required = false) Integer svExtraPadding,
                                                 @QueryParam("cnvExtraPadding")
-                                                    @ApiParam(name = "cnvExtraPadding",
-                                                            value = "Integer to optionally provide the size of the extra"
-                                                                    + " padding to be used when annotating imprecise (or not)"
-                                                                    + " CNVs",
-                                                            defaultValue = "0", required = false) Integer cnvExtraPadding) {
+                                                @ApiParam(name = "cnvExtraPadding",
+                                                        value = "Integer to optionally provide the size of the extra"
+                                                                + " padding to be used when annotating imprecise (or not)"
+                                                                + " CNVs",
+                                                        defaultValue = "0", required = false) Integer cnvExtraPadding) {
 
+        return getAnnotationByVariant(variants,
+                normalize,
+                skipDecompose,
+                ignorePhase,
+                phased,
+                imprecise,
+                svExtraPadding,
+                cnvExtraPadding);
+    }
+
+    @GET
+    @Path("/{variants}/annotation")
+    @ApiOperation(httpMethod = "GET",
+            value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
+            + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
+            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
+            response = VariantAnnotation.class, responseContainer = "QueryResponse")
+    public Response getAnnotationByVariantsGET(@PathParam("variants")
+                                               @ApiParam(name = "variants", value = "Comma separated list of variants to"
+                                                       + "annotate, e.g. "
+                                                       + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
+                                                       + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>",
+                                                       required = true) String variants,
+                                               @QueryParam("normalize")
+                                               @ApiParam(name = "normalize",
+                                                       value = "Boolean to indicate whether input variants shall be "
+                                                               + "normalized or not. Normalization process does NOT "
+                                                               + "include decomposing ", allowableValues = "false,true",
+                                                       defaultValue = "true", required = false) Boolean normalize,
+                                               @QueryParam("skipDecompose")
+                                               @ApiParam(name = "skipDecompose",
+                                                       value = "Boolean to indicate whether input MNVs should be "
+                                                               + "decomposed or not as part of the normalisation step."
+                                                               + " MNV decomposition is strongly encouraged.",
+                                                       allowableValues = "false,true",
+                                                       defaultValue = "false", required = false) Boolean skipDecompose,
+                                               @QueryParam("ignorePhase")
+                                               @ApiParam(name = "ignorePhase",
+                                                       value = "Boolean to indicate whether phase data should be "
+                                                               + "taken into account.", allowableValues = "false,true",
+                                                       required = false) Boolean ignorePhase,
+                                               @Deprecated
+                                               @QueryParam("phased")
+                                               @ApiParam(name = "phased",
+                                                       value = "DEPRECATED. Will be removed in next release. "
+                                                               + "Please, use ignorePhase instead. Boolean to "
+                                                               + "indicate whether phase should be considered "
+                                                               + "during the annotation process",
+                                                       allowableValues = "false,true",
+                                                       required = false) Boolean phased,
+                                               @QueryParam("imprecise")
+                                               @ApiParam(name = "imprecise",
+                                                       value = "Boolean to indicate whether imprecise search must be"
+                                                               + " used or not", allowableValues = "false,true",
+                                                       defaultValue = "true", required = false) Boolean imprecise,
+                                               @QueryParam("svExtraPadding")
+                                               @ApiParam(name = "svExtraPadding",
+                                                       value = "Integer to optionally provide the size of the extra"
+                                                               + " padding to be used when annotating imprecise (or not)"
+                                                               + " structural variants",
+                                                       defaultValue = "0", required = false) Integer svExtraPadding,
+                                               @QueryParam("cnvExtraPadding")
+                                               @ApiParam(name = "cnvExtraPadding",
+                                                       value = "Integer to optionally provide the size of the extra"
+                                                               + " padding to be used when annotating imprecise (or not)"
+                                                               + " CNVs",
+                                                       defaultValue = "0", required = false) Integer cnvExtraPadding) {
+        return getAnnotationByVariant(variants,
+                normalize,
+                skipDecompose,
+                ignorePhase,
+                phased,
+                imprecise,
+                svExtraPadding,
+                cnvExtraPadding);
+    }
+
+    private Response getAnnotationByVariant(String variants,
+                                            Boolean normalize,
+                                            Boolean skipDecompose,
+                                            Boolean ignorePhase,
+                                            @Deprecated Boolean phased,
+                                            Boolean imprecise,
+                                            Integer svExtraPadding,
+                                            Integer cnvExtraPadding) {
         try {
             parseQueryParams();
-            List<Variant> variantList = Variant.parseVariants(variants);
+            List<Variant> variantList = parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
-//            boolean normalize = (queryOptions.get("normalize") != null && queryOptions.get("normalize").equals("true"));
-//            // Use cache by default
-//            boolean useCache = (queryOptions.get("useCache") != null ? queryOptions.get("useCache").equals("true") : true);
+
+            // If ignorePhase (new parameter) is present, then overrides presence of "phased"
+            if (ignorePhase != null) {
+                queryOptions.put("ignorePhase", ignorePhase);
+                // If the new parameter (ignorePhase) is not present but old one ("phased") is, then follow old one - probably
+                // someone who has not moved to the new parameter yet
+            } else if (phased != null) {
+                queryOptions.put("ignorePhase", !phased);
+                // Default behavior is to perform phased annotation
+            } else {
+                queryOptions.put("ignorePhase", false);
+            }
+
             if (normalize != null) {
                 queryOptions.put("normalize", normalize);
             }
-            if (useCache != null) {
-                queryOptions.put("useCache", useCache);
-            }
-            if (phased != null) {
-                queryOptions.put("phased", phased);
+            if (skipDecompose != null) {
+                queryOptions.put("skipDecompose", skipDecompose);
             }
             if (imprecise != null) {
                 queryOptions.put("imprecise", imprecise);
@@ -239,86 +345,53 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{variants}/annotation")
-    @ApiOperation(httpMethod = "GET",
-            value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
-            + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
-            + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
-            response = VariantAnnotation.class, responseContainer = "QueryResponse")
-    public Response getAnnotationByVariantsGET(@PathParam("variants")
-                                               @ApiParam(name = "variants", value = "Comma separated list of variants to"
-                                                       + "annotate, e.g. "
-                                                       + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
-                                                       + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>",
-                                                       required = true) String variants,
-                                               @QueryParam("normalize")
-                                               @ApiParam(name = "normalize",
-                                                       value = "Boolean to indicate whether input variants shall be "
-                                                               + "normalized or not. Normalization process includes "
-                                                               + "decomposing MNVs", allowableValues = "false,true",
-                                                       defaultValue = "false", required = false) Boolean normalize,
-                                               @QueryParam("phased")
-                                               @ApiParam(name = "phased",
-                                                       value = "Boolean to indicate whether phase should be considered "
-                                                               + "during the annotation process",
-                                                       allowableValues = "false,true", defaultValue = "false",
-                                                       required = false) Boolean phased,
-                                               @QueryParam("useCache")
-                                                   @ApiParam(name = "useCache",
-                                                           value = "useCache=true is discouraged unless the server"
-                                                                   + " administrator advises so. Boolean to indicate"
-                                                                   + " whether cached annotation should be"
-                                                                   + " used or not", allowableValues = "false,true",
-                                                           defaultValue = "false", required = false) Boolean useCache,
-                                               @QueryParam("imprecise")
-                                                   @ApiParam(name = "imprecise",
-                                                           value = "Boolean to indicate whether imprecise search must be"
-                                                                   + " used or not", allowableValues = "false,true",
-                                                           defaultValue = "true", required = false) Boolean imprecise,
-                                               @QueryParam("svExtraPadding")
-                                                   @ApiParam(name = "svExtraPadding",
-                                                           value = "Integer to optionally provide the size of the extra"
-                                                                   + " padding to be used when annotating imprecise (or not)"
-                                                                   + " structural variants",
-                                                           defaultValue = "0", required = false) Integer svExtraPadding,
-                                               @QueryParam("cnvExtraPadding")
-                                                   @ApiParam(name = "cnvExtraPadding",
-                                                           value = "Integer to optionally provide the size of the extra"
-                                                                   + " padding to be used when annotating imprecise (or not)"
-                                                                   + " CNVs",
-                                                           defaultValue = "0", required = false) Integer cnvExtraPadding) {
-        try {
-            parseQueryParams();
-            List<Variant> variantList = Variant.parseVariants(variants);
-            VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
-            if (normalize != null) {
-                queryOptions.put("normalize", normalize);
-            }
-            if (useCache != null) {
-                queryOptions.put("useCache", useCache);
-            }
-            if (phased != null) {
-                queryOptions.put("phased", phased);
-            }
-            if (imprecise != null) {
-                queryOptions.put("imprecise", imprecise);
-            }
-            if (svExtraPadding != null) {
-                queryOptions.put("svExtraPadding", svExtraPadding);
-            }
-            if (cnvExtraPadding != null) {
-                queryOptions.put("cnvExtraPadding", cnvExtraPadding);
-            }
-            logger.debug(queryOptions.toJson());
-            List<QueryResult<VariantAnnotation>> clinicalQueryResultList =
-                    variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
+    private List<Variant> parseVariants(String variantsString) {
+        List<Variant> variants = null;
+        if (variantsString != null && !variantsString.isEmpty()) {
+            String[] variantItems = variantsString.split(",");
+            variants = new ArrayList<>(variantItems.length);
 
-            return createOkResponse(clinicalQueryResultList);
-        } catch (Exception e) {
-            return createErrorResponse(e);
+            for (String variantString: variantItems) {
+                variants.add(parseVariant(variantString));
+            }
         }
+        return variants;
+    }
+
+    private Variant parseVariant(String variantString) {
+        String[] variantStringPartArray = variantString.split(PHASE_DATA_URL_SEPARATOR);
+
+        VariantBuilder variantBuilder;
+        if (variantStringPartArray.length > 0) {
+            variantBuilder = new VariantBuilder(variantStringPartArray[0]);
+            // Either 1 or 3 parts expected variant+GT+PS
+            if (variantStringPartArray.length == 3) {
+                List<String> formatList = new ArrayList<>(2);
+                // If phase set tag is not provided not phase data is added at all to the Variant object
+                if (!variantStringPartArray[2].isEmpty()) {
+                    formatList.add(AnnotationBasedPhasedQueryManager.PHASE_SET_TAG);
+                    List<String> sampleData = new ArrayList<>(2);
+                    sampleData.add(variantStringPartArray[2]);
+                    // Genotype field might be empty - just PS would be added to Variant object in that case
+                    if (!variantStringPartArray[1].isEmpty()) {
+                        formatList.add(AnnotationBasedPhasedQueryManager.GENOTYPE_TAG);
+                        sampleData.add(variantStringPartArray[1]);
+                    }
+                    variantBuilder.setFormat(formatList);
+                    variantBuilder.setSamplesData(Collections.singletonList(sampleData));
+                }
+            } else if (variantStringPartArray.length > 3) {
+                throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                        + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                        + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+            }
+        } else {
+            throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
+                    + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
+                    + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
+        }
+
+        return variantBuilder.build();
     }
 
     @GET
