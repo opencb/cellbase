@@ -461,16 +461,18 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertTrue(variantQueryResult.getResult().isEmpty());
 
         // Just one variant being queried: in the database, this variant is duplicated. An exception must be raised
-        // since variants are not expected to be repeated in the database
-        try {
-            variantQueryResultList = clinicalDBAdaptor.getByVariant(
-                    Collections.singletonList(new Variant("1", 1, "T", "A")),
-                    new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
-            assert false;
-        } catch (RuntimeException runTimeException) {
-            assertEquals("Unexpected: more than one result found in the clinical variant "
-                    + "collection for variant 1:1:T:A. Please, check.", runTimeException.getMessage());
-        }
+        // since variants are not expected to be repeated in the database <--- This is no longer the expected behavior,
+        // as it is not controlled taht in the variation collection there is strictly one document per variant object
+        // now: the phased query manager is arbitrarily selecting the first one and logging a warning message
+//        try {
+//            variantQueryResultList = clinicalDBAdaptor.getByVariant(
+//                    Collections.singletonList(new Variant("1", 1, "T", "A")),
+//                    new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), true));
+//            assert false;
+//        } catch (RuntimeException runTimeException) {
+//            assertEquals("Unexpected: more than one result found in the clinical variant "
+//                    + "collection for variant 1:1:T:A. Please, check.", runTimeException.getMessage());
+//        }
 
     }
 

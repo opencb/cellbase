@@ -2,10 +2,14 @@ package org.opencb.cellbase.core.variant;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.commons.datastore.core.QueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public abstract class AnnotationBasedPhasedQueryManager<T> extends PhasedQueryManager {
+
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public List<QueryResult<Variant>> run(List<Variant> variantList, List<QueryResult<Variant>> variantQueryResultList) {
         // Go through all input variants and their corresponding query results
@@ -15,8 +19,9 @@ public abstract class AnnotationBasedPhasedQueryManager<T> extends PhasedQueryMa
                 // Variants are normalised and data from each of the sources (COSMIC, ClinVar, DOCM, etc.) integrated
                 // during the build process. Only one variant record should be present per assembly.
                 if (variantQueryResult.getResult().size() > 1) {
-                    throw new RuntimeException("Unexpected: more than one result found in the clinical variant "
-                            + "collection for variant " + variantQueryResult.getId() + ". Please, check.");
+                    logger.warn("More than one result found either the clinical_variants or variation collection"
+                            + "for variant " + variantQueryResult.getId() + ". Arbitrarily selecting the first one. "
+                            + "Please, check.");
                 }
 
                 Variant matchedVariant = variantQueryResult.getResult().get(0);
