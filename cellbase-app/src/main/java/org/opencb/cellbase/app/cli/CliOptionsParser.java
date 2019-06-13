@@ -419,23 +419,18 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean skipLeftAlign = false;
 
-        @Parameter(names = {"--server-cache"}, description = "Use of this parameter is discouraged unless the "
-                + "server administrator advises so. Annotation was already pre-calculated and cached in "
-                + "our servers for the whole ENSEMBL variation collection. Most of variants will be included in that "
-                + "collection, meaning that the use of this cache may improve performance. Use this flag "
-                + "if you want to use this server cache.",
-                required = false, arity = 0)
-        public boolean cache = false;
-
-        @Parameter(names = {"--no-server-cache"}, description = "DEPRECATED. Current implementation completely ignores" +
-                " this parameter. Please, have a look at --server-cache instead.",
-                required = false, arity = 0)
+        // TODO: remove "phased" CLI parameter in next release. Default behavior from here onwards should be
+        //  ignorePhase = false
+        @Parameter(names = {"--phased"}, description = "This parameter is now deprecated and will be removed in next" +
+                " release. Please, use --ignorePhase instead. Flag to indicate whether phased annotation shall be " +
+                " activated.", required = false, arity = 0)
         @Deprecated
-        public boolean noCache = false;
+        public Boolean phased;
 
-        @Parameter(names = {"--phased"}, description = "Flag to indicate whether phased annotation shall be activated." +
-                " By default phased annotation is not enabled.", required = false, arity = 0)
-        public boolean phased;
+        @Parameter(names = {"--ignorePhase"}, description = "Flag to indicate whether phase should be ignored during" +
+                " annotation. By default phased annotation is enabled, i.e. ignorePhase=false.", required = false,
+                arity = 0)
+        public Boolean ignorePhase;
 
         @Parameter(names = {"--no-imprecision"}, description = "Flag to indicate whether imprecision borders (CIPOS, CIEND)"
                 + " should be taken into account when annotating structural variants or CNVs."

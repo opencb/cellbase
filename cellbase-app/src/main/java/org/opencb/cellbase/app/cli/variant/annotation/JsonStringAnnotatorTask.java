@@ -35,6 +35,7 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
+@Deprecated
 public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

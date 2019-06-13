@@ -23,6 +23,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantBuilder;
+import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -33,6 +35,10 @@ import org.opencb.commons.datastore.core.QueryResult;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -71,6 +77,9 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variation_chr10.full.test.json.gz").toURI());
         loadRunner.load(path, "variation");
+        path = Paths.get(getClass()
+                .getResource("/variation_chr1.full.test.json.gz").toURI());
+        loadRunner.load(path, "variation");
     }
 
     // TODO: to be finished - properly implemented
@@ -80,6 +89,158 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryResult functionalScoreVariant = variationDBAdaptor.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
                 new QueryOptions());
+    }
+
+    @Test
+    public void getPhasedPopulationFrequencyByVariant() {
+        VariantBuilder variantBuilder = new VariantBuilder("1",
+                62165739,
+                62165739,
+                "A",
+                "T");
+        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("62165739", "0|1")));
+        Variant variant = variantBuilder.build();
+
+        variantBuilder = new VariantBuilder("1",
+                62165740,
+                62165740,
+                "T",
+                "G");
+        variantBuilder.setFormat("PS", "GT");
+        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("62165739", "0|1")));
+        Variant variant1 = variantBuilder.build();
+
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens",
+                "GRCh37");
+        List<QueryResult<Variant>> variantQueryResultList
+                = variationDBAdaptor.getPopulationFrequencyByVariant(Arrays.asList(variant, variant1),
+                new QueryOptions(VariantDBAdaptor.QueryParams.PHASE.key(), true));
+
+        assertEquals(2, variantQueryResultList.size());
+        QueryResult<Variant> variantQueryResult = getByVariant(variantQueryResultList,
+                new Variant("1:62165739:A:T"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(3, variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies().size());
+        List<PopulationFrequency> populationFrequencyList
+                = getPopulationFrequency(variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AFR",
+                        "AT",
+                        "1:62165739:A:T,1:62165740:T:G",
+                        (float) 0.9849,
+                        (float) 0.0151,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AMR",
+                        "AT",
+                        "1:62165739:A:T,1:62165740:T:G",
+                        (float) 0.9957,
+                        (float) 0.0043,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "EUR",
+                        "AT",
+                        "1:62165739:A:T,1:62165740:T:G",
+                        (float) 0.999,
+                        (float) 0.001,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+
+        variantQueryResult = getByVariant(variantQueryResultList, new Variant("1:62165740:T:G"));
+        assertNotNull(variantQueryResult);
+        assertEquals(1, variantQueryResult.getNumResults());
+        assertEquals(1, variantQueryResult.getNumTotalResults());
+        assertEquals(1, variantQueryResult.getResult().size());
+        assertEquals(4, variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies().size());
+        populationFrequencyList
+                = getPopulationFrequency(variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("GNOMAD_GENOMES",
+                        "AMR",
+                        "T",
+                        "G",
+                        (float) 0.98062956,
+                        (float) 0.01937046,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AFR",
+                        "AT",
+                        "1:62165739:A:T,1:62165740:T:G",
+                        (float) 0.9849,
+                        (float) 0.0151,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "AMR",
+                        "AT",
+                        "1:62165739:A:T,1:62165740:T:G",
+                        (float) 0.9957,
+                        (float) 0.0043,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+        populationFrequencyList
+                = getPopulationFrequency(variantQueryResult.getResult().get(0).getAnnotation().getPopulationFrequencies(),
+                new PopulationFrequency("1kG_phase3",
+                        "EUR",
+                        "AT",
+                        "1:62165739:A:T,1:62165740:T:G",
+                        (float) 0.999,
+                        (float) 0.001,
+                        null,
+                        null,
+                        null));
+        assertNotNull(populationFrequencyList);
+        assertEquals(1, populationFrequencyList.size());
+
+    }
+
+    private List<PopulationFrequency> getPopulationFrequency(List<PopulationFrequency> populationFrequencyList,
+                                                             PopulationFrequency populationFrequency) {
+        List<PopulationFrequency> populationFrequencyList1 = new ArrayList<>(1);
+        for (PopulationFrequency populationFrequency1 : populationFrequencyList) {
+            if (populationFrequency.getStudy().equals(populationFrequency1.getStudy())
+                    && populationFrequency.getPopulation().equals(populationFrequency1.getPopulation())
+                    && populationFrequency.getRefAllele().equals(populationFrequency1.getRefAllele())
+                    && populationFrequency.getAltAllele().equals(populationFrequency1.getAltAllele())
+                    && populationFrequency.getAltAlleleFreq().equals(populationFrequency1.getAltAlleleFreq())
+                    && populationFrequency.getRefAlleleFreq().equals(populationFrequency1.getRefAlleleFreq())) {
+                populationFrequencyList1.add(populationFrequency);
+            }
+        }
+
+        return populationFrequencyList1;
     }
 
     @Test

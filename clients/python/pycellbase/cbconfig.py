@@ -1,11 +1,13 @@
 import requests
 import json
 import yaml
+from retrying import retry
 
 _DEFAULT_CONFIG = {
     "species": "hsapiens",
     "version": "v4",
-    "rest": {"hosts": ["http://bioinfo.hpc.cam.ac.uk:80/cellbase"]}
+    "rest": {"hosts": ["http://bioinfo.hpc.cam.ac.uk:80/cellbase",
+                       "https://bioinfo.hpc.cam.ac.uk:80/cellbase"]}
 }
 
 
@@ -72,24 +74,12 @@ class ConfigClient(object):
             url = 'http://' + url
         return url
 
-    @staticmethod
-    def _check_host(host):
-        """Checks host availability"""
-        try:
-            r = requests.head(host, timeout=1)
-            if r.status_code == 302:  # Found
-                return True
-            else:
-                return False
-        except requests.ConnectionError:
-            return False
-
     def _get_available_host(self, hosts):
         """Returns the first available host"""
         available_host = None
         for host in hosts:
             host = self._format_url(host)
-            if self._check_host(host):
+            if _check_host(host):
                 available_host = host
                 break
 
@@ -130,3 +120,25 @@ class ConfigClient(object):
     @property
     def configuration(self):
         return self._config
+
+
+def _returned_false(result):
+    return result is False
+
+
+@retry(
+    wait_exponential_multiplier=10,
+    wait_exponential_max=2000,
+    retry_on_result=_returned_false,
+    stop_max_attempt_number=5
+)
+def _check_host(host):
+    """Checks host availability"""
+    try:
+        r = requests.head(host, timeout=1)
+        if r.status_code == 302:  # Found
+            return True
+        else:
+            return False
+    except requests.ConnectionError:
+        return False

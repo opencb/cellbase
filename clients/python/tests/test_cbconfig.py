@@ -14,12 +14,12 @@ class ConfigClientTest(unittest.TestCase):
         assert cc.version == 'v4'
 
         # Retrieving config params from YAML config file
-        cc = ConfigClient('./testresources/config.yml')
+        cc = ConfigClient('./tests/testresources/config.yml')
         assert cc.species == 'mmusculus'
         assert cc.version == 'v4'
 
         # Retrieving config params from JSON config file
-        cc = ConfigClient('./testresources/config.json')
+        cc = ConfigClient('./tests/testresources/config.json')
         assert cc.species == 'celegans'
         assert cc.version == 'v3'
 

@@ -41,18 +41,6 @@ public class CellBaseLocalVariantAnnotator implements VariantAnnotator {
         List<QueryResult<VariantAnnotation>> queryResultList =
                 variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
 
-//        //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
-//        for (int i = 0; i < queryResultList.size(); i++) {
-//            if (queryResultList.get(i).getResult().size() > 0) {
-//                if (variantList.get(i).getAnnotation() == null) {
-//                    variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
-//                } else {
-//                    mergeAnnotation(variantList.get(i).getAnnotation(), queryResultList.get(i).getResult().get(0));
-//                }
-//            } else {
-//                logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
-//            }
-//        }
     }
 
     public boolean close() {

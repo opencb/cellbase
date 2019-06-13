@@ -16,11 +16,13 @@ import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Thread.sleep;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.*;
@@ -41,16 +43,166 @@ public class ClinicalVariantParserTest {
     }
 
     @Test
-    public void parse() throws Exception {
-        Path clinicalVariantFolder = Paths.get(getClass().getResource("/clinicalVariant").toURI());
-        Path genomeSequenceFilePath = Paths.get(getClass()
-                .getResource("/clinicalVariant/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI());
+    public void noNormaliseTest() throws Exception {
+        // Remove all previous clinical variant temporary test data
+        cleanUp();
+
+        // Copy clinical variant test data to tmp
+        // NOTE: mvn/idea tests run created lots of problems with running all tests in this ClinicalVariantParserTest
+        // in one go; summarising there's some problem with rocks db directories and the way running the tests handles
+        // temporary files/directories. Best solution found was to make different copies fo the data to the tmp and run
+        // each test over a separate copy of the test data. Note the 3 on /tmp/clinicalVariant3 below
+        Path clinicalVariantFolder = Paths.get(getClass().getResource("/variant/annotation/clinicalVariant").toURI());
+        org.apache.commons.io.FileUtils.copyDirectory(clinicalVariantFolder.toFile(),
+                Paths.get("/tmp/clinicalVariant3").toFile());
+        clinicalVariantFolder = Paths.get("/tmp/clinicalVariant3");
+
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.fai").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.fai").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toFile());
+
+        Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
+
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
+        (new ClinicalVariantParser(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
+
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        assertEquals(21, parsedVariantList.size());
+
+        // ClinVar record for an un-normalised variant. It appears in the variant_summary.txt as 17 53	53	C	CC
+        // Genome sequence context for that position is TGTCCCTGCTGAA
+        //                                                   ^
+        //                                                   53
+        // After normalisation should be 17 51 -   C
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000488336");
+        assertEquals(1, variantList.size());
+        Variant variant = variantList.get(0);
+        assertEquals("17", variant.getChromosome());
+        assertEquals(Integer.valueOf(53), variant.getStart());
+        assertEquals("C", variant.getReference());
+        assertEquals("CC", variant.getAlternate());
+
+    }
+
+    @Test
+    public void parseMNVTest() throws Exception {
+
+        // Remove all previous clinical variant temporary test data
+        cleanUp();
+
+        // Copy clinical variant test data to tmp
+        // NOTE: mvn/idea tests run created lots of problems with running all tests in this ClinicalVariantParserTest
+        // in one go; summarising there's some problem with rocks db directories and the way running the tests handles
+        // temporary files/directories. Best solution found was to make different copies fo the data to the tmp and run
+        // each test over a separate copy of the test data. Note the 1 on /tmp/clinicalVariant1 below
+        Path clinicalVariantFolder = Paths.get(getClass().getResource("/variant/annotation/clinicalVariant").toURI());
+        org.apache.commons.io.FileUtils.copyDirectory(clinicalVariantFolder.toFile(),
+                Paths.get("/tmp/clinicalVariant1").toFile());
+        clinicalVariantFolder = Paths.get("/tmp/clinicalVariant1");
+
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.fai").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.fai").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toFile());
+
+        Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(20, parsedVariantList.size());
+        assertEquals(27, parsedVariantList.size());
+
+        // DOCM MNV (from docm.json.gz):
+        // "chromosome":"1","start":115256528,"stop":115256529,"reference":"TT","variant":"CA"
+        Variant variant1 = getVariantByVariant(parsedVariantList,
+                new Variant("1", 115256528, "T", "C"));
+        assertNotNull(variant1);
+        assertEvidenceEntriesHaplotype("1:115256528:T:C,1:115256529:T:A", variant1);
+
+        variant1 = getVariantByVariant(parsedVariantList,
+                new Variant("1", 115256529, "T", "A"));
+        assertNotNull(variant1);
+        assertEvidenceEntriesHaplotype("1:115256528:T:C,1:115256529:T:A", variant1);
+
+        // MNV present, from variant_summary:
+        // 9    107594021        107594034        AGAACTTCCTCTCA  GTACAGTGGCGTGACCTCAGCTCACTGCAACCTCTGCCTCCTGAGTTCAAGTGATTCTCGTGCCTCAGCCTCCCAAGTAGCTGGGATTACAGCTCCTGCCACCACGCCCG
+        // Six simple variants to be obtained from its decomposition
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000010100");
+        assertEquals(6, variantList.size());
+
+        // Check corresponding EvidenceEntry objects for all 6 variants have been flagged with the proper "haplotype"
+        // additional property
+        for (Variant variant : variantList) {
+            // Each simple variant must contain two EvidenceEntry objects: one for the variation ID, another one for
+            // the RCV
+            assertEquals(2, variant.getAnnotation().getTraitAssociation().size());
+            assertEvidenceEntriesHaplotype("9:107594021:-:GTAC,"
+                    + "9:107594027:-:TGGCGTGACCTCAGCTCACTGC,"
+                    + "9:107594052:-:CTCTGCCTCCTGAG,"
+                    + "9:107594069:-:AAGTGATT,"
+                    + "9:107594080:-:GTGCC,"
+                    + "9:107594088:-:GCCTCCCAAGTAGCTGGGATTACAGCTCCTGCCACCACGCCCG",
+                    variant);
+        }
+
+    }
+
+    private void assertEvidenceEntriesHaplotype(String expectedHaplotype, Variant variant) {
+        for (EvidenceEntry evidenceEntry : variant.getAnnotation().getTraitAssociation()) {
+            assertNotNull(evidenceEntry.getAdditionalProperties());
+            Property clinicalHaplotypeProperty = getProperty(evidenceEntry.getAdditionalProperties(),
+                    ClinicalIndexer.HAPLOTYPE_FIELD_NAME);
+            assertNotNull(clinicalHaplotypeProperty);
+            assertEquals(expectedHaplotype, clinicalHaplotypeProperty.getValue());
+        }
+    }
+
+
+    @Test
+    public void parse() throws Exception {
+
+        // Remove all previous clinical variant temporary test data
+        cleanUp();
+
+        // Copy clinical variant test data to tmp
+        // NOTE: mvn/idea tests run created lots of problems with running all tests in this ClinicalVariantParserTest
+        // in one go; summarising there's some problem with rocks db directories and the way running the tests handles
+        // temporary files/directories. Best solution found was to make different copies fo the data to the tmp and run
+        // each test over a separate copy of the test data. Note the 2 on /tmp/clinicalVariant2 below
+        Path clinicalVariantFolder = Paths.get(getClass().getResource("/variant/annotation/clinicalVariant").toURI());
+        org.apache.commons.io.FileUtils.copyDirectory(clinicalVariantFolder.toFile(),
+                Paths.get("/tmp/clinicalVariant2").toFile());
+        clinicalVariantFolder = Paths.get("/tmp/clinicalVariant2");
+
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.fai").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.fai").toFile());
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toURI()).toFile(),
+                clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toFile());
+
+        Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
+
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
+        (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
+
+        List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
+        assertEquals(27, parsedVariantList.size());
 
         // ClinVar record for an insertion with emtpy reference allele (some other insertions do provide reference nts)
         // It appears in the variant_summary.txt as 3       37090475        37090476        -       TT
@@ -253,7 +405,7 @@ public class ClinicalVariantParserTest {
         // Check it's properly flagged as part of the genotype set
         property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNotNull(property.getValue());
-        assertEquals("18:56390321:C:", property.getValue());
+        assertEquals("18:56390321:C:-", property.getValue());
         evidenceEntry = getEvidenceEntryByAccession(variant, "RCV000169692");
         assertNotNull(evidenceEntry);
         assertEquals(1, evidenceEntry.getGenomicFeatures().size());
@@ -261,7 +413,7 @@ public class ClinicalVariantParserTest {
         // Check it's properly flagged as part of the genotype set
         property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNotNull(property.getValue());
-        assertEquals("18:56390321:C:", property.getValue());
+        assertEquals("18:56390321:C:-", property.getValue());
         // Second variant in the genotype set
         variant = variantList.get(1);
         assertEquals("18", variant.getChromosome());
@@ -365,6 +517,14 @@ public class ClinicalVariantParserTest {
         assertEquals("PMID:0001694291",
                 variant.getAnnotation().getTraitAssociation().get(0).getBibliography().get(0));
 
+    }
+
+    private void cleanUp() throws URISyntaxException, IOException {
+        // Clean up temporary files/directories/indexes
+        org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant1/").toFile());
+        org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant2/").toFile());
+        org.apache.commons.io.FileUtils.deleteDirectory(Paths.get("/tmp/clinicalVariant3/").toFile());
+        Paths.get("/tmp/clinical_variants.json.gz").toFile().delete();
     }
 
     private Set<String> getAllTraitNames(List<EvidenceEntry> evidenceEntryList, String source) {

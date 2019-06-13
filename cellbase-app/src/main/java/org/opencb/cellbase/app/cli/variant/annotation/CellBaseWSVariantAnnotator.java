@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by fjlopez on 02/03/15.
@@ -61,8 +60,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
             logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
             QueryResponse<VariantAnnotation> response;
             try {
-                response = variantClient.getAnnotationByVariantIds(variantList.stream().map(Variant::toString).collect(Collectors.toList()),
-                        queryOptions, true);
+                response = variantClient.getAnnotation(variantList, queryOptions, true);
             } catch (IOException e) {
                 e.printStackTrace();
                 return;

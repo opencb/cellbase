@@ -29,8 +29,11 @@ PyCellBase is stored in PyPI and can be installed via pip::
 
    $ pip install pycellbase
 
-Usage
------
+REST client library
+-------------------
+
+PyCellBase consumes the RESTful web services provided by `CellBase`_, providing a simple and fast access to the database.
+A series of clients and methods have been implemented to retrieve specific resources from the main features.
 
 Getting started
 ```````````````
@@ -188,6 +191,48 @@ If you want to change the configuration **on the fly** you can directly modify t
 Use case
 ````````
 A use case where PyCellBase is used to obtain multiple kinds of data from different sources can be found in this `Jupyter Notebook`_
+
+Command-line tools
+------------------
+
+A command-line interface, called cbtools.py, has been implemented with several tools to ease and speed up frequently performed tasks in bioinformatics.
+These tools make use of the REST client library and offer a further output processing to facilitate its analysis.
+
+ID converter
+````````````
+
+This tool annotates genomic features with all their associated IDs, making use of 74 different sources for human, including most common databases such as Ensembl, NCBI, RefSeq, Reactome, OMIM, PDB, miRBase or UniProt among others.
+In addition, it supports heterogeneous input files with IDs from different sources.
+
+.. code-block:: bash
+
+    $ cbtools.py xref file_with_ids.vcf > output.txt
+
+HGVS calculator
+```````````````
+
+This tool annotates variants with their associated HGVS names.
+Given a variant (in the format “chromosome:position:reference:alternate”), this tool returns all the associated HGVS names for many different types of reference sequence.
+
+.. code-block:: bash
+
+    $ cbtools.py hgvs 19:45411941:T:C
+
+A file with multiple variants can also be used.
+
+.. code-block:: bash
+
+    $ cbtools.py hgvs file_with_variants.txt > output.txt
+
+VCF annotator
+`````````````
+
+This tool takes a VCF file as input and returns it with its variants annotated with a broad range of information such as consequence types, population frequencies, overlapping sequence repeats, cytobands, gene expression, conservation scores, clinical significance (ClinVar, COSMIC, diseases and drugs), functional scores and more.
+
+.. code-block:: bash
+
+    $ cbtools.py annotation input.vcf > output.vcf
+
 
 
 .. _CellBase: https://github.com/opencb/cellbase
