@@ -8,7 +8,7 @@ logFile: ""
 rest:
   hosts:
   - "bioinfodev.hpc.cam.ac.uk/cellbase"
-  - "bioinfodev.hpc.cam.ac.uk/cellbase-4.7.0-SNAPSHOT"
+  - "bioinfodev.hpc.cam.ac.uk/cellbase-4.8.0-SNAPSHOT"
   timeout: 2000
 grpc:
   host: "localhost:9091"
