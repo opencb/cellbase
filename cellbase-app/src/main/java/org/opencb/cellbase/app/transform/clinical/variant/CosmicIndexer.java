@@ -263,7 +263,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         boolean validVariant = false;
         String[] fields = line.split("\t", -1);
         String mutationCds = fields[HGVS_COLUMN];
-        VariantType variantType = get_variant_type(mutationCds);
+        VariantType variantType = getVariantType(mutationCds);
 
         if (variantType != null) {
             switch (variantType) {
@@ -300,7 +300,7 @@ public class CosmicIndexer extends ClinicalIndexer {
         return validVariant;
     }
 
-    private VariantType get_variant_type(String mutationCds) {
+    private VariantType getVariantType(String mutationCds) {
         if (mutationCds.contains(HGVS_SNV_CHANGE_SYMBOL)) {
             return VariantType.SNV;
         } else if (mutationCds.contains(HGVS_DELETION_TAG)) {
@@ -479,7 +479,7 @@ public class CosmicIndexer extends ClinicalIndexer {
             if (matcher.matches()) {
                 setCosmicChromosome(matcher.group(CHROMOSOME), sequenceLocation);
                 String mutationCds = fields[HGVS_COLUMN];
-                VariantType variantType = get_variant_type(mutationCds);
+                VariantType variantType = getVariantType(mutationCds);
                 if (VariantType.INSERTION.equals(variantType)) {
                     sequenceLocation.setEnd(Integer.parseInt(matcher.group(START)));
                     sequenceLocation.setStart(Integer.parseInt(matcher.group(END)));
