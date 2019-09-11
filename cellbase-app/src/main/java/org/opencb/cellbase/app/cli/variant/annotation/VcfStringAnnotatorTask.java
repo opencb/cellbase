@@ -64,11 +64,23 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
                                   boolean normalize, VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig) {
         this.vcfCodec = new FullVcfCodec();
         this.vcfCodec.setVCFHeader(header, version);
-        this.converter = new VariantContextToVariantConverter("", "", header.getSampleNamesInOrder());
+
         this.variantAnnotatorList = variantAnnotatorList;
         this.sharedContext = sharedContext;
         this.normalize = normalize;
         normalizer = new VariantNormalizer(variantNormalizerConfig);
+
+        // htsjdk automatically and inevitably sorts sample data in alphabetical order. Need to recover the original
+        // order in the VCF from the header and initialise the converter with the original order so that the order
+        // of samplesdata in CellBase output is exactly the same as in the original VCF
+        List<String> samplesInOriginalOrder = Arrays.asList(new String[header.getSampleNameToOffset().size()]);
+        for (Map.Entry<String, Integer> entry : header.getSampleNameToOffset().entrySet()) {
+            samplesInOriginalOrder.set(entry.getValue(), entry.getKey());
+        }
+
+        this.converter = new VariantContextToVariantConverter("", "", samplesInOriginalOrder);
+
+
     }
 
     @Override

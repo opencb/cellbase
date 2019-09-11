@@ -45,6 +45,7 @@ public class ClinicalVariantParserTest {
         Path clinicalVariantFolder = Paths.get(getClass().getResource("/clinicalVariant").toURI());
         Path genomeSequenceFilePath = Paths.get(getClass()
                 .getResource("/clinicalVariant/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toURI());
+        org.apache.commons.io.FileUtils.deleteDirectory(genomeSequenceFilePath.resolve(".rdb").toFile());
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
