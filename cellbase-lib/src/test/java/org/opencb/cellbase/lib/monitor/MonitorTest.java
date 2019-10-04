@@ -3,6 +3,7 @@ package org.opencb.cellbase.lib.monitor;
 import com.google.common.io.Files;
 import org.apache.tools.ant.util.FileUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -35,6 +36,7 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
+    @Ignore
     @Test
     public void run() throws Exception {
 
