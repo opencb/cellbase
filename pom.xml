@@ -179,6 +179,7 @@
                 <version>4.12</version>
                 <scope>test</scope>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -244,6 +245,25 @@
                         <version>2.0.8</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.7.201606060606</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -335,6 +355,24 @@
             </build>
         </profile>
     </profiles>
+
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <!-- select non-aggregate reports -->
+                            <report>report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
 
     <distributionManagement>
         <repository>
