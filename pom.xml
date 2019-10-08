@@ -33,6 +33,7 @@
         <jersey.version>2.23.2</jersey.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
         <slf4j.version>1.7.21</slf4j.version>
+        <jacoco.version>0.8.4</jacoco.version>
     </properties>
 
     <scm>
@@ -249,7 +250,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.7.201606060606</version>
+                <version>${jacoco.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -258,7 +259,7 @@
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>prepare-package</phase>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
@@ -355,25 +356,7 @@
             </build>
         </profile>
     </profiles>
-
-
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <!-- select non-aggregate reports -->
-                            <report>report</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
-        </plugins>
-    </reporting>
-
+    
     <distributionManagement>
         <repository>
             <id>ossrh</id>
