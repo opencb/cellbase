@@ -104,6 +104,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String TRF_NAME = "Tandem repeats finder";
     private static final String GSD_NAME = "Genomic super duplications";
     private static final String WM_NAME = "WindowMasker";
+    private static final String GNOMAD_NAME = "gnomAD";
+
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -398,6 +400,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas();
         downloadGeneDiseaseAnnotation(geneFolder);
+        downloadGnomad(sp, speciesFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
@@ -532,6 +535,18 @@ public class DownloadCommandExecutor extends CommandExecutor {
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
                 getVersionFromVersionLine(geneFolder.resolve("disgenetReadme.txt"), "(version"), getTimeStamp(),
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
+    }
+
+    private void downloadGnomad(Species species, Path speciesFolder) throws IOException, InterruptedException {
+        if (species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading gnomAD data...");
+
+            String url = configuration.getDownload().getGnomad().getHost();
+            downloadFile(url, speciesFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
+            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, "2.1.1", getTimeStamp(), Collections.singletonList(url),
+                    speciesFolder.resolve("gnomadVersion.json"));
+
+        }
     }
 
     private String getVersionFromVersionLine(Path path, String tag) {

@@ -56,7 +56,7 @@ public class DownloadProperties {
     private URLProperties dbsnp;
     private URLProperties cadd;
     private URLProperties reactome;
-
+    private URLProperties gnomad;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -353,6 +353,15 @@ public class DownloadProperties {
 
     public DownloadProperties setReactome(URLProperties reactome) {
         this.reactome = reactome;
+        return this;
+    }
+
+    public URLProperties getGnomad() {
+        return gnomad;
+    }
+
+    public DownloadProperties setGnomad(URLProperties gnomad) {
+        this.gnomad = gnomad;
         return this;
     }
 
