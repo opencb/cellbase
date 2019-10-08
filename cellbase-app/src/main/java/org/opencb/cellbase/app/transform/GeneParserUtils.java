@@ -278,4 +278,36 @@ public class GeneParserUtils {
         return geneDiseaseAssociationMap;
     }
 
+    public static Map<String, List<Score>> getGnomadScoresMap(Path gnomadFile) throws IOException {
+        Map<String, List<Score>> gnomadScoresMap = new HashMap<>();
+
+        if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
+            logger.info("Loading OE scores from '{}'", gnomadFile);
+            BufferedReader br = FileUtils.newBufferedReader(gnomadFile);
+
+            // Skip header.
+            br.readLine();
+
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\t");
+
+                    if (parts[7].equals("UP")) {
+                        addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
+                                parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
+                    } else if (parts[7].equals("DOWN")) {
+                        addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
+                                parts[4], parts[5], parts[6], ExpressionCall.DOWN, Float.valueOf(parts[8])));
+                    } else {
+                        logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
+                    }
+
+            }
+
+            br.close();
+        } else {
+            logger.warn("Parameters are not correct");
+        }
+
+        return gnomadScoresMap;
+    }
 }

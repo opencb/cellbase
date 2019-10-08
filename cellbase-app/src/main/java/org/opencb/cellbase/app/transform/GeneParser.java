@@ -106,6 +106,7 @@ public class GeneParser extends CellBaseParser {
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
+                geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 genomeSequenceFastaFile, species, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -113,8 +114,8 @@ public class GeneParser extends CellBaseParser {
     }
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
-                      Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path genomeSequenceFilePath,
-                      Species species, boolean flexibleGTFParsing,
+                      Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
+                      Path genomeSequenceFilePath, Species species, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
@@ -127,6 +128,7 @@ public class GeneParser extends CellBaseParser {
         this.geneDrugFile = geneDrugFile;
         this.hpoFile = hpoFile;
         this.disgenetFile = disgenetFile;
+        this.gnomadFile = gnomadFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.species = species;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -153,6 +155,7 @@ public class GeneParser extends CellBaseParser {
                 .getGeneExpressionMap(species.getScientificName(), geneExpressionFile);
         Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
         Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
+        Map<String, List<Score>> gnomadScoresMap = GeneParserUtils.getGnomadScoresMap(gnomadFile);
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
