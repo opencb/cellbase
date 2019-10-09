@@ -34,8 +34,8 @@
         <cellbase.war.name>cellbase</cellbase.war.name>
         <slf4j.version>1.7.21</slf4j.version>
         <jacoco.version>0.8.4</jacoco.version>
+        <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
     </properties>
-
     <scm>
         <url>https://github.com/opencb/cellbase</url>
         <connection>scm:git:git://github.com/opencb/cellbase.git</connection>
@@ -204,7 +204,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.17</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>validate</id>
