@@ -114,7 +114,7 @@
         </module>
         <module name="EmptyBlock">
             <!-- all other blocks need a real statement. -->
-            <property name="option" value="stmt"/>
+            <property name="option" value="statement"/>
             <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY,
           LITERAL_IF, LITERAL_FOR, LITERAL_TRY, LITERAL_WHILE, INSTANCE_INIT,
           STATIC_INIT"/>
@@ -160,15 +160,13 @@
             <property name="illegalPattern" value="true"/>
             <property name="message" value="Trailing whitespace"/>
         </module>
-        <module name="FileContentsHolder"/>
-    </module>
 
-    <!-- allow warnings to be suppressed -->
-    <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CSOFF\: ([\w\|]+)"/>
-        <property name="onCommentFormat" value="CSON\: ([\w\|]+)"/>
-        <property name="checkFormat" value="$1"/>
-    </module>
 
-    <module name="SuppressionFilter"/>
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CSOFF\: ([\w\|]+)"/>
+            <property name="onCommentFormat" value="CSON\: ([\w\|]+)"/>
+            <property name="checkFormat" value="$1"/>
+        </module><!-- allow warnings to be suppressed -->
+
+    </module>
 </module>
