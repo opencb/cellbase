@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.core.config;
 
+import java.util.List;
+
 /**
  * Created by imedina on 19/08/16.
  */
@@ -390,6 +392,8 @@ public class DownloadProperties {
     public static class URLProperties {
 
         private String host;
+        private String version;
+        private List<String> files;
 
         public String getHost() {
             return host;
@@ -398,5 +402,24 @@ public class DownloadProperties {
         public void setHost(String host) {
             this.host = host;
         }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public URLProperties setVersion(String version) {
+            this.version = version;
+            return this;
+        }
+
+        public List<String> getFiles() {
+            return files;
+        }
+
+        public URLProperties setFiles(List<String> files) {
+            this.files = files;
+            return this;
+        }
+
     }
 }

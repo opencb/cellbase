@@ -362,29 +362,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
         return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
     }
 
-    private void saveVersionData(String data, String source, String version, String date, List<String> url,
-                                 Path outputFilePath) {
-        Map versionData = new HashedMap();
-        versionData.put("data", data);
-        versionData.put("source", source);
-        versionData.put("version", version);
-        versionData.put("downloadDate", date);
-        versionData.put("uRL", url);
-        writeVersionDataFile(versionData, outputFilePath);
-    }
+    private void saveVersionData(String data, String source, String version, String date, List<String> url, Path outputFilePath)
+            throws IOException {
+        Map<String, Object> versionDataMap = new HashMap<>();
+        versionDataMap.put("data", data);
+        versionDataMap.put("source", source);
+        versionDataMap.put("version", version);
+        versionDataMap.put("downloadDate", date);
+        versionDataMap.put("uRL", url);
 
-    private void writeVersionDataFile(Map versionData, Path outputFilePath) {
-        try {
-            OutputStream os = Files.newOutputStream(outputFilePath);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-            ObjectMapper jsonObjectMapper = new ObjectMapper();
-            ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
-            bw.write(jsonObjectWriter.writeValueAsString(versionData) + "\n");
-            bw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        ObjectMapper jsonObjectMapper = new ObjectMapper();
+        jsonObjectMapper.writeValue(outputFilePath.toFile(), versionDataMap);
     }
 
     private void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder, String host)
@@ -402,56 +390,52 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private void downloadDrugData(Species species, Path speciesFolder) throws IOException, InterruptedException {
-
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
-
             Path geneDrugFolder = speciesFolder.resolve("gene/geneDrug");
             makeDir(geneDrugFolder);
             String url = configuration.getDownload().getDgidb().getHost();
             downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
-
             saveVersionData(EtlCommons.GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     geneDrugFolder.resolve("dgidbVersion.json"));
-
         }
     }
 
-    private void downloadEnsemblData(Species sp, String spShortName, Path geneFolder, String host)
+    private void downloadEnsemblData(Species species, String speciesShortName, Path geneFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
         List<String> downloadedUrls = new ArrayList<>(4);
 
         String ensemblHost = host + "/" + ensemblRelease;
-        if (!configuration.getSpecies().getVertebrates().contains(sp)) {
-            ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(sp);
+        if (!configuration.getSpecies().getVertebrates().contains(species)) {
+            ensemblHost = host + "/" + ensemblRelease + "/" + getPhylo(species);
         }
 
         String bacteriaCollectionPath = "";
-        if (configuration.getSpecies().getBacteria().contains(sp)) {
+        if (configuration.getSpecies().getBacteria().contains(species)) {
             // WARN: assuming there's just one assembly
-            bacteriaCollectionPath =  sp.getAssemblies().get(0).getEnsemblCollection() + "/";
+            bacteriaCollectionPath =  species.getAssemblies().get(0).getEnsemblCollection() + "/";
         }
 
         // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
         // to download the correct GTF file.
         String version = ensemblRelease.split("-")[1];
-        String url = ensemblHost + "/gtf/" + bacteriaCollectionPath + spShortName + "/*" + version + ".gtf.gz";
-        String fileName = geneFolder.resolve(spShortName + ".gtf.gz").toString();
+        String url = ensemblHost + "/gtf/" + bacteriaCollectionPath + speciesShortName + "/*" + version + ".gtf.gz";
+        String fileName = geneFolder.resolve(speciesShortName + ".gtf.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/pep/*.pep.all.fa.gz";
-        fileName = geneFolder.resolve(spShortName + ".pep.all.fa.gz").toString();
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + speciesShortName + "/pep/*.pep.all.fa.gz";
+        fileName = geneFolder.resolve(speciesShortName + ".pep.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + spShortName + "/cdna/*.cdna.all.fa.gz";
-        fileName = geneFolder.resolve(spShortName + ".cdna.all.fa.gz").toString();
+        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + speciesShortName + "/cdna/*.cdna.all.fa.gz";
+        fileName = geneFolder.resolve(speciesShortName + ".cdna.all.fa.gz").toString();
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/regulation/" + spShortName + "/MotifFeatures.gff.gz";
+        url = ensemblHost + "/regulation/" + speciesShortName + "/MotifFeatures.gff.gz";
         Path outputFile = geneFolder.resolve("MotifFeatures.gff.gz");
         downloadFile(url, outputFile.toString());
         downloadedUrls.add(url);
@@ -524,14 +508,33 @@ public class DownloadCommandExecutor extends CommandExecutor {
         saveVersionData(EtlCommons.GENE_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(host),
                 geneFolder.resolve("hpoVersion.json"));
 
+//        host = configuration.getDownload().getDisgenet().getHost();
+//        String readme = configuration.getDownload().getDisgenetReadme().getHost();
+//        fileName = StringUtils.substringAfterLast(host, "/");
+//        downloadFile(host, geneFolder.resolve(fileName).toString());
+//        downloadFile(readme, geneFolder.resolve("disgenetReadme.txt").toString());
+
         host = configuration.getDownload().getDisgenet().getHost();
-        String readme = configuration.getDownload().getDisgenetReadme().getHost();
-        fileName = StringUtils.substringAfterLast(host, "/");
-        downloadFile(host, geneFolder.resolve(fileName).toString());
-        downloadFile(readme, geneFolder.resolve("disgenetReadme.txt").toString());
+        List<String> files = configuration.getDownload().getDisgenet().getFiles();
+        for (String file : files) {
+            file = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
+            downloadFile(host + "/" + file, file );
+        }
+
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
                 getVersionFromVersionLine(geneFolder.resolve("disgenetReadme.txt"), "(version"), getTimeStamp(),
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
+    }
+
+    private void downloadGnomad(Species species, Path speciesFolder) throws IOException, InterruptedException {
+        if (species.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading gnomAD data...");
+            String host = configuration.getDownload().getGnomad().getHost();
+            List<String> fileNames = configuration.getDownload().getGnomad().getFiles();
+            downloadFiles(host, fileNames);
+            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomad().getVersion(), getTimeStamp(),
+                    Collections.singletonList(host), speciesFolder.resolve("gnomadVersion.json"));
+        }
     }
 
     private String getVersionFromVersionLine(Path path, String tag) {
@@ -573,9 +576,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
 //
 //        }
 
-            args.addAll(Arrays.asList("--species", sp.getScientificName(), "--assembly", assembly,
-                    "--outdir", geneFolder.toAbsolutePath().toString(),
-                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
+        args.addAll(Arrays.asList("--species", sp.getScientificName(), "--assembly", assembly,
+                "--outdir", geneFolder.toAbsolutePath().toString(),
+                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
 
         if (!configuration.getSpecies().getVertebrates().contains(species)
                 && !species.getScientificName().equals("Drosophila melanogaster")) {
@@ -1069,8 +1072,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         ObjectMapper jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ObjectReader reader = jsonObjectMapper
-                .readerFor(jsonObjectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, Map.class));
+                .readerFor(jsonObjectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
         return reader.readValue(json);
     }
 
@@ -1158,21 +1160,29 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
     }
 
+
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         downloadFile(url, outputFileName, null);
     }
 
+    private void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException {
+        downloadFiles(host, fileNames, fileNames);
+    }
+
+    private void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames) throws IOException, InterruptedException {
+        for (int i = 0; i < fileNames.size(); i++) {
+            downloadFile(host + "/" + fileNames.get(i), ouputFileNames.get(i), null);
+        }
+    }
+
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
-
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o",
-                outputFileName + ".log"));
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputFileName + ".log"));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }
 
         boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
-
         if (downloaded) {
             logger.info(outputFileName + " created OK");
         } else {

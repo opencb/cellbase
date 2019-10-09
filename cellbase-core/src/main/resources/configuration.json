@@ -132,10 +132,8 @@
 			"host": "http://compbio.charite.de/hudson/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"
 		},
 		"disgenet": {
-			"host": "http://www.disgenet.org/ds/DisGeNET/results/all_gene_disease_associations.tsv.gz"
-		},
-		"disgenetReadme": {
-			"host": "http://www.disgenet.org/ds/DisGeNET/results/readme.txt"
+			"host": "http://www.disgenet.org/ds/DisGeNET/results",
+			"files": ["all_gene_disease_associations.tsv.gz", "readme.txt"]
 		},
 		"dgidb": {
 			"host": "http://dgidb.org/data/interactions.tsv"
@@ -145,6 +143,11 @@
 		},
 		"reactome": {
 			"host": "http://www.reactome.org/download/current/biopax.zip"
+		},
+		"gnomad": {
+			"host": "https://storage.googleapis.com/gnomad-public/release/2.1.1/constraint",
+			"version": "2.1.1",
+			"files": ["gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"]
 		}
 	},
 	"species": {
