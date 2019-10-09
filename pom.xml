@@ -35,7 +35,6 @@
         <slf4j.version>1.7.21</slf4j.version>
         <junit.platform.version>1.5.2</junit.platform.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
-        <junit.vintage.version>5.5.2</junit.vintage.version>
     </properties>
 
     <scm>
@@ -192,12 +191,6 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
                 <version>${junit.jupiter.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.vintage</groupId>
-                <artifactId>junit-vintage-engine</artifactId>
-                <version>${junit.vintage.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
