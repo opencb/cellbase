@@ -2,7 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;

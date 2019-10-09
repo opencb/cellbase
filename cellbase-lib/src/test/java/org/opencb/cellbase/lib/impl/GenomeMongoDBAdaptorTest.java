@@ -3,7 +3,7 @@ package org.opencb.cellbase.lib.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;

@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.loader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.loader.LoadRunner;
 
 import java.util.ArrayList;

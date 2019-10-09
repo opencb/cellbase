@@ -1,6 +1,6 @@
 package org.opencb.cellbase.client.rest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;

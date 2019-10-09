@@ -2,7 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;

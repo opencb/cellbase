@@ -4,7 +4,7 @@ import com.google.common.io.Files;
 import org.apache.tools.ant.util.FileUtils;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.monitor.HealthStatus;

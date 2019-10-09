@@ -1,7 +1,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.commons.datastore.core.ObjectMap;

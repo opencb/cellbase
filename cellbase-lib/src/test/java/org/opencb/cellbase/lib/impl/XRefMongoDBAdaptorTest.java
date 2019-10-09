@@ -2,7 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.QueryOptions;

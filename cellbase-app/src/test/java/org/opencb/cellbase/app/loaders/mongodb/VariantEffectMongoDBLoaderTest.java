@@ -20,7 +20,7 @@ package org.opencb.cellbase.app.loaders.mongodb;
 //import org.junit.AfterClass;
 //import org.junit.BeforeClass;
 //import org.junit.Ignore;
-//import org.junit.Test;
+//import org.junit.jupiter.api.Test;
 //import org.opencb.biodata.models.variant.annotation.VariantAnnotation;
 //import org.opencb.biodata.models.variant.annotation.VariantEffect;
 //

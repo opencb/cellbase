@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.util.JSON;
 import org.apache.commons.io.IOExceptionWithCause;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;

@@ -17,17 +17,18 @@
 package org.opencb.cellbase.core;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class CellBaseConfigurationTest {
 
     CellBaseConfiguration cellBaseConfiguration;
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         cellBaseConfiguration = CellBaseConfiguration.load(CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"));
     }

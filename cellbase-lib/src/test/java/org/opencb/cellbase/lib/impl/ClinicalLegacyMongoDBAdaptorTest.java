@@ -2,7 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;

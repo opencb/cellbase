@@ -2,7 +2,7 @@ package org.opencb.cellbase.lib.impl;
 
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 import org.opencb.cellbase.core.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;

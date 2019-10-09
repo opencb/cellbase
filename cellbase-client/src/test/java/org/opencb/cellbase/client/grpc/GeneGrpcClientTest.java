@@ -1,7 +1,7 @@
 package org.opencb.cellbase.client.grpc;
 
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
 import org.opencb.biodata.models.core.protobuf.RegulatoryRegionModel;
