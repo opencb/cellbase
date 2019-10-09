@@ -519,7 +519,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         List<String> files = configuration.getDownload().getDisgenet().getFiles();
         for (String file : files) {
             file = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
-            downloadFile(host + "/" + file, file );
+            downloadFile(host + "/" + file, file);
         }
 
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
