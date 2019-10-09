@@ -1,6 +1,10 @@
 package org.opencb.cellbase.client.grpc;
 
-import org.junit.Ignore;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.common.protobuf.service.ServiceTypesModel;
 import org.opencb.biodata.models.core.protobuf.GeneModel;
@@ -10,11 +14,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+
 
 /**
  * Created by swaathi on 17/08/16.
  */
+@Disabled
 public class TranscriptGrpcClientTest {
 
     private CellbaseGrpcClient cellbaseGrpcClient;
@@ -23,23 +28,21 @@ public class TranscriptGrpcClientTest {
         cellbaseGrpcClient = new CellbaseGrpcClient("localhost", 9090);
     }
 
-    @Ignore
+
     @Test
     public void count() throws Exception {
         Long count = cellbaseGrpcClient.getTranscriptClient().count(new HashMap<>());
-        assertEquals("Number of transcripts does not match", 196501, count.longValue());
+        assertEquals(196501, count.longValue());
         System.out.println(count.longValue());
     }
 
-    @Ignore
     @Test
     public void first() throws Exception {
         TranscriptModel.Transcript transcript = cellbaseGrpcClient.getTranscriptClient().first(new HashMap<>(), new HashMap<>());
-        assertNotNull("First transcript exists and it must be returned", transcript);
+        assertNotNull(transcript);
 //        assertEquals("The biotype returned is wrong", "processed_transcript", transcript.getBiotype());
     }
 
-    @Ignore
     @Test
     public void get() throws Exception {
         Map<String, String> query = new HashMap<>();
@@ -48,24 +51,22 @@ public class TranscriptGrpcClientTest {
         int count = 0;
         while (transcriptIterator.hasNext()) {
             TranscriptModel.Transcript next = transcriptIterator.next();
-            assertEquals("The biotype returned is wrong", "processed_transcript", next.getBiotype());
+            assertEquals( "processed_transcript", next.getBiotype());
             count++;
         }
         System.out.println(count);
     }
 
-    @Ignore
     @Test
     public void distinct() throws Exception {
 
     }
 
-    @Ignore
     @Test
     public void getSequence() throws Exception {
         Map<String, String> query = new HashMap<>();
         query.put("id", "ENST00000456328");
         ServiceTypesModel.StringResponse sequence = cellbaseGrpcClient.getTranscriptClient().getSequence(query);
-        assertTrue("The sequence returned is wrong", sequence.getValue().startsWith("GTTAACTTGCCGTCAGCCTTTTCTTT"));
+        assertTrue(sequence.getValue().startsWith("GTTAACTTGCCGTCAGCCTTTTCTTT"));
     }
 }

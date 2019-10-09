@@ -21,9 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 
-import static org.junit.Assert.*;
 
 /**
  * Created by imedina on 13/05/16.

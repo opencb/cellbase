@@ -7,7 +7,7 @@ import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by swaathi on 25/05/16.
