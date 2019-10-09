@@ -16,7 +16,8 @@
 
 package org.opencb.cellbase.app.transform.utils;
 
-import org.junit.Ignore;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Paths;
@@ -30,7 +31,7 @@ import java.util.Map;
  * Time: 2:18 PM
  * To change this template use File | Settings | File Templates.
  */
-@Ignore
+@Disabled
 public class GenomeSequenceUtilsTest {
 
     @Test

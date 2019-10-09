@@ -24,8 +24,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.util.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Ignore;
+
+;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.formats.variant.vcf4.VcfRecord;
 import org.opencb.biodata.formats.variant.vcf4.io.VcfRawReader;
@@ -54,7 +55,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
@@ -65,7 +70,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     public VariantAnnotationCalculatorTest() throws IOException {
     }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);

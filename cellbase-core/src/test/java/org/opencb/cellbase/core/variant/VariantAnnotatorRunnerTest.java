@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.variant;
 
+@Deprecated
 public class VariantAnnotatorRunnerTest {
 
 //    @Test

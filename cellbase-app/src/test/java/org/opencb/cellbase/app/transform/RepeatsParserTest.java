@@ -3,6 +3,8 @@ package org.opencb.cellbase.app.transform;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Test;
 import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.variant.avro.Repeat;
@@ -24,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
-import static org.junit.Assert.*;
+
 
 /**
  * Created by fjlopez on 10/05/17.

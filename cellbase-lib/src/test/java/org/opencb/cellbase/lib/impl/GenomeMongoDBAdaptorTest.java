@@ -2,7 +2,8 @@ package org.opencb.cellbase.lib.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
-import org.junit.Before;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
@@ -31,7 +32,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

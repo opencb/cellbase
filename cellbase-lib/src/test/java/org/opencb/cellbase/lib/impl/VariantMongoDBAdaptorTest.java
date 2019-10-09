@@ -18,9 +18,12 @@ package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
@@ -41,7 +44,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 
 /**
  * Created by imedina on 12/02/16.
@@ -52,7 +56,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
 //    private static DBAdaptorFactory dbAdaptorFactory;
 
-//    @Ignore
+//    @Disabled
 //    @Test
 //    public VariantMongoDBAdaptorTest() {
 //        try {
@@ -65,7 +69,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //
 //    }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
@@ -83,7 +87,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     // TODO: to be finished - properly implemented
-    @Ignore
+    @Disabled
     @Test
     public void testGetFunctionalScoreVariant() throws Exception {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");

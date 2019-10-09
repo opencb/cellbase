@@ -17,7 +17,10 @@
 package org.opencb.cellbase.lib.loader;
 
 import org.junit.After;
-import org.junit.Before;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.loader.LoadRunner;
 
@@ -26,11 +29,13 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
+@Disabled
 public class LoadRunnerTest {
 
     LoadRunner cosmicLoadRunner;
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
 //        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
         Path jsonFile = Paths.get(LoadRunnerTest.class.getResource("/cosmic.json.gz").toURI());
@@ -43,7 +48,7 @@ public class LoadRunnerTest {
 //        cosmicLoadRunner = new LoadRunner(jsonFile, "cosmic", 4, params);
     }
 
-    @After
+    @AfterAll
     public void tearDown() throws Exception {
 
     }

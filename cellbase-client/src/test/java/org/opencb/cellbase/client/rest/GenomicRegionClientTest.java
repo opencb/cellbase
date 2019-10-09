@@ -26,8 +26,10 @@ import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.Assert.*;
 
 /**
  * Created by imedina on 26/05/16.
@@ -47,15 +49,15 @@ public class GenomicRegionClientTest {
     @Test
     public void getGene() throws Exception {
         QueryResponse<Gene> geneQueryResponse = cellBaseClient.getGenomicRegionClient().getGene(Arrays.asList("3:555-77777"), null);
-        assertNotNull("The gene that belongs to the region 3:555-77777 must be returned", geneQueryResponse.firstResult());
-        assertEquals("The gene returned is wrong", "AY269186.1", geneQueryResponse.firstResult().getName());
+        assertNotNull(geneQueryResponse.firstResult());
+        assertEquals("AY269186.1", geneQueryResponse.firstResult().getName());
     }
 
     @Test
     public void getTranscript() throws Exception {
         QueryResponse<Transcript> transcriptQueryResponse = cellBaseClient.getGenomicRegionClient().getTranscript(Arrays.asList("3:555-77777"), null);
-        assertNotNull("The transcript that belongs to the region 3:555-77777 must be returned",transcriptQueryResponse.firstResult());
-        assertEquals("The transcript returned is wrong", "AY269186.1-001", transcriptQueryResponse.firstResult().getName());
+        assertNotNull(transcriptQueryResponse.firstResult());
+        assertEquals("AY269186.1-001", transcriptQueryResponse.firstResult().getName());
     }
 
     @Test
@@ -72,42 +74,39 @@ public class GenomicRegionClientTest {
         QueryResponse<Variant> variantQueryResponse = cellBaseClient.getGenomicRegionClient()
                 .getVariation(Arrays.asList("3:555-77777", "11:58888-198888"), queryOptions);
 
-        assertNotNull("SNPs of the given gene must be returned", variantQueryResponse.firstResult());
-        assertEquals("Number of variations in numTotalResult and getResult().size do not match",
-                variantQueryResponse.getResponse().get(0).getNumTotalResults(),
+        assertNotNull(variantQueryResponse.firstResult());
+        assertEquals(variantQueryResponse.getResponse().get(0).getNumTotalResults(),
                 variantQueryResponse.getResponse().get(0).getResult().size());
-        assertTrue("Number of variations do not match for 3:555-77777", variantQueryResponse.getResponse().get(0).getResult().size() >= 2699);
-        assertEquals("Number of variations in numTotalResult and getResult().size do not match",
-                variantQueryResponse.getResponse().get(1).getNumTotalResults(),
+        assertTrue(variantQueryResponse.getResponse().get(0).getResult().size() >= 2699);
+        assertEquals(variantQueryResponse.getResponse().get(1).getNumTotalResults(),
                 variantQueryResponse.getResponse().get(1).getResult().size());
-        assertTrue("Number of variations do not match for 11:58888-198888", variantQueryResponse.getResponse().get(1).getResult().size() >= 12029);
+        assertTrue(variantQueryResponse.getResponse().get(1).getResult().size() >= 12029);
     }
 
     @Test
     public void getSequence() throws Exception {
         QueryResponse<GenomeSequenceFeature> response = cellBaseClient.getGenomicRegionClient().getSequence(Arrays.asList("10:69999-77777"), null);
-        assertTrue("The genome sequence for the region 3:555-77777 starts with GATTACCAAAGGC", response.firstResult().getSequence().startsWith("GATTACCAAAGGC"));
+        assertTrue(response.firstResult().getSequence().startsWith("GATTACCAAAGGC"));
     }
 
     @Test
     public void getRegulatory() throws Exception {
         QueryResponse<RegulatoryFeature> regulatoryFeatureQueryResponse = cellBaseClient.getGenomicRegionClient().getRegulatory(Arrays.asList("10:69999-77777"), null);
-        assertNotNull("Regulatory elements present in the region 10:69999-77777 must be returned", regulatoryFeatureQueryResponse.firstResult());
-        assertEquals("The number of regulatory elements in the region 10:69999-77777 does not match", 39, regulatoryFeatureQueryResponse.getResponse().get(0).getResult().size());
+        assertNotNull(regulatoryFeatureQueryResponse.firstResult());
+        assertEquals(39, regulatoryFeatureQueryResponse.getResponse().get(0).getResult().size());
     }
 
     @Test
     public void getTfbs() throws Exception {
         QueryResponse<RegulatoryFeature> response = cellBaseClient.getGenomicRegionClient().getTfbs(Arrays.asList("1:555-66666"), null);
-        assertNotNull("Regulatory elements with feature type=TF_binding_site,TF_binding_site_motif must be returned", response.firstResult());
-        assertEquals("The number of Regulatory elements with feature type=TF_binding_site,TF_binding_site_motif in 1:555-66666 does not match", 276,
-                response.getResponse().get(0).getResult().size());
+        assertNotNull(response.firstResult());
+        assertEquals(276, response.getResponse().get(0).getResult().size());
     }
 
     @Test
     public void getConservation() throws Exception {
         QueryResponse<GenomicScoreRegion> conservation = cellBaseClient.getGenomicRegionClient().getConservation(Arrays.asList("1:555-66666"), null);
-        assertNotNull("Conservation values for 1:555-66666 must be returned", conservation.firstResult());
+        assertNotNull(conservation.firstResult());
 
     }
 }

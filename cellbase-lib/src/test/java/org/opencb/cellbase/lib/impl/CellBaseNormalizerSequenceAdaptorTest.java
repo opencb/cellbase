@@ -1,7 +1,8 @@
 package org.opencb.cellbase.lib.impl;
 
-import org.junit.Before;
-import org.junit.Rule;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 import org.opencb.cellbase.core.variant.annotation.CellBaseNormalizerSequenceAdaptor;
@@ -10,20 +11,17 @@ import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.junit.Assert.*;
 
 public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdaptorTest {
 
     private CellBaseNormalizerSequenceAdaptor cellBaseNormalizerSequenceAdaptor;
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     public CellBaseNormalizerSequenceAdaptorTest() throws IOException {
     }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
@@ -38,17 +36,20 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
 
     @Test
     public void testGenomicSequenceChromosomeNotPresent() throws Exception {
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("Unable to find entry for 1234:1-1999");
-        cellBaseNormalizerSequenceAdaptor.query("1234", 1, 1999);
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
+            cellBaseNormalizerSequenceAdaptor.query("1234", 1, 1999);
+        });
+        assertEquals("Unable to find entry for 1234:1-1999", exception.getMessage());
     }
 
     @Test
     public void testGenomicSequenceQueryStartEndOutOfRightBound() throws Exception {
         // Both start & end out of the right bound
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("Unable to find entry for 17:73973989-73974999");
-        cellBaseNormalizerSequenceAdaptor.query("17", 73973989, 73974999);
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
+            cellBaseNormalizerSequenceAdaptor.query("17", 73973989, 73974999);
+        });
+        assertEquals("Unable to find entry for 17:73973989-73974999", exception.getMessage());
+
     }
 
     @Test
@@ -62,9 +63,10 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
     @Test
     public void testGenomicSequenceQueryStartOutOfLeftBound() throws Exception {
         // start within the bounds, end out of the right bound. Should return last 10 nts.
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage("Unable to find entry for 1:-100-1999");
-        cellBaseNormalizerSequenceAdaptor.query("1", -100, 1999);
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
+            cellBaseNormalizerSequenceAdaptor.query("1", -100, 1999);
+        });
+        assertEquals("Unable to find entry for 1:-100-1999", exception.getMessage());
     }
 
 

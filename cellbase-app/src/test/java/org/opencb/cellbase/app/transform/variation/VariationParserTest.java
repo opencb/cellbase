@@ -1,6 +1,14 @@
 package org.opencb.cellbase.app.transform.variation;
 
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
@@ -13,9 +21,13 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 
-import static org.junit.Assert.*;
+
 
 /**
  * Created by parce on 03/12/15.
@@ -25,14 +37,14 @@ public class VariationParserTest {
     private static Path variationParserTestDirectory;
     private static Path variationParserTestOutputDirectory;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         variationParserTestDirectory = Paths.get(VariationParserTest.class.getResource("/variationParser").getPath());
         variationParserTestOutputDirectory = variationParserTestDirectory.resolve("output");
         variationParserTestOutputDirectory.toFile().mkdir();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Exception {
         variationParserTestDirectory.resolve(VariationParser.PREPROCESSED_VARIATION_FILENAME + ".gz").toFile().delete();
         variationParserTestDirectory.resolve(VariationFeatureFile.PREPROCESSED_VARIATION_FEATURE_FILENAME + ".gz").toFile().delete();
@@ -42,7 +54,7 @@ public class VariationParserTest {
     }
 
     // TODO: fix test
-    @Ignore
+    @Disabled
     @Test
     public void testParse() throws Exception {
         TestSerializer testSerializer = new TestSerializer();
@@ -145,7 +157,7 @@ public class VariationParserTest {
     }
 
     // TODO: fix test
-    @Ignore
+    @Disabled
     @Test
     public void testParseToJson() throws Exception {
         CellBaseJsonFileSerializer serializer = new CellBaseJsonFileSerializer(variationParserTestDirectory.resolve("output"), "", false);
