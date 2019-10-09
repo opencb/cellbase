@@ -20,8 +20,6 @@ import com.beust.jcommander.ParameterException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -104,6 +102,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String TRF_NAME = "Tandem repeats finder";
     private static final String GSD_NAME = "Genomic super duplications";
     private static final String WM_NAME = "WindowMasker";
+    private static final String GNOMAD_NAME = "gnomAD";
+
 
     public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
@@ -386,6 +386,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas();
         downloadGeneDiseaseAnnotation(geneFolder);
+        downloadGnomad(sp, speciesFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
