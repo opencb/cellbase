@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
  */
 public class CosmicIndexer extends ClinicalIndexer {
 
-    private static final String COSMIC_NAME = "cosmic";
     private static final int PRIMARY_SITE_COLUMN = 7;
     private static final int SITE_SUBTYPE_COLUMN = 8;
     private static final int PRIMARY_HISTOLOGY_COLUMN = 11;
@@ -47,6 +46,11 @@ public class CosmicIndexer extends ClinicalIndexer {
     private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
     private static final int GENE_NAMES_COLUMN = 0;
     private static final int HGNC_COLUMN = 3;
+    private static final int HGVS_COLUMN = 17;
+    private static final String HGVS_INSERTION_TAG = "ins";
+    private static final String HGVS_SNV_CHANGE_SYMBOL = ">";
+    private static final String HGVS_DELETION_TAG = "del";
+    private static final String HGVS_DUPLICATION_TAG = "dup";
     private final Path cosmicFile;
     private final int mutationSomaticStatusColumn;
     private final int pubmedPMIDColumn;
@@ -94,7 +98,7 @@ public class CosmicIndexer extends ClinicalIndexer {
 
     private void compileRegularExpressionPatterns() {
         mutationGRCh37GenomePositionPattern = Pattern.compile("(?<" + CHROMOSOME + ">\\S+):(?<" + START + ">\\d+)-(?<" + END + ">\\d+)");
-        snvPattern = Pattern.compile("c\\.\\d+(_\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
+        snvPattern = Pattern.compile("c\\.\\d+((\\+|\\-|_)\\d+)?(?<" + REF + ">(A|C|T|G)+)>(?<" + ALT + ">(A|C|T|G)+)");
     }
 
     public void index() throws RocksDBException {
@@ -266,101 +270,64 @@ public class CosmicIndexer extends ClinicalIndexer {
         return true;
     }
 
-//    /**
-//     * Checks whether all fields but the bibliography list, are exactly the same in two somatic records.
-//     * @param somatic1 Somatic object
-//     * @param somatic2 Somatic object
-//     * @return true if all fields but the bibliography are exaclty the same in both records. false otherwise
-//     */
-//    private boolean sameSomaticDocument(EvidenceEntry evidenceEntry1, EvidenceEntry evidenceEntry2) {
-//        // Check gene name list
-//        boolean equalSource = (somatic1.getSource() == null
-//                && somatic2.getSource() == null)
-//                || (somatic1.getSource().equalsIgnoreCase(somatic2.getSource()));
-//
-//        if (equalSource) {
-//            boolean equalAccession = (somatic1.getAccession() == null && somatic2.getAccession() == null)
-//                    || (somatic1.getAccession().equals(somatic2.getAccession()));
-//            if (equalAccession) {
-//                boolean equalGeneList = (somatic1.getGeneNames() == null && somatic2.getGeneNames() == null)
-//                        || (new HashSet<>(somatic1.getGeneNames()).equals(new HashSet<>(somatic2.getGeneNames())));
-//                if (equalGeneList) {
-//                    boolean equalMutationSomaticStatus = (somatic1.getMutationSomaticStatus() == null
-//                            && somatic2.getMutationSomaticStatus() == null)
-//                            || (somatic1.getMutationSomaticStatus().equalsIgnoreCase(somatic2.getMutationSomaticStatus()));
-//                    if (equalMutationSomaticStatus) {
-//                        boolean equalPrimarySite = (somatic1.getPrimarySite() == null
-//                                && somatic2.getPrimarySite() == null)
-//                                || (somatic1.getPrimarySite().equalsIgnoreCase(somatic2.getPrimarySite()));
-//                        if (equalPrimarySite) {
-//                            boolean equalSiteSubtype = (somatic1.getSiteSubtype() == null
-//                                    && somatic2.getSiteSubtype() == null)
-//                                    || (somatic1.getSiteSubtype().equalsIgnoreCase(somatic2.getSiteSubtype()));
-//                            if (equalSiteSubtype) {
-//                                boolean equalPrimaryHistology = (somatic1.getPrimaryHistology() == null
-//                                        && somatic2.getPrimaryHistology() == null)
-//                                        || (somatic1.getPrimaryHistology().equalsIgnoreCase(somatic2.getPrimaryHistology()));
-//                                if (equalPrimaryHistology) {
-//                                    boolean equalHistologySubtype = (somatic1.getHistologySubtype() == null
-//                                            && somatic2.getHistologySubtype() == null)
-//                                            || (somatic1.getHistologySubtype().equalsIgnoreCase(somatic2.getHistologySubtype()));
-//                                    if (equalHistologySubtype) {
-//                                        boolean equalSampleSource = (somatic1.getSampleSource() == null
-//                                                && somatic2.getSampleSource() == null)
-//                                                || (somatic1.getSampleSource().equalsIgnoreCase(somatic2.getSampleSource()));
-//                                        if (equalSampleSource) {
-//                                            boolean equalTumourOrigin = (somatic1.getTumourOrigin() == null
-//                                                    && somatic2.getTumourOrigin() == null)
-//                                                    || (somatic1.getTumourOrigin().equalsIgnoreCase(somatic2.getTumourOrigin()));
-//                                            return equalTumourOrigin;
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return false;
-//    }
-
     /**
      * Check whether the variant is valid and parse it.
      *
      * @return true if valid mutation, false otherwise
      */
     private boolean parseVariant(SequenceLocation sequenceLocation, String line) {
-        boolean validVariant;
+        boolean validVariant = false;
         String[] fields = line.split("\t", -1);
-        String mutationCds = fields[17];
+        String mutationCds = fields[HGVS_COLUMN];
+        VariantType variantType = getVariantType(mutationCds);
 
-        if (mutationCds.contains(">")) {
-            validVariant = parseSnv(mutationCds, sequenceLocation);
-            if (!validVariant) {
-                invalidSubstitutionLines++;
+        if (variantType != null) {
+            switch (variantType) {
+                case SNV:
+                    validVariant = parseSnv(mutationCds, sequenceLocation);
+                    if (!validVariant) {
+                        invalidSubstitutionLines++;
+                    }
+                    break;
+                case DELETION:
+                    validVariant = parseDeletion(mutationCds, sequenceLocation);
+                    if (!validVariant) {
+                        invalidDeletionLines++;
+                    }
+                    break;
+                case INSERTION:
+                    validVariant = parseInsertion(mutationCds, sequenceLocation);
+                    if (!validVariant) {
+                        invalidInsertionLines++;
+                    }
+                    break;
+                case DUPLICATION:
+                    validVariant = parseDuplication(mutationCds);
+                    if (!validVariant) {
+                        invalidDuplicationLines++;
+                    }
+                    break;
+                default:
+                    validVariant = false;
+                    invalidMutationCDSOtherReason++;
             }
-        } else if (mutationCds.contains("del")) {
-            validVariant = parseDeletion(mutationCds, sequenceLocation);
-            if (!validVariant) {
-                invalidDeletionLines++;
-            }
-        } else if (mutationCds.contains("ins")) {
-            validVariant = parseInsertion(mutationCds, sequenceLocation);
-            if (!validVariant) {
-                invalidInsertionLines++;
-            }
-        } else if (mutationCds.contains("dup")) {
-            validVariant = parseDuplication(mutationCds);
-            if (!validVariant) {
-                invalidDuplicationLines++;
-            }
-        } else {
-            validVariant = false;
-            invalidMutationCDSOtherReason++;
         }
 
         return validVariant;
+    }
+
+    private VariantType getVariantType(String mutationCds) {
+        if (mutationCds.contains(HGVS_SNV_CHANGE_SYMBOL)) {
+            return VariantType.SNV;
+        } else if (mutationCds.contains(HGVS_DELETION_TAG)) {
+            return VariantType.DELETION;
+        } else if (mutationCds.contains(HGVS_INSERTION_TAG)) {
+            return VariantType.INSERTION;
+        } else if (mutationCds.contains(HGVS_DUPLICATION_TAG)) {
+            return VariantType.DUPLICATION;
+        } else {
+            return null;
+        }
     }
 
     private boolean parseDuplication(String dup) {
@@ -527,8 +494,15 @@ public class CosmicIndexer extends ClinicalIndexer {
             Matcher matcher = mutationGRCh37GenomePositionPattern.matcher(positionString);
             if (matcher.matches()) {
                 setCosmicChromosome(matcher.group(CHROMOSOME), sequenceLocation);
-                sequenceLocation.setStart(getStart(Integer.parseInt(matcher.group(START)), fields[27]));
-                sequenceLocation.setEnd(Integer.parseInt(matcher.group(END)));
+                String mutationCds = fields[HGVS_COLUMN];
+                VariantType variantType = getVariantType(mutationCds);
+                if (VariantType.INSERTION.equals(variantType)) {
+                    sequenceLocation.setEnd(Integer.parseInt(matcher.group(START)));
+                    sequenceLocation.setStart(Integer.parseInt(matcher.group(END)));
+                } else {
+                    sequenceLocation.setStart(Integer.parseInt(matcher.group(START)));
+                    sequenceLocation.setEnd(Integer.parseInt(matcher.group(END)));
+                }
                 success = true;
             }
         }
@@ -536,16 +510,6 @@ public class CosmicIndexer extends ClinicalIndexer {
             this.invalidPositionLines++;
         }
         return success;
-    }
-
-    private Integer getStart(Integer readPosition, String mutationCDS) {
-        // In order to agree with the Variant model and what it's stored in variation, the start must be incremented in
-        // 1 for insertions given what is provided in the COSMIC file
-        if (mutationCDS.contains("ins")) {
-            return readPosition + 1;
-        } else {
-            return readPosition;
-        }
     }
 
     private void setCosmicChromosome(String chromosome, SequenceLocation sequenceLocation) {
