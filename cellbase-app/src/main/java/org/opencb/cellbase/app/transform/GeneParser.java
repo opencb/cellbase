@@ -192,7 +192,7 @@ public class GeneParser extends CellBaseParser {
 
                 GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
                         diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraintScores.getGeneConstraintScores(geneId));
+                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraintScores.getGeneConstraints(geneId));
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
@@ -208,7 +208,8 @@ public class GeneParser extends CellBaseParser {
                 ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
                 Map<String, String> gtfAttributes = gtf.getAttributes();
 
-                TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(constraintScores.getTranscriptConstraintScores(transcriptId));
+                TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(
+                        constraintScores.getTranscriptConstraints(transcriptId));
 
                 transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                         (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
