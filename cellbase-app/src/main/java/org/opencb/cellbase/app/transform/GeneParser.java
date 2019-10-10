@@ -49,7 +49,6 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
 
-
     private Path gtfFile;
     private Path proteinFastaFile;
     private Path cDnaFastaFile;
@@ -62,6 +61,7 @@ public class GeneParser extends CellBaseParser {
     private Path geneDrugFile;
     private Path hpoFile;
     private Path disgenetFile;
+    private Path gnomadFile;
     private Path genomeSequenceFilePath;
     private boolean flexibleGTFParsing;
 
@@ -89,7 +89,6 @@ public class GeneParser extends CellBaseParser {
     private String feature;
     private Gtf nextGtfToReturn;
 
-
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       Species species,
                       CellBaseSerializer serializer) {
@@ -106,6 +105,7 @@ public class GeneParser extends CellBaseParser {
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
+                geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 genomeSequenceFastaFile, species, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -113,8 +113,8 @@ public class GeneParser extends CellBaseParser {
     }
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
-                      Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path genomeSequenceFilePath,
-                      Species species, boolean flexibleGTFParsing,
+                      Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
+                      Path genomeSequenceFilePath, Species species, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
@@ -127,6 +127,7 @@ public class GeneParser extends CellBaseParser {
         this.geneDrugFile = geneDrugFile;
         this.hpoFile = hpoFile;
         this.disgenetFile = disgenetFile;
+        this.gnomadFile = gnomadFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.species = species;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -153,6 +154,9 @@ public class GeneParser extends CellBaseParser {
                 .getGeneExpressionMap(species.getScientificName(), geneExpressionFile);
         Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
         Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
+
+        // Transcript annotation
+        PLoFConstraintScores constraintScores = GeneParserUtils.getConstraintScores(gnomadFile);
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
@@ -188,7 +192,7 @@ public class GeneParser extends CellBaseParser {
 
                 GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
                         diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                        geneDrugMap.get(gtf.getAttributes().get("gene_name")));
+                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraintScores.getGeneConstraints(geneId));
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
@@ -203,12 +207,16 @@ public class GeneParser extends CellBaseParser {
                 String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
                 ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
                 Map<String, String> gtfAttributes = gtf.getAttributes();
+
+                TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(
+                        constraintScores.getTranscriptConstraints(transcriptId));
+
                 transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                         (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0,
                         0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
-                        transcriptTfbses);
+                        transcriptTfbses, transcriptAnnotation);
 
                 // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
                 // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure

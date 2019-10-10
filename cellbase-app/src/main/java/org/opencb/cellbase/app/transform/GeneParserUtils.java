@@ -25,6 +25,8 @@ import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
+import org.opencb.biodata.models.core.Constraint;
+
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -239,9 +241,7 @@ public class GeneParserUtils {
             expressionValueList.add(value);
             map.put(key, expressionValueList);
         }
-
     }
-
 
     public static Map<String, List<GeneTraitAssociation>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath)
             throws IOException {
@@ -278,4 +278,59 @@ public class GeneParserUtils {
         return geneDiseaseAssociationMap;
     }
 
+    public static PLoFConstraints getConstraints(Path gnomadFile) throws IOException {
+        Map<String, List<Constraint>> transcriptConstraints = new HashMap<>();
+        Map<String, List<Constraint>> geneConstraints = new HashMap<>();
+
+        if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
+            logger.info("Loading OE scores from '{}'", gnomadFile);
+            BufferedReader br = FileUtils.newBufferedReader(gnomadFile);
+
+            // Skip header.
+            br.readLine();
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\t");
+
+                String transcriptIdentifier = parts[1];
+                String canonical = parts[2];
+                String oeMis = parts[5];
+                String oeSyn = parts[14];
+                String oeLof = parts[24];
+                String geneIdentifier = parts[64];
+
+                List<Constraint> constraints = new ArrayList();
+                constraints.add(createScore("oe_mis", oeMis));
+                constraints.add(createScore("oe_syn", oeSyn));
+                constraints.add(createScore("oe_lof", oeLof));
+
+                transcriptConstraints.put(transcriptIdentifier, constraints);
+
+                if ("TRUE".equals(canonical)) {
+                    addValuesToMapElement(geneConstraints, geneIdentifier, constraints);
+                }
+            }
+            br.close();
+        }
+        return new PLoFConstraints(transcriptConstraints, geneConstraints);
+    }
+
+    private static Constraint createScore(String name, String value) {
+        Constraint score = new Constraint();
+        score.setMethod("pLoF");
+        score.setSource("gnomAD");
+        score.setName(name);
+        score.setValue(Double.parseDouble(value));
+        return score;
+    }
+
+    private static <T> void addValuesToMapElement(Map<String, List<T>> map, String key, List<T> values) {
+        if (map.containsKey(key)) {
+            map.get(key).addAll(values);
+        } else {
+            List<T> valuesList = new ArrayList<>();
+            valuesList.add(value);
+            map.put(key, valuesList);
+        }
+    }
 }
