@@ -382,23 +382,21 @@ public class DownloadCommandExecutor extends CommandExecutor {
         makeDir(geneFolder);
 
         downloadEnsemblData(sp, spShortName, geneFolder, host);
-        downloadDrugData(sp, speciesFolder);
+        downloadDrugData(sp, geneFolder);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas();
         downloadGeneDiseaseAnnotation(geneFolder);
-        downloadGnomad(sp, speciesFolder);
+        downloadGnomad(sp, geneFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
-    private void downloadDrugData(Species species, Path speciesFolder) throws IOException, InterruptedException {
+    private void downloadDrugData(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
-            Path geneDrugFolder = speciesFolder.resolve("gene/geneDrug");
-            makeDir(geneDrugFolder);
             String url = configuration.getDownload().getDgidb().getHost();
-            downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
+            downloadFile(url, geneFolder.resolve("dgidb.tsv").toString());
             saveVersionData(EtlCommons.GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    geneDrugFolder.resolve("dgidbVersion.json"));
+                    geneFolder.resolve("dgidbVersion.json"));
         }
     }
 
@@ -518,8 +516,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
         host = configuration.getDownload().getDisgenet().getHost();
         List<String> files = configuration.getDownload().getDisgenet().getFiles();
         for (String file : files) {
-            file = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
-            downloadFile(host + "/" + file, file );
+            String outputFileName = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
+            downloadFile(host + "/" + file, geneFolder.resolve(outputFileName).toString());
         }
 
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
@@ -527,14 +525,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
-    private void downloadGnomad(Species species, Path speciesFolder) throws IOException, InterruptedException {
+    private void downloadGnomad(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD data...");
             String host = configuration.getDownload().getGnomad().getHost();
             List<String> fileNames = configuration.getDownload().getGnomad().getFiles();
-            downloadFiles(host, fileNames);
+            downloadFiles(host, fileNames, geneFolder);
             saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomad().getVersion(), getTimeStamp(),
-                    Collections.singletonList(host), speciesFolder.resolve("gnomadVersion.json"));
+                    Collections.singletonList(host), geneFolder.resolve("gnomadVersion.json"));
         }
     }
 
@@ -1166,13 +1164,14 @@ public class DownloadCommandExecutor extends CommandExecutor {
         downloadFile(url, outputFileName, null);
     }
 
-    private void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException {
-        downloadFiles(host, fileNames, fileNames);
+    private void downloadFiles(String host, List<String> fileNames, Path outdir) throws IOException, InterruptedException {
+        downloadFiles(host, fileNames, fileNames, outdir);
     }
 
-    private void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames) throws IOException, InterruptedException {
+    private void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames, Path outdir)
+            throws IOException, InterruptedException {
         for (int i = 0; i < fileNames.size(); i++) {
-            downloadFile(host + "/" + fileNames.get(i), ouputFileNames.get(i), null);
+            downloadFile(host + "/" + fileNames.get(i), outdir.resolve(ouputFileNames.get(i)).toString(), null);
         }
     }
 

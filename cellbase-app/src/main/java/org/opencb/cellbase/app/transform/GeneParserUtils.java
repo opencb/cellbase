@@ -19,24 +19,26 @@ package org.opencb.cellbase.app.transform;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.models.core.Constraint;
-
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by imedina on 12/11/15.
@@ -278,20 +280,19 @@ public class GeneParserUtils {
         return geneDiseaseAssociationMap;
     }
 
-    public static PLoFConstraints getConstraints(Path gnomadFile) throws IOException {
+    public static Map<String, List<Constraint>> getConstraints(Path gnomadFile) throws IOException {
         Map<String, List<Constraint>> transcriptConstraints = new HashMap<>();
-        Map<String, List<Constraint>> geneConstraints = new HashMap<>();
 
         if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
             logger.info("Loading OE scores from '{}'", gnomadFile);
-            BufferedReader br = FileUtils.newBufferedReader(gnomadFile);
-
+//            BufferedReader br = FileUtils.newBufferedReader(gnomadFile);
+            InputStream inputStream = Files.newInputStream(gnomadFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
             // Skip header.
             br.readLine();
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
-
                 String transcriptIdentifier = parts[1];
                 String canonical = parts[2];
                 String oeMis = parts[5];
@@ -299,20 +300,19 @@ public class GeneParserUtils {
                 String oeLof = parts[24];
                 String geneIdentifier = parts[64];
 
-                List<Constraint> constraints = new ArrayList();
+                List<Constraint> constraints = new ArrayList<>();
                 constraints.add(createScore("oe_mis", oeMis));
                 constraints.add(createScore("oe_syn", oeSyn));
                 constraints.add(createScore("oe_lof", oeLof));
-
                 transcriptConstraints.put(transcriptIdentifier, constraints);
 
-                if ("TRUE".equals(canonical)) {
-                    addValuesToMapElement(geneConstraints, geneIdentifier, constraints);
+                if ("TRUE".equalsIgnoreCase(canonical)) {
+                    transcriptConstraints.put(geneIdentifier, constraints);
                 }
             }
             br.close();
         }
-        return new PLoFConstraints(transcriptConstraints, geneConstraints);
+        return transcriptConstraints;
     }
 
     private static Constraint createScore(String name, String value) {
@@ -322,15 +322,5 @@ public class GeneParserUtils {
         score.setName(name);
         score.setValue(Double.parseDouble(value));
         return score;
-    }
-
-    private static <T> void addValuesToMapElement(Map<String, List<T>> map, String key, List<T> values) {
-        if (map.containsKey(key)) {
-            map.get(key).addAll(values);
-        } else {
-            List<T> valuesList = new ArrayList<>();
-            valuesList.add(value);
-            map.put(key, valuesList);
-        }
     }
 }
