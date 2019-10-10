@@ -278,8 +278,9 @@ public class GeneParserUtils {
         return geneDiseaseAssociationMap;
     }
 
-    public static Map<String, List<Score>> getGnomadScoresMap(Path gnomadFile) throws IOException {
-        Map<String, List<Score>> gnomadScoresMap = new HashMap<>();
+    public static PLoFConstraintScores getConstraintScores(Path gnomadFile) throws IOException {
+        Map<String, Set<String>> transcriptConstraintScores = new HashMap<>();
+        Map<String, Set<String>> geneConstraintScores = new HashMap<>();
 
         if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
             logger.info("Loading OE scores from '{}'", gnomadFile);
@@ -287,27 +288,39 @@ public class GeneParserUtils {
 
             // Skip header.
             br.readLine();
-
+            String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
 
-                    if (parts[7].equals("UP")) {
-                        addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-                                parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
-                    } else if (parts[7].equals("DOWN")) {
-                        addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-                                parts[4], parts[5], parts[6], ExpressionCall.DOWN, Float.valueOf(parts[8])));
-                    } else {
-                        logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
-                    }
+                String transcriptIdentifier = parts[1];
+                String canonical = parts[2];
+                String oeMis = parts[5];
+                String oeSyn = parts[14];
+                String oeLof = parts[24];
+                String geneIdentifier = parts[64];
 
+                List<ConstraintScore> constraintScores = new ArrayList();
+                constraintScores.add(createScore("oe_mis"), oeMis);
+                constraintScores.add(createScore("oe_syn"), oeSyn);
+                constraintScores.add(createScore("oe_lof"), oeLof);
+
+                transcriptConstraintScores.put(transcriptIdentifier, constraintScores);
+
+                if ("TRUE".equals(canonical)) {
+                    addValueToMapElement(geneConstraintScores, geneIdentifier, constraintScores);
+                }
             }
-
             br.close();
-        } else {
-            logger.warn("Parameters are not correct");
         }
+        return new PLoFConstraintScores(transcriptConstraintScores, geneConstraintScores);
+    }
 
-        return gnomadScoresMap;
+    private ConstraintScore createScore(String name, String value) {
+        ConstraintScore score = new ConstraintScore();
+        score.setMethod("pLoF");
+        score.setSource("gnomAD");
+        score.setName(name);
+        score.setValue(Double.parseDouble(value));
+        return score;
     }
 }

@@ -49,7 +49,6 @@ public class GeneParser extends CellBaseParser {
     private Map<String, Integer> transcriptDict;
     private Map<String, Exon> exonDict;
 
-
     private Path gtfFile;
     private Path proteinFastaFile;
     private Path cDnaFastaFile;
@@ -62,6 +61,7 @@ public class GeneParser extends CellBaseParser {
     private Path geneDrugFile;
     private Path hpoFile;
     private Path disgenetFile;
+    private Path gnomadFile;
     private Path genomeSequenceFilePath;
     private boolean flexibleGTFParsing;
 
@@ -88,7 +88,6 @@ public class GeneParser extends CellBaseParser {
     private int exonCounter;
     private String feature;
     private Gtf nextGtfToReturn;
-
 
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       Species species,
@@ -155,7 +154,9 @@ public class GeneParser extends CellBaseParser {
                 .getGeneExpressionMap(species.getScientificName(), geneExpressionFile);
         Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
         Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
-        Map<String, List<Score>> gnomadScoresMap = GeneParserUtils.getGnomadScoresMap(gnomadFile);
+
+        // Transcript annotation
+        PLoFConstraintScores constraintScores = GeneParserUtils.getConstraintScores(gnomadFile);
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
@@ -191,7 +192,7 @@ public class GeneParser extends CellBaseParser {
 
                 GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
                         diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                        geneDrugMap.get(gtf.getAttributes().get("gene_name")));
+                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraintScores.getGeneConstraintScores(geneId));
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
@@ -206,12 +207,15 @@ public class GeneParser extends CellBaseParser {
                 String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
                 ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
                 Map<String, String> gtfAttributes = gtf.getAttributes();
+
+                TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(constraintScores.getTranscriptConstraintScores(transcriptId));
+
                 transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                         (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0,
                         0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
-                        transcriptTfbses);
+                        transcriptTfbses, transcriptAnnotation);
 
                 // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
                 // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
