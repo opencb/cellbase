@@ -301,9 +301,9 @@ public class GeneParserUtils {
                 String geneIdentifier = parts[64];
 
                 List<Constraint> constraints = new ArrayList<>();
-                constraints.add(createScore("oe_mis", oeMis));
-                constraints.add(createScore("oe_syn", oeSyn));
-                constraints.add(createScore("oe_lof", oeLof));
+                addConstraint(constraints, "oe_mis", oeMis);
+                addConstraint(constraints, "oe_syn", oeSyn);
+                addConstraint(constraints, "oe_lof", oeLof);
                 transcriptConstraints.put(transcriptIdentifier, constraints);
 
                 if ("TRUE".equalsIgnoreCase(canonical)) {
@@ -315,12 +315,17 @@ public class GeneParserUtils {
         return transcriptConstraints;
     }
 
-    private static Constraint createScore(String name, String value) {
-        Constraint score = new Constraint();
-        score.setMethod("pLoF");
-        score.setSource("gnomAD");
-        score.setName(name);
-        score.setValue(Double.parseDouble(value));
-        return score;
+    private static void addConstraint(List<Constraint> constraints, String name, String value) {
+        Constraint constraint = new Constraint();
+        constraint.setMethod("pLoF");
+        constraint.setSource("gnomAD");
+        constraint.setName(name);
+        try {
+            constraint.setValue(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            // invalid number (e.g. NA), discard.
+            return;
+        }
+        constraints.add(constraint);
     }
 }
