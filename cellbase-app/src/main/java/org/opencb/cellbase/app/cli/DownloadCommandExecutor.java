@@ -1182,12 +1182,22 @@ public class DownloadCommandExecutor extends CommandExecutor {
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }
-
-        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
-        if (downloaded) {
-            logger.info(outputFileName + " created OK");
-        } else {
-            logger.warn(url + " cannot be downloaded");
+        try {
+            File summaryLog = new File("download_summary.log");
+            summaryLog.createNewFile();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(summaryLog, true));
+            boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
+            if (downloaded) {
+                logger.info(outputFileName + " created OK");
+                writer.append(outputFileName + " - OK");
+            } else {
+                logger.warn(url + " cannot be downloaded");
+                writer.append(outputFileName + " - ERROR");
+            }
+            writer.append(System.getProperty("line.separator"));
+            writer.close();
+        } catch (IOException e) {
+            logger.warn("error writing to download_summary.log");
         }
     }
 }
