@@ -340,10 +340,11 @@ public class GeneParser extends CellBaseParser {
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
-                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
-                    // nothing to do
-                    System.out.println("Empty block, this should be redesigned");
-                }
+//                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
+//                    // nothing to do
+//                    // this prints out 123,451 times.
+//                    //System.out.println("Empty block, this should be redesigned");
+//                }
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
                     //                      no need to set it at the beginning of next feature
