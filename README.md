@@ -8,7 +8,7 @@ CellBase constitutes the knowledge-base component of [OpenCB](http://www.opencb.
 Note: This repository is a major refactoring of https://github.com/opencb-cloud. All users, please update to this one.
 
 ### Documentation
-You can find CellBase documentation and tutorials at: https://github.com/opencb/cellbase/wiki.
+You can find CellBase documentation and tutorials at: http://docs.opencb.org.
 
 For documenting RESTful web services [Swagger](http://swagger.io/) has been set-up and is available at http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/.  
 
