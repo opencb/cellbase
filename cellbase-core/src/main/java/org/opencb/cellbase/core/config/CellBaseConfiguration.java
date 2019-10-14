@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,26 @@
 package org.opencb.cellbase.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.CaseFormat;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by parce on 12/02/15.
  */
 public class CellBaseConfiguration {
+
+    public static final String CELLBASE_PREFIX = "CELLBASE_";
+    public static final String CELLBASE_DATABASES_MONGODB_HOST = "CELLBASE_DATABASES_MONGODB_HOST";
+    public static final String CELLBASE_DATABASES_MONGODB_USER = "CELLBASE_DATABASES_MONGODB_USER";
+    public static final String CELLBASE_DATABASES_MONGODB_PASSWORD = "CELLBASE_DATABASES_MONGODB_PASSWORD";
+    public static final String CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX = "CELLBASE_DATABASES_MONGODB_OPTIONS_";
 
     private String version;
     private String apiVersion;
@@ -41,7 +51,54 @@ public class CellBaseConfiguration {
 
     public static CellBaseConfiguration load(InputStream configurationInputStream) throws IOException {
         ObjectMapper jsonMapper = new ObjectMapper();
-        return jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
+        CellBaseConfiguration configuration = jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
+
+        Map<String, String> envVariables = System.getenv();
+        overwriteEnvVariables(configuration, envVariables);
+
+        return configuration;
+    }
+
+    protected static void overwriteEnvVariables(CellBaseConfiguration configuration, Map<String, String> envVariables) {
+        for (Map.Entry<String, String> entry : envVariables.entrySet()) {
+            String variable = entry.getKey();
+            String value = entry.getValue();
+            if (variable.startsWith(CELLBASE_PREFIX)) {
+                if (variable.startsWith(CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX)) {
+                    String optionKey = variable.substring(CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX.length());
+                    String camelCaseKey = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, optionKey);
+                    secureGetMongodb(configuration).getOptions().put(optionKey, value);
+                    secureGetMongodb(configuration).getOptions().put(camelCaseKey, value);
+                } else {
+                    switch (variable) {
+                        case CELLBASE_DATABASES_MONGODB_HOST:
+                            secureGetMongodb(configuration).setHost(value);
+                            break;
+                        case CELLBASE_DATABASES_MONGODB_USER:
+                            secureGetMongodb(configuration).setUser(value);
+                            break;
+                        case CELLBASE_DATABASES_MONGODB_PASSWORD:
+                            secureGetMongodb(configuration).setPassword(value);
+                            break;
+                        default:
+                            LoggerFactory.getLogger(CellBaseConfiguration.class).warn("Unknown env var '" + variable + "'");
+                    }
+                }
+            }
+        }
+    }
+
+    private static DatabaseCredentials secureGetMongodb(CellBaseConfiguration configuration) {
+        if (configuration.getDatabases() == null) {
+            configuration.setDatabases(new Databases());
+        }
+        if (configuration.getDatabases().getMongodb() == null) {
+            configuration.getDatabases().setMongodb(new DatabaseCredentials());
+        }
+        if (configuration.getDatabases().getMongodb().getOptions() == null) {
+            configuration.getDatabases().getMongodb().setOptions(new HashMap<>());
+        }
+        return configuration.getDatabases().getMongodb();
     }
 
     public String getVersion() {

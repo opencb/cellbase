@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2020 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.opencb.cellbase.app.transform.clinical.variant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -81,7 +97,7 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(21, parsedVariantList.size());
+        assertEquals(23, parsedVariantList.size());
 
         // ClinVar record for an un-normalised variant. It appears in the variant_summary.txt as 17 53	53	C	CC
         // Genome sequence context for that position is TGTCCCTGCTGAA
@@ -130,7 +146,7 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(27, parsedVariantList.size());
+        assertEquals(29, parsedVariantList.size());
 
         // DOCM MNV (from docm.json.gz):
         // "chromosome":"1","start":115256528,"stop":115256529,"reference":"TT","variant":"CA"
@@ -210,14 +226,33 @@ public class ClinicalVariantParserTest {
         (new ClinicalVariantParser(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
-        assertEquals(27, parsedVariantList.size());
+        assertEquals(29, parsedVariantList.size());
+
+        // COSMIC SNV with more complicated hgvs c.431-1G>A
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "COSM4450061");
+        assertEquals(1, variantList.size());
+        Variant variant = variantList.get(0);
+        assertEquals("1", variant.getChromosome());
+        assertEquals(Integer.valueOf(939039), variant.getStart());
+        assertEquals("G", variant.getReference());
+        assertEquals("A", variant.getAlternate());
+
+        // COSMIC insertion
+        variantList = getVariantByAccession(parsedVariantList, "COSM5381470");
+        assertEquals(1, variantList.size());
+        variant = variantList.get(0);
+        assertEquals("1", variant.getChromosome());
+        assertEquals(Integer.valueOf(69568), variant.getStart());
+        assertEquals(Integer.valueOf(69567), variant.getEnd());
+        assertEquals("", variant.getReference());
+        assertEquals("T", variant.getAlternate());
 
         // ClinVar record for an insertion with emtpy reference allele (some other insertions do provide reference nts)
         // It appears in the variant_summary.txt as 3       37090475        37090476        -       TT
         // No normalisation applies
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000221270");
+        variantList = getVariantByAccession(parsedVariantList, "RCV000221270");
         assertEquals(1, variantList.size());
-        Variant variant = variantList.get(0);
+        variant = variantList.get(0);
         assertEquals("3", variant.getChromosome());
         assertEquals(Integer.valueOf(37090476), variant.getStart());
         assertEquals("", variant.getReference());
