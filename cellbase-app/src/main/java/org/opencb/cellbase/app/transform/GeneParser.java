@@ -188,7 +188,7 @@ public class GeneParser extends CellBaseParser {
 
                 GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
                         diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                        geneDrugMap.get(gtf.getAttributes().get("gene_name")));
+                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), null);
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
@@ -208,7 +208,7 @@ public class GeneParser extends CellBaseParser {
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0,
                         0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
-                        transcriptTfbses);
+                        transcriptTfbses, null);
 
                 // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
                 // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
