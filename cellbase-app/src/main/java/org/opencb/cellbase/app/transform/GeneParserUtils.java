@@ -298,12 +298,16 @@ public class GeneParserUtils {
                 String oeMis = parts[5];
                 String oeSyn = parts[14];
                 String oeLof = parts[24];
+                String exacPLI = parts[70];
+                String exacLof = parts[73];
                 String geneIdentifier = parts[64];
 
                 List<Constraint> constraints = new ArrayList<>();
                 addConstraint(constraints, "oe_mis", oeMis);
                 addConstraint(constraints, "oe_syn", oeSyn);
                 addConstraint(constraints, "oe_lof", oeLof);
+                addConstraint(constraints, "exac_pLI", exacPLI);
+                addConstraint(constraints, "exac_oe_lof", exacLof);
                 transcriptConstraints.put(transcriptIdentifier, constraints);
 
                 if ("TRUE".equalsIgnoreCase(canonical)) {
