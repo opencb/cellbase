@@ -13,7 +13,8 @@
 				"authenticationDatabase": "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}",
 				"readPreference": "${CELLBASE.DB.MONGODB.READPREFERENCE}",
 				"replicaSet": "${CELLBASE.DB.MONGODB.REPLICASET}",
-				"connectionsPerHost": 20
+				"connectionsPerHost": 20,
+				"sslEnabled": false
 			}
 		},
 		"neo4j": {
