@@ -70,35 +70,6 @@
 
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>appassembler-maven-plugin</artifactId>
-                <version>1.10</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>assemble</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <repositoryName>libs</repositoryName>
-                    <repositoryLayout>flat</repositoryLayout>
-                    <useWildcardClassPath>true</useWildcardClassPath>
-                    <extraJvmArguments>-Xms256m -Xmx16384m -Dfile.encoding=UTF-8</extraJvmArguments>
-                    <programs>
-                        <program>
-                            <name>cellbase.sh</name>
-                            <mainClass>org.opencb.cellbase.app.CellBaseMain</mainClass>
-                        </program>
-                        <program>
-                            <name>cellbase-grpc.sh</name>
-                            <mainClass>org.opencb.cellbase.server.grpc.GrpcServer</mainClass>
-                        </program>
-                    </programs>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
                 <executions>
