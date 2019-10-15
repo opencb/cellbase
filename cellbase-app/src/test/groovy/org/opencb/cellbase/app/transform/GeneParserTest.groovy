@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.app.transform
 
-import org.junit.Ignore
+
 import org.opencb.biodata.models.core.Gene
 import org.opencb.cellbase.core.config.Species
 import org.opencb.cellbase.core.serializer.CellBaseSerializer

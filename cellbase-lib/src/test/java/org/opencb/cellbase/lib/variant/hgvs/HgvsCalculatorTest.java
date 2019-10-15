@@ -17,8 +17,9 @@
 package org.opencb.cellbase.lib.variant.hgvs;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
@@ -30,13 +31,17 @@ import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 
 /**
  * Created by fjlopez on 14/02/17.
@@ -48,7 +53,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     public HgvsCalculatorTest() throws IOException {
     }
 
-    @Before
+    @BeforeAll
     public void init() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

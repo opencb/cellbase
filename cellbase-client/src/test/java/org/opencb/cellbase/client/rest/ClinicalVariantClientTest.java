@@ -16,22 +16,18 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.junit.Test;
-import org.opencb.biodata.models.core.Gene;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.commons.datastore.core.ObjectMap;
+
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by fjlopez on 07/07/17.

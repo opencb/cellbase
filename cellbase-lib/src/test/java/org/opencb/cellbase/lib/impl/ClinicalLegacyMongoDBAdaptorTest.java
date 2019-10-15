@@ -17,8 +17,9 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.junit.Ignore;
-import org.junit.Test;
+;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantTraitAssociation;
@@ -32,12 +33,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Created by fjlopez on 09/12/15.
  */
-@Ignore
+@Disabled
 public class ClinicalLegacyMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public ClinicalLegacyMongoDBAdaptorTest() throws IOException { super(); }
@@ -162,7 +166,7 @@ public class ClinicalLegacyMongoDBAdaptorTest extends GenericMongoDBAdaptorTest 
         query7.put("source", "cosmic");
         QueryOptions options = new QueryOptions();
         QueryResult queryResult9 = clinicalDBAdaptor.nativeGet(query7, options);
-        assertNotNull("Should return the queryResult of id=COSM306824", queryResult9.getResult());
+        assertNotNull(queryResult9.getResult());
         assertEquals(((Document)queryResult9.getResult().get(0)).get("geneName"), "FMN2");
 
     }

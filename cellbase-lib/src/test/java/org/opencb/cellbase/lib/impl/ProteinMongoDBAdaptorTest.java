@@ -17,8 +17,9 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -33,7 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Created by fjlopez on 14/04/16.
@@ -44,7 +46,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
