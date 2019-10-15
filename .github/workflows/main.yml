@@ -2,6 +2,9 @@ name: Java Unit tests
 
 on: [push, pull_request]
 
+matrix:
+  mongodb-version: ["4.0", "4.2"]
+
 jobs:
   build:
 
@@ -14,6 +17,6 @@ jobs:
       with:
         java-version: 1.8
     - name: Launch MongoDB 
-      run: ./mongo.sh
+      run: ./mongo-installation.sh
     - name: Build with Maven
       run: mvn -T 2 clean install
