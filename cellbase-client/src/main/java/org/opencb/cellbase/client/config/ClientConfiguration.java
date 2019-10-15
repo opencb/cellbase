@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ public class ClientConfiguration {
     private String logFile;
 
     private RestConfig rest;
-    private GrpcConfig grpc;
 
     public ClientConfiguration() {
     }
@@ -75,7 +74,6 @@ public class ClientConfiguration {
         sb.append(", logLevel='").append(logLevel).append('\'');
         sb.append(", logFile='").append(logFile).append('\'');
         sb.append(", rest=").append(rest);
-        sb.append(", grpc=").append(grpc);
         sb.append('}');
         return sb.toString();
     }
@@ -122,15 +120,6 @@ public class ClientConfiguration {
 
     public ClientConfiguration setRest(RestConfig rest) {
         this.rest = rest;
-        return this;
-    }
-
-    public GrpcConfig getGrpc() {
-        return grpc;
-    }
-
-    public ClientConfiguration setGrpc(GrpcConfig grpc) {
-        this.grpc = grpc;
         return this;
     }
 }

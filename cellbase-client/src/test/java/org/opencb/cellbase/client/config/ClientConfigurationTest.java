@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,8 @@ public class ClientConfigurationTest {
         clientConfiguration.setLogFile("");
 
         RestConfig restConfig = new RestConfig(Arrays.asList("bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0", "bioinfodev.hpc.cam.ac.uk/cellbase"), 2000);
-        GrpcConfig grpcConfig = new GrpcConfig("localhost:9091");
 
         clientConfiguration.setRest(restConfig);
-        clientConfiguration.setGrpc(grpcConfig);
 
         try {
             clientConfiguration.serialize(new FileOutputStream("/tmp/client-configuration-test.yml"));

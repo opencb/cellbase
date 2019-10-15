@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,9 +70,6 @@ public class CellBaseMain {
                         break;
                     case "query":
                         commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryCommandOptions());
-                        break;
-                    case "query-grpc":
-                        commandExecutor = new QueryGrpcCommandExecutor(cliOptionsParser.getQueryGrpcCommandOptions());
                         break;
                     case "variant-annotation":
                         commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());

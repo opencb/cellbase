@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.impl;
 
 import com.mongodb.MongoTimeoutException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
@@ -140,27 +140,18 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         if (!mongodbCredentials.getUser().isEmpty() && !mongodbCredentials.getPassword().isEmpty()) {
             // MongoDB could authenticate against different databases
             builder.setUserPassword(mongodbCredentials.getUser(), mongodbCredentials.getPassword());
-            if (mongodbCredentials.getOptions().containsKey(MongoDBConfiguration.AUTHENTICATION_DATABASE)) {
-                builder.setAuthenticationDatabase(mongodbCredentials.getOptions()
-                        .get(MongoDBConfiguration.AUTHENTICATION_DATABASE));
+        }
+
+        for (Map.Entry<String, String> entry : mongodbCredentials.getOptions().entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (key.equalsIgnoreCase(MongoDBConfiguration.REPLICA_SET) && value.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
+                // Skip replica set
+                continue;
             }
-        }
-
-        if (mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE) != null
-                && !mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE).isEmpty()) {
-            builder.add(MongoDBConfiguration.READ_PREFERENCE,
-                    mongodbCredentials.getOptions().get(MongoDBConfiguration.READ_PREFERENCE));
-        }
-
-        String replicaSet = mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET);
-        if (replicaSet != null && !replicaSet.isEmpty() && !replicaSet.contains(CELLBASE_DB_MONGODB_REPLICASET)) {
-            builder.setReplicaSet(mongodbCredentials.getOptions().get(MongoDBConfiguration.REPLICA_SET));
-        }
-
-        String connectionsPerHost = mongodbCredentials.getOptions().get(MongoDBConfiguration.CONNECTIONS_PER_HOST);
-        if (connectionsPerHost != null && !connectionsPerHost.isEmpty()) {
-            builder.setConnectionsPerHost(Integer.valueOf(mongodbCredentials.getOptions()
-                    .get(MongoDBConfiguration.CONNECTIONS_PER_HOST)));
+            if (StringUtils.isNotEmpty(value)) {
+                builder.add(key, value);
+            }
         }
 
         mongoDBConfiguration = builder.build();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ public class CliOptionsParser {
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private QueryCommandOptions queryCommandOptions;
-    private QueryGrpcCommandOptions queryGrpcCommandOptions;
     private VariantAnnotationCommandOptions variantAnnotationCommandOptions;
     private PostLoadCommandOptions postLoadCommandOptions;
 
@@ -57,7 +56,6 @@ public class CliOptionsParser {
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         queryCommandOptions = new QueryCommandOptions();
-        queryGrpcCommandOptions = new QueryGrpcCommandOptions();
         variantAnnotationCommandOptions = new VariantAnnotationCommandOptions();
         postLoadCommandOptions = new PostLoadCommandOptions();
 
@@ -65,7 +63,6 @@ public class CliOptionsParser {
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("query", queryCommandOptions);
-        jCommander.addCommand("query-grpc", queryGrpcCommandOptions);
         jCommander.addCommand("variant-annotation", variantAnnotationCommandOptions);
         jCommander.addCommand("post-load", postLoadCommandOptions);
     }
@@ -292,16 +289,6 @@ public class CliOptionsParser {
         @Parameter(names = {"-c", "--count"}, description = "Comma separated list of annotators to be excluded", required = false, arity = 0)
         public boolean count;
 
-    }
-
-    @Parameters(commandNames = {"query-grpc"}, commandDescription = "Query and fetch data from CellBase database using gRPC server")
-    public class QueryGrpcCommandOptions extends QueryCommandOptions {
-
-        @Parameter(names = {"--host"}, description = "", required = false, arity = 1)
-        public String host = "localhost";
-
-        @Parameter(names = {"--port"}, description = "", required = false, arity = 1)
-        public int port = 9090;
     }
 
     @Parameters(commandNames = {"variant-annotation"}, commandDescription = "Annotate variants from VCF files using CellBase and other custom files")
@@ -555,10 +542,6 @@ public class CliOptionsParser {
 
     public QueryCommandOptions getQueryCommandOptions() {
         return queryCommandOptions;
-    }
-
-    public QueryGrpcCommandOptions getQueryGrpcCommandOptions() {
-        return queryGrpcCommandOptions;
     }
 
     public VariantAnnotationCommandOptions getVariantAnnotationCommandOptions() { return variantAnnotationCommandOptions; }

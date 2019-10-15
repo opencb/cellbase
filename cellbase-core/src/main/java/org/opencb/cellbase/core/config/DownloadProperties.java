@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package org.opencb.cellbase.core.config;
+
+import java.util.List;
 
 /**
  * Created by imedina on 19/08/16.
@@ -56,7 +58,7 @@ public class DownloadProperties {
     private URLProperties dbsnp;
     private URLProperties cadd;
     private URLProperties reactome;
-
+    private URLProperties gnomad;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -356,6 +358,15 @@ public class DownloadProperties {
         return this;
     }
 
+    public URLProperties getGnomad() {
+        return gnomad;
+    }
+
+    public DownloadProperties setGnomad(URLProperties gnomad) {
+        this.gnomad = gnomad;
+        return this;
+    }
+
     public static class EnsemblProperties {
 
         private DatabaseCredentials database;
@@ -390,6 +401,8 @@ public class DownloadProperties {
     public static class URLProperties {
 
         private String host;
+        private String version;
+        private List<String> files;
 
         public String getHost() {
             return host;
@@ -398,5 +411,24 @@ public class DownloadProperties {
         public void setHost(String host) {
             this.host = host;
         }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public URLProperties setVersion(String version) {
+            this.version = version;
+            return this;
+        }
+
+        public List<String> getFiles() {
+            return files;
+        }
+
+        public URLProperties setFiles(List<String> files) {
+            this.files = files;
+            return this;
+        }
+
     }
 }
