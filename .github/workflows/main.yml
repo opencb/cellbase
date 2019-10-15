@@ -2,8 +2,9 @@ name: Java Unit tests
 
 on: [push, pull_request]
 
-matrix:
-  mongodb-version: ["4.0", "4.2"]
+strategy:
+  matrix:
+    mongodb-version: ["4.0", "4.2"]
 
 jobs:
   build:
