@@ -15,7 +15,7 @@ jobs:
       with:
         java-version: 1.8
     - name: Launch MongoDB 
-      uses: wbari/mongoDB@v0.1
+      uses: wbari/start-mongoDB@v0.2
       with:
         mongoDBVersion: ${{ matrix.mongodb-version }} 
     - name: Build with Maven
