@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>4.8.0-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -22,7 +22,7 @@
     </modules>
 
     <properties>
-        <cellbase.version>4.8.0-SNAPSHOT</cellbase.version>
+        <cellbase.version>5.0.0-SNAPSHOT</cellbase.version>
         <compileSource>1.8</compileSource>
         <java-common-libs.version>3.7.0</java-common-libs.version>
         <biodata.version>1.6.0-SNAPSHOT</biodata.version>
@@ -368,7 +368,7 @@
             </build>
         </profile>
     </profiles>
-    
+
     <distributionManagement>
         <repository>
             <id>ossrh</id>
@@ -378,6 +378,11 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+<!--        <repository>-->
+<!--            <id>github</id>-->
+<!--            <name>GitHub OWNER Apache Maven Packages</name>-->
+<!--            <url>https://maven.pkg.github.com/opencb/cellbase</url>-->
+<!--        </repository>-->
     </distributionManagement>
 
 </project>
