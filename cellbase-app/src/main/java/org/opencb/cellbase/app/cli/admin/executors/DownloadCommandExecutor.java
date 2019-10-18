@@ -25,7 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.app.cli.admin.EtlCommons;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
