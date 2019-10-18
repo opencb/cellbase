@@ -17,17 +17,18 @@
 package org.opencb.cellbase.app.cli;
 
 import com.beust.jcommander.ParameterException;
-import org.opencb.cellbase.app.transform.*;
-import org.opencb.cellbase.app.transform.clinical.variant.ClinVarParser;
-import org.opencb.cellbase.app.transform.clinical.variant.ClinicalVariantParser;
-import org.opencb.cellbase.app.transform.clinical.variant.CosmicParser;
-import org.opencb.cellbase.app.transform.clinical.variant.GwasParser;
-import org.opencb.cellbase.app.transform.variation.VariationParser;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.lib.builders.*;
+import org.opencb.cellbase.lib.builders.clinical.variant.ClinVarParser;
+import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantParser;
+import org.opencb.cellbase.lib.builders.clinical.variant.CosmicParser;
+import org.opencb.cellbase.lib.builders.clinical.variant.GwasParser;
+import org.opencb.cellbase.lib.builders.variation.VariationParser;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.File;

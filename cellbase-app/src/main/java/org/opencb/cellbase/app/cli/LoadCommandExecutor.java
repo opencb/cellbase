@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.cli;
 
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
+import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.File;
 import java.io.FileNotFoundException;
