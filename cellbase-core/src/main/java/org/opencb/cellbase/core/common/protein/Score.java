@@ -23,6 +23,7 @@ package org.opencb.cellbase.core.common.protein;
  * Time: 5:51 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class Score {
     private String type;
     private float score;

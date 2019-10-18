@@ -21,6 +21,7 @@ import java.util.Map;
 /**
  * Created by imedina on 10/12/13.
  */
+@Deprecated
 public class FunctionPrediction {
 
     private String checksum;

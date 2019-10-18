@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.common.pathway;
 
+@Deprecated
 public class ComplexComponent {
 
     public enum TYPE {Protein, SmallMollecule, DNA, DNARegion, RNA, RNARegion, Unknown}

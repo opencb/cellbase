@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.common.pathway;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class SubPathway {
 
     private String name;

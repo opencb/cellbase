@@ -25,6 +25,7 @@ import java.util.List;
  * Time: 4:41 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class Interaction {
     private Interactor interactorA;
     private Interactor interactorB;

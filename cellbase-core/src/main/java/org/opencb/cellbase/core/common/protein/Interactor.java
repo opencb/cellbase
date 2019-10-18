@@ -25,6 +25,7 @@ import java.util.List;
  * Time: 12:05 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class Interactor {
     private String id;
     private String dbName;

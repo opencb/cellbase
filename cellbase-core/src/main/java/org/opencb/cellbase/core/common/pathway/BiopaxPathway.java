@@ -18,7 +18,7 @@ package org.opencb.cellbase.core.common.pathway;
 
 import java.util.*;
 
-
+@Deprecated
 public class BiopaxPathway {
 
     private String id, name, dbName, dbSource, dbVersion, parentPathway;
