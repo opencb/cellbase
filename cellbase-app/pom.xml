@@ -99,11 +99,11 @@
                     <programs>
                         <program>
                             <name>cellbase.sh</name>
-                            <mainClass>org.opencb.cellbase.app.CellBaseMain</mainClass>
+                            <mainClass>org.opencb.cellbase.app.cli.main.CellBaseMain</mainClass>
                         </program>
                         <program>
                             <name>cellbase-admin.sh</name>
-                            <mainClass>org.opencb.cellbase.app.CellBaseMain</mainClass>
+                            <mainClass>org.opencb.cellbase.app.cli.admin.AdminMain</mainClass>
                         </program>
                     </programs>
                 </configuration>

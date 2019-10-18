@@ -1,4 +1,4 @@
-package org.opencb.cellbase.app.cli.variant.annotation;
+package org.opencb.cellbase.app.cli.main.annotation;
 
 import htsjdk.tribble.readers.LineIterator;
 import htsjdk.variant.vcf.VCFHeader;

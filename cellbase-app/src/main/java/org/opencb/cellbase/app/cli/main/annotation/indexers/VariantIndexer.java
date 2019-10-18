@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli.variant.annotation.indexers;
+package org.opencb.cellbase.app.cli.main.annotation.indexers;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

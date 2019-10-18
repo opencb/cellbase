@@ -21,7 +21,7 @@ import org.opencb.biodata.models.variant.avro.AdditionalAttribute;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.StructuralVariation;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.app.cli.EtlCommons;
+import org.opencb.cellbase.app.cli.admin.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.utils.FileUtils;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli.variant.annotation;
+package org.opencb.cellbase.app.cli.main.annotation;
 
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;

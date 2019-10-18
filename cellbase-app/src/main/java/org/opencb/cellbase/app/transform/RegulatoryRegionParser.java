@@ -17,7 +17,7 @@
 package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.models.core.RegulatoryFeature;
-import org.opencb.cellbase.app.cli.EtlCommons;
+import org.opencb.cellbase.app.cli.admin.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 

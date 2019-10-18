@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli;
+package org.opencb.cellbase.app.cli.admin;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.ConsoleAppender;

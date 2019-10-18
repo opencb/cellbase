@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli;
+package org.opencb.cellbase.app.cli.main.executors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opencb.cellbase.core.api.*;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
+import org.opencb.cellbase.core.api.*;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -40,12 +42,12 @@ public class QueryCommandExecutor extends CommandExecutor {
 
     private DBAdaptorFactory dbAdaptorFactory;
 
-    private CliOptionsParser.QueryCommandOptions queryCommandOptions;
+    private CellBaseCliOptionsParser.QueryCommandOptions queryCommandOptions;
 
     private ObjectMapper objectMapper;
     private Path outputFile;
 
-    public QueryCommandExecutor(CliOptionsParser.QueryCommandOptions queryCommandOptions) {
+    public QueryCommandExecutor(CellBaseCliOptionsParser.QueryCommandOptions queryCommandOptions) {
         super(queryCommandOptions.commonOptions.logLevel, queryCommandOptions.commonOptions.verbose,
                 queryCommandOptions.commonOptions.conf);
 

@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app;
+package org.opencb.cellbase.app.cli.admin;
 
 import com.beust.jcommander.ParameterException;
-import org.opencb.cellbase.app.cli.*;
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.admin.executors.BuildCommandExecutor;
+import org.opencb.cellbase.app.cli.admin.executors.DownloadCommandExecutor;
+import org.opencb.cellbase.app.cli.admin.executors.LoadCommandExecutor;
+import org.opencb.cellbase.app.cli.admin.executors.PostLoadCommandExecutor;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,11 +30,11 @@ import java.net.URISyntaxException;
 /**
  * Created by imedina on 03/02/15.
  */
-public class CellBaseMain {
+public class AdminMain {
 
     public static void main(String[] args) {
 
-        CliOptionsParser cliOptionsParser = new CliOptionsParser();
+        AdminCliOptionsParser cliOptionsParser = new AdminCliOptionsParser();
         try {
             cliOptionsParser.parse(args);
         } catch (ParameterException e) {
@@ -39,19 +44,26 @@ public class CellBaseMain {
         }
 
         String parsedCommand = cliOptionsParser.getCommand();
-        if (parsedCommand == null || parsedCommand.isEmpty()) {
-            if (cliOptionsParser.getGeneralOptions().help) {
-                cliOptionsParser.printUsage();
+        if (StringUtils.isEmpty(parsedCommand)) {
+            if (cliOptionsParser.getGeneralOptions().version) {
+                cliOptionsParser.printVersion();
                 System.exit(0);
             } else {
-                if (cliOptionsParser.getGeneralOptions().version) {
-                    cliOptionsParser.printVersion();
-                    System.exit(0);
-                } else {
-                    cliOptionsParser.printUsage();
-                    System.exit(1);
-                }
+                cliOptionsParser.printUsage();
+                System.exit(0);
             }
+//            if (cliOptionsParser.getGeneralOptions().help) {
+//                cliOptionsParser.printUsage();
+//                System.exit(0);
+//            } else {
+//                if (cliOptionsParser.getGeneralOptions().version) {
+//                    cliOptionsParser.printVersion();
+//                    System.exit(0);
+//                } else {
+//                    cliOptionsParser.printUsage();
+//                    System.exit(1);
+//                }
+//            }
         } else {
             CommandExecutor commandExecutor = null;
             if (cliOptionsParser.isHelp()) {
@@ -67,12 +79,6 @@ public class CellBaseMain {
                         break;
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
-                        break;
-                    case "query":
-                        commandExecutor = new QueryCommandExecutor(cliOptionsParser.getQueryCommandOptions());
-                        break;
-                    case "variant-annotation":
-                        commandExecutor = new VariantAnnotationCommandExecutor(cliOptionsParser.getVariantAnnotationCommandOptions());
                         break;
                     case "post-load":
                         commandExecutor = new PostLoadCommandExecutor(cliOptionsParser.getPostLoadCommandOptions());

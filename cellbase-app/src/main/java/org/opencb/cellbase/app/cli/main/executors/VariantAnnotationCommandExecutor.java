@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli;
+package org.opencb.cellbase.app.cli.main.executors;
 
 import com.beust.jcommander.ParameterException;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -35,10 +35,12 @@ import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.biodata.tools.variant.VariantJsonReader;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
-import org.opencb.cellbase.app.cli.variant.annotation.*;
-import org.opencb.cellbase.app.cli.variant.annotation.indexers.CustomAnnotationVariantIndexer;
-import org.opencb.cellbase.app.cli.variant.annotation.indexers.PopulationFrequencyVariantIndexer;
-import org.opencb.cellbase.app.cli.variant.annotation.indexers.VariantIndexer;
+import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.main.annotation.*;
+import org.opencb.cellbase.app.cli.main.annotation.indexers.CustomAnnotationVariantIndexer;
+import org.opencb.cellbase.app.cli.main.annotation.indexers.PopulationFrequencyVariantIndexer;
+import org.opencb.cellbase.app.cli.main.annotation.indexers.VariantIndexer;
+import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
@@ -79,7 +81,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     public enum FileFormat {VCF, JSON, AVRO, VEP};
 
-    private CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions;
+    private CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions;
 
     private Path input;
     private Path output;
@@ -116,7 +118,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private final String TMP_DIR = "/tmp/";
     private static final String VARIATION_ANNOTATION_FILE_PREFIX = "variation_annotation_";
 
-    public VariantAnnotationCommandExecutor(CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions) {
+    public VariantAnnotationCommandExecutor(CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions) {
         super(variantAnnotationCommandOptions.commonOptions.logLevel, variantAnnotationCommandOptions.commonOptions.verbose,
                 variantAnnotationCommandOptions.commonOptions.conf);
 

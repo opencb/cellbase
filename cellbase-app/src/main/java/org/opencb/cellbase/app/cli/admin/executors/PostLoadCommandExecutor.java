@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli;
+package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
+import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,7 +29,7 @@ import java.nio.file.Paths;
  */
 public class PostLoadCommandExecutor extends CommandExecutor {
 
-    private CliOptionsParser.PostLoadCommandOptions postLoadCommandOptions;
+    private AdminCliOptionsParser.PostLoadCommandOptions postLoadCommandOptions;
 
     private Path clinicalAnnotationFilename = null;
     private String assembly = null;
@@ -38,7 +40,7 @@ public class PostLoadCommandExecutor extends CommandExecutor {
     public PostLoadCommandExecutor() {
     }
 
-    public PostLoadCommandExecutor(CliOptionsParser.PostLoadCommandOptions postLoadCommandOptions) {
+    public PostLoadCommandExecutor(AdminCliOptionsParser.PostLoadCommandOptions postLoadCommandOptions) {
         super(postLoadCommandOptions.commonOptions.logLevel, postLoadCommandOptions.commonOptions.verbose,
                 postLoadCommandOptions.commonOptions.conf);
 

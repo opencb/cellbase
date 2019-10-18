@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli.variant.annotation;
+package org.opencb.cellbase.app.cli.main.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;

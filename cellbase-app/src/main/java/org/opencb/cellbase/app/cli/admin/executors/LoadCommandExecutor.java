@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli;
+package org.opencb.cellbase.app.cli.admin.executors;
 
+import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.app.cli.admin.EtlCommons;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 
@@ -36,7 +39,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
     private static final String METADATA = "metadata";
     private LoadRunner loadRunner;
-    private CliOptionsParser.LoadCommandOptions loadCommandOptions;
+    private AdminCliOptionsParser.LoadCommandOptions loadCommandOptions;
 
     private Path input;
 
@@ -46,7 +49,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private String loader;
     private int numThreads;
 
-    public LoadCommandExecutor(CliOptionsParser.LoadCommandOptions loadCommandOptions) {
+    public LoadCommandExecutor(AdminCliOptionsParser.LoadCommandOptions loadCommandOptions) {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.verbose,
                 loadCommandOptions.commonOptions.conf);
 

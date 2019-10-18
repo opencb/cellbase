@@ -20,6 +20,7 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,41 +137,5 @@ public abstract class CommandExecutor {
             Files.createDirectories(folderPath);
         }
     }
-
-//    protected boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
-//            throws IOException, InterruptedException {
-//        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
-//
-//        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
-//        Process process = builder.start();
-//        process.waitFor();
-//
-//        // Check process output
-//        boolean executedWithoutErrors = true;
-//        int genomeInfoExitValue = process.exitValue();
-//        if (genomeInfoExitValue != 0) {
-//            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-//            executedWithoutErrors = false;
-//        }
-//        return executedWithoutErrors;
-//    }
-//
-//    private ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
-//        List<String> commandArgs = new ArrayList<>();
-//        commandArgs.add(binPath);
-//        commandArgs.addAll(args);
-//        ProcessBuilder builder = new ProcessBuilder(commandArgs);
-//
-//        // working directoy and error and output log outputs
-//        if (workingDirectory != null) {
-//            builder.directory(workingDirectory);
-//        }
-//        builder.redirectErrorStream(true);
-//        if (logFilePath != null) {
-//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
-//        }
-//
-//        return builder;
-//    }
 
 }

@@ -223,8 +223,14 @@
                         <phase>validate</phase>
                         <configuration>
                             <configLocation>checkstyle.xml</configLocation>
-                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java,
-                                org/opencb/cellbase/client/rest/models/GroupByFields.java,org/opencb/cellbase/client/rest/models/GroupCount.java</excludes>
+                            <excludes>
+                                org/opencb/cellbase/app/cli/CliOptionsParser.java,
+                                org/opencb/cellbase/app/cli/admin/AdminCliOptionsParser.java,
+                                org/opencb/cellbase/app/cli/main/CellBaseCliOptionsParser.java,
+                                org/opencb/cellbase/app/transform/GeneParserProto.java,
+                                org/opencb/cellbase/client/rest/models/GroupByFields.java,
+                                org/opencb/cellbase/client/rest/models/GroupCount.java
+                            </excludes>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -378,11 +384,11 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-<!--        <repository>-->
-<!--            <id>github</id>-->
-<!--            <name>GitHub OWNER Apache Maven Packages</name>-->
-<!--            <url>https://maven.pkg.github.com/opencb/cellbase</url>-->
-<!--        </repository>-->
+        <!--        <repository>-->
+        <!--            <id>github</id>-->
+        <!--            <name>GitHub OWNER Apache Maven Packages</name>-->
+        <!--            <url>https://maven.pkg.github.com/opencb/cellbase</url>-->
+        <!--        </repository>-->
     </distributionManagement>
 
 </project>

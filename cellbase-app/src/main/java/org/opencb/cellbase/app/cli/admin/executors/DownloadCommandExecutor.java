@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli;
+package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -23,6 +23,9 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.app.cli.admin.EtlCommons;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.commons.utils.FileUtils;
 
@@ -45,7 +48,7 @@ import java.util.zip.ZipFile;
  */
 public class DownloadCommandExecutor extends CommandExecutor {
 
-    private CliOptionsParser.DownloadCommandOptions downloadCommandOptions;
+    private AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions;
 
     private Path output = null;
     private Path common = null;
@@ -105,7 +108,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private static final String GNOMAD_NAME = "gnomAD";
 
 
-    public DownloadCommandExecutor(CliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
+    public DownloadCommandExecutor(AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
                 downloadCommandOptions.commonOptions.conf);
 

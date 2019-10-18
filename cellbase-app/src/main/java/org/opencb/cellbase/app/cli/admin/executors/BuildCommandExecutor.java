@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.cli;
+package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
+import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.app.cli.admin.EtlCommons;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.clinical.variant.ClinVarParser;
 import org.opencb.cellbase.app.transform.clinical.variant.ClinicalVariantParser;
@@ -50,7 +53,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     public static final String HPO_INPUT_FILE_NAME = "ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt";
     public static final String DBSNP_INPUT_FILE_NAME = "All.vcf.gz";
 
-    private CliOptionsParser.BuildCommandOptions buildCommandOptions;
+    private AdminCliOptionsParser.BuildCommandOptions buildCommandOptions;
 
     private Path input = null;
     private Path output = null;
@@ -63,7 +66,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private boolean flexibleGTFParsing;
     private Species species;
 
-    public BuildCommandExecutor(CliOptionsParser.BuildCommandOptions buildCommandOptions) {
+    public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
                 buildCommandOptions.commonOptions.conf);
 
