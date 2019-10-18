@@ -19,7 +19,7 @@ package org.opencb.cellbase.app.cli.admin.executors;
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.app.cli.admin.EtlCommons;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.app.transform.*;
 import org.opencb.cellbase.app.transform.clinical.variant.ClinVarParser;
 import org.opencb.cellbase.app.transform.clinical.variant.ClinicalVariantParser;

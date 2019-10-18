@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
-import org.opencb.cellbase.app.cli.admin.EtlCommons;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;

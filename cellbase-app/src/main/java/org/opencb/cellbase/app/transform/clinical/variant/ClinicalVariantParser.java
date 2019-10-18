@@ -19,7 +19,7 @@ package org.opencb.cellbase.app.transform.clinical.variant;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.app.cli.admin.EtlCommons;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.app.transform.CellBaseParser;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.Options;

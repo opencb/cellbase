@@ -18,7 +18,7 @@ package org.opencb.cellbase.app.transform;
 
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.cellbase.app.cli.admin.EtlCommons;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.utils.FileUtils;
