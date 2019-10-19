@@ -29,8 +29,9 @@
         <bionetdb.version>0.1.0</bionetdb.version>
         <jackson.version>2.8.4</jackson.version>
         <jersey.version>2.23.2</jersey.version>
+        <commons.io.version>2.5</commons.io.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
-        <slf4j.version>1.7.21</slf4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <junit.platform.version>1.5.2</junit.platform.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.4</jacoco.version>
@@ -77,14 +78,6 @@
         </developer>
     </developers>
 
-    <mailingLists>
-        <mailingList>
-            <name>OpenCB Mailing List</name>
-            <archive>https://groups.google.com/forum/#!forum/opencb</archive>
-            <post>opencb@googlegroups.com</post>
-        </mailingList>
-    </mailingLists>
-
     <repositories>
         <repository>
             <id>ossrh</id>
@@ -105,6 +98,16 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-lib</artifactId>
+                <version>${cellbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.commons</groupId>
+                <artifactId>commons-datastore-core</artifactId>
+                <version>${java-common-libs.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
@@ -118,11 +121,6 @@
                         <groupId>BigWig</groupId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.commons</groupId>
-                <artifactId>commons-datastore-core</artifactId>
-                <version>${java-common-libs.version}</version>
             </dependency>
 
             <!-- General dependencies -->
@@ -152,27 +150,14 @@
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.spockframework</groupId>
-                <artifactId>spock-core</artifactId>
-                <version>0.7-groovy-2.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>3.1</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.objenesis</groupId>
-                <artifactId>objenesis</artifactId>
-                <version>2.1</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -192,7 +177,6 @@
                 <version>${junit.jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -204,7 +188,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>${compileSource}</source>
                     <target>${compileSource}</target>
@@ -390,5 +374,4 @@
         <!--            <url>https://maven.pkg.github.com/opencb/cellbase</url>-->
         <!--        </repository>-->
     </distributionManagement>
-
 </project>

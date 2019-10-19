@@ -21,22 +21,14 @@
     <dependencies>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-server</artifactId>
+            <artifactId>cellbase-client</artifactId>
             <version>${cellbase.version}</version>
-            <!--<type>war</type>-->
         </dependency>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-client</artifactId>
-            <version>${cellbase.version}</version>
-            <!--<type>war</type>-->
+            <artifactId>cellbase-lib</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.beust</groupId>
-            <artifactId>jcommander</artifactId>
-            <version>1.58</version>
-        </dependency>
         <!--<dependency>-->
             <!--<groupId>psidev.psi.mi</groupId>-->
             <!--<artifactId>psimitab</artifactId>-->
@@ -45,17 +37,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.spockframework</groupId>
-            <artifactId>spock-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

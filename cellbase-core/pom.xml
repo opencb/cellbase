@@ -83,8 +83,6 @@
                 </executions>
 
                 <configuration>
-                    <!-- ... -->
-
                     <!-- this is false by default, forces the plugin to generate the git.properties file -->
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
 
@@ -121,7 +119,6 @@
                         <forceLongFormat>false</forceLongFormat>
                     </gitDescribe>
                 </configuration>
-
             </plugin>
         </plugins>
     </build>
