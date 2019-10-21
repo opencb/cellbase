@@ -17,7 +17,7 @@
 package org.opencb.cellbase.client.rest;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -27,7 +27,9 @@ import org.opencb.commons.datastore.core.QueryResponse;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Created by fjlopez on 07/07/17.

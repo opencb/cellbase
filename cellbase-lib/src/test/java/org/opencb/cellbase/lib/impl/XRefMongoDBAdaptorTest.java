@@ -17,8 +17,9 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -32,7 +33,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Created by fjlopez on 09/05/16.
@@ -42,7 +44,7 @@ public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

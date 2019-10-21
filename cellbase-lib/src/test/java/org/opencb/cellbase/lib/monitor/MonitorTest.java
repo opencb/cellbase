@@ -18,9 +18,10 @@ package org.opencb.cellbase.lib.monitor;
 
 import com.google.common.io.Files;
 import org.apache.tools.ant.util.FileUtils;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+
+;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.monitor.HealthStatus;
@@ -33,7 +34,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by fjlopez on 12/10/17.
@@ -52,7 +53,7 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void run() throws Exception {
 
