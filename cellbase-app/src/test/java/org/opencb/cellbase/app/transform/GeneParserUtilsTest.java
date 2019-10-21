@@ -20,13 +20,10 @@ package org.opencb.cellbase.app.transform;
 import org.junit.Test;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.models.core.Constraint;
-import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -62,7 +59,28 @@ public class GeneParserUtilsTest {
     }
 
     @Test
+    public void testGetGeneDrugMap() throws IOException {
+        Path geneDrugFile = Paths.get(getClass().getResource("/dgidb.tsv").getFile());
+        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
+        assertEquals(1, geneDrugMap.size());
+        assertTrue(geneDrugMap.containsKey("CDK7"));
+        List<GeneDrugInteraction> interactions = geneDrugMap.get("CDK7");
+        assertEquals(1, interactions.size());
+        Iterator<GeneDrugInteraction> iter = interactions.iterator();
+        GeneDrugInteraction actionInteraction = iter.next();
+        assertEquals("inhibitor", actionInteraction.getDrugName());
+        assertEquals("CDK7", actionInteraction.getGeneName());
+        assertEquals("dgidb", actionInteraction.getSource());
+        assertEquals("1022", actionInteraction.getStudyType());
+        assertEquals("CancerCommons", actionInteraction.getType());
+//        assertEquals("", actionInteraction.getSchema());
+
+    }
+
+    @Test
     public void testGetXrefMap() throws IOException {
+        // TODO test xref file too. but I don't know what it looks like.
+
         Path idmappingFile = Paths.get(getClass().getResource("/idmapping_selected.tab.gz").getFile());
         Map<String, ArrayList<Xref>> xrefMap = GeneParserUtils.getXrefMap(null, idmappingFile);
         assertEquals(2, xrefMap.size());

@@ -1,0 +1,2 @@
+gene_name	gene_claim_name	entrez_id	interaction_claim_source	interaction_types	drug_claim_name	drug_claim_primary_name	drug_name	drug_chembl_id	PMIDs
+CDK7	CDK7	1022	CancerCommons	inhibitor	SNS-032	SNS-032	BMS-387032	CHEMBL296468	
