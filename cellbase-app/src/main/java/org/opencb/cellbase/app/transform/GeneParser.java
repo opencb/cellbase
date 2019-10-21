@@ -56,7 +56,6 @@ public class GeneParser extends CellBaseParser {
     private Path xrefsFile;
     private Path uniprotIdMappingFile;
     private Path tfbsFile;
-    private Path mirnaFile;
     private Path geneExpressionFile;
     private Path geneDrugFile;
     private Path hpoFile;
@@ -100,7 +99,6 @@ public class GeneParser extends CellBaseParser {
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
-                geneDirectoryPath.resolve("mirna.txt"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("dgidb.tsv"),
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
@@ -112,7 +110,7 @@ public class GeneParser extends CellBaseParser {
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
     }
 
-    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
+    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
                       Path genomeSequenceFilePath, Species species, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
@@ -122,7 +120,6 @@ public class GeneParser extends CellBaseParser {
         this.xrefsFile = xrefsFile;
         this.uniprotIdMappingFile = uniprotIdMappingFile;
         this.tfbsFile = tfbsFile;
-        this.mirnaFile = mirnaFile;
         this.geneExpressionFile = geneExpressionFile;
         this.geneDrugFile = geneDrugFile;
         this.hpoFile = hpoFile;
@@ -147,7 +144,6 @@ public class GeneParser extends CellBaseParser {
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
         Map<String, SortedSet<Gff2>> tfbsMap = GeneParserUtils.getTfbsMap(tfbsFile);
-        Map<String, MiRNAGene> mirnaGeneMap = GeneParserUtils.getmiRNAGeneMap(mirnaFile);
 
         // Gene annotation data
         Map<String, List<Expression>> geneExpressionMap = GeneParserUtils
@@ -197,7 +193,7 @@ public class GeneParser extends CellBaseParser {
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<>(),
-                        mirnaGeneMap.get(geneId), geneAnnotation);
+                        null, geneAnnotation);
                 // Do not change order!! size()-1 is the index of the gene ID
             }
 

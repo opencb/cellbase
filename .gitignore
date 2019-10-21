@@ -18,6 +18,7 @@ private
 *.zip
 sonar-project.properties
 git.properties
+*~
 
 # Maven
 target/

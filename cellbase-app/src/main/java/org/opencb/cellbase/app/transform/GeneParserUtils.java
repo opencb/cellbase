@@ -74,51 +74,6 @@ public class GeneParserUtils {
         return tfbsMap;
     }
 
-    public static Map<String, MiRNAGene> getmiRNAGeneMap(Path mirnaGeneFile) throws IOException {
-        Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
-
-        if (mirnaGeneFile != null && Files.exists(mirnaGeneFile) && !Files.isDirectory(mirnaGeneFile)
-                && Files.size(mirnaGeneFile) > 0) {
-            logger.info("Loading miRNA data ...");
-            BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
-
-            String line;
-            String[] fields, mirnaMatures, mirnaMaturesFields;
-            List<String> aliases;
-            MiRNAGene miRNAGene;
-            while ((line = br.readLine()) != null) {
-                fields = line.split("\t");
-
-                // First, read aliases of miRNA, field #5
-                aliases = new ArrayList<>();
-                for (String alias : fields[5].split(",")) {
-                    aliases.add(alias);
-                }
-
-                miRNAGene = new MiRNAGene(fields[1], fields[2], fields[3], fields[4], aliases, new ArrayList<>());
-
-                // Second, read the miRNA matures, field #6
-                mirnaMatures = fields[6].split(",");
-                for (String s : mirnaMatures) {
-                    mirnaMaturesFields = s.split("\\|");
-                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2]) + 1;
-                    int cdnaEnd = cdnaStart + mirnaMaturesFields[2].length() - 1;
-                    // Save directly into MiRNAGene object.
-                    miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2], cdnaStart, cdnaEnd);
-                }
-
-                // Add object to Map<EnsemblID, MiRNAGene>
-                mirnaGeneMap.put(fields[0], miRNAGene);
-            }
-            br.close();
-        } else {
-            logger.warn("Mirna file '{}' not found", mirnaGeneFile);
-            logger.warn("Mirna data not loaded");
-        }
-        return mirnaGeneMap;
-    }
-
-
     public static Map<String, ArrayList<Xref>> getXrefMap(Path xrefsFile, Path uniprotIdMappingFile) throws IOException {
         Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
         logger.info("Loading xref data...");

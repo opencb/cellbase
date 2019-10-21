@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.MiRNAGene;
+import org.opencb.biodata.models.core.Xref;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,13 +53,40 @@ public class GeneParserUtilsTest {
         Gff2 expectedFeature1 = new Gff2(SEQUENCE_NAME, SOURCE, FEATURE, 10365, 10384, "5.864", "-", ".", "Name=PPARG::RXRA:MA0065.1");
         Gff2 expectedFeature2 = new Gff2(SEQUENCE_NAME, SOURCE, FEATURE, 10442, 10456, "10.405", "-", ".", "Name=Tr4:MA0504.1");
 
-        Iterator<Gff2> itr = features.iterator();
-        Gff2 actualFeature1 = itr.next();
-        Gff2 actualFeature2 = itr.next();
+        Iterator<Gff2> iter = features.iterator();
+        Gff2 actualFeature1 = iter.next();
+        Gff2 actualFeature2 = iter.next();
 
         assertEquals(expectedFeature1.toString(), actualFeature1.toString());
         assertEquals(expectedFeature2.toString(), actualFeature2.toString());
     }
+
+    @Test
+    public void testGetXrefMap() throws IOException {
+        Path idmappingFile = Paths.get(getClass().getResource("/idmapping_selected.tab.gz").getFile());
+        Map<String, ArrayList<Xref>> xrefMap = GeneParserUtils.getXrefMap(null, idmappingFile);
+        assertEquals(2, xrefMap.size());
+
+        assertTrue(xrefMap.containsKey("ENST00000372839"));
+        assertTrue(xrefMap.containsKey("ENST00000353703"));
+        assertEquals(xrefMap.get("ENST00000372839"), xrefMap.get("ENST00000353703"));
+
+        ArrayList<Xref> xrefs = xrefMap.get("ENST00000372839");
+        Iterator<Xref> iter = xrefs.iterator();
+        Xref actualXref1 = iter.next();
+        Xref actualXref2 = iter.next();
+
+        assertEquals("UniProtKB ACC", actualXref1.getDbDisplayName());
+        assertEquals("uniprotkb_acc", actualXref1.getDbName());
+        assertEquals("", actualXref1.getDescription());
+        assertEquals("P31946", actualXref1.getId());
+
+        assertEquals("UniProtKB ID", actualXref2.getDbDisplayName());
+        assertEquals("uniprotkb_id", actualXref2.getDbName());
+        assertEquals("", actualXref2.getDescription());
+        assertEquals("1433B_HUMAN", actualXref2.getId());
+    }
+
 
     @Test
     public void testGetConstraints() throws Exception {
