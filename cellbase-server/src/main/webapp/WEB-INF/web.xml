@@ -44,7 +44,7 @@
 
     <filter>
         <filter-name>CorsFilter</filter-name>
-        <filter-class>org.opencb.cellbase.server.ws.CORSFilter</filter-class>
+        <filter-class>org.opencb.cellbase.server.rest.CORSFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CorsFilter</filter-name>
