@@ -33,6 +33,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
+    private ServerCommandOptions serverCommandOptions;
     private PostLoadCommandOptions postLoadCommandOptions;
 
     public AdminCliOptionsParser() {
@@ -42,11 +43,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
+        serverCommandOptions = new ServerCommandOptions();
         postLoadCommandOptions = new PostLoadCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
+        jCommander.addCommand("server", serverCommandOptions);
         jCommander.addCommand("post-load", postLoadCommandOptions);
     }
 
@@ -163,6 +166,19 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
         public Map<String, String> loaderParams = new HashMap<>();
 
+    }
+
+    @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")
+    public class ServerCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"--start"}, description = "File with the new tool to be installed", arity = 0)
+        public String start;
+
+        @Parameter(names = {"--stop"}, description = "File with the new tool to be installed", arity = 0)
+        public String stop;
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")

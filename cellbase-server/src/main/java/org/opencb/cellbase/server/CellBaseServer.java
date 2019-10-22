@@ -25,6 +25,7 @@ import org.glassfish.jersey.server.ResourceConfig;
  * Time: 3:24 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class CellBaseServer extends ResourceConfig {
 
     public CellBaseServer() {

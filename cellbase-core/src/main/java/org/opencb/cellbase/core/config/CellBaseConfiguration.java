@@ -47,6 +47,7 @@ public class CellBaseConfiguration {
     private Databases databases;
     private DownloadProperties download;
     private SpeciesProperties species;
+    private ServerProperties server;
 
 
     public static CellBaseConfiguration load(InputStream configurationInputStream) throws IOException {
@@ -201,4 +202,11 @@ public class CellBaseConfiguration {
         return allSpecies;
     }
 
+    public ServerProperties getServer() {
+        return server;
+    }
+
+    public void setServer(ServerProperties server) {
+        this.server = server;
+    }
 }

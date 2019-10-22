@@ -36,6 +36,7 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.4</jacoco.version>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
+        <jetty.version>9.4.17.v20190418</jetty.version>
     </properties>
     <scm>
         <url>https://github.com/opencb/cellbase</url>
@@ -148,6 +149,16 @@
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet</artifactId>
                 <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-webapp</artifactId>
+                <version>${jetty.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
