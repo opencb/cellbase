@@ -33,7 +33,7 @@
 	"server": {
 		"rest": {
 			"url": "localhost",
-			"port": "8081"
+			"port": "9090"
 		}
 	},
 	"defaultOutdir": "/tmp",

@@ -18,7 +18,7 @@ package org.opencb.cellbase.core.config;
 
 public class Rest {
     private String url;
-    private String port;
+    private int port;
 
     public String getUrl() {
         return url;
@@ -28,11 +28,11 @@ public class Rest {
         this.url = url;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 }

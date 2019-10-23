@@ -179,6 +179,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"--stop"}, description = "Stop the REST server", arity = 0)
         public boolean stop;
+
+        @Parameter(names = {"--port"}, description = "REST port to be used", arity = 1)
+        public int port;
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")

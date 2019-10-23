@@ -36,6 +36,11 @@ public class ServerCommandExecutor extends CommandExecutor {
 
     @Override
     public void execute() {
+        // Process user parameters
+        if (serverCommandOptions.port != 0) {
+            this.configuration.getServer().getRest().setPort(serverCommandOptions.port);
+        }
+
         if (serverCommandOptions.start) {
             RestServer server = new RestServer(configuration);
             try {
@@ -47,7 +52,7 @@ public class ServerCommandExecutor extends CommandExecutor {
 
         if (serverCommandOptions.stop) {
             Client client = ClientBuilder.newClient();
-            WebTarget target = client.target(configuration.getServer().getRest().getUrl() + configuration.getServer().getRest().getPort())
+            WebTarget target = client.target("localhost" + ":" + configuration.getServer().getRest().getPort())
                     .path("cellbase")
                     .path("webservices")
                     .path("rest")

@@ -33,14 +33,16 @@ import java.util.EnumSet;
 
 public class RestServer  {
 
-    protected static Logger logger = LoggerFactory.getLogger("org.opencb.cellbase.server.RestServer");
     private static Server server;
     private CellBaseConfiguration configuration;
     private boolean exit;
     private int port;
 
-    public RestServer() {
-    }
+    protected static Logger logger;
+
+//    public RestServer() {
+//
+//    }
 
     public RestServer(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -51,8 +53,8 @@ public class RestServer  {
         logger = LoggerFactory.getLogger(this.getClass());
         if (configuration != null) {
             try {
-                this.port = Integer.valueOf(configuration.getServer().getRest().getPort());
-                logger.info("Using port: " + port);
+                this.port = configuration.getServer().getRest().getPort();
+                logger.info("REST server started using port: {}", port);
             } catch (NumberFormatException e) {
                 throw new RuntimeException("Invalid port number: " + configuration.getServer().getRest().getPort());
             }
@@ -73,10 +75,20 @@ public class RestServer  {
 
         ServletContextHandler context = new ServletContextHandler(server, null, ServletContextHandler.SESSIONS);
         context.addServlet(sh, "/cellbase/webservices/rest/*");
-        //context.setInitParameter("config-dir", configDir.toFile().toString());
 
         // To add CORS Java filtert class to Jetty
         context.addFilter(CORSFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.ERROR));
+
+        // TODO It would be great to add Swagger
+//        ServletHolder apiServlet = context.addServlet(ServletContainer.class, "/webservices/rest/*");
+//        apiServlet.setInitOrder(1);
+//        apiServlet.setInitParameter("jersey.config.server.provider.packages",
+//                "io.swagger.jaxrs.listing;org.opencb.cellbase.server.rest;com.jersey.jaxb;com.fasterxml.jackson.jaxrs.json");
+//
+//        ServletHolder swaggerServlet = context.addServlet(JerseyJaxrsConfig.class, "/webservices");
+//        swaggerServlet.setInitParameter("api.version", "5.0.0");
+//        swaggerServlet.setInitParameter("swagger.api.basepath", "/cellbase/webservices/rest");
+//        swaggerServlet.setInitOrder(2);
 
         server.start();
         logger.info("REST server started, listening on port: " + port + " at " + server.getURI());
@@ -121,9 +133,9 @@ public class RestServer  {
 
     private void stopJettyServer() throws Exception {
         // By setting exit to true the monitor thread will close the Jetty server
-        logger.info("Shutting down Jetty server");
+        logger.info("Stopping REST server ...");
         server.stop();
-        logger.info("REST server shut down");
+        logger.info("REST server is shutdown");
     }
 
 }
