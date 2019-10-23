@@ -171,14 +171,14 @@ public class GenericRestWSServer implements IWSServer {
         logger.info("Static block, creating MongoDBAdapatorFactory");
         try {
             if (System.getenv("CELLBASE_HOME") != null) {
-                logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME") + "/configuration.json");
+                logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME") + "/conf/configuration.json");
                 cellBaseConfiguration = CellBaseConfiguration
-                        .load(new FileInputStream(new File(System.getenv("CELLBASE_HOME") + "/configuration.json")));
+                        .load(new FileInputStream(new File(System.getenv("CELLBASE_HOME") + "/conf/configuration.json")));
             } else {
                 logger.info("Loading configuration from '{}'",
-                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
+                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.json").toString());
                 cellBaseConfiguration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.json"));
             }
 
             // If Configuration has been loaded we can create the DBAdaptorFactory
