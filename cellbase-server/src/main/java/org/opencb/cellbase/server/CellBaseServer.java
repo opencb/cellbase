@@ -29,7 +29,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 public class CellBaseServer extends ResourceConfig {
 
     public CellBaseServer() {
-        packages("org.opencb.cellbase.server.ws");
+        packages("org.opencb.cellbase.server.rest");
 
 //        BeanConfig beanConfig = new BeanConfig();
 //        beanConfig.setVersion("1.0.2");
