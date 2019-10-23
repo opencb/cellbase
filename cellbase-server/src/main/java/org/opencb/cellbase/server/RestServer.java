@@ -43,6 +43,7 @@ public class RestServer  {
     }
 
     public RestServer(CellBaseConfiguration configuration) {
+        this.configuration = configuration;
         init();
     }
 
