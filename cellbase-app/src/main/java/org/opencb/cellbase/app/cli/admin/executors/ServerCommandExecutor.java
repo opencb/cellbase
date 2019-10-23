@@ -36,7 +36,7 @@ public class ServerCommandExecutor extends CommandExecutor {
 
     @Override
     public void execute() {
-        if (serverCommandOptions.start != null) {
+        if (serverCommandOptions.start) {
             RestServer server = new RestServer(configuration);
             try {
                 server.start();
@@ -45,7 +45,7 @@ public class ServerCommandExecutor extends CommandExecutor {
             }
         }
 
-        if (serverCommandOptions.stop != null) {
+        if (serverCommandOptions.stop) {
             Client client = ClientBuilder.newClient();
             WebTarget target = client.target(configuration.getServer().getRest().getUrl() + configuration.getServer().getRest().getPort())
                     .path("cellbase")

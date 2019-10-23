@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 OpenCB
+ * Copyright 2015-2020 OpenCB
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,13 @@
 
 package org.opencb.cellbase.server.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.cellbase.server.RestServer;
+import org.opencb.commons.datastore.core.QueryResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -45,7 +42,8 @@ public class AdminRestWebService {
     private static RestServer server;
 
     public AdminRestWebService(@PathParam("apiVersion") String version, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest httpServletRequest, @Context ServletContext context) throws IOException {
+                               @Context HttpServletRequest httpServletRequest, @Context ServletContext context)
+        throws IOException {
 //        super(version, uriInfo, httpServletRequest, context);
         System.out.println("Build AdminWSServer");
     }
@@ -90,7 +88,8 @@ public class AdminRestWebService {
         // FIXME
 //        try {
 //            ObjectMapper jsonObjectMapper = getDefaultObjectMapper();
-//            return buildResponse(Response.ok(jsonObjectMapper.writer().writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
+//            return buildResponse(Response.ok(jsonObjectMapper.writer().writeValueAsString(queryResponse),
+//              MediaType.APPLICATION_JSON_TYPE));
 //        } catch (JsonProcessingException e) {
 //            e.printStackTrace();
 //        }

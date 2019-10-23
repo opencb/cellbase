@@ -174,11 +174,11 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"--start"}, description = "File with the new tool to be installed", arity = 0)
-        public String start;
+        @Parameter(names = {"--start"}, description = "Start the REST server", arity = 0)
+        public boolean start;
 
-        @Parameter(names = {"--stop"}, description = "File with the new tool to be installed", arity = 0)
-        public String stop;
+        @Parameter(names = {"--stop"}, description = "Stop the REST server", arity = 0)
+        public boolean stop;
     }
 
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
@@ -223,6 +223,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     public LoadCommandOptions getLoadCommandOptions() {
         return loadCommandOptions;
     }
+
+    public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
 
     public PostLoadCommandOptions getPostLoadCommandOptions() { return postLoadCommandOptions; }
 
