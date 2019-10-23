@@ -23,6 +23,8 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.server.rest.AdminRestWebService;
+import org.opencb.cellbase.server.rest.CORSFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,7 @@ import java.util.EnumSet;
 public class RestServer  {
 
     protected static Logger logger = LoggerFactory.getLogger("org.opencb.cellbase.server.RestServer");
-    private static org.eclipse.jetty.server.Server server;
+    private static Server server;
     private CellBaseConfiguration configuration;
     private boolean exit;
     private int port;
@@ -69,7 +71,7 @@ public class RestServer  {
 
         ServletContextHandler context = new ServletContextHandler(server, null, ServletContextHandler.SESSIONS);
         context.addServlet(sh, "/cellbase/webservices/rest/*");
-        context.setInitParameter("config-dir", configDir.toFile().toString());
+        //context.setInitParameter("config-dir", configDir.toFile().toString());
 
         // To add CORS Java filtert class to Jetty
         context.addFilter(CORSFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.ERROR));

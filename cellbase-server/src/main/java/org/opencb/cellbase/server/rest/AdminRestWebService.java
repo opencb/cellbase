@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencb.opencga.core.common.JacksonUtils.getDefaultObjectMapper;
+//import static org.opencb.opencga.core.common.JacksonUtils.getDefaultObjectMapper;
 
 
 @Path("/admin")
@@ -60,12 +60,6 @@ public class AdminRestWebService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        OpenCGAStorageService.getInstance().stop();
-//        try {
-//            RestStorageServer.stop();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
         return createOkResponse("bye!");
     }
 
@@ -93,21 +87,15 @@ public class AdminRestWebService {
         }
         queryResponse.setResponse(coll);
 
-        try {
-            ObjectMapper jsonObjectMapper = getDefaultObjectMapper();
-            return buildResponse(Response.ok(jsonObjectMapper.writer().writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-//        switch (outputFormat.toLowerCase()) {
-//            case "json":
-//                return createJsonResponse(queryResponse);
-//            case "xml":
-////                return createXmlResponse(queryResponse);
-//            default:
-//                return buildResponse(Response.ok());
+        // FIXME
+//        try {
+//            ObjectMapper jsonObjectMapper = getDefaultObjectMapper();
+//            return buildResponse(Response.ok(jsonObjectMapper.writer().writeValueAsString(queryResponse), MediaType.APPLICATION_JSON_TYPE));
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
 //        }
+
+
         return null;
     }
 
