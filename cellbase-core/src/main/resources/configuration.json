@@ -30,6 +30,12 @@
 			}
 		}
 	},
+	"server": {
+		"rest": {
+			"url": "localhost",
+			"port": "8081"
+		}
+	},
 	"defaultOutdir": "/tmp",
 	"download": {
 		"ensembl": {

@@ -51,6 +51,7 @@ public class RestServer  {
         if (configuration != null) {
             try {
                 this.port = Integer.valueOf(configuration.getServer().getRest().getPort());
+                logger.info("Using port: " + port);
             } catch (NumberFormatException e) {
                 throw new RuntimeException("Invalid port number: " + configuration.getServer().getRest().getPort());
             }
@@ -77,7 +78,7 @@ public class RestServer  {
         context.addFilter(CORSFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.ERROR));
 
         server.start();
-        logger.info("REST server started, listening on {}", port);
+        logger.info("REST server started, listening on port: " + port + " at " + server.getURI());
 
         // A hook is added in case the JVM is shutting down
         Runtime.getRuntime().addShutdownHook(new Thread() {
