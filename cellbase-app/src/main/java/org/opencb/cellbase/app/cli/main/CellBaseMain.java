@@ -22,7 +22,6 @@ import org.opencb.cellbase.app.cli.main.executors.QueryCommandExecutor;
 import org.opencb.cellbase.app.cli.main.executors.VariantAnnotationCommandExecutor;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 /**
  * Created by imedina on 03/02/15.
