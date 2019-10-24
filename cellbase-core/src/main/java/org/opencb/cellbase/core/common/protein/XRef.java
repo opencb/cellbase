@@ -23,6 +23,7 @@ package org.opencb.cellbase.core.common.protein;
  * Time: 2:47 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class XRef {
 
     private String id;

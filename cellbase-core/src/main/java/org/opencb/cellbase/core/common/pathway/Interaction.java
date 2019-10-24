@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.common.pathway;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
 public class Interaction {
 
     private String id, name, type;

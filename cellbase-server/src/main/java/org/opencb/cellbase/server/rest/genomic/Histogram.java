@@ -16,7 +16,8 @@
 
 package org.opencb.cellbase.server.rest.genomic;
 
-import org.opencb.cellbase.core.common.core.Gene;
+
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 
 import java.util.ArrayList;
