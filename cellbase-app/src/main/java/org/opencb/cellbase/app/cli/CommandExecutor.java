@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.app.cli;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -111,25 +113,47 @@ public abstract class CommandExecutor {
 
     /*
      * This method attempts to first data configuration from CLI parameter, if not present then uses
-     * the configuration from installation directory, if not exists then loads JAR configuration.json.
+     * the configuration from installation directory, if not exists then loads JAR configuration.json or yml.
      */
     public void loadCellBaseConfiguration() throws URISyntaxException, IOException {
         if (this.configFile != null) {
             logger.debug("Loading configuration from '{}'", this.configFile);
-            this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.configFile)));
+            File file = new File(this.configFile);
+            String fileExtension = FilenameUtils.getExtension(this.configFile);
+            CellBaseConfiguration.ConfigurationFileType fileType;
+            if (CellBaseConfiguration.ConfigurationFileType.JSON.toString().equalsIgnoreCase(fileExtension)) {
+                fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+            } else if (CellBaseConfiguration.ConfigurationFileType.YAML.toString().equalsIgnoreCase(fileExtension)
+                || "yml".equalsIgnoreCase(fileExtension)) {
+                fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
+            } else {
+                throw new RuntimeException("Invalid file type for configuration file, needs to be .json or .yaml but was "
+                    + fileExtension);
+            }
+            this.configuration = CellBaseConfiguration.load(fileType, new FileInputStream(file));
         } else {
             if (Files.exists(Paths.get(this.appHome + "/conf/configuration.json"))) {
                 logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.json");
-                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/conf/configuration.json")));
+                this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.JSON,
+                        new FileInputStream(new File(this.appHome + "/conf/configuration.json")));
+            } else if (Files.exists(Paths.get(this.appHome + "/conf/configuration.yml"))) {
+                    logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.yml");
+                    this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.YAML,
+                        new FileInputStream(new File(this.appHome + "/conf/configuration.yml")));
             } else {
-                logger.debug("Loading configuration from '{}'",
-                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json").toString());
-                this.configuration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json"));
+                InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json");
+                String configurationFilePath = "conf/configuration.json";
+                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+                if (inputStream == null) {
+                    inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.yml");
+                    configurationFilePath = "conf/configuration.yml";
+                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
+                }
+                logger.debug("Loading configuration from '{}'", configurationFilePath);
+                this.configuration = CellBaseConfiguration.load(fileType, inputStream);
             }
         }
     }
-
 
     protected void makeDir(Path folderPath) throws IOException {
         if (!Files.exists(folderPath)) {

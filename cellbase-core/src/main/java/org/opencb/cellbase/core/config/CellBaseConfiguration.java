@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.CaseFormat;
 import org.slf4j.LoggerFactory;
 
@@ -49,14 +50,18 @@ public class CellBaseConfiguration {
     private SpeciesProperties species;
     private ServerProperties server;
 
+    public enum ConfigurationFileType {
+        JSON, YAML
+    };
 
-    public static CellBaseConfiguration load(InputStream configurationInputStream) throws IOException {
-        ObjectMapper jsonMapper = new ObjectMapper();
-        CellBaseConfiguration configuration = jsonMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
-
+    public static CellBaseConfiguration load(ConfigurationFileType type, InputStream configurationInputStream) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        if (ConfigurationFileType.YAML.equals(type)) {
+            mapper = new ObjectMapper(new YAMLFactory());
+        }
+        CellBaseConfiguration configuration = mapper.readValue(configurationInputStream, CellBaseConfiguration.class);
         Map<String, String> envVariables = System.getenv();
         overwriteEnvVariables(configuration, envVariables);
-
         return configuration;
     }
 

@@ -47,6 +47,10 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -56,6 +60,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>configuration.json</include>
+                    <include>configuration.yml</include>
                     <include>git.properties</include>
                     <include>log4j.properties</include>
                 </includes>
