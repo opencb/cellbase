@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.cli;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.opencb.cellbase.app.cli.admin.executors.PostLoadCommandExecutor;
 
 
 @Disabled

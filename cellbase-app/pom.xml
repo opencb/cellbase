@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>4.8.0-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -21,22 +21,14 @@
     <dependencies>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-server</artifactId>
+            <artifactId>cellbase-client</artifactId>
             <version>${cellbase.version}</version>
-            <!--<type>war</type>-->
         </dependency>
         <dependency>
             <groupId>org.opencb.cellbase</groupId>
-            <artifactId>cellbase-client</artifactId>
-            <version>${cellbase.version}</version>
-            <!--<type>war</type>-->
+            <artifactId>cellbase-lib</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.beust</groupId>
-            <artifactId>jcommander</artifactId>
-            <version>1.58</version>
-        </dependency>
         <!--<dependency>-->
             <!--<groupId>psidev.psi.mi</groupId>-->
             <!--<artifactId>psimitab</artifactId>-->
@@ -45,17 +37,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.spockframework</groupId>
-            <artifactId>spock-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -72,6 +53,12 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-server</artifactId>
+            <version>5.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -79,6 +66,35 @@
         <testSourceDirectory>src/test/java</testSourceDirectory>
 
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.10</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <repositoryName>libs</repositoryName>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <useWildcardClassPath>true</useWildcardClassPath>
+                    <extraJvmArguments>-Xms256m -Xmx16384m -Dfile.encoding=UTF-8</extraJvmArguments>
+                    <programs>
+                        <program>
+                            <name>cellbase.sh</name>
+                            <mainClass>org.opencb.cellbase.app.cli.main.CellBaseMain</mainClass>
+                        </program>
+                        <program>
+                            <name>cellbase-admin.sh</name>
+                            <mainClass>org.opencb.cellbase.app.cli.admin.AdminMain</mainClass>
+                        </program>
+                    </programs>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
@@ -112,6 +128,7 @@
                                 <exec executable="mkdir">
                                     <arg value="${build.dir}"/>
                                     <arg value="${build.dir}/test"/>
+                                    <arg value="${build.dir}/conf"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}</echo>
@@ -122,11 +139,17 @@
                                     <arg value="${project.basedir}/app/mongodb-scripts"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
-                                    <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
-                                    <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${project.basedir}/../LICENSE"/>
                                     <arg value="${build.dir}"/>
+                                </exec>
+
+                                <echo>Copying to ${build.dir}/conf</echo>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
+                                    <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
+                                    <arg value="${build.dir}/conf"/>
                                 </exec>
 
                                 <echo>Coping war file</echo>

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>4.8.0-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -83,8 +83,6 @@
                 </executions>
 
                 <configuration>
-                    <!-- ... -->
-
                     <!-- this is false by default, forces the plugin to generate the git.properties file -->
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
 
@@ -121,7 +119,6 @@
                         <forceLongFormat>false</forceLongFormat>
                     </gitDescribe>
                 </configuration>
-
             </plugin>
         </plugins>
     </build>

@@ -118,14 +118,14 @@ public abstract class CommandExecutor {
             logger.debug("Loading configuration from '{}'", this.configFile);
             this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.configFile)));
         } else {
-            if (Files.exists(Paths.get(this.appHome + "/configuration.json"))) {
-                logger.debug("Loading configuration from '{}'", this.appHome + "/configuration.json");
-                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/configuration.json")));
+            if (Files.exists(Paths.get(this.appHome + "/conf/configuration.json"))) {
+                logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.json");
+                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/conf/configuration.json")));
             } else {
                 logger.debug("Loading configuration from '{}'",
-                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
+                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json").toString());
                 this.configuration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json"));
             }
         }
     }
@@ -136,41 +136,5 @@ public abstract class CommandExecutor {
             Files.createDirectories(folderPath);
         }
     }
-
-//    protected boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
-//            throws IOException, InterruptedException {
-//        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
-//
-//        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
-//        Process process = builder.start();
-//        process.waitFor();
-//
-//        // Check process output
-//        boolean executedWithoutErrors = true;
-//        int genomeInfoExitValue = process.exitValue();
-//        if (genomeInfoExitValue != 0) {
-//            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-//            executedWithoutErrors = false;
-//        }
-//        return executedWithoutErrors;
-//    }
-//
-//    private ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
-//        List<String> commandArgs = new ArrayList<>();
-//        commandArgs.add(binPath);
-//        commandArgs.addAll(args);
-//        ProcessBuilder builder = new ProcessBuilder(commandArgs);
-//
-//        // working directoy and error and output log outputs
-//        if (workingDirectory != null) {
-//            builder.directory(workingDirectory);
-//        }
-//        builder.redirectErrorStream(true);
-//        if (logFilePath != null) {
-//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
-//        }
-//
-//        return builder;
-//    }
 
 }

@@ -30,6 +30,11 @@
 			}
 		}
 	},
+	"server": {
+		"rest": {
+			"port": "9090"
+		}
+	},
 	"defaultOutdir": "/tmp",
 	"download": {
 		"ensembl": {
