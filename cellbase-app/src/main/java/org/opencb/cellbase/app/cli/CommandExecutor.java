@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.app.cli;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -131,42 +130,25 @@ public abstract class CommandExecutor {
         Path confPath = Paths.get(this.conf);
         FileUtils.checkDirectory(confPath);
 
-        if (this.conf != null) {
-            logger.debug("Loading configuration from '{}'", this.conf);
-            File file = new File(this.configFile);
-            String fileExtension = FilenameUtils.getExtension(this.configFile);
-            CellBaseConfiguration.ConfigurationFileType fileType;
-            if (CellBaseConfiguration.ConfigurationFileType.JSON.toString().equalsIgnoreCase(fileExtension)) {
-                fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
-            } else if (CellBaseConfiguration.ConfigurationFileType.YAML.toString().equalsIgnoreCase(fileExtension)
-                || "yml".equalsIgnoreCase(fileExtension)) {
-                fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
-            } else {
-                throw new RuntimeException("Invalid file type for configuration file, needs to be .json or .yaml but was "
-                    + fileExtension);
-            }
-            this.configuration = CellBaseConfiguration.load(fileType, new FileInputStream(file));
+        if (Files.exists(confPath.resolve("configuration.json"))) {
+            logger.debug("Loading configuration from '{}'", confPath.resolve("configuration.json").toAbsolutePath());
+            this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.JSON,
+                    new FileInputStream(confPath.resolve("configuration.json").toFile()));
+        } else if (Files.exists(Paths.get(this.appHome + "/conf/configuration.yml"))) {
+            logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.yml");
+            this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.YAML,
+                    new FileInputStream(new File(this.appHome + "/conf/configuration.yml")));
         } else {
-            if (Files.exists(confPath.resolve("configuration.json"))) {
-                logger.debug("Loading configuration from '{}'", confPath.resolve("configuration.json").toAbsolutePath());
-                this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.JSON,
-                        new FileInputStream(confPath.resolve("configuration.json").toFile()));
-            } else if (Files.exists(Paths.get(this.appHome + "/conf/configuration.yml"))) {
-                    logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.yml");
-                    this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.YAML,
-                        new FileInputStream(new File(this.appHome + "/conf/configuration.yml")));
-            } else {
-                InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json");
-                String configurationFilePath = "conf/configuration.json";
-                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
-                if (inputStream == null) {
-                    inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.yml");
-                    configurationFilePath = "conf/configuration.yml";
-                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
-                }
-                logger.debug("Loading configuration from '{}'", configurationFilePath);
-                this.configuration = CellBaseConfiguration.load(fileType, inputStream);
+            InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json");
+            String configurationFilePath = "conf/configuration.json";
+            CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+            if (inputStream == null) {
+                inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.yml");
+                configurationFilePath = "conf/configuration.yml";
+                fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
             }
+            logger.debug("Loading configuration from '{}'", configurationFilePath);
+            this.configuration = CellBaseConfiguration.load(fileType, inputStream);
         }
     }
 
@@ -182,14 +164,16 @@ public abstract class CommandExecutor {
         if (Files.exists(confPath.resolve("client-configuration.yml"))) {
             Path configurationPath = confPath.resolve("client-configuration.yml");
             logger.debug("Loading configuration from '{}'", configurationPath.toAbsolutePath());
-            this.clientConfiguration = ClientConfiguration.load(new FileInputStream(configurationPath.toFile()), "yml");
+            this.clientConfiguration = ClientConfiguration.load(new FileInputStream(configurationPath.toFile()),
+                    CellBaseConfiguration.ConfigurationFileType.YAML);
         } else {
             if (Files.exists(confPath.resolve("client-configuration.json"))) {
                 Path clientConfigurationPath = confPath.resolve("client-configuration.json");
                 logger.debug("Loading configuration from '{}'", clientConfigurationPath.toAbsolutePath());
-                this.clientConfiguration = ClientConfiguration.load(new FileInputStream(clientConfigurationPath.toFile()), "json");
+                this.clientConfiguration = ClientConfiguration.load(new FileInputStream(clientConfigurationPath.toFile()),
+                        CellBaseConfiguration.ConfigurationFileType.JSON);
             } else {
-                logger.error("");
+                throw new RuntimeException("Invalid configuration file, expecting client-configuration.json or client-configuration.yml");
             }
         }
     }

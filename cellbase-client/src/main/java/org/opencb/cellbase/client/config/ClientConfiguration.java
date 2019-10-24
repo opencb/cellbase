@@ -18,6 +18,7 @@ package org.opencb.cellbase.client.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,19 +40,19 @@ public class ClientConfiguration {
     }
 
     public static ClientConfiguration load(InputStream configurationInputStream) throws IOException {
-        return load(configurationInputStream, "yml");
+        return load(configurationInputStream, CellBaseConfiguration.ConfigurationFileType.YAML);
     }
 
-    public static ClientConfiguration load(InputStream configurationInputStream, String format) throws IOException {
+    public static ClientConfiguration load(InputStream configurationInputStream, CellBaseConfiguration.ConfigurationFileType format)
+        throws IOException {
         ClientConfiguration clientConfiguration;
         ObjectMapper objectMapper;
-        switch (format.toLowerCase()) {
-            case "json":
+        switch (format) {
+            case JSON:
                 objectMapper = new ObjectMapper();
                 clientConfiguration = objectMapper.readValue(configurationInputStream, ClientConfiguration.class);
                 break;
-            case "yml":
-            case "yaml":
+            case YAML:
             default:
                 objectMapper = new ObjectMapper(new YAMLFactory());
                 clientConfiguration = objectMapper.readValue(configurationInputStream, ClientConfiguration.class);
