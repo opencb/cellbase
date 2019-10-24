@@ -63,7 +63,8 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
         CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
-                .load(MonitorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
+                .load(CellBaseConfiguration.ConfigurationFileType.JSON,
+                        MonitorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
         MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         Monitor monitor = new Monitor(dbAdaptorFactory);
         HealthStatus health = monitor.run(SPECIES, ASSEMBLY);
