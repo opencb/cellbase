@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -54,8 +55,13 @@ public abstract class CellBaseLoader implements Callable<Integer> {
             this.cellBaseConfiguration = configuration;
         } else {
             try {
-                this.cellBaseConfiguration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+                InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json");
+                if (inputStream == null) {
+                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
+                    inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.yml");
+                }
+                this.cellBaseConfiguration = CellBaseConfiguration.load(fileType, inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }

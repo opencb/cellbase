@@ -46,6 +46,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -171,14 +172,25 @@ public class GenericRestWSServer implements IWSServer {
         logger.info("Static block, creating MongoDBAdapatorFactory");
         try {
             if (System.getenv("CELLBASE_HOME") != null) {
-                logger.info("Loading configuration from '{}'", System.getenv("CELLBASE_HOME") + "/conf/configuration.json");
-                cellBaseConfiguration = CellBaseConfiguration
-                        .load(new FileInputStream(new File(System.getenv("CELLBASE_HOME") + "/conf/configuration.json")));
+                File configurationFile = new File(System.getenv("CELLBASE_HOME") + "/conf/configuration.json");
+                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+                if (!configurationFile.exists()) {
+                    configurationFile = new File(System.getenv("CELLBASE_HOME") + "/conf/configuration.yml");
+                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
+                }
+                logger.info("Loading configuration from '{}'", configurationFile.getAbsolutePath());
+                cellBaseConfiguration = CellBaseConfiguration.load(fileType, new FileInputStream(configurationFile));
             } else {
-                logger.info("Loading configuration from '{}'",
-                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.json").toString());
-                cellBaseConfiguration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.json"));
+                InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.json");
+                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+                String configurationPath = "/conf/configuration.json";
+                if (inputStream == null) {
+                    inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.yml");
+                    configurationPath = "/conf/configuration.yml";
+                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
+                }
+                logger.info("Loading configuration from '{}'", configurationPath);
+                cellBaseConfiguration = CellBaseConfiguration.load(fileType, inputStream);
             }
 
             // If Configuration has been loaded we can create the DBAdaptorFactory

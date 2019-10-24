@@ -24,6 +24,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.commons.utils.CommandLineUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -71,7 +72,7 @@ public abstract class CliOptionsParser {
         @Parameter(names = {"-v", "--verbose"}, description = "[Deprecated] Set the level of the logging", required = false, arity = 1)
         public boolean verbose;
 
-        @Parameter(names = {"-C", "--config"}, description = "CellBase configuration.json file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.json for an example", required = false, arity = 1)
+        @Parameter(names = {"-C", "--config"}, description = "CellBase configuration.json or configuration.yml file. Have a look at cellbase/cellbase-core/src/main/resources/configuration.yml for an example", required = false, arity = 1)
         public String conf;
 
     }
@@ -122,8 +123,15 @@ public abstract class CliOptionsParser {
     protected String getAPIVersion() {
         CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
         try {
-            cellBaseConfiguration = CellBaseConfiguration
-                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json"));
+            InputStream inputStream = CellBaseConfiguration.class.getClassLoader()
+                    .getResourceAsStream("conf/configuration.json");
+            CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+            if (inputStream == null) {
+                inputStream = CellBaseConfiguration.class.getClassLoader()
+                        .getResourceAsStream("conf/configuration.yml");
+                fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
+            }
+            cellBaseConfiguration = CellBaseConfiguration.load(fileType, inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
