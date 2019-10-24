@@ -123,7 +123,7 @@ public abstract class CliOptionsParser {
         CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
         try {
             cellBaseConfiguration = CellBaseConfiguration
-                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+                    .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json"));
         } catch (IOException e) {
             e.printStackTrace();
         }

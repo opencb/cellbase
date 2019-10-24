@@ -53,6 +53,12 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-server</artifactId>
+            <version>5.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -122,6 +128,7 @@
                                 <exec executable="mkdir">
                                     <arg value="${build.dir}"/>
                                     <arg value="${build.dir}/test"/>
+                                    <arg value="${build.dir}/conf"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}</echo>
@@ -132,11 +139,17 @@
                                     <arg value="${project.basedir}/app/mongodb-scripts"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
-                                    <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
-                                    <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${project.basedir}/../LICENSE"/>
                                     <arg value="${build.dir}"/>
+                                </exec>
+
+                                <echo>Copying to ${build.dir}/conf</echo>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.json"/>
+                                    <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
+                                    <arg value="${build.dir}/conf"/>
                                 </exec>
 
                                 <echo>Coping war file</echo>

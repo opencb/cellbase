@@ -118,14 +118,14 @@ public abstract class CommandExecutor {
             logger.debug("Loading configuration from '{}'", this.configFile);
             this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.configFile)));
         } else {
-            if (Files.exists(Paths.get(this.appHome + "/configuration.json"))) {
-                logger.debug("Loading configuration from '{}'", this.appHome + "/configuration.json");
-                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/configuration.json")));
+            if (Files.exists(Paths.get(this.appHome + "/conf/configuration.json"))) {
+                logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.json");
+                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/conf/configuration.json")));
             } else {
                 logger.debug("Loading configuration from '{}'",
-                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
+                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json").toString());
                 this.configuration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json"));
             }
         }
     }

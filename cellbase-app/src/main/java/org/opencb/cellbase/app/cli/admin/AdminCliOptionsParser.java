@@ -33,6 +33,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
+    private ServerCommandOptions serverCommandOptions;
     private PostLoadCommandOptions postLoadCommandOptions;
 
     public AdminCliOptionsParser() {
@@ -42,11 +43,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
+        serverCommandOptions = new ServerCommandOptions();
         postLoadCommandOptions = new PostLoadCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
+        jCommander.addCommand("server", serverCommandOptions);
         jCommander.addCommand("post-load", postLoadCommandOptions);
     }
 
@@ -165,6 +168,22 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     }
 
+    @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")
+    public class ServerCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"--start"}, description = "Start the REST server", arity = 0)
+        public boolean start;
+
+        @Parameter(names = {"--stop"}, description = "Stop the REST server", arity = 0)
+        public boolean stop;
+
+        @Parameter(names = {"--port"}, description = "REST port to be used", arity = 1)
+        public int port;
+    }
+
     @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
     public class PostLoadCommandOptions {
 
@@ -207,6 +226,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     public LoadCommandOptions getLoadCommandOptions() {
         return loadCommandOptions;
     }
+
+    public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
 
     public PostLoadCommandOptions getPostLoadCommandOptions() { return postLoadCommandOptions; }
 

@@ -19,10 +19,7 @@ package org.opencb.cellbase.app.cli.admin;
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
-import org.opencb.cellbase.app.cli.admin.executors.BuildCommandExecutor;
-import org.opencb.cellbase.app.cli.admin.executors.DownloadCommandExecutor;
-import org.opencb.cellbase.app.cli.admin.executors.LoadCommandExecutor;
-import org.opencb.cellbase.app.cli.admin.executors.PostLoadCommandExecutor;
+import org.opencb.cellbase.app.cli.admin.executors.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -79,6 +76,9 @@ public class AdminMain {
                         break;
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
+                        break;
+                    case "server":
+                        commandExecutor = new ServerCommandExecutor(cliOptionsParser.getServerCommandOptions());
                         break;
                     case "post-load":
                         commandExecutor = new PostLoadCommandExecutor(cliOptionsParser.getPostLoadCommandOptions());
