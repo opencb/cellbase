@@ -39,13 +39,13 @@ public class ClientConfiguration {
     }
 
     public static ClientConfiguration load(InputStream configurationInputStream) throws IOException {
-        return load(configurationInputStream, "yaml");
+        return load(configurationInputStream, "yml");
     }
 
     public static ClientConfiguration load(InputStream configurationInputStream, String format) throws IOException {
         ClientConfiguration clientConfiguration;
         ObjectMapper objectMapper;
-        switch (format) {
+        switch (format.toLowerCase()) {
             case "json":
                 objectMapper = new ObjectMapper();
                 clientConfiguration = objectMapper.readValue(configurationInputStream, ClientConfiguration.class);

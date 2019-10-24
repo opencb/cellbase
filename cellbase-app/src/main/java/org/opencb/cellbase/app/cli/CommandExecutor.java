@@ -17,10 +17,13 @@
 package org.opencb.cellbase.app.cli;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +43,15 @@ public abstract class CommandExecutor {
 
     protected String logLevel;
     protected boolean verbose;
+    protected String conf;
+
+    @Deprecated
     protected String configFile;
 
     protected String appHome;
+
     protected CellBaseConfiguration configuration;
+    protected ClientConfiguration clientConfiguration;
 
     protected Logger logger;
 
@@ -51,16 +59,20 @@ public abstract class CommandExecutor {
 
     }
 
-    public CommandExecutor(String logLevel, boolean verbose, String configFile) {
+    public CommandExecutor(String logLevel, boolean verbose, String conf) {
         this.logLevel = logLevel;
         this.verbose = verbose;
-        this.configFile = configFile;
+        this.conf = conf;
 
         /**
          * System property 'app.home' is set up by cellbase.sh. If by any reason this is null
          * then CELLBASE_HOME environment variable is used instead.
          */
         this.appHome = System.getProperty("app.home", System.getenv("CELLBASE_HOME"));
+
+        if (StringUtils.isEmpty(conf)) {
+            this.conf = this.appHome + "/conf";
+        }
 
         if (logLevel != null && !logLevel.isEmpty()) {
             // We must call to this method
@@ -116,8 +128,11 @@ public abstract class CommandExecutor {
      * the configuration from installation directory, if not exists then loads JAR configuration.json or yml.
      */
     public void loadCellBaseConfiguration() throws URISyntaxException, IOException {
-        if (this.configFile != null) {
-            logger.debug("Loading configuration from '{}'", this.configFile);
+        Path confPath = Paths.get(this.conf);
+        FileUtils.checkDirectory(confPath);
+
+        if (this.conf != null) {
+            logger.debug("Loading configuration from '{}'", this.conf);
             File file = new File(this.configFile);
             String fileExtension = FilenameUtils.getExtension(this.configFile);
             CellBaseConfiguration.ConfigurationFileType fileType;
@@ -132,10 +147,10 @@ public abstract class CommandExecutor {
             }
             this.configuration = CellBaseConfiguration.load(fileType, new FileInputStream(file));
         } else {
-            if (Files.exists(Paths.get(this.appHome + "/conf/configuration.json"))) {
-                logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.json");
+            if (Files.exists(confPath.resolve("configuration.json"))) {
+                logger.debug("Loading configuration from '{}'", confPath.resolve("configuration.json").toAbsolutePath());
                 this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.JSON,
-                        new FileInputStream(new File(this.appHome + "/conf/configuration.json")));
+                        new FileInputStream(confPath.resolve("configuration.json").toFile()));
             } else if (Files.exists(Paths.get(this.appHome + "/conf/configuration.yml"))) {
                     logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.yml");
                     this.configuration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.YAML,
@@ -151,6 +166,30 @@ public abstract class CommandExecutor {
                 }
                 logger.debug("Loading configuration from '{}'", configurationFilePath);
                 this.configuration = CellBaseConfiguration.load(fileType, inputStream);
+            }
+        }
+    }
+
+    /**
+     * This method attempts to first data configuration from CLI parameter, if not present then uses
+     * the configuration from installation directory, if not exists then loads JAR client-configuration.yml.
+     *
+     * @throws IOException If any IO problem occurs
+     */
+    public void loadClientConfiguration() throws IOException {
+        Path confPath = Paths.get(this.conf);
+        FileUtils.checkDirectory(confPath);
+        if (Files.exists(confPath.resolve("client-configuration.yml"))) {
+            Path configurationPath = confPath.resolve("client-configuration.yml");
+            logger.debug("Loading configuration from '{}'", configurationPath.toAbsolutePath());
+            this.clientConfiguration = ClientConfiguration.load(new FileInputStream(configurationPath.toFile()), "yml");
+        } else {
+            if (Files.exists(confPath.resolve("client-configuration.json"))) {
+                Path clientConfigurationPath = confPath.resolve("client-configuration.json");
+                logger.debug("Loading configuration from '{}'", clientConfigurationPath.toAbsolutePath());
+                this.clientConfiguration = ClientConfiguration.load(new FileInputStream(clientConfigurationPath.toFile()), "json");
+            } else {
+                logger.error("");
             }
         }
     }

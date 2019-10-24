@@ -74,9 +74,9 @@ public class CellBaseMain {
 
             if (commandExecutor != null) {
                 try {
-                    commandExecutor.loadCellBaseConfiguration();
+                    commandExecutor.loadClientConfiguration();
                     commandExecutor.execute();
-                } catch (IOException | URISyntaxException e) {
+                } catch (IOException e) {
                     commandExecutor.getLogger().error("Error reading CellBase configuration: " + e.getMessage());
                     System.exit(1);
                 }
