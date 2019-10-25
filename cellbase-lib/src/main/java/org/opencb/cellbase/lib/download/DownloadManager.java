@@ -40,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -222,7 +223,7 @@ public class DownloadManager {
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas();
         downloadGeneDiseaseAnnotation(geneFolder);
-        downloadGnomad(sp, speciesFolder);
+        downloadGnomad(sp, geneFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
@@ -349,7 +350,7 @@ public class DownloadManager {
         List<String> files = configuration.getDownload().getDisgenet().getFiles();
         for (String file : files) {
             file = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
-            downloadFile(host + "/" + file, file);
+            downloadFile(host + "/" + file, geneFolder.resolve(file).toString());
         }
 
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
@@ -357,14 +358,18 @@ public class DownloadManager {
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
-    private void downloadGnomad(Species species, Path speciesFolder) throws IOException, InterruptedException {
+    private void downloadGnomad(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD data...");
             String host = configuration.getDownload().getGnomad().getHost();
-            List<String> fileNames = configuration.getDownload().getGnomad().getFiles();
+            List<String> fileNames = configuration.getDownload().getGnomad().getFiles()
+                    .stream()
+                    .map(s -> geneFolder.resolve(s).toString())
+                    .collect(Collectors.toList());
+
             downloadFiles(host, fileNames);
             saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomad().getVersion(), getTimeStamp(),
-                    Collections.singletonList(host), speciesFolder.resolve("gnomadVersion.json"));
+                    Collections.singletonList(host), geneFolder.resolve("gnomadVersion.json"));
         }
     }
 
