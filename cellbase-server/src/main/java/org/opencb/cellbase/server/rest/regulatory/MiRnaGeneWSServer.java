@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.rest.regulatory;
 
 import io.swagger.annotations.Api;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -37,7 +38,7 @@ public class MiRnaGeneWSServer extends RegulatoryWSServer {
 
 
     public MiRnaGeneWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-                             @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                             @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
 

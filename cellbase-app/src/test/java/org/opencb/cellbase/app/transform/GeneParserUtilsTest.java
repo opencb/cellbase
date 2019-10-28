@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.transform;
 
 import org.junit.Test;
 import org.opencb.biodata.models.core.Constraint;
+import org.opencb.cellbase.lib.builders.GeneParserUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
