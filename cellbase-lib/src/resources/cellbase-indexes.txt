@@ -12,22 +12,6 @@
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.alleleOrigin": 1}, {sparse: true})
 {"collection": "clinical_variants", "fields": {"_traits": 1}, "options": {"background": true}}
 
-{"collection": "clinical", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.clinVarAccession.acc": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.measureSet.measure.type": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"_geneIds": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"_phenotypes": "text"})
-{"collection": "clinical", "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.clinicalSignificance.description": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"primarySite": "text"})
-{"collection": "clinical", "fields": {"siteSubtype": "text"})
-{"collection": "clinical", "fields": {"primaryHistology": "text"})
-{"collection": "clinical", "fields": {"histologySubtype": "text"})
-{"collection": "clinical", "fields": {"studies.traits.diseaseTrait": "text"})
-
 {"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "conservation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 

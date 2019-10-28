@@ -17,8 +17,10 @@
 package org.opencb.cellbase.lib.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import org.bson.*;
 import org.bson.conversions.Bson;
@@ -28,10 +30,13 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -63,6 +68,12 @@ public class MongoDBAdaptor {
 
         initSpeciesAssembly(species, assembly);
 //        jsonObjectMapper = new ObjectMapper();
+    }
+
+    public void createIndexes() {
+        InputStream resourceAsStream = getClass().getResourceAsStream("/cellbase-indexes.txt");
+        MongoDBIndexUtils.createIndexes(mongoDataStore, mongoDataStore.getDb(),
+                mongoDataStore.getMongoDBConfiguration(), resourceAsStream);
     }
 
     private void initSpeciesAssembly(String species, String assembly) {
