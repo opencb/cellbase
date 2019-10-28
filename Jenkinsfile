@@ -26,7 +26,6 @@ pipeline {
             }
             steps {
                 sh 'docker build -t cellbase -f cellbase-app/app/docker/cellbase/Dockerfile .'
-                sh 'docker build -t cellbase-app -f cellbase-app/app/docker/cellbase-app/Dockerfile .'
             }
         }
 
@@ -36,13 +35,10 @@ pipeline {
              }
              steps {
                 script {
-                   def images = ["cellbase", "cellbase-app"]
                    def tag = sh(returnStdout: true, script: "git rev-parse --verify HEAD").trim()
                    withDockerRegistry([ credentialsId: "wasim-docker-hub", url: "" ]) {
-                       for(int i =0; i < images.size(); i++){
-                           sh "docker tag '${images[i]}' opencb/'${images[i]}':${tag}"
-                           sh "docker push opencb/'${images[i]}':${tag}"
-                       }
+                           sh "docker tag cellbase opencb/cellbase:${tag}"
+                           sh "docker push opencb/cellbase:${tag}"
                    }
                 }
              }

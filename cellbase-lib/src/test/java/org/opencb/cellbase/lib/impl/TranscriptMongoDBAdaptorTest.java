@@ -17,8 +17,9 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.bson.Document;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -35,7 +36,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by fjlopez on 27/04/16.
@@ -45,7 +47,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
@@ -80,7 +82,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), "BRCA2");
         queryOptions = new QueryOptions("include", "transcripts.id");
         queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
-        assertEquals("Number of transcripts with biotype protein_coding", 3, queryResult.getNumTotalResults());
+        assertEquals(3, queryResult.getNumTotalResults());
 
     }
 

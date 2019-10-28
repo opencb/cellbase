@@ -18,6 +18,7 @@ package org.opencb.cellbase.client.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,25 +35,24 @@ public class ClientConfiguration {
     private String logFile;
 
     private RestConfig rest;
-    private GrpcConfig grpc;
 
     public ClientConfiguration() {
     }
 
     public static ClientConfiguration load(InputStream configurationInputStream) throws IOException {
-        return load(configurationInputStream, "yaml");
+        return load(configurationInputStream, CellBaseConfiguration.ConfigurationFileFormat.YAML);
     }
 
-    public static ClientConfiguration load(InputStream configurationInputStream, String format) throws IOException {
+    public static ClientConfiguration load(InputStream configurationInputStream, CellBaseConfiguration.ConfigurationFileFormat format)
+        throws IOException {
         ClientConfiguration clientConfiguration;
         ObjectMapper objectMapper;
         switch (format) {
-            case "json":
+            case JSON:
                 objectMapper = new ObjectMapper();
                 clientConfiguration = objectMapper.readValue(configurationInputStream, ClientConfiguration.class);
                 break;
-            case "yml":
-            case "yaml":
+            case YAML:
             default:
                 objectMapper = new ObjectMapper(new YAMLFactory());
                 clientConfiguration = objectMapper.readValue(configurationInputStream, ClientConfiguration.class);
@@ -75,7 +75,6 @@ public class ClientConfiguration {
         sb.append(", logLevel='").append(logLevel).append('\'');
         sb.append(", logFile='").append(logFile).append('\'');
         sb.append(", rest=").append(rest);
-        sb.append(", grpc=").append(grpc);
         sb.append('}');
         return sb.toString();
     }
@@ -122,15 +121,6 @@ public class ClientConfiguration {
 
     public ClientConfiguration setRest(RestConfig rest) {
         this.rest = rest;
-        return this;
-    }
-
-    public GrpcConfig getGrpc() {
-        return grpc;
-    }
-
-    public ClientConfiguration setGrpc(GrpcConfig grpc) {
-        this.grpc = grpc;
         return this;
     }
 }

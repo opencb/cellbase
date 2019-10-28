@@ -16,14 +16,14 @@
 
 package org.opencb.cellbase.app.cli;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.opencb.cellbase.app.cli.admin.executors.PostLoadCommandExecutor;
 
-import static org.junit.Assert.*;
 
+@Disabled
 public class PostLoadCommandExecutorTest {
 
-    @Ignore
     @Test
     public void testLoadClinicalAnnotation() {
         PostLoadCommandExecutor postLoadCommandExecutor = new PostLoadCommandExecutor();

@@ -16,16 +16,20 @@
 
 package org.opencb.cellbase.app.cli;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,10 +42,15 @@ public abstract class CommandExecutor {
 
     protected String logLevel;
     protected boolean verbose;
+    protected String conf;
+
+    @Deprecated
     protected String configFile;
 
     protected String appHome;
+
     protected CellBaseConfiguration configuration;
+    protected ClientConfiguration clientConfiguration;
 
     protected Logger logger;
 
@@ -49,16 +58,20 @@ public abstract class CommandExecutor {
 
     }
 
-    public CommandExecutor(String logLevel, boolean verbose, String configFile) {
+    public CommandExecutor(String logLevel, boolean verbose, String conf) {
         this.logLevel = logLevel;
         this.verbose = verbose;
-        this.configFile = configFile;
+        this.conf = conf;
 
         /**
          * System property 'app.home' is set up by cellbase.sh. If by any reason this is null
          * then CELLBASE_HOME environment variable is used instead.
          */
         this.appHome = System.getProperty("app.home", System.getenv("CELLBASE_HOME"));
+
+        if (StringUtils.isEmpty(conf)) {
+            this.conf = this.appHome + "/conf";
+        }
 
         if (logLevel != null && !logLevel.isEmpty()) {
             // We must call to this method
@@ -111,66 +124,62 @@ public abstract class CommandExecutor {
 
     /*
      * This method attempts to first data configuration from CLI parameter, if not present then uses
-     * the configuration from installation directory, if not exists then loads JAR configuration.json.
+     * the configuration from installation directory, if not exists then loads JAR configuration.json or yml.
      */
     public void loadCellBaseConfiguration() throws URISyntaxException, IOException {
-        if (this.configFile != null) {
-            logger.debug("Loading configuration from '{}'", this.configFile);
-            this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.configFile)));
+        Path confPath = Paths.get(this.conf);
+        FileUtils.checkDirectory(confPath);
+
+        if (Files.exists(confPath.resolve("configuration.json"))) {
+            logger.debug("Loading configuration from '{}'", confPath.resolve("configuration.json").toAbsolutePath());
+            this.configuration = CellBaseConfiguration.load(new FileInputStream(confPath.resolve("configuration.json").toFile()));
+        } else if (Files.exists(Paths.get(this.appHome + "/conf/configuration.yml"))) {
+            logger.debug("Loading configuration from '{}'", this.appHome + "/conf/configuration.yml");
+            this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/conf/configuration.yml")));
         } else {
-            if (Files.exists(Paths.get(this.appHome + "/configuration.json"))) {
-                logger.debug("Loading configuration from '{}'", this.appHome + "/configuration.json");
-                this.configuration = CellBaseConfiguration.load(new FileInputStream(new File(this.appHome + "/configuration.json")));
-            } else {
-                logger.debug("Loading configuration from '{}'",
-                        CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json").toString());
-                this.configuration = CellBaseConfiguration
-                        .load(CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.json"));
+            InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json");
+            String configurationFilePath = "conf/configuration.json";
+            CellBaseConfiguration.ConfigurationFileFormat fileType = CellBaseConfiguration.ConfigurationFileFormat.JSON;
+            if (inputStream == null) {
+                inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.yml");
+                configurationFilePath = "conf/configuration.yml";
+                fileType = CellBaseConfiguration.ConfigurationFileFormat.YAML;
             }
+            logger.debug("Loading configuration from '{}'", configurationFilePath);
+            this.configuration = CellBaseConfiguration.load(inputStream);
         }
     }
 
+    /**
+     * This method attempts to first data configuration from CLI parameter, if not present then uses
+     * the configuration from installation directory, if not exists then loads JAR client-configuration.yml.
+     *
+     * @throws IOException If any IO problem occurs
+     */
+    public void loadClientConfiguration() throws IOException {
+        Path confPath = Paths.get(this.conf);
+        FileUtils.checkDirectory(confPath);
+        if (Files.exists(confPath.resolve("client-configuration.yml"))) {
+            Path configurationPath = confPath.resolve("client-configuration.yml");
+            logger.debug("Loading configuration from '{}'", configurationPath.toAbsolutePath());
+            this.clientConfiguration = ClientConfiguration.load(new FileInputStream(configurationPath.toFile()),
+                    CellBaseConfiguration.ConfigurationFileFormat.YAML);
+        } else {
+            if (Files.exists(confPath.resolve("client-configuration.json"))) {
+                Path clientConfigurationPath = confPath.resolve("client-configuration.json");
+                logger.debug("Loading configuration from '{}'", clientConfigurationPath.toAbsolutePath());
+                this.clientConfiguration = ClientConfiguration.load(new FileInputStream(clientConfigurationPath.toFile()),
+                        CellBaseConfiguration.ConfigurationFileFormat.JSON);
+            } else {
+                throw new RuntimeException("Invalid configuration file, expecting client-configuration.json or client-configuration.yml");
+            }
+        }
+    }
 
     protected void makeDir(Path folderPath) throws IOException {
         if (!Files.exists(folderPath)) {
             Files.createDirectories(folderPath);
         }
     }
-
-//    protected boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
-//            throws IOException, InterruptedException {
-//        ProcessBuilder builder = getProcessBuilder(workingDirectory, binPath, args, logFilePath);
-//
-//        logger.debug("Executing command: " + StringUtils.join(builder.command(), " "));
-//        Process process = builder.start();
-//        process.waitFor();
-//
-//        // Check process output
-//        boolean executedWithoutErrors = true;
-//        int genomeInfoExitValue = process.exitValue();
-//        if (genomeInfoExitValue != 0) {
-//            logger.warn("Error executing {}, error code: {}. More info in log file: {}", binPath, genomeInfoExitValue, logFilePath);
-//            executedWithoutErrors = false;
-//        }
-//        return executedWithoutErrors;
-//    }
-//
-//    private ProcessBuilder getProcessBuilder(File workingDirectory, String binPath, List<String> args, String logFilePath) {
-//        List<String> commandArgs = new ArrayList<>();
-//        commandArgs.add(binPath);
-//        commandArgs.addAll(args);
-//        ProcessBuilder builder = new ProcessBuilder(commandArgs);
-//
-//        // working directoy and error and output log outputs
-//        if (workingDirectory != null) {
-//            builder.directory(workingDirectory);
-//        }
-//        builder.redirectErrorStream(true);
-//        if (logFilePath != null) {
-//            builder.redirectOutput(ProcessBuilder.Redirect.appendTo(new File(logFilePath)));
-//        }
-//
-//        return builder;
-//    }
 
 }

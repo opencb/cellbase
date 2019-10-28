@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -29,8 +29,8 @@ import org.opencb.commons.datastore.core.QueryResponse;
 import java.io.IOException;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by swaathi on 20/05/16.
@@ -51,19 +51,19 @@ public class TranscriptClientTest {
     @Test
     public void count() throws Exception {
         QueryResponse<Long> count = cellBaseClient.getTranscriptClient().count(new Query());
-        assertEquals("Number of returned transcripts do not match", 196501, count.firstResult().longValue());
+        assertEquals(196501, count.firstResult().longValue(), "Number of returned transcripts do not match");
     }
 
     @Test
     public void first() throws Exception {
         QueryResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().first();
-        assertNotNull("First transcript in the collection must be returned", transcript);
+        assertNotNull(transcript, "First transcript in the collection must be returned");
     }
 
     @Test
     public void get() throws Exception {
         QueryResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get(Collections.singletonList("ENST00000456328"), null);
-        assertNotNull("This transcript should exist", transcript.firstResult());
+        assertNotNull(transcript.firstResult(), "This transcript should exist");
 
 //        Map<String, Object> params = new HashMap<>();
 //        params.put("exclude", "xrefs");
@@ -74,14 +74,14 @@ public class TranscriptClientTest {
     @Test
     public void getGene() throws Exception {
         QueryResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", new QueryOptions());
-        assertNotNull("It should return the respective gene", response.firstResult());
+        assertNotNull(response.firstResult(), "It should return the respective gene");
     }
 
 //    @Test
     public void getVariation() throws Exception {
         QueryResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328,ENST00000528762",
                 new QueryOptions(QueryOptions.EXCLUDE, "annotation"));
-        assertNotNull("It should return the variations for the given transcript(s)", response.firstResult());
+        assertNotNull(response.firstResult(), "It should return the variations for the given transcript(s)");
     }
 
     @Test
@@ -99,7 +99,7 @@ public class TranscriptClientTest {
     @Test
     public void getProtein() throws Exception {
         QueryResponse<Entry> response = cellBaseClient.getTranscriptClient().getProtein("ENST00000342992", null);
-        assertNotNull("Protein for the given transcript must be returned", response.firstResult());
+        assertNotNull(response.firstResult(), "Protein for the given transcript must be returned");
     }
 
 //    @Test
