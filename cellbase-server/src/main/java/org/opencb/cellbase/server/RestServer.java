@@ -17,95 +17,78 @@
 package org.opencb.cellbase.server;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.server.rest.AdminRestWebService;
-import org.opencb.cellbase.server.rest.CORSFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import java.util.EnumSet;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 public class RestServer  {
 
     private static Server server;
-    private CellBaseConfiguration configuration;
+    private Path cellbaseHome;
     private boolean exit;
     private int port;
 
-    protected static Logger logger;
+    private static Logger logger;
 
-//    public RestServer() {
-//
-//    }
+    public RestServer(Path cellbaseHome) {
+        this(cellbaseHome, 0);
+    }
 
-    public RestServer(CellBaseConfiguration configuration) {
-        this.configuration = configuration;
+    public RestServer(Path cellbaseHome, int port) {
+        this.cellbaseHome = cellbaseHome;
+        this.port = port;
+
         init();
     }
 
+
     private void init() {
         logger = LoggerFactory.getLogger(this.getClass());
-        if (configuration != null) {
-            try {
-                this.port = configuration.getServer().getRest().getPort();
-                logger.info("REST server started using port: {}", port);
-            } catch (NumberFormatException e) {
-                throw new RuntimeException("Invalid port number: " + configuration.getServer().getRest().getPort());
-            }
+
+        try {
+            CellBaseConfiguration configuration = CellBaseConfiguration.load(cellbaseHome.resolve("conf").resolve("configuration.yml"));
+            this.port = (this.port == 0) ? configuration.getServer().getRest().getPort() : this.port;
+        } catch (IOException e) {
+            throw new RuntimeException("Invalid CellBase home: " + cellbaseHome.toString());
         }
     }
 
     public void start() throws Exception {
-        ResourceConfig resourceConfig = new ResourceConfig();
-        resourceConfig.packages(true, "org.opencb.cellbase.server.rest");
-
-        // Registering MultiPart class for POST forms
-        resourceConfig.register(MultiPartFeature.class);
-
-        ServletContainer sc = new ServletContainer(resourceConfig);
-        ServletHolder sh = new ServletHolder("cellbase", sc);
-
         server = new Server(port);
 
-        ServletContextHandler context = new ServletContextHandler(server, null, ServletContextHandler.SESSIONS);
-        context.addServlet(sh, "/cellbase/webservices/rest/*");
-
-        // To add CORS Java filtert class to Jetty
-        context.addFilter(CORSFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST, DispatcherType.ERROR));
-
-        // TODO It would be great to add Swagger
-//        ServletHolder apiServlet = context.addServlet(ServletContainer.class, "/webservices/rest/*");
-//        apiServlet.setInitOrder(1);
-//        apiServlet.setInitParameter("jersey.config.server.provider.packages",
-//                "io.swagger.jaxrs.listing;org.opencb.cellbase.server.rest;com.jersey.jaxb;com.fasterxml.jackson.jaxrs.json");
-//
-//        ServletHolder swaggerServlet = context.addServlet(JerseyJaxrsConfig.class, "/webservices");
-//        swaggerServlet.setInitParameter("api.version", "5.0.0");
-//        swaggerServlet.setInitParameter("swagger.api.basepath", "/cellbase/webservices/rest");
-//        swaggerServlet.setInitOrder(2);
+        WebAppContext webapp = new WebAppContext();
+        webapp.setContextPath("/cellbase");
+        Optional<Path> warPath = Files.list(cellbaseHome)
+                .filter(path -> path.toString().endsWith("war"))
+                .findFirst();
+        // Check is a war file has been found in cellbaseHome
+        if (!warPath.isPresent()) {
+            throw new Exception("No war file found at: " + cellbaseHome.toString());
+        }
+        webapp.setWar(warPath.get().toString());
+        webapp.setInitParameter("CELLBASE_HOME", cellbaseHome.toFile().toString());
+        server.setHandler(webapp);
 
         server.start();
         logger.info("REST server started, listening on port: " + port + " at " + server.getURI());
 
         // A hook is added in case the JVM is shutting down
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                try {
-                    if (server.isRunning()) {
-                        stopJettyServer();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                if (server.isRunning()) {
+                    stopJettyServer();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+        }));
 
         // A separated thread is launched to shut down the server
         new Thread(() -> {

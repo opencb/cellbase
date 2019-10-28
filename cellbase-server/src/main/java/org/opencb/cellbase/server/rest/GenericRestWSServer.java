@@ -38,17 +38,17 @@ import org.opencb.commons.datastore.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.opencb.commons.datastore.core.QueryOptions.*;
 
@@ -137,6 +137,8 @@ public class GenericRestWSServer implements IWSServer {
     protected static final String SERVICE_START_DATE;
     protected static final StopWatch WATCH;
 
+    protected static AtomicBoolean initialized;
+
     protected long startTime;
     protected long endTime;
 
@@ -164,41 +166,13 @@ public class GenericRestWSServer implements IWSServer {
     private static final String OK = "ok";
 
     static {
+        initialized = new AtomicBoolean(false);
+
         SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
         WATCH = new StopWatch();
         WATCH.start();
 
-        logger = LoggerFactory.getLogger("org.opencb.cellbase.server.ws.GenericRestWSServer");
-        logger.info("Static block, creating MongoDBAdapatorFactory");
-        try {
-            if (System.getenv("CELLBASE_HOME") != null) {
-                File configurationFile = new File(System.getenv("CELLBASE_HOME") + "/conf/configuration.json");
-                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
-                if (!configurationFile.exists()) {
-                    configurationFile = new File(System.getenv("CELLBASE_HOME") + "/conf/configuration.yml");
-                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
-                }
-                logger.info("Loading configuration from '{}'", configurationFile.getAbsolutePath());
-                cellBaseConfiguration = CellBaseConfiguration.load(fileType, new FileInputStream(configurationFile));
-            } else {
-                InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.json");
-                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
-                String configurationPath = "/conf/configuration.json";
-                if (inputStream == null) {
-                    inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("/conf/configuration.yml");
-                    configurationPath = "/conf/configuration.yml";
-                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
-                }
-                logger.info("Loading configuration from '{}'", configurationPath);
-                cellBaseConfiguration = CellBaseConfiguration.load(fileType, inputStream);
-            }
 
-            // If Configuration has been loaded we can create the DBAdaptorFactory
-//            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-            dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -210,38 +184,60 @@ public class GenericRestWSServer implements IWSServer {
         monitor = new Monitor(dbAdaptorFactory);
     }
 
-
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException {
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         this.version = version;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
 
-        logger.debug("Executing GenericRestWSServer constructor with no Species");
-        init(false);
+        init();
+        initQuery();
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException {
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
         this.version = version;
         this.species = species;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
 
-        logger.debug("Executing GenericRestWSServer constructor");
-        init(true);
+        init();
+        initQuery();
     }
 
+    protected void init() throws VersionException, SpeciesException, IOException {
+        // we need to make sure we only init one single time
+        if (initialized.compareAndSet(false, true)) {
+            logger = LoggerFactory.getLogger(this.getClass());
 
-    protected void init(boolean checkSpecies) throws VersionException, SpeciesException {
+            // We must load the configuration file from CELLBASE_HOME, this must happen only the first time!
+            ServletContext context = httpServletRequest.getServletContext();
+            String cellbaseHome = context.getInitParameter("CELLBASE_HOME");
+            if (StringUtils.isEmpty(cellbaseHome)) {
+                // If not exists then we try the environment variable OPENCGA_HOME
+                if (StringUtils.isNotEmpty(System.getenv("CELLBASE_HOME"))) {
+                    cellbaseHome = System.getenv("CELLBASE_HOME");
+                } else {
+                    logger.error("No valid configuration directory provided!");
+                    // FIXME Move to CellBase Exception
+                    throw new IOException("No CELLBASE_HOME found");
+                }
+            }
+            logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
+
+            cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
+            dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+        }
+    }
+
+    private void initQuery() throws VersionException, SpeciesException {
         startTime = System.currentTimeMillis();
-
         query = new Query();
         // This needs to be an ArrayList since it may be added some extra fields later
         queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         queryResponse = new QueryResponse();
 
-        checkPathParams(checkSpecies);
+        checkPathParams(true);
     }
 
     private void checkPathParams(boolean checkSpecies) throws VersionException, SpeciesException {

@@ -19,25 +19,19 @@ package org.opencb.cellbase.core.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.CaseFormat;
+import org.opencb.commons.utils.FileUtils;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by parce on 12/02/15.
- */
 public class CellBaseConfiguration {
-
-    public static final String CELLBASE_PREFIX = "CELLBASE_";
-    public static final String CELLBASE_DATABASES_MONGODB_HOST = "CELLBASE_DATABASES_MONGODB_HOST";
-    public static final String CELLBASE_DATABASES_MONGODB_USER = "CELLBASE_DATABASES_MONGODB_USER";
-    public static final String CELLBASE_DATABASES_MONGODB_PASSWORD = "CELLBASE_DATABASES_MONGODB_PASSWORD";
-    public static final String CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX = "CELLBASE_DATABASES_MONGODB_OPTIONS_";
 
     private String version;
     private String apiVersion;
@@ -50,19 +44,59 @@ public class CellBaseConfiguration {
     private SpeciesProperties species;
     private ServerProperties server;
 
-    public enum ConfigurationFileType {
+    public static final String CELLBASE_PREFIX = "CELLBASE_";
+    public static final String CELLBASE_DATABASES_MONGODB_HOST = "CELLBASE_DATABASES_MONGODB_HOST";
+    public static final String CELLBASE_DATABASES_MONGODB_USER = "CELLBASE_DATABASES_MONGODB_USER";
+    public static final String CELLBASE_DATABASES_MONGODB_PASSWORD = "CELLBASE_DATABASES_MONGODB_PASSWORD";
+    public static final String CELLBASE_DATABASES_MONGODB_OPTIONS_PREFIX = "CELLBASE_DATABASES_MONGODB_OPTIONS_";
+
+    public enum ConfigurationFileFormat {
         JSON, YAML
     };
 
-    public static CellBaseConfiguration load(ConfigurationFileType type, InputStream configurationInputStream) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        if (ConfigurationFileType.YAML.equals(type)) {
-            mapper = new ObjectMapper(new YAMLFactory());
+    public static CellBaseConfiguration load(Path configurationPath) throws IOException {
+        InputStream inputStream = FileUtils.newInputStream(configurationPath);
+        if (configurationPath.toFile().getName().endsWith("json")) {
+            return load(inputStream, ConfigurationFileFormat.JSON);
+        } else {
+            return load(inputStream, ConfigurationFileFormat.YAML);
         }
-        CellBaseConfiguration configuration = mapper.readValue(configurationInputStream, CellBaseConfiguration.class);
+    }
+
+    public static CellBaseConfiguration load(InputStream configurationInputStream) throws IOException {
+        return load(configurationInputStream, ConfigurationFileFormat.YAML);
+    }
+
+    public static CellBaseConfiguration load(InputStream configurationInputStream, ConfigurationFileFormat format) throws IOException {
+        CellBaseConfiguration configuration;
+        try {
+            switch (format) {
+                case JSON:
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    configuration = objectMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
+                    break;
+                case YAML:
+                default:
+                    ObjectMapper yamlObjectMapper = new ObjectMapper(new YAMLFactory());
+                    configuration = yamlObjectMapper.readValue(configurationInputStream, CellBaseConfiguration.class);
+                    break;
+            }
+        } catch (IOException e) {
+            throw new IOException("Configuration file could not be parsed: " + e.getMessage(), e);
+        }
+
+        overwriteEnvVariables(configuration);
+        return configuration;
+    }
+
+    public void serialize(OutputStream configurationOututStream) throws IOException {
+        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+        yamlMapper.writerWithDefaultPrettyPrinter().writeValue(configurationOututStream, this);
+    }
+
+    protected static void overwriteEnvVariables(CellBaseConfiguration configuration) {
         Map<String, String> envVariables = System.getenv();
         overwriteEnvVariables(configuration, envVariables);
-        return configuration;
     }
 
     protected static void overwriteEnvVariables(CellBaseConfiguration configuration, Map<String, String> envVariables) {

@@ -23,6 +23,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import java.nio.file.Paths;
 
 public class ServerCommandExecutor extends CommandExecutor {
 
@@ -36,13 +37,10 @@ public class ServerCommandExecutor extends CommandExecutor {
 
     @Override
     public void execute() {
-        // Process user parameters
-        if (serverCommandOptions.port != 0) {
-            this.configuration.getServer().getRest().setPort(serverCommandOptions.port);
-        }
+        int port = (serverCommandOptions.port == 0) ? configuration.getServer().getRest().getPort() : serverCommandOptions.port;
 
         if (serverCommandOptions.start) {
-            RestServer server = new RestServer(configuration);
+            RestServer server = new RestServer(Paths.get(this.appHome), port);
             try {
                 server.start();
             } catch (Exception e) {
@@ -52,7 +50,7 @@ public class ServerCommandExecutor extends CommandExecutor {
 
         if (serverCommandOptions.stop) {
             Client client = ClientBuilder.newClient();
-            WebTarget target = client.target("localhost" + ":" + configuration.getServer().getRest().getPort())
+            WebTarget target = client.target("localhost" + ":" + port)
                     .path("cellbase")
                     .path("webservices")
                     .path("rest")

@@ -30,14 +30,16 @@ public class CellBaseConfigurationTest {
 
     @BeforeAll
     public void setUp() throws Exception {
-        cellBaseConfiguration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.JSON,
-                CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"));
+        cellBaseConfiguration = CellBaseConfiguration.load(
+                CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"),
+                CellBaseConfiguration.ConfigurationFileFormat.JSON);
     }
 
     @Test
     public void load() throws Exception {
-        cellBaseConfiguration = CellBaseConfiguration.load(CellBaseConfiguration.ConfigurationFileType.JSON,
-                CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"));
+        cellBaseConfiguration = CellBaseConfiguration.load(
+                CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"),
+                CellBaseConfiguration.ConfigurationFileFormat.JSON);
         System.out.println(new ObjectMapper().writer().withDefaultPrettyPrinter().writeValueAsString(cellBaseConfiguration));
     }
 

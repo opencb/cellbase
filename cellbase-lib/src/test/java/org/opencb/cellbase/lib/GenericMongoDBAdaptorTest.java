@@ -16,29 +16,19 @@
 
 package org.opencb.cellbase.lib;
 
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
-import org.opencb.cellbase.core.config.DatabaseCredentials;
-import org.opencb.cellbase.core.config.Databases;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,8 +48,9 @@ public class GenericMongoDBAdaptorTest {
 
     public GenericMongoDBAdaptorTest() throws IOException {
 
-        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
-                .load(CellBaseConfiguration.ConfigurationFileType.JSON, GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
+        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
+                GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"),
+                CellBaseConfiguration.ConfigurationFileFormat.YAML);
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
     }

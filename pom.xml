@@ -121,6 +121,10 @@
                         <artifactId>BigWig</artifactId>
                         <groupId>BigWig</groupId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -299,6 +303,8 @@
             </activation>
             <properties>
                 <cellbase.war.name>cellbase-${cellbase.version}</cellbase.war.name>
+                <CELLBASE.INSTALLATION.DIR>${project.basedir}/../build</CELLBASE.INSTALLATION.DIR>
+
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
