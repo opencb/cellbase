@@ -31,6 +31,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -185,7 +186,7 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         this.version = version;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
@@ -195,7 +196,7 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         this.version = version;
         this.species = species;
         this.uriInfo = uriInfo;
@@ -205,7 +206,7 @@ public class GenericRestWSServer implements IWSServer {
         initQuery();
     }
 
-    protected void init() throws VersionException, SpeciesException, IOException {
+    protected void init() throws VersionException, SpeciesException, IOException, CellbaseException {
         // we need to make sure we only init one single time
         if (initialized.compareAndSet(false, true)) {
             logger = LoggerFactory.getLogger(this.getClass());
@@ -219,8 +220,7 @@ public class GenericRestWSServer implements IWSServer {
                     cellbaseHome = System.getenv("CELLBASE_HOME");
                 } else {
                     logger.error("No valid configuration directory provided!");
-                    // FIXME Move to CellBase Exception
-                    throw new IOException("No CELLBASE_HOME found");
+                    throw new CellbaseException("No CELLBASE_HOME found");
                 }
             }
             logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
