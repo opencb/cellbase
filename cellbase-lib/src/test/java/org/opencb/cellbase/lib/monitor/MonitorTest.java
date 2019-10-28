@@ -17,12 +17,10 @@
 package org.opencb.cellbase.lib.monitor;
 
 import com.google.common.io.Files;
-import org.apache.tools.ant.util.FileUtils;
 
 ;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.cellbase.core.monitor.Monitor;
@@ -62,9 +60,9 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         Path path = Paths.get(getClass()
                 .getResource("/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
-        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration
-                .load(CellBaseConfiguration.ConfigurationFileType.JSON,
-                        MonitorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"));
+        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
+                MonitorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"),
+                CellBaseConfiguration.ConfigurationFileFormat.JSON);
         MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         Monitor monitor = new Monitor(dbAdaptorFactory);
         HealthStatus health = monitor.run(SPECIES, ASSEMBLY);

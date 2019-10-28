@@ -218,23 +218,23 @@ public class DownloadManager {
         Files.createDirectories(geneFolder);
 
         downloadEnsemblData(sp, spShortName, geneFolder, ensemblInfo.getHostURL());
-        downloadDrugData(sp, speciesFolder);
+        downloadDrugData(sp, geneFolder);
         downloadGeneUniprotXref(sp, geneFolder);
         downloadGeneExpressionAtlas();
         downloadGeneDiseaseAnnotation(geneFolder);
-        downloadGnomad(sp, speciesFolder);
+        downloadGnomad(sp, geneFolder);
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
-    private void downloadDrugData(Species species, Path speciesFolder) throws IOException, InterruptedException {
+    private void downloadDrugData(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
-            Path geneDrugFolder = speciesFolder.resolve("gene/geneDrug");
+            Path geneDrugFolder = geneFolder.resolve("geneDrug");
             Files.createDirectories(geneDrugFolder);
             String url = configuration.getDownload().getDgidb().getHost();
-            downloadFile(url, geneDrugFolder.resolve("dgidb.tsv").toString());
+            downloadFile(url, geneFolder.resolve("dgidb.tsv").toString());
             saveVersionData(EtlCommons.GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    geneDrugFolder.resolve("dgidbVersion.json"));
+                    geneFolder.resolve("dgidbVersion.json"));
         }
     }
 
@@ -349,7 +349,7 @@ public class DownloadManager {
         List<String> files = configuration.getDownload().getDisgenet().getFiles();
         for (String file : files) {
             file = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
-            downloadFile(host + "/" + file, file);
+            downloadFile(host + "/" + file, geneFolder.resolve(file).toString());
         }
 
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
@@ -357,14 +357,13 @@ public class DownloadManager {
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
-    private void downloadGnomad(Species species, Path speciesFolder) throws IOException, InterruptedException {
+    private void downloadGnomad(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD data...");
-            String host = configuration.getDownload().getGnomad().getHost();
-            List<String> fileNames = configuration.getDownload().getGnomad().getFiles();
-            downloadFiles(host, fileNames);
+            String url = configuration.getDownload().getGnomad().getHost();
+            downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
             saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomad().getVersion(), getTimeStamp(),
-                    Collections.singletonList(host), speciesFolder.resolve("gnomadVersion.json"));
+                    Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
         }
     }
 
@@ -978,7 +977,6 @@ public class DownloadManager {
 
         }
     }
-
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         downloadFile(url, outputFileName, null);

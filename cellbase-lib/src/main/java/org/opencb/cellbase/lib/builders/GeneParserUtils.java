@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.builders;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.models.core.MiRNAGene;
+import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
@@ -31,10 +31,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Created by imedina on 12/11/15.
@@ -69,51 +72,6 @@ public class GeneParserUtils {
         }
         return tfbsMap;
     }
-
-    public static Map<String, MiRNAGene> getmiRNAGeneMap(Path mirnaGeneFile) throws IOException {
-        Map<String, MiRNAGene> mirnaGeneMap = new HashMap<>();
-
-        if (mirnaGeneFile != null && Files.exists(mirnaGeneFile) && !Files.isDirectory(mirnaGeneFile)
-                && Files.size(mirnaGeneFile) > 0) {
-            logger.info("Loading miRNA data ...");
-            BufferedReader br = Files.newBufferedReader(mirnaGeneFile, Charset.defaultCharset());
-
-            String line;
-            String[] fields, mirnaMatures, mirnaMaturesFields;
-            List<String> aliases;
-            MiRNAGene miRNAGene;
-            while ((line = br.readLine()) != null) {
-                fields = line.split("\t");
-
-                // First, read aliases of miRNA, field #5
-                aliases = new ArrayList<>();
-                for (String alias : fields[5].split(",")) {
-                    aliases.add(alias);
-                }
-
-                miRNAGene = new MiRNAGene(fields[1], fields[2], fields[3], fields[4], aliases, new ArrayList<>());
-
-                // Second, read the miRNA matures, field #6
-                mirnaMatures = fields[6].split(",");
-                for (String s : mirnaMatures) {
-                    mirnaMaturesFields = s.split("\\|");
-                    int cdnaStart = fields[4].indexOf(mirnaMaturesFields[2]) + 1;
-                    int cdnaEnd = cdnaStart + mirnaMaturesFields[2].length() - 1;
-                    // Save directly into MiRNAGene object.
-                    miRNAGene.addMiRNAMature(mirnaMaturesFields[0], mirnaMaturesFields[1], mirnaMaturesFields[2], cdnaStart, cdnaEnd);
-                }
-
-                // Add object to Map<EnsemblID, MiRNAGene>
-                mirnaGeneMap.put(fields[0], miRNAGene);
-            }
-            br.close();
-        } else {
-            logger.warn("Mirna file '{}' not found", mirnaGeneFile);
-            logger.warn("Mirna data not loaded");
-        }
-        return mirnaGeneMap;
-    }
-
 
     public static Map<String, ArrayList<Xref>> getXrefMap(Path xrefsFile, Path uniprotIdMappingFile) throws IOException {
         Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
@@ -239,9 +197,7 @@ public class GeneParserUtils {
             expressionValueList.add(value);
             map.put(key, expressionValueList);
         }
-
     }
-
 
     public static Map<String, List<GeneTraitAssociation>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath)
             throws IOException {
@@ -278,4 +234,56 @@ public class GeneParserUtils {
         return geneDiseaseAssociationMap;
     }
 
+    public static Map<String, List<Constraint>> getConstraints(Path gnomadFile) throws IOException {
+        Map<String, List<Constraint>> transcriptConstraints = new HashMap<>();
+
+        if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
+            logger.info("Loading OE scores from '{}'", gnomadFile);
+//            BufferedReader br = FileUtils.newBufferedReader(gnomadFile);
+            InputStream inputStream = Files.newInputStream(gnomadFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
+            // Skip header.
+            br.readLine();
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\t");
+                String transcriptIdentifier = parts[1];
+                String canonical = parts[2];
+                String oeMis = parts[5];
+                String oeSyn = parts[14];
+                String oeLof = parts[24];
+                String exacPLI = parts[70];
+                String exacLof = parts[73];
+                String geneIdentifier = parts[64];
+
+                List<Constraint> constraints = new ArrayList<>();
+                addConstraint(constraints, "oe_mis", oeMis);
+                addConstraint(constraints, "oe_syn", oeSyn);
+                addConstraint(constraints, "oe_lof", oeLof);
+                addConstraint(constraints, "exac_pLI", exacPLI);
+                addConstraint(constraints, "exac_oe_lof", exacLof);
+                transcriptConstraints.put(transcriptIdentifier, constraints);
+
+                if ("TRUE".equalsIgnoreCase(canonical)) {
+                    transcriptConstraints.put(geneIdentifier, constraints);
+                }
+            }
+            br.close();
+        }
+        return transcriptConstraints;
+    }
+
+    private static void addConstraint(List<Constraint> constraints, String name, String value) {
+        Constraint constraint = new Constraint();
+        constraint.setMethod("pLoF");
+        constraint.setSource("gnomAD");
+        constraint.setName(name);
+        try {
+            constraint.setValue(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            // invalid number (e.g. NA), discard.
+            return;
+        }
+        constraints.add(constraint);
+    }
 }

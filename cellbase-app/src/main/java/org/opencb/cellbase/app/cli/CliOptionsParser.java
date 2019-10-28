@@ -123,15 +123,13 @@ public abstract class CliOptionsParser {
     protected String getAPIVersion() {
         CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration();
         try {
-            InputStream inputStream = CellBaseConfiguration.class.getClassLoader()
-                    .getResourceAsStream("conf/configuration.json");
-            CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
+            InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.json");
+            CellBaseConfiguration.ConfigurationFileFormat fileType = CellBaseConfiguration.ConfigurationFileFormat.JSON;
             if (inputStream == null) {
-                inputStream = CellBaseConfiguration.class.getClassLoader()
-                        .getResourceAsStream("conf/configuration.yml");
-                fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
+                inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("conf/configuration.yml");
+                fileType = CellBaseConfiguration.ConfigurationFileFormat.YAML;
             }
-            cellBaseConfiguration = CellBaseConfiguration.load(fileType, inputStream);
+            cellBaseConfiguration = CellBaseConfiguration.load(inputStream, fileType);
         } catch (IOException e) {
             e.printStackTrace();
         }

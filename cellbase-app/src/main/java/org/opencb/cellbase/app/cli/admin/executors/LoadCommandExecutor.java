@@ -125,6 +125,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve("geneExpressionAtlasVersion.json"), METADATA);
                             loadIfExists(input.resolve("hpoVersion.json"), METADATA);
                             loadIfExists(input.resolve("disgenetVersion.json"), METADATA);
+                            loadIfExists(input.resolve("gnomadVersion.json"), METADATA);
                             loadRunner.index("gene");
                             break;
                         case EtlCommons.VARIATION_DATA:

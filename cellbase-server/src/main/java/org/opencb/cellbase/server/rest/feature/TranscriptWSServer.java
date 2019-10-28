@@ -24,6 +24,7 @@ import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -58,7 +59,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                       + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                               @DefaultValue("") @QueryParam("exclude") String exclude,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException {
+            throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
 

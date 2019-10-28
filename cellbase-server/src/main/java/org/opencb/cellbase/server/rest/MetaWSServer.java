@@ -23,6 +23,7 @@ import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesProperties;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
@@ -61,7 +62,7 @@ public class MetaWSServer extends GenericRestWSServer {
                         @ApiParam(name = "version", value = "Possible values: v3, v4",
                                 defaultValue = "v4") String version,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException {
+            throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, uriInfo, hsr);
     }
 

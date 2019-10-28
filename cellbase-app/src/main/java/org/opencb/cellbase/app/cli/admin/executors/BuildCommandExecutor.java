@@ -293,7 +293,8 @@ public class BuildCommandExecutor extends CommandExecutor {
         copyVersionFiles(Arrays.asList(geneFolderPath.resolve("geneDrug/dgidbVersion.json"),
                 geneFolderPath.resolve("ensemblCoreVersion.json"), geneFolderPath.resolve("uniprotXrefVersion.json"),
                 geneFolderPath.resolve(common.resolve("expression/geneExpressionAtlasVersion.json")),
-                geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json")));
+                geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json"),
+                geneFolderPath.resolve("gnomadVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
         return new GeneParser(geneFolderPath, genomeFastaFilePath, species, flexibleGTFParsing, serializer);

@@ -40,10 +40,10 @@ public class ClientConfiguration {
     }
 
     public static ClientConfiguration load(InputStream configurationInputStream) throws IOException {
-        return load(configurationInputStream, CellBaseConfiguration.ConfigurationFileType.YAML);
+        return load(configurationInputStream, CellBaseConfiguration.ConfigurationFileFormat.YAML);
     }
 
-    public static ClientConfiguration load(InputStream configurationInputStream, CellBaseConfiguration.ConfigurationFileType format)
+    public static ClientConfiguration load(InputStream configurationInputStream, CellBaseConfiguration.ConfigurationFileFormat format)
         throws IOException {
         ClientConfiguration clientConfiguration;
         ObjectMapper objectMapper;

@@ -24,6 +24,7 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -56,7 +57,8 @@ public class IdWSServer extends GenericRestWSServer {
                       @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                               + "of potentially available species ids, please refer to: "
                               + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
-                      @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException {
+                      @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
+            SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
 
