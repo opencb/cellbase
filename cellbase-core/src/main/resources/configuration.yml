@@ -108,10 +108,8 @@ download:
  reactome:
   host: http://www.reactome.org/download/current/biopax.zip
  gnomad:
-  host: https://storage.googleapis.com/gnomad-public/release/2.1.1/constraint
+  host: https://storage.googleapis.com/gnomad-public/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
   version: 2.1.1
-  files:
-   - gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
 species:
  vertebrates:
   - id: hsapiens

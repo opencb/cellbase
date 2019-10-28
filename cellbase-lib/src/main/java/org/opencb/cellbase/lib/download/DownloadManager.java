@@ -40,7 +40,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -361,15 +360,10 @@ public class DownloadManager {
     private void downloadGnomad(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD data...");
-            String host = configuration.getDownload().getGnomad().getHost();
-            List<String> fileNames = configuration.getDownload().getGnomad().getFiles()
-                    .stream()
-                    .map(s -> geneFolder.resolve(s).toString())
-                    .collect(Collectors.toList());
-
-            downloadFiles(host, fileNames);
+            String url = configuration.getDownload().getGnomad().getHost();
+            downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
             saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomad().getVersion(), getTimeStamp(),
-                    Collections.singletonList(host), geneFolder.resolve("gnomadVersion.json"));
+                    Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
         }
     }
 
@@ -983,7 +977,6 @@ public class DownloadManager {
 
         }
     }
-
 
     private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         downloadFile(url, outputFileName, null);
