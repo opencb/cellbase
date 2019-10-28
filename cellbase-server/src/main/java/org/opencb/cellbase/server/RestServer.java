@@ -51,13 +51,24 @@ public class RestServer  {
 
     private void init() {
         logger = LoggerFactory.getLogger(this.getClass());
+        logger = LoggerFactory.getLogger("org.opencb.cellbase.server.rest.RestServer");
+        logger.info("========================================================================");
+        logger.info("| Starting Cellbase REST server, initializing RestServer");
+        logger.info("| This message must appear only once.");
 
         try {
             CellBaseConfiguration configuration = CellBaseConfiguration.load(cellbaseHome.resolve("conf").resolve("configuration.yml"));
             this.port = (this.port == 0) ? configuration.getServer().getRest().getPort() : this.port;
+
+            logger.info("|  * Configuration folder: '{}'", cellbaseHome.resolve("conf").toAbsolutePath());
+            logger.info("|  * Configuration file: configuration.yml'");
+            logger.info("|  * Port: '{}'", port);
+
         } catch (IOException e) {
             throw new RuntimeException("Invalid CellBase home: " + cellbaseHome.toString());
         }
+
+        logger.info("========================================================================\n");
     }
 
     public void start() throws Exception {
