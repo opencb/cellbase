@@ -24,8 +24,6 @@ import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 
-import org.opencb.cellbase.lib.builders.GeneParserUtils;
-
 
 import java.io.IOException;
 import java.nio.file.Path;

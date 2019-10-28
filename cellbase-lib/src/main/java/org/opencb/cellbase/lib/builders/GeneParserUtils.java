@@ -20,7 +20,6 @@ import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.Constraint;
-import org.opencb.biodata.models.core.MiRNAGene;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
