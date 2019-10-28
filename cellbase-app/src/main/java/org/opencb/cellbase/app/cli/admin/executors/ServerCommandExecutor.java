@@ -50,7 +50,7 @@ public class ServerCommandExecutor extends CommandExecutor {
 
         if (serverCommandOptions.stop) {
             Client client = ClientBuilder.newClient();
-            WebTarget target = client.target("localhost" + ":" + port)
+            WebTarget target = client.target("http://localhost" + ":" + port)
                     .path("cellbase")
                     .path("webservices")
                     .path("rest")
