@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.transform;
+package org.opencb.cellbase.lib.builders;
 
 
 import org.junit.Test;
