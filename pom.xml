@@ -6,7 +6,7 @@
 
     <groupId>org.opencb.cellbase</groupId>
     <artifactId>cellbase</artifactId>
-    <version>4.8.0-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>CellBase project</name>
@@ -22,19 +22,21 @@
     </modules>
 
     <properties>
-        <cellbase.version>4.8.0-SNAPSHOT</cellbase.version>
+        <cellbase.version>5.0.0-SNAPSHOT</cellbase.version>
         <compileSource>1.8</compileSource>
         <java-common-libs.version>3.7.0</java-common-libs.version>
         <biodata.version>1.6.0-SNAPSHOT</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
-        <jackson.version>2.9.8</jackson.version>
-        <protobuf.version>3.1.0</protobuf.version>
-        <grpc.version>1.0.1</grpc.version>
-        <jersey.version>2.25.1</jersey.version>
+        <jackson.version>2.8.4</jackson.version>
+        <jersey.version>2.29.1</jersey.version>
+        <commons.io.version>2.5</commons.io.version>
         <cellbase.war.name>cellbase</cellbase.war.name>
-        <slf4j.version>1.7.21</slf4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <junit.platform.version>1.5.2</junit.platform.version>
+        <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.4</jacoco.version>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
+        <jetty.version>9.4.17.v20190418</jetty.version>
     </properties>
     <scm>
         <url>https://github.com/opencb/cellbase</url>
@@ -77,14 +79,6 @@
         </developer>
     </developers>
 
-    <mailingLists>
-        <mailingList>
-            <name>OpenCB Mailing List</name>
-            <archive>https://groups.google.com/forum/#!forum/opencb</archive>
-            <post>opencb@googlegroups.com</post>
-        </mailingList>
-    </mailingLists>
-
     <repositories>
         <repository>
             <id>ossrh</id>
@@ -105,6 +99,16 @@
                 <version>${cellbase.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-lib</artifactId>
+                <version>${cellbase.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.commons</groupId>
+                <artifactId>commons-datastore-core</artifactId>
+                <version>${java-common-libs.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-tools</artifactId>
                 <version>${biodata.version}</version>
@@ -117,12 +121,11 @@
                         <artifactId>BigWig</artifactId>
                         <groupId>BigWig</groupId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.commons</groupId>
-                <artifactId>commons-datastore-core</artifactId>
-                <version>${java-common-libs.version}</version>
             </dependency>
 
             <!-- General dependencies -->
@@ -152,35 +155,43 @@
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-webapp</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.spockframework</groupId>
-                <artifactId>spock-core</artifactId>
-                <version>0.7-groovy-2.0</version>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>3.1</version>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-engine</artifactId>
+                <version>${junit.platform.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.objenesis</groupId>
-                <artifactId>objenesis</artifactId>
-                <version>2.1</version>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -192,7 +203,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>${compileSource}</source>
                     <target>${compileSource}</target>
@@ -211,8 +222,14 @@
                         <phase>validate</phase>
                         <configuration>
                             <configLocation>checkstyle.xml</configLocation>
-                            <excludes>org/opencb/cellbase/app/cli/CliOptionsParser.java,org/opencb/cellbase/app/transform/GeneParserProto.java,
-                                org/opencb/cellbase/client/rest/models/GroupByFields.java,org/opencb/cellbase/client/rest/models/GroupCount.java</excludes>
+                            <excludes>
+                                org/opencb/cellbase/app/cli/CliOptionsParser.java,
+                                org/opencb/cellbase/app/cli/admin/AdminCliOptionsParser.java,
+                                org/opencb/cellbase/app/cli/main/CellBaseCliOptionsParser.java,
+                                org/opencb/cellbase/lib/builders/GeneParserProto.java,
+                                org/opencb/cellbase/client/rest/models/GroupByFields.java,
+                                org/opencb/cellbase/client/rest/models/GroupCount.java
+                            </excludes>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -286,11 +303,13 @@
             </activation>
             <properties>
                 <cellbase.war.name>cellbase-${cellbase.version}</cellbase.war.name>
+                <CELLBASE.INSTALLATION.DIR>${project.basedir}/../build</CELLBASE.INSTALLATION.DIR>
+
                 <CELLBASE.DB.MONGODB.HOST>localhost:27017</CELLBASE.DB.MONGODB.HOST>
                 <CELLBASE.DB.USER></CELLBASE.DB.USER>
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
-
-                <CELLBASE.DB.NEO4J.HOST>localhost:27017</CELLBASE.DB.NEO4J.HOST>
+                <CELLBASE.DB.MONGODB.READPREFERENCE>primary</CELLBASE.DB.MONGODB.READPREFERENCE>
+                <CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>admin</CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>
             </properties>
         </profile>
 
@@ -356,7 +375,7 @@
             </build>
         </profile>
     </profiles>
-    
+
     <distributionManagement>
         <repository>
             <id>ossrh</id>
@@ -366,6 +385,10 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <!--        <repository>-->
+        <!--            <id>github</id>-->
+        <!--            <name>GitHub OWNER Apache Maven Packages</name>-->
+        <!--            <url>https://maven.pkg.github.com/opencb/cellbase</url>-->
+        <!--        </repository>-->
     </distributionManagement>
-
 </project>

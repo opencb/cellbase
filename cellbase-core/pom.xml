@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.opencb.cellbase</groupId>
         <artifactId>cellbase</artifactId>
-        <version>4.8.0-SNAPSHOT</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -32,11 +32,24 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
-
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
     </dependencies>
 
@@ -47,6 +60,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>configuration.json</include>
+                    <include>configuration.yml</include>
                     <include>git.properties</include>
                     <include>log4j.properties</include>
                 </includes>
@@ -74,8 +88,6 @@
                 </executions>
 
                 <configuration>
-                    <!-- ... -->
-
                     <!-- this is false by default, forces the plugin to generate the git.properties file -->
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
 
@@ -112,32 +124,6 @@
                         <forceLongFormat>false</forceLongFormat>
                     </gitDescribe>
                 </configuration>
-
-            </plugin>
-
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.5.0</version>
-                <configuration>
-                    <!--
-                      The version of protoc must match protobuf-java. If you don't depend on
-                      protobuf-java directly, you will be transitively depending on the
-                      protobuf-java version that grpc depends on.
-                    -->
-                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
-                    <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-                    <!--<protoSourceRoot>src/main/resources/</protoSourceRoot>-->
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>compile-custom</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

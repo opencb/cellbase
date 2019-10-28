@@ -18,8 +18,9 @@ package org.opencb.cellbase.lib.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
@@ -35,7 +36,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by fjlopez on 18/04/16.
@@ -47,7 +48,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

@@ -16,14 +16,14 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by swaathi on 25/05/16.

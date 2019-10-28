@@ -566,7 +566,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
      * Created an specific method for pop freqs here since in this case phase is managed at the Pop. freq level.
      * @param variants list of Variant objects to query
      * @param queryOptions query options, e.g. phased={true, false}
-     * @return list of QueryResult<Variant> objects, each of which contains the query result of each variant in the
+     * @return list of QueryResult of Variant objects, each of which contains the query result of each variant in the
      * input list ("variants"). Positions within the list of QueryResult must always correspond to the position Variant
      * objects occupy in the "variants" query list.
      */

@@ -20,10 +20,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.util.JSON;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
+import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
+import org.opencb.cellbase.app.cli.main.executors.VariantAnnotationCommandExecutor;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.commons.utils.FileUtils;
 
@@ -37,7 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by fjlopez on 07/10/16.
@@ -728,7 +730,7 @@ public class VariantAnnotationCommandExecutorTest {
                 .resolve("commandExecutor/customAnnotation/GEL_GL_6628.duprem.sites.annot.subset.atomic.left.split.test.vcf.gz.idx").toFile());
     }
 
-    private CliOptionsParser.VariantAnnotationCommandOptions
+    private CellBaseCliOptionsParser.VariantAnnotationCommandOptions
     getVariantAnnotationCommandOptions(String inputFilename,
                                        boolean decompose,
                                        String customfiles,
@@ -738,8 +740,8 @@ public class VariantAnnotationCommandExecutorTest {
                                        Boolean completeInputPopulation,
                                        int maxOpenFiles) {
 
-        CliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
-                = new CliOptionsParser().getVariantAnnotationCommandOptions();
+        CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
+                = new CellBaseCliOptionsParser().getVariantAnnotationCommandOptions();
 
         variantAnnotationCommandOptions.referenceFasta = resourcesFolder
                 .resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz").toString();

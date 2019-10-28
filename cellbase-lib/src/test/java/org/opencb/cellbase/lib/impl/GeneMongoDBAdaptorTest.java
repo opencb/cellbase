@@ -17,8 +17,9 @@
 package org.opencb.cellbase.lib.impl;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
@@ -33,7 +34,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Created by fjlopez on 08/10/15.
@@ -42,7 +44,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     public GeneMongoDBAdaptorTest() throws IOException { super(); }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

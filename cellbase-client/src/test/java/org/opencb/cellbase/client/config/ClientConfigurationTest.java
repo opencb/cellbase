@@ -16,14 +16,12 @@
 
 package org.opencb.cellbase.client.config;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 
-import static org.junit.Assert.*;
 
 /**
  * Created by imedina on 13/05/16.
@@ -38,10 +36,8 @@ public class ClientConfigurationTest {
         clientConfiguration.setLogFile("");
 
         RestConfig restConfig = new RestConfig(Arrays.asList("bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0", "bioinfodev.hpc.cam.ac.uk/cellbase"), 2000);
-        GrpcConfig grpcConfig = new GrpcConfig("localhost:9091");
 
         clientConfiguration.setRest(restConfig);
-        clientConfiguration.setGrpc(grpcConfig);
 
         try {
             clientConfiguration.serialize(new FileOutputStream("/tmp/client-configuration-test.yml"));
