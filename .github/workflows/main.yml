@@ -15,7 +15,7 @@ jobs:
       with:
         java-version: 1.8
     - name: Git Clone biodata
-      run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd ${{ GITHUB_WORKSPACE }}
+      run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
     - name: Launch MongoDB 
       run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
     - name: Build with Maven
