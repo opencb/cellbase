@@ -1004,7 +1004,7 @@ public class DownloadManager {
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }
-        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
+        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
         if (downloaded) {
             validateDownloadFile(url, outputFileName, outputLog);
         } else {
