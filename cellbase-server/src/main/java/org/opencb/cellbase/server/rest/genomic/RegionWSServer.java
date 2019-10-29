@@ -47,7 +47,7 @@ public class RegionWSServer extends GenericRestWSServer {
                           @PathParam("species")
                           @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                   + "of potentially available species ids, please refer to: "
-                                  + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                                  + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                           @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -710,7 +710,7 @@ public class RegionWSServer extends GenericRestWSServer {
                     value = "Comma separated list of regulatory region types, e.g.: "
                             + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
                             + "list of available regulatory types: "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
                     required = false, dataType = "java.util.List", paramType = "query"),
     })
     public Response getFeatureMap(@PathParam("chrRegionId")

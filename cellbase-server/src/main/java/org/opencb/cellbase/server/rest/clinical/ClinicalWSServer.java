@@ -49,7 +49,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                                   @PathParam("species")
                                   @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                           + "of potentially available species ids, please refer to: "
-                                          + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                                          + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                                   @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -70,7 +70,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "so",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
                             + "matches will be returned. A list of searchable SO term names can be accessed at "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/variation/consequence_types",
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/variation/consequence_types",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "feature",
                     value = "Comma separated list of feature ids, which can be either ENSEMBL gene ids, HGNC gene symbols,"
@@ -92,27 +92,27 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "type",
                     value = "Comma separated list of variant types, e.g. \"SNV\" A list of searchable types can be accessed at "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/type",
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/type",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "consistencyStatus",
                     value = "Comma separated list of consistency labels. A list of searchable consistency labels can be accessed at "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/consistency_labels",
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/consistency_labels",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "clinicalSignificance",
                     value = "Comma separated list of clinical significance labels. A list of searchable clinical "
                             + " significance labels can be accessed at "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/clinsig_labels"
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/clinsig_labels"
                             + " WARNING: returned numTotalResults will always be -1 if more than 1 label is provided.",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "modeInheritance",
                     value = "Comma separated list of mode of inheritance labels. A list of searchable mode of inheritance "
                             + " labels can be accessed at "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/mode_inheritance_labels",
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/mode_inheritance_labels",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "alleleOrigin",
                     value = "Comma separated list of allele origin labels. A list of searchable allele origin "
                             + " labels can be accessed at "
-                            + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/allele_origin_labels",
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/allele_origin_labels",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll() {

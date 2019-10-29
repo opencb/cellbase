@@ -76,7 +76,7 @@ public class MetaWSServer extends GenericRestWSServer {
                                @ApiParam(name = "species",
                                        value = "Name of the species, e.g.: hsapiens. For a full list of potentially"
                                                + "available species ids, please refer to: "
-                                               + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
+                                               + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
                                         required = true) String species) {
         CellBaseDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor(species, this.assembly);
         return createOkResponse(metaDBAdaptor.nativeGet(new Query(), new QueryOptions()));
@@ -180,7 +180,7 @@ public class MetaWSServer extends GenericRestWSServer {
                                @ApiParam(name = "species",
                                        value = "Name of the species, e.g.: hsapiens. For a full list of potentially"
                                                + "available species ids, please refer to: "
-                                               + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
+                                               + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
                                        required = true) String species) {
         HealthStatus health = monitor.run(species, this.assembly);
         QueryResult<HealthStatus> queryResult = new QueryResult();
