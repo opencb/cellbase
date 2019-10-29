@@ -163,6 +163,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                     case EtlCommons.GENE_DATA:
                         downloadManager.downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder);
+                        if (!dataList.contains(EtlCommons.GENOME_DATA)) {
+                            // user didn't specify genome data to download, but we need it for gene data sources
+                            downloadManager.downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder);
+                        }
                         break;
                     case EtlCommons.VARIATION_DATA:
                         downloadManager.downloadVariation(sp, spShortName, spFolder);
