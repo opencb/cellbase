@@ -1,5 +1,5 @@
 [![Actions Status](https://github.com/opencb/cellbase/workflows/Java%20Unit%20tests/badge.svg?branch=next)](https://github.com/opencb/cellbase/actions)
-![Maven Central](https://img.shields.io/maven-central/v/org.opencb.cellbase/cellbase)
+[![Maven Central](https://img.shields.io/maven-central/v/org.opencb.cellbase/cellbase)](https://search.maven.org/search?q=cellbase)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/bioconductor-cellbaser/README.html)
 [![Documentation](https://img.shields.io/badge/Documentation-wiki-blue)](http://docs.opencb.org/display/cellbase)
