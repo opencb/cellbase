@@ -338,7 +338,7 @@ public class MongoDBAdaptor {
         CellBaseDataResult cellBaseDataResult = new CellBaseDataResult();
         cellBaseDataResult.setResults(resultList);
         cellBaseDataResult.setId(region.toString());
-        cellBaseDataResult.setResultsType("frequencies");
+        cellBaseDataResult.setResultType("frequencies");
         return cellBaseDataResult;
     }
 
