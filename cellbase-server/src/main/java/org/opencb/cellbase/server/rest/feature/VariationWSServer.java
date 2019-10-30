@@ -56,7 +56,7 @@ public class VariationWSServer extends GenericRestWSServer {
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                    + "of potentially available species ids, please refer to: "
-                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                                   + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -110,13 +110,7 @@ public class VariationWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response count() {
-//    public Response count(@DefaultValue("")
-//                          @QueryParam("region")
-//                          @ApiParam(name = "region",
-//                                  value = "Comma separated list of genomic regions to be queried, "
-//                                          + "e.g.: 1:6635137-6635325", required = true) String region) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//        query.append(VariantDBAdaptor.QueryParams.REGION.key(), region);
         return createOkResponse(variationDBAdaptor.count(query));
     }
 
@@ -238,10 +232,6 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getAllConsequenceTypes() {
         try {
             parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//            query.put(VariantDBAdaptor.QueryParams.REGION.key(), "22:1-50000000");
-//            return createOkResponse(variationDBAdaptor.distinct(query, "displayConsequenceType"));
-
             List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
                     .sorted()
                     .collect(Collectors.toList());
@@ -332,7 +322,6 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getPopulationFrequency(@PathParam("snpId") String snpId) {
         try {
             parseQueryParams();
-//            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", Arrays.asList(""));
         } catch (Exception e) {

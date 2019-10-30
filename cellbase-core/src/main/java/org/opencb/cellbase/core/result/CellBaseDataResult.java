@@ -26,7 +26,6 @@ import java.util.List;
 public class CellBaseDataResult<T> extends DataResult<T> {
 
     private String id;
-    private String resultsType;
 
     public CellBaseDataResult() {
     }
@@ -49,8 +48,8 @@ public class CellBaseDataResult<T> extends DataResult<T> {
         super(time, events, numResults, null, numMatches);
     }
 
-    public <T> CellBaseDataResult(String id, int time, int numResults, long numMatches, List<Event> events, List<T> results) {
-        super(time, events, numResults, new ArrayList(results), numMatches);
+    public CellBaseDataResult(String id, int time, int numResults, long numMatches, List<Event> events, List<T> results) {
+        super(time, events, numResults, results, numMatches);
     }
 
     public String getId() {
@@ -59,13 +58,5 @@ public class CellBaseDataResult<T> extends DataResult<T> {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getResultsType() {
-        return resultsType;
-    }
-
-    public void setResultsType(String resultsType) {
-        this.resultsType = resultsType;
     }
 }
