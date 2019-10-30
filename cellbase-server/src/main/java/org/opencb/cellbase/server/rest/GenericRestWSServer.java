@@ -56,8 +56,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
-
 @Path("/{version}/{species}")
 @Produces("text/plain")
 public class GenericRestWSServer implements IWSServer {
@@ -154,7 +152,6 @@ public class GenericRestWSServer implements IWSServer {
      * HibernateDBAdaptorFactory or an HBaseDBAdaptorFactory. This object is a
      * factory for creating adaptors like GeneDBAdaptor
      */
-//    protected static DBAdaptorFactory dbAdaptorFactory;
     protected static DBAdaptorFactory dbAdaptorFactory;
     protected static Monitor monitor;
 

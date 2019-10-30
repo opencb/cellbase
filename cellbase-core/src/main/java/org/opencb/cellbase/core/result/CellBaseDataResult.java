@@ -19,8 +19,6 @@ package org.opencb.cellbase.core.result;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class CellBaseDataResult<T> extends DataResult<T> {

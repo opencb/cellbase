@@ -28,11 +28,7 @@ public class CellBaseDataResponse<T> {
 
     private String apiVersion;
     private int time;
-
     private List<Event> events;
-
-
-
     private ObjectMap params;
     private List<CellBaseDataResult<T>> responses;
 
