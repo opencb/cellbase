@@ -30,7 +30,7 @@ import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,15 +41,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
-
-//import org.opencb.cellbase.core.db.api.core.ConservedRegionDBAdaptor;
-//import org.opencb.cellbase.core.db.api.core.GeneDBAdaptor;
-//import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
-//import org.opencb.cellbase.core.db.api.core.ProteinDBAdaptor;
-//import org.opencb.cellbase.core.db.api.regulatory.RegulatoryRegionDBAdaptor;
-//import org.opencb.cellbase.core.db.api.variation.ClinicalDBAdaptor;
-//import org.opencb.cellbase.core.db.api.variation.VariantFunctionalScoreDBAdaptor;
-//import org.opencb.cellbase.core.db.api.variation.VariationDBAdaptor;
 
 /**
  * Created by imedina on 06/02/16.
@@ -118,16 +109,8 @@ public class VariantAnnotationCalculator {
     }
 
     @Deprecated
-    public QueryResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions) {
+    public CellBaseDataResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions) {
         long dbTimeStart = System.currentTimeMillis();
-
-        // We process include and exclude query options to know which annotators to use.
-        // Include parameter has preference over exclude.
-//        Set<String> annotatorSet = getAnnotatorSet(queryOptions);
-//
-//        // This field contains all the fields to be returned by overlapping genes
-//        String includeGeneFields = getIncludedGeneFields(annotatorSet);
-
         parseQueryParam(queryOptions);
         List<Gene> batchGeneList = getBatchGeneList(Collections.singletonList(variant));
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
@@ -136,23 +119,21 @@ public class VariantAnnotationCalculator {
         List<ConsequenceType> consequenceTypeList = getConsequenceTypeList(variant, geneList, true,
                 queryOptions);
 
-        QueryResult queryResult = new QueryResult();
-        queryResult.setId(variant.toString());
-        queryResult.setDbTime(Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue());
-        queryResult.setNumResults(consequenceTypeList.size());
-        queryResult.setNumTotalResults(consequenceTypeList.size());
-        queryResult.setResult(consequenceTypeList);
-
-        return queryResult;
-
+        CellBaseDataResult cellBaseDataResult = new CellBaseDataResult();
+        cellBaseDataResult.setId(variant.toString());
+        cellBaseDataResult.setTime(Long.valueOf(System.currentTimeMillis() - dbTimeStart).intValue());
+        cellBaseDataResult.setNumResults(consequenceTypeList.size());
+        cellBaseDataResult.setNumTotalResults(consequenceTypeList.size());
+        cellBaseDataResult.setResults(consequenceTypeList);
+        return cellBaseDataResult;
     }
 
-    public QueryResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions)
+    public CellBaseDataResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions)
             throws InterruptedException, ExecutionException {
         return getAnnotationByVariantList(Collections.singletonList(variant), queryOptions).get(0);
     }
 
-    public List<QueryResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList,
+    public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList,
                                                                            QueryOptions queryOptions)
             throws InterruptedException, ExecutionException {
 
@@ -169,61 +150,48 @@ public class VariantAnnotationCalculator {
             normalizedVariantList = variantList;
         }
 
-
-//        if (useCache) {
-//            variantAnnotationResultList = getCachedPreferredAnnotation(normalizedVariantList);
-//        } else {
-
         long startTime = System.currentTimeMillis();
         // Normalized variants already contain updated VariantAnnotation objects since runAnnotationProcess will
         // write on them if available (if not will create and set them) - i.e. no need to use variantAnnotationList
         // really
         List<VariantAnnotation> variantAnnotationList = runAnnotationProcess(normalizedVariantList);
 
-        return generateQueryResultList(variantList, normalizedVariantList, startTime);
+        return generateCellBaseDataResultList(variantList, normalizedVariantList, startTime);
     }
 
-    private List<QueryResult<VariantAnnotation>> generateQueryResultList(List<Variant> variantList,
+    private List<CellBaseDataResult<VariantAnnotation>> generateCellBaseDataResultList(List<Variant> variantList,
                                                                          List<Variant> normalizedVariantList,
                                                                          long startTime) {
 
-        List<QueryResult<VariantAnnotation>> annotationResultList = new ArrayList<>(variantList.size());
+        List<CellBaseDataResult<VariantAnnotation>> annotationResultList = new ArrayList<>(variantList.size());
 
-        // Return only one result per QueryResult if either
+        // Return only one result per CellBaseDataResult if either
         //   - size original variant list and normalised one is the same
         //   - MNV decomposition is switched OFF, i.e. queryOptions.skipDecompose = true and therefore
         //   this.decompose = false
         if (!decompose || variantList.size() == normalizedVariantList.size()) {
             for (int i = 0; i < variantList.size(); i++) {
-                QueryResult<VariantAnnotation> queryResult = new QueryResult<>(variantList.get(i).toString(),
-                        (int) (System.currentTimeMillis() - startTime),
-                        1,
-                        1,
-                        null,
-                        null,
+                CellBaseDataResult<VariantAnnotation> cellBaseDataResult = new CellBaseDataResult(variantList.get(i).toString(),
+                        (int) (System.currentTimeMillis() - startTime), 1, 1, null,
                         Collections.singletonList(normalizedVariantList.get(i).getAnnotation()));
-                annotationResultList.add(queryResult);
+                annotationResultList.add(cellBaseDataResult);
             }
         } else {
             int originalVariantListCounter = 0;
             String previousCall = EMPTY_STRING;
-            QueryResult<VariantAnnotation> queryResult = null;
+            CellBaseDataResult<VariantAnnotation> cellBaseDataResult = null;
             for (Variant normalizedVariant : normalizedVariantList) {
                 if (isSameMnv(previousCall, normalizedVariant)) {
-                    queryResult.getResult().add(normalizedVariant.getAnnotation());
-                    queryResult.setNumResults(queryResult.getNumResults() + 1);
-                    queryResult.setNumTotalResults(queryResult.getNumTotalResults() + 1);
+                    cellBaseDataResult.getResults().add(normalizedVariant.getAnnotation());
+                    cellBaseDataResult.setNumResults(cellBaseDataResult.getNumResults() + 1);
+                    cellBaseDataResult.setNumMatches(cellBaseDataResult.getNumMatches() + 1);
                 } else {
                     List<VariantAnnotation> variantAnnotationList = new ArrayList<>(1);
                     variantAnnotationList.add(normalizedVariant.getAnnotation());
-                    queryResult = new QueryResult<>(variantList.get(originalVariantListCounter).toString(),
-                            (int) (System.currentTimeMillis() - startTime),
-                            1,
-                            1,
-                            null,
-                            null,
+                    cellBaseDataResult = new CellBaseDataResult(variantList.get(originalVariantListCounter).toString(),
+                            (int) (System.currentTimeMillis() - startTime), 1, 1, null,
                             variantAnnotationList);
-                    annotationResultList.add(queryResult);
+                    annotationResultList.add(cellBaseDataResult);
                     previousCall = getCall(normalizedVariant);
                     originalVariantListCounter++;
                 }
@@ -255,115 +223,16 @@ public class VariantAnnotationCalculator {
         return null;
     }
 
-//    @Deprecated
-//    private List<QueryResult<VariantAnnotation>> getCachedPreferredAnnotation(List<Variant> variantList)
-//            throws InterruptedException, ExecutionException {
-//
-//        // Expected to be very few within a batch, no capacity initialized for the array
-//        List<Integer> mustRunAnnotationPositions = new ArrayList<>();
-//        List<Variant> mustRunAnnotation = new ArrayList<>();
-//
-//        // Expected to be most of them, array capacity set to variantList size
-//        List<Integer> mustSearchVariationPositions = new ArrayList<>(variantList.size());
-//        List<Variant> mustSearchVariation = new ArrayList<>();
-//
-//        // Phased variants cannot be annotated using the variation collection
-//        if (phased) {
-//            for (int i = 0; i < variantList.size(); i++) {
-//                if (isPhased(variantList.get(i))) {
-//                    mustRunAnnotationPositions.add(i);
-//                    mustRunAnnotation.add(variantList.get(i));
-//                } else {
-//                    mustSearchVariationPositions.add(i);
-//                    mustSearchVariation.add(variantList.get(i));
-//                }
-//            }
-//        } else {
-//            for (int i = 0; i < variantList.size(); i++) {
-//                mustSearchVariationPositions.add(i);
-//                mustSearchVariation.add(variantList.get(i));
-//            }
-//        }
-//
-//        // Search unphased variants within variation collection
-//        QueryOptions queryOptions = new QueryOptions("include", getCachedVariationIncludeFields());
-//        List<QueryResult<Variant>> variationQueryResultList = variantDBAdaptor.getByVariant(mustSearchVariation,
-//                queryOptions);
-//
-//        // Object to be returned
-//        List<QueryResult<VariantAnnotation>> variantAnnotationResultList =
-//                Arrays.asList(new QueryResult[variantList.size()]);
-//
-//        // Gene annotation is always generated on-the-fly. Get genes overlapping with the batch of variants
-//        List<Gene> batchGeneList = getBatchGeneList(variantList);
-//
-//        // mustSearchVariation and variationQueryResultList do have same size, same order
-//        for (int i = 0; i < mustSearchVariation.size(); i++) {
-//            // WARNING: variation collection may contain multiple documents for the same variant. ENSEMBL variation
-//            // often provides multiple entries for the same variant (<1% variants). This line below will select just
-//            // one of them.
-//            Variant cacheVariant = getPreferredVariant(variationQueryResultList.get(i));
-//
-//            // Variant not found in variation collection or the variant was found but not annotated with CellBase - I can
-//            // distinguish CellBase from ENSEMBL annotation because when CellBase annotates, it includes chromosome, start,
-//            // reference and alternate fields - TODO: change this.
-//            // Must be annotated by running the whole process
-//            if (cacheVariant == null) {
-//                mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
-//                mustRunAnnotation.add(mustSearchVariation.get(i));
-//            } else if (cacheVariant.getAnnotation() != null && cacheVariant.getAnnotation().getChromosome() == null) {
-//                mustSearchVariation.get(i).setId(cacheVariant.getId());
-//                if (mustSearchVariation.get(i).getAnnotation() == null) {
-//                    mustSearchVariation.get(i).setAnnotation(new VariantAnnotation());
-//                }
-//                mustSearchVariation.get(i).getAnnotation()
-//                        .setPopulationFrequencies(cacheVariant.getAnnotation().getPopulationFrequencies());
-//                mustRunAnnotationPositions.add(mustSearchVariationPositions.get(i));
-//                mustRunAnnotation.add(mustSearchVariation.get(i));
-//            } else {
-//                // variantList is the passed by reference argument and reference to objects within variantList are
-//                // copied within mustSearchVariation. Modifying reference objects within mustSearchVariation will
-//                // modify user-provided Variant objects. If there's no annotation - just set it; if there's an annotation
-//                // object already created, let's only overwrite those fields created by the annotator
-//                VariantAnnotation variantAnnotation;
-//                if (mustSearchVariation.get(i).getAnnotation() == null) {
-//                    variantAnnotation =  cacheVariant.getAnnotation();
-//                    mustSearchVariation.get(i).setAnnotation(variantAnnotation);
-//                } else {
-//                    variantAnnotation = mustSearchVariation.get(i).getAnnotation();
-//                    mergeAnnotation(variantAnnotation, cacheVariant.getAnnotation());
-//                }
-//                setGeneAnnotation(batchGeneList, mustSearchVariation.get(i));
-//                variantAnnotationResultList.set(mustSearchVariationPositions.get(i),
-//                        new QueryResult<>(mustSearchVariation.get(i).toString(),
-//                        variationQueryResultList.get(i).getDbTime(), 1, 1, null, null,
-//                        Collections.singletonList(variantAnnotation)));
-//            }
-//        }
-//
-//        if (mustRunAnnotation.size() > 0) {
-//            List<QueryResult<VariantAnnotation>> uncachedAnnotations = runAnnotationProcess(mustRunAnnotation);
-//            for (int i = 0; i < mustRunAnnotation.size(); i++) {
-//                variantAnnotationResultList.set(mustRunAnnotationPositions.get(i), uncachedAnnotations.get(i));
-//            }
-//        }
-//
-//        logger.debug("{}/{} ({}%) variants required running the annotation process", mustRunAnnotation.size(),
-//                variantList.size(), (mustRunAnnotation.size() * (100.0 / variantList.size())));
-//        return variantAnnotationResultList;
-//
-//    }
-
-    private Variant getPreferredVariant(QueryResult<Variant> variantQueryResult) {
-        if (variantQueryResult.getNumResults() > 1
-                && variantQueryResult.first().getAnnotation().getPopulationFrequencies() == null) {
-            for (int i = 1; i < variantQueryResult.getResult().size(); i++) {
-                if (variantQueryResult.getResult().get(i).getAnnotation().getPopulationFrequencies() != null) {
-                    return variantQueryResult.getResult().get(i);
+    private Variant getPreferredVariant(CellBaseDataResult<Variant> variantCellBaseDataResult) {
+        if (variantCellBaseDataResult.getNumResults() > 1
+                && variantCellBaseDataResult.first().getAnnotation().getPopulationFrequencies() == null) {
+            for (int i = 1; i < variantCellBaseDataResult.getResults().size(); i++) {
+                if (variantCellBaseDataResult.getResults().get(i).getAnnotation().getPopulationFrequencies() != null) {
+                    return variantCellBaseDataResult.getResults().get(i);
                 }
             }
         }
-        return variantQueryResult.first();
+        return variantCellBaseDataResult.first();
     }
 
     private List<Gene> setGeneAnnotation(List<Gene> batchGeneList, Variant variant) {
@@ -429,15 +298,6 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("consequenceType")) {
             stringBuilder.append(",annotation.consequenceTypes,annotation.displayConsequenceType");
         }
-//        if (annotatorSet.contains("expression")) {
-//            stringBuilder.append(",annotation.geneExpression");
-//        }
-//        if (annotatorSet.contains("geneDisease")) {
-//            stringBuilder.append(",annotation.geneTraitAssociation");
-//        }
-//        if (annotatorSet.contains("drugInteraction")) {
-//            stringBuilder.append(",annotation.geneDrugInteraction");
-//        }
         if (annotatorSet.contains("populationFrequencies")) {
             stringBuilder.append(",annotation.populationFrequencies");
         }
@@ -459,7 +319,7 @@ public class VariantAnnotationCalculator {
          */
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(5);
         FutureVariationAnnotator futureVariationAnnotator = null;
-        Future<List<QueryResult<Variant>>> variationFuture = null;
+        Future<List<CellBaseDataResult<Variant>>> variationFuture = null;
 
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
@@ -469,21 +329,21 @@ public class VariantAnnotationCalculator {
         }
 
         FutureConservationAnnotator futureConservationAnnotator = null;
-        Future<List<QueryResult>> conservationFuture = null;
+        Future<List<CellBaseDataResult>> conservationFuture = null;
         if (annotatorSet.contains("conservation")) {
             futureConservationAnnotator = new FutureConservationAnnotator(normalizedVariantList, QueryOptions.empty());
             conservationFuture = fixedThreadPool.submit(futureConservationAnnotator);
         }
 
         FutureVariantFunctionalScoreAnnotator futureVariantFunctionalScoreAnnotator = null;
-        Future<List<QueryResult<Score>>> variantFunctionalScoreFuture = null;
+        Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture = null;
         if (annotatorSet.contains("functionalScore")) {
             futureVariantFunctionalScoreAnnotator = new FutureVariantFunctionalScoreAnnotator(normalizedVariantList, QueryOptions.empty());
             variantFunctionalScoreFuture = fixedThreadPool.submit(futureVariantFunctionalScoreAnnotator);
         }
 
         FutureClinicalAnnotator futureClinicalAnnotator = null;
-        Future<List<QueryResult<Variant>>> clinicalFuture = null;
+        Future<List<CellBaseDataResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
             futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList,
                     new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased));
@@ -491,14 +351,14 @@ public class VariantAnnotationCalculator {
         }
 
         FutureRepeatsAnnotator futureRepeatsAnnotator = null;
-        Future<List<QueryResult<Repeat>>> repeatsFuture = null;
+        Future<List<CellBaseDataResult<Repeat>>> repeatsFuture = null;
         if (annotatorSet.contains("repeats")) {
             futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, QueryOptions.empty());
             repeatsFuture = fixedThreadPool.submit(futureRepeatsAnnotator);
         }
 
         FutureCytobandAnnotator futureCytobandAnnotator = null;
-        Future<List<QueryResult<Cytoband>>> cytobandFuture = null;
+        Future<List<CellBaseDataResult<Cytoband>>> cytobandFuture = null;
         if (annotatorSet.contains("cytoband")) {
             futureCytobandAnnotator = new FutureCytobandAnnotator(normalizedVariantList, QueryOptions.empty());
             cytobandFuture = fixedThreadPool.submit(futureCytobandAnnotator);
@@ -622,9 +482,6 @@ public class VariantAnnotationCalculator {
         if (futureCytobandAnnotator != null) {
             futureCytobandAnnotator.processResults(cytobandFuture, variantAnnotationList);
         }
-//        if (futureHgvsAnnotator != null) {
-//            futureHgvsAnnotator.processResults(hgvsFuture, variantAnnotationResultList);
-//        }
         fixedThreadPool.shutdown();
 
 
@@ -646,7 +503,7 @@ public class VariantAnnotationCalculator {
         QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, includeGeneFields);
         queryOptions.put(MERGE, true);
 
-        return ((QueryResult) geneDBAdaptor.getByRegion(regionList, queryOptions).get(0)).getResult();
+        return ((CellBaseDataResult) geneDBAdaptor.getByRegion(regionList, queryOptions).get(0)).getResults();
     }
 
     private void parseQueryParam(QueryOptions queryOptions) {
@@ -1152,7 +1009,7 @@ public class VariantAnnotationCalculator {
 
         return geneDBAdaptor
                 .getByRegion(new Region(chromosome, Math.max(1, start - 5000),
-                        end + 5000), queryOptions).getResult();
+                        end + 5000), queryOptions).getResults();
     }
 
     private boolean nonSynonymous(ConsequenceType consequenceType, boolean useMitochondrialCode) {
@@ -1169,14 +1026,14 @@ public class VariantAnnotationCalculator {
 
     private ProteinVariantAnnotation getProteinAnnotation(ConsequenceType consequenceType) {
         if (consequenceType.getProteinVariantAnnotation() != null) {
-            QueryResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
+            CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
                     consequenceType.getEnsemblTranscriptId(),
                     consequenceType.getProteinVariantAnnotation().getPosition(),
                     consequenceType.getProteinVariantAnnotation().getReference(),
                     consequenceType.getProteinVariantAnnotation().getAlternate(), new QueryOptions());
 
             if (proteinVariantAnnotation.getNumResults() > 0) {
-                return proteinVariantAnnotation.getResult().get(0);
+                return proteinVariantAnnotation.getResults().get(0);
             }
         }
         return null;
@@ -1242,14 +1099,6 @@ public class VariantAnnotationCalculator {
                 }
             }
         }
-
-//        List<RegulatoryFeature> regionList = new ArrayList<>(queryResult.getNumResults());
-//        for (RegulatoryFeature object : queryResult.getResult()) {
-//            regionList.add(object);
-//        }
-
-
-//        return regionList;
     }
 
     private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position) {
@@ -1259,17 +1108,17 @@ public class VariantAnnotationCalculator {
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
 
-        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor
+        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationDBAdaptor
                 .get(new Query(REGION, toRegionString(chromosome, position)), queryOptions);
 
-        if (queryResult.getNumTotalResults() > 0) {
+        if (cellBaseDataResult.getNumMatches() > 0) {
             overlapsRegulatoryRegion[0] = true;
             boolean tfbsFound = false;
-            for (int i = 0; (i < queryResult.getResult().size() && !tfbsFound); i++) {
-                String regulatoryRegionType = queryResult.getResult().get(i).getFeatureType();
+            for (int i = 0; (i < cellBaseDataResult.getResults().size() && !tfbsFound); i++) {
+                String regulatoryRegionType = cellBaseDataResult.getResults().get(i).getFeatureType();
                 tfbsFound = regulatoryRegionType != null
                         && (regulatoryRegionType.equals(RegulationDBAdaptor.FeatureType.TF_binding_site.name())
-                        || queryResult.getResult().get(i).getFeatureType()
+                        || cellBaseDataResult.getResults().get(i).getFeatureType()
                             .equals(RegulationDBAdaptor.FeatureType.TF_binding_site_motif.name()));
             }
             overlapsRegulatoryRegion[1] = tfbsFound;
@@ -1289,19 +1138,19 @@ public class VariantAnnotationCalculator {
         String regionString = toRegionString(chromosome, start, end);
         Query query = new Query(REGION, regionString);
 
-        QueryResult<RegulatoryFeature> queryResult = regulationDBAdaptor
+        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationDBAdaptor
                 .get(query.append(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE, TF_BINDING_SITE), queryOptions);
 
         // Overlaps transcription factor binding site - it's therefore a regulatory variant
-        if (queryResult.getNumResults() == 1) {
+        if (cellBaseDataResult.getNumResults() == 1) {
             overlapsRegulatoryRegion[0] = true;
             overlapsRegulatoryRegion[1] = true;
         // Does not overlap transcription factor binding site - check any other regulatory region type
         } else {
             query.remove(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
-            queryResult = regulationDBAdaptor.get(query, queryOptions);
+            cellBaseDataResult = regulationDBAdaptor.get(query, queryOptions);
             // Does overlap other types of regulatory regions
-            if (queryResult.getNumResults() == 1) {
+            if (cellBaseDataResult.getNumResults() == 1) {
                 overlapsRegulatoryRegion[0] = true;
             }
         }
@@ -1354,40 +1203,6 @@ public class VariantAnnotationCalculator {
         }
 
         return regionList;
-
-//        List<Region> regionList = new ArrayList<>(variantList.size());
-//        if (imprecise) {
-//            for (Variant variant : variantList) {
-//                if (VariantType.CNV.equals(variant.getType())) {
-//                    regionList.add(new Region(variant.getChromosome(),
-//                            variant.getStart() - cnvExtraPadding,
-//                            variant.getEnd() + cnvExtraPadding));
-//                } else if (variant.getSv() != null) {
-//                    regionList.add(new Region(variant.getChromosome(),
-//                            variant.getSv() != null && variant.getSv().getCiStartLeft() != null
-//                                    ? variant.getSv().getCiStartLeft() : variant.getStart(),
-//                            variant.getSv() != null && variant.getSv().getCiEndRight() != null
-//                                    ? variant.getSv().getCiEndRight() : variant.getEnd()));
-//                // Insertion
-//                } else if (variant.getStart() > variant.getEnd()) {
-//                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
-//                // Other but insertion
-//                } else {
-//                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
-//                }
-//            }
-//        } else {
-//            for (Variant variant : variantList) {
-//                // Insertion
-//                if (variant.getStart() > variant.getEnd()) {
-//                    regionList.add(new Region(variant.getChromosome(), variant.getEnd(), variant.getStart()));
-//                // Other but insertion
-//                } else {
-//                    regionList.add(new Region(variant.getChromosome(), variant.getStart(), variant.getEnd()));
-//                }
-//            }
-//        }
-//        return regionList;
     }
 
     private List<Region> variantToRegionList(Variant variant) {
@@ -1492,7 +1307,7 @@ public class VariantAnnotationCalculator {
     /*
      * Future classes for Async annotations
      */
-    class FutureVariationAnnotator implements Callable<List<QueryResult<Variant>>> {
+    class FutureVariationAnnotator implements Callable<List<CellBaseDataResult<Variant>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
@@ -1502,16 +1317,16 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<QueryResult<Variant>> call() throws Exception {
+        public List<CellBaseDataResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
             logger.debug("Query variation");
-            List<QueryResult<Variant>> variationQueryResultList
+            List<CellBaseDataResult<Variant>> variationCellBaseDataResultList
                     = variantDBAdaptor.getPopulationFrequencyByVariant(variantList, queryOptions);
             logger.debug("Variation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
-            return variationQueryResultList;
+            return variationCellBaseDataResultList;
         }
 
-        public void processResults(Future<List<QueryResult<Variant>>> variationFuture,
+        public void processResults(Future<List<CellBaseDataResult<Variant>>> variationFuture,
                                    List<VariantAnnotation> variantAnnotationList,
                                    Set<String> annotatorSet) throws InterruptedException, ExecutionException {
 
@@ -1519,10 +1334,10 @@ public class VariantAnnotationCalculator {
                 Thread.sleep(1);
             }
 
-            List<QueryResult<Variant>> variationQueryResults = variationFuture.get();
-            if (variationQueryResults != null) {
+            List<CellBaseDataResult<Variant>> variationCellBaseDataResults = variationFuture.get();
+            if (variationCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    Variant preferredVariant = getPreferredVariant(variationQueryResults.get(i));
+                    Variant preferredVariant = getPreferredVariant(variationCellBaseDataResults.get(i));
                     if (preferredVariant != null) {
                         if (preferredVariant.getIds().size() > 0) {
                             variantAnnotationList.get(i).setId(preferredVariant.getIds().get(0));
@@ -1544,7 +1359,7 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    class FutureConservationAnnotator implements Callable<List<QueryResult>> {
+    class FutureConservationAnnotator implements Callable<List<CellBaseDataResult>> {
         private List<Variant> variantList;
 
         private QueryOptions queryOptions;
@@ -1555,13 +1370,13 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<QueryResult> call() throws Exception {
+        public List<CellBaseDataResult> call() throws Exception {
             long startTime = System.currentTimeMillis();
 
-            List<QueryResult> queryResultList = new ArrayList<>(variantList.size());
+            List<CellBaseDataResult> cellBaseDataResultList = new ArrayList<>(variantList.size());
 
             logger.debug("Query conservation");
-            // Want to return only one QueryResult object per Variant
+            // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
 
                 // Truncate region size of SVs to avoid server collapse
@@ -1572,46 +1387,46 @@ public class VariantAnnotationCalculator {
                                 ? (new Region(region.getChromosome(), region.getStart(), region.getStart() + 49))
                                 : region).collect(Collectors.toList());
 
-                List<QueryResult> tmpQueryResultList = conservationDBAdaptor
+                List<CellBaseDataResult> tmpCellBaseDataResultList = conservationDBAdaptor
                     .getAllScoresByRegionList(regionList, queryOptions);
 
-                // There may be more than one QueryResult per variant for breakends
-                // Reuse one of the QueryResult objects returned by the adaptor
-                QueryResult newQueryResult = tmpQueryResultList.get(0);
-                if (tmpQueryResultList.size() > 1) {
-                    // Reuse one of the QueryResult objects - new result is the set formed by the scores corresponding
+                // There may be more than one CellBaseDataResult per variant for breakends
+                // Reuse one of the CellBaseDataResult objects returned by the adaptor
+                CellBaseDataResult newCellBaseDataResult = tmpCellBaseDataResultList.get(0);
+                if (tmpCellBaseDataResultList.size() > 1) {
+                    // Reuse one of the CellBaseDataResult objects - new result is the set formed by the scores corresponding
                     // to the two breakpoints
-                    newQueryResult.getResult().addAll(tmpQueryResultList.get(1).getResult());
-                    newQueryResult.setNumResults(newQueryResult.getResult().size());
-                    newQueryResult.setNumTotalResults(newQueryResult.getResult().size());
+                    newCellBaseDataResult.getResults().addAll(tmpCellBaseDataResultList.get(1).getResults());
+                    newCellBaseDataResult.setNumResults(newCellBaseDataResult.getResults().size());
+                    newCellBaseDataResult.setNumMatches(newCellBaseDataResult.getResults().size());
                 }
-                queryResultList.add(newQueryResult);
+                cellBaseDataResultList.add(newCellBaseDataResult);
             }
 
             logger.debug("Conservation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());
-            return queryResultList;
+            return cellBaseDataResultList;
         }
 
-        public void processResults(Future<List<QueryResult>> conservationFuture,
+        public void processResults(Future<List<CellBaseDataResult>> conservationFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
             while (!conservationFuture.isDone()) {
                 Thread.sleep(1);
             }
 
-            List<QueryResult> conservationQueryResults = conservationFuture.get();
-            if (conservationQueryResults != null) {
+            List<CellBaseDataResult> conservationCellBaseDataResults = conservationFuture.get();
+            if (conservationCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
                     variantAnnotationList.get(i)
-                            .setConservation((List<Score>) conservationQueryResults.get(i).getResult());
+                            .setConservation((List<Score>) conservationCellBaseDataResults.get(i).getResults());
                 }
             }
         }
 
     }
 
-    class FutureVariantFunctionalScoreAnnotator implements Callable<List<QueryResult<Score>>> {
+    class FutureVariantFunctionalScoreAnnotator implements Callable<List<CellBaseDataResult<Score>>> {
         private List<Variant> variantList;
 
         private QueryOptions queryOptions;
@@ -1622,19 +1437,19 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<QueryResult<Score>> call() throws Exception {
+        public List<CellBaseDataResult<Score>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-//            List<QueryResult> variantFunctionalScoreQueryResultList =
+//            List<CellBaseDataResult> variantFunctionalScoreCellBaseDataResultList =
 //                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
             logger.debug("Query variant functional score");
-            List<QueryResult<Score>> variantFunctionalScoreQueryResultList =
+            List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResultList =
                     variantDBAdaptor.getFunctionalScoreVariant(variantList, queryOptions);
             logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
                     System.currentTimeMillis() - startTime, variantList.size());
-            return variantFunctionalScoreQueryResultList;
+            return variantFunctionalScoreCellBaseDataResultList;
         }
 
-        public void processResults(Future<List<QueryResult<Score>>> variantFunctionalScoreFuture,
+        public void processResults(Future<List<CellBaseDataResult<Score>>> variantFunctionalScoreFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
 
@@ -1642,19 +1457,19 @@ public class VariantAnnotationCalculator {
                 Thread.sleep(1);
             }
 
-            List<QueryResult<Score>> variantFunctionalScoreQueryResults = variantFunctionalScoreFuture.get();
-            if (variantFunctionalScoreQueryResults != null) {
+            List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResults = variantFunctionalScoreFuture.get();
+            if (variantFunctionalScoreCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    if (variantFunctionalScoreQueryResults.get(i).getNumResults() > 0) {
+                    if (variantFunctionalScoreCellBaseDataResults.get(i).getNumResults() > 0) {
                         variantAnnotationList.get(i)
-                                .setFunctionalScore((List<Score>) variantFunctionalScoreQueryResults.get(i).getResult());
+                                .setFunctionalScore((List<Score>) variantFunctionalScoreCellBaseDataResults.get(i).getResults());
                     }
                 }
             }
         }
     }
 
-    class FutureClinicalAnnotator implements Callable<List<QueryResult<Variant>>> {
+    class FutureClinicalAnnotator implements Callable<List<CellBaseDataResult<Variant>>> {
         private static final String CLINVAR = "clinvar";
         private static final String COSMIC = "cosmic";
         private static final String CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE = "ClinicalSignificance_in_source_file";
@@ -1670,15 +1485,14 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<QueryResult<Variant>> call() throws Exception {
+        public List<CellBaseDataResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-//            List<QueryResult> clinicalQueryResultList = clinicalDBAdaptor.getAllByGenomicVariantList(variantList, queryOptions);
-            List<QueryResult<Variant>> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
+            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
-            return clinicalQueryResultList;
+            return clinicalCellBaseDataResultList;
         }
 
-        public void processResults(Future<List<QueryResult<Variant>>> clinicalFuture,
+        public void processResults(Future<List<CellBaseDataResult<Variant>>> clinicalFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
 //            try {
@@ -1686,29 +1500,25 @@ public class VariantAnnotationCalculator {
                 Thread.sleep(1);
             }
 
-            List<QueryResult<Variant>> clinicalQueryResults = clinicalFuture.get();
-            if (clinicalQueryResults != null) {
+            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResults = clinicalFuture.get();
+            if (clinicalCellBaseDataResults != null) {
                 for (int i = 0; i < variantAnnotationList.size(); i++) {
-                    QueryResult<Variant> clinicalQueryResult = clinicalQueryResults.get(i);
-                    if (clinicalQueryResult.getResult() != null && clinicalQueryResult.getResult().size() > 0) {
+                    CellBaseDataResult<Variant> clinicalCellBaseDataResult = clinicalCellBaseDataResults.get(i);
+                    if (clinicalCellBaseDataResult.getResults() != null && clinicalCellBaseDataResult.getResults().size() > 0) {
                         variantAnnotationList.get(i)
-                                .setTraitAssociation(clinicalQueryResult.getResult().get(0).getAnnotation()
+                                .setTraitAssociation(clinicalCellBaseDataResult.getResults().get(0).getAnnotation()
                                         .getTraitAssociation());
                         // DEPRECATED
                         // TODO: remove in 4.6
                         variantAnnotationList.get(i)
-                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalQueryResult
-                                        .getResult()
+                                .setVariantTraitAssociation(convertToVariantTraitAssociation(clinicalCellBaseDataResult
+                                        .getResults()
                                         .get(0)
                                         .getAnnotation()
                                         .getTraitAssociation()));
                     }
                 }
             }
-//            } catch (ExecutionException e) {
-////            } catch (InterruptedException | ExecutionException e) {
-//                e.printStackTrace();
-//            }
         }
 
         private VariantTraitAssociation convertToVariantTraitAssociation(List<EvidenceEntry> traitAssociation) {
@@ -1794,7 +1604,7 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    class FutureRepeatsAnnotator implements Callable<List<QueryResult<Repeat>>> {
+    class FutureRepeatsAnnotator implements Callable<List<CellBaseDataResult<Repeat>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
@@ -1803,43 +1613,41 @@ public class VariantAnnotationCalculator {
             this.queryOptions = queryOptions;
         }
 
-        public List<QueryResult<Repeat>> call() throws Exception {
-//            List<QueryResult<Repeat>> queryResultList
-//                    = repeatsDBAdaptor.getByRegion(variantListToRegionList(variantList), queryOptions);
+        public List<CellBaseDataResult<Repeat>> call() throws Exception {
 
             long startTime = System.currentTimeMillis();
-            List<QueryResult<Repeat>> queryResultList = new ArrayList<>(variantList.size());
+            List<CellBaseDataResult<Repeat>> cellBaseDataResultList = new ArrayList<>(variantList.size());
 
             logger.debug("Query repeats");
-            // Want to return only one QueryResult object per Variant
+            // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                List<QueryResult<Repeat>> tmpQueryResultList = repeatsDBAdaptor
+                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsDBAdaptor
                         .getByRegion(breakpointsToRegionList(variant), queryOptions);
 
-                // There may be more than one QueryResult per variant for non SNV variants since there will be
+                // There may be more than one CellBaseDataResult per variant for non SNV variants since there will be
                 // two breakpoints
-                // Reuse one of the QueryResult objects returned by the adaptor
-                QueryResult newQueryResult = tmpQueryResultList.get(0);
-                if (tmpQueryResultList.size() > 1) {
-                    Set<Repeat> repeatSet = new HashSet<>(newQueryResult.getResult());
-                    // Reuse one of the QueryResult objects - new result is the set formed by the repeats corresponding
+                // Reuse one of the CellBaseDataResult objects returned by the adaptor
+                CellBaseDataResult newCellBaseDataResult = tmpCellBaseDataResultList.get(0);
+                if (tmpCellBaseDataResultList.size() > 1) {
+                    Set<Repeat> repeatSet = new HashSet<>(newCellBaseDataResult.getResults());
+                    // Reuse one of the CellBaseDataResult objects - new result is the set formed by the repeats corresponding
                     // to the two breakpoints
-                    repeatSet.addAll(tmpQueryResultList.get(1).getResult());
-                    newQueryResult.setNumResults(repeatSet.size());
-                    newQueryResult.setNumTotalResults(repeatSet.size());
-                    newQueryResult.setResult(new ArrayList(repeatSet));
+                    repeatSet.addAll(tmpCellBaseDataResultList.get(1).getResults());
+                    newCellBaseDataResult.setNumResults(repeatSet.size());
+                    newCellBaseDataResult.setNumTotalResults(repeatSet.size());
+                    newCellBaseDataResult.setResults(new ArrayList(repeatSet));
                 }
-                queryResultList.add(newQueryResult);
+                cellBaseDataResultList.add(newCellBaseDataResult);
             }
 
             logger.debug("Repeat query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());
 
-            return queryResultList;
+            return cellBaseDataResultList;
 
         }
 
-        public void processResults(Future<List<QueryResult<Repeat>>> repeatsFuture,
+        public void processResults(Future<List<CellBaseDataResult<Repeat>>> repeatsFuture,
                                    List<VariantAnnotation> variantAnnotationResults)
                 throws InterruptedException, ExecutionException {
 //            try {
@@ -1847,24 +1655,20 @@ public class VariantAnnotationCalculator {
                 Thread.sleep(1);
             }
 
-            List<QueryResult<Repeat>> queryResultList = repeatsFuture.get();
-            if (queryResultList != null) {
+            List<CellBaseDataResult<Repeat>> cellBaseDataResultList = repeatsFuture.get();
+            if (cellBaseDataResultList != null) {
                 for (int i = 0; i < variantAnnotationResults.size(); i++) {
-                    QueryResult<Repeat> queryResult = queryResultList.get(i);
-                    if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
+                    CellBaseDataResult<Repeat> cellBaseDataResult = cellBaseDataResultList.get(i);
+                    if (cellBaseDataResult.getResults() != null && cellBaseDataResult.getResults().size() > 0) {
                         variantAnnotationResults.get(i)
-                                .setRepeat(queryResult.getResult());
+                                .setRepeat(cellBaseDataResult.getResults());
                     }
                 }
             }
-//            } catch (ExecutionException e) {
-////            } catch (InterruptedException | ExecutionException e) {
-//                e.printStackTrace();
-//            }
         }
     }
 
-    class FutureCytobandAnnotator implements Callable<List<QueryResult<Cytoband>>> {
+    class FutureCytobandAnnotator implements Callable<List<CellBaseDataResult<Cytoband>>> {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
@@ -1874,47 +1678,47 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        public List<QueryResult<Cytoband>> call() throws Exception {
+        public List<CellBaseDataResult<Cytoband>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<QueryResult<Cytoband>> queryResultList = new ArrayList<>(variantList.size());
+            List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = new ArrayList<>(variantList.size());
 
             logger.debug("Query cytoband");
-            // Want to return only one QueryResult object per Variant
+            // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                List<QueryResult<Cytoband>> tmpQueryResultList = genomeDBAdaptor
+                List<CellBaseDataResult<Cytoband>> tmpCellBaseDataResultList = genomeDBAdaptor
                         .getCytobands(breakpointsToRegionList(variant));
 
-                // There may be more than one QueryResult per variant for non SNV variants since there will be
+                // There may be more than one CellBaseDataResult per variant for non SNV variants since there will be
                 // two breakpoints
-                // Reuse one of the QueryResult objects returned by the adaptor
-                QueryResult newQueryResult = tmpQueryResultList.get(0);
-                if (tmpQueryResultList.size() > 1) {
-                    Set<Cytoband> cytobandSet = new HashSet<>(newQueryResult.getResult());
-                    // Reuse one of the QueryResult objects - new result is the set formed by the cytobands corresponding
+                // Reuse one of the CellBaseDataResult objects returned by the adaptor
+                CellBaseDataResult newCellBaseDataResult = tmpCellBaseDataResultList.get(0);
+                if (tmpCellBaseDataResultList.size() > 1) {
+                    Set<Cytoband> cytobandSet = new HashSet<>(newCellBaseDataResult.getResults());
+                    // Reuse one of the CellBaseDataResult objects - new result is the set formed by the cytobands corresponding
                     // to the two breakpoints
-                    cytobandSet.addAll(tmpQueryResultList.get(1).getResult());
-                    newQueryResult.setNumResults(cytobandSet.size());
-                    newQueryResult.setNumTotalResults(cytobandSet.size());
-                    newQueryResult.setResult(new ArrayList(cytobandSet));
+                    cytobandSet.addAll(tmpCellBaseDataResultList.get(1).getResults());
+                    newCellBaseDataResult.setNumResults(cytobandSet.size());
+                    newCellBaseDataResult.setNumTotalResults(cytobandSet.size());
+                    newCellBaseDataResult.setResults(new ArrayList(cytobandSet));
                 }
-                queryResultList.add(newQueryResult);
+                cellBaseDataResultList.add(newCellBaseDataResult);
             }
 
             logger.debug("Cytoband query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
                     variantList.size());
-            return queryResultList;
+            return cellBaseDataResultList;
         }
 
-        public void processResults(Future<List<QueryResult<Cytoband>>> cytobandFuture,
+        public void processResults(Future<List<CellBaseDataResult<Cytoband>>> cytobandFuture,
                                    List<VariantAnnotation> variantAnnotationList)
                 throws InterruptedException, ExecutionException {
             while (!cytobandFuture.isDone()) {
                 Thread.sleep(1);
             }
 
-            List<QueryResult<Cytoband>> queryResultList = cytobandFuture.get();
-            if (queryResultList != null) {
-                if (queryResultList.isEmpty()) {
+            List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = cytobandFuture.get();
+            if (cellBaseDataResultList != null) {
+                if (cellBaseDataResultList.isEmpty()) {
                     StringBuilder stringbuilder = new StringBuilder(variantList.get(0).toString());
                     for (int i = 1; i < variantList.size(); i++) {
                         stringbuilder.append(",").append(variantList.get(i).toString());
@@ -1923,61 +1727,14 @@ public class VariantAnnotationCalculator {
                 } else {
                     // Cytoband lists are returned in the same order in which variants are queried
                     for (int i = 0; i < variantAnnotationList.size(); i++) {
-                        QueryResult queryResult = queryResultList.get(i);
-                        if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
-                            variantAnnotationList.get(i).setCytoband(queryResult.getResult());
+                        CellBaseDataResult cellBaseDataResult = cellBaseDataResultList.get(i);
+                        if (cellBaseDataResult.getResults() != null && cellBaseDataResult.getResults().size() > 0) {
+                            variantAnnotationList.get(i).setCytoband(cellBaseDataResult.getResults());
                         }
                     }
                 }
             }
         }
     }
-
-//    private class FutureHgvsAnnotator implements Callable<List<QueryResult<String>>> {
-//        private List<Variant> variantList;
-//        private QueryOptions queryOptions;
-//
-//        FutureHgvsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
-//            this.variantList = variantList;
-//            this.queryOptions = queryOptions;
-//        }
-//
-//        @Override
-//        public List<QueryResult<String>> call() throws Exception {
-//            long startTime = System.currentTimeMillis();
-//            List<QueryResult<String>> queryResultList = hgvsCalculator.run(variantList);
-//            logger.debug("HGVS query performance is {}ms for {} variants", System.currentTimeMillis() - startTime,
-//                    variantList.size());
-//            return queryResultList;
-//        }
-//
-//        public void processResults(Future<List<QueryResult<Cytoband>>> cytobandFuture,
-//                                   List<QueryResult<VariantAnnotation>> variantAnnotationResults)
-//                throws InterruptedException, ExecutionException {
-//            while (!cytobandFuture.isDone()) {
-//                Thread.sleep(1);
-//            }
-//
-//            List<QueryResult<Cytoband>> queryResultList = cytobandFuture.get();
-//            if (queryResultList != null) {
-//                if (queryResultList.isEmpty()) {
-//                    StringBuilder stringbuilder = new StringBuilder(variantList.get(0).toString());
-//                    for (int i = 1; i < variantList.size(); i++) {
-//                        stringbuilder.append(",").append(variantList.get(i).toString());
-//                    }
-//                    logger.warn("NO cytoband was found for any of these variants: {}", stringbuilder.toString());
-//                } else {
-//                    // Cytoband lists are returned in the same order in which variants are queried
-//                    for (int i = 0; i < variantAnnotationResults.size(); i++) {
-//                        QueryResult queryResult = queryResultList.get(i);
-//                        if (queryResult.getResult() != null && queryResult.getResult().size() > 0) {
-//                            variantAnnotationResults.get(i).getResult().get(0).setCytoband(queryResult.getResult());
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//    }
 }
 

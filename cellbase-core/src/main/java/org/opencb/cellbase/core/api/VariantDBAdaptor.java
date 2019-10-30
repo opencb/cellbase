@@ -22,7 +22,7 @@ import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,9 +82,9 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
     }
 
-    QueryResult startsWith(String id, QueryOptions options);
+    CellBaseDataResult startsWith(String id, QueryOptions options);
 
-    default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
+    default CellBaseDataResult<T> getByVariant(Variant variant, QueryOptions options) {
         Query query;
 //        if (VariantType.CNV.equals(variant.getType())) {
 
@@ -102,16 +102,6 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
                 int ciStartRight = variant.getSv().getCiStartRight();
                 int ciEndLeft = variant.getSv().getCiEndLeft();
                 int ciEndRight = variant.getSv().getCiEndRight();
-//                // CNVs must be considered inherently imprecise (GEL requirement), even if variant caller returned
-//                // precise positions
-//                if (VariantType.CNV.equals(variant.getType())
-//                        && variant.getSv().getCiStartLeft().equals(variant.getSv().getCiStartRight())
-//                        && variant.getSv().getCiEndLeft().equals(variant.getSv().getCiEndRight())) {
-//                    ciStartLeft -= CNV_DEFAULT_PADDING;
-//                    ciStartRight += CNV_DEFAULT_PADDING;
-//                    ciEndLeft -= CNV_DEFAULT_PADDING;
-//                    ciEndRight += CNV_DEFAULT_PADDING;
-//                }
                 query.append(QueryParams.CI_START_LEFT.key(), ciStartLeft)
                         .append(QueryParams.CI_START_RIGHT.key(), ciStartRight)
                         .append(QueryParams.CI_END_LEFT.key(), ciEndLeft)
@@ -136,29 +126,29 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         return get(query, options);
     }
 
-    default List<QueryResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {
-        List<QueryResult<T>> results = new ArrayList<>(variants.size());
+    default List<CellBaseDataResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {
+        List<CellBaseDataResult<T>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
             results.add(getByVariant(variant, options));
         }
         return results;
     }
 
-    QueryResult<String> getConsequenceTypes(Query query);
+    CellBaseDataResult<String> getConsequenceTypes(Query query);
 
-    QueryResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions options);
+    CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions options);
 
-    default List<QueryResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options) {
-        List<QueryResult<Score>> queryResults = new ArrayList<>(variants.size());
+    default List<CellBaseDataResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options) {
+        List<CellBaseDataResult<Score>> cellBaseDataResults = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
             if (variant.getType() == VariantType.SNV) {
-                queryResults.add(getFunctionalScoreVariant(variant, options));
+                cellBaseDataResults.add(getFunctionalScoreVariant(variant, options));
             } else {
-                queryResults.add(new QueryResult<>(variant.toString(), 0, 0, 0, null, null, Collections.emptyList()));
+                cellBaseDataResults.add(new CellBaseDataResult(variant.toString(), 0, 0, 0, null, Collections.emptyList()));
             }
         }
-        return queryResults;
+        return cellBaseDataResults;
     }
 
-    List<QueryResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions);
+    List<CellBaseDataResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions);
 }

@@ -23,12 +23,11 @@ import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -87,7 +86,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/list")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = QueryResponse.class)
+    @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = CellBaseDataResult.class)
     public Response getChromosomes() {
         try {
             parseQueryParams();
@@ -113,9 +112,9 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
 //            return createOkResponse(dbAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions));
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
-            List<QueryResult> queryResults = new ArrayList<>(chromosomeList.size());
+            List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
             for (String chromosome : chromosomeList) {
-                QueryResult queryResult = dbAdaptor.getChromosomeInfo(chromosome, queryOptions);
+                CellBaseDataResult queryResult = dbAdaptor.getChromosomeInfo(chromosome, queryOptions);
                 queryResult.setId(chromosome);
                 queryResults.add(queryResult);
             }
@@ -136,7 +135,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             QueryOptions options = new QueryOptions("include", "chromosomes.size");
 //            return createOkResponse(dbAdaptor.getChromosomeById(query, options));
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
-            List<QueryResult> queryResults = new ArrayList<>(chromosomeList.size());
+            List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
             for (String chromosome : chromosomeList) {
                 queryResults.add(dbAdaptor.getChromosomeInfo(chromosome, options));
             }
@@ -145,19 +144,6 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-
-//    @GET
-//    @Path("/{chromosomeName}/cytoband")
-//    public Response getByChromosomeName(@PathParam("chromosomeName") String query) {
-//        try {
-//            parseQueryParams();
-//            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(dbAdaptor.getAllCytobandsByIdList(Splitter.on(",").splitToList(query), queryOptions));
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
 
     @GET
     public Response defaultMethod() {

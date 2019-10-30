@@ -29,7 +29,7 @@ import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -81,8 +81,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
 
     @Override
-    public QueryResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
-        QueryResult result = null;
+    public CellBaseDataResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
+        CellBaseDataResult result = null;
 
         // Ensembl transcript id is needed for this collection
         if (query.getString("transcript") != null) {
@@ -103,20 +103,20 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
                 // Projection is used to minimize the returned data
                 Bson positionProjection = Projections.include(projectionString);
-                result = proteinSubstitutionMongoDBCollection.find(transcript, positionProjection, options);
+                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, positionProjection, options));
             } else {
                 // Return the whole transcript data
-                result = proteinSubstitutionMongoDBCollection.find(transcript, options);
+                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, options));
             }
 
-            if (result != null && !result.getResult().isEmpty()) {
-                Document document = (Document) result.getResult().get(0);
+            if (result != null && !result.getResults().isEmpty()) {
+                Document document = (Document) result.getResults().get(0);
                 Document aaPositionsDocument = (Document) document.get("aaPositions");
 
                 // Position or aa change were not provided, returning whole transcript data
                 if (position == -1 || aaShortName == null) {
                     // Return only the inner Document, not the whole document projected
-                    result.setResult(Collections.singletonList(aaPositionsDocument));
+                    result.setResults(Collections.singletonList(aaPositionsDocument));
                 // Position and aa were provided, return only corresponding Score objects
                 } else {
                     List<Score> scoreList = null;
@@ -124,7 +124,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                         scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
                         Document positionDocument = (Document) aaPositionsDocument.get(Integer.toString(position));
                         Document aaDocument = (Document) positionDocument.get(aaShortName);
-//                        Document proteinSubstitutionScores = (Document) result.getResult().get(0);
                         if (aaDocument.get("ss") != null) {
                             scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ss")),
                                     "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(aaDocument.get("se"))));
@@ -134,12 +133,8 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
                                     "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(aaDocument.get("pe"))));
                         }
                     }
-                    result.setResult(scoreList);
-//                    result.setResult(Collections.singletonList(scoreList));
+                    result.setResults(scoreList);
                 }
-//            // Return empty QueryResult if the query did not return any result
-//            } else {
-//                return result;
             }
         }
         // Return null if no transcript id is provided
@@ -147,61 +142,27 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     }
 
-//    private List<Score> getProteinSubstitutionScores(String ensemblTranscriptId, int aaPosition, String alternativeAa) {
-//        QueryResult proteinSubstitutionScoresQueryResult = getFunctionPredictionByAaChange(ensemblTranscriptId,
-//                aaPosition, alternativeAa, new QueryOptions());
-//        List<Score> scoreList = null;
-//        if (proteinSubstitutionScoresQueryResult.getNumResults() == 1) {
-//            scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
-//            Document proteinSubstitutionScores = (Document) proteinSubstitutionScoresQueryResult.getResult().get(0);
-//            if (proteinSubstitutionScores.get("ss") != null) {
-//                scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ss")),
-//                        "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(proteinSubstitutionScores.get("se"))));
-//            }
-//            if (proteinSubstitutionScores.get("ps") != null) {
-//                scoreList.add(new Score(Double.parseDouble("" + proteinSubstitutionScores.get("ps")),
-//                        "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(proteinSubstitutionScores.get("pe"))));
-//            }
-//        }
-//        return scoreList;
-//    }
-
     @Override
-    public QueryResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
+    public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
                                                                       String aaAlternate, QueryOptions options) {
-        QueryResult<ProteinVariantAnnotation> queryResult = new QueryResult<>();
-        queryResult.setId(ensemblTranscriptId + "/" + position + "/" + aaAlternate);
+        CellBaseDataResult<ProteinVariantAnnotation> cellBaseDataResult = new CellBaseDataResult<>();
+        cellBaseDataResult.setId(ensemblTranscriptId + "/" + position + "/" + aaAlternate);
         long dbTimeStart = System.currentTimeMillis();
 
         ProteinVariantAnnotation proteinVariantAnnotation = new ProteinVariantAnnotation();
         proteinVariantAnnotation.setPosition(position);
         proteinVariantAnnotation.setReference(aaReference);
         proteinVariantAnnotation.setAlternate(aaAlternate);
-//        proteinVariantAnnotation.setSubstitutionScores(getProteinSubstitutionScores(ensemblTranscriptId, position, aaAlternate));
         Query query = new Query("transcript", ensemblTranscriptId).append("position", position).append("aa", aaAlternate);
-//        try {
-//            if (ensemblTranscriptId.equals("ENST00000383037") || ensemblTranscriptId.equals("ENST00000428666")) {
-//                int a = 1;
-//            }
         // Stop_gain/lost variants do not have SIFT/POLYPHEN scores
         if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
-            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResult());
+            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResults());
         }
-//        } catch (Exception e) {
-//            int a = 1;
-//        }
 
-        QueryResult proteinVariantData = null;
+        CellBaseDataResult proteinVariantData = null;
         String shortAlternativeAa = aaShortNameMap.get(aaAlternate);
         if (shortAlternativeAa != null) {
             List<Bson> pipeline = new ArrayList<>();
-
-//            BasicDBList andDBList1 = new BasicDBList();
-//            andDBList1.add(new Document("dbReference.id", ensemblTranscriptId));
-//            andDBList1.add(new Document("feature.location.position.position", position));
-//            andDBList1.add(new Document("feature.variation", shortAlternativeAa));
-//            pipeline.add(new Document("$match", new Document("$and", andDBList1)));
-
             pipeline.add(new Document("$match", new Document("dbReference.id", ensemblTranscriptId)));
 
             Document projection = new Document();
@@ -225,112 +186,77 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
             orList.add(firstOr);
             orList.add(secondOr);
             pipeline.add(new Document("$match", new Document("$or", orList)));
-//            pipeline.add(new Document("$match", firstOr));
-//
+
             Document groupFields = new Document();
             groupFields.put("_id", "$accession");
             groupFields.put("keyword", new Document("$addToSet", "$keyword"));
             groupFields.put("feature", new Document("$addToSet", "$feature"));
             pipeline.add(new Document("$group", groupFields));
 
-
-            //TODO:terminar el pipeline de agregacion
-//            QueryBuilder builder = QueryBuilder.start("dbReference.id").is(ensemblTranscriptId)
-//                    .and("feature.location.position.position").is(position)
-//                    .and("feature.variation").is(shortAlternativeAa);
-//
-//            Document firstOr = new Document();
-//            firstOr.put("location.position.position", position);
-//            firstOr.put("variation", shortAlternativeAa);
-//
-//            BasicDBList andList = new BasicDBList();
-//            andList.add(new Document("location.end.position", new Document("$gte", position)));
-//            andList.add(new Document("location.begin.position", new Document("$lte", position)));
-//            Document secondOr = new Document();
-//            secondOr.put("$and", andList);
-//
-//            BasicDBList orList = new BasicDBList();
-//            orList.add(firstOr);
-//            orList.add(secondOr);
-//
-//            Document elemMatch = new Document();
-//            elemMatch.put("$elemMatch", new Document("$or", orList));
-//
-//            Document projection = new Document();
-//            projection.put("feature", elemMatch);
-//
-//            QueryOptions localQueryOptions = new QueryOptions();
-//            localQueryOptions.put("elemMatch",projection);
-//            localQueryOptions.put("include","accession,keyword,feature");
-//            proteinVariantData = executeQuery(ensemblTranscriptId + "_" + String.valueOf(position) + "_"
-//                            + aaAlternate, new Document(builder.get().toMap()), localQueryOptions);
             proteinVariantData = executeAggregation2(ensemblTranscriptId + "_" + String.valueOf(position) + "_"
                     + aaAlternate, pipeline, new QueryOptions());
             if (proteinVariantData.getNumResults() > 0) {
                 proteinVariantAnnotation = processProteinVariantData(proteinVariantAnnotation, shortAlternativeAa,
-                        (Document) proteinVariantData.getResult().get(0));
+                        (Document) proteinVariantData.getResults().get(0));
             }
         }
 
         long dbTimeEnd = System.currentTimeMillis();
-        queryResult.setDbTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
-
-//        if (proteinVariantAnnotation.getSubstitutionScores() != null || proteinVariantAnnotation.getUniprotAccession() != null) {
-        queryResult.setNumResults(1);
-        queryResult.setResult(Collections.singletonList(proteinVariantAnnotation));
-//        }
-        return queryResult;
+        cellBaseDataResult.setTime(Long.valueOf(dbTimeEnd - dbTimeStart).intValue());
+        cellBaseDataResult.setNumResults(1);
+        cellBaseDataResult.setResults(Collections.singletonList(proteinVariantAnnotation));
+        return cellBaseDataResult;
     }
 
     @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
-    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query) {
         Bson document = parseQuery(query);
-        return mongoDBCollection.count(document);
+        return new CellBaseDataResult<>(mongoDBCollection.count(document));
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field) {
         Bson document = parseQuery(query);
-        return mongoDBCollection.distinct(field, document);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, document));
     }
 
     @Override
-    public QueryResult stats(Query query) {
+    public CellBaseDataResult stats(Query query) {
         return null;
     }
 
     @Override
-    public QueryResult<Entry> get(Query query, QueryOptions options) {
+    public CellBaseDataResult<Entry> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, null, Entry.class, options);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Entry.class, options));
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
 
     @Override

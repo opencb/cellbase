@@ -24,7 +24,7 @@ import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -121,7 +121,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     genomeDBAdaptor.getGenomeInfo(queryOptions);
                     break;
                 case "sequence":
-                    QueryResult<GenomeSequenceFeature> genomicSequence = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
+                    CellBaseDataResult<GenomeSequenceFeature> genomicSequence = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
                     output.println(objectMapper.writeValueAsString(genomicSequence));
                     break;
                 default:
@@ -188,13 +188,13 @@ public class QueryCommandExecutor extends CommandExecutor {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
-            QueryResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
+            CellBaseDataResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
             output.println(objectMapper.writeValueAsString(distinct));
             return;
         }
 
         if (queryCommandOptions.count) {
-            QueryResult count = proteinDBAdaptor.count(query);
+            CellBaseDataResult count = proteinDBAdaptor.count(query);
             output.println(objectMapper.writeValueAsString(count));
             return;
         }
@@ -210,7 +210,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     }
                     break;
                 case "substitution-scores":
-                    QueryResult substitutionScores = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
+                    CellBaseDataResult substitutionScores = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
                     output.println(objectMapper.writeValueAsString(substitutionScores));
                     break;
                 default:
@@ -264,31 +264,31 @@ public class QueryCommandExecutor extends CommandExecutor {
             throws JsonProcessingException {
 
         if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
-            QueryResult distinct = featureDBAdaptor.distinct(query, queryCommandOptions.distinct);
+            CellBaseDataResult distinct = featureDBAdaptor.distinct(query, queryCommandOptions.distinct);
             output.println(objectMapper.writeValueAsString(distinct));
             return;
         }
 
         if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
-            QueryResult groupBy = featureDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
+            CellBaseDataResult groupBy = featureDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
             output.println(objectMapper.writeValueAsString(groupBy));
             return;
         }
 
         if (queryCommandOptions.rank != null && !queryCommandOptions.rank.isEmpty()) {
-            QueryResult rank = featureDBAdaptor.rank(query, queryCommandOptions.rank, queryCommandOptions.limit, true);
+            CellBaseDataResult rank = featureDBAdaptor.rank(query, queryCommandOptions.rank, queryCommandOptions.limit, true);
             output.println(objectMapper.writeValueAsString(rank));
             return;
         }
 
         if (queryCommandOptions.count) {
-            QueryResult count = featureDBAdaptor.count(query);
+            CellBaseDataResult count = featureDBAdaptor.count(query);
             output.println(objectMapper.writeValueAsString(count));
             return;
         }
 
         if (queryCommandOptions.histogram) {
-            QueryResult histogram = featureDBAdaptor.getIntervalFrequencies(query, queryCommandOptions.interval, queryOptions);
+            CellBaseDataResult histogram = featureDBAdaptor.getIntervalFrequencies(query, queryCommandOptions.interval, queryOptions);
             output.println(objectMapper.writeValueAsString(histogram));
             return;
         }

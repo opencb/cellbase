@@ -17,7 +17,7 @@
 package org.opencb.cellbase.core.variant;
 
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,20 +27,21 @@ public abstract class AnnotationBasedPhasedQueryManager<T> extends PhasedQueryMa
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public List<QueryResult<Variant>> run(List<Variant> variantList, List<QueryResult<Variant>> variantQueryResultList) {
+    public List<CellBaseDataResult<Variant>> run(List<Variant> variantList,
+                                                 List<CellBaseDataResult<Variant>> variantCellBaseDataResultList) {
         // Go through all input variants and their corresponding query results
-        for (int j = 0; j < variantQueryResultList.size(); j++) {
-            QueryResult<Variant> variantQueryResult = variantQueryResultList.get(j);
-            if (!variantQueryResult.getResult().isEmpty()) {
+        for (int j = 0; j < variantCellBaseDataResultList.size(); j++) {
+            CellBaseDataResult<Variant> variantCellBaseDataResult = variantCellBaseDataResultList.get(j);
+            if (!variantCellBaseDataResult.getResults().isEmpty()) {
                 // Variants are normalised and data from each of the sources (COSMIC, ClinVar, DOCM, etc.) integrated
                 // during the build process. Only one variant record should be present per assembly.
-                if (variantQueryResult.getResult().size() > 1) {
+                if (variantCellBaseDataResult.getResults().size() > 1) {
                     logger.warn("More than one result found either the clinical_variants or variation collection"
-                            + "for variant " + variantQueryResult.getId() + ". Arbitrarily selecting the first one. "
+                            + "for variant " + variantCellBaseDataResult.getId() + ". Arbitrarily selecting the first one. "
                             + "Please, check.");
                 }
 
-                Variant matchedVariant = variantQueryResult.getResult().get(0);
+                Variant matchedVariant = variantCellBaseDataResult.getResults().get(0);
                 Variant queryVariant = variantList.get(j);
                 List<T> annotationObjectList = getAnnotationObjectList(matchedVariant);
                 // Phase is stored at the evidence entry/population frequency level, e.g.: there might be two ClinVar
@@ -78,12 +79,12 @@ public abstract class AnnotationBasedPhasedQueryManager<T> extends PhasedQueryMa
 
                 // Remove whole variant from the query result object if ended up without any evidence entry
                 if (annotationObjectList.isEmpty()) {
-                    reset(variantQueryResult);
+                    reset(variantCellBaseDataResult);
                 }
             }
         }
 
-        return variantQueryResultList;
+        return variantCellBaseDataResultList;
     }
 
     protected abstract List<Variant> getHaplotype(T annotationObject, Variant variant);

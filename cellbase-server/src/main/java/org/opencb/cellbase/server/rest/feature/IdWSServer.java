@@ -25,11 +25,12 @@ import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryResult;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -74,7 +75,7 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/info")
     @ApiOperation(httpMethod = "GET", value = "Retrieves the external reference(s) info for the ID(s)",
             notes = "An independent database query will be issued for each id, meaning that results for each id will be"
-            + " returned in independent QueryResult objects within the QueryResponse object.", response = Xref.class,
+            + " returned in independent CellBaseDataResult objects within the QueryResponse object.", response = Xref.class,
             responseContainer = "QueryResponse")
     public Response getByFeatureIdInfo(@PathParam("id")
                                        @ApiParam(name = "id", value = "Comma separated list of ids, e.g.: BRCA2. Exact "
@@ -91,14 +92,14 @@ public class IdWSServer extends GenericRestWSServer {
 //            }
             List<Query> queries = createQueries(id, XRefDBAdaptor.QueryParams.ID.key());
 
-            List<QueryResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < dbNameList.size(); i++) {
                 dbNameList.get(i).setId(list.get(i));
-                for (Document document : dbNameList.get(i).getResult()) {
+                for (Document document : dbNameList.get(i).getResults()) {
                     if (document.get("id").equals(list.get(i))) {
                         List<Document> objectList = new ArrayList<>(1);
                         objectList.add(document);
-                        dbNameList.get(i).setResult(objectList);
+                        dbNameList.get(i).setResults(objectList);
                         break;
                     }
                 }
@@ -133,7 +134,7 @@ public class IdWSServer extends GenericRestWSServer {
                 query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
             }
 //            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
-            QueryResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
+            CellBaseDataResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
             queryResult.setId(ids);
             return createOkResponse(queryResult);
         } catch (Exception e) {
@@ -151,7 +152,7 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             XRefDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            QueryResult queryResult = x.startsWith(id, queryOptions);
+            CellBaseDataResult queryResult = x.startsWith(id, queryOptions);
             queryResult.setId(id);
             return createOkResponse(queryResult);
         } catch (Exception e) {
@@ -169,7 +170,7 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            QueryResult xrefs = xRefDBAdaptor.contains(id, queryOptions);
+            CellBaseDataResult xrefs = xRefDBAdaptor.contains(id, queryOptions);
             xrefs.setId(id);
             return createOkResponse(xrefs);
         } catch (Exception e) {
@@ -182,7 +183,7 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/gene")
     @ApiOperation(httpMethod = "GET", value = "Get the gene(s) for the given ID(s)", notes = "An independent"
             + " database query will be issued for each id, meaning that results for each id will be"
-            + " returned in independent QueryResult objects within the QueryResponse object.",
+            + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
             responseContainer = "QueryResponse")
     public Response getGeneByEnsemblId(@PathParam("id")
                                        @ApiParam(name = "id", value = "Comma separated list of ids to look"
@@ -196,7 +197,7 @@ public class IdWSServer extends GenericRestWSServer {
             for (String s : ids) {
                 queries.add(new Query(GeneDBAdaptor.QueryParams.XREFS.key(), s));
             }
-            List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < ids.length; i++) {
                 queryResults.get(i).setId(ids[i]);
             }
@@ -214,7 +215,7 @@ public class IdWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            QueryResult xrefs = xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
+            CellBaseDataResult xrefs = xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
             return createOkResponse(xrefs);
         } catch (Exception e) {
             return createErrorResponse(e);

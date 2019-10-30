@@ -24,10 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.avro.DrugResponseClassification;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.models.mixin.DrugResponseClassificationMixIn;
+import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.commons.datastore.core.Event;
+import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,24 +98,25 @@ public class ParentRestClient<T> {
     }
 
 
-    public QueryResponse<Long> count(Query query) throws IOException {
+    public CellBaseDataResponse<Long> count(Query query) throws IOException {
         return execute("count", query, new QueryOptions(), Long.class);
     }
 
-    public QueryResponse<T> first() throws IOException {
+    public CellBaseDataResponse<T> first() throws IOException {
         return execute("first", new Query(), new QueryOptions(), clazz);
     }
 
-    public QueryResponse<T> get(List<String> id, QueryOptions queryOptions) throws IOException {
+    public CellBaseDataResponse<T> get(List<String> id, QueryOptions queryOptions) throws IOException {
         return execute(id, "info", queryOptions, clazz);
     }
 
 
-    protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz) throws IOException {
+    protected <U> CellBaseDataResponse<U> execute(String action, Query query, QueryOptions queryOptions,
+                                                  Class<U> clazz) throws IOException {
         return  execute(action, query, queryOptions, clazz, false);
     }
 
-    protected <U> QueryResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz,
+    protected <U> CellBaseDataResponse<U> execute(String action, Query query, QueryOptions queryOptions, Class<U> clazz,
                                            boolean post) throws IOException {
         if (query != null && queryOptions != null) {
             queryOptions.putAll(query);
@@ -121,25 +124,26 @@ public class ParentRestClient<T> {
         return execute("", action, queryOptions, clazz, post);
     }
 
-    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz)
+    protected <U> CellBaseDataResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz)
             throws IOException {
         return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz, false);
     }
 
-    protected <U> QueryResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz,
+    protected <U> CellBaseDataResponse<U> execute(String ids, String resource, QueryOptions queryOptions, Class<U> clazz,
                                            boolean post) throws IOException {
         return execute(Arrays.asList(ids.split(",")), resource, queryOptions, clazz, post);
     }
 
-    protected <U> QueryResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz) throws IOException {
+    protected <U> CellBaseDataResponse<U> execute(List<String> idList, String resource, QueryOptions options,
+                                                  Class<U> clazz) throws IOException {
         return execute(idList, resource, options, clazz, false);
     }
 
-    protected <U> QueryResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
+    protected <U> CellBaseDataResponse<U> execute(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
                                            boolean post) throws IOException {
 
         if (idList == null || idList.isEmpty()) {
-            return new QueryResponse<>();
+            return new CellBaseDataResponse<>();
         }
 
         // If the list contain less than REST_CALL_BATCH_SIZE variants then we can make a normal REST call.
@@ -153,7 +157,7 @@ public class ParentRestClient<T> {
                 : DEFAULT_NUM_THREADS;
 
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-        List<Future<QueryResponse<U>>> futureList = new ArrayList<>((idList.size() / REST_CALL_BATCH_SIZE) + 1);
+        List<Future<CellBaseDataResponse<U>>> futureList = new ArrayList<>((idList.size() / REST_CALL_BATCH_SIZE) + 1);
         for (int i = 0; i < idList.size(); i += REST_CALL_BATCH_SIZE) {
             final int from = i;
             final int to = (from + REST_CALL_BATCH_SIZE > idList.size())
@@ -164,26 +168,26 @@ public class ParentRestClient<T> {
             ));
         }
 
-        List<QueryResult<U>> queryResults = new ArrayList<>(idList.size());
-        for (Future<QueryResponse<U>> responseFuture : futureList) {
+        List<CellBaseDataResult<U>> cellBaseDataResults = new ArrayList<>(idList.size());
+        for (Future<CellBaseDataResponse<U>> responseFuture : futureList) {
             try {
                 while (!responseFuture.isDone()) {
                     Thread.sleep(5);
                 }
-                queryResults.addAll(responseFuture.get().getResponse());
+                cellBaseDataResults.addAll(responseFuture.get().getResponses());
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
         }
 
-        QueryResponse<U> finalResponse = new QueryResponse<>();
-        finalResponse.setResponse(queryResults);
+        CellBaseDataResponse<U> finalResponse = new CellBaseDataResponse<>();
+        finalResponse.setResponses(cellBaseDataResults);
         executorService.shutdown();
 
         return finalResponse;
     }
 
-    private <U> QueryResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
+    private <U> CellBaseDataResponse<U> fetchData(List<String> idList, String resource, QueryOptions options, Class<U> clazz,
                                            boolean post) throws IOException {
 
         if (options == null) {
@@ -196,19 +200,19 @@ public class ParentRestClient<T> {
         List<String> newIdsList = null;
         boolean call = true;
         int skip = 0;
-        QueryResponse<U> queryResponse = null;
-        QueryResponse<U> finalQueryResponse = null;
+        CellBaseDataResponse<U> queryResponse = null;
+        CellBaseDataResponse<U> finalDataResponse = null;
         while (call) {
             queryResponse = robustRestCall(idList, resource, options, clazz, post);
 
             // First iteration we set the response object, no merge needed
-            // Create id -> finalQueryResponse-position map, so that we can know in forthcoming iterations where to
+            // Create id -> finalDataResponse-position map, so that we can know in forthcoming iterations where to
             // save corresponding lists of query results
-            if (finalQueryResponse == null) {
-                finalQueryResponse = queryResponse;
+            if (finalDataResponse == null) {
+                finalDataResponse = queryResponse;
                 idMap = new HashMap<>();
-                // WARN: assuming the order of QueryResults in queryResponse corresponds to the order of ids in idList
-                // i.e. queryResponse[0] contains queryResult for idList[0], queryResponse[1] for idList[1], etc.
+                // WARN: assuming the order of CellBaseDataResults in queryResponse corresponds to the order of ids in idList
+                // i.e. queryResponse[0] contains CellBaseDataResult for idList[0], queryResponse[1] for idList[1], etc.
                 for (int i = 0; i < idList.size(); i++) {
                     idMap.put(idList.get(i), i);
                 }
@@ -216,8 +220,8 @@ public class ParentRestClient<T> {
 //                if (newIdsList != null && newIdsList.size() > 0) {
                 if (newIdsList.size() > 0) {
                     for (int i = 0; i < newIdsList.size(); i++) {
-                        finalQueryResponse.getResponse().get(idMap.get(newIdsList.get(i))).getResult()
-                                .addAll(queryResponse.getResponse().get(i).getResult());
+                        finalDataResponse.getResponses().get(idMap.get(newIdsList.get(i))).getResults()
+                                .addAll(queryResponse.getResponses().get(i).getResults());
                     }
                 }
             }
@@ -227,8 +231,8 @@ public class ParentRestClient<T> {
                 prevIdList = newIdsList;
             }
             newIdsList = new ArrayList<>();
-            for (int i = 0; i < queryResponse.getResponse().size(); i++) {
-                if (queryResponse.getResponse().get(i).getNumResults() == LIMIT) {
+            for (int i = 0; i < queryResponse.getResponses().size(); i++) {
+                if (queryResponse.getResponses().get(i).getNumResults() == LIMIT) {
                     newIdsList.add(prevIdList.get(i));
                 }
             }
@@ -244,10 +248,10 @@ public class ParentRestClient<T> {
         }
 
         logger.debug("queryResponse = " + queryResponse);
-        return finalQueryResponse;
+        return finalDataResponse;
     }
 
-    private <U> QueryResponse<U> robustRestCall(List<String> idList, String resource, QueryOptions queryOptions,
+    private <U> CellBaseDataResponse<U> robustRestCall(List<String> idList, String resource, QueryOptions queryOptions,
                                                 Class<U> clazz, boolean post)
             throws IOException {
 
@@ -260,7 +264,7 @@ public class ParentRestClient<T> {
         }
 
         boolean queryError = false;
-        QueryResponse<U> queryResponse;
+        CellBaseDataResponse<U> queryResponse;
         try {
             queryResponse = restCall(configuration.getRest().getHosts(), configuration.getVersion(),
                     ids, resource, queryOptions, clazz, post);
@@ -293,37 +297,37 @@ public class ParentRestClient<T> {
             }
         }
 
-        if (queryResponse != null && queryResponse.getResponse().size() != idList.size()) {
-            logger.warn("QueryResponse size (" + queryResponse.getResponse().size() + ") != id list size ("
+        if (queryResponse != null && queryResponse.getResponses().size() != idList.size()) {
+            logger.warn("DataResponse size (" + queryResponse.getResponses().size() + ") != id list size ("
                     + idList.size() + ").");
         }
 
         if (queryError) {
             if (idList.size() == 1) {
                 logger.warn("CellBase REST warning. Skipping id. {}", idList.get(0));
-                return new QueryResponse<U>(configuration.getVersion(), -1, null,
-                        "CellBase REST error. Skipping id " + idList.get(0), queryOptions,
-                        Collections.singletonList(new QueryResult<U>(idList.get(0), -1, 0, 0, null, null,
-                                Collections.emptyList())));
+                Event event = new Event(Event.Type.ERROR, "CellBase REST error. Skipping id " + idList.get(0));
+                CellBaseDataResult result = new CellBaseDataResult<U>(idList.get(0), -1, 0, 0, null,
+                        Collections.emptyList());
+                return new CellBaseDataResponse<U>(configuration.getVersion(), -1, Collections.singletonList(event),
+                        new ObjectMap(queryOptions), Collections.singletonList(result));
             }
-
-            List<QueryResult<U>> queryResultList = new LinkedList<>();
-            queryResponse = new QueryResponse<U>(configuration.getVersion(), -1, null, null, queryOptions,
-                    queryResultList);
+            List<CellBaseDataResult<U>> cellBaseDataResultList = new LinkedList<>();
+            queryResponse = new CellBaseDataResponse<U>(configuration.getVersion(), -1, null, queryOptions,
+                    cellBaseDataResultList);
             logger.info("Re-attempting to solve the query - trying to identify any problematic id to skip it");
             List<String> idList1 = idList.subList(0, idList.size() / 2);
             if (!idList1.isEmpty()) {
-                queryResultList.addAll(robustRestCall(idList1, resource, queryOptions, clazz, post).getResponse());
+                cellBaseDataResultList.addAll(robustRestCall(idList1, resource, queryOptions, clazz, post).getResponses());
             }
             List<String> idList2 = idList.subList(idList.size() / 2, idList.size());
             if (!idList2.isEmpty()) {
-                queryResultList.addAll(robustRestCall(idList2, resource, queryOptions, clazz, post).getResponse());
+                cellBaseDataResultList.addAll(robustRestCall(idList2, resource, queryOptions, clazz, post).getResponses());
             }
         }
         return queryResponse;
     }
 
-    private <U> QueryResponse<U> restCall(List<String> hosts, String version, String ids, String resource, QueryOptions queryOptions,
+    private <U> CellBaseDataResponse<U> restCall(List<String> hosts, String version, String ids, String resource, QueryOptions queryOptions,
                                           Class<U> clazz, boolean post) throws IOException {
 
         WebTarget path = getBaseUrl(hosts, version);
@@ -372,9 +376,10 @@ public class ParentRestClient<T> {
                     .path(subcategory);
     }
 
-    private static <U> QueryResponse<U> parseResult(String json, Class<U> clazz) throws IOException {
+    private static <U> CellBaseDataResponse<U> parseResult(String json, Class<U> clazz) throws IOException {
         ObjectReader reader = jsonObjectMapper
-                .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(QueryResponse.class, QueryResult.class, clazz));
+                .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(CellBaseDataResponse.class,
+                        CellBaseDataResult.class, clazz));
         return reader.readValue(json);
     }
 

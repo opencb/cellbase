@@ -22,12 +22,13 @@ import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -87,7 +88,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, ProteinDBAdaptor.QueryParams.XREFS.key());
-            List<QueryResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
             }
@@ -167,19 +168,19 @@ public class ProteinWSServer extends GenericRestWSServer {
             logger.info("Searching transcripts for protein {}", id);
             Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
             QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-            QueryResult queryResult = transcriptDBAdaptor.nativeGet(transcriptQuery, transcriptQueryOptions);
+            CellBaseDataResult queryResult = transcriptDBAdaptor.nativeGet(transcriptQuery, transcriptQueryOptions);
             logger.info("{} transcripts found", queryResult.getNumResults());
-            logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResult()));
+            logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
 
             // Get substitution scores for fetched transcript
             if (queryResult.getNumResults() > 0) {
-                query.put("transcript", ((Map) queryResult.getResult().get(0)).get("id"));
+                query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
                 logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
                 logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
                 ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-                QueryResult scoresQueryResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
-                scoresQueryResult.setId(id);
-                return createOkResponse(scoresQueryResult);
+                CellBaseDataResult scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
+                scoresCellBaseDataResult.setId(id);
+                return createOkResponse(scoresCellBaseDataResult);
             } else {
                 return createOkResponse(queryResult);
             }
@@ -304,13 +305,10 @@ public class ProteinWSServer extends GenericRestWSServer {
         query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteinId);
         queryOptions.put("include", "sequence.value");
         // split by comma
-        QueryResult<Entry> queryResult = proteinDBAdaptor.get(query, queryOptions);
-//        Document sequenceDocument = (Document) ((Document)queryResult.first()).get("sequence");
-////        String sequence = sequenceDocument.getString("value");
-//        queryResult.setResult(Collections.singletonList(sequenceDocument.getString("value")));
-        QueryResult queryResult1 = new QueryResult(queryResult.getId(), queryResult.getDbTime(), queryResult.getNumResults(),
-                queryResult.getNumTotalResults(), queryResult.getWarningMsg(), queryResult.getErrorMsg(), Collections.EMPTY_LIST);
-        queryResult1.setResult(Collections.singletonList(queryResult.first().getSequence().getValue()));
+        CellBaseDataResult<Entry> queryResult = proteinDBAdaptor.get(query, queryOptions);
+        CellBaseDataResult queryResult1 = new CellBaseDataResult(queryResult.getId(), queryResult.getTime(), queryResult.getNumResults(),
+                queryResult.getNumTotalResults(), queryResult.getEvents(), Collections.EMPTY_LIST);
+        queryResult1.setResults(Collections.singletonList(queryResult.first().getSequence().getValue()));
         queryResult1.setId(proteinId);
         return createOkResponse(queryResult1);
     }

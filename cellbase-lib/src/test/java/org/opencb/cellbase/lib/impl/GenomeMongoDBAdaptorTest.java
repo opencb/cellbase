@@ -28,7 +28,7 @@ import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -62,68 +62,68 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void getChromosomeInfo() throws Exception {
-        QueryResult queryResult = dbAdaptor.getChromosomeInfo("20", new QueryOptions());
+        CellBaseDataResult CellBaseDataResult = dbAdaptor.getChromosomeInfo("20", new QueryOptions());
         assertEquals(Integer.valueOf(64444167),
-                ((Document) ((List) ((Document) queryResult.getResult().get(0)).get("chromosomes")).get(0)).get("size"));
+                ((Document) ((List) ((Document) CellBaseDataResult.getResults().get(0)).get("chromosomes")).get(0)).get("size"));
     }
 
     @Test
     public void getGenomicSequence() {
-        QueryResult<GenomeSequenceFeature> queryResult = dbAdaptor.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions());
-        assertEquals(StringUtils.repeat("N", 1999), queryResult.getResult().get(0).getSequence());
+        CellBaseDataResult<GenomeSequenceFeature> CellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions());
+        assertEquals(StringUtils.repeat("N", 1999), CellBaseDataResult.getResults().get(0).getSequence());
 
-        queryResult = dbAdaptor.getGenomicSequence(new Query("region", "17:63971994-63972004"), new QueryOptions());
-        assertEquals("GAGAAAAAACC", queryResult.getResult().get(0).getSequence());
+        CellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "17:63971994-63972004"), new QueryOptions());
+        assertEquals("GAGAAAAAACC", CellBaseDataResult.getResults().get(0).getSequence());
 
-        queryResult = dbAdaptor.getGenomicSequence(new Query("region", "13:47933990-47934003"), new QueryOptions());
-        assertEquals("TTCATTTTTAGATT", queryResult.getResult().get(0).getSequence());
+        CellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "13:47933990-47934003"), new QueryOptions());
+        assertEquals("TTCATTTTTAGATT", CellBaseDataResult.getResults().get(0).getSequence());
     }
 
     @Test
     public void testGenomicSequenceChromosomeNotPresent() {
-        QueryResult<GenomeSequenceFeature> queryResult = dbAdaptor.getSequence(new Region("1234:1-1999"), new QueryOptions());
-        assertEquals(0, queryResult.getResult().size());
+        CellBaseDataResult<GenomeSequenceFeature> CellBaseDataResult = dbAdaptor.getSequence(new Region("1234:1-1999"), new QueryOptions());
+        assertEquals(0, CellBaseDataResult.getResults().size());
     }
 
     @Test
     public void testGenomicSequenceQueryOutOfBounds() {
         // Both start & end out of the right bound
-        QueryResult<GenomeSequenceFeature> queryResult = dbAdaptor
+        CellBaseDataResult<GenomeSequenceFeature> CellBaseDataResult = dbAdaptor
                 .getSequence(new Region("17", 73973989, 73974999), new QueryOptions());
-        assertEquals(0, queryResult.getResult().size());
+        assertEquals(0, CellBaseDataResult.getResults().size());
 
         // start within the bounds, end out of the right bound. Should return last 10 nts.
-        queryResult = dbAdaptor
+        CellBaseDataResult = dbAdaptor
                 .getSequence(new Region("17", 63973989, 63974999), new QueryOptions());
-        assertEquals(1, queryResult.getResult().size());
-        assertEquals("TCAAGACCAGC", queryResult.getResult().get(0).getSequence());
+        assertEquals(1, CellBaseDataResult.getResults().size());
+        assertEquals("TCAAGACCAGC", CellBaseDataResult.getResults().get(0).getSequence());
 
         // Start out of the left bound
-        queryResult = dbAdaptor
+        CellBaseDataResult = dbAdaptor
                 .getSequence(new Region("1", -100, 1999), new QueryOptions());
-        assertEquals(0, queryResult.getResult().size());
+        assertEquals(0, CellBaseDataResult.getResults().size());
 
 
     }
 
     @Test
     public void getCytoband() {
-        List<QueryResult<Cytoband>> queryResultList
+        List<CellBaseDataResult<Cytoband>> CellBaseDataResultList
                 = dbAdaptor.getCytobands(Arrays.asList(new Region("19:55799900-55803000"),
                 new Region("11:121300000-124030001")));
 
-        assertEquals(2, queryResultList.size());
+        assertEquals(2, CellBaseDataResultList.size());
 
-        assertEquals(2, queryResultList.get(0).getNumTotalResults());
+        assertEquals(2, CellBaseDataResultList.get(0).getNumTotalResults());
         String[] names1 = {"q13.42", "q13.43",};
-        for (int i = 0; i < queryResultList.get(0).getNumResults(); i++) {
-            assertEquals(names1[i], queryResultList.get(0).getResult().get(i).getName());
+        for (int i = 0; i < CellBaseDataResultList.get(0).getNumResults(); i++) {
+            assertEquals(names1[i], CellBaseDataResultList.get(0).getResults().get(i).getName());
         }
 
-        assertEquals(3, queryResultList.get(1).getNumTotalResults());
+        assertEquals(3, CellBaseDataResultList.get(1).getNumTotalResults());
         String[] names2 = {"q23.3","q24.1","q24.2",};
-        for (int i = 0; i < queryResultList.get(1).getNumResults(); i++) {
-            assertEquals(names2[i], queryResultList.get(1).getResult().get(i).getName());
+        for (int i = 0; i < CellBaseDataResultList.get(1).getNumResults(); i++) {
+            assertEquals(names2[i], CellBaseDataResultList.get(1).getResults().get(i).getName());
         }
 
     }

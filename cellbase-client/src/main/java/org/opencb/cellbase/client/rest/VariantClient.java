@@ -20,10 +20,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
+import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,51 +52,54 @@ public final class VariantClient extends FeatureClient<Variant> {
     }
 
     @Deprecated
-    public QueryResponse<VariantAnnotation> getAnnotationByVariantIds(String id, QueryOptions options) throws IOException {
+    public CellBaseDataResponse<VariantAnnotation> getAnnotationByVariantIds(String id, QueryOptions options) throws IOException {
         return this.getAnnotationByVariantIds(Arrays.asList(id.split(",")), options, false);
     }
 
     @Deprecated
-    public QueryResponse<VariantAnnotation> getAnnotationByVariantIds(String id, QueryOptions options, boolean post) throws IOException {
+    public CellBaseDataResponse<VariantAnnotation> getAnnotationByVariantIds(String id, QueryOptions options,
+                                                                             boolean post) throws IOException {
         return this.getAnnotationByVariantIds(Arrays.asList(id.split(",")), options, post);
     }
 
-    public QueryResponse<VariantAnnotation> getAnnotationByVariantIds(List<String> ids, QueryOptions options) throws IOException {
+    public CellBaseDataResponse<VariantAnnotation> getAnnotationByVariantIds(List<String> ids, QueryOptions options) throws IOException {
         return this.getAnnotationByVariantIds(ids, options, false);
     }
 
-    public QueryResponse<VariantAnnotation> getAnnotationByVariantIds(List<String> ids, QueryOptions options, boolean post)
+    public CellBaseDataResponse<VariantAnnotation> getAnnotationByVariantIds(List<String> ids, QueryOptions options, boolean post)
             throws IOException {
-        QueryResponse<VariantAnnotation> result = execute(ids, "annotation", options, VariantAnnotation.class, post);
+        CellBaseDataResponse<VariantAnnotation> result = execute(ids, "annotation", options, VariantAnnotation.class, post);
         return initRequiredAnnotation(result);
     }
 
 
-    public QueryResponse<Variant> annotate(List<Variant> variants, QueryOptions options) throws IOException {
+    public CellBaseDataResponse<Variant> annotate(List<Variant> variants, QueryOptions options) throws IOException {
         return annotate(variants, options, false);
     }
 
-    public QueryResponse<Variant> annotate(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
+    public CellBaseDataResponse annotate(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
         List<String> variantIds = getVariantAnnotationIds(variants, options.getBoolean(IGNORE_PHASE));
-        QueryResponse<VariantAnnotation> annotations = this.getAnnotationByVariantIds(variantIds, options, post);
+        CellBaseDataResponse<VariantAnnotation> annotations = this.getAnnotationByVariantIds(variantIds, options, post);
 
         int timePerId = annotations.getTime() / variants.size();
-        List<QueryResult<Variant>> annotatedVariants = new ArrayList<>(variants.size());
+        List<CellBaseDataResult<Variant>> annotatedVariants = new ArrayList<>(variants.size());
         for (int i = 0; i < variants.size(); i++) {
-            variants.get(i).setAnnotation(annotations.getResponse().get(i).first());
-            annotatedVariants.add(new QueryResult<>(variantIds.get(i), timePerId, 1, 1, "", "",
+            variants.get(i).setAnnotation(annotations.getResponses().get(i).first());
+            annotatedVariants.add(new CellBaseDataResult(variantIds.get(i), timePerId, 1, 1, null,
                     Collections.singletonList(variants.get(i))));
         }
 
-        return new QueryResponse<>(configuration.getVersion(), annotations.getTime(), options, annotatedVariants);
+        return new CellBaseDataResponse(configuration.getVersion(), annotations.getTime(), null,
+                new ObjectMap(options), annotatedVariants);
     }
 
-    public QueryResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options) throws IOException {
+    public CellBaseDataResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options) throws IOException {
         return getAnnotation(variants, options, false);
     }
 
-    public QueryResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
-        QueryResponse<VariantAnnotation> result = execute(getVariantAnnotationIds(variants,
+    public CellBaseDataResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options,
+                                                                 boolean post) throws IOException {
+        CellBaseDataResponse<VariantAnnotation> result = execute(getVariantAnnotationIds(variants,
                 options.getBoolean(IGNORE_PHASE)),
                 "annotation",
                 options,
@@ -154,9 +158,9 @@ public final class VariantClient extends FeatureClient<Variant> {
         return variantIds;
     }
 
-    private QueryResponse<VariantAnnotation> initRequiredAnnotation(QueryResponse<VariantAnnotation> queryResponse) {
-        for (int i = 0; i < queryResponse.getResponse().size(); i++) {
-            VariantAnnotation annotation = queryResponse.getResponse().get(i).first();
+    private CellBaseDataResponse<VariantAnnotation> initRequiredAnnotation(CellBaseDataResponse<VariantAnnotation> queryResponse) {
+        for (int i = 0; i < queryResponse.getResponses().size(); i++) {
+            VariantAnnotation annotation = queryResponse.getResponses().get(i).first();
             // It can happen that no annotation is returned for variants that could not be parsed and raised problems
             // e.g. 1:645710:A:<INS:ME:ALU>
             if (annotation != null) {
