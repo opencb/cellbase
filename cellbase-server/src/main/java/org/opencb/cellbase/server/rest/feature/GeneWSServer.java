@@ -57,7 +57,7 @@ public class GeneWSServer extends GenericRestWSServer {
                         @PathParam("species")
                         @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                 + "of potentially available species ids, please refer to: "
-                                + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                                + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
             SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -150,15 +150,9 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response count() {
-//    public Response count(@DefaultValue("") @QueryParam("region") String region,
-//                          @DefaultValue("") @QueryParam("biotype") String biotype,
-//                          @DefaultValue("") @QueryParam("xrefs") String xrefs) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//            query.put(GeneDBAdaptor.QueryParams.REGION.key(), region);
-//            query.put(GeneDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
-//            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), xrefs);
             return createOkResponse(geneDBAdaptor.count(query));
         } catch (Exception e) {
             return createErrorResponse(e);
