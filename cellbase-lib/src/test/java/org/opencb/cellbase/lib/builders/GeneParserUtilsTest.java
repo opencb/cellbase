@@ -22,7 +22,10 @@ import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.models.core.Constraint;
 
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.variant.avro.Expression;
+import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 
 
 import java.io.IOException;
@@ -61,25 +64,6 @@ public class GeneParserUtilsTest {
     }
 
     @Test
-    public void testGetGeneDrugMap() throws IOException {
-        Path geneDrugFile = Paths.get(getClass().getResource("/dgidb.tsv").getFile());
-        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
-        assertEquals(1, geneDrugMap.size());
-        assertTrue(geneDrugMap.containsKey("CDK7"));
-        List<GeneDrugInteraction> interactions = geneDrugMap.get("CDK7");
-        assertEquals(1, interactions.size());
-        Iterator<GeneDrugInteraction> iter = interactions.iterator();
-        GeneDrugInteraction actionInteraction = iter.next();
-        assertEquals("inhibitor", actionInteraction.getDrugName());
-        assertEquals("CDK7", actionInteraction.getGeneName());
-        assertEquals("dgidb", actionInteraction.getSource());
-        assertEquals("1022", actionInteraction.getStudyType());
-        assertEquals("CancerCommons", actionInteraction.getType());
-//        assertEquals("", actionInteraction.getSchema());
-
-    }
-
-    @Test
     public void testGetXrefMap() throws IOException {
         // TODO test xref file too. but I don't know what it looks like.
 
@@ -107,6 +91,64 @@ public class GeneParserUtilsTest {
         assertEquals("1433B_HUMAN", actualXref2.getId());
     }
 
+    @Test
+    public void testGetGeneDrugMap() throws IOException {
+        Path geneDrugFile = Paths.get(getClass().getResource("/dgidb.tsv").getFile());
+        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
+        assertEquals(1, geneDrugMap.size());
+        assertTrue(geneDrugMap.containsKey("CDK7"));
+        List<GeneDrugInteraction> interactions = geneDrugMap.get("CDK7");
+        assertEquals(1, interactions.size());
+        Iterator<GeneDrugInteraction> iter = interactions.iterator();
+        GeneDrugInteraction actionInteraction = iter.next();
+        assertEquals("inhibitor", actionInteraction.getDrugName());
+        assertEquals("CDK7", actionInteraction.getGeneName());
+        assertEquals("dgidb", actionInteraction.getSource());
+        assertEquals("1022", actionInteraction.getStudyType());
+        assertEquals("CancerCommons", actionInteraction.getType());
+    }
+
+    @Test
+    public void testGetGeneExpressionMap() throws IOException {
+        Path geneExpressionFile = Paths.get(getClass().getResource("/allgenes_updown_in_organism_part.tab.gz").getFile());
+        Map<String, List<Expression>> geneExpressionMap = GeneParserUtils.getGeneExpressionMap("Arabidopsis thaliana", geneExpressionFile);
+        assertEquals(2, geneExpressionMap.size());
+        assertTrue(geneExpressionMap.containsKey("AT4G08410"));
+
+        List<Expression> results = geneExpressionMap.get("AT4G08410");
+        assertEquals(1, results.size());
+        Iterator<Expression> iter = results.iterator();
+        Expression expression = iter.next();
+        assertEquals("organism_part", expression.getExperimentalFactor());
+        assertEquals("AT4G08410", expression.getGeneName());
+        assertEquals("E-GEOD-16722", expression.getExperimentId());
+        assertEquals("shoot", expression.getFactorValue());
+        assertEquals("A-AFFY-2", expression.getTechnologyPlatform());
+        assertEquals(ExpressionCall.DOWN, expression.getExpression());
+        assertEquals(1.2705652E-10, expression.getPvalue(), 0.001);
+    }
+
+    @Test
+    public void testGetGeneDiseaseAssociationMap() throws IOException {
+        Path hpoFilePath = Paths.get(getClass().getResource("/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").getFile());
+//        Path disgenetFilePath = Paths.get(getClass().getResource("/all_gene_disease_associations.tsv.gz").getFile());
+
+        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFilePath, null);
+
+        assertEquals(1, geneDiseaseAssociationMap.size());
+        assertTrue(geneDiseaseAssociationMap.containsKey("LIPA"));
+
+        List<GeneTraitAssociation> results = geneDiseaseAssociationMap.get("LIPA");
+        assertEquals(1, results.size());
+        Iterator<GeneTraitAssociation> iter = results.iterator();
+        GeneTraitAssociation geneTraitAssociation = iter.next();
+        assertEquals("HP:0002092", geneTraitAssociation.getHpo());
+        assertEquals("OMIM:278000", geneTraitAssociation.getId());
+        assertEquals("Pulmonary arterial hypertension", geneTraitAssociation.getName());
+        assertEquals(1, geneTraitAssociation.getNumberOfPubmeds(), 1);
+        assertEquals(0, geneTraitAssociation.getScore(), 0.001);
+        assertEquals("hpo", geneTraitAssociation.getSource());
+    }
 
     @Test
     public void testGetConstraints() throws Exception {
