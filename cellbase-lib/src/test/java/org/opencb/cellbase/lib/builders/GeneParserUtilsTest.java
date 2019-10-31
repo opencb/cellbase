@@ -131,11 +131,11 @@ public class GeneParserUtilsTest {
     @Test
     public void testGetGeneDiseaseAssociationMap() throws IOException {
         Path hpoFilePath = Paths.get(getClass().getResource("/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").getFile());
-//        Path disgenetFilePath = Paths.get(getClass().getResource("/all_gene_disease_associations.tsv.gz").getFile());
+        Path disgenetFilePath = Paths.get(getClass().getResource("/all_gene_disease_associations.tsv.gz").getFile());
 
-        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFilePath, null);
+        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFilePath, disgenetFilePath);
 
-        assertEquals(1, geneDiseaseAssociationMap.size());
+        assertEquals(3, geneDiseaseAssociationMap.size());
         assertTrue(geneDiseaseAssociationMap.containsKey("LIPA"));
 
         List<GeneTraitAssociation> results = geneDiseaseAssociationMap.get("LIPA");
@@ -148,6 +148,16 @@ public class GeneParserUtilsTest {
         assertEquals(1, geneTraitAssociation.getNumberOfPubmeds(), 1);
         assertEquals(0, geneTraitAssociation.getScore(), 0.001);
         assertEquals("hpo", geneTraitAssociation.getSource());
+
+        results = geneDiseaseAssociationMap.get("A1BG");
+        iter = results.iterator();
+        assertEquals(6, results.size());
+        geneTraitAssociation = iter.next();
+        assertEquals("C0001418", geneTraitAssociation.getId());
+        assertEquals("Adenocarcinoma", geneTraitAssociation.getName());
+        assertEquals("disgenet", geneTraitAssociation.getSource());
+        assertEquals(1, geneTraitAssociation.getNumberOfPubmeds(), 1);
+        assertEquals(0.009999999776482582, geneTraitAssociation.getScore(), 0.001);
     }
 
     @Test
