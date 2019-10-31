@@ -49,8 +49,8 @@ public class CellBaseDataResult<T> extends DataResult<T> {
         super(time, events, numResults, null, numMatches);
     }
 
-    public <T> CellBaseDataResult(String id, int time, int numResults, long numMatches, List<Event> events, List<T> results) {
-        super(time, events, numResults, new ArrayList(results), numMatches);
+    public CellBaseDataResult(String id, int time, int numResults, long numMatches, List<Event> events, List<T> results) {
+        super(time, events, numResults, results, numMatches);
     }
 
     public String getId() {

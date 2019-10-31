@@ -28,11 +28,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.Monitor;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.*;
@@ -129,6 +131,9 @@ public class GenericRestWSServer implements IWSServer {
     protected Query query;
     protected QueryOptions queryOptions;
     protected QueryResponse queryResponse;
+
+    protected CellBaseDataResponse response;
+    protected ObjectMap params;
 
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
@@ -237,6 +242,9 @@ public class GenericRestWSServer implements IWSServer {
         queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         queryResponse = new QueryResponse();
 
+        params = new ObjectMap();
+        response = new CellBaseDataResponse();
+
         checkPathParams(true);
     }
 
@@ -313,6 +321,7 @@ public class GenericRestWSServer implements IWSServer {
                 query.put(entry.getKey(), entry.getValue().get(0));
             }
         }
+
 
 //        try {
 //            logger.info("{}\t{}\t{}", uriInfo.getAbsolutePath().toString(),
@@ -406,6 +415,15 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         queryResponse.setQueryOptions(queryOptions);
+
+
+        // Now:
+
+        params.put("id", ((CellBaseDataResult) obj).getId());
+        params.put("species", species);
+        params.putAll(query);
+        params.putAll(queryOptions);
+        response.setParams(params);
 
         // Guarantee that the QueryResponse object contains a list of results
         List list;

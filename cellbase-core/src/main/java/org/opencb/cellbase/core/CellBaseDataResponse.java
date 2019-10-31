@@ -28,11 +28,7 @@ public class CellBaseDataResponse<T> {
 
     private String apiVersion;
     private int time;
-
     private List<Event> events;
-
-
-
     private ObjectMap params;
     private List<CellBaseDataResult<T>> responses;
 
@@ -43,8 +39,7 @@ public class CellBaseDataResponse<T> {
         this("", -1, Collections.emptyList(), params, responses);
     }
 
-    public CellBaseDataResponse(String apiVersion, int time, List<Event> events, ObjectMap params,
-                                List<CellBaseDataResult<T>> responses) {
+    public CellBaseDataResponse(String apiVersion, int time, List<Event> events, ObjectMap params, List<CellBaseDataResult<T>> responses) {
         this.apiVersion = apiVersion;
         this.time = time;
         this.params = params;
