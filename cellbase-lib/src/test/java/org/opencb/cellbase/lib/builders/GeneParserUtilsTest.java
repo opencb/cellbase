@@ -46,7 +46,7 @@ public class GeneParserUtilsTest {
         final String SOURCE = "RegulatoryBuild TFBS Motifs v13.0";
         final String FEATURE = "TF_binding_site";
 
-        Path tfbsFile = Paths.get(getClass().getResource("/MotifFeatures.gff.gz").getFile());
+        Path tfbsFile = Paths.get(getClass().getResource("/gene/MotifFeatures.gff.gz").getFile());
         Map<String, SortedSet<Gff2>> tfbsMap = GeneParserUtils.getTfbsMap(tfbsFile);
         assertEquals(1, tfbsMap.size());
         SortedSet<Gff2> features = tfbsMap.get("10");
@@ -93,7 +93,7 @@ public class GeneParserUtilsTest {
 
     @Test
     public void testGetGeneDrugMap() throws IOException {
-        Path geneDrugFile = Paths.get(getClass().getResource("/dgidb.tsv").getFile());
+        Path geneDrugFile = Paths.get(getClass().getResource("/gene/dgidb.tsv").getFile());
         Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
         assertEquals(1, geneDrugMap.size());
         assertTrue(geneDrugMap.containsKey("CDK7"));
@@ -110,7 +110,7 @@ public class GeneParserUtilsTest {
 
     @Test
     public void testGetGeneExpressionMap() throws IOException {
-        Path geneExpressionFile = Paths.get(getClass().getResource("/allgenes_updown_in_organism_part.tab.gz").getFile());
+        Path geneExpressionFile = Paths.get(getClass().getResource("/gene/allgenes_updown_in_organism_part.tab.gz").getFile());
         Map<String, List<Expression>> geneExpressionMap = GeneParserUtils.getGeneExpressionMap("Arabidopsis thaliana", geneExpressionFile);
         assertEquals(2, geneExpressionMap.size());
         assertTrue(geneExpressionMap.containsKey("AT4G08410"));
@@ -130,7 +130,7 @@ public class GeneParserUtilsTest {
 
     @Test
     public void testGetGeneDiseaseAssociationMap() throws IOException {
-        Path hpoFilePath = Paths.get(getClass().getResource("/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").getFile());
+        Path hpoFilePath = Paths.get(getClass().getResource("/gene/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").getFile());
 //        Path disgenetFilePath = Paths.get(getClass().getResource("/all_gene_disease_associations.tsv.gz").getFile());
 
         Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFilePath, null);
@@ -152,7 +152,7 @@ public class GeneParserUtilsTest {
 
     @Test
     public void testGetConstraints() throws Exception {
-        Path gnmoadFile = Paths.get(getClass().getResource("/gnomad.v2.1.1.lof_metrics.by_transcript.txt.gz").getFile());
+        Path gnmoadFile = Paths.get(getClass().getResource("/gene/gnomad.v2.1.1.lof_metrics.by_transcript.txt.gz").getFile());
         Map<String, List<Constraint>> constraints = GeneParserUtils.getConstraints(gnmoadFile);
 
         Constraint constraint1 = new Constraint("gnomAD", "pLoF", "oe_mis", 1.0187);

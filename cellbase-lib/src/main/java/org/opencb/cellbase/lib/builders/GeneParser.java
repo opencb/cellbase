@@ -220,13 +220,12 @@ public class GeneParser extends CellBaseParser {
             } else {
                 exon = exonDict.get(transcript.getId() + "_" + exon.getExonNumber());
                 if (gtf.getFeature().equalsIgnoreCase("CDS")) {
-                    cds = getCds(transcript, exon, cdna, cds, gtf);
+                    cds = processExons(transcript, exon, cdna, cds, gtf);
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
                 // FIXME We need to clean up this
 //                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
-//                    // nothing to do, this prints out 123,451 times.
 //                    //System.out.println("Empty block, this should be redesigned");
 //                }
 
@@ -247,7 +246,7 @@ public class GeneParser extends CellBaseParser {
         fastaIndexManager.close();
     }
 
-    private int getCds(Transcript transcript, Exon exon, int cdna, int cds, Gtf gtf) {
+    protected int processExons(Transcript transcript, Exon exon, int cdna, int cds, Gtf gtf) {
         if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
             // CDS states the beginning of coding start
             exon.setGenomicCodingStart(gtf.getStart());
@@ -778,7 +777,6 @@ public class GeneParser extends CellBaseParser {
             gene.setEnd(gtf.getEnd());
         }
     }
-
 
     private void getGtfFileFromGeneDirectoryPath(Path geneDirectoryPath) {
         for (String fileName : geneDirectoryPath.toFile().list()) {
