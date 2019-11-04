@@ -49,18 +49,6 @@ public class AdminMain {
                 cliOptionsParser.printUsage();
                 System.exit(0);
             }
-//            if (cliOptionsParser.getGeneralOptions().help) {
-//                cliOptionsParser.printUsage();
-//                System.exit(0);
-//            } else {
-//                if (cliOptionsParser.getGeneralOptions().version) {
-//                    cliOptionsParser.printVersion();
-//                    System.exit(0);
-//                } else {
-//                    cliOptionsParser.printUsage();
-//                    System.exit(1);
-//                }
-//            }
         } else {
             CommandExecutor commandExecutor = null;
             if (cliOptionsParser.isHelp()) {

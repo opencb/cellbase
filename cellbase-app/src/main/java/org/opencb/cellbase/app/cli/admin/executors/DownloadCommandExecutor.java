@@ -200,7 +200,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                 }
             }
+
+            downloadManager.writeDownloadLogFile();
         }
     }
-
 }

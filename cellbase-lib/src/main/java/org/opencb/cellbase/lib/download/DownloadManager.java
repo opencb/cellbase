@@ -17,16 +17,17 @@
 package org.opencb.cellbase.lib.download;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.slf4j.Logger;
 import java.nio.file.Files;
@@ -38,8 +39,11 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -88,7 +92,9 @@ public class DownloadManager {
     private static final String[] DEPRECATED_REGULATION_FILES = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
             "RegulatoryFeatures_MultiCell.gff.gz", };
 
-    private static final Map<String, String> GENE_UNIPROT_XREF_FILES = new HashMap() {
+    private List<DownloadFile> downloadFiles = new ArrayList<>();
+
+    private static final HashMap GENE_UNIPROT_XREF_FILES = new HashMap() {
         {
             put("Homo sapiens", "HUMAN_9606_idmapping_selected.tab.gz");
             put("Mus musculus", "MOUSE_10090_idmapping_selected.tab.gz");
@@ -108,7 +114,7 @@ public class DownloadManager {
     }
 
     public void downloadStructuralVariants(Species species, String assembly, Path speciesFolder)
-        throws IOException, InterruptedException, CellbaseException {
+        throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(species, "svs")) {
             return;
         }
@@ -162,7 +168,7 @@ public class DownloadManager {
     }
 
     public void downloadReferenceGenome(Species sp, String shortName, String assembly, Path spFolder)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         logger.info("Downloading genome information ...");
         Path sequenceFolder = spFolder.resolve("genome");
         Files.createDirectories(sequenceFolder);
@@ -213,7 +219,7 @@ public class DownloadManager {
     }
 
     public void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = speciesFolder.resolve("gene");
         Files.createDirectories(geneFolder);
@@ -227,7 +233,7 @@ public class DownloadManager {
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
-    private void downloadDrugData(Species species, Path geneFolder) throws IOException, InterruptedException, CellbaseException {
+    private void downloadDrugData(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
             Path geneDrugFolder = geneFolder.resolve("geneDrug");
@@ -240,7 +246,7 @@ public class DownloadManager {
     }
 
     private void downloadEnsemblData(Species species, String speciesShortName, Path geneFolder, String host)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
         List<String> downloadedUrls = new ArrayList<>(4);
 
@@ -282,7 +288,7 @@ public class DownloadManager {
                 geneFolder.resolve("ensemblCoreVersion.json"));
     }
 
-    private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException, CellbaseException {
+    private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading UniProt ID mapping ...");
 
         if (GENE_UNIPROT_XREF_FILES.containsKey(sp.getScientificName())) {
@@ -317,7 +323,7 @@ public class DownloadManager {
                 + "/relnotes.txt";
     }
 
-    private void downloadGeneExpressionAtlas() throws IOException, InterruptedException, CellbaseException {
+    private void downloadGeneExpressionAtlas() throws IOException, InterruptedException {
         logger.info("Downloading gene expression atlas ...");
         Path expression = common.resolve("expression");
 
@@ -337,7 +343,7 @@ public class DownloadManager {
                 .split("_")[5].replace(".tab", "");
     }
 
-    private void downloadGeneDiseaseAnnotation(Path geneFolder) throws IOException, InterruptedException, CellbaseException {
+    private void downloadGeneDiseaseAnnotation(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene disease annotation ...");
 
         String host = configuration.getDownload().getHpo().getHost();
@@ -358,7 +364,7 @@ public class DownloadManager {
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
-    private void downloadGnomad(Species species, Path geneFolder) throws IOException, InterruptedException, CellbaseException {
+    private void downloadGnomad(Species species, Path geneFolder) throws IOException, InterruptedException {
         if (species.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD data...");
             String url = configuration.getDownload().getGnomad().getHost();
@@ -425,7 +431,7 @@ public class DownloadManager {
 
 
     public void downloadVariation(Species sp, String shortName, Path spFolder)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(sp, "variation")) {
             return;
         }
@@ -453,7 +459,7 @@ public class DownloadManager {
     }
 
     public void downloadRegulation(Species species, String shortName, String assembly, Path speciesFolder)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(species, "regulation")) {
             return;
         }
@@ -566,9 +572,8 @@ public class DownloadManager {
      * @param sp species to load data for
      * @throws IOException if there is an error writing to a file
      * @throws InterruptedException if there is an error downloading files
-     * @throws CellbaseException if the file does not download completely
      */
-    public void downloadProtein(Species sp) throws IOException, InterruptedException, CellbaseException {
+    public void downloadProtein(Species sp) throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(sp, "protein")) {
             return;
         }
@@ -654,10 +659,9 @@ public class DownloadManager {
      * @param speciesFolder Output folder to download the data
      * @throws IOException if there is an error writing to a file
      * @throws InterruptedException if there is an error downloading files
-     * @throws CellbaseException if the file did not download completely
      */
     public void downloadConservation(Species species, String assembly, Path speciesFolder)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(species, "conservation")) {
             return;
         }
@@ -752,7 +756,7 @@ public class DownloadManager {
     }
 
     public void downloadClinical(Species species, String assembly, Path speciesFolder)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(species, "clinical_variants")) {
             return;
         }
@@ -909,7 +913,7 @@ public class DownloadManager {
     }
 
     public void downloadCaddScores(Species species, String assembly, Path speciesFolder)
-        throws IOException, InterruptedException, CellbaseException {
+        throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(species, "variation_functional_score")) {
             return;
         }
@@ -927,7 +931,7 @@ public class DownloadManager {
         }
     }
 
-    private void downloadReactomeData() throws IOException, InterruptedException, CellbaseException {
+    private void downloadReactomeData() throws IOException, InterruptedException {
         Path proteinFolder = common.resolve("protein");
 
         String url = configuration.getDownload().getReactome().getHost();
@@ -937,7 +941,7 @@ public class DownloadManager {
     }
 
     public void downloadRepeats(Species species, String assembly, Path speciesFolder)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(species, "repeats")) {
             return;
         }
@@ -982,23 +986,26 @@ public class DownloadManager {
         }
     }
 
-    private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException, CellbaseException {
+    private void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         downloadFile(url, outputFileName, null);
     }
 
-    private void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException, CellbaseException {
+    private void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException {
         downloadFiles(host, fileNames, fileNames);
     }
 
     private void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames)
-        throws IOException, InterruptedException, CellbaseException {
+        throws IOException, InterruptedException {
         for (int i = 0; i < fileNames.size(); i++) {
             downloadFile(host + "/" + fileNames.get(i), ouputFileNames.get(i), null);
         }
     }
 
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
-            throws IOException, InterruptedException, CellbaseException {
+            throws IOException, InterruptedException {
+        Long startTime = System.currentTimeMillis();
+        LocalDateTime now = LocalDateTime.now();
+        DownloadFile downloadFile = new DownloadFile(url, outputFileName,  Timestamp.valueOf(now).toString());
         final String outputLog = outputFileName + ".log";
         List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
@@ -1006,22 +1013,40 @@ public class DownloadManager {
         }
         boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
         if (downloaded) {
-            validateDownloadFile(url, outputFileName, outputLog);
+            boolean validFileSize = validateDownloadFile(downloadFile, url, outputFileName, outputLog);
+            if (validFileSize) {
+                downloadFile.setStatus(DownloadFile.Status.OK);
+                downloadFile.setMessage("File downloaded successfully");
+            } else {
+                downloadFile.setStatus(DownloadFile.Status.ERROR);
+                downloadFile.setMessage("Expected downloaded file size " + downloadFile.getExpectedFileSize()
+                + ", Actual file size " + downloadFile.getActualFileSize());
+            }
         } else {
-            throw new CellbaseException(url + " cannot be downloaded");
+            downloadFile.setMessage("See full error message in " + outputLog);
+            downloadFile.setStatus(DownloadFile.Status.ERROR);
         }
+        Long endTime = System.currentTimeMillis();
+        Long elapsedTime = endTime - startTime;
+        downloadFile.setElapsedTime(TimeUnit.MILLISECONDS.toSeconds(elapsedTime) + " seconds");
+        downloadFiles.add(downloadFile);
     }
 
-    private void validateDownloadFile(String url, String outputFileName, String outputFileLog) throws CellbaseException {
+    public void writeDownloadLogFile() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+        writer.writeValue(new File("download_log.json"), downloadFiles);
+    }
+
+    private boolean validateDownloadFile(DownloadFile downloadFile, String url, String outputFileName, String outputFileLog) {
         int expectedFileSize = getExpectedFileSize(outputFileLog);
         long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
-
+        downloadFile.setActualFileSize(Math.toIntExact(actualFileSize));
+        downloadFile.setExpectedFileSize(expectedFileSize);
         if (expectedFileSize != actualFileSize) {
-            throw new CellbaseException(url + " not downloaded fully. Expected the file size to be "
-                    + expectedFileSize + " but was " + actualFileSize);
+            return false;
         }
-
-        logger.info(outputFileName + " created OK (actual and expected filesize matched - " + actualFileSize + ")");
+        return true;
     }
 
     private int getExpectedFileSize(String outputFileLog) {
@@ -1040,3 +1065,5 @@ public class DownloadManager {
         return 0;
     }
 }
+
+

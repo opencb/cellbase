@@ -39,4 +39,10 @@ public class EnsemblInfo {
     protected String getRelease() {
         return release;
     }
+
+    @Override
+    public String toString() {
+        return "EnsemblInfo{"
+                + "hostURL='" + hostURL + '\'' + ", version='" + version + '\'' + ", release='" + release + '\'' + '}';
+    }
 }
