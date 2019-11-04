@@ -239,7 +239,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     public List<CellBaseDataResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
-
         Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
                 ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
         List<CellBaseDataResult> cellBaseDataResultList = new ArrayList<>();
@@ -256,48 +255,45 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     @Override
     public CellBaseDataResult<String> getAlleleOriginLabels() {
-
         List<String> alleleOriginLabels = Arrays.stream(AlleleOrigin.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-
-        return new CellBaseDataResult<String>("allele_origin_labels", 0,
-                alleleOriginLabels.size(), alleleOriginLabels.size(), null, alleleOriginLabels);
+        return new CellBaseDataResult<String>("allele_origin_labels", 0, Collections.emptyList(),
+                alleleOriginLabels.size(), alleleOriginLabels, alleleOriginLabels.size());
     }
 
     @Override
     public CellBaseDataResult<String> getModeInheritanceLabels() {
         List<String> modeInheritanceLabels = Arrays.stream(ModeOfInheritance.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-        return new CellBaseDataResult<String>("mode_inheritance_labels", 0,
-                modeInheritanceLabels.size(), modeInheritanceLabels.size(), null, modeInheritanceLabels);
+        return new CellBaseDataResult<String>("mode_inheritance_labels", 0, Collections.emptyList(),
+                modeInheritanceLabels.size(), modeInheritanceLabels, modeInheritanceLabels.size());
     }
 
     @Override
     public CellBaseDataResult<String> getClinsigLabels() {
         List<String> clinsigLabels = Arrays.stream(ClinicalSignificance.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-        return new CellBaseDataResult<String>("clinsig_labels", 0,
-                clinsigLabels.size(), clinsigLabels.size(), null, clinsigLabels);
+        return new CellBaseDataResult<String>("clinsig_labels", 0, Collections.emptyList(),
+                clinsigLabels.size(), clinsigLabels, clinsigLabels.size());
     }
 
     @Override
     public CellBaseDataResult<String> getConsistencyLabels() {
         List<String> consistencyLabels = Arrays.stream(ConsistencyStatus.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-        return  new CellBaseDataResult<String>("consistency_labels", 0,
-                consistencyLabels.size(), consistencyLabels.size(), null, consistencyLabels);
+        return  new CellBaseDataResult<String>("consistency_labels", 0, Collections.emptyList(),
+                consistencyLabels.size(), consistencyLabels, consistencyLabels.size());
     }
 
     @Override
     public CellBaseDataResult<String> getVariantTypes() {
         List<String> variantTypes = Arrays.stream(VariantType.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-        return new CellBaseDataResult<String>("variant_types", 0,
-                variantTypes.size(), variantTypes.size(), null, variantTypes);
+        return new CellBaseDataResult<String>("variant_types", 0, Collections.emptyList(),
+                variantTypes.size(), variantTypes, variantTypes.size());
     }
 
     private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
-
         List<Bson> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
                 new Document("$exists", 1))));
@@ -323,7 +319,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
-
         List<Bson> pipeline = new ArrayList<>();
         // Select only GWAS documents
         pipeline.add(new Document("$match", new Document("snpIdCurrent", new Document("$exists", 1))));

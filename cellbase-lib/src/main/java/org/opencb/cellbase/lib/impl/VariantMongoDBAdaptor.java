@@ -155,7 +155,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //        options = addPrivateExcludeOptions(options);
 
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return new CellBaseDataResult(mongoDBCollection.find(bson, null, Variant.class, options));
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, options));
     }
 
     // FIXME: patch to exclude annotation.additionalAttributes from the results - to remove as soon as the variation
@@ -359,17 +359,16 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             QueryOptions options = new QueryOptions("upsert", false);
             options.put("multi", false);
             try {
-                bulkWriteResult = new CellBaseDataResult(mongoDBCollection.update(queries, updates, options));
+                bulkWriteResult = new CellBaseDataResult<>(mongoDBCollection.update(queries, updates, options));
             } catch (BulkWriteException e) {
                 throw e;
             }
             logger.info("{} object updated", bulkWriteResult.first().getModifiedCount());
 
-            CellBaseDataResult<Long> longCellBaseDataResult = new CellBaseDataResult(bulkWriteResult.getId(),
-                    bulkWriteResult.getTime(), bulkWriteResult .getNumResults(),
-                    bulkWriteResult.getNumMatches(), bulkWriteResult.getEvents(),
+            CellBaseDataResult<Long> longCellBaseDataResult = new CellBaseDataResult<>(bulkWriteResult.getId(),
+                    bulkWriteResult.getTime(), bulkWriteResult.getEvents(), bulkWriteResult .getNumResults(),
                     Collections.singletonList((long) (bulkWriteResult.first().getUpserts().size()
-                            + bulkWriteResult.first().getModifiedCount())));
+                            + bulkWriteResult.first().getModifiedCount())), bulkWriteResult.getNumMatches());
             return longCellBaseDataResult;
         }
         logger.info("no object updated");
@@ -378,7 +377,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     }
 
     private CellBaseDataResult<Long> updatePopulationFrequencies(List<Document> variantDocumentList) {
-
         List<Bson> queries = new ArrayList<>(variantDocumentList.size());
         List<Bson> updates = new ArrayList<>(variantDocumentList.size());
 //        CellBaseDataResult<Long> longCellBaseDataResult = null;
@@ -422,10 +420,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             logger.info("{} object updated", bulkWriteResult.first().getUpserts().size() + bulkWriteResult.first().getModifiedCount());
 
             CellBaseDataResult<Long> longCellBaseDataResult = new CellBaseDataResult<>(bulkWriteResult.getId(),
-                    bulkWriteResult.getTime(), bulkWriteResult.getNumResults(),
-                    bulkWriteResult.getNumTotalResults(), bulkWriteResult.getEvents(),
+                    bulkWriteResult.getTime(), bulkWriteResult.getEvents(), bulkWriteResult.getNumResults(),
                     Collections.singletonList((long) (bulkWriteResult.first().getUpserts().size()
-                            + bulkWriteResult.first().getModifiedCount())));
+                            + bulkWriteResult.first().getModifiedCount())), bulkWriteResult.getNumMatches());
             return longCellBaseDataResult;
         }
         logger.info("no object updated");

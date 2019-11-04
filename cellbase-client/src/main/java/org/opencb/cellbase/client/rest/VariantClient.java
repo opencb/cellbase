@@ -77,7 +77,7 @@ public final class VariantClient extends FeatureClient<Variant> {
         return annotate(variants, options, false);
     }
 
-    public CellBaseDataResponse annotate(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
+    public CellBaseDataResponse<Variant> annotate(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
         List<String> variantIds = getVariantAnnotationIds(variants, options.getBoolean(IGNORE_PHASE));
         CellBaseDataResponse<VariantAnnotation> annotations = this.getAnnotationByVariantIds(variantIds, options, post);
 
@@ -85,11 +85,11 @@ public final class VariantClient extends FeatureClient<Variant> {
         List<CellBaseDataResult<Variant>> annotatedVariants = new ArrayList<>(variants.size());
         for (int i = 0; i < variants.size(); i++) {
             variants.get(i).setAnnotation(annotations.getResponses().get(i).first());
-            annotatedVariants.add(new CellBaseDataResult(variantIds.get(i), timePerId, 1, 1, null,
-                    Collections.singletonList(variants.get(i))));
+            annotatedVariants.add(new CellBaseDataResult<>(variantIds.get(i), timePerId, null, 1,
+                    Collections.singletonList(variants.get(i)), 1));
         }
 
-        return new CellBaseDataResponse(configuration.getVersion(), annotations.getTime(), null,
+        return new CellBaseDataResponse<>(configuration.getVersion(), annotations.getTime(), null,
                 new ObjectMap(options), annotatedVariants);
     }
 
@@ -97,8 +97,8 @@ public final class VariantClient extends FeatureClient<Variant> {
         return getAnnotation(variants, options, false);
     }
 
-    public CellBaseDataResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options,
-                                                                 boolean post) throws IOException {
+    public CellBaseDataResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options, boolean post)
+            throws IOException {
         CellBaseDataResponse<VariantAnnotation> result = execute(getVariantAnnotationIds(variants,
                 options.getBoolean(IGNORE_PHASE)),
                 "annotation",

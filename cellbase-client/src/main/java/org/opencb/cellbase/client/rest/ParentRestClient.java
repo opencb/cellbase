@@ -306,9 +306,8 @@ public class ParentRestClient<T> {
             if (idList.size() == 1) {
                 logger.warn("CellBase REST warning. Skipping id. {}", idList.get(0));
                 Event event = new Event(Event.Type.ERROR, "CellBase REST error. Skipping id " + idList.get(0));
-                CellBaseDataResult result = new CellBaseDataResult<U>(idList.get(0), -1, 0, 0, null,
-                        Collections.emptyList());
-                return new CellBaseDataResponse<U>(configuration.getVersion(), -1, Collections.singletonList(event),
+                CellBaseDataResult result = new CellBaseDataResult<U>(idList.get(0), 0, Collections.emptyList(), 0, null, 0);
+                return new CellBaseDataResponse<U>(configuration.getVersion(), 0, Collections.singletonList(event),
                         new ObjectMap(queryOptions), Collections.singletonList(result));
             }
             List<CellBaseDataResult<U>> cellBaseDataResultList = new LinkedList<>();

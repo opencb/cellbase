@@ -268,10 +268,9 @@ public class VariationWSServer extends GenericRestWSServer {
             query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
             queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
             CellBaseDataResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
-            CellBaseDataResult queryResult1 = new CellBaseDataResult(
-                    queryResult.getId(), queryResult.getTime(), queryResult.getNumResults(),
-                    queryResult.getNumTotalResults(), queryResult.getEvents(),
-                    Collections.singletonList(queryResult.getResults().get(0).getAnnotation().getDisplayConsequenceType()));
+            CellBaseDataResult queryResult1 = new CellBaseDataResult<>(
+                    queryResult.getId(), queryResult.getTime(), queryResult.getEvents(), queryResult.getNumResults(),
+                    Collections.singletonList(queryResult.getResults().get(0).getAnnotation().getDisplayConsequenceType()), 1);
             return createOkResponse(queryResult1);
         } catch (Exception e) {
             return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());

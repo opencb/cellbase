@@ -144,7 +144,7 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
             if (variant.getType() == VariantType.SNV) {
                 cellBaseDataResults.add(getFunctionalScoreVariant(variant, options));
             } else {
-                cellBaseDataResults.add(new CellBaseDataResult(variant.toString(), 0, 0, 0, null, Collections.emptyList()));
+                cellBaseDataResults.add(new CellBaseDataResult<>(variant.toString(), 0, Collections.emptyList(), 0));
             }
         }
         return cellBaseDataResults;

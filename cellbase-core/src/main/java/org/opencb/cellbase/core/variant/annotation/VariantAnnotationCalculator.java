@@ -171,9 +171,9 @@ public class VariantAnnotationCalculator {
         //   this.decompose = false
         if (!decompose || variantList.size() == normalizedVariantList.size()) {
             for (int i = 0; i < variantList.size(); i++) {
-                CellBaseDataResult<VariantAnnotation> cellBaseDataResult = new CellBaseDataResult(variantList.get(i).toString(),
-                        (int) (System.currentTimeMillis() - startTime), 1, 1, null,
-                        Collections.singletonList(normalizedVariantList.get(i).getAnnotation()));
+                CellBaseDataResult<VariantAnnotation> cellBaseDataResult = new CellBaseDataResult<>(variantList.get(i).toString(),
+                        (int) (System.currentTimeMillis() - startTime), null, 1,
+                        Collections.singletonList(normalizedVariantList.get(i).getAnnotation()), 1);
                 annotationResultList.add(cellBaseDataResult);
             }
         } else {
@@ -188,9 +188,8 @@ public class VariantAnnotationCalculator {
                 } else {
                     List<VariantAnnotation> variantAnnotationList = new ArrayList<>(1);
                     variantAnnotationList.add(normalizedVariant.getAnnotation());
-                    cellBaseDataResult = new CellBaseDataResult(variantList.get(originalVariantListCounter).toString(),
-                            (int) (System.currentTimeMillis() - startTime), 1, 1, null,
-                            variantAnnotationList);
+                    cellBaseDataResult = new CellBaseDataResult<>(variantList.get(originalVariantListCounter).toString(),
+                            (int) (System.currentTimeMillis() - startTime), null, 1, variantAnnotationList, 1);
                     annotationResultList.add(cellBaseDataResult);
                     previousCall = getCall(normalizedVariant);
                     originalVariantListCounter++;

@@ -62,8 +62,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
             List<Document> transcripts = (List<Document>) result.getResults().get(0).get("transcripts");
             sequence = transcripts.get(0).getString("cDnaSequence");
         }
-        return new CellBaseDataResult(id, result.getTime(), result.getNumResults(), result.getNumMatches(),
-                result.getEvents(), Collections.singletonList(sequence));
+        return new CellBaseDataResult<>(id, result.getTime(), result.getEvents(), result.getNumResults(),
+                Collections.singletonList(sequence), 1);
     }
 
     @Override
@@ -99,15 +99,14 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
                 new CellBaseDataResult<>(mongoDBCollection.aggregate(Arrays.asList(match, include, unwind, match2, project, group), null));
         Number number = (Number) cellBaseDataResult.first().get("count");
         Long count = number.longValue();
-        return new CellBaseDataResult(null, cellBaseDataResult.getTime(), cellBaseDataResult.getNumResults(),
-                cellBaseDataResult.getNumMatches(), cellBaseDataResult.getEvents(), Collections.singletonList(count));
+        return new CellBaseDataResult<>(null, cellBaseDataResult.getTime(), cellBaseDataResult.getEvents(),
+                cellBaseDataResult.getNumResults(), Collections.singletonList(count), cellBaseDataResult.getNumMatches());
     }
 
     @Override
     public CellBaseDataResult distinct(Query query, String field) {
         Bson bsonDocument = parseQuery(query);
         return new CellBaseDataResult(mongoDBCollection.distinct(field, bsonDocument));
-
     }
 
     @Override

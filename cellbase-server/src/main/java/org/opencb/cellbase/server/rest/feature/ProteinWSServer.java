@@ -306,8 +306,8 @@ public class ProteinWSServer extends GenericRestWSServer {
         queryOptions.put("include", "sequence.value");
         // split by comma
         CellBaseDataResult<Entry> queryResult = proteinDBAdaptor.get(query, queryOptions);
-        CellBaseDataResult queryResult1 = new CellBaseDataResult(queryResult.getId(), queryResult.getTime(), queryResult.getNumResults(),
-                queryResult.getNumTotalResults(), queryResult.getEvents(), Collections.EMPTY_LIST);
+        CellBaseDataResult<String> queryResult1 = new CellBaseDataResult<>(queryResult.getId(), queryResult.getTime(),
+                queryResult.getEvents(), queryResult.getNumResults(), Collections.emptyList(), 1);
         queryResult1.setResults(Collections.singletonList(queryResult.first().getSequence().getValue()));
         queryResult1.setId(proteinId);
         return createOkResponse(queryResult1);

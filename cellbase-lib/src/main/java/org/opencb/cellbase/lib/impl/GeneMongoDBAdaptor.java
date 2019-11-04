@@ -109,11 +109,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         options = addPrivateExcludeOptions(options);
 
         if (postDBFilteringParametersEnabled(query)) {
-            CellBaseDataResult<Document> nativeCellBaseDataResult = postDBFiltering(query,
+            CellBaseDataResult<Document> dataResult = postDBFiltering(query,
                     new CellBaseDataResult<>(mongoDBCollection.find(bson, options)));
-            CellBaseDataResult<Gene> cellBaseDataResult = new CellBaseDataResult(nativeCellBaseDataResult.getId(),
-                    nativeCellBaseDataResult.getTime(), nativeCellBaseDataResult.getNumResults(),
-                    nativeCellBaseDataResult.getNumMatches(), nativeCellBaseDataResult.getEvents());
+            CellBaseDataResult<Gene> cellBaseDataResult = new CellBaseDataResult<>(dataResult.getId(),
+                    dataResult.getTime(), dataResult.getEvents(), dataResult.getNumResults(), null,
+                    dataResult.getNumMatches());
 
             // Now we need to convert MongoDB Documents to Gene objects
             // TODO: maybe we could query Genes in the first stage
@@ -121,7 +121,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
             jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
             ObjectWriter objectWriter = jsonObjectMapper.writer();
-            cellBaseDataResult.setResults(nativeCellBaseDataResult.getResults().stream()
+            cellBaseDataResult.setResults(dataResult.getResults().stream()
                     .map(document -> {
                         try {
                             return this.objectMapper.readValue(objectWriter.writeValueAsString(document), Gene.class);

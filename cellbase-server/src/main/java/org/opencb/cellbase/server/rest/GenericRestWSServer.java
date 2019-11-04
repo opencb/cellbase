@@ -37,10 +37,7 @@ import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.commons.datastore.core.Event;
-import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +122,7 @@ public class GenericRestWSServer implements IWSServer {
     protected QueryOptions queryOptions;
     protected CellBaseDataResponse queryResponse;
 
-    protected CellBaseDataResponse response;
+//    protected CellBaseDataResponse response;
     protected ObjectMap params;
 
     protected UriInfo uriInfo;
@@ -230,9 +227,7 @@ public class GenericRestWSServer implements IWSServer {
         // This needs to be an ArrayList since it may be added some extra fields later
         queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         queryResponse = new CellBaseDataResponse<>();
-
         params = new ObjectMap();
-        response = new CellBaseDataResponse();
 
         checkPathParams(true);
     }
@@ -323,8 +318,8 @@ public class GenericRestWSServer implements IWSServer {
             mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
             JsonSchema jsonSchema = visitor.finalSchema();
 
-            return createOkResponse(new CellBaseDataResult(clazz.toString(), 0, 1, 1, null,
-                    Collections.singletonList(jsonSchema)));
+            return createOkResponse(new CellBaseDataResult<>(clazz.toString(), 0, Collections.emptyList(), 1,
+                    Collections.singletonList(jsonSchema), 1));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -374,13 +369,13 @@ public class GenericRestWSServer implements IWSServer {
 
         // Now:
 
-        params.put("id", ((CellBaseDataResult) obj).getId());
+//        params.put("id", ((CellBaseDataResult) obj).getId());
         params.put("species", species);
         params.putAll(query);
         params.putAll(queryOptions);
-        response.setParams(params);
+        queryResponse.setParams(params);
 
-        // Guarantee that the QueryResponse object contains a list of results
+        // Guarantee that the QueryResponse object contains a list of data results
         List list;
         if (obj instanceof List) {
             list = (List) obj;
@@ -408,8 +403,10 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createJsonResponse(CellBaseDataResponse queryResponse) {
         try {
-            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse),
-                    MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8")));
+            System.out.println("queryResponse.getResponses().get(0).toString() = " + queryResponse.getResponses().get(0).toString());
+            String value = jsonObjectWriter.writeValueAsString(queryResponse);
+            ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
+            return buildResponse(ok);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             logger.error("Error parsing queryResponse object");
