@@ -1014,7 +1014,7 @@ public class DownloadManager {
 
     private void validateDownloadFile(String url, String outputFileName, String outputFileLog) throws CellbaseException {
         int expectedFileSize = getExpectedFileSize(outputFileLog);
-        Long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
+        long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
 
         if (expectedFileSize != actualFileSize) {
             throw new CellbaseException(url + " not downloaded fully. Expected the file size to be "
@@ -1031,7 +1031,7 @@ public class DownloadManager {
                 // looking for: Length: 13846591 (13M)
                 if (line.startsWith("Length:")) {
                     String[] parts = line.split("\\s");
-                    return Integer.valueOf(parts[1]);
+                    return Integer.parseInt(parts[1]);
                 }
             }
         } catch (Exception e) {
