@@ -21,7 +21,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,11 +37,11 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
     String MERGE = "merge";
     String REGION = "region";
 
-    default QueryResult first() {
+    default CellBaseDataResult first() {
         return first(new QueryOptions());
     }
 
-    default QueryResult first(QueryOptions options) {
+    default CellBaseDataResult first(QueryOptions options) {
         if (options == null) {
             options = new QueryOptions();
         }
@@ -49,23 +49,23 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         return nativeGet(new Query(), options);
     }
 
-    QueryResult<T> next(Query query, QueryOptions options);
+    CellBaseDataResult<T> next(Query query, QueryOptions options);
 
-    QueryResult nativeNext(Query query, QueryOptions options);
+    CellBaseDataResult nativeNext(Query query, QueryOptions options);
 
-    default QueryResult<T> getByRegion(Region region, QueryOptions options) {
+    default CellBaseDataResult<T> getByRegion(Region region, QueryOptions options) {
         Query query = new Query("region", region.toString());
         return get(query, options);
     }
 
-    default List<QueryResult<T>> getByRegion(List<Region> regions, QueryOptions options) {
+    default List<CellBaseDataResult<T>> getByRegion(List<Region> regions, QueryOptions options) {
         if (options.containsKey(MERGE) && (Boolean) options.get(MERGE)) {
             Query query = new Query(REGION, String.join(",",
                     regions.stream().map((region) -> region.toString()).collect(Collectors.toList())));
-            QueryResult<T> queryResult = get(query, options);
-            return Collections.singletonList(queryResult);
+            CellBaseDataResult<T> cellBaseDataResult = get(query, options);
+            return Collections.singletonList(cellBaseDataResult);
         } else {
-            List<QueryResult<T>> results = new ArrayList<>(regions.size());
+            List<CellBaseDataResult<T>> results = new ArrayList<>(regions.size());
             for (Region region : regions) {
                 Query query = new Query("region", region.toString());
                 results.add(get(query, options));
@@ -74,18 +74,18 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         }
     }
 
-    QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options);
+    CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options);
 
-    default List<QueryResult> getIntervalFrequencies(List<Query> queries, int intervalSize, QueryOptions options) {
+    default List<CellBaseDataResult> getIntervalFrequencies(List<Query> queries, int intervalSize, QueryOptions options) {
         Objects.requireNonNull(queries);
-        List<QueryResult> queryResults = new ArrayList<>(queries.size());
+        List<CellBaseDataResult> cellBaseDataResults = new ArrayList<>(queries.size());
         for (Query query : queries) {
-            queryResults.add(getIntervalFrequencies(query, intervalSize, options));
+            cellBaseDataResults.add(getIntervalFrequencies(query, intervalSize, options));
         }
-        return queryResults;
+        return cellBaseDataResults;
     }
 
-    default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
+    default CellBaseDataResult<T> getByVariant(Variant variant, QueryOptions options) {
         Query query;
         if (VariantType.CNV.equals(variant.getType())) {
             query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
@@ -101,14 +101,14 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
                     .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
                     .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
         }
-        QueryResult<T> queryResult = get(query, options);
-        queryResult.setId(variant.toString());
+        CellBaseDataResult<T> cellBaseDataResult = get(query, options);
+        cellBaseDataResult.setId(variant.toString());
 
-        return queryResult;
+        return cellBaseDataResult;
     }
 
-    default List<QueryResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {
-        List<QueryResult<T>> results = new ArrayList<>(variants.size());
+    default List<CellBaseDataResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {
+        List<CellBaseDataResult<T>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
             results.add(getByVariant(variant, options));
         }

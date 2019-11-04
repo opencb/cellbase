@@ -20,9 +20,10 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
+
 
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -48,12 +49,12 @@ public class GenericClientTest {
 
     @Test
     public void get() throws Exception {
-        QueryResponse<Gene> queryResponse1 = cellBaseClient.getGenericClient().get("feature", "gene", "BRCA2", "info",
+        CellBaseDataResponse<Gene> queryResponse1 = cellBaseClient.getGenericClient().get("feature", "gene", "BRCA2", "info",
                 new QueryOptions(QueryOptions.INCLUDE, "name"), Gene.class);
         assertEquals(1, queryResponse1.allResults().size());
         assertEquals("BRCA2", queryResponse1.firstResult().getName());
 
-        QueryResponse<ObjectMap> queryResponse2 = cellBaseClient.getGenericClient().get("meta", "about", new QueryOptions(),
+        CellBaseDataResponse<ObjectMap> queryResponse2 = cellBaseClient.getGenericClient().get("meta", "about", new QueryOptions(),
                 ObjectMap.class);
         assertEquals(5, queryResponse2.firstResult().size());
         assertTrue(queryResponse2.firstResult().containsKey("Program: "));

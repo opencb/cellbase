@@ -19,7 +19,7 @@ package org.opencb.cellbase.core.api;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.List;
 
@@ -97,18 +97,18 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
     }
 
-    List<QueryResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions);
+    List<CellBaseDataResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions);
 
-    QueryResult<String> getAlleleOriginLabels();
+    CellBaseDataResult<String> getAlleleOriginLabels();
 
-    QueryResult<String> getModeInheritanceLabels();
+    CellBaseDataResult<String> getModeInheritanceLabels();
 
-    QueryResult<String> getClinsigLabels();
+    CellBaseDataResult<String> getClinsigLabels();
 
-    QueryResult<String> getConsistencyLabels();
+    CellBaseDataResult<String> getConsistencyLabels();
 
-    QueryResult<String> getVariantTypes();
+    CellBaseDataResult<String> getVariantTypes();
 
-//    List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options);
+//    List<CellBaseDataResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options);
 
 }

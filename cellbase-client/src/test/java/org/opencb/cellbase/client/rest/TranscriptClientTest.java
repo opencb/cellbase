@@ -22,9 +22,10 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
+
 
 import java.io.IOException;
 import java.util.Collections;
@@ -50,19 +51,19 @@ public class TranscriptClientTest {
 
     @Test
     public void count() throws Exception {
-        QueryResponse<Long> count = cellBaseClient.getTranscriptClient().count(new Query());
+        CellBaseDataResponse<Long> count = cellBaseClient.getTranscriptClient().count(new Query());
         assertEquals(196501, count.firstResult().longValue(), "Number of returned transcripts do not match");
     }
 
     @Test
     public void first() throws Exception {
-        QueryResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().first();
+        CellBaseDataResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().first();
         assertNotNull(transcript, "First transcript in the collection must be returned");
     }
 
     @Test
     public void get() throws Exception {
-        QueryResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get(Collections.singletonList("ENST00000456328"), null);
+        CellBaseDataResponse<Transcript> transcript = cellBaseClient.getTranscriptClient().get(Collections.singletonList("ENST00000456328"), null);
         assertNotNull(transcript.firstResult(), "This transcript should exist");
 
 //        Map<String, Object> params = new HashMap<>();
@@ -73,20 +74,20 @@ public class TranscriptClientTest {
 
     @Test
     public void getGene() throws Exception {
-        QueryResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", new QueryOptions());
+        CellBaseDataResponse<Gene> response = cellBaseClient.getTranscriptClient().getGene("ENST00000456328", new QueryOptions());
         assertNotNull(response.firstResult(), "It should return the respective gene");
     }
 
 //    @Test
     public void getVariation() throws Exception {
-        QueryResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328,ENST00000528762",
+        CellBaseDataResponse<Variant> response = cellBaseClient.getTranscriptClient().getVariation("ENST00000456328,ENST00000528762",
                 new QueryOptions(QueryOptions.EXCLUDE, "annotation"));
         assertNotNull(response.firstResult(), "It should return the variations for the given transcript(s)");
     }
 
     @Test
     public void getSequence() throws Exception {
-        QueryResponse<String> seq = cellBaseClient.getTranscriptClient().getSequence("ENST00000528762", null);
+        CellBaseDataResponse<String> seq = cellBaseClient.getTranscriptClient().getSequence("ENST00000528762", null);
         assertEquals("The sequence returned is wrong", "TCATCTGGATTATACATATTTCGCAATGAAAGAGAGGAAGAAAAGGAAGCAGCAAAATATGTG" +
                 "GAGGCCCAACAAAAGAGACTAGAAGCCTTATTCACTAAAATTCAGGAGGAATTTGAAGAACATGAAGTTACTTCCTCCACTGAAGTCTTGAACCCCCCAA" +
                 "AGTCATCCATGAGGGTTGGAATCAACTTCTGAAAACACAACAAAACCATATTTACCATCACGTGCACTAACAAGACAGCAAGTTCGTGCTTTGCAAGATGG" +
@@ -98,13 +99,13 @@ public class TranscriptClientTest {
 
     @Test
     public void getProtein() throws Exception {
-        QueryResponse<Entry> response = cellBaseClient.getTranscriptClient().getProtein("ENST00000342992", null);
+        CellBaseDataResponse<Entry> response = cellBaseClient.getTranscriptClient().getProtein("ENST00000342992", null);
         assertNotNull(response.firstResult(), "Protein for the given transcript must be returned");
     }
 
 //    @Test
 //    public void getFunctionPrediction() throws Exception {
-//        QueryResponse<List> response = cellBaseClient.getTranscriptClient().getProteinFunctionPrediction("ENST00000530893", null);
+//        CellBaseDataResponse<List> response = cellBaseClient.getTranscriptClient().getProteinFunctionPrediction("ENST00000530893", null);
 //        assertNotNull("The function prediction for the given trnascript must be returned", response.firstResult());
 //    }
 }

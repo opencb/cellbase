@@ -23,7 +23,7 @@ import org.opencb.biodata.models.protein.Interaction;
 import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -45,48 +45,48 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
     }
 
     @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return groupBy(parseQuery(query), field, "name", options);
     }
 
     @Override
-    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         return groupBy(parseQuery(query), fields, "name", options);
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> count(Query query) {
-        return mongoDBCollection.count(parseQuery(query));
+    public CellBaseDataResult<Long> count(Query query) {
+        return new CellBaseDataResult<>(mongoDBCollection.count(parseQuery(query)));
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
-        return mongoDBCollection.distinct(field, parseQuery(query));
+    public CellBaseDataResult distinct(Query query, String field) {
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, parseQuery(query)));
     }
 
     @Override
-    public QueryResult stats(Query query) {
+    public CellBaseDataResult stats(Query query) {
         return null;
     }
 
     @Override
-    public QueryResult<Interaction> get(Query query, QueryOptions options) {
+    public CellBaseDataResult<Interaction> get(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
-        return mongoDBCollection.find(parseQuery(query), options);
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
+        return new CellBaseDataResult<>(mongoDBCollection.find(parseQuery(query), options));
     }
 
     @Override

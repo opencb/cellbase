@@ -22,10 +22,11 @@ import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryResult;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -74,7 +75,7 @@ public class TfWSServer extends RegulatoryWSServer {
             List<Query> queries = createQueries(tfId, RegulationDBAdaptor.QueryParams.NAME.key(),
                     RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                             + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-            List<QueryResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.NAME.key()));
             }
@@ -127,7 +128,7 @@ public class TfWSServer extends RegulatoryWSServer {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(tfId, GeneDBAdaptor.QueryParams.NAME.key());
-            List<QueryResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));
             }

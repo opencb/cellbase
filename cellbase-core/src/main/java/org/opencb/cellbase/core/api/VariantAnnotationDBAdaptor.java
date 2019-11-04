@@ -21,7 +21,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.List;
 
@@ -31,33 +31,18 @@ import java.util.List;
 @Deprecated
 public interface VariantAnnotationDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
-    QueryResult<T> getAnnotationByVariant(Variant variant, QueryOptions options);
+    CellBaseDataResult<T> getAnnotationByVariant(Variant variant, QueryOptions options);
 
-    List<QueryResult<T>> getAnnotationByVariantList(List<Variant> variants, QueryOptions options);
-
-
-    QueryResult<ConsequenceType> getConsequenceTypes(Query query, QueryOptions options);
+    List<CellBaseDataResult<T>> getAnnotationByVariantList(List<Variant> variants, QueryOptions options);
 
 
-    QueryResult<Score> getFunctionalScore(Variant variant, QueryOptions options);
+    CellBaseDataResult<ConsequenceType> getConsequenceTypes(Query query, QueryOptions options);
 
-    List<QueryResult<Score>> getFunctionalScore(List<Variant> variants, QueryOptions options);
 
-    QueryResult<Score> getFunctionalScore(Query query, QueryOptions options);
+    CellBaseDataResult<Score> getFunctionalScore(Variant variant, QueryOptions options);
 
-//    void setVariantClinicalDBAdaptor(ClinicalDBAdaptor clinicalDBAdaptor);
-//
-//    void setProteinDBAdaptor(ProteinDBAdaptor proteinDBAdaptor);
-//
-//    void setConservationDBAdaptor(ConservationDBAdaptor conservationDBAdaptor);
-//
-//    void setVariantFunctionalScoreDBAdaptor(VariantFunctionalScoreDBAdaptor variantFunctionalScoreDBAdaptor);
-//
-//    void setGenomeDBAdaptor(GenomeDBAdaptor genomeDBAdaptor);
-//
-//    void setGeneDBAdaptor(GeneDBAdaptor geneDBAdaptor);
-//
-//    void setRegulationDBAdaptor(RegulationDBAdaptor regulationDBAdaptor);
+    List<CellBaseDataResult<Score>> getFunctionalScore(List<Variant> variants, QueryOptions options);
 
+    CellBaseDataResult<Score> getFunctionalScore(Query query, QueryOptions options);
 
 }

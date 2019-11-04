@@ -25,7 +25,7 @@ import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.XRefDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -49,48 +49,48 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 
 
     @Override
-    public QueryResult startsWith(String id, QueryOptions options) {
+    public CellBaseDataResult startsWith(String id, QueryOptions options) {
         Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
         Bson include = Projections.include("id", "name", "chromosome", "start", "end");
-        return mongoDBCollection.find(regex, include, options);
+        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
     }
 
     @Override
-    public QueryResult contains(String id, QueryOptions options) {
+    public CellBaseDataResult contains(String id, QueryOptions options) {
         Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("\\w*" + id + "\\w*"));
         Bson include = Projections.include("id", "name", "chromosome", "start", "end");
-        return mongoDBCollection.find(regex, include, options);
+        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        return new CellBaseDataResult(mongoDBCollection.count(bson));
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        return new CellBaseDataResult(mongoDBCollection.distinct(field, bson));
     }
 
     @Override
-    public QueryResult stats(Query query) {
+    public CellBaseDataResult stats(Query query) {
         return null;
     }
 
     @Override
-    public QueryResult<Xref> get(Query query, QueryOptions options) {
+    public CellBaseDataResult<Xref> get(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         Bson match = Aggregates.match(bson);
 
@@ -107,9 +107,10 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         if (query.containsKey(QueryParams.DBNAME.key())) {
             Bson bson2 = parseQuery(new Query(QueryParams.DBNAME.key(), query.get(QueryParams.DBNAME.key())));
             Bson match2 = Aggregates.match(bson2);
-            return mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, match2, project1), options);
+            return new CellBaseDataResult(mongoDBCollection.aggregate(
+                    Arrays.asList(match, project, unwind, unwind2, match2, project1), options));
         }
-        return mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), options);
+        return new CellBaseDataResult(mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), options));
     }
 
     @Override
@@ -124,17 +125,17 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     }
 
     @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return groupBy(parseQuery(query), field, "name", options);
     }
 
     @Override
-    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         return groupBy(parseQuery(query), fields, "name", options);
     }
 

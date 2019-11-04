@@ -19,7 +19,8 @@ package org.opencb.cellbase.core.variant;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
+
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,7 @@ public abstract class PhasedQueryManager {
     private static final String REFERENCE = "0";
 
 
-    abstract List<QueryResult<Variant>> run(List<Variant> variantList, List<QueryResult<Variant>> variantQueryResult);
+    abstract List<CellBaseDataResult<Variant>> run(List<Variant> variantList, List<CellBaseDataResult<Variant>> variantCellBaseDataResult);
 
     protected boolean sameHaplotype(Variant queryVariant, List<Variant> inputVariantList,
                                     List<Variant> databaseHaplotype) {
@@ -218,10 +219,10 @@ public abstract class PhasedQueryManager {
                 && (allele.equals(allele1) || isMissing(allele) || isMissing(allele1));
     }
 
-    protected void reset(QueryResult<Variant> variantQueryResult) {
-        variantQueryResult.setResult(Collections.emptyList());
-        variantQueryResult.setNumResults(0);
-        variantQueryResult.setNumTotalResults(0);
+    protected void reset(CellBaseDataResult<Variant> variantCellBaseDataResult) {
+        variantCellBaseDataResult.setResults(Collections.emptyList());
+        variantCellBaseDataResult.setNumResults(0);
+        variantCellBaseDataResult.setNumTotalResults(0);
     }
 
 

@@ -28,11 +28,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.Monitor;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.*;
@@ -51,21 +53,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.opencb.commons.datastore.core.QueryOptions.*;
-
 @Path("/{version}/{species}")
 @Produces("text/plain")
-//@Api(value = "Generic", description = "Generic RESTful Web Services API")
 public class GenericRestWSServer implements IWSServer {
 
-    //    @DefaultValue("")
-//    @PathParam("version")
-//    @ApiParam(name = "version", value = "Use 'latest' for last stable version",  defaultValue = "latest")
     protected String version;
-
-    //    @DefaultValue("")
-//    @PathParam("species")
-//    @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens.")
     protected String species;
 
     @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of"
@@ -128,7 +120,10 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Query query;
     protected QueryOptions queryOptions;
-    protected QueryResponse queryResponse;
+    protected CellBaseDataResponse queryResponse;
+
+//    protected CellBaseDataResponse response;
+    protected ObjectMap params;
 
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
@@ -157,7 +152,6 @@ public class GenericRestWSServer implements IWSServer {
      * HibernateDBAdaptorFactory or an HBaseDBAdaptorFactory. This object is a
      * factory for creating adaptors like GeneDBAdaptor
      */
-//    protected static DBAdaptorFactory dbAdaptorFactory;
     protected static DBAdaptorFactory dbAdaptorFactory;
     protected static Monitor monitor;
 
@@ -173,11 +167,8 @@ public class GenericRestWSServer implements IWSServer {
         WATCH = new StopWatch();
         WATCH.start();
 
-
-
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-//        jsonObjectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
 
@@ -235,7 +226,8 @@ public class GenericRestWSServer implements IWSServer {
         query = new Query();
         // This needs to be an ArrayList since it may be added some extra fields later
         queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
-        queryResponse = new QueryResponse();
+        queryResponse = new CellBaseDataResponse<>();
+        params = new ObjectMap();
 
         checkPathParams(true);
     }
@@ -248,24 +240,6 @@ public class GenericRestWSServer implements IWSServer {
         if (checkSpecies && species == null) {
             throw new SpeciesException("Species not valid: '" + species + "'");
         }
-
-        /**
-         * Check version parameter, must be: v1, v2, ... If 'latest' then is
-         * converted to appropriate version
-         */
-//        if (version.equalsIgnoreCase("latest")) {
-//            version = cellBaseConfiguration.getVersion();
-//            logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
-//        } else {
-//            // FIXME this will only work when no database schemas are done, in version 3 and 4 this can raise some problems
-//            // we set the version from the URL, this will decide which database is queried,
-//            cellBaseConfiguration.setVersion(version);
-//        }
-
-//        if (!version.equalsIgnoreCase("v3") && !cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
-//            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
-//            throw new VersionException("Version not valid: '" + version + "'");
-//        }
     }
 
     @Override
@@ -276,50 +250,34 @@ public class GenericRestWSServer implements IWSServer {
 
         if (exclude != null && !exclude.isEmpty()) {
             // We add the user's 'exclude' fields to the default values _id and _chunks
-            if (queryOptions.containsKey(EXCLUDE)) {
-                queryOptions.getAsStringList(EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
+            if (queryOptions.containsKey(QueryOptions.EXCLUDE)) {
+                queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
             }
         }
-//        else {
-//            queryOptions.put("exclude", (multivaluedMap.get("exclude") != null)
-//                    ? Splitter.on(",").splitToList(multivaluedMap.get("exclude").get(0))
-//                    : null);
-//        }
 
         if (include != null && !include.isEmpty()) {
-            queryOptions.put(INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
+            queryOptions.put(QueryOptions.INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
         } else {
-            queryOptions.put(INCLUDE, (multivaluedMap.get(INCLUDE) != null)
-                    ? Splitter.on(",").splitToList(multivaluedMap.get(INCLUDE).get(0))
+            queryOptions.put(QueryOptions.INCLUDE, (multivaluedMap.get(QueryOptions.INCLUDE) != null)
+                    ? Splitter.on(",").splitToList(multivaluedMap.get(QueryOptions.INCLUDE).get(0))
                     : null);
         }
 
         if (sort != null && !sort.isEmpty()) {
-            queryOptions.put(SORT, sort);
+            queryOptions.put(QueryOptions.SORT, sort);
         }
 
-        queryOptions.put(LIMIT, (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
-        queryOptions.put(SKIP, (skip >= 0) ? skip : -1);
-        queryOptions.put(SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
-        queryOptions.put(COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
-//        outputFormat = (outputFormat != null && !outputFormat.equals("")) ? outputFormat : "json";
+        queryOptions.put(QueryOptions.LIMIT, (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
+        queryOptions.put(QueryOptions.SKIP, (skip >= 0) ? skip : -1);
+        queryOptions.put(QueryOptions.SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
+        queryOptions.put(QueryOptions.COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
 
         // Add all the others QueryParams from the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
             if (!queryOptions.containsKey(entry.getKey())) {
-//                logger.info("Adding '{}' to queryOptions", entry);
-                // FIXME delete this!!
-//                queryOptions.put(entry.getKey(), entry.getValue().get(0));
                 query.put(entry.getKey(), entry.getValue().get(0));
             }
         }
-
-//        try {
-//            logger.info("{}\t{}\t{}", uriInfo.getAbsolutePath().toString(),
-//                    jsonObjectWriter.writeValueAsString(query), jsonObjectWriter.writeValueAsString(queryOptions));
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
     }
 
     protected void logQuery(String status) {
@@ -337,7 +295,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @GET
     @Path("/help")
-    @ApiOperation(httpMethod = "GET", value = "To be implemented", response = QueryResponse.class, hidden = true)
+    @ApiOperation(httpMethod = "GET", value = "To be implemented", response = CellBaseDataResponse.class, hidden = true)
     public Response help() {
         return createOkResponse("No help available");
     }
@@ -353,7 +311,6 @@ public class GenericRestWSServer implements IWSServer {
         return createOkResponse("Not valid option");
     }
 
-
     protected Response createModelResponse(Class clazz) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -361,8 +318,8 @@ public class GenericRestWSServer implements IWSServer {
             mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
             JsonSchema jsonSchema = visitor.finalSchema();
 
-            return createOkResponse(new QueryResult<>(clazz.toString(), 0, 1, 1, null, null,
-                    Collections.singletonList(jsonSchema)));
+            return createOkResponse(new CellBaseDataResult<>(clazz.toString(), 0, Collections.emptyList(), 1,
+                    Collections.singletonList(jsonSchema), 1));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -373,16 +330,18 @@ public class GenericRestWSServer implements IWSServer {
         e.printStackTrace();
 
         // Now we prepare the response to client
-        queryResponse = new QueryResponse();
+        queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setQueryOptions(queryOptions);
-        queryResponse.setError(e.toString());
+        queryResponse.setParams(new ObjectMap(queryOptions));
+        queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
-        QueryResult<ObjectMap> result = new QueryResult();
-        result.setWarningMsg("Future errors will ONLY be shown in the QueryResponse body");
-        result.setErrorMsg("DEPRECATED: " + e.toString());
-        queryResponse.setResponse(Arrays.asList(result));
+        CellBaseDataResult<ObjectMap> result = new CellBaseDataResult();
+        List<Event> events = new ArrayList<>();
+        events.add(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
+        events.add(new Event(Event.Type.ERROR, "DEPRECATED: " + e.toString()));
+        queryResponse.setEvents(events);
+        queryResponse.setResponses(Arrays.asList(result));
         logQuery(ERROR);
 
         return Response
@@ -402,12 +361,21 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     protected Response createOkResponse(Object obj) {
-        queryResponse = new QueryResponse();
+        queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setQueryOptions(queryOptions);
+        queryResponse.setParams(queryOptions);
 
-        // Guarantee that the QueryResponse object contains a list of results
+
+        // Now:
+
+//        params.put("id", ((CellBaseDataResult) obj).getId());
+        params.put("species", species);
+        params.putAll(query);
+        params.putAll(queryOptions);
+        queryResponse.setParams(params);
+
+        // Guarantee that the QueryResponse object contains a list of data results
         List list;
         if (obj instanceof List) {
             list = (List) obj;
@@ -415,7 +383,7 @@ public class GenericRestWSServer implements IWSServer {
             list = new ArrayList(1);
             list.add(obj);
         }
-        queryResponse.setResponse(list);
+        queryResponse.setResponses(list);
         logQuery(OK);
 
         return createJsonResponse(queryResponse);
@@ -433,10 +401,12 @@ public class GenericRestWSServer implements IWSServer {
         return buildResponse(Response.ok(str));
     }
 
-    protected Response createJsonResponse(QueryResponse queryResponse) {
+    protected Response createJsonResponse(CellBaseDataResponse queryResponse) {
         try {
-            return buildResponse(Response.ok(jsonObjectWriter.writeValueAsString(queryResponse),
-                    MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8")));
+            System.out.println("queryResponse.getResponses().get(0).toString() = " + queryResponse.getResponses().get(0).toString());
+            String value = jsonObjectWriter.writeValueAsString(queryResponse);
+            ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
+            return buildResponse(ok);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             logger.error("Error parsing queryResponse object");
@@ -453,6 +423,21 @@ public class GenericRestWSServer implements IWSServer {
                 .build();
     }
 
+    protected List<Query> createQueries(String csvField, String queryKey, String... args) {
+        String[] ids = csvField.split(",");
+        List<Query> queries = new ArrayList<>(ids.length);
+        for (String id : ids) {
+            Query q = new Query(query);
+            q.put(queryKey, id);
+            if (args != null && args.length > 0 && args.length % 2 == 0) {
+                for (int i = 0; i < args.length; i += 2) {
+                    q.put(args[i], args[i + 1]);
+                }
+            }
+            queries.add(q);
+        }
+        return queries;
+    }
 
     /*
      * TO DELETE
@@ -478,31 +463,5 @@ public class GenericRestWSServer implements IWSServer {
             }
         }
         return false;
-    }
-
-//    protected List<Query> createQueries(String csvField, String queryKey) {
-//        String[] ids = csvField.split(",");
-//        List<Query> queries = new ArrayList<>(ids.length);
-//        for (String s : ids) {
-//            queries.add(new Query(queryKey, s));
-//        }
-//        return queries;
-//    }
-
-    protected List<Query> createQueries(String csvField, String queryKey, String... args) {
-        String[] ids = csvField.split(",");
-        List<Query> queries = new ArrayList<>(ids.length);
-        for (String id : ids) {
-//            q = new Query(queryKey, id);
-            Query q = new Query(query);
-            q.put(queryKey, id);
-            if (args != null && args.length > 0 && args.length % 2 == 0) {
-                for (int i = 0; i < args.length; i += 2) {
-                    q.put(args[i], args[i + 1]);
-                }
-            }
-            queries.add(q);
-        }
-        return queries;
     }
 }

@@ -25,11 +25,12 @@ import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.HealthStatus;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -128,10 +129,10 @@ public class MetaWSServer extends GenericRestWSServer {
 
     private Response getAllSpecies() {
         try {
-            QueryResult queryResult = new QueryResult();
+            CellBaseDataResult queryResult = new CellBaseDataResult();
             queryResult.setId("species");
-            queryResult.setDbTime(0);
-            queryResult.setResult(Arrays.asList(cellBaseConfiguration.getSpecies()));
+            queryResult.setTime(0);
+            queryResult.setResults(Arrays.asList(cellBaseConfiguration.getSpecies()));
             return createOkResponse(queryResult);
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,10 +151,10 @@ public class MetaWSServer extends GenericRestWSServer {
         info.put("Git branch: ", GitRepositoryState.get().getBranch());
         info.put("Git commit: ", GitRepositoryState.get().getCommitId());
         info.put("Description: ", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
-        QueryResult queryResult = new QueryResult();
+        CellBaseDataResult queryResult = new CellBaseDataResult();
         queryResult.setId("about");
-        queryResult.setDbTime(0);
-        queryResult.setResult(Collections.singletonList(info));
+        queryResult.setTime(0);
+        queryResult.setResults(Collections.singletonList(info));
 
         return createOkResponse(queryResult);
     }
@@ -163,10 +164,10 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Checks if the app is alive. Returns pong.",
             response = String.class, responseContainer = "QueryResponse")
     public Response ping() {
-        QueryResult queryResult = new QueryResult();
+        CellBaseDataResult queryResult = new CellBaseDataResult();
         queryResult.setId(PONG);
-        queryResult.setDbTime(0);
-        queryResult.setResult(Collections.emptyList());
+        queryResult.setTime(0);
+        queryResult.setResults(Collections.emptyList());
 
         return createOkResponse(queryResult);
     }
@@ -183,12 +184,12 @@ public class MetaWSServer extends GenericRestWSServer {
                                                + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
                                        required = true) String species) {
         HealthStatus health = monitor.run(species, this.assembly);
-        QueryResult<HealthStatus> queryResult = new QueryResult();
+        CellBaseDataResult<HealthStatus> queryResult = new CellBaseDataResult();
         queryResult.setId(STATUS);
-        queryResult.setDbTime(0);
+        queryResult.setTime(0);
         queryResult.setNumTotalResults(1);
         queryResult.setNumResults(1);
-        queryResult.setResult(Collections.singletonList(health));
+        queryResult.setResults(Collections.singletonList(health));
 
         return createOkResponse(queryResult);
 
