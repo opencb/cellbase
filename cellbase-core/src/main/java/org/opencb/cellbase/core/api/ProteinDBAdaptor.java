@@ -21,7 +21,7 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
@@ -65,10 +65,10 @@ public interface ProteinDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         }
     }
 
-    QueryResult<Score> getSubstitutionScores(Query query, QueryOptions options);
+    CellBaseDataResult<Score> getSubstitutionScores(Query query, QueryOptions options);
 
     // TODO: to think about moving this method to annotation or to change the params
-    QueryResult<ProteinVariantAnnotation> getVariantAnnotation(String enstranscriptId, int position, String aaReference,
+    CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String enstranscriptId, int position, String aaReference,
                                                                String aaAlternate, QueryOptions options);
 
 }

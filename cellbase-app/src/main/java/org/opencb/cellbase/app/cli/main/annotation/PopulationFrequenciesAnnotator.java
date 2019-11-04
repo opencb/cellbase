@@ -26,7 +26,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -82,21 +82,21 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
      */
     public void run(List<Variant> variantList) {
 
-        List<QueryResult<Variant>> variantQueryResult = new ArrayList<>(variantList.size());
+        List<CellBaseDataResult<Variant>> variantCellBaseDataResult = new ArrayList<>(variantList.size());
         for (Variant variant: variantList) {
-            variantQueryResult.add(getPopulationFrequencies(variant));
+            variantCellBaseDataResult.add(getPopulationFrequencies(variant));
         }
 
         if (queryOptions.get(IGNORE_PHASE) != null && !queryOptions.getBoolean(IGNORE_PHASE)) {
-            variantQueryResult = phasedQueryManager.run(variantList, variantQueryResult);
+            variantCellBaseDataResult = phasedQueryManager.run(variantList, variantCellBaseDataResult);
         }
 
         for (int i = 0; i < variantList.size(); i++) {
-            if (!variantQueryResult.get(i).getResult().isEmpty()) {
+            if (!variantCellBaseDataResult.get(i).getResults().isEmpty()) {
                 // Assuming if it gets to this point the variant has VariantAnnotation
                 // Only one variant  can be returned per query to RocksDB
                 List<PopulationFrequency> populationFrequencies
-                        = variantQueryResult.get(i).getResult().get(0).getAnnotation().getPopulationFrequencies();
+                        = variantCellBaseDataResult.get(i).getResults().get(0).getAnnotation().getPopulationFrequencies();
                 // Update only if there are annotations for this variant
                 if (populationFrequencies != null && populationFrequencies.size() > 0) {
                     VariantAnnotation variantAnnotation = variantList.get(i).getAnnotation();
@@ -114,9 +114,9 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
         }
     }
 
-    private QueryResult<Variant> getPopulationFrequencies(Variant variant) {
-        QueryResult<Variant> populationFrequencyQueryResult = new QueryResult<>();
-        populationFrequencyQueryResult.setId(variant.toString());
+    private CellBaseDataResult<Variant> getPopulationFrequencies(Variant variant) {
+        CellBaseDataResult<Variant> populationFrequencyCellBaseDataResult = new CellBaseDataResult<>();
+        populationFrequencyCellBaseDataResult.setId(variant.toString());
         long start = System.currentTimeMillis();
         try {
             byte[] variantKey = variant.toString().getBytes();
@@ -125,18 +125,18 @@ public class PopulationFrequenciesAnnotator implements VariantAnnotator {
                 Variant variant1 = mapper.readValue(dbContent, Variant.class);
                 flagVisitedVariant(variantKey, variant1);
 
-                populationFrequencyQueryResult.setResult(Collections.singletonList(variant1));
-                populationFrequencyQueryResult.setNumTotalResults(1);
-                populationFrequencyQueryResult.setNumResults(1);
+                populationFrequencyCellBaseDataResult.setResults(Collections.singletonList(variant1));
+                populationFrequencyCellBaseDataResult.setNumTotalResults(1);
+                populationFrequencyCellBaseDataResult.setNumResults(1);
             }
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();
         }
 
         long end = System.currentTimeMillis();
-        populationFrequencyQueryResult.setDbTime((int) (end - start));
+        populationFrequencyCellBaseDataResult.setTime((int) (end - start));
 
-        return populationFrequencyQueryResult;
+        return populationFrequencyCellBaseDataResult;
     }
 
     private void flagVisitedVariant(byte[] key, Variant variant) {

@@ -25,7 +25,7 @@ import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.variant.CustomAnnotationPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
@@ -77,21 +77,21 @@ public class VcfVariantAnnotator implements VariantAnnotator {
      */
     public void run(List<Variant> variantList) {
 
-        List<QueryResult<Variant>> variantQueryResult = new ArrayList<>(variantList.size());
+        List<CellBaseDataResult<Variant>> variantCellBaseDataResult = new ArrayList<>(variantList.size());
         for (Variant variant: variantList) {
-            variantQueryResult.add(getCustomAnnotation(variant));
+            variantCellBaseDataResult.add(getCustomAnnotation(variant));
         }
 
         if (queryOptions.get(IGNORE_PHASE) != null && !queryOptions.getBoolean(IGNORE_PHASE)) {
-            variantQueryResult = phasedQueryManager.run(variantList, variantQueryResult);
+            variantCellBaseDataResult = phasedQueryManager.run(variantList, variantCellBaseDataResult);
         }
 
         for (int i = 0; i < variantList.size(); i++) {
-            if (!variantQueryResult.get(i).getResult().isEmpty()) {
+            if (!variantCellBaseDataResult.get(i).getResults().isEmpty()) {
                 // Assuming if it gets to this point the variant has VariantAnnotation
                 // Only one variant  can be returned per query to RocksDB
                 Map<String, AdditionalAttribute> customAnnotation
-                        = parseCustomAnnotation(variantQueryResult.get(i).getResult().get(0));
+                        = parseCustomAnnotation(variantCellBaseDataResult.get(i).getResults().get(0));
                 // Update only if there are annotations for this variant. customAnnotation may be empty if the variant
                 // exists in the vcf but the info field does not contain any of the required attributes
                 if (customAnnotation != null && !customAnnotation.isEmpty()) {
@@ -133,9 +133,9 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         return null;
     }
 
-    private QueryResult<Variant> getCustomAnnotation(Variant variant) {
-        QueryResult<Variant> customAnnotationQueryResult = new QueryResult<>();
-        customAnnotationQueryResult.setId(variant.toString());
+    private CellBaseDataResult<Variant> getCustomAnnotation(Variant variant) {
+        CellBaseDataResult<Variant> customAnnotationCellBaseDataResult = new CellBaseDataResult<>();
+        customAnnotationCellBaseDataResult.setId(variant.toString());
         long start = System.currentTimeMillis();
         try {
             byte[] variantKey = variant.toString().getBytes();
@@ -143,18 +143,18 @@ public class VcfVariantAnnotator implements VariantAnnotator {
             if (dbContent != null) {
                 Variant variant1 = mapper.readValue(dbContent, Variant.class);
 
-                customAnnotationQueryResult.setResult(Collections.singletonList(variant1));
-                customAnnotationQueryResult.setNumTotalResults(1);
-                customAnnotationQueryResult.setNumResults(1);
+                customAnnotationCellBaseDataResult.setResults(Collections.singletonList(variant1));
+                customAnnotationCellBaseDataResult.setNumTotalResults(1);
+                customAnnotationCellBaseDataResult.setNumResults(1);
             }
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();
         }
 
         long end = System.currentTimeMillis();
-        customAnnotationQueryResult.setDbTime((int) (end - start));
+        customAnnotationCellBaseDataResult.setTime((int) (end - start));
 
-        return customAnnotationQueryResult;
+        return customAnnotationCellBaseDataResult;
     }
 
     public boolean close() {

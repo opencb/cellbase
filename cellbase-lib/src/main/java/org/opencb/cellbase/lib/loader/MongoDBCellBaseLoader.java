@@ -40,7 +40,7 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -741,7 +741,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         if (batch.size() > 0) {
             try {
                 // TODO: queryOptions?
-                QueryResult<BulkWriteResult> result = mongoDBCollection.insert(batch, new QueryOptions());
+                CellBaseDataResult<BulkWriteResult> result = new CellBaseDataResult<>(mongoDBCollection.insert(batch, new QueryOptions()));
                 return result.first().getInsertedCount();
             } catch (BsonSerializationException e) {
                 // End recursive calls

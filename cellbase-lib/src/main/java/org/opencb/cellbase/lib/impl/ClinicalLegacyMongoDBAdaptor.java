@@ -26,7 +26,7 @@ import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
@@ -47,69 +47,69 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
     }
 
     @Override
-    public QueryResult<ClinicalVariant> next(Query query, QueryOptions options) {
+    public CellBaseDataResult<ClinicalVariant> next(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeNext(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
-    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
     }
 
     @Override
-    public QueryResult stats(Query query) {
+    public CellBaseDataResult stats(Query query) {
         return null;
     }
 
     @Override
-    public QueryResult<ClinicalVariant> get(Query query, QueryOptions options) {
+    public CellBaseDataResult<ClinicalVariant> get(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options);
-        return mongoDBCollection.find(bson, parsedOptions);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
     }
 
     @Override
@@ -308,52 +308,52 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
         }
     }
 
-    public List<QueryResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
+    public List<CellBaseDataResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
 
         Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
                 ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
-        List<QueryResult> queryResultList = new ArrayList<>();
+        List<CellBaseDataResult> cellBaseDataResultList = new ArrayList<>();
         if (sourceContent == null || sourceContent.contains("clinvar")) {
-            queryResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
+            cellBaseDataResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
 
         }
         if (sourceContent == null || sourceContent.contains("gwas")) {
-            queryResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
+            cellBaseDataResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
         }
 
-        return queryResultList;
+        return cellBaseDataResultList;
     }
 
     @Override
-    public QueryResult<String> getAlleleOriginLabels() {
+    public CellBaseDataResult<String> getAlleleOriginLabels() {
         return null;
     }
 
     @Override
-    public QueryResult<String> getModeInheritanceLabels() {
+    public CellBaseDataResult<String> getModeInheritanceLabels() {
         return null;
     }
 
     @Override
-    public QueryResult<String> getClinsigLabels() {
+    public CellBaseDataResult<String> getClinsigLabels() {
         return null;
     }
 
     @Override
-    public QueryResult<String> getConsistencyLabels() {
+    public CellBaseDataResult<String> getConsistencyLabels() {
         return null;
     }
 
     @Override
-    public QueryResult<String> getVariantTypes() {
+    public CellBaseDataResult<String> getVariantTypes() {
         return null;
     }
 
 //    @Override
-//    public List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
+//    public List<CellBaseDataResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options) {
 //        List<Document> queries = new ArrayList<>();
 //        List<String> ids = new ArrayList<>(variantList.size());
-//        List<QueryResult> queryResultList;
+//        List<CellBaseDataResult> CellBaseDataResultList;
 //        for (Variant genomicVariant : variantList) {
 //            QueryBuilder builder = QueryBuilder.start("chromosome").is(genomicVariant.getChromosome()).
 //                    and("start").is(genomicVariant.getStart()).and("alternate").is(genomicVariant.getAlternate());
@@ -365,10 +365,10 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
 //            ids.add(genomicVariant.toString());
 //        }
 //
-//        queryResultList = executeQueryList2(ids, queries, options);
+//        CellBaseDataResultList = executeQueryList2(ids, queries, options);
 //
-//        for (QueryResult queryResult : queryResultList) {
-//            List<Document> clinicalList = (List<Document>) queryResult.getResult();
+//        for (CellBaseDataResult CellBaseDataResult : CellBaseDataResultList) {
+//            List<Document> clinicalList = (List<Document>) CellBaseDataResult.getResults();
 //
 //            List<Cosmic> cosmicList = new ArrayList<>();
 //            List<Gwas> gwasList = new ArrayList<>();
@@ -408,18 +408,18 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
 //                    && variantTraitAssociation.getClinvar().isEmpty())) {
 //
 //                // FIXME quick solution to compile
-//                // queryResult.setResult(clinicalData);
-//                queryResult.setResult(Collections.singletonList(variantTraitAssociation));
-//                queryResult.setNumResults(variantTraitAssociation.getCosmic().size()
+//                // CellBaseDataResult.setResults(clinicalData);
+//                CellBaseDataResult.setResults(Collections.singletonList(variantTraitAssociation));
+//                CellBaseDataResult.setNumResults(variantTraitAssociation.getCosmic().size()
 //                        + variantTraitAssociation.getGwas().size()
 //                        + variantTraitAssociation.getClinvar().size());
 //            } else {
-//                queryResult.setResult(null);
-//                queryResult.setNumResults(0);
+//                CellBaseDataResult.setResults(null);
+//                CellBaseDataResult.setNumResults(0);
 //            }
 //        }
 //
-//        return queryResultList;
+//        return CellBaseDataResultList;
 //    }
 
     private boolean isClinvar(Document clinical) {
@@ -520,7 +520,7 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
         return new ClinVar(acc, clinicalSignificanceName, traitNames, geneNameList, reviewStatus);
     }
 
-    private QueryResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
+    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
 
         List<Bson> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
@@ -547,7 +547,7 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
 
     }
 
-    private QueryResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
+    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
 
         List<Bson> pipeline = new ArrayList<>();
         // Select only GWAS documents

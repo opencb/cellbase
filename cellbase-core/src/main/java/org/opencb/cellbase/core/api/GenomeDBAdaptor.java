@@ -20,10 +20,10 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.variant.avro.Cytoband;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.core.QueryResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,51 +66,48 @@ public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
         }
     }
 
-    QueryResult getGenomeInfo(QueryOptions queryOptions);
+    CellBaseDataResult getGenomeInfo(QueryOptions queryOptions);
 
-    QueryResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions);
-
-    @Deprecated
-    QueryResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions);
+    CellBaseDataResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions);
 
     @Deprecated
-    default List<QueryResult<GenomeSequenceFeature>> getGenomicSequence(List<Query> queries, QueryOptions queryOptions) {
-        List<QueryResult<GenomeSequenceFeature>> queryResults = new ArrayList<>(queries.size());
-        queryResults.addAll(queries.stream().map(query -> getGenomicSequence(query, queryOptions)).collect(Collectors.toList()));
-        return queryResults;
+    CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions);
+
+    @Deprecated
+    default List<CellBaseDataResult<GenomeSequenceFeature>> getGenomicSequence(List<Query> queries, QueryOptions queryOptions) {
+        List<CellBaseDataResult<GenomeSequenceFeature>> cellBaseDataResults = new ArrayList<>(queries.size());
+        cellBaseDataResults.addAll(queries.stream().map(query -> getGenomicSequence(query, queryOptions)).collect(Collectors.toList()));
+        return cellBaseDataResults;
     }
 
 
-    QueryResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions);
+    CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions);
 
-    default List<QueryResult<GenomeSequenceFeature>> getSequence(List<Region> regions, QueryOptions queryOptions) {
-        List<QueryResult<GenomeSequenceFeature>> queryResults = new ArrayList<>(regions.size());
-        queryResults.addAll(regions.stream().map(region -> getSequence(region, queryOptions)).collect(Collectors.toList()));
-        return queryResults;
+    default List<CellBaseDataResult<GenomeSequenceFeature>> getSequence(List<Region> regions, QueryOptions queryOptions) {
+        List<CellBaseDataResult<GenomeSequenceFeature>> cellBaseDataResults = new ArrayList<>(regions.size());
+        cellBaseDataResults.addAll(regions.stream().map(region -> getSequence(region, queryOptions)).collect(Collectors.toList()));
+        return cellBaseDataResults;
     }
 
-
-//    default QueryResult<ConservationScoreRegion> getConservation(Region region, QueryOptions queryOptions) {
-    default QueryResult<GenomicScoreRegion<Float>> getConservation(Region region, QueryOptions queryOptions) {
+    default CellBaseDataResult<GenomicScoreRegion<Float>> getConservation(Region region, QueryOptions queryOptions) {
         return getConservation(Collections.singletonList(region), queryOptions).get(0);
     }
 
-//    List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regions, QueryOptions queryOptions);
-    List<QueryResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regions, QueryOptions queryOptions);
+    List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regions, QueryOptions queryOptions);
 
-    default List<QueryResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions) {
-        List<QueryResult<Cytoband>> queryResultList = new ArrayList<>(regionList.size());
+    default List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions) {
+        List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = new ArrayList<>(regionList.size());
         for (Region region : regionList) {
-            queryResultList.add(getCytobands(region, queryOptions));
+            cellBaseDataResultList.add(getCytobands(region, queryOptions));
         }
-        return queryResultList;
+        return cellBaseDataResultList;
     }
 
     @Deprecated
-    default List<QueryResult<Cytoband>> getCytobands(List<Region> regionList) {
+    default List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList) {
         return getCytobands(regionList, null);
     }
 
-    QueryResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions);
+    CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions);
 
 }

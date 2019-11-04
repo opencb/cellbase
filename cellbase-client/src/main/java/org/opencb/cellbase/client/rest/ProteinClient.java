@@ -18,8 +18,9 @@ package org.opencb.cellbase.client.rest;
 
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -39,11 +40,11 @@ public class ProteinClient extends FeatureClient<Entry> {
     }
 
 
-    public QueryResponse<List> getSubstitutionScores(String id, QueryOptions options) throws IOException {
+    public CellBaseDataResponse<List> getSubstitutionScores(String id, QueryOptions options) throws IOException {
         return execute(id, "substitution_scores", options, List.class);
     }
 
-    public QueryResponse<String> getSequence(String id, QueryOptions options) throws IOException {
+    public CellBaseDataResponse<String> getSequence(String id, QueryOptions options) throws IOException {
         return execute(id, "sequence", options, String.class);
     }
 }
