@@ -88,7 +88,22 @@ public class DownloadFile {
         return message;
     }
 
-    public void setMessage(String message) {
+    public DownloadFile setMessage(String message) {
         this.message = message;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "DownloadFile{"
+                + "startTime='" + startTime + '\''
+                + ", elapsedTime='" + elapsedTime + '\''
+                + ", status=" + status
+                + ", message='" + message + '\''
+                + ", expectedFileSize=" + expectedFileSize
+                + ", actualFileSize=" + actualFileSize
+                + ", outputFile='" + outputFile + '\''
+                + ", url='" + url + '\''
+                + '}';
     }
 }

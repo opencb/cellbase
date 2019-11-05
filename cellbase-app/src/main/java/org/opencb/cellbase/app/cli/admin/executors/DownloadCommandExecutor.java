@@ -19,7 +19,6 @@ package org.opencb.cellbase.app.cli.admin.executors;
 import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.config.Species;
 import org.opencb.cellbase.lib.download.DownloadManager;
@@ -91,13 +90,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
             }
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
-        } catch (IOException | InterruptedException | CellbaseException e) {
+        } catch (IOException | InterruptedException e) {
             logger.error("Error downloading '" + downloadCommandOptions.species + "' files: " + e.getMessage());
         }
 
     }
 
-    private void processSpecies(Species sp) throws IOException, InterruptedException, CellbaseException {
+    private void processSpecies(Species sp) throws IOException, InterruptedException {
         logger.info("Processing species " + sp.getScientificName());
 
         // We need to find which is the correct Ensembl host URL.
