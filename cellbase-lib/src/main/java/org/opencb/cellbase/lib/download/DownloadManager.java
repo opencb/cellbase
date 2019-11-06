@@ -39,7 +39,9 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -1001,17 +1003,17 @@ public class DownloadManager {
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
         Long startTime = System.currentTimeMillis();
-        // holder object, written to JSON for log file
-        DownloadFile downloadFile = new DownloadFile(url, outputFileName,  getTimeStamp());
+        LocalDateTime now = LocalDateTime.now();
+        DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(now).toString());
         final String outputLog = outputFileName + ".log";
         List<String> wgetArgs = new ArrayList<>(Arrays.asList("-N --tries=10", url, "-O", outputFileName, "-o", outputLog));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }
         boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
-        setDownloadStatusAndMessage(url, outputFileName, downloadFile, outputLog, downloaded);
-        downloadFile.setElapsedTime(startTime, System.currentTimeMillis());
-        downloadFiles.add(downloadFile);
+        setDownloadStatusAndMessage(url, outputFileName, downloadFileInfo, outputLog, downloaded);
+        downloadFileInfo.setElapsedTime(startTime, System.currentTimeMillis());
+        downloadFiles.add(downloadFileInfo);
     }
 
     private void setDownloadStatusAndMessage(String url, String outputFileName, DownloadFile downloadFile,
