@@ -73,7 +73,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence
-                = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence();
+                = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());

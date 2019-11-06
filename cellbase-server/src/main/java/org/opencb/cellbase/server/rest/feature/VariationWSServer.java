@@ -21,13 +21,14 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -55,7 +56,7 @@ public class VariationWSServer extends GenericRestWSServer {
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                    + "of potentially available species ids, please refer to: "
-                                   + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                                   + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -109,13 +110,7 @@ public class VariationWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response count() {
-//    public Response count(@DefaultValue("")
-//                          @QueryParam("region")
-//                          @ApiParam(name = "region",
-//                                  value = "Comma separated list of genomic regions to be queried, "
-//                                          + "e.g.: 1:6635137-6635325", required = true) String region) {
         VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//        query.append(VariantDBAdaptor.QueryParams.REGION.key(), region);
         return createOkResponse(variationDBAdaptor.count(query));
     }
 
@@ -132,7 +127,7 @@ public class VariationWSServer extends GenericRestWSServer {
     @Path("/{id}/info")
     @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) SNPs", notes = "An independent"
             + " database query will be issued for each region in id, meaning that results for each region will be"
-            + " returned in independent QueryResult objects within the QueryResponse object.",
+            + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
             response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
@@ -164,7 +159,7 @@ public class VariationWSServer extends GenericRestWSServer {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
-            List<QueryResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
             }
@@ -222,7 +217,7 @@ public class VariationWSServer extends GenericRestWSServer {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
-            QueryResult queryResult = variationDBAdaptor.next(query, queryOptions);
+            CellBaseDataResult queryResult = variationDBAdaptor.next(query, queryOptions);
             queryResult.setId(id);
             return createOkResponse(queryResult);
         } catch (Exception e) {
@@ -237,16 +232,12 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getAllConsequenceTypes() {
         try {
             parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//            query.put(VariantDBAdaptor.QueryParams.REGION.key(), "22:1-50000000");
-//            return createOkResponse(variationDBAdaptor.distinct(query, "displayConsequenceType"));
-
             List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
                     .sorted()
                     .collect(Collectors.toList());
-            QueryResult<String> queryResult = new QueryResult<>("consequence_types");
+            CellBaseDataResult<String> queryResult = new CellBaseDataResult<>("consequence_types");
             queryResult.setNumResults(consequenceTypes.size());
-            queryResult.setResult(consequenceTypes);
+            queryResult.setResults(consequenceTypes);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -276,10 +267,10 @@ public class VariationWSServer extends GenericRestWSServer {
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
             queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
-            QueryResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
-            QueryResult queryResult1 = new QueryResult(queryResult.getId(), queryResult.getDbTime(), queryResult.getNumResults(),
-                    queryResult.getNumTotalResults(), queryResult.getWarningMsg(), queryResult.getErrorMsg(),
-                    Collections.singletonList(queryResult.getResult().get(0).getAnnotation().getDisplayConsequenceType()));
+            CellBaseDataResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
+            CellBaseDataResult queryResult1 = new CellBaseDataResult<>(
+                    queryResult.getId(), queryResult.getTime(), queryResult.getEvents(), queryResult.getNumResults(),
+                    Collections.singletonList(queryResult.getResults().get(0).getAnnotation().getDisplayConsequenceType()), 1);
             return createOkResponse(queryResult1);
         } catch (Exception e) {
             return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
@@ -330,7 +321,6 @@ public class VariationWSServer extends GenericRestWSServer {
     public Response getPopulationFrequency(@PathParam("snpId") String snpId) {
         try {
             parseQueryParams();
-//            SnpDBAdaptor snpDBAdaptor = dbAdaptorFactory.getSnpDBAdaptor(species, version);
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", Arrays.asList(""));
         } catch (Exception e) {

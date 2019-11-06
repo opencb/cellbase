@@ -52,7 +52,7 @@ import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.ParallelTaskRunner;
@@ -212,7 +212,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
                             new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
-                    List<QueryResult<VariantAnnotation>> annotationByVariantList =
+                    List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
                     ObjectMapper jsonObjectMapper = new ObjectMapper();
@@ -223,8 +223,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     Path outPath = Paths.get(variantAnnotationCommandOptions.output);
                     FileUtils.checkDirectory(outPath.getParent());
                     BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(outPath);
-                    for (QueryResult queryResult : annotationByVariantList) {
-                        bufferedWriter.write(objectWriter.writeValueAsString(queryResult.getResult()));
+                    for (CellBaseDataResult cellBaseDataResult : annotationByVariantList) {
+                        bufferedWriter.write(objectWriter.writeValueAsString(cellBaseDataResult.getResults()));
                         bufferedWriter.newLine();
                     }
                     bufferedWriter.close();
@@ -363,9 +363,10 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             logger.info("Getting full list of chromosome names in the database");
             dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-            QueryResult queryResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
+            CellBaseDataResult cellBaseDataResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
 
-            List<Document> chromosomeDocumentList = (List<Document>) ((List<Document>) queryResult.getResult()).get(0).get("chromosomes");
+            List<Document> chromosomeDocumentList = (List<Document>) ((List<Document>) cellBaseDataResult
+                    .getResults()).get(0).get("chromosomes");
             chromosomeList = new ArrayList<>(chromosomeDocumentList.size());
             for (Document chromosomeDocument : chromosomeDocumentList) {
                 chromosomeList.add((String) chromosomeDocument.get("name"));

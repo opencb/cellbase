@@ -21,16 +21,16 @@ import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -63,13 +63,12 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     @Override
-    public QueryResult getGenomeInfo(QueryOptions queryOptions) {
-        return genomeInfoMongoDBCollection.find(new Document(), queryOptions);
-//        return genomeInfoMongoDBCollection.find(new Document(), new QueryOptions());
+    public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {
+        return new CellBaseDataResult<>(genomeInfoMongoDBCollection.find(new Document(), queryOptions));
     }
 
     @Override
-    public QueryResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions) {
+    public CellBaseDataResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions) {
         if (queryOptions == null) {
             queryOptions = new QueryOptions("include", Collections.singletonList("chromosomes.$"));
         } else {
@@ -80,8 +79,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     @Override
-    public QueryResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions) {
-
+    public CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions) {
         List<Cytoband> cytobandList = new ArrayList<>();
         long dbStartTime = System.currentTimeMillis();
         long dbTime = System.currentTimeMillis() - dbStartTime;
@@ -101,10 +99,8 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                 i++;
             }
         }
-        QueryResult queryResult = new QueryResult(region.toString(), (int) dbTime, cytobandList.size(),
-                cytobandList.size(), null, null, cytobandList);
-
-        return queryResult;
+        return new CellBaseDataResult<>(region.toString(), (int) dbTime, Collections.emptyList(), cytobandList.size(), cytobandList,
+                cytobandList.size());
 
     }
 
@@ -122,9 +118,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     private Document getGenomeInfoVariable() {
         if (genomeInfo == null) {
-            QueryResult<Document> queryResult = genomeInfoMongoDBCollection.find(new Document(), null);
-            if (queryResult.getNumResults() > 0) {
-                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResult().get(0);
+            CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult<>(
+                    genomeInfoMongoDBCollection.find(new Document(), null));
+            if (cellBaseDataResult.getNumResults() > 0) {
+                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResults().get(0);
                 for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
                     ((List<Document>) chromosomeDocument.get(CYTOBANDS))
                             .sort((c1, c2) -> Integer.compare((int) c1.get(START), (int) c2.get(START)));
@@ -136,54 +133,21 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
 
     @Deprecated
     @Override
-    public QueryResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions) {
-//        QueryResult<Document> queryResult = nativeGet(query, queryOptions);
-//        List<Document> queryResultList = queryResult.getResult();
-//
-//        QueryResult<GenomeSequenceFeature> result = new QueryResult<>();
-//
-//        if (queryResultList != null && !queryResultList.isEmpty()) {
-//            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
-//
-//            StringBuilder stringBuilder = new StringBuilder();
-//            for (Document document : queryResult.getResult()) {
-//                stringBuilder.append(document.getString("sequence"));
-//            }
-//            int startIndex = region.getStart() % MongoDBCollectionConfiguration.GENOME_SEQUENCE_CHUNK_SIZE;
-//            int length = region.getEnd() - region.getStart() + 1;
-//            String sequence = stringBuilder.toString().substring(startIndex, startIndex + length);
-//
-//            String strand = "1";
-//            String queryStrand= (query.getString("strand") != null) ? query.getString("strand") : "1";
-//            if (queryStrand.equals("-1") || queryStrand.equals("-")) {
-//                sequence = DNASequenceUtils.reverseComplement(sequence);
-//                strand = "-1";
-//            }
-//
-//            String sequenceType = queryResult.getResult().get(0).getString("sequenceType");
-//            String assembly = queryResult.getResult().get(0).getString("assembly");
-//
-//            result.setResult(Collections.singletonList(new GenomeSequenceFeature(
-//              region.getChromosome(), region.getStart(), region.getEnd(), Integer.parseInt(strand), sequenceType, assembly, sequence)
-//            ));
-//        }
-
+    public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions) {
         return getSequence(Region.parseRegion(query.getString(QueryParams.REGION.key())), queryOptions);
     }
 
     @Override
-    public QueryResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions) {
+    public CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions) {
         Query query = new Query(QueryParams.REGION.key(), region.toString());
-        QueryResult<Document> queryResult = nativeGet(query, queryOptions);
-        List<Document> queryResultList = queryResult.getResult();
+        CellBaseDataResult<Document> cellBaseDataResult = nativeGet(query, queryOptions);
+        List<Document> cellBaseDataResultList = cellBaseDataResult.getResults();
 
-        QueryResult<GenomeSequenceFeature> result = new QueryResult<>(region.toString());
+        CellBaseDataResult<GenomeSequenceFeature> result = new CellBaseDataResult(region.toString());
 
-        if (queryResultList != null && !queryResultList.isEmpty()) {
-//            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
-
+        if (cellBaseDataResultList != null && !cellBaseDataResultList.isEmpty()) {
             StringBuilder stringBuilder = new StringBuilder();
-            for (Document document : queryResult.getResult()) {
+            for (Document document : cellBaseDataResult.getResults()) {
                 stringBuilder.append(document.getString("sequence"));
             }
 
@@ -207,10 +171,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                 strand = "-1";
             }
 
-            String sequenceType = queryResult.getResult().get(0).getString("sequenceType");
-            String assembly = queryResult.getResult().get(0).getString("assembly");
+            String sequenceType = cellBaseDataResult.getResults().get(0).getString("sequenceType");
+            String assembly = cellBaseDataResult.getResults().get(0).getString("assembly");
 
-            result.setResult(Collections.singletonList(new GenomeSequenceFeature(
+            result.setResults(Collections.singletonList(new GenomeSequenceFeature(
                     region.getChromosome(), region.getStart(), region.getEnd(), Integer.parseInt(strand), sequenceType, assembly, sequence)
             ));
         }
@@ -219,8 +183,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     @Override
-//    public List<QueryResult<ConservationScoreRegion>> getConservation(List<Region> regionList, QueryOptions options) {
-    public List<QueryResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regionList, QueryOptions options) {
+    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(List<Region> regionList, QueryOptions options) {
         //TODO not finished yet
         List<Document> queries = new ArrayList<>();
         List<String> ids = new ArrayList<>(regionList.size());
@@ -250,33 +213,21 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                         .is(getChunkIdPrefix(region.getChromosome(), region.getStart(),
                                 MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
             } else {
-//                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
-////                    integerChunkIds.add(chunkId);
-//                    integerChunkIds.add(region.getChromosomeInfo() + "_" + chunkId + "_" + this.chunkSize/1000 + "k");
-//                }
-//                builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(integerChunkIds);
                 builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
                         .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
             }
-//            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(hunkIds);
-            /****/
-
             queries.add(new Document(builder.get().toMap()));
             ids.add(region.toString());
         }
 
-        List<QueryResult> queryResults = executeQueryList2(ids, queries, options, conservationMongoDBCollection);
-//        List<QueryResult<ConservationScoreRegion>> conservationQueryResults = new ArrayList<>();
-        List<QueryResult<GenomicScoreRegion<Float>>> conservationQueryResults = new ArrayList<>();
+        List<CellBaseDataResult> cellBaseDataResults = executeQueryList2(ids, queries, options, conservationMongoDBCollection);
+        List<CellBaseDataResult<GenomicScoreRegion<Float>>> conservationCellBaseDataResults = new ArrayList<>();
 
         for (int i = 0; i < regions.size(); i++) {
             Region region = regions.get(i);
-            QueryResult queryResult = queryResults.get(i);
-//            QueryResult<ConservationScoreRegion> conservationQueryResult = new QueryResult<>();
-            QueryResult<GenomicScoreRegion<Float>> conservationQueryResult = new QueryResult<>();
-
-//            BasicDBList list = (BasicDBList) queryResult.getResult();
-            List list = queryResult.getResult();
+            CellBaseDataResult cellBaseDataResult = cellBaseDataResults.get(i);
+            CellBaseDataResult<GenomicScoreRegion<Float>> conservationCellBaseDataResult = new CellBaseDataResult<>();
+            List list = cellBaseDataResult.getResults();
 
             Map<String, List<Float>> typeMap = new HashMap<>();
             for (int j = 0; j < list.size(); j++) {
@@ -293,7 +244,6 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                     valuesList = typeMap.get(source);
                 }
 
-//                BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
                 ArrayList valuesChunk = chunk.get("values", ArrayList.class);
 
                 int pos = 0;
@@ -305,59 +255,52 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
                     valuesList.set(pos + chunk.getInteger("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
                 }
             }
-
-//            BasicDBList resultList = new BasicDBList();
-//            List<ConservationScoreRegion> resultList = new ArrayList<>();
             List<GenomicScoreRegion<Float>> resultList = new ArrayList<>();
-//            ConservationScoreRegion conservedRegionChunk;
             GenomicScoreRegion<Float> conservedRegionChunk;
             for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
-//                conservedRegionChunk = new ConservationScoreRegion(region.getChromosome(), region.getStart(), region.getEnd(),
-//                        elem.getKey(), elem.getValue());
                 conservedRegionChunk = new GenomicScoreRegion<>(region.getChromosome(), region.getStart(), region.getEnd(),
                         elem.getKey(), elem.getValue());
                 resultList.add(conservedRegionChunk);
             }
-//            queryResult.setResult(resultList);
-            conservationQueryResult.setResult(resultList);
-            conservationQueryResults.add(conservationQueryResult);
+            conservationCellBaseDataResult.setResults(resultList);
+            conservationCellBaseDataResults.add(conservationCellBaseDataResult);
         }
 
-        return conservationQueryResults;
+        return conservationCellBaseDataResults;
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
     }
 
     @Override
-    public QueryResult stats(Query query) {
+    public CellBaseDataResult stats(Query query) {
         return null;
     }
 
     @Override
-    public QueryResult get(Query query, QueryOptions options) {
+    public CellBaseDataResult get(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return mongoDBCollection.find(bson, options);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
 
     @Override
@@ -372,17 +315,17 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     }
 
     @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, List fields, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
         return null;
     }
 

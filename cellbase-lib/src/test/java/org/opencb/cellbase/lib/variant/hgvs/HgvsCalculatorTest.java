@@ -238,7 +238,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                         + "transcripts.cdnaCodingEnd,transcripts.exons.start,"
                         + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
                         + "transcripts.exons.cdsStart,transcripts.exons.cdsEnd,"
-                        + "transcripts.exons.end")).getResult();
+                        + "transcripts.exons.end")).getResults();
 
         return hgvsCalculator.run(variant, geneList);
     }

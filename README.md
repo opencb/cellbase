@@ -1,3 +1,10 @@
+[![Actions Status](https://github.com/opencb/cellbase/workflows/Java%20Unit%20tests/badge.svg?branch=next)](https://github.com/opencb/cellbase/actions)
+[![Maven Central](https://img.shields.io/maven-central/v/org.opencb.cellbase/cellbase)](https://search.maven.org/search?q=cellbase)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/bioconductor-cellbaser/README.html)
+[![Documentation](https://img.shields.io/badge/Documentation-wiki-blue)](http://docs.opencb.org/display/cellbase)
+[![pubmed](http://img.shields.io/badge/pubmed-22693220-blue.svg?style=flat)](https://www.ncbi.nlm.nih.gov/pubmed/22693220)
+
 # Overview
 CellBase is a scalable and high-performance NoSQL database that integrates relevant biological information from well-known data sources such as Ensembl, Uniprot, IntAct or ClinVar among others. All this data can be queried through a comprehensive RESTful web services API or using the command line interface. Also, a built-in variant annotator has been developed and can be used to annotate files containing variants in Variant Call Format (VCF).
 
@@ -138,5 +145,4 @@ At this moment the only fully developed storage engine plugin is [MongoDB](https
 # Supporters
 JetBrains is supporting this open source project with:
 
-[![Intellij IDEA](https://www.jetbrains.com/idea/docs/logo_intellij_idea.png)]
-(http://www.jetbrains.com/idea/)
+[![Intellij IDEA](https://www.jetbrains.com/idea/docs/logo_intellij_idea.png)](http://www.jetbrains.com/idea/)

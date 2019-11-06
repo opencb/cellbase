@@ -217,7 +217,7 @@ sub createCoreTables {
 
 			## MICROARRYAYS
 			if(defined $pba) {
-				my @probesets = @{$pba->fetch_all_by_external_name($trans->stable_id)};
+				my @probesets = @{$pba->fetch_all_by_transcript_stable_id($trans->stable_id)};
 				foreach my $probeset (@probesets){
 
 	#              my $arrays_string = join(', ', (map $_->name, @{$probeset->get_all_Arrays}));

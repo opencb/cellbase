@@ -16,8 +16,9 @@
 
 package org.opencb.cellbase.server.rest;
 
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.server.RestServer;
-import org.opencb.commons.datastore.core.QueryResponse;
+
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -70,7 +71,7 @@ public class AdminRestWebService {
     }
 
     protected Response createOkResponse(Object obj) {
-        QueryResponse queryResponse = new QueryResponse();
+        CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(0).intValue());
         queryResponse.setApiVersion(apiVersion);
 //        queryResponse.setQueryOptions(queryOptions);
@@ -83,7 +84,7 @@ public class AdminRestWebService {
             coll = new ArrayList();
             coll.add(obj);
         }
-        queryResponse.setResponse(coll);
+        queryResponse.setResponses(coll);
 
         // FIXME
 //        try {
