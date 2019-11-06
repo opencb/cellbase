@@ -39,11 +39,8 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -1004,14 +1001,21 @@ public class DownloadManager {
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
         Long startTime = System.currentTimeMillis();
-        LocalDateTime now = LocalDateTime.now();
-        DownloadFile downloadFile = new DownloadFile(url, outputFileName,  Timestamp.valueOf(now).toString());
+        // holder object, written to JSON for log file
+        DownloadFile downloadFile = new DownloadFile(url, outputFileName,  getTimeStamp());
         final String outputLog = outputFileName + ".log";
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("-N --tries=10", url, "-O", outputFileName, "-o", outputLog));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }
         boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
+        setDownloadStatusAndMessage(url, outputFileName, downloadFile, outputLog, downloaded);
+        downloadFile.setElapsedTime(startTime, System.currentTimeMillis());
+        downloadFiles.add(downloadFile);
+    }
+
+    private void setDownloadStatusAndMessage(String url, String outputFileName, DownloadFile downloadFile,
+                                             String outputLog, boolean downloaded) throws IOException {
         if (downloaded) {
             boolean validFileSize = validateDownloadFile(downloadFile, url, outputFileName, outputLog);
             if (validFileSize) {
@@ -1025,11 +1029,9 @@ public class DownloadManager {
         } else {
             downloadFile.setMessage("See full error message in " + outputLog);
             downloadFile.setStatus(DownloadFile.Status.ERROR);
+            // because we use the -O flag, a file will be written, even on error. See #467
+            Files.deleteIfExists((new File(outputFileName)).toPath());
         }
-        Long endTime = System.currentTimeMillis();
-        Long elapsedTime = endTime - startTime;
-        downloadFile.setElapsedTime(TimeUnit.MILLISECONDS.toSeconds(elapsedTime) + " seconds");
-        downloadFiles.add(downloadFile);
     }
 
     public void writeDownloadLogFile() throws IOException {
