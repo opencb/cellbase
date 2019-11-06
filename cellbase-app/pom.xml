@@ -64,7 +64,6 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
-
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -129,6 +128,7 @@
                                     <arg value="${build.dir}"/>
                                     <arg value="${build.dir}/test"/>
                                     <arg value="${build.dir}/conf"/>
+                                    <arg value="${build.dir}/conf/indexes"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}</echo>
@@ -136,7 +136,6 @@
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/app/bin"/>
                                     <arg value="${project.basedir}/app/example"/>
-                                    <arg value="${project.basedir}/app/mongodb-scripts"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../README.md"/>
@@ -151,6 +150,13 @@
                                     <arg value="${project.basedir}/../cellbase-core/target/classes/configuration.yml"/>
                                     <arg value="${project.basedir}/../cellbase-client/target/classes/client-configuration.yml"/>
                                     <arg value="${build.dir}/conf"/>
+                                </exec>
+
+                                <echo>Copying to ${build.dir}/conf/indexes</echo>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../cellbase-app/target/classes/mongodb-indexes.json"/>
+                                    <arg value="${build.dir}/conf/indexes"/>
                                 </exec>
 
                                 <echo>Coping war file</echo>
@@ -194,15 +200,11 @@
                     <include>CliOptionsParser.java</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
         </resources>
     </build>
 
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>intact.nexus</id>-->
-            <!--<name>IntAct Nexus</name>-->
-            <!--<url>http://www.ebi.ac.uk/intact/maven/nexus/content/groups/public</url>-->
-        <!--</repository>-->
-    <!--</repositories>-->
 
 </project>
