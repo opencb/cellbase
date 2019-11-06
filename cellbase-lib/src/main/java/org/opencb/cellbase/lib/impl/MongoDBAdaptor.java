@@ -28,6 +28,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,20 +169,6 @@ public class MongoDBAdaptor {
         Bson start = Filters.lte("start", region.getEnd());
         Bson end = Filters.gte("end", region.getStart());
         return Filters.and(chunk, start, end);
-
-//        // We only use chunks if region queried belongs to a single chunk
-//        if (startChunkId == endChunkId) {
-//            logger.info("Querying by chunkId, {}, {}", startChunkId, endChunkId);
-//            Bson chunk = Filters.eq("_chunkIds", getChunkIdPrefix(region.getChromosomeInfo(), region.getStart(), chunkSize));
-//            Bson start = Filters.lte("start", region.getEnd());
-//            Bson end = Filters.gte("end", region.getStart());
-//            return Filters.and(chunk, start, end);
-//        } else {
-//            Bson chromosome = Filters.eq("chromosome", region.getChromosomeInfo());
-//            Bson start = Filters.lte("start", region.getEnd());
-//            Bson end = Filters.gte("end", region.getStart());
-//            return Filters.and(chromosome, start, end);
-//        }
     }
 
     protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
@@ -270,8 +257,6 @@ public class MongoDBAdaptor {
             }
         }
     }
-
-
 
     public CellBaseDataResult getIntervalFrequencies(Bson query, Region region, int intervalSize, QueryOptions options) {
         int interval = 50000;
