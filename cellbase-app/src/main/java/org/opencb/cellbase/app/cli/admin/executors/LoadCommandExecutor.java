@@ -334,10 +334,10 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (!createIndexes) {
             return;
         }
-        try (InputStream resourceAsStream = getClass().getResourceAsStream("/mongodb-indexes.json")){
+        try (InputStream resourceAsStream = getClass().getResourceAsStream("/mongodb-indexes.json")) {
             MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
             MongoDataStore mongoDataStore = factory.createMongoDBDatastore(database);
-            MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream,collectionName, true);
+            MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, true);
         } catch (IOException e) {
             logger.error("Can't open index configuration file:" + e.toString());
         }
