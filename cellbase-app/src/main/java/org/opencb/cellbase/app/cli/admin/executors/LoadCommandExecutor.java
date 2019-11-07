@@ -21,11 +21,15 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
+import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
+import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
+import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -49,6 +53,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private String[] innerFields;
     private String loader;
     private int numThreads;
+    private boolean createIndexes;
 
     public LoadCommandExecutor(AdminCliOptionsParser.LoadCommandOptions loadCommandOptions) {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.verbose,
@@ -71,6 +76,9 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (loadCommandOptions.loader != null) {
             loader = loadCommandOptions.loader;
         }
+        if (loadCommandOptions.index) {
+            createIndexes = true;
+        }
     }
 
 
@@ -82,18 +90,11 @@ public class LoadCommandExecutor extends CommandExecutor {
         checkParameters();
 
         if (loadCommandOptions.data != null) {
-
-            if (loadCommandOptions.loaderParams.containsKey("mongodb-index-folder")) {
-                configuration.getDatabases().getMongodb().getOptions().put("mongodb-index-folder",
-                        loadCommandOptions.loaderParams.get("mongodb-index-folder"));
-            }
             // If 'authenticationDatabase' is not passed by argument then we read it from configuration.json
             if (loadCommandOptions.loaderParams.containsKey("authenticationDatabase")) {
                 configuration.getDatabases().getMongodb().getOptions().put("authenticationDatabase",
                         loadCommandOptions.loaderParams.get("authenticationDatabase"));
             }
-
-//                loadRunner = new LoadRunner(loader, database, loadCommandOptions.loaderParams, numThreads, configuration);
             loadRunner = new LoadRunner(loader, database, numThreads, configuration);
 
             String[] loadOptions;
@@ -115,7 +116,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve("genome_info.json"), "genome_info");
                             loadIfExists(input.resolve("genome_sequence.json.gz"), "genome_sequence");
                             loadIfExists(input.resolve("genomeVersion.json"), METADATA);
-                            loadRunner.index("genome_sequence");
+                            createIndex("genome_sequence");
                             break;
                         case EtlCommons.GENE_DATA:
                             loadIfExists(input.resolve("gene.json.gz"), "gene");
@@ -126,7 +127,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve("hpoVersion.json"), METADATA);
                             loadIfExists(input.resolve("disgenetVersion.json"), METADATA);
                             loadIfExists(input.resolve("gnomadVersion.json"), METADATA);
-                            loadRunner.index("gene");
+                            createIndex("gene");
                             break;
                         case EtlCommons.VARIATION_DATA:
                             loadVariationData();
@@ -134,7 +135,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             loadIfExists(input.resolve("cadd.json.gz"), "cadd");
                             loadIfExists(input.resolve("caddVersion.json"), METADATA);
-                            loadRunner.index("variation_functional_score");
+                            createIndex("variation_functional_score");
                             break;
                         case EtlCommons.CONSERVATION_DATA:
                             loadConservation();
@@ -145,18 +146,18 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadIfExists(input.resolve("mirbaseVersion.json"), METADATA);
                             loadIfExists(input.resolve("targetScanVersion.json"), METADATA);
                             loadIfExists(input.resolve("miRTarBaseVersion.json"), METADATA);
-                            loadRunner.index("regulatory_region");
+                            createIndex("regulatory_region");
                             break;
                         case EtlCommons.PROTEIN_DATA:
                             loadIfExists(input.resolve("protein.json.gz"), "protein");
                             loadIfExists(input.resolve("uniprotVersion.json"), METADATA);
                             loadIfExists(input.resolve("interproVersion.json"), METADATA);
-                            loadRunner.index("protein");
+                            createIndex("protein");
                             break;
                         case EtlCommons.PPI_DATA:
                             loadIfExists(input.resolve("protein_protein_interaction.json.gz"), "protein_protein_interaction");
                             loadIfExists(input.resolve("intactVersion.json"), METADATA);
-                            loadRunner.index("protein_protein_interaction");
+                            createIndex("protein_protein_interaction");
                             break;
                         case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA:
                             loadProteinFunctionalPrediction();
@@ -182,8 +183,7 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void loadStructuralVariants() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
-            LoaderException, InvocationTargetException, ClassNotFoundException {
+    private void loadStructuralVariants() {
         Path path = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_JSON + ".json.gz");
         if (Files.exists(path)) {
             try {
@@ -195,8 +195,6 @@ public class LoadCommandExecutor extends CommandExecutor {
                 logger.error(e.toString());
             }
         }
-        // Assuming variation collection is already indexed
-//        loadRunner.index("variation");
     }
 
     private void loadIfExists(Path path, String collection) throws NoSuchMethodException, InterruptedException,
@@ -240,7 +238,6 @@ public class LoadCommandExecutor extends CommandExecutor {
         }
     }
 
-
     private void loadVariationData() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
             IOException, LoaderException {
@@ -256,7 +253,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                 loadRunner.load(input.resolve(entry.getFileName()), "variation");
             }
             loadIfExists(input.resolve("ensemblVariationVersion.json"), METADATA);
-            loadRunner.index("variation");
+            createIndex("variation");
             // Custom update required e.g. population freqs loading
         } else {
             logger.info("Loading file '{}'", input.toString());
@@ -266,7 +263,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
     private void loadConservation() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException, LoaderException {
+            IOException {
 
         DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
             return entry.getFileName().toString().startsWith("conservation_");
@@ -279,12 +276,11 @@ public class LoadCommandExecutor extends CommandExecutor {
         loadIfExists(input.resolve("gerpVersion.json"), METADATA);
         loadIfExists(input.resolve("phastConsVersion.json"), METADATA);
         loadIfExists(input.resolve("phyloPVersion.json"), METADATA);
-        loadRunner.index("conservation");
     }
 
     private void loadProteinFunctionalPrediction() throws NoSuchMethodException, InterruptedException, ExecutionException,
             InstantiationException, IllegalAccessException, InvocationTargetException, ClassNotFoundException,
-            IOException, LoaderException {
+            IOException {
 
         DirectoryStream<Path> stream = Files.newDirectoryStream(input, entry -> {
             return entry.getFileName().toString().startsWith("prot_func_pred_");
@@ -294,20 +290,9 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "protein_functional_prediction");
         }
-        loadRunner.index("protein_functional_prediction");
     }
 
-    private void loadClinical() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
-            LoaderException, InvocationTargetException, ClassNotFoundException, FileNotFoundException {
-
-//        Map<String, String> files = new LinkedHashMap<>();
-//        files.put("clinvar", "clinvar.json.gz");
-//        files.put("cosmic", "cosmic.json.gz");
-//        files.put("gwas", "gwas.json.gz");
-//        files.put("gwas", "gwas.json.gz");
-
-//        files.keySet().forEach(entry -> {
-//            Path path = input.resolve(files.get(entry));
+    private void loadClinical() throws FileNotFoundException {
         Path path = input.resolve(EtlCommons.CLINICAL_VARIANTS_ANNOTATED_JSON_FILE);
         if (Files.exists(path)) {
             try {
@@ -323,14 +308,9 @@ public class LoadCommandExecutor extends CommandExecutor {
         } else {
             throw new FileNotFoundException("File " + path.toString() + " does not exist");
         }
-//        });
-        loadRunner.index("clinical_variants");
-//        loadRunner.index("clinical");
     }
 
-    private void loadRepeats() throws NoSuchMethodException, IllegalAccessException, InstantiationException,
-            LoaderException, InvocationTargetException, ClassNotFoundException {
-
+    private void loadRepeats() {
         Path path = input.resolve(EtlCommons.REPEATS_JSON + ".json.gz");
         if (Files.exists(path)) {
             try {
@@ -343,32 +323,23 @@ public class LoadCommandExecutor extends CommandExecutor {
                     | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
                 logger.error(e.toString());
             }
-            loadRunner.index(EtlCommons.REPEATS_DATA);
+            createIndex(EtlCommons.REPEATS_DATA);
         } else {
             logger.warn("Repeats file {} not found", path.toString());
             logger.warn("No repeats data will be loaded");
         }
-//        Map<String, String> files = new LinkedHashMap<>();
-//        files.put("simpleRepeat", "simpleRepeat.json.gz");
-//        files.put("genomicSuperDup", "genomicSuperDup.json.gz");
-//        files.put("windowMasker", "windowMasker.json.gz");
-//
-//        files.keySet().forEach(entry -> {
-//            Path path = input.resolve(files.get(entry));
-//            if (Files.exists(path)) {
-//                try {
-//                    logger.debug("Loading '{}' ...", entry);
-//                    loadRunner.load(path, entry);
-//                    loadIfExists(input.resolve(EtlCommons.TRF_VERSION_FILE), "metadata");
-//                    loadIfExists(input.resolve(EtlCommons.GSD_VERSION_FILE), "metadata");
-//                    loadIfExists(input.resolve(EtlCommons.WM_VERSION_FILE), "metadata");
-//                } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException
-//                        | IllegalAccessException | ExecutionException | IOException | InterruptedException e) {
-//                    logger.error(e.toString());
-//                }
-//            }
-//        });
-
     }
 
+    private void createIndex(String collectionName) {
+        if (!createIndexes) {
+            return;
+        }
+        try (InputStream resourceAsStream = getClass().getResourceAsStream("/mongodb-indexes.json")){
+            MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
+            MongoDataStore mongoDataStore = factory.createMongoDBDatastore(database);
+            MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream,collectionName, true);
+        } catch (IOException e) {
+            logger.error("Can't open index configuration file:" + e.toString());
+        }
+    }
 }

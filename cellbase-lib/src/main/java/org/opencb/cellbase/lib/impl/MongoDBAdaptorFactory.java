@@ -60,7 +60,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
      */
     private MongoDataStoreManager mongoDataStoreManager;
     private static Map<String, MongoDataStoreManager> memberDataStoreManagerMap = new HashMap<>();
-//    private static Map<String, MongoDataStore> mongoDatastoreFactory;
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
         super(cellBaseConfiguration);
@@ -70,7 +69,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     private void init() {
         if (mongoDataStoreManager == null) {
-//            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
             String[] hosts = cellBaseConfiguration.getDatabases().getMongodb().getHost().split(",");
             List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
             for (String host : hosts) {
@@ -84,11 +82,9 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
             logger.debug("MongoDBAdaptorFactory constructor, this should be only be printed once");
         }
-
-//        logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    private MongoDataStore createMongoDBDatastore(String species, String assembly) {
+    public MongoDataStore createMongoDBDatastore(String species, String assembly) {
         /**
          Database name has the following pattern in lower case and with no '.' in the name:
          cellbase_speciesId_assembly_cellbaseVersion
@@ -131,7 +127,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
-    private MongoDataStore createMongoDBDatastore(String database) {
+    public MongoDataStore createMongoDBDatastore(String database) {
         DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
         MongoDBConfiguration mongoDBConfiguration;
         MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
@@ -167,9 +163,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
                 mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
         logger.debug("*************************************************************************************");
-//                } else {
-//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
-//                }
 
         // A MongoDataStore to this host and database is returned
         MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
@@ -317,7 +310,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     public GeneDBAdaptor getGeneDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
-//        geneMongoDBAdaptor.setClinicalDBAdaptor(getClinicalLegacyDBAdaptor(species, assembly));
         return geneMongoDBAdaptor;
     }
 
@@ -368,30 +360,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
-//        return getVariantAnnotationDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new VariantAnnotationCalculator(species, assembly, mongoDatastore, this);
-//    }
-
-
-//    @Override
-//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
-//        return getVariantFunctionalScoreDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-
 
     @Override
     public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species) {

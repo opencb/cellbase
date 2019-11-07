@@ -1,5 +1,5 @@
 {"collection": "clinical_variants", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "clinical_variants", "ields": {"type": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"type": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.source.name": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.consequenceTypes.sequenceOntologyTerms.name": 1}, "options": {"background": true}}
@@ -29,7 +29,7 @@
 
 {"collection": "gene", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"name": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"biotype":: 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"biotype": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"chromosome": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.id": 1}, "options": {"background": true}}
@@ -41,7 +41,6 @@
 {"collection": "gene", "fields": {"transcripts.xrefs.dbDisplayName": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
-
 
 {"collection": "mutation", "fields": {"chunkIds": 1}, "options": {"background": true}}
 {"collection": "mutation", "fields": {"id": 1}, "options": {"background": true}}
@@ -88,7 +87,6 @@
 {"collection": "protein_protein_interaction", "fields": {"xrefs.dbName": 1}, "options": {"background": true}}
 {"collection": "protein_protein_interaction", "fields": {"source.psimi": 1}, "options": {"background": true}}
 {"collection": "protein_protein_interaction", "fields": {"source.name": 1}, "options": {"background": true}}
-
 
 {"collection": "regulatory_region", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}

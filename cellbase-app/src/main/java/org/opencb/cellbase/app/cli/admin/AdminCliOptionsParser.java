@@ -35,6 +35,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private LoadCommandOptions loadCommandOptions;
     private ServerCommandOptions serverCommandOptions;
     private PostLoadCommandOptions postLoadCommandOptions;
+    private IndexCommandOptions indexCommandOptions;
 
     public AdminCliOptionsParser() {
         jCommander.setProgramName("cellbase-admin.sh");
@@ -43,12 +44,14 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
+        indexCommandOptions = new IndexCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
         postLoadCommandOptions = new PostLoadCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
+        jCommander.addCommand("index", indexCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
         jCommander.addCommand("post-load", postLoadCommandOptions);
     }
@@ -125,13 +128,11 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     }
 
-
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
     public class LoadCommandOptions {
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
-
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
                 + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
@@ -163,9 +164,33 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", required = false, arity = 1)
         public int numThreads = 2;
 
+        @Parameter(names = {"--index"}, description = "After loading, add index to the database", required = false, arity = 0)
+        public boolean index;
+
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
         public Map<String, String> loaderParams = new HashMap<>();
 
+    }
+
+    @Parameters(commandNames = {"indexes"}, commandDescription = "Create indexes in mongodb")
+    public class IndexCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-d", "--data"}, description = "Data model type to be indexed: genome, gene, variation, "
+                + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
+                + "clinical_variants, repeats, svs. 'all' indexes everything", required = true, arity = 1)
+        public String data;
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
+        public String species = "Homo sapiens";
+
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        public String assembly = null;
+
+        @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", required = false, arity = 0)
+        public boolean dropIndexesFirst;
     }
 
     @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")
@@ -225,6 +250,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     public LoadCommandOptions getLoadCommandOptions() {
         return loadCommandOptions;
+    }
+
+    public IndexCommandOptions getIndexCommandOptions() {
+        return indexCommandOptions;
     }
 
     public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }

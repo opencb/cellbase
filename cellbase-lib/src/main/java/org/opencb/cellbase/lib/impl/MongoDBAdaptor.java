@@ -28,12 +28,10 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -64,12 +62,6 @@ public class MongoDBAdaptor {
         objectMapper = new ObjectMapper();
 
         initSpeciesAssembly(species, assembly);
-//        jsonObjectMapper = new ObjectMapper();
-    }
-
-    public void createIndexes() {
-        InputStream resourceAsStream = getClass().getResourceAsStream("/cellbase-indexes.txt");
-        MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream);
     }
 
     private void initSpeciesAssembly(String species, String assembly) {
