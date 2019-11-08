@@ -1,0 +1,121 @@
+{"collection": "clinical_variants", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"type": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.source.name": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"annotation.consequenceTypes.sequenceOntologyTerms.name": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"_featureXrefs": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.id": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"annotation.id": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.consistencyStatus": 1}, {sparse: true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.variantClassification.clinicalSignificance": 1}, {sparse: true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.heritableTraits.inheritanceMode": 1}, {sparse: true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.alleleOrigin": 1}, {sparse: true})
+{"collection": "clinical_variants", "fields": {"_traits": 1}, "options": {"background": true}}
+
+{"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "conservation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+
+{"collection": "drugbank", "fields": {"type": 1}, "options": {"background": true}}
+{"collection": "drugbank", "fields": {"action": 1}, "options": {"background": true}}
+{"collection": "drugbank", "fields": {"drug.xrefs.id": 1}, "options": {"background": true}}
+{"collection": "drugbank", "fields": {"drug.type": 1}, "options": {"background": true}}
+{"collection": "drugbank", "fields": {"drug.group": 1}, "options": {"background": true}}
+{"collection": "drugbank", "fields": {"drug.category": 1}, "options": {"background": true}}
+{"collection": "drugbank", "fields": {"partner.xrefs.id": 1}, "options": {"background": true}}
+{"collection": "drugbank", "fields": {"partner.essentiality": 1}, "options": {"background": true}}
+
+{"collection": "genome_sequence", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "genome_sequence", "fields": {"sequenceType": 1}, "options": {"background": true}}
+
+{"collection": "gene", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"biotype": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"chromosome": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.name": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.chromosome": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.xrefs.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.xrefs.dbName": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.xrefs.dbDisplayName": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
+
+{"collection": "mutation", "fields": {"chunkIds": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"protein": 1, "proteinStart": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"gene": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"transcriptId": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"sampleName": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"primarySite": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"siteSubtype": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"primaryHistology": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"histologySubtype": 1}, "options": {"background": true}}
+{"collection": "mutation", "fields": {"description": 1}, "options": {"background": true}}
+
+{"collection": "protein", "fields": {"accession": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"protein.recommendedName.fullName.value": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"gene.name.value": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"dbReference.id": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"dbReference.type": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"keyword.id": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"keyword.value": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"feature.id": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"feature.type": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"feature.location.position.position": 1}, "options": {"background": true}}
+{"collection": "protein", "fields": {"sequence.checksum": 1}, "options": {"background": true}}
+
+{"collection": "protein_functional_prediction", "fields": {"checksum": 1}, "options": {"background": true}}
+{"collection": "protein_functional_prediction", "fields": {"uniprotId": 1}, "options": {"background": true}}
+{"collection": "protein_functional_prediction", "fields": {"transcriptId": 1}, "options": {"background": true}}
+
+{"collection": "protein_protein_interaction", "fields": {"interactorA.id": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"interactorA.dbName": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"interactorA.xrefs.id": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"interactorB.id": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"interactorB.dbName": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"interactorB.xrefs.id": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"type.psimi": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"type.name": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"detectionMethod.psimi": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"detectionMethod.name": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"status": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"xrefs.id": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"xrefs.dbName": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"source.psimi": 1}, "options": {"background": true}}
+{"collection": "protein_protein_interaction", "fields": {"source.name": 1}, "options": {"background": true}}
+
+{"collection": "regulatory_region", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "regulatory_region", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "regulatory_region", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "regulatory_region", "fields": {"featureType": 1}, "options": {"background": true}}
+{"collection": "regulatory_region", "fields": {"featureClass": 1}, "options": {"background": true}}
+
+{"collection": "repeats", "fields": {"_chunkIds": 1, "start": 1, "end": 1}, "options": {"background": true}}
+
+{"collection": "variation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "variation", "fields": {"chromosome": 1, "start": 1, "end":1}, "options": {"background": true}}
+{"collection": "variation", "fields": {"chromosome": 1, "sv.ciStartLeft": 1, "sv.ciStartRight": 1, "sv.ciEndLeft": 1, "sv.ciEndRight": 1, "type": 1, "sv.type": 1}, {name: "imprecise", sparse: true})
+{"collection": "variation", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "variation", "fields": {"annotation.displayConsequenceType": 1}, "options": {"background": true}}
+{"collection": "variation", "fields": {"annotation.consequenceTypes.geneName": 1}, "options": {"background": true}}
+{"collection": "variation", "fields": {"annotation.consequenceTypes.ensemblGeneId": 1}, "options": {"background": true}}
+{"collection": "variation", "fields": {"annotation.consequenceTypes.ensemblTranscriptId": 1}, "options": {"background": true}}
+{"collection": "variation", "fields": {"annotation.consequenceTypes.sequenceOntologyTerms.name": 1}, "options": {"background": true}}
+
+{"collection": "variation_functional_score", "fields": {"_chunkIds": 1}, "options": {"background": true}}
+{"collection": "variation_functional_score", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "variation_functional_score", "fields": {"source": 1}, "options": {"background": true}}
+
+{"collection": "variation_phenotype", "fields": {"phenotype": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype", "fields": {"associatedGenes": 1}, "options": {"background": true}}
+
+{"collection": "variation_phenotype_annotation", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation", "fields": {"chunkIds": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation, "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation, "fields": {"phenotype": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation, "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation, "fields": {"associatedGenes": 1}, "options": {"background": true}}
