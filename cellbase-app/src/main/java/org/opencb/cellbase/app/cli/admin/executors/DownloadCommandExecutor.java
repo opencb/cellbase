@@ -20,7 +20,7 @@ import com.beust.jcommander.ParameterException;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.lib.download.DownloadManager;
 import org.opencb.cellbase.lib.download.EnsemblInfo;
 
@@ -42,7 +42,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     private String ensemblVersion;
     private String ensemblRelease;
 
-    private Species species;
+    private SpeciesConfiguration speciesConfiguration;
 
 
     public DownloadCommandExecutor(AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
@@ -70,18 +70,18 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 // We need to get the Species object from the CLI name
                 // This can be the scientific or common name, or the ID
                 //            Species speciesToDownload = null;
-                for (Species sp : configuration.getAllSpecies()) {
+                for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
                     if (downloadCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
                             || downloadCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
                             || downloadCommandOptions.species.equalsIgnoreCase(sp.getId())) {
-                        species = sp;
+                        speciesConfiguration = sp;
                         break;
                     }
                 }
 
                 // If everything is right we launch the download
-                if (species != null) {
-                    processSpecies(species);
+                if (speciesConfiguration != null) {
+                    processSpecies(speciesConfiguration);
                 } else {
                     logger.error("Species '{}' not valid", downloadCommandOptions.species);
                 }
@@ -96,7 +96,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
     }
 
-    private void processSpecies(Species sp) throws IOException, InterruptedException {
+    private void processSpecies(SpeciesConfiguration sp) throws IOException, InterruptedException {
         logger.info("Processing species " + sp.getScientificName());
 
         // We need to find which is the correct Ensembl host URL.
@@ -110,11 +110,11 @@ public class DownloadCommandExecutor extends CommandExecutor {
 
         // Getting the assembly.
         // By default the first assembly in the configuration.json
-        Species.Assembly assembly = null;
+        SpeciesConfiguration.Assembly assembly = null;
         if (downloadCommandOptions.assembly == null || downloadCommandOptions.assembly.isEmpty()) {
             assembly = sp.getAssemblies().get(0);
         } else {
-            for (Species.Assembly assembly1 : sp.getAssemblies()) {
+            for (SpeciesConfiguration.Assembly assembly1 : sp.getAssemblies()) {
                 if (downloadCommandOptions.assembly.equalsIgnoreCase(assembly1.getName())) {
                     assembly = assembly1;
                     break;

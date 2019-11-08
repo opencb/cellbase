@@ -186,9 +186,6 @@
                     <include>CliOptionsParser.java</include>
                 </includes>
             </resource>
-            <resource>
-                <directory>../cellbase-lib/src/main/resources</directory>
-            </resource>
         </resources>
     </build>
 

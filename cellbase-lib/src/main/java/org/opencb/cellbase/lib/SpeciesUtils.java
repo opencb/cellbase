@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class SpeciesUtils {
     public static Species getSpecies(CellBaseConfiguration configuration, String userProvidedSpecies,
                                      String userProvidedAssembly) throws CellbaseException {
         Species species = null;
-        for (org.opencb.cellbase.core.config.Species sp : configuration.getAllSpecies()) {
+        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
             if (userProvidedSpecies.equalsIgnoreCase(sp.getScientificName())
                     || userProvidedSpecies.equalsIgnoreCase(sp.getCommonName())
                     || userProvidedSpecies.equalsIgnoreCase(sp.getId())) {
@@ -62,8 +63,8 @@ public class SpeciesUtils {
         return species;
     }
 
-    private static String checkAssembly(org.opencb.cellbase.core.config.Species species, String assemblyString) {
-        for (org.opencb.cellbase.core.config.Species.Assembly assembly : species.getAssemblies()) {
+    private static String checkAssembly(SpeciesConfiguration speciesConfiguration, String assemblyString) {
+        for (SpeciesConfiguration.Assembly assembly : speciesConfiguration.getAssemblies()) {
             if (assembly.getName().equalsIgnoreCase(assemblyString)) {
                 return assemblyString;
             }
@@ -71,10 +72,10 @@ public class SpeciesUtils {
         return null;
     }
 
-    private static String getDefaultAssembly(org.opencb.cellbase.core.config.Species species) throws CellbaseException {
-        List<org.opencb.cellbase.core.config.Species.Assembly> assemblies = species.getAssemblies();
+    private static String getDefaultAssembly(SpeciesConfiguration speciesConfiguration) throws CellbaseException {
+        List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
         if (assemblies == null || assemblies.isEmpty()) {
-            throw new CellbaseException("Species has no associated assembly " + species.getScientificName());
+            throw new CellbaseException("Species has no associated assembly " + speciesConfiguration.getScientificName());
         }
         return assemblies.get(0).getName();
     }

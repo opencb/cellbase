@@ -24,7 +24,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -115,7 +115,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          **/
 
         // We need to look for the species object in the configuration
-        Species speciesObject = getSpecies(species);
+        SpeciesConfiguration speciesObject = getSpecies(species);
         if (speciesObject != null) {
             species = speciesObject.getId();
             String cellbaseAssembly = getAssembly(speciesObject, assembly);
@@ -149,8 +149,11 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     protected String getDatabaseName(String species, String cellbaseAssembly) {
-        return "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
-                            .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
+        String cleanAssembly = cellbaseAssembly
+                .replaceAll("\\.", "")
+                .replaceAll("-", "")
+                .replaceAll("_", "");
+        return "cellbase" + "_" + species + "_" + cleanAssembly + "_" + cellBaseConfiguration.getVersion();
     }
 
     private MongoDataStore createMongoDBDatastore(String database) {

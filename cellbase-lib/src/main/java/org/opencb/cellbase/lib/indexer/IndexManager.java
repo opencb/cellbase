@@ -42,16 +42,13 @@ public class IndexManager {
      * @throws CellbaseException if indexes file isn't found, or invalid input
      */
     public static void createMongoDBIndexes(CellBaseConfiguration configuration, String data, String speciesName,
-                                            String assemblyName, boolean dropIndexesFirst)
-            throws CellbaseException, IOException {
+                                            String assemblyName, boolean dropIndexesFirst) throws CellbaseException, IOException {
         Species species = SpeciesUtils.getSpecies(configuration, speciesName, assemblyName);
         if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
-            createMongoDBIndexes(configuration, new String[0], species.getScientific(), species.getAssembly(),
-                dropIndexesFirst);
+            createMongoDBIndexes(configuration, new String[0], species.getScientific(), species.getAssembly(), dropIndexesFirst);
         } else {
             String[] indexes = data.split(",");
-            createMongoDBIndexes(configuration, indexes, species.getScientific(), species.getAssembly(),
-                dropIndexesFirst);
+            createMongoDBIndexes(configuration, indexes, species.getScientific(), species.getAssembly(), dropIndexesFirst);
         }
     }
 
@@ -68,8 +65,7 @@ public class IndexManager {
      * @throws CellbaseException if indexes file isn't found
      */
     public static void createMongoDBIndexes(CellBaseConfiguration configuration, String collectionName,
-                                             String databaseName, boolean dropIndexesFirst)
-            throws IOException, CellbaseException {
+                                            String databaseName, boolean dropIndexesFirst) throws IOException, CellbaseException {
         InputStream resourceAsStream = IndexManager.class.getResourceAsStream("/mongodb-indexes.json");
         if (resourceAsStream == null) {
             throw new CellbaseException("Index file mongodb-indexes.json not found");
@@ -83,8 +79,7 @@ public class IndexManager {
     }
 
     private static void createMongoDBIndexes(CellBaseConfiguration configuration, String[] indexes, String species,
-                                             String assembly, boolean dropIndexesFirst)
-            throws IOException, CellbaseException {
+                                             String assembly, boolean dropIndexesFirst) throws IOException, CellbaseException {
         InputStream resourceAsStream = IndexManager.class.getResourceAsStream("/mongodb-indexes.json");
         if (resourceAsStream == null) {
             throw new CellbaseException("Index file mongodb-indexes.json not found");
