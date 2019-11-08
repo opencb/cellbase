@@ -29,10 +29,6 @@
             <artifactId>cellbase-lib</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opencb.commons</groupId>
-            <artifactId>commons-datastore-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
@@ -126,7 +122,6 @@
                                     <arg value="${build.dir}"/>
                                     <arg value="${build.dir}/test"/>
                                     <arg value="${build.dir}/conf"/>
-                                    <arg value="${build.dir}/conf/indexes"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}</echo>
@@ -192,7 +187,7 @@
                 </includes>
             </resource>
             <resource>
-                <directory>src/main/resources</directory>
+                <directory>../cellbase-lib/src/main/resources</directory>
             </resource>
         </resources>
     </build>

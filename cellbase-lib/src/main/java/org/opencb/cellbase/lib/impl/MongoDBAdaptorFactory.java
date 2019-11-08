@@ -84,7 +84,29 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
-    public MongoDataStore createMongoDBDatastore(String species, String assembly) {
+    /**
+     * Get database based on species, assembly and version. Returns NULL if no database exists.
+     *
+     * @param species Species name
+     * @param assembly Assembly version
+     * @return the datastore associated with given species and assembly
+     */
+    public MongoDataStore getMongoDBDatastore(String species, String assembly) {
+        String databaseName = getDatabaseName(species, assembly);
+        return mongoDataStoreManager.get(databaseName);
+    }
+
+    /**
+     * Get database based on database name. Returns NULL if no database exists.
+     *
+     * @param databaseName name of database
+     * @return the datastore of the given name
+     */
+    public MongoDataStore getMongoDBDatastore(String databaseName) {
+        return mongoDataStoreManager.get(databaseName);
+    }
+
+    private MongoDataStore createMongoDBDatastore(String species, String assembly) {
         /**
          Database name has the following pattern in lower case and with no '.' in the name:
          cellbase_speciesId_assembly_cellbaseVersion
@@ -101,8 +123,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             if (species != null && !species.isEmpty() && cellbaseAssembly != null && !cellbaseAssembly.isEmpty()) {
                 cellbaseAssembly = cellbaseAssembly.toLowerCase();
                 // Database name is built following the above pattern
-                String database = "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
-                        .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
+                String database = getDatabaseName(species, cellbaseAssembly);
                 logger.debug("Database for the species is '{}'", database);
                 return createMongoDBDatastore(database);
             } else {
@@ -127,7 +148,12 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
     }
 
-    public MongoDataStore createMongoDBDatastore(String database) {
+    protected String getDatabaseName(String species, String cellbaseAssembly) {
+        return "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
+                            .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
+    }
+
+    private MongoDataStore createMongoDBDatastore(String database) {
         DatabaseCredentials mongodbCredentials = cellBaseConfiguration.getDatabases().getMongodb();
         MongoDBConfiguration mongoDBConfiguration;
         MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();

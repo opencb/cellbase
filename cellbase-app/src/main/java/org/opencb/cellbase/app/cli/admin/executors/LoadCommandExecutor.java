@@ -18,18 +18,15 @@ package org.opencb.cellbase.app.cli.admin.executors;
 
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
-import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
-import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
-
+import org.opencb.cellbase.lib.indexer.IndexManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -334,12 +331,10 @@ public class LoadCommandExecutor extends CommandExecutor {
         if (!createIndexes) {
             return;
         }
-        try (InputStream resourceAsStream = getClass().getResourceAsStream("/mongodb-indexes.json")) {
-            MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
-            MongoDataStore mongoDataStore = factory.createMongoDBDatastore(database);
-            MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, true);
-        } catch (IOException e) {
-            logger.error("Can't open index configuration file:" + e.toString());
+        try {
+            IndexManager.createMongoDBIndexes(configuration, collectionName, database, true);
+        } catch (CellbaseException | IOException e) {
+            logger.error("Error creating indexes:" + e.toString());
         }
     }
 }
