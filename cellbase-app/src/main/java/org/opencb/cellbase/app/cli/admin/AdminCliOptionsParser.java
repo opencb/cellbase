@@ -33,9 +33,9 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
+    private IndexCommandOptions indexCommandOptions;
     private ServerCommandOptions serverCommandOptions;
     private PostLoadCommandOptions postLoadCommandOptions;
-    private IndexCommandOptions indexCommandOptions;
 
     public AdminCliOptionsParser() {
         jCommander.setProgramName("cellbase-admin.sh");
@@ -161,10 +161,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
         public String loader = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
 
-        @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", required = false, arity = 1)
+        @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", arity = 1)
         public int numThreads = 2;
 
-        @Parameter(names = {"--index"}, description = "After loading, add index to the database", required = false, arity = 0)
+        @Parameter(names = {"--index"}, description = "After loading, add index to the database", arity = 0)
         public boolean index;
 
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
@@ -172,7 +172,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     }
 
-    @Parameters(commandNames = {"indexes"}, commandDescription = "Create indexes in mongodb")
+    @Parameters(commandNames = {"index"}, commandDescription = "Create indexes in mongodb")
     public class IndexCommandOptions {
 
         @ParametersDelegate
@@ -183,13 +183,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "clinical_variants, repeats, svs. 'all' indexes everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
-        public String assembly = null;
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", arity = 1)
+        public String assembly = "GRCh38";
 
-        @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", required = false, arity = 0)
+        @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", arity = 0)
         public boolean dropIndexesFirst;
     }
 

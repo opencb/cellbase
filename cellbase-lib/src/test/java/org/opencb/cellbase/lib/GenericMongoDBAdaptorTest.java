@@ -47,7 +47,6 @@ public class GenericMongoDBAdaptorTest {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public GenericMongoDBAdaptorTest() throws IOException {
-
         CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
                 GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
@@ -64,7 +63,6 @@ public class GenericMongoDBAdaptorTest {
             mongoManager.drop(dbName);
         }
     }
-
 
     protected CellBaseDataResult<Variant> getByVariant(List<CellBaseDataResult<Variant>> variantCellBaseDataResultList, Variant variant) {
         for (CellBaseDataResult<Variant> variantCellBaseDataResult : variantCellBaseDataResultList) {

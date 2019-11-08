@@ -150,13 +150,6 @@
                                     <arg value="${build.dir}/conf"/>
                                 </exec>
 
-                                <echo>Copying to ${build.dir}/conf/indexes</echo>
-                                <exec executable="cp">
-                                    <arg value="-r"/>
-                                    <arg value="${project.basedir}/../cellbase-app/target/classes/mongodb-indexes.json"/>
-                                    <arg value="${build.dir}/conf/indexes"/>
-                                </exec>
-
                                 <echo>Coping war file</echo>
                                 <exec executable="cp">
                                     <arg value="${project.basedir}/../cellbase-server/target/${cellbase.war.name}.war"/>

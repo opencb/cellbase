@@ -17,6 +17,7 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.Species;
@@ -32,8 +33,8 @@ public class IndexCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.IndexCommandOptions indexCommandOptions;
 
     private String data;
-    private boolean dropIndexesFirst;
     private Species species;
+    private String assembly;
 
     public IndexCommandExecutor(AdminCliOptionsParser.IndexCommandOptions indexCommandOptions) {
         super(indexCommandOptions.commonOptions.logLevel, indexCommandOptions.commonOptions.verbose,
@@ -43,9 +44,6 @@ public class IndexCommandExecutor extends CommandExecutor {
 
         if (indexCommandOptions.data != null) {
             data = indexCommandOptions.data;
-        }
-        if (indexCommandOptions.dropIndexesFirst) {
-            dropIndexesFirst = true;
         }
     }
 
@@ -57,25 +55,24 @@ public class IndexCommandExecutor extends CommandExecutor {
         if (data != null) {
             String[] indexes;
             if (("all").equalsIgnoreCase(data)) {
-                createIndexes(null, dropIndexesFirst);
+                createIndexes(null, indexCommandOptions.dropIndexesFirst);
             } else {
                 indexes = data.split(",");
-                createIndexes(indexes, dropIndexesFirst);
+                createIndexes(indexes, indexCommandOptions.dropIndexesFirst);
             }
         } else {
-            createIndexes(null, dropIndexesFirst);
+            createIndexes(null, indexCommandOptions.dropIndexesFirst);
         }
     }
 
-    public void createIndexes(String[] indexes, boolean dropIndexesFirst) {
+    private void createIndexes(String[] indexes, boolean dropIndexesFirst) {
         InputStream resourceAsStream = getClass().getResourceAsStream("/mongodb-indexes.json");
         if (resourceAsStream == null) {
             logger.warn("Index file mongodb-indexes.json not found");
             return;
         }
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
-        MongoDataStore mongoDataStore = factory.createMongoDBDatastore(species.getScientificName(),
-                species.getAssemblies().get(0).getName());
+        MongoDataStore mongoDataStore = factory.createMongoDBDatastore(species.getScientificName(), this.assembly);
         try {
             if (indexes == null || indexes.length == 0) {
                 MongoDBIndexUtils.createAllIndexes(mongoDataStore, resourceAsStream, dropIndexesFirst);
@@ -97,20 +94,27 @@ public class IndexCommandExecutor extends CommandExecutor {
             if (indexCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
                     || indexCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
                     || indexCommandOptions.species.equalsIgnoreCase(sp.getId())) {
-                species = sp;
-                return;
+                this.species = sp;
+
+                if (StringUtils.isNotEmpty(indexCommandOptions.assembly)) {
+                    for (Species.Assembly assembly : species.getAssemblies()) {
+                        if (assembly.getName().equalsIgnoreCase(indexCommandOptions.assembly)) {
+                            this.assembly = indexCommandOptions.assembly;
+                            break;
+                        }
+                    }
+                    if (StringUtils.isEmpty(this.assembly)) {
+                        throw new ParameterException("Assembly '" + indexCommandOptions.assembly + "' is invalid");
+                    }
+                } else {
+                    this.assembly = species.getAssemblies().get(0).getName();
+                    return;
+                }
             }
         }
-        throw new ParameterException("Species '" + indexCommandOptions.species + "' is invalid");
-    }
 
-    private String getDefaultAssembly() {
-        for (Species sp : configuration.getSpecies().getVertebrates()) {
-            if (sp == species) {
-                return sp.getAssemblies().get(0).getName();
-            }
+        if (this.species == null) {
+            throw new ParameterException("Species '" + indexCommandOptions.species + "' is invalid");
         }
-        throw new ParameterException("Assembly not found");
     }
-
 }
