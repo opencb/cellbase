@@ -4,6 +4,7 @@
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/bioconductor-cellbaser/README.html)
 [![Documentation](https://img.shields.io/badge/Documentation-wiki-blue)](http://docs.opencb.org/display/cellbase)
 [![pubmed](http://img.shields.io/badge/pubmed-22693220-blue.svg?style=flat)](https://www.ncbi.nlm.nih.gov/pubmed/22693220)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/opencb/cellbase/next?filepath=clients%2Fpython%2F)
 
 # Overview
 CellBase is a scalable and high-performance NoSQL database that integrates relevant biological information from well-known data sources such as Ensembl, Uniprot, IntAct or ClinVar among others. All this data can be queried through a comprehensive RESTful web services API or using the command line interface. Also, a built-in variant annotator has been developed and can be used to annotate files containing variants in Variant Call Format (VCF).
