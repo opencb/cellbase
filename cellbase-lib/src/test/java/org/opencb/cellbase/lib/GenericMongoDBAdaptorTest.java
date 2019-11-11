@@ -49,7 +49,7 @@ public class GenericMongoDBAdaptorTest {
 
     public GenericMongoDBAdaptorTest() throws IOException {
         CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
-                GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"),
+                GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);

@@ -149,6 +149,12 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     protected String getDatabaseName(String species, String cellbaseAssembly) {
+        if (species == null) {
+            throw new InvalidParameterException("Species is required");
+        }
+        if (cellbaseAssembly == null) {
+            throw new InvalidParameterException("Assembly is required");
+        }
         String cleanAssembly = cellbaseAssembly
                 .replaceAll("\\.", "")
                 .replaceAll("-", "")

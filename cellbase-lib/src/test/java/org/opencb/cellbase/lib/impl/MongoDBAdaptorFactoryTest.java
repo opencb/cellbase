@@ -16,18 +16,14 @@
 
 package org.opencb.cellbase.lib.impl;
 
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-
-
 import java.io.IOException;
+import java.security.InvalidParameterException;
 
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
 
@@ -40,22 +36,30 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
     }
 
     @BeforeAll
-    static void setUp() throws Exception {
+    public static void setUp() throws Exception {
         cellBaseConfiguration = CellBaseConfiguration.load(
-                MongoDBAdaptorFactoryTest.class.getClassLoader().getResourceAsStream("configuration.test.json"),
+                MongoDBAdaptorFactoryTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
 
         mongoDBAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
     }
 
-
     @Test
     public void testGetDatabaseName() throws Exception {
+        // provide assembly
         String databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "assemblyName");
+        assertEquals("cellbase_speciesName_assemblyName_v4", databaseName);
 
-        assertEquals("speciesName_assemblyname", databaseName);
-        assertTrue(false);
+        // don't provide assembly
+        InvalidParameterException thrown =
+                assertThrows(InvalidParameterException.class,
+                        () -> mongoDBAdaptorFactory.getDatabaseName("speciesName", null),
+                        "Expected getDatabaseName() to throw an exception, but it didn't");
+
+        assertTrue(thrown.getMessage().contains("Assembly is required"));
+
+        // handle special characters
+        databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "my_funny.database--name");
+        assertEquals("cellbase_speciesName_myfunnydatabasename_v4", databaseName);
     }
-
-
 }
