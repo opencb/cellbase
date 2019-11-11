@@ -44,11 +44,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     private GenomeDBAdaptor dbAdaptor;
 
-    public GenomeMongoDBAdaptorTest() throws IOException {
+    public GenomeMongoDBAdaptorTest() throws Exception {
         super();
+        setUp();
     }
 
-    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

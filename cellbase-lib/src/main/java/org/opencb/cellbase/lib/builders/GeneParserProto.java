@@ -33,7 +33,7 @@ import org.opencb.biodata.models.core.protobuf.TranscriptModel.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 
@@ -63,7 +63,7 @@ public class GeneParserProto extends CellBaseParser {
     private Path geneDrugFile;
     private Path genomeSequenceFilePath;
 
-    private Species species;
+    private SpeciesConfiguration speciesConfiguration;
 
     private Connection sqlConn;
     private PreparedStatement sqlQuery;
@@ -74,13 +74,13 @@ public class GeneParserProto extends CellBaseParser {
 
 
     public GeneParserProto(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                           Species species, CellBaseSerializer serializer) {
+                           SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff"),
                 geneDirectoryPath.resolve("mirna.txt"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
-                genomeSequenceFastaFile, species, serializer);
+                genomeSequenceFastaFile, speciesConfiguration, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -88,7 +88,7 @@ public class GeneParserProto extends CellBaseParser {
 
     public GeneParserProto(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
                            Path mirnaFile, Path geneExpressionFile, Path geneDrugFile, Path genomeSequenceFilePath,
-                           Species species, CellBaseSerializer serializer) {
+                           SpeciesConfiguration speciesConfiguration, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -99,7 +99,7 @@ public class GeneParserProto extends CellBaseParser {
         this.geneExpressionFile = geneExpressionFile;
         this.geneDrugFile = geneDrugFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
-        this.species = species;
+        this.speciesConfiguration = speciesConfiguration;
 
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
@@ -551,7 +551,7 @@ public class GeneParserProto extends CellBaseParser {
 
         while ((line = br.readLine()) != null) {
             String[] parts = line.split("\t");
-            if (species.getScientificName().equals(parts[2])) {
+            if (speciesConfiguration.getScientificName().equals(parts[2])) {
                 if (parts[7].equals("UP")) {
                     addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
                             parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));

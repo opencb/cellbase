@@ -28,7 +28,7 @@ import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDBException;
@@ -64,7 +64,7 @@ public class GeneParser extends CellBaseParser {
     private Path genomeSequenceFilePath;
     private boolean flexibleGTFParsing;
 
-    private Species species;
+    private SpeciesConfiguration speciesConfiguration;
 
     private Connection sqlConn;
     private PreparedStatement sqlQuery;
@@ -89,13 +89,13 @@ public class GeneParser extends CellBaseParser {
     private Gtf nextGtfToReturn;
 
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                      Species species,
+                      SpeciesConfiguration speciesConfiguration,
                       CellBaseSerializer serializer) {
-        this(geneDirectoryPath, genomeSequenceFastaFile, species, false, serializer);
+        this(geneDirectoryPath, genomeSequenceFastaFile, speciesConfiguration, false, serializer);
     }
 
     public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                      Species species, boolean flexibleGTFParsing,
+                      SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("MotifFeatures.gff.gz"),
@@ -104,7 +104,7 @@ public class GeneParser extends CellBaseParser {
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
-                genomeSequenceFastaFile, species, flexibleGTFParsing, serializer);
+                genomeSequenceFastaFile, speciesConfiguration, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -112,7 +112,7 @@ public class GeneParser extends CellBaseParser {
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
-                      Path genomeSequenceFilePath, Species species, boolean flexibleGTFParsing,
+                      Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
@@ -126,7 +126,7 @@ public class GeneParser extends CellBaseParser {
         this.disgenetFile = disgenetFile;
         this.gnomadFile = gnomadFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
-        this.species = species;
+        this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
 
         transcriptDict = new HashMap<>(250000);
@@ -147,7 +147,7 @@ public class GeneParser extends CellBaseParser {
 
         // Gene annotation data
         Map<String, List<Expression>> geneExpressionMap = GeneParserUtils
-                .getGeneExpressionMap(species.getScientificName(), geneExpressionFile);
+                .getGeneExpressionMap(speciesConfiguration.getScientificName(), geneExpressionFile);
         Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
         Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
 

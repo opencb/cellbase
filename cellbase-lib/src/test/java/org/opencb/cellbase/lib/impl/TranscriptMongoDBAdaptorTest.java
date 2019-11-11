@@ -42,11 +42,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Created by fjlopez on 27/04/16.
  */
 public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
-    public TranscriptMongoDBAdaptorTest() throws IOException {
+    public TranscriptMongoDBAdaptorTest() throws Exception {
         super();
+        setUp();
     }
 
-    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

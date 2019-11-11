@@ -42,11 +42,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
-    public ProteinMongoDBAdaptorTest() throws IOException {
+    public ProteinMongoDBAdaptorTest() throws Exception {
         super();
+        setUp();
     }
 
-    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

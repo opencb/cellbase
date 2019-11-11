@@ -40,11 +40,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Created by fjlopez on 09/05/16.
  */
 public class XRefMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
-    public XRefMongoDBAdaptorTest() throws IOException {
+    public XRefMongoDBAdaptorTest() throws Exception {
         super();
+        setUp();
     }
 
-    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

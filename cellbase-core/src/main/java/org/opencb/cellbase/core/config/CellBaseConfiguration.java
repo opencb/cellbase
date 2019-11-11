@@ -214,8 +214,8 @@ public class CellBaseConfiguration {
         this.species = species;
     }
 
-    public List<Species> getAllSpecies() {
-        List<Species> allSpecies = new ArrayList<>();
+    public List<SpeciesConfiguration> getAllSpecies() {
+        List<SpeciesConfiguration> allSpecies = new ArrayList<>();
         if (species.getVertebrates() != null && !species.getVertebrates().isEmpty()) {
             allSpecies.addAll(species.getVertebrates());
         }
