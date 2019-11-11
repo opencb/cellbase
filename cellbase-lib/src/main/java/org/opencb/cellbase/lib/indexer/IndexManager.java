@@ -24,15 +24,26 @@ import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.mongodb.MongoDBIndexUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
+
 public class IndexManager {
+
+    private CellBaseConfiguration configuration;
+    private Logger logger;
+
+    public IndexManager(CellBaseConfiguration configuration) {
+        this.configuration = configuration;
+        logger = LoggerFactory.getLogger(this.getClass());
+    }
 
     /**
      * Create indexes. Exception thrown if species or assembly is incorrect. NULL assembly value will default to
      * first assembly in the config file.
      *
-     * @param configuration cellbase configuration file
      * @param data list of collections to index
      * @param speciesName name of species
      * @param assemblyName name of assembly
@@ -41,14 +52,14 @@ public class IndexManager {
      * @throws IOException if configuration file can't be read
      * @throws CellbaseException if indexes file isn't found, or invalid input
      */
-    public static void createMongoDBIndexes(CellBaseConfiguration configuration, String data, String speciesName,
-                                            String assemblyName, boolean dropIndexesFirst) throws CellbaseException, IOException {
+    public void createMongoDBIndexes(String data, String speciesName, String assemblyName, boolean dropIndexesFirst)
+            throws CellbaseException, IOException {
         Species species = SpeciesUtils.getSpecies(configuration, speciesName, assemblyName);
         if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
-            createMongoDBIndexes(configuration, new String[0], species.getSpecies(), species.getAssembly(), dropIndexesFirst);
+            createMongoDBIndexes(new String[0], species.getSpecies(), species.getAssembly(), dropIndexesFirst);
         } else {
             String[] indexes = data.split(",");
-            createMongoDBIndexes(configuration, indexes, species.getSpecies(), species.getAssembly(), dropIndexesFirst);
+            createMongoDBIndexes(indexes, species.getSpecies(), species.getAssembly(), dropIndexesFirst);
         }
     }
 
@@ -56,7 +67,6 @@ public class IndexManager {
      * Create indexes for specified collection. Use by the load to create indexes. Will throw an exception if
      * given database does not already exist.
      *
-     * @param configuration cellbase configuration file
      * @param collectionName create indexes for this collection
      * @param databaseName name of database
      * @param dropIndexesFirst if TRUE, deletes the index before creating a new one. FALSE, no index is created if it
@@ -64,8 +74,8 @@ public class IndexManager {
      * @throws IOException if configuration file can't be read
      * @throws CellbaseException if indexes file isn't found
      */
-    public static void createMongoDBIndexes(CellBaseConfiguration configuration, String collectionName,
-                                            String databaseName, boolean dropIndexesFirst) throws IOException, CellbaseException {
+    public void createMongoDBIndexes(String collectionName, String databaseName, boolean dropIndexesFirst)
+            throws IOException, CellbaseException {
         InputStream resourceAsStream = IndexManager.class.getResourceAsStream("/mongodb-indexes.json");
         if (resourceAsStream == null) {
             throw new CellbaseException("Index file mongodb-indexes.json not found");
@@ -75,8 +85,8 @@ public class IndexManager {
         MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, dropIndexesFirst);
     }
 
-    private static void createMongoDBIndexes(CellBaseConfiguration configuration, String[] indexes, String species,
-                                             String assembly, boolean dropIndexesFirst) throws IOException, CellbaseException {
+    private void createMongoDBIndexes(String[] indexes, String species, String assembly, boolean dropIndexesFirst)
+            throws IOException, CellbaseException {
         InputStream resourceAsStream = IndexManager.class.getResourceAsStream("/mongodb-indexes.json");
         if (resourceAsStream == null) {
             throw new CellbaseException("Index file mongodb-indexes.json not found");

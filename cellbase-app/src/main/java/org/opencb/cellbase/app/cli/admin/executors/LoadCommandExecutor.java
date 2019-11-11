@@ -51,6 +51,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private String loader;
     private int numThreads;
     private boolean createIndexes;
+    private IndexManager indexManager;
 
     public LoadCommandExecutor(AdminCliOptionsParser.LoadCommandOptions loadCommandOptions) {
         super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.verbose,
@@ -93,6 +94,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                         loadCommandOptions.loaderParams.get("authenticationDatabase"));
             }
             loadRunner = new LoadRunner(loader, database, numThreads, configuration);
+            if (createIndexes) {
+                indexManager = new IndexManager(configuration);
+            }
 
             String[] loadOptions;
             if (loadCommandOptions.data.equals("all")) {
@@ -332,7 +336,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             return;
         }
         try {
-            IndexManager.createMongoDBIndexes(configuration, collectionName, database, true);
+            indexManager.createMongoDBIndexes(collectionName, database, true);
         } catch (CellbaseException | IOException e) {
             logger.error("Error creating indexes:" + e.toString());
         }

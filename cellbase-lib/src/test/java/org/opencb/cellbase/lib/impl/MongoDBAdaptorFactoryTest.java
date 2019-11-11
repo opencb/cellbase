@@ -59,11 +59,7 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
         assertTrue(thrown.getMessage().contains("Assembly is required"));
 
         // handle special characters
-        databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "my_funny.database--name");
-        assertEquals("cellbase_speciesName_myfunnydatabasename_v4", databaseName);
-
-        // handle special characters
-        databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "my_funny.database--name");
-        assertEquals("cellbase_speciesName_myfunnydatabasename_v4", databaseName);
+        databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "my_funny.assembly--name");
+        assertEquals("cellbase_speciesName_myfunnyassemblyname_v4", databaseName);
     }
 }
