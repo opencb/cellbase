@@ -170,7 +170,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                 .replaceAll("\\.", "")
                 .replaceAll("-", "")
                 .replaceAll("_", "");
-        return "cellbase" + "_" + species + "_" + cleanAssembly + "_" + cellBaseConfiguration.getVersion();
+        return "cellbase" + "_" + species.toLowerCase() + "_" + cleanAssembly.toLowerCase() + "_" + cellBaseConfiguration.getVersion();
     }
 
     private MongoDataStore createMongoDBDatastore(String database) {

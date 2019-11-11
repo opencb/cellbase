@@ -6,10 +6,10 @@
 {"collection": "clinical_variants", "fields": {"_featureXrefs": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.id": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.id": 1}, "options": {"background": true}}
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.consistencyStatus": 1}, {sparse: true})
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.variantClassification.clinicalSignificance": 1}, {sparse: true})
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.heritableTraits.inheritanceMode": 1}, {sparse: true})
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.alleleOrigin": 1}, {sparse: true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.consistencyStatus": 1}, {"sparse": true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.variantClassification.clinicalSignificance": 1}, {"sparse": true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.heritableTraits.inheritanceMode": 1}, {"sparse": true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.alleleOrigin": 1}, {"sparse": true})
 {"collection": "clinical_variants", "fields": {"_traits": 1}, "options": {"background": true}}
 
 {"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}

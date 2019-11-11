@@ -45,10 +45,10 @@ public class IndexManager {
                                             String assemblyName, boolean dropIndexesFirst) throws CellbaseException, IOException {
         Species species = SpeciesUtils.getSpecies(configuration, speciesName, assemblyName);
         if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
-            createMongoDBIndexes(configuration, new String[0], species.getScientific(), species.getAssembly(), dropIndexesFirst);
+            createMongoDBIndexes(configuration, new String[0], species.getSpecies(), species.getAssembly(), dropIndexesFirst);
         } else {
             String[] indexes = data.split(",");
-            createMongoDBIndexes(configuration, indexes, species.getScientific(), species.getAssembly(), dropIndexesFirst);
+            createMongoDBIndexes(configuration, indexes, species.getSpecies(), species.getAssembly(), dropIndexesFirst);
         }
     }
 
@@ -72,9 +72,6 @@ public class IndexManager {
         }
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
         MongoDataStore mongoDataStore = factory.getMongoDBDatastore(databaseName);
-        if (mongoDataStore == null) {
-            throw new CellbaseException("Database not found: '" + databaseName + "'");
-        }
         MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, dropIndexesFirst);
     }
 

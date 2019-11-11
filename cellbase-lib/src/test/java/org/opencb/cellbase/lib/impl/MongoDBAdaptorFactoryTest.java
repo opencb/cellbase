@@ -61,5 +61,9 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
         // handle special characters
         databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "my_funny.database--name");
         assertEquals("cellbase_speciesName_myfunnydatabasename_v4", databaseName);
+
+        // handle special characters
+        databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "my_funny.database--name");
+        assertEquals("cellbase_speciesName_myfunnydatabasename_v4", databaseName);
     }
 }
