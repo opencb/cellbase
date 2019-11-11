@@ -63,7 +63,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
         super(cellBaseConfiguration);
-
         init();
     }
 
@@ -85,7 +84,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     /**
-     * Get database based on species, assembly and version. Returns NULL if no database exists.
+     * Get database based on species, assembly and version. Throws IllegalArgumentException if no database exists.
      *
      * @param species Species name
      * @param assembly Assembly version
@@ -93,17 +92,29 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
      */
     public MongoDataStore getMongoDBDatastore(String species, String assembly) {
         String databaseName = getDatabaseName(species, assembly);
-        return mongoDataStoreManager.get(databaseName);
+        MongoDataStore mongoDataStore = null;
+        try {
+            mongoDataStore = mongoDataStoreManager.get(databaseName);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Database does not exist: '" + databaseName + "'");
+        }
+        return mongoDataStore;
     }
 
     /**
-     * Get database based on database name. Returns NULL if no database exists.
+     * Get database based on database name. Throws IllegalArgumentException if no database exists.
      *
      * @param databaseName name of database
      * @return the datastore of the given name
      */
     public MongoDataStore getMongoDBDatastore(String databaseName) {
-        return mongoDataStoreManager.get(databaseName);
+        MongoDataStore mongoDataStore = null;
+        try {
+            mongoDataStore = mongoDataStoreManager.get(databaseName);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Database does not exist: '" + databaseName + "'");
+        }
+        return mongoDataStore;
     }
 
     private MongoDataStore createMongoDBDatastore(String species, String assembly) {
