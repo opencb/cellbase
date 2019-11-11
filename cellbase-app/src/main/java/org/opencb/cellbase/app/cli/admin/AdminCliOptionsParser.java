@@ -35,7 +35,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private LoadCommandOptions loadCommandOptions;
     private IndexCommandOptions indexCommandOptions;
     private ServerCommandOptions serverCommandOptions;
-    private PostLoadCommandOptions postLoadCommandOptions;
 
     public AdminCliOptionsParser() {
         jCommander.setProgramName("cellbase-admin.sh");
@@ -46,14 +45,12 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         loadCommandOptions = new LoadCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
-        postLoadCommandOptions = new PostLoadCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
-        jCommander.addCommand("post-load", postLoadCommandOptions);
     }
 
     public void parse(String[] args) throws ParameterException {
@@ -210,20 +207,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public int port;
     }
 
-    @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
-    public class PostLoadCommandOptions {
-
-        @ParametersDelegate
-        public CommonCommandOptions commonOptions = commonCommandOptions;
-
-        @Parameter(names = {"-a", "--assembly"}, description = "The name of the assembly", required = false, arity = 1)
-        public String assembly = null;
-
-        @Parameter(names = {"--clinical-annotation-file"}, description = "Specify a file containing variant annotations for CellBase clinical data. Accepted file formats: VEP's file format", required = false)
-        public String clinicalAnnotationFilename = null;
-
-    }
-
     @Override
     public boolean isHelp() {
         String parsedCommand = jCommander.getParsedCommand();
@@ -258,7 +241,5 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     }
 
     public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
-
-    public PostLoadCommandOptions getPostLoadCommandOptions() { return postLoadCommandOptions; }
 
 }
