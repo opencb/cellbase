@@ -28,6 +28,7 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -99,12 +100,12 @@ public class DownloadManager {
         }
     };
 
-    public DownloadManager(CellBaseConfiguration configuration, Logger logger, EnsemblInfo ensemblInfo, Path common, String assembly) {
+    public DownloadManager(CellBaseConfiguration configuration, EnsemblInfo ensemblInfo, Path common, String assembly) {
         this.configuration = configuration;
-        this.logger = logger;
         this.ensemblInfo = ensemblInfo;
         this.common = common;
         this.assembly = assembly;
+        logger = LoggerFactory.getLogger(this.getClass());
     }
 
     public void downloadStructuralVariants(SpeciesConfiguration speciesConfiguration, String assembly, Path speciesFolder)

@@ -153,8 +153,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
             }
 
             EnsemblInfo ensemblInfo = new EnsemblInfo(ensemblHostUrl, ensemblVersion, ensemblRelease);
-            DownloadManager downloadManager = new DownloadManager(configuration, logger, ensemblInfo, common,
-                downloadCommandOptions.assembly);
+            DownloadManager downloadManager = new DownloadManager(configuration, ensemblInfo, common, downloadCommandOptions.assembly);
 
             for (String data : dataList) {
                 switch (data) {

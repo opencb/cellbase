@@ -60,7 +60,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.parse(args);
     }
 
-    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.json file")
+    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.yml" +
+            " file")
     public class DownloadCommandOptions {
 
         @ParametersDelegate
@@ -74,7 +75,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
         public String assembly = null;
 
         @Parameter(names = {"-o", "--output"}, description = "The output directory, species folder will be created", required = false, arity = 1)
@@ -100,7 +101,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
         public String assembly = null;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the downloaded data sources to be loaded", required = true, arity = 1)
@@ -186,7 +187,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", arity = 1)
         public String assembly = "GRCh38";
 
         @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", arity = 0)
