@@ -58,8 +58,8 @@ public class IndexManager {
         if (StringUtils.isEmpty(data) || "all".equalsIgnoreCase(data)) {
             createMongoDBIndexes(new String[0], species.getSpecies(), species.getAssembly(), dropIndexesFirst);
         } else {
-            String[] indexes = data.split(",");
-            createMongoDBIndexes(indexes, species.getSpecies(), species.getAssembly(), dropIndexesFirst);
+            String[] collections = data.split(",");
+            createMongoDBIndexes(collections, species.getSpecies(), species.getAssembly(), dropIndexesFirst);
         }
     }
 
@@ -85,7 +85,7 @@ public class IndexManager {
         MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, dropIndexesFirst);
     }
 
-    private void createMongoDBIndexes(String[] indexes, String species, String assembly, boolean dropIndexesFirst)
+    private void createMongoDBIndexes(String[] collections, String species, String assembly, boolean dropIndexesFirst)
             throws IOException, CellbaseException {
         InputStream resourceAsStream = IndexManager.class.getResourceAsStream("/mongodb-indexes.json");
         if (resourceAsStream == null) {
@@ -93,11 +93,16 @@ public class IndexManager {
         }
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
         MongoDataStore mongoDataStore = factory.getMongoDBDatastore(species, assembly);
-        if (indexes == null || indexes.length == 0) {
+        if (collections == null || collections.length == 0) {
             MongoDBIndexUtils.createAllIndexes(mongoDataStore, resourceAsStream, dropIndexesFirst);
         } else {
-            for (String indexName : indexes) {
-                MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, indexName, dropIndexesFirst);
+            for (String collectionName : collections) {
+                try {
+                    MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, dropIndexesFirst);
+                } catch (NullPointerException e) {
+                    throw new CellbaseException("Error creating an index for collection '" + collectionName
+                            + "', collection does not exist");
+                }
             }
         }
     }
