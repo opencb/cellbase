@@ -1,32 +1,16 @@
 {"collection": "clinical_variants", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "clinical_variants", "ields": {"type": 1}, "options": {"background": true}}
+{"collection": "clinical_variants", "fields": {"type": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.source.name": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.consequenceTypes.sequenceOntologyTerms.name": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"_featureXrefs": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.traitAssociation.id": 1}, "options": {"background": true}}
 {"collection": "clinical_variants", "fields": {"annotation.id": 1}, "options": {"background": true}}
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.consistencyStatus": 1}, {sparse: true})
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.variantClassification.clinicalSignificance": 1}, {sparse: true})
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.heritableTraits.inheritanceMode": 1}, {sparse: true})
-{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.alleleOrigin": 1}, {sparse: true})
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.consistencyStatus": 1},  "options": {"sparse": true}}
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.variantClassification.clinicalSignificance": 1},  "options": {"sparse": true}}
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.heritableTraits.inheritanceMode": 1},  "options": {"sparse": true}}
+{"collection": "clinical_variants", "fields": {"annotation.traitAssociation.alleleOrigin": 1},  "options": {"sparse": true}}
 {"collection": "clinical_variants", "fields": {"_traits": 1}, "options": {"background": true}}
-
-{"collection": "clinical", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.clinVarAccession.acc": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.measureSet.measure.xref.id": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.measureSet.measure.type": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"_geneIds": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"_phenotypes": "text"})
-{"collection": "clinical", "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.clinicalSignificance.reviewStatus": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"clinvarSet.referenceClinVarAssertion.clinicalSignificance.description": 1}, "options": {"background": true}}
-{"collection": "clinical", "fields": {"primarySite": "text"})
-{"collection": "clinical", "fields": {"siteSubtype": "text"})
-{"collection": "clinical", "fields": {"primaryHistology": "text"})
-{"collection": "clinical", "fields": {"histologySubtype": "text"})
-{"collection": "clinical", "fields": {"studies.traits.diseaseTrait": "text"})
 
 {"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "conservation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
@@ -45,7 +29,7 @@
 
 {"collection": "gene", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"name": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"biotype":: 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"biotype": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"chromosome": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.id": 1}, "options": {"background": true}}
@@ -57,7 +41,6 @@
 {"collection": "gene", "fields": {"transcripts.xrefs.dbDisplayName": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
-
 
 {"collection": "mutation", "fields": {"chunkIds": 1}, "options": {"background": true}}
 {"collection": "mutation", "fields": {"id": 1}, "options": {"background": true}}
@@ -105,7 +88,6 @@
 {"collection": "protein_protein_interaction", "fields": {"source.psimi": 1}, "options": {"background": true}}
 {"collection": "protein_protein_interaction", "fields": {"source.name": 1}, "options": {"background": true}}
 
-
 {"collection": "regulatory_region", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"name": 1}, "options": {"background": true}}
@@ -116,7 +98,7 @@
 
 {"collection": "variation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "variation", "fields": {"chromosome": 1, "start": 1, "end":1}, "options": {"background": true}}
-{"collection": "variation", "fields": {"chromosome": 1, "sv.ciStartLeft": 1, "sv.ciStartRight": 1, "sv.ciEndLeft": 1, "sv.ciEndRight": 1, "type": 1, "sv.type": 1}, {name: "imprecise", sparse: true})
+{"collection": "variation", "fields": {"chromosome": 1, "sv.ciStartLeft": 1, "sv.ciStartRight": 1, "sv.ciEndLeft": 1, "sv.ciEndRight": 1, "type": 1, "sv.type": 1}, "options": {"name" : "imprecise", "sparse": true}}
 {"collection": "variation", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "variation", "fields": {"annotation.displayConsequenceType": 1}, "options": {"background": true}}
 {"collection": "variation", "fields": {"annotation.consequenceTypes.geneName": 1}, "options": {"background": true}}
@@ -133,7 +115,7 @@
 
 {"collection": "variation_phenotype_annotation", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "variation_phenotype_annotation", "fields": {"chunkIds": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation, "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation, "fields": {"phenotype": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation, "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation, "fields": {"associatedGenes": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation", "fields": {"phenotype": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "variation_phenotype_annotation", "fields": {"associatedGenes": 1}, "options": {"background": true}}

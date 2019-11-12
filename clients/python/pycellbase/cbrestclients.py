@@ -69,11 +69,13 @@ class _ParentRestClient(object):
                          and method_swag in path]
             if not path_info:
                 continue
+            # TODO This is a temporary check to fix POST methods, that should be removed.
+            if 'get' not in path_info[0]:
+                continue
             if 'summary' not in path_info[0]['get']:
                 continue
             desc = path_info[0]['get']['summary']
-            desc = desc.replace('http://bioinfo.hpc.cam.ac.uk/cellbase',
-                                self._configuration.host)
+            desc = desc.replace('http://bioinfo.hpc.cam.ac.uk/cellbase', self._configuration.host)
             sys.stdout.write(text.format(indent=' ' * 4,
                                          bullet='-',
                                          name=method,

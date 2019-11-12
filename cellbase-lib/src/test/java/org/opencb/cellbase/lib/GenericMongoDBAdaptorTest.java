@@ -40,6 +40,7 @@ public class GenericMongoDBAdaptorTest {
     private static final String LOCALHOST = "localhost:27017";
     protected static final String GRCH37_DBNAME = "cellbase_hsapiens_grch37_v4";
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
+    protected CellBaseConfiguration cellBaseConfiguration;
 
     protected final LoadRunner loadRunner;
     protected DBAdaptorFactory dbAdaptorFactory;
@@ -47,9 +48,8 @@ public class GenericMongoDBAdaptorTest {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public GenericMongoDBAdaptorTest() throws IOException {
-
-        CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
-                GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"),
+        cellBaseConfiguration = CellBaseConfiguration.load(
+                GenericMongoDBAdaptorTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
@@ -64,7 +64,6 @@ public class GenericMongoDBAdaptorTest {
             mongoManager.drop(dbName);
         }
     }
-
 
     protected CellBaseDataResult<Variant> getByVariant(List<CellBaseDataResult<Variant>> variantCellBaseDataResultList, Variant variant) {
         for (CellBaseDataResult<Variant> variantCellBaseDataResult : variantCellBaseDataResultList) {

@@ -55,6 +55,7 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by parce on 18/02/15.
  */
+@Deprecated
 public class MongoDBCellBaseLoader extends CellBaseLoader {
 
     private static final String CLINICAL_VARIANTS_COLLECTION = "clinical_variants";

@@ -54,10 +54,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     ObjectMapper jsonObjectMapper;
     VariantAnnotationCalculator variantAnnotationCalculator;
 
-    public VariantAnnotationCalculatorTest() throws IOException {
+    public VariantAnnotationCalculatorTest() throws Exception {
+        super();
+        setUp();
     }
 
-    @BeforeAll
+
     public void setUp() throws Exception {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);

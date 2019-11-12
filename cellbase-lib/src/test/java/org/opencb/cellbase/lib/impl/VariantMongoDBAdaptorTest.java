@@ -51,25 +51,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * Created by imedina on 12/02/16.
  */
 public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
-    public VariantMongoDBAdaptorTest() throws IOException {
+    public VariantMongoDBAdaptorTest() throws Exception {
+        super();
+        setUp();
     }
 
-//    private static DBAdaptorFactory dbAdaptorFactory;
-
-//    @Disabled
-//    @Test
-//    public VariantMongoDBAdaptorTest() {
-//        try {
-//            Path inputPath = Paths.get(getClass().getResource("/configuration.test.json").toURI());
-//            CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(new FileInputStream(inputPath.toFile()));
-//            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-//        } catch (URISyntaxException | IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
-
-    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

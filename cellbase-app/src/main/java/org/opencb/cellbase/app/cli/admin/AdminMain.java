@@ -65,11 +65,11 @@ public class AdminMain {
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;
+                    case "index":
+                        commandExecutor = new IndexCommandExecutor(cliOptionsParser.getIndexCommandOptions());
+                        break;
                     case "server":
                         commandExecutor = new ServerCommandExecutor(cliOptionsParser.getServerCommandOptions());
-                        break;
-                    case "post-load":
-                        commandExecutor = new PostLoadCommandExecutor(cliOptionsParser.getPostLoadCommandOptions());
                         break;
                     default:
                         break;

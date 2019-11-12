@@ -24,7 +24,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -60,17 +60,14 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
      */
     private MongoDataStoreManager mongoDataStoreManager;
     private static Map<String, MongoDataStoreManager> memberDataStoreManagerMap = new HashMap<>();
-//    private static Map<String, MongoDataStore> mongoDatastoreFactory;
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
         super(cellBaseConfiguration);
-
         init();
     }
 
     private void init() {
         if (mongoDataStoreManager == null) {
-//            String[] hosts = cellBaseConfiguration.getDatabases().get("mongodb").getHost().split(",");
             String[] hosts = cellBaseConfiguration.getDatabases().getMongodb().getHost().split(",");
             List<DataStoreServerAddress> dataStoreServerAddresses = new ArrayList<>(hosts.length);
             for (String host : hosts) {
@@ -84,8 +81,40 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             mongoDataStoreManager = new MongoDataStoreManager(dataStoreServerAddresses);
             logger.debug("MongoDBAdaptorFactory constructor, this should be only be printed once");
         }
+    }
 
-//        logger = LoggerFactory.getLogger(this.getClass());
+    /**
+     * Get database based on species, assembly and version. Throws IllegalArgumentException if no database exists.
+     *
+     * @param species Species name
+     * @param assembly Assembly version
+     * @return the datastore associated with given species and assembly
+     */
+    public MongoDataStore getMongoDBDatastore(String species, String assembly) {
+        String databaseName = getDatabaseName(species, assembly);
+        MongoDataStore mongoDataStore = null;
+        try {
+            mongoDataStore = mongoDataStoreManager.get(databaseName);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Database does not exist: '" + databaseName + "'");
+        }
+        return mongoDataStore;
+    }
+
+    /**
+     * Get database based on database name. Throws IllegalArgumentException if no database exists.
+     *
+     * @param databaseName name of database
+     * @return the datastore of the given name
+     */
+    public MongoDataStore getMongoDBDatastore(String databaseName) {
+        MongoDataStore mongoDataStore = null;
+        try {
+            mongoDataStore = mongoDataStoreManager.get(databaseName);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Database does not exist: '" + databaseName + "'");
+        }
+        return mongoDataStore;
     }
 
     private MongoDataStore createMongoDBDatastore(String species, String assembly) {
@@ -97,7 +126,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
          **/
 
         // We need to look for the species object in the configuration
-        Species speciesObject = getSpecies(species);
+        SpeciesConfiguration speciesObject = getSpecies(species);
         if (speciesObject != null) {
             species = speciesObject.getId();
             String cellbaseAssembly = getAssembly(speciesObject, assembly);
@@ -105,8 +134,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
             if (species != null && !species.isEmpty() && cellbaseAssembly != null && !cellbaseAssembly.isEmpty()) {
                 cellbaseAssembly = cellbaseAssembly.toLowerCase();
                 // Database name is built following the above pattern
-                String database = "cellbase" + "_" + species + "_" + cellbaseAssembly.replaceAll("\\.", "").replaceAll("-", "")
-                        .replaceAll("_", "") + "_" + cellBaseConfiguration.getVersion();
+                String database = getDatabaseName(species, cellbaseAssembly);
                 logger.debug("Database for the species is '{}'", database);
                 return createMongoDBDatastore(database);
             } else {
@@ -129,6 +157,20 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
                     -> (tmpSpeciesObject.getCommonName() + "|" + tmpSpeciesObject.getScientificName()))
                     .collect(Collectors.toList())) + "}");
         }
+    }
+
+    protected String getDatabaseName(String species, String cellbaseAssembly) {
+        if (species == null) {
+            throw new InvalidParameterException("Species is required");
+        }
+        if (cellbaseAssembly == null) {
+            throw new InvalidParameterException("Assembly is required");
+        }
+        String cleanAssembly = cellbaseAssembly
+                .replaceAll("\\.", "")
+                .replaceAll("-", "")
+                .replaceAll("_", "");
+        return "cellbase" + "_" + species.toLowerCase() + "_" + cleanAssembly.toLowerCase() + "_" + cellBaseConfiguration.getVersion();
     }
 
     private MongoDataStore createMongoDBDatastore(String database) {
@@ -167,9 +209,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         logger.debug("{} = {}", MongoDBConfiguration.CONNECTIONS_PER_HOST,
                 mongoDBConfiguration.get(MongoDBConfiguration.CONNECTIONS_PER_HOST));
         logger.debug("*************************************************************************************");
-//                } else {
-//                    mongoDBConfiguration = MongoDBConfiguration.builder().init().build();
-//                }
 
         // A MongoDataStore to this host and database is returned
         MongoDataStore mongoDatastore = mongoDataStoreManager.get(database, mongoDBConfiguration);
@@ -317,7 +356,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     public GeneDBAdaptor getGeneDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
-//        geneMongoDBAdaptor.setClinicalDBAdaptor(getClinicalLegacyDBAdaptor(species, assembly));
         return geneMongoDBAdaptor;
     }
 
@@ -368,30 +406,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
-//        return getVariantAnnotationDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new VariantAnnotationCalculator(species, assembly, mongoDatastore, this);
-//    }
-
-
-//    @Override
-//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
-//        return getVariantFunctionalScoreDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-
 
     @Override
     public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species) {
