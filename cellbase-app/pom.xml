@@ -28,12 +28,6 @@
             <groupId>org.opencb.cellbase</groupId>
             <artifactId>cellbase-lib</artifactId>
         </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>psidev.psi.mi</groupId>-->
-            <!--<artifactId>psimitab</artifactId>-->
-            <!--<version>1.8.5</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -64,7 +58,6 @@
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
-
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -136,7 +129,6 @@
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/app/bin"/>
                                     <arg value="${project.basedir}/app/example"/>
-                                    <arg value="${project.basedir}/app/mongodb-scripts"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../README.md"/>
@@ -197,12 +189,5 @@
         </resources>
     </build>
 
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>intact.nexus</id>-->
-            <!--<name>IntAct Nexus</name>-->
-            <!--<url>http://www.ebi.ac.uk/intact/maven/nexus/content/groups/public</url>-->
-        <!--</repository>-->
-    <!--</repositories>-->
 
 </project>

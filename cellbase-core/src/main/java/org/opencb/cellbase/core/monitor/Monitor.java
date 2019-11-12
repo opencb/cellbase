@@ -19,10 +19,11 @@ package org.opencb.cellbase.core.monitor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.common.GitRepositoryState;
-import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
+
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +102,7 @@ public class Monitor {
         try {
             String jsonString = callUrl.request().get(String.class);
             List<HealthStatus> healthStatusList
-                    = parseResult(jsonString, HealthStatus.class).getResponse().get(0).getResult();
+                    = parseResult(jsonString, HealthStatus.class).getResponses().get(0).getResults();
             // Old CellBase WS servers may return an empty result if they don't recognize the endpoint
             if (!healthStatusList.isEmpty()) {
                 return healthStatusList.get(0);
@@ -207,9 +208,10 @@ public class Monitor {
         }
     }
 
-    private <U> QueryResponse<U> parseResult(String json, Class<U> clazz) throws IOException {
+    private <U> CellBaseDataResponse<U> parseResult(String json, Class<U> clazz) throws IOException {
         ObjectReader reader = jsonObjectMapper
-                .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(QueryResponse.class, QueryResult.class, clazz));
+                .readerFor(jsonObjectMapper.getTypeFactory().constructParametrizedType(
+                        CellBaseDataResponse.class, CellBaseDataResult.class, clazz));
         return reader.readValue(json);
     }
 

@@ -20,10 +20,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.client.rest.VariantClient;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
+
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
     public void run(List<Variant> variantList) {
         if (variantList != null && !variantList.isEmpty()) {
             logger.debug("Annotator sends {} new variants for annotation. Waiting for the result", variantList.size());
-            QueryResponse<VariantAnnotation> response;
+            CellBaseDataResponse<VariantAnnotation> response;
             try {
                 response = variantClient.getAnnotation(variantList, queryOptions, true);
             } catch (IOException e) {
@@ -68,17 +69,17 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
 
             //TODO: assuming CellBase annotation will always be the first and therefore variantAnnotationList will be empty
             //        variantAnnotationList = new ArrayList<>(variantList.size());
-            //        List<QueryResult<QueryResult<VariantAnnotation>>> response1 = response.getResponse();
-            List<QueryResult<VariantAnnotation>> queryResultList = response.getResponse();
-            for (int i = 0; i < queryResultList.size(); i++) {
-                if (queryResultList.get(i).getResult().size() > 0) {
+            //        List<CellBaseDataResult<CellBaseDataResult<VariantAnnotation>>> response1 = response.getResponse();
+            List<CellBaseDataResult<VariantAnnotation>> cellBaseDataResultList = response.getResponses();
+            for (int i = 0; i < cellBaseDataResultList.size(); i++) {
+                if (cellBaseDataResultList.get(i).getResults().size() > 0) {
                     if (variantList.get(i).getAnnotation() == null) {
-                        variantList.get(i).setAnnotation(queryResultList.get(i).getResult().get(0));
+                        variantList.get(i).setAnnotation(cellBaseDataResultList.get(i).getResults().get(0));
                     } else {
-                        mergeAnnotation(variantList.get(i).getAnnotation(), queryResultList.get(i).getResult().get(0));
+                        mergeAnnotation(variantList.get(i).getAnnotation(), cellBaseDataResultList.get(i).getResults().get(0));
                     }
                 } else {
-                    logger.warn("Emtpy result for '{}'", queryResultList.get(i).getId());
+                    logger.warn("Emtpy result for '{}'", cellBaseDataResultList.get(i).getId());
                 }
             }
         }

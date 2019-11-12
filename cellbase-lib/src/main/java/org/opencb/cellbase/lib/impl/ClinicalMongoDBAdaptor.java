@@ -27,7 +27,7 @@ import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
@@ -53,79 +53,77 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     }
 
     @Override
-    public QueryResult<Variant> next(Query query, QueryOptions options) {
+    public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeNext(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, field, "name", options);
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
-//        Bson bsonQuery = parseQuery(query);
-//        return groupBy(bsonQuery, fields, "name", options);
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.count(bson);
+        return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.distinct(field, bson);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
     }
 
     @Override
-    public QueryResult stats(Query query) {
+    public CellBaseDataResult stats(Query query) {
         return null;
     }
 
     @Override
-    public QueryResult<Variant> get(Query query, QueryOptions options) {
+    public CellBaseDataResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
-        return mongoDBCollection.find(bson, null, Variant.class, parsedOptions);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
+
+
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
         parsedOptions = addPrivateExcludeOptions(parsedOptions, PRIVATE_CLINICAL_FIELDS);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
-        return mongoDBCollection.find(bson, parsedOptions);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
     }
 
     @Override
@@ -226,9 +224,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             keywordString = keywordString.toLowerCase();
             createOrQuery(Arrays.asList(keywordString.split(SEPARATOR)), PRIVATE_TRAIT_FIELD, andBsonList);
         }
-//        for (String keyword : keywords) {
-//            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, keyword, "i"));
-//        }
     }
 
     private void createImprecisePositionQuery(Query query, String leftQueryParam, String rightQueryParam,
@@ -243,98 +238,65 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
     }
 
-    public List<QueryResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
-
+    public List<CellBaseDataResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
         Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
                 ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
-        List<QueryResult> queryResultList = new ArrayList<>();
+        List<CellBaseDataResult> cellBaseDataResultList = new ArrayList<>();
         if (sourceContent == null || sourceContent.contains("clinvar")) {
-            queryResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
+            cellBaseDataResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
 
         }
         if (sourceContent == null || sourceContent.contains("gwas")) {
-            queryResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
+            cellBaseDataResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
         }
 
-        return queryResultList;
+        return cellBaseDataResultList;
     }
 
     @Override
-    public QueryResult<String> getAlleleOriginLabels() {
-
+    public CellBaseDataResult<String> getAlleleOriginLabels() {
         List<String> alleleOriginLabels = Arrays.stream(AlleleOrigin.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-
-        QueryResult<String> queryResult = new QueryResult<String>("allele_origin_labels", 0,
-                alleleOriginLabels.size(), alleleOriginLabels.size(), null, null,
-                alleleOriginLabels);
-
-        return queryResult;
-
+        return new CellBaseDataResult<String>("allele_origin_labels", 0, Collections.emptyList(),
+                alleleOriginLabels.size(), alleleOriginLabels, alleleOriginLabels.size());
     }
 
     @Override
-    public QueryResult<String> getModeInheritanceLabels() {
-
+    public CellBaseDataResult<String> getModeInheritanceLabels() {
         List<String> modeInheritanceLabels = Arrays.stream(ModeOfInheritance.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-
-        QueryResult<String> queryResult = new QueryResult<String>("mode_inheritance_labels", 0,
-                modeInheritanceLabels.size(), modeInheritanceLabels.size(), null, null,
-                modeInheritanceLabels);
-
-        return queryResult;
-
+        return new CellBaseDataResult<String>("mode_inheritance_labels", 0, Collections.emptyList(),
+                modeInheritanceLabels.size(), modeInheritanceLabels, modeInheritanceLabels.size());
     }
 
     @Override
-    public QueryResult<String> getClinsigLabels() {
-
+    public CellBaseDataResult<String> getClinsigLabels() {
         List<String> clinsigLabels = Arrays.stream(ClinicalSignificance.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-
-        QueryResult<String> queryResult = new QueryResult<String>("clinsig_labels", 0,
-                clinsigLabels.size(), clinsigLabels.size(), null, null,
-                clinsigLabels);
-
-        return queryResult;
-
+        return new CellBaseDataResult<String>("clinsig_labels", 0, Collections.emptyList(),
+                clinsigLabels.size(), clinsigLabels, clinsigLabels.size());
     }
 
     @Override
-    public QueryResult<String> getConsistencyLabels() {
-
+    public CellBaseDataResult<String> getConsistencyLabels() {
         List<String> consistencyLabels = Arrays.stream(ConsistencyStatus.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-
-        QueryResult<String> queryResult = new QueryResult<String>("consistency_labels", 0,
-                consistencyLabels.size(), consistencyLabels.size(), null, null,
-                consistencyLabels);
-
-        return queryResult;
-
+        return  new CellBaseDataResult<String>("consistency_labels", 0, Collections.emptyList(),
+                consistencyLabels.size(), consistencyLabels, consistencyLabels.size());
     }
 
     @Override
-    public QueryResult<String> getVariantTypes() {
-
+    public CellBaseDataResult<String> getVariantTypes() {
         List<String> variantTypes = Arrays.stream(VariantType.values())
                 .map((value) -> value.name()).collect(Collectors.toList());
-
-        QueryResult<String> queryResult = new QueryResult<String>("variant_types", 0,
-                variantTypes.size(), variantTypes.size(), null, null,
-                variantTypes);
-
-        return queryResult;
-
+        return new CellBaseDataResult<String>("variant_types", 0, Collections.emptyList(),
+                variantTypes.size(), variantTypes, variantTypes.size());
     }
 
-    private QueryResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
-
+    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
         List<Bson> pipeline = new ArrayList<>();
         pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
                 new Document("$exists", 1))));
-//        pipeline.add(new Document("$match", new Document("clinvarSet", new Document("$exists", 1))));
         pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure"));
         pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship"));
         pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol"));
@@ -356,8 +318,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     }
 
-    private QueryResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
-
+    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
         List<Bson> pipeline = new ArrayList<>();
         // Select only GWAS documents
         pipeline.add(new Document("$match", new Document("snpIdCurrent", new Document("$exists", 1))));
@@ -376,9 +337,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return executeAggregation2("", pipeline, queryOptions);
     }
 
-    public List<QueryResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
-        List<QueryResult<Variant>> results = new ArrayList<>(variants.size());
-        for (Variant variant: variants) {
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
+        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
+        for (Variant variant : variants) {
             results.add(getByVariant(variant, queryOptions));
         }
 
@@ -388,7 +349,4 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
         return results;
     }
-
-
-
 }

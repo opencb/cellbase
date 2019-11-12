@@ -21,9 +21,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.commons.datastore.core.Event;
+import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
-import org.opencb.commons.datastore.core.QueryResult;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +50,6 @@ public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
     private static ObjectWriter jsonObjectWriter;
     private static final String ERROR = "error";
 
-//    private final HttpServletRequest hsr;
-
     static {
         logger = LoggerFactory.getLogger(CellBaseExceptionMapper.class);
 
@@ -61,7 +62,6 @@ public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
 
     public CellBaseExceptionMapper(@Context UriInfo uriInfo) {
         this.uriInfo = uriInfo;
-//        this.hsr = hsr;
     }
 
     @Override
@@ -70,17 +70,16 @@ public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
         e.printStackTrace();
 
         // Now we prepare the response to client
-//            queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
-        QueryResponse queryResponse = new QueryResponse();
-//            queryResponse.setApiVersion(version);
+        CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         QueryOptions queryOptions = new QueryOptions(uriInfo.getQueryParameters(), true);
-        queryResponse.setQueryOptions(queryOptions);
-        queryResponse.setError(e.toString());
+        queryResponse.setParams(new ObjectMap(queryOptions));
+        queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
-        QueryResult result = new QueryResult();
-        result.setWarningMsg("Future errors will ONLY be shown in the QueryResponse body");
-        result.setErrorMsg("DEPRECATED: " + e.toString());
-        queryResponse.setResponse(Collections.singletonList(result));
+        CellBaseDataResponse result = new CellBaseDataResponse();
+        result.addEvent(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
+        result.addEvent(new Event(Event.Type.ERROR, "DEPRECATED: " + e.toString()));
+
+        queryResponse.setResponses(Collections.singletonList(result));
 
         try {
             logger.info("{}\t{}\t{}",

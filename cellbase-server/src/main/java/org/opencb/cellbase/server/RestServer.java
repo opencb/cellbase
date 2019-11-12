@@ -75,14 +75,17 @@ public class RestServer  {
         server = new Server(port);
 
         WebAppContext webapp = new WebAppContext();
-        webapp.setContextPath("/cellbase");
         Optional<Path> warPath = Files.list(cellbaseHome)
                 .filter(path -> path.toString().endsWith("war"))
                 .findFirst();
+
         // Check is a war file has been found in cellbaseHome
         if (!warPath.isPresent()) {
             throw new Exception("No war file found at: " + cellbaseHome.toString());
         }
+
+        String cellbaseVersion = warPath.get().toFile().getName().replace(".war", "");
+        webapp.setContextPath("/" + cellbaseVersion);
         webapp.setWar(warPath.get().toString());
         webapp.setInitParameter("CELLBASE_HOME", cellbaseHome.toFile().toString());
         server.setHandler(webapp);

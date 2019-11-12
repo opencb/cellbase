@@ -22,9 +22,9 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResponse;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,33 +44,29 @@ public class GeneClient extends FeatureClient<Gene> {
     }
 
 
-    public QueryResponse<String> getBiotypes(Query query) throws IOException {
+    public CellBaseDataResponse<String> getBiotypes(Query query) throws IOException {
         return execute("biotype", query, new QueryOptions(), String.class);
     }
 
     @Deprecated
-    public QueryResponse<Gene> list(Query query) throws IOException {
+    public CellBaseDataResponse<Gene> list(Query query) throws IOException {
         return execute("list", query, new QueryOptions(), Gene.class);
     }
 
-    public QueryResponse<Transcript> getTranscript(String id, QueryOptions queryOptions) throws IOException {
+    public CellBaseDataResponse<Transcript> getTranscript(String id, QueryOptions queryOptions) throws IOException {
         return execute(id, "transcript", queryOptions, Transcript.class);
     }
 
-    public QueryResponse<TranscriptTfbs> getTfbs(String id, QueryOptions queryOptions) throws IOException {
+    public CellBaseDataResponse<TranscriptTfbs> getTfbs(String id, QueryOptions queryOptions) throws IOException {
         return execute(id, "tfbs", queryOptions, TranscriptTfbs.class);
     }
 
-    public QueryResponse<Variant> getVariation(List<String> id, QueryOptions queryOptions) throws IOException {
+    public CellBaseDataResponse<Variant> getVariation(List<String> id, QueryOptions queryOptions) throws IOException {
         return execute(id, "snp", queryOptions, Variant.class);
     }
 
-    public QueryResponse<Entry> getProtein(String id, QueryOptions queryOptions) throws IOException {
+    public CellBaseDataResponse<Entry> getProtein(String id, QueryOptions queryOptions) throws IOException {
         return execute(id, "protein", queryOptions, Entry.class);
     }
-
-//    public QueryResponse<> getClinical(String id, QueryOptions queryOptions) throws IOException {
-//        return execute(id, "clinical", queryOptions, );
-//    }
 
 }

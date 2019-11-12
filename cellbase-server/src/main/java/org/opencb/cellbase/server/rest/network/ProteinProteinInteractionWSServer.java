@@ -19,11 +19,12 @@ package org.opencb.cellbase.server.rest.network;
 import org.opencb.biodata.models.protein.Interaction;
 import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryResult;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -82,7 +83,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
                     dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
-            List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -100,7 +101,7 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
                     dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
             queryOptions.put("include", "interactorA,interactorB");
             List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
-            List<QueryResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
