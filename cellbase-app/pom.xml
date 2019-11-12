@@ -29,6 +29,10 @@
             <artifactId>cellbase-lib</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-server</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
