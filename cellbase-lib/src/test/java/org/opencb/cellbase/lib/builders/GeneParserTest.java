@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GeneParserTest {
     private GeneParser geneParser;
-    private static final Species SPECIES = new Species("hsapiens", "Homo sapiens", "human", null, null);
+    private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null);
     public GeneParserTest() throws URISyntaxException {
         init();
     }
