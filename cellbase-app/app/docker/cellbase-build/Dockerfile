@@ -1,6 +1,6 @@
 # OpenCB
 #
-# DESCRIPTION: All non-Java dependencies
+# DESCRIPTION: All non-Java CellBase dependencies
 # VERSION               0.0.1
 # CREDITS Started as a fork of helios/ensembl-docker
 
@@ -23,14 +23,13 @@ RUN apt-get install -y libcatalyst-perl liblog-log4perl-perl libcatalyst-action-
 
 COPY entrypoint.sh /usr/local/bin/
 
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-COPY registry.conf /opt/ensembl-rest/
+COPY registry.conf /opt/
 COPY DB_CONFIG.pm /opt/
 COPY gene_extra_info.pl /opt/
 COPY protein_function_prediction_matrices.pl /opt/
 COPY genome_info.pl /opt/
 
-EXPOSE 3000
+VOLUME /ensembl-data
 
+RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
