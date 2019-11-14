@@ -7,7 +7,6 @@ logFile: ""
 ## These are the RESTful configurations parameters
 rest:
   hosts:
-  - "bioinfodev.hpc.cam.ac.uk/cellbase"
-  - "bioinfodev.hpc.cam.ac.uk/cellbase-4.8.0-SNAPSHOT"
+  - "bioinfo.hpc.cam.ac.uk/cellbase"
   timeout: 2000
 
