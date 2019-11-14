@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Created by imedina on 19/08/16.
  */
-public class Species {
+public class SpeciesConfiguration {
 
     private String id;
     private String scientificName;
@@ -30,10 +30,10 @@ public class Species {
     private List<String> data;
 
 
-    public Species() {
+    public SpeciesConfiguration() {
     }
 
-    public Species(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data) {
+    public SpeciesConfiguration(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data) {
         this.id = id;
         this.scientificName = scientificName;
         this.commonName = commonName;

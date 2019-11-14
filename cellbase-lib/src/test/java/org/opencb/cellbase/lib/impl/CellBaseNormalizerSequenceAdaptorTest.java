@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.rules.ExpectedException;
 import org.opencb.cellbase.core.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
@@ -29,15 +30,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-
 public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdaptorTest {
 
     private CellBaseNormalizerSequenceAdaptor cellBaseNormalizerSequenceAdaptor;
 
-    public CellBaseNormalizerSequenceAdaptorTest() throws IOException {
+    public CellBaseNormalizerSequenceAdaptorTest() throws Exception {
+        setUp();
     }
 
-    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()

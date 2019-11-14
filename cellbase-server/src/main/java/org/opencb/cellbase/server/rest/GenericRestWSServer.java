@@ -31,7 +31,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -454,7 +454,7 @@ public class GenericRestWSServer implements IWSServer {
 
     @Deprecated
     private boolean isSpecieAvailable(String species) {
-        List<Species> speciesList = cellBaseConfiguration.getAllSpecies();
+        List<SpeciesConfiguration> speciesList = cellBaseConfiguration.getAllSpecies();
         for (int i = 0; i < speciesList.size(); i++) {
             // This only allows to show the information if species is in 3
             // letters format

@@ -33,8 +33,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
+    private IndexCommandOptions indexCommandOptions;
     private ServerCommandOptions serverCommandOptions;
-    private PostLoadCommandOptions postLoadCommandOptions;
 
     public AdminCliOptionsParser() {
         jCommander.setProgramName("cellbase-admin.sh");
@@ -43,21 +43,22 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
+        indexCommandOptions = new IndexCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
-        postLoadCommandOptions = new PostLoadCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
+        jCommander.addCommand("index", indexCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
-        jCommander.addCommand("post-load", postLoadCommandOptions);
     }
 
     public void parse(String[] args) throws ParameterException {
         jCommander.parse(args);
     }
 
-    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.json file")
+    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.yml" +
+            " file")
     public class DownloadCommandOptions {
 
         @ParametersDelegate
@@ -71,7 +72,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
         public String assembly = null;
 
         @Parameter(names = {"-o", "--output"}, description = "The output directory, species folder will be created", required = false, arity = 1)
@@ -97,7 +98,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
         public String species = "Homo sapiens";
 
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.json will be used", required = false, arity = 1)
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
         public String assembly = null;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the downloaded data sources to be loaded", required = true, arity = 1)
@@ -125,13 +126,11 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
     }
 
-
     @Parameters(commandNames = {"load"}, commandDescription = "Load the built data models into the database")
     public class LoadCommandOptions {
 
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
-
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
                 + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
@@ -160,12 +159,36 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-l", "--loader"}, description = "Database specific data loader to be used", required = false, arity = 1)
         public String loader = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
 
-        @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", required = false, arity = 1)
+        @Parameter(names = {"--num-threads"}, description = "Number of threads used for loading data into the database", arity = 1)
         public int numThreads = 2;
+
+        @Parameter(names = {"--index"}, description = "After loading, add index to the database", arity = 0)
+        public boolean index;
 
         @DynamicParameter(names = "-D", description = "Dynamic parameters go here", hidden = true)
         public Map<String, String> loaderParams = new HashMap<>();
 
+    }
+
+    @Parameters(commandNames = {"index"}, commandDescription = "Create indexes in mongodb")
+    public class IndexCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-d", "--data"}, description = "Data model type to be indexed: genome, gene, variation, "
+                + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
+                + "clinical_variants, repeats, svs. 'all' indexes everything", required = true, arity = 1)
+        public String data;
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
+        public String species = "Homo sapiens";
+
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", arity = 1)
+        public String assembly = "GRCh38";
+
+        @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", arity = 0)
+        public boolean dropIndexesFirst;
     }
 
     @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")
@@ -182,20 +205,6 @@ public class AdminCliOptionsParser extends CliOptionsParser {
 
         @Parameter(names = {"--port"}, description = "REST port to be used", arity = 1)
         public int port;
-    }
-
-    @Parameters(commandNames = {"post-load"}, commandDescription = "Complements data already loaded in CellBase")
-    public class PostLoadCommandOptions {
-
-        @ParametersDelegate
-        public CommonCommandOptions commonOptions = commonCommandOptions;
-
-        @Parameter(names = {"-a", "--assembly"}, description = "The name of the assembly", required = false, arity = 1)
-        public String assembly = null;
-
-        @Parameter(names = {"--clinical-annotation-file"}, description = "Specify a file containing variant annotations for CellBase clinical data. Accepted file formats: VEP's file format", required = false)
-        public String clinicalAnnotationFilename = null;
-
     }
 
     @Override
@@ -227,8 +236,10 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         return loadCommandOptions;
     }
 
-    public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
+    public IndexCommandOptions getIndexCommandOptions() {
+        return indexCommandOptions;
+    }
 
-    public PostLoadCommandOptions getPostLoadCommandOptions() { return postLoadCommandOptions; }
+    public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
 
 }

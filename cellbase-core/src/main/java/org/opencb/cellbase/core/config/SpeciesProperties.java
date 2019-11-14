@@ -23,20 +23,21 @@ import java.util.List;
  */
 public class SpeciesProperties {
 
-    private List<Species> vertebrates;
-    private List<Species> metazoa;
-    private List<Species> fungi;
-    private List<Species> protist;
-    private List<Species> plants;
-    private List<Species> virus;
-    private List<Species> bacteria;
+    private List<SpeciesConfiguration> vertebrates;
+    private List<SpeciesConfiguration> metazoa;
+    private List<SpeciesConfiguration> fungi;
+    private List<SpeciesConfiguration> protist;
+    private List<SpeciesConfiguration> plants;
+    private List<SpeciesConfiguration> virus;
+    private List<SpeciesConfiguration> bacteria;
 
 
     public SpeciesProperties() {
     }
 
-    public SpeciesProperties(List<Species> vertebrates, List<Species> metazoa, List<Species> fungi, List<Species> protist,
-                             List<Species> plants, List<Species> virus, List<Species> bacteria) {
+    public SpeciesProperties(List<SpeciesConfiguration> vertebrates, List<SpeciesConfiguration> metazoa, List<SpeciesConfiguration> fungi,
+                             List<SpeciesConfiguration> protist, List<SpeciesConfiguration> plants, List<SpeciesConfiguration> virus,
+                             List<SpeciesConfiguration> bacteria) {
         this.vertebrates = vertebrates;
         this.metazoa = metazoa;
         this.fungi = fungi;
@@ -59,59 +60,59 @@ public class SpeciesProperties {
         return sb.toString();
     }
 
-    public List<Species> getVertebrates() {
+    public List<SpeciesConfiguration> getVertebrates() {
         return vertebrates;
     }
 
-    public void setVertebrates(List<Species> vertebrates) {
+    public void setVertebrates(List<SpeciesConfiguration> vertebrates) {
         this.vertebrates = vertebrates;
     }
 
-    public List<Species> getMetazoa() {
+    public List<SpeciesConfiguration> getMetazoa() {
         return metazoa;
     }
 
-    public void setMetazoa(List<Species> metazoa) {
+    public void setMetazoa(List<SpeciesConfiguration> metazoa) {
         this.metazoa = metazoa;
     }
 
-    public List<Species> getFungi() {
+    public List<SpeciesConfiguration> getFungi() {
         return fungi;
     }
 
-    public void setFungi(List<Species> fungi) {
+    public void setFungi(List<SpeciesConfiguration> fungi) {
         this.fungi = fungi;
     }
 
-    public List<Species> getProtist() {
+    public List<SpeciesConfiguration> getProtist() {
         return protist;
     }
 
-    public void setProtist(List<Species> protist) {
+    public void setProtist(List<SpeciesConfiguration> protist) {
         this.protist = protist;
     }
 
-    public List<Species> getPlants() {
+    public List<SpeciesConfiguration> getPlants() {
         return plants;
     }
 
-    public void setPlants(List<Species> plants) {
+    public void setPlants(List<SpeciesConfiguration> plants) {
         this.plants = plants;
     }
 
-    public List<Species> getVirus() {
+    public List<SpeciesConfiguration> getVirus() {
         return virus;
     }
 
-    public void setVirus(List<Species> virus) {
+    public void setVirus(List<SpeciesConfiguration> virus) {
         this.virus = virus;
     }
 
-    public List<Species> getBacteria() {
+    public List<SpeciesConfiguration> getBacteria() {
         return bacteria;
     }
 
-    public void setBacteria(List<Species> bacteria) {
+    public void setBacteria(List<SpeciesConfiguration> bacteria) {
         this.bacteria = bacteria;
     }
 }

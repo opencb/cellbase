@@ -56,7 +56,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection(GENE);
-
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");
     }
 
