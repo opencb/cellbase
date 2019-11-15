@@ -17,25 +17,20 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
-
-
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.builders.*;
-import org.opencb.cellbase.lib.builders.clinical.variant.ClinVarParser;
 import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantParser;
-import org.opencb.cellbase.lib.builders.clinical.variant.CosmicParser;
-import org.opencb.cellbase.lib.builders.clinical.variant.GwasParser;
 import org.opencb.cellbase.lib.builders.variation.VariationParser;
-import org.opencb.commons.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,23 +44,14 @@ import java.util.List;
  * Created by imedina on 03/02/15.
  */
 public class BuildCommandExecutor extends CommandExecutor {
-
-    // TODO: these constants should be defined in the 'download' module
-    public static final String GWAS_INPUT_FILE_NAME = "gwas_catalog.tsv";
-    public static final String CADD_INPUT_FILE_NAME = "whole_genome_SNVs.tsv.gz";
-    public static final String DISGENET_INPUT_FILE_NAME = "all_gene_disease_associations.txt.gz";
-    public static final String HPO_INPUT_FILE_NAME = "ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt";
-    public static final String DBSNP_INPUT_FILE_NAME = "All.vcf.gz";
-
     private AdminCliOptionsParser.BuildCommandOptions buildCommandOptions;
 
-    private Path input = null;
-    private Path output = null;
-    private Path common = null;
+    private Path output;
+    private Path buildFolder; // <output>/<species>_<assembly>/data
+    private Path downloadFolder; // <output>/<species>_<assembly>/download
     private boolean normalize = true;
 
     private File ensemblScriptsFolder;
-    private File proteinScriptsFolder;
 
     private boolean flexibleGTFParsing;
     private SpeciesConfiguration speciesConfiguration;
@@ -75,22 +61,10 @@ public class BuildCommandExecutor extends CommandExecutor {
                 buildCommandOptions.commonOptions.conf);
 
         this.buildCommandOptions = buildCommandOptions;
-
-        if (buildCommandOptions.input != null) {
-            input = Paths.get(buildCommandOptions.input);
-        }
-        if (buildCommandOptions.output != null) {
-            output = Paths.get(buildCommandOptions.output);
-        }
-        if (buildCommandOptions.common != null) {
-            common = Paths.get(buildCommandOptions.common);
-        } else {
-            common = input.getParent().getParent().resolve("common");
-        }
+        this.output = Paths.get(buildCommandOptions.targetDirectory);
         normalize = !buildCommandOptions.skipNormalize;
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
-        this.proteinScriptsFolder = new File(System.getProperty("basedir") + "/bin/protein/");
         this.flexibleGTFParsing = buildCommandOptions.flexibleGTFParsing;
     }
 
@@ -100,30 +74,38 @@ public class BuildCommandExecutor extends CommandExecutor {
      */
     public void execute() {
         try {
-            checkParameters();
-
-            // Output directory need to be created if it not exists
+            // Output directory need to be created if it doesn't exist
             if (!Files.exists(output)) {
                 Files.createDirectories(output);
             }
 
-            // We need to get the Species object from the CLI name
-            // This can be the scientific or common name, or the ID
-            for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
-                if (buildCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
-                        || buildCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
-                        || buildCommandOptions.species.equalsIgnoreCase(sp.getId())) {
-                    speciesConfiguration = sp;
-                    break;
+            speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, buildCommandOptions.species);
+            if (speciesConfiguration == null) {
+                throw new CellbaseException("Invalid species: '" + buildCommandOptions.species + "'");
+            }
+            SpeciesConfiguration.Assembly assembly = null;
+            if (!StringUtils.isEmpty(buildCommandOptions.assembly)) {
+                assembly = SpeciesUtils.getAssembly(speciesConfiguration, buildCommandOptions.assembly);
+                if (assembly == null) {
+                    throw new CellbaseException("Invalid assembly: '" + buildCommandOptions.assembly + "'");
                 }
+            } else {
+                assembly = SpeciesUtils.getDefaultAssembly(speciesConfiguration);
             }
 
-            if (speciesConfiguration == null) {
-                logger.error("Species '{}' not valid", buildCommandOptions.species);
+            String spShortName = SpeciesUtils.getSpeciesShortname(speciesConfiguration);
+            String spAssembly = assembly.getName().toLowerCase();
+            Path spFolder = output.resolve(spShortName + "_" + spAssembly);
+            // <output>/<species>_<assembly>/download
+            downloadFolder = output.resolve(spFolder + "/download");
+            if (downloadFolder == null) {
+                throw new CellbaseException("Download folder not found '" + spShortName + "_" + spAssembly + "/download'");
             }
+            // <output>/<species>_<assembly>/data
+            buildFolder = output.resolve(spFolder + "/data");
+            makeDir(buildFolder);
 
             if (buildCommandOptions.data != null) {
-
                 String[] buildOptions;
                 if (buildCommandOptions.data.equals("all")) {
                     buildOptions = speciesConfiguration.getData().toArray(new String[0]);
@@ -164,20 +146,8 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.CONSERVATION_DATA:
                             parser = buildConservation();
                             break;
-                        case EtlCommons.DRUG_DATA:
-                            parser = buildDrugParser();
-                            break;
                         case EtlCommons.CLINICAL_VARIANTS_DATA:
                             parser = buildClinicalVariants();
-                            break;
-                        case EtlCommons.CLINVAR_DATA:
-                            parser = buildClinvar();
-                            break;
-                        case EtlCommons.COSMIC_DATA:
-                            parser = buildCosmic();
-                            break;
-                        case EtlCommons.GWAS_DATA:
-                            parser = buildGwas();
                             break;
                         case EtlCommons.STRUCTURAL_VARIANTS_DATA:
                             parser = buildStructuralVariants();
@@ -202,50 +172,39 @@ public class BuildCommandExecutor extends CommandExecutor {
             }
         } catch (ParameterException e) {
             logger.error("Error parsing build command line parameters: " + e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (IOException | CellbaseException e) {
             logger.error(e.getMessage());
         }
     }
 
     private CellBaseParser buildStructuralVariants() {
-        Path structuralVariantsFolder = input.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
+        Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
         copyVersionFiles(Arrays.asList(structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE)));
         Path structuralVariantsFile = structuralVariantsFolder.resolve(EtlCommons.DGV_FILE);
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.STRUCTURAL_VARIANTS_JSON,
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.STRUCTURAL_VARIANTS_JSON,
                 true);
         return new DgvParser(structuralVariantsFile, serializer);
     }
 
     private CellBaseParser buildRepeats() {
-        Path repeatsFilesDir = input.resolve(EtlCommons.REPEATS_FOLDER);
+        Path repeatsFilesDir = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILE)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILE)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILE)));
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, EtlCommons.REPEATS_JSON);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REPEATS_JSON);
         return new RepeatsParser(repeatsFilesDir, serializer);
     }
 
     private void copyVersionFiles(List<Path> pathList) {
         for (Path path : pathList) {
             try {
-                Files.copy(path, output.resolve(path.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(path, downloadFolder.resolve(path.getFileName()), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 logger.warn("Version file {} not found - skipping", path.toString());
             }
         }
-    }
-
-    private void checkParameters() throws IOException {
-        if (!Files.exists(input) || !Files.isDirectory(input)) {
-            throw new IOException("Input parameter '" + input.toString() + "' does not exist or is not a directory");
-        }
-
-        if (!Files.exists(common) || !Files.isDirectory(common)) {
-            throw new IOException("Common parameter '" + common.toString() + "' does not exist or is not a directory");
-        }
-
     }
 
     private void buildGenomeInfo() {
@@ -254,7 +213,7 @@ public class BuildCommandExecutor extends CommandExecutor {
          * we execute the following script.
          */
         try {
-            String outputFileName = output.resolve("genome_info.json").toAbsolutePath().toString();
+            String outputFileName = downloadFolder.resolve("genome_info.json").toAbsolutePath().toString();
             List<String> args = new ArrayList<>();
             args.addAll(Arrays.asList("--species", speciesConfiguration.getScientificName(),
                     "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
@@ -266,7 +225,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 args.add("no-vertebrate");
             }
 
-            String geneInfoLogFileName = output.resolve("genome_info.log").toAbsolutePath().toString();
+            String geneInfoLogFileName = downloadFolder.resolve("genome_info.log").toAbsolutePath().toString();
 
             boolean downloadedGenomeInfo;
             downloadedGenomeInfo = EtlCommons.runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
@@ -282,58 +241,58 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseParser buildGenomeSequence() {
-        copyVersionFiles(Collections.singletonList(input.resolve("genome/genomeVersion.json")));
+        copyVersionFiles(Collections.singletonList(downloadFolder.resolve("genome/genomeVersion.json")));
         Path fastaFile = getFastaReferenceGenome();
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "genome_sequence");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "genome_sequence");
         return new GenomeSequenceFastaParser(fastaFile, serializer);
     }
 
     private CellBaseParser buildGene() {
-        Path geneFolderPath = input.resolve("gene");
-        copyVersionFiles(Arrays.asList(geneFolderPath.resolve("geneDrug/dgidbVersion.json"),
+        Path geneFolderPath = downloadFolder.resolve("gene");
+        copyVersionFiles(Arrays.asList(geneFolderPath.resolve("dgidbVersion.json"),
                 geneFolderPath.resolve("ensemblCoreVersion.json"), geneFolderPath.resolve("uniprotXrefVersion.json"),
-                geneFolderPath.resolve(common.resolve("expression/geneExpressionAtlasVersion.json")),
+                geneFolderPath.resolve(downloadFolder.resolve("expression/geneExpressionAtlasVersion.json")),
                 geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json"),
                 geneFolderPath.resolve("gnomadVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "gene");
         return new GeneParser(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
     }
 
 
     private CellBaseParser buildVariation() {
-        Path variationFolderPath = input.resolve("variation");
+        Path variationFolderPath = downloadFolder.resolve("variation");
         copyVersionFiles(Arrays.asList(variationFolderPath.resolve("ensemblVariationVersion.json")));
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, null, true, true, true);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, null, true, true, true);
         return new VariationParser(variationFolderPath, serializer);
     }
 
     private CellBaseParser buildCadd() {
-        Path variationFunctionalScorePath = input.resolve("variation_functional_score");
+        Path variationFunctionalScorePath = downloadFolder.resolve("variation_functional_score");
         copyVersionFiles(Arrays.asList(variationFunctionalScorePath.resolve("caddVersion.json")));
-        Path caddFilePath = variationFunctionalScorePath.resolve(CADD_INPUT_FILE_NAME);
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output, "cadd");
+        Path caddFilePath = variationFunctionalScorePath.resolve("whole_genome_SNVs.tsv.gz");
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "cadd");
         return new CaddScoreParser(caddFilePath, serializer);
     }
 
     private CellBaseParser buildRegulation() {
-        Path regulatoryRegionFilesDir = input.resolve("regulation");
+        Path regulatoryRegionFilesDir = downloadFolder.resolve("regulation");
         copyVersionFiles(Arrays.asList(regulatoryRegionFilesDir.resolve("ensemblRegulationVersion.json"),
-                common.resolve("mirbase/mirbaseVersion.json"),
+                downloadFolder.resolve("mirbase/mirbaseVersion.json"),
                 regulatoryRegionFilesDir.resolve("targetScanVersion.json"),
                 regulatoryRegionFilesDir.resolve("miRTarBaseVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "regulatory_region");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_region");
         return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
 
     }
 
     private CellBaseParser buildProtein() {
-        Path proteinFolder = common.resolve("protein");
+        Path proteinFolder = downloadFolder.resolve("protein");
         copyVersionFiles(Arrays.asList(proteinFolder.resolve("uniprotVersion.json"),
                 proteinFolder.resolve("interproVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "protein");
         return new ProteinParser(proteinFolder.resolve("uniprot_chunks"),
-                common.resolve("protein").resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
+                downloadFolder.resolve("protein").resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
     }
 
     private void getProteinFunctionPredictionMatrices(SpeciesConfiguration sp, Path geneFolder)
@@ -359,38 +318,30 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private CellBaseParser getInteractionParser() {
-        Path proteinFolder = common.resolve("protein");
+        Path proteinFolder = downloadFolder.resolve("protein");
         Path psimiTabFile = proteinFolder.resolve("intact.txt");
         copyVersionFiles(Arrays.asList(proteinFolder.resolve("intactVersion.json")));
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein_protein_interaction");
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "protein_protein_interaction");
         return new InteractionParser(psimiTabFile, speciesConfiguration.getScientificName(), serializer);
     }
 
-    private CellBaseParser buildDrugParser() {
-        throw new ParameterException("'drug' builder is not implemented yet");
-//        Path drugFile = getInputFileFromCommandLine();
-//        CellBaseSerializer serializer = new JsonParser(output, "drug");
-//        return new DrugParser(drugFile, serializer);
-    }
-
-
     private CellBaseParser buildConservation() {
-        Path conservationFilesDir = input.resolve("conservation");
+        Path conservationFilesDir = downloadFolder.resolve("conservation");
         copyVersionFiles(Arrays.asList(conservationFilesDir.resolve("gerpVersion.json"),
                 conservationFilesDir.resolve("phastConsVersion.json"),
                 conservationFilesDir.resolve("phyloPVersion.json")));
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(output);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder);
         return new ConservationParser(conservationFilesDir, conservationChunkSize, serializer);
     }
 
     private CellBaseParser buildClinicalVariants() {
-        Path clinicalVariantFolder = input.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
+        Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
         copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
         copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
 
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output,
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder,
                 EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
         return new ClinicalVariantParser(clinicalVariantFolder, normalize, getFastaReferenceGenome(),
                 buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
@@ -408,70 +359,10 @@ public class BuildCommandExecutor extends CommandExecutor {
                 + "configuration file. No hsapiens data found within the configuration.json file");
     }
 
-    @Deprecated
-    private CellBaseParser buildClinvar() {
-        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
-        Path clinvarFolder = input.resolve("clinical");
-        copyVersionFiles(Arrays.asList(clinvarFolder.resolve("clinvarVersion.json")));
-        Path clinvarFile = clinvarFolder.resolve("ClinVar.xml.gz");
-        Path clinvarSummaryFile = clinvarFolder.resolve("variant_summary.txt.gz");
-        Path efosFilePath = clinvarFolder.resolve("ClinVar_Traits_EFO_Names.csv");
-        if (!efosFilePath.toFile().exists()) {
-            efosFilePath = null;
-        }
-
-        String assembly = buildCommandOptions.assembly;
-        checkMandatoryOption("assembly", assembly);
-        if (!assembly.equals(ClinVarParser.GRCH37_ASSEMBLY) && !assembly.equals(ClinVarParser.GRCH38_ASSEMBLY)) {
-            throw new ParameterException("Assembly '" + assembly + "' is not valid. Possible values: " + ClinVarParser.GRCH37_ASSEMBLY
-                    + ", " + ClinVarParser.GRCH38_ASSEMBLY);
-        }
-
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "clinvar", true);
-        return new ClinVarParser(clinvarFile, clinvarSummaryFile, efosFilePath, assembly, serializer);
-    }
-
-    @Deprecated
-    private CellBaseParser buildCosmic() {
-        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
-        Path cosmicFilePath = input.resolve("CosmicMutantExport.tsv");
-        //MutationParser vp = new MutationParser(Paths.get(cosmicFilePath), mSerializer);
-        // this parser works with cosmic file: CosmicCompleteExport_vXX.tsv (XX >= 70)
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "cosmic", true);
-        String assembly = buildCommandOptions.assembly;
-        return new CosmicParser(cosmicFilePath, serializer, assembly);
-    }
-
-    @Deprecated
-    private CellBaseParser buildGwas() throws IOException {
-        logger.warn("This method is deprecated, should no longer be used and will soon be removed");
-        Path inputDir = getInputDirFromCommandLine().resolve("clinical");
-        copyVersionFiles(Arrays.asList(inputDir.resolve("gwasVersion.json")));
-        Path gwasFile = inputDir.resolve(GWAS_INPUT_FILE_NAME);
-        FileUtils.checkPath(gwasFile);
-        Path dbsnpFile = inputDir.resolve(DBSNP_INPUT_FILE_NAME);
-        FileUtils.checkPath(dbsnpFile);
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gwas");
-        return new GwasParser(gwasFile, dbsnpFile, serializer);
-    }
-
-    private Path getInputDirFromCommandLine() {
-        File inputDirectory = new File(input.toString());
-        if (inputDirectory.exists()) {
-            if (inputDirectory.isDirectory()) {
-                return input;
-            } else {
-                throw new ParameterException("'" + input + "' is not a directory");
-            }
-        } else {
-            throw new ParameterException("Folder '" + input + "' doesn't exist");
-        }
-    }
-
     private Path getFastaReferenceGenome() {
         Path fastaFile = null;
         try {
-            DirectoryStream<Path> stream = Files.newDirectoryStream(input.resolve("genome"), entry -> {
+            DirectoryStream<Path> stream = Files.newDirectoryStream(downloadFolder.resolve("genome"), entry -> {
                 return entry.toString().endsWith(".fa.gz");
             });
             for (Path entry : stream) {
@@ -482,11 +373,4 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
         return fastaFile;
     }
-
-    private void checkMandatoryOption(String option, String value) {
-        if (value == null) {
-            throw new ParameterException("'" + option + "' option is mandatory for '" + buildCommandOptions.data + "' builder");
-        }
-    }
-
 }

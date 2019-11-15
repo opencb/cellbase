@@ -59,9 +59,7 @@ public class LoadCommandExecutor extends CommandExecutor {
 
         this.loadCommandOptions = loadCommandOptions;
 
-        if (loadCommandOptions.input != null) {
-            input = Paths.get(loadCommandOptions.input);
-        }
+        input = Paths.get(loadCommandOptions.targetDirectory);
         if (loadCommandOptions.database != null) {
             database = loadCommandOptions.database;
         }
