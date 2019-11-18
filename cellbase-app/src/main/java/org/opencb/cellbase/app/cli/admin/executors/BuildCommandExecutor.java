@@ -47,8 +47,8 @@ public class BuildCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.BuildCommandOptions buildCommandOptions;
 
     private Path output;
-    private Path buildFolder; // <output>/<species>_<assembly>/generated-json
-    private Path downloadFolder; // <output>/<species>_<assembly>/download
+    private Path buildFolder = null; // <output>/<species>_<assembly>/generated-json
+    private Path downloadFolder = null; // <output>/<species>_<assembly>/download
     private boolean normalize = true;
 
     private File ensemblScriptsFolder;
@@ -98,7 +98,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             Path spFolder = output.resolve(spShortName + "_" + spAssembly);
             // <output>/<species>_<assembly>/download
             downloadFolder = output.resolve(spFolder + "/download");
-            if (downloadFolder == null) {
+            if (!Files.exists(downloadFolder)) {
                 throw new CellbaseException("Download folder not found '" + spShortName + "_" + spAssembly + "/download'");
             }
             // <output>/<species>_<assembly>/generated_json
@@ -126,6 +126,10 @@ public class BuildCommandExecutor extends CommandExecutor {
                             parser = buildGenomeSequence();
                             break;
                         case EtlCommons.GENE_DATA:
+                            if (!buildOption.contains(EtlCommons.GENOME_DATA)) {
+                                // user didn't specify, load it anyway because required to load gene
+                                buildGenomeSequence();
+                            }
                             parser = buildGene();
                             break;
                         case EtlCommons.VARIATION_DATA:
