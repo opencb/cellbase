@@ -462,8 +462,7 @@ public class DownloadManager {
 
     }
 
-    public void downloadRegulation()
-            throws IOException, InterruptedException {
+    public void downloadRegulation() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
             return;
         }
@@ -998,7 +997,8 @@ public class DownloadManager {
 
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-N", "-O", outputFileName, "-o", outputFileName + ".log"));
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-N", "-O", outputFileName, "-o",
+                outputFileName + ".log"));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }

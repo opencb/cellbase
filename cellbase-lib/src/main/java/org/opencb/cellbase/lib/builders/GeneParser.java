@@ -29,6 +29,7 @@ import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDBException;
@@ -108,6 +109,8 @@ public class GeneParser extends CellBaseParser {
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
+
+        this.genomeSequenceFilePath = genomeSequenceFastaFile;
     }
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
@@ -156,6 +159,9 @@ public class GeneParser extends CellBaseParser {
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
+        if (fastaIndexManager == null) {
+            throw new CellbaseException("Error parsing fasta: " + genomeSequenceFilePath.toAbsolutePath() + " not found");
+        }
 
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
@@ -247,12 +253,15 @@ public class GeneParser extends CellBaseParser {
 
             if (gtf.getFeature().equalsIgnoreCase("exon")) {
                 // Obtaining the exon sequence
-                //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                 String exonSequence = null;
                 try {
                     exonSequence = fastaIndexManager.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                 } catch (RocksDBException e) {
                     e.printStackTrace();
+                    System.out.println("Couldn't get sequence for exon " +  gtf.getAttributes().get("exon_id") + " "
+                            + gtf.getSequenceName() + ":" + gtf.getStart() + "-" +  gtf.getEnd());
+                    logger.error("Couldn't get sequence for exon {} at {}:{}-{}", gtf.getAttributes().get("exon_id"),
+                            gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                 }
 
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
@@ -336,12 +345,6 @@ public class GeneParser extends CellBaseParser {
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
-                // FIXME We need to clean up this
-//                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
-//                    // nothing to do, this prints out 123,451 times.
-//                    //System.out.println("Empty block, this should be redesigned");
-//                }
-
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
                     //                      no need to set it at the beginning of next feature
@@ -389,7 +392,6 @@ public class GeneParser extends CellBaseParser {
         if (!fastaIndexManager.isConnected()) {
             fastaIndexManager.index();
         }
-
         return fastaIndexManager;
     }
 

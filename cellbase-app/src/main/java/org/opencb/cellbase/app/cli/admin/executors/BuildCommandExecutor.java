@@ -47,7 +47,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.BuildCommandOptions buildCommandOptions;
 
     private Path output;
-    private Path buildFolder; // <output>/<species>_<assembly>/data
+    private Path buildFolder; // <output>/<species>_<assembly>/generated-json
     private Path downloadFolder; // <output>/<species>_<assembly>/download
     private boolean normalize = true;
 
@@ -101,8 +101,8 @@ public class BuildCommandExecutor extends CommandExecutor {
             if (downloadFolder == null) {
                 throw new CellbaseException("Download folder not found '" + spShortName + "_" + spAssembly + "/download'");
             }
-            // <output>/<species>_<assembly>/data
-            buildFolder = output.resolve(spFolder + "/data");
+            // <output>/<species>_<assembly>/generated_json
+            buildFolder = output.resolve(spFolder + "/generated_json");
             makeDir(buildFolder);
 
             if (buildCommandOptions.data != null) {
