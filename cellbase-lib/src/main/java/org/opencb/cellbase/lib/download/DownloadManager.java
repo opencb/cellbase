@@ -241,7 +241,7 @@ public class DownloadManager {
         downloadGeneExpressionAtlas(geneFolder);
         downloadGeneDiseaseAnnotation(geneFolder);
         downloadGnomad(geneFolder);
-        runGeneExtraInfo(geneFolder);
+        runGeneExtraInfo(geneFolder); 
     }
 
     private void downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
@@ -997,7 +997,7 @@ public class DownloadManager {
 
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-N", "-O", outputFileName, "-o",
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "--no-clobber", "-O", outputFileName, "-o",
                 outputFileName + ".log"));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);

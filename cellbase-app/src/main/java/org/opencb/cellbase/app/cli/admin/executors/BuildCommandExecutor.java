@@ -255,7 +255,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path geneFolderPath = downloadFolder.resolve("gene");
         copyVersionFiles(Arrays.asList(geneFolderPath.resolve("dgidbVersion.json"),
                 geneFolderPath.resolve("ensemblCoreVersion.json"), geneFolderPath.resolve("uniprotXrefVersion.json"),
-                geneFolderPath.resolve(downloadFolder.resolve("expression/geneExpressionAtlasVersion.json")),
+                geneFolderPath.resolve("geneExpressionAtlasVersion.json"),
                 geneFolderPath.resolve("hpoVersion.json"), geneFolderPath.resolve("disgenetVersion.json"),
                 geneFolderPath.resolve("gnomadVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();

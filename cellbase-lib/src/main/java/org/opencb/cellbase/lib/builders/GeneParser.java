@@ -159,9 +159,6 @@ public class GeneParser extends CellBaseParser {
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
-        if (fastaIndexManager == null) {
-            throw new CellbaseException("Error parsing fasta: " + genomeSequenceFilePath.toAbsolutePath() + " not found");
-        }
 
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
@@ -258,10 +255,6 @@ public class GeneParser extends CellBaseParser {
                     exonSequence = fastaIndexManager.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                 } catch (RocksDBException e) {
                     e.printStackTrace();
-                    System.out.println("Couldn't get sequence for exon " +  gtf.getAttributes().get("exon_id") + " "
-                            + gtf.getSequenceName() + ":" + gtf.getStart() + "-" +  gtf.getEnd());
-                    logger.error("Couldn't get sequence for exon {} at {}:{}-{}", gtf.getAttributes().get("exon_id"),
-                            gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                 }
 
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
