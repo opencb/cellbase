@@ -241,7 +241,7 @@ public class DownloadManager {
         downloadGeneExpressionAtlas(geneFolder);
         downloadGeneDiseaseAnnotation(geneFolder);
         downloadGnomad(geneFolder);
-        runGeneExtraInfo(geneFolder); 
+        runGeneExtraInfo(geneFolder);
     }
 
     private void downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
