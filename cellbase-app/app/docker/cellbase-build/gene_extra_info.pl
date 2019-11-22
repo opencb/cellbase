@@ -10,7 +10,7 @@ use DB_CONFIG;
 my $species = 'Homo sapiens';
 my $assembly = 'GRCh37';
 my $phylo = "";
-my $outdir = "/tmp/$species";
+my $outdir = "/ensembl-data/$species";
 my $verbose = '0';
 my $help = '0';
 
