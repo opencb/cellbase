@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.ErrorCategory;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.bulk.BulkWriteError;
-import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonSerializationException;
 import org.bson.Document;
@@ -38,9 +37,9 @@ import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
+import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -741,9 +740,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
         // End recursive calls
         if (batch.size() > 0) {
             try {
-                // TODO: queryOptions?
-                CellBaseDataResult<BulkWriteResult> result = new CellBaseDataResult<>(mongoDBCollection.insert(batch, new QueryOptions()));
-                return result.first().getInsertedCount();
+                DataResult result = mongoDBCollection.insert(batch, new QueryOptions());
+                return Math.toIntExact(result.getNumInserted());
             } catch (BsonSerializationException e) {
                 // End recursive calls
                 if (batch.size() == 1) {
