@@ -55,12 +55,7 @@ public abstract class CellBaseLoader implements Callable<Integer> {
             this.cellBaseConfiguration = configuration;
         } else {
             try {
-//                CellBaseConfiguration.ConfigurationFileType fileType = CellBaseConfiguration.ConfigurationFileType.JSON;
                 InputStream inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.yml");
-//                if (inputStream == null) {
-//                    fileType = CellBaseConfiguration.ConfigurationFileType.YAML;
-//                    inputStream = CellBaseConfiguration.class.getClassLoader().getResourceAsStream("configuration.yml");
-//                }
                 this.cellBaseConfiguration = CellBaseConfiguration.load(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();

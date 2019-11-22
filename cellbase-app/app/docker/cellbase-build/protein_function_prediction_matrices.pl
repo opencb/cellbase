@@ -11,7 +11,7 @@ use JSON;
 
 my $species = 'Homo sapiens';
 my $assembly = 'GRCh37';
-my $outdir = "/tmp/$species";
+my $outdir = "/ensembl-data/$species";
 my $chrom = '22';
 my $ensembl_libs;
 my $verbose = '0';

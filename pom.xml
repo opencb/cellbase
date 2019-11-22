@@ -23,20 +23,21 @@
 
     <properties>
         <cellbase.version>5.0.0-SNAPSHOT</cellbase.version>
-        <compileSource>1.8</compileSource>
-        <java-common-libs.version>3.7.0</java-common-libs.version>
-        <biodata.version>1.6.0-SNAPSHOT</biodata.version>
+        <java-common-libs.version>4.0.0-SNAPSHOT</java-common-libs.version>
+        <biodata.version>2.0.0-SNAPSHOT</biodata.version>
         <bionetdb.version>0.1.0</bionetdb.version>
-        <jackson.version>2.8.4</jackson.version>
+        <jackson.version>2.10.1</jackson.version>
         <jersey.version>2.29.1</jersey.version>
         <commons.io.version>2.5</commons.io.version>
-        <cellbase.war.name>cellbase</cellbase.war.name>
         <slf4j.version>1.7.25</slf4j.version>
         <junit.platform.version>1.5.2</junit.platform.version>
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
-        <jacoco.version>0.8.4</jacoco.version>
-        <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
+        <jacoco.version>0.8.5</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
+
+        <cellbase.war.name>cellbase</cellbase.war.name>
+        <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
+        <compileSource>1.8</compileSource>
     </properties>
     <scm>
         <url>https://github.com/opencb/cellbase</url>
@@ -63,19 +64,14 @@
             <email>javild@gmail.com</email>
         </developer>
         <developer>
-            <id>Swaathik</id>
-            <name>Swaathi</name>
-            <email>swaathik@gmail.com</email>
+            <id>julie-sullivan</id>
+            <name>Julie</name>
+            <email>julie.sullivan@gmail.com</email>
         </developer>
         <developer>
             <id>mbleda</id>
             <name>Marta</name>
             <email>martableda@gmail.com</email>
-        </developer>
-        <developer>
-            <id>pabarcgar</id>
-            <name>Pablo</name>
-            <email>pablo.arce.garcia@gmail.com</email>
         </developer>
     </developers>
 

@@ -1,0 +1,7 @@
+name: cellbase-environment
+channels:
+  - conda-forge
+dependencies:
+  - requests
+  - pyyaml
+  - retrying

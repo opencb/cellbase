@@ -26,7 +26,7 @@ import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -48,34 +48,34 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
 
 
     @Override
-    public QueryResult<RegulatoryFeature> next(Query query, QueryOptions options) {
+    public CellBaseDataResult<RegulatoryFeature> next(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult nativeNext(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
         return null;
     }
 
     @Override
-    public QueryResult rank(Query query, String field, int numResults, boolean asc) {
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
         return null;
     }
 
     @Override
-    public QueryResult groupBy(Query query, String field, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
-    public QueryResult groupBy(Query query, List<String> fields, QueryOptions options) {
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
     }
 
     @Override
-    public QueryResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         if (query.getString(QueryParams.REGION.key()) != null) {
             Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
             Bson bsonDocument = parseQuery(query);
@@ -85,39 +85,39 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public QueryResult<Long> update(List objectList, String field, String[] innerFields) {
+    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;
     }
 
     @Override
-    public QueryResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.count(bsonDocument);
+        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
     }
 
     @Override
-    public QueryResult distinct(Query query, String field) {
+    public CellBaseDataResult distinct(Query query, String field) {
         Bson bsonDocument = parseQuery(query);
-        return mongoDBCollection.distinct(field, bsonDocument);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
     }
 
     @Override
-    public QueryResult stats(Query query) {
+    public CellBaseDataResult stats(Query query) {
         return null;
     }
 
     @Override
-    public QueryResult<RegulatoryFeature> get(Query query, QueryOptions inputOptions) {
+    public CellBaseDataResult<RegulatoryFeature> get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return mongoDBCollection.find(bson, null, RegulatoryFeature.class, options);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, RegulatoryFeature.class, options));
     }
 
     @Override
-    public QueryResult nativeGet(Query query, QueryOptions options) {
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.find(bson, options);
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
 
     @Override

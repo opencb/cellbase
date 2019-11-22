@@ -24,10 +24,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -99,19 +100,20 @@ public class DownloadManager {
         }
     };
 
-    public DownloadManager(CellBaseConfiguration configuration, Logger logger, EnsemblInfo ensemblInfo, Path common, String assembly) {
+    public DownloadManager(CellBaseConfiguration configuration, EnsemblInfo ensemblInfo, Path common, String assembly) {
         this.configuration = configuration;
-        this.logger = logger;
         this.ensemblInfo = ensemblInfo;
         this.common = common;
         this.assembly = assembly;
+        logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    public void downloadStructuralVariants(Species species, String assembly, Path speciesFolder) throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(species, "svs")) {
+    public void downloadStructuralVariants(SpeciesConfiguration speciesConfiguration, String assembly, Path speciesFolder)
+            throws IOException, InterruptedException {
+        if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
             return;
         }
-        if (species.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading DGV data ...");
 
             Path structuralVariantsFolder = speciesFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
@@ -131,7 +133,7 @@ public class DownloadManager {
         return sourceFilename.split("\\.")[0].split("_")[3];
     }
 
-    private boolean speciesHasInfoToDownload(Species sp, String info) {
+    private boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String info) {
         boolean hasInfo = true;
         if (sp.getData() == null || !sp.getData().contains(info)) {
             logger.warn("Species '{}' has no '{}' information available to download", sp.getScientificName(), info);
@@ -140,7 +142,7 @@ public class DownloadManager {
         return hasInfo;
     }
 
-    private String getPhylo(Species sp) {
+    private String getPhylo(SpeciesConfiguration sp) {
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
             return "vertebrates";
         } else if (configuration.getSpecies().getMetazoa().contains(sp)) {
@@ -160,7 +162,7 @@ public class DownloadManager {
         }
     }
 
-    public void downloadReferenceGenome(Species sp, String shortName, String assembly, Path spFolder)
+    public void downloadReferenceGenome(SpeciesConfiguration sp, String shortName, String assembly, Path spFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading genome information ...");
         Path sequenceFolder = spFolder.resolve("genome");
@@ -211,7 +213,7 @@ public class DownloadManager {
         jsonObjectMapper.writeValue(outputFilePath.toFile(), versionDataMap);
     }
 
-    public void downloadEnsemblGene(Species sp, String spShortName, String assembly, Path speciesFolder)
+    public void downloadEnsemblGene(SpeciesConfiguration sp, String spShortName, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = speciesFolder.resolve("gene");
@@ -226,8 +228,8 @@ public class DownloadManager {
         runGeneExtraInfo(sp, assembly, geneFolder);
     }
 
-    private void downloadDrugData(Species species, Path geneFolder) throws IOException, InterruptedException {
-        if (species.getScientificName().equals("Homo sapiens")) {
+    private void downloadDrugData(SpeciesConfiguration speciesConfiguration, Path geneFolder) throws IOException, InterruptedException {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
             Path geneDrugFolder = geneFolder.resolve("geneDrug");
             Files.createDirectories(geneDrugFolder);
@@ -238,20 +240,20 @@ public class DownloadManager {
         }
     }
 
-    private void downloadEnsemblData(Species species, String speciesShortName, Path geneFolder, String host)
+    private void downloadEnsemblData(SpeciesConfiguration speciesConfiguration, String speciesShortName, Path geneFolder, String host)
             throws IOException, InterruptedException {
         logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
         List<String> downloadedUrls = new ArrayList<>(4);
 
         String ensemblHost = ensemblInfo.getHostURL() + "/" + ensemblInfo.getRelease();
-        if (!configuration.getSpecies().getVertebrates().contains(species)) {
-            ensemblHost = ensemblInfo.getHostURL() + "/" + ensemblInfo.getRelease() + "/" + getPhylo(species);
+        if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
+            ensemblHost = ensemblInfo.getHostURL() + "/" + ensemblInfo.getRelease() + "/" + getPhylo(speciesConfiguration);
         }
 
         String bacteriaCollectionPath = "";
-        if (configuration.getSpecies().getBacteria().contains(species)) {
+        if (configuration.getSpecies().getBacteria().contains(speciesConfiguration)) {
             // WARN: assuming there's just one assembly
-            bacteriaCollectionPath =  species.getAssemblies().get(0).getEnsemblCollection() + "/";
+            bacteriaCollectionPath =  speciesConfiguration.getAssemblies().get(0).getEnsemblCollection() + "/";
         }
 
         // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
@@ -281,7 +283,7 @@ public class DownloadManager {
                 geneFolder.resolve("ensemblCoreVersion.json"));
     }
 
-    private void downloadGeneUniprotXref(Species sp, Path geneFolder) throws IOException, InterruptedException {
+    private void downloadGeneUniprotXref(SpeciesConfiguration sp, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading UniProt ID mapping ...");
 
         if (GENE_UNIPROT_XREF_FILES.containsKey(sp.getScientificName())) {
@@ -357,8 +359,8 @@ public class DownloadManager {
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
     }
 
-    private void downloadGnomad(Species species, Path geneFolder) throws IOException, InterruptedException {
-        if (species.getScientificName().equals("Homo sapiens")) {
+    private void downloadGnomad(SpeciesConfiguration speciesConfiguration, Path geneFolder) throws IOException, InterruptedException {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD data...");
             String url = configuration.getDownload().getGnomad().getHost();
             downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
@@ -391,7 +393,7 @@ public class DownloadManager {
         return null;
     }
 
-    private void runGeneExtraInfo(Species sp, String assembly, Path geneFolder) throws IOException, InterruptedException {
+    private void runGeneExtraInfo(SpeciesConfiguration sp, String assembly, Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
 
         String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
@@ -423,7 +425,7 @@ public class DownloadManager {
     }
 
 
-    public void downloadVariation(Species sp, String shortName, Path spFolder)
+    public void downloadVariation(SpeciesConfiguration sp, String shortName, Path spFolder)
             throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(sp, "variation")) {
             return;
@@ -451,9 +453,9 @@ public class DownloadManager {
 
     }
 
-    public void downloadRegulation(Species species, String shortName, String assembly, Path speciesFolder)
+    public void downloadRegulation(SpeciesConfiguration speciesConfiguration, String shortName, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(species, "regulation")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
             return;
         }
         logger.info("Downloading regulation information ...");
@@ -463,8 +465,8 @@ public class DownloadManager {
 
         // Downloading Ensembl Regulation
         String regulationUrl = ensemblInfo.getHostURL() + "/" + ensemblInfo.getRelease();
-        if (!configuration.getSpecies().getVertebrates().contains(species)) {
-            regulationUrl = ensemblInfo.getHostURL() + "/" + ensemblInfo.getRelease() + "/" + getPhylo(species);
+        if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
+            regulationUrl = ensemblInfo.getHostURL() + "/" + ensemblInfo.getRelease() + "/" + getPhylo(speciesConfiguration);
         }
         regulationUrl = regulationUrl + "/regulation/" + shortName;
 
@@ -511,7 +513,7 @@ public class DownloadManager {
                     Collections.singletonList(url), mirbaseFolder.resolve("mirbaseVersion.json"));
         }
 
-        if (species.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             if (assembly.equalsIgnoreCase("GRCh37")) {
                 url = configuration.getDownload().getTargetScan().getHost() + "/hg19/database/targetScanS.txt.gz";
                 downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
@@ -526,7 +528,7 @@ public class DownloadManager {
                         Collections.singletonList(url), regulationFolder.resolve("miRTarBaseVersion.json"));
             }
         }
-        if (species.getScientificName().equals("Mus musculus")) {
+        if (speciesConfiguration.getScientificName().equals("Mus musculus")) {
             url = configuration.getDownload().getTargetScan().getHost() + "/mm9/database/targetScanS.txt.gz";
             downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
 
@@ -566,7 +568,7 @@ public class DownloadManager {
      * @throws IOException if there is an error writing to a file
      * @throws InterruptedException if there is an error downloading files
      */
-    public void downloadProtein(Species sp) throws IOException, InterruptedException {
+    public void downloadProtein(SpeciesConfiguration sp) throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(sp, "protein")) {
             return;
         }
@@ -647,21 +649,21 @@ public class DownloadManager {
     /**
      * This method downloads bith PhastCons and PhyloP data from UCSC for Human and Mouse species.
      *
-     * @param species       The Species object to download the data
+     * @param speciesConfiguration       The Species object to download the data
      * @param assembly      The assembly required
      * @param speciesFolder Output folder to download the data
      * @throws IOException if there is an error writing to a file
      * @throws InterruptedException if there is an error downloading files
      */
-    public void downloadConservation(Species species, String assembly, Path speciesFolder)
+    public void downloadConservation(SpeciesConfiguration speciesConfiguration, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(species, "conservation")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, "conservation")) {
             return;
         }
         logger.info("Downloading conservation information ...");
         Path conservationFolder = speciesFolder.resolve("conservation");
 
-        if (species.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             Files.createDirectories(conservationFolder);
             Files.createDirectories(conservationFolder.resolve("phastCons"));
             Files.createDirectories(conservationFolder.resolve("phylop"));
@@ -721,7 +723,7 @@ public class DownloadManager {
             }
         }
 
-        if (species.getScientificName().equals("Mus musculus")) {
+        if (speciesConfiguration.getScientificName().equals("Mus musculus")) {
             Files.createDirectories(conservationFolder);
             Files.createDirectories(conservationFolder.resolve("phastCons"));
             Files.createDirectories(conservationFolder.resolve("phylop"));
@@ -748,12 +750,12 @@ public class DownloadManager {
         }
     }
 
-    public void downloadClinical(Species species, String assembly, Path speciesFolder)
+    public void downloadClinical(SpeciesConfiguration speciesConfiguration, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(species, "clinical_variants")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, "clinical_variants")) {
             return;
         }
-        if (species.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             if (assembly == null) {
                 throw new ParameterException("Assembly must be provided for downloading clinical variants data."
                         + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
@@ -905,11 +907,12 @@ public class DownloadManager {
         return configuration.getDownload().getClinvar().getHost().split("_")[1].split("\\.")[0];
     }
 
-    public void downloadCaddScores(Species species, String assembly, Path speciesFolder) throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(species, "variation_functional_score")) {
+    public void downloadCaddScores(SpeciesConfiguration speciesConfiguration, String assembly, Path speciesFolder)
+            throws IOException, InterruptedException {
+        if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
             return;
         }
-        if (species.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens") && assembly.equalsIgnoreCase("GRCh37")) {
             logger.info("Downloading CADD scores information ...");
 
             Path variationFunctionalScoreFolder = speciesFolder.resolve("variation_functional_score");
@@ -932,12 +935,12 @@ public class DownloadManager {
                 proteinFolder.resolve("reactomeVersion.json"));
     }
 
-    public void downloadRepeats(Species species, String assembly, Path speciesFolder)
+    public void downloadRepeats(SpeciesConfiguration speciesConfiguration, String assembly, Path speciesFolder)
             throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(species, "repeats")) {
+        if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
             return;
         }
-        if (species.getScientificName().equals("Homo sapiens")) {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading repeats data ...");
             Path repeatsFolder = speciesFolder.resolve(EtlCommons.REPEATS_FOLDER);
             Files.createDirectories(repeatsFolder);

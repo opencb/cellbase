@@ -35,7 +35,7 @@ print_usage() if $help;
 print_parameters() if $verbose;
 
 if($outfile eq "") {
-    $outfile = "/tmp/$species.json";
+    $outfile = "/ensembl-data/$species.json";
 }
 
 ####################################################################
@@ -173,3 +173,5 @@ my $info_stats_json = encode_json \%info_stats;
 open(OUTFILE, ">$outfile") || die "Cannot open $outfile\n";
 print OUTFILE $info_stats_json;
 close(OUTFILE);
+
+print "Wrote $outfile\n";

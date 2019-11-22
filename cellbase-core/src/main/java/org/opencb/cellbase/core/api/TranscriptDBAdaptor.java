@@ -17,7 +17,7 @@
 package org.opencb.cellbase.core.api;
 
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,14 +68,14 @@ public interface TranscriptDBAdaptor<Transcript> extends FeatureDBAdaptor<Transc
         }
     }
 
-    QueryResult<String> getCdna(String id);
+    CellBaseDataResult<String> getCdna(String id);
 
-    default List<QueryResult<String>> getCdna(List<String> idList) {
-        List<QueryResult<String>> queryResults = new ArrayList<>();
+    default List<CellBaseDataResult<String>> getCdna(List<String> idList) {
+        List<CellBaseDataResult<String>> cellBaseDataResults = new ArrayList<>();
         for (String id : idList) {
-            queryResults.add(getCdna(id));
+            cellBaseDataResults.add(getCdna(id));
         }
-        return queryResults;
+        return cellBaseDataResults;
     }
 
 }

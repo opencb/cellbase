@@ -23,7 +23,7 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.lib.EtlCommons;
 
 
-import org.opencb.cellbase.core.config.Species;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -68,7 +68,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private File proteinScriptsFolder;
 
     private boolean flexibleGTFParsing;
-    private Species species;
+    private SpeciesConfiguration speciesConfiguration;
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
@@ -109,16 +109,16 @@ public class BuildCommandExecutor extends CommandExecutor {
 
             // We need to get the Species object from the CLI name
             // This can be the scientific or common name, or the ID
-            for (Species sp : configuration.getAllSpecies()) {
+            for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
                 if (buildCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
                         || buildCommandOptions.species.equalsIgnoreCase(sp.getId())) {
-                    species = sp;
+                    speciesConfiguration = sp;
                     break;
                 }
             }
 
-            if (species == null) {
+            if (speciesConfiguration == null) {
                 logger.error("Species '{}' not valid", buildCommandOptions.species);
             }
 
@@ -126,7 +126,7 @@ public class BuildCommandExecutor extends CommandExecutor {
 
                 String[] buildOptions;
                 if (buildCommandOptions.data.equals("all")) {
-                    buildOptions = species.getData().toArray(new String[0]);
+                    buildOptions = speciesConfiguration.getData().toArray(new String[0]);
                 } else {
                     buildOptions = buildCommandOptions.data.split(",");
                 }
@@ -256,12 +256,12 @@ public class BuildCommandExecutor extends CommandExecutor {
         try {
             String outputFileName = output.resolve("genome_info.json").toAbsolutePath().toString();
             List<String> args = new ArrayList<>();
-            args.addAll(Arrays.asList("--species", species.getScientificName(),
+            args.addAll(Arrays.asList("--species", speciesConfiguration.getScientificName(),
                     "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
                     "-o", outputFileName,
                     "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
-            if (!configuration.getSpecies().getVertebrates().contains(species)
-                    && !species.getScientificName().equals("Drosophila melanogaster")) {
+            if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)
+                    && !speciesConfiguration.getScientificName().equals("Drosophila melanogaster")) {
                 args.add("--phylo");
                 args.add("no-vertebrate");
             }
@@ -274,7 +274,7 @@ public class BuildCommandExecutor extends CommandExecutor {
             if (downloadedGenomeInfo) {
                 logger.info(outputFileName + " created OK");
             } else {
-                logger.error("Genome info for " + species.getScientificName() + " cannot be downloaded");
+                logger.error("Genome info for " + speciesConfiguration.getScientificName() + " cannot be downloaded");
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -297,7 +297,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                 geneFolderPath.resolve("gnomadVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "gene");
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, species, flexibleGTFParsing, serializer);
+        return new GeneParser(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
     }
 
 
@@ -333,10 +333,10 @@ public class BuildCommandExecutor extends CommandExecutor {
                 proteinFolder.resolve("interproVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein");
         return new ProteinParser(proteinFolder.resolve("uniprot_chunks"),
-                common.resolve("protein").resolve("protein2ipr.dat.gz"), species.getScientificName(), serializer);
+                common.resolve("protein").resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
     }
 
-    private void getProteinFunctionPredictionMatrices(Species sp, Path geneFolder)
+    private void getProteinFunctionPredictionMatrices(SpeciesConfiguration sp, Path geneFolder)
             throws IOException, InterruptedException {
         logger.info("Downloading protein function prediction matrices ...");
 
@@ -363,7 +363,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path psimiTabFile = proteinFolder.resolve("intact.txt");
         copyVersionFiles(Arrays.asList(proteinFolder.resolve("intactVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(output, "protein_protein_interaction");
-        return new InteractionParser(psimiTabFile, species.getScientificName(), serializer);
+        return new InteractionParser(psimiTabFile, speciesConfiguration.getScientificName(), serializer);
     }
 
     private CellBaseParser buildDrugParser() {
@@ -398,7 +398,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     }
 
     private String getDefaultHumanAssembly() {
-        for (Species species : configuration.getSpecies().getVertebrates()) {
+        for (SpeciesConfiguration species : configuration.getSpecies().getVertebrates()) {
             if (species.getId().equals("hsapiens")) {
                 return species.getAssemblies().get(0).getName();
             }

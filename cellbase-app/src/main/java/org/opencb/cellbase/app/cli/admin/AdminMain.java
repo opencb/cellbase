@@ -49,18 +49,6 @@ public class AdminMain {
                 cliOptionsParser.printUsage();
                 System.exit(0);
             }
-//            if (cliOptionsParser.getGeneralOptions().help) {
-//                cliOptionsParser.printUsage();
-//                System.exit(0);
-//            } else {
-//                if (cliOptionsParser.getGeneralOptions().version) {
-//                    cliOptionsParser.printVersion();
-//                    System.exit(0);
-//                } else {
-//                    cliOptionsParser.printUsage();
-//                    System.exit(1);
-//                }
-//            }
         } else {
             CommandExecutor commandExecutor = null;
             if (cliOptionsParser.isHelp()) {
@@ -77,11 +65,11 @@ public class AdminMain {
                     case "load":
                         commandExecutor = new LoadCommandExecutor(cliOptionsParser.getLoadCommandOptions());
                         break;
+                    case "index":
+                        commandExecutor = new IndexCommandExecutor(cliOptionsParser.getIndexCommandOptions());
+                        break;
                     case "server":
                         commandExecutor = new ServerCommandExecutor(cliOptionsParser.getServerCommandOptions());
-                        break;
-                    case "post-load":
-                        commandExecutor = new PostLoadCommandExecutor(cliOptionsParser.getPostLoadCommandOptions());
                         break;
                     default:
                         break;

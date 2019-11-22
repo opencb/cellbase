@@ -22,7 +22,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.tools.sequence.SequenceAdaptor;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
     @Override
     public String query(String contig, int start, int end) throws Exception {
         Region region = new Region(contig, start, end);
-        QueryResult<GenomeSequenceFeature> queryResult
+        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult
                  = genomeDBAdaptor.getSequence(region, QueryOptions.empty());
 
         // This behaviour mimics the behaviour of the org.opencb.biodata.tools.sequence.SamtoolsFastaIndex with one
@@ -63,11 +63,11 @@ public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
         // bound, then a RunTime exception will be thrown. HOWEVER: if start is within the bounds BUT end is out of the
         // right bound, then THIS implementaiton will return available nucleotides while SamtoolsFastaIndex will keep
         // returning the exception.
-        if (queryResult.getResult().size() > 0 && StringUtils.isNotBlank(queryResult.getResult().get(0).getSequence())) {
-            if (queryResult.getResult().get(0).getSequence().length() < (end - start + 1)) {
+        if (cellBaseDataResult.getResults().size() > 0 && StringUtils.isNotBlank(cellBaseDataResult.getResults().get(0).getSequence())) {
+            if (cellBaseDataResult.getResults().get(0).getSequence().length() < (end - start + 1)) {
                 logger.warn("End coordinate out of the right bound. Returning available nucleotides.");
             }
-            return queryResult.getResult().get(0).getSequence();
+            return cellBaseDataResult.getResults().get(0).getSequence();
         } else {
             throw new RuntimeException("Unable to find entry for " + region.toString());
         }

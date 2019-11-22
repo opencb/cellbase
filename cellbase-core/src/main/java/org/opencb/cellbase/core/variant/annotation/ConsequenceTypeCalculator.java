@@ -337,7 +337,7 @@ public abstract class ConsequenceTypeCalculator {
                         + "-" + (genomicCoordinate + 1));
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
                         .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
-                                .getResult().get(0).getSequence().charAt(0));
+                                .getResults().get(0).getSequence().charAt(0));
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
                         reverseTranscriptSequence.charAt(reverseTranscriptSequencePosition));
@@ -367,7 +367,7 @@ public abstract class ConsequenceTypeCalculator {
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
                 modifiedCodonArray[modifiedCodonPosition] = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
-                        .getResult().get(0).getSequence().charAt(0);
+                        .getResults().get(0).getSequence().charAt(0);
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);
             }
