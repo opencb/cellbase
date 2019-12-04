@@ -12,7 +12,6 @@ PERL5LIB=${PERL5LIB}:/opt/
 export PERL5LIB
 
 
-#perl /opt/gene_extra_info.pl
-perl /opt/protein_function_prediction_matrices.pl
+perl /opt/gene_extra_info.pl
 perl /opt/genome_info.pl
-
+perl /opt/protein_function_prediction_matrices.pl
