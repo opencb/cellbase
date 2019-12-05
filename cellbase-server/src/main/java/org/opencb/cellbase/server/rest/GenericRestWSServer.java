@@ -183,7 +183,7 @@ public class GenericRestWSServer implements IWSServer {
         this.httpServletRequest = hsr;
 
         init();
-        initQuery();
+        initQuery(false);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
@@ -194,7 +194,7 @@ public class GenericRestWSServer implements IWSServer {
         this.httpServletRequest = hsr;
 
         init();
-        initQuery();
+        initQuery(true);
     }
 
     protected void init() throws VersionException, SpeciesException, IOException, CellbaseException {
@@ -222,7 +222,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void initQuery() throws VersionException, SpeciesException {
+    private void initQuery(boolean checkSpecies) throws VersionException, SpeciesException {
         startTime = System.currentTimeMillis();
         query = new Query();
         // This needs to be an ArrayList since it may be added some extra fields later
@@ -230,7 +230,7 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse = new CellBaseDataResponse<>();
         params = new ObjectMap();
 
-        checkPathParams(true);
+        checkPathParams(checkSpecies);
     }
 
     private void checkPathParams(boolean checkSpecies) throws VersionException, SpeciesException {
