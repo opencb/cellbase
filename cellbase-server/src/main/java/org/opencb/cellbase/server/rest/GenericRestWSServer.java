@@ -203,17 +203,18 @@ public class GenericRestWSServer implements IWSServer {
             logger = LoggerFactory.getLogger(this.getClass());
 
             // We must load the configuration file from CELLBASE_HOME, this must happen only the first time!
-            ServletContext context = httpServletRequest.getServletContext();
-            String cellbaseHome = context.getInitParameter("CELLBASE_HOME");
+            String cellbaseHome = System.getenv("CELLBASE_HOME");
             if (StringUtils.isEmpty(cellbaseHome)) {
-                // If not exists then we try the environment variable OPENCGA_HOME
-                if (StringUtils.isNotEmpty(System.getenv("CELLBASE_HOME"))) {
-                    cellbaseHome = System.getenv("CELLBASE_HOME");
+                // ENV variable isn't set, try the servlet context instead
+                ServletContext context = httpServletRequest.getServletContext();
+                if (StringUtils.isNotEmpty(context.getInitParameter("CELLBASE_HOME"))) {
+                    cellbaseHome = context.getInitParameter("CELLBASE_HOME");
                 } else {
                     logger.error("No valid configuration directory provided!");
                     throw new CellbaseException("No CELLBASE_HOME found");
                 }
             }
+
             logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
 
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
