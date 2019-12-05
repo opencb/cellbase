@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cellbase.fullname" . }}
+  labels:
+    {{- include "cellbase.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "cellbase.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cellbase.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "cellbase.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CELLBASE_DATABASES_MONGODB_HOST
+              value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_HOST }}
+            - name: CELLBASE_DATABASES_MONGODB_USER
+              value: {{ .Values.mongodb.adminUser }}
+            - name: CELLBASE_DATABASES_MONGODB_PASSWORD
+              value: {{ .Values.mongodb.mongodbRootPassword }}
+            - name: CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE
+              value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE }}
+            - name: CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET
+              value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET | quote }}
+            - name: CELLBASE_DATABASES_MONGODB_OPTIONS_READ_PREFERENCE
+              value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_OPTIONS_READ_PREFERENCE }}
+            - name: CELLBASE_DATABASES_MONGODB_OPTIONS_CONNECTIONS_PER_HOST
+              value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_OPTIONS_CONNECTIONS_PER_HOST | quote }}
+            - name: CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_ENABLED
+              value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_ENABLED | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /cellbase/webservices/rest/v4/meta/about
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /cellbase/webservices/rest/v4/meta/about
+              port: 8080
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

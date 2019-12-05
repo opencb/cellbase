@@ -1,0 +1,82 @@
+# Default values for cellbase.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+deployMongo: false
+deployMongoSharded: false
+  
+mongodb:
+  mongodbRootPassword: 
+
+settings:
+  CELLBASE_DATABASES_MONGODB_USER: admin
+  CELLBASE_DATABASES_MONGODB_HOST: cellbase-mongodb-replicaset-client
+  CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE: "admin"
+  CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET: "rs0"
+  CELLBASE_DATABASES_MONGODB_OPTIONS_READ_PREFERENCE: "nearest"
+  CELLBASE_DATABASES_MONGODB_OPTIONS_CONNECTIONS_PER_HOST: "50"
+  CELLBASE_DATABASES_MONGODB_OPTIONS_SSL_ENABLED: "false"
+
+
+image:
+  repository: opencb/cellbase-app:71f4a2f22318c5d6099bec5ba6cfffdee22c67ff
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: LoadBalancer
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: 
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
