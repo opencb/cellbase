@@ -132,6 +132,7 @@
                                 <exec executable="cp">
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/app/bin"/>
+                                    <arg value="${project.basedir}/app/docker"/>
                                     <arg value="${project.basedir}/app/example"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
