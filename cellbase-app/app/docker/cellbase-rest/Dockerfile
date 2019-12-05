@@ -9,8 +9,6 @@ WORKDIR /appl/cellbase
 RUN mvn clean install -DskipTests
 
 FROM openjdk:8-jre-alpine
-#ENV CELLBASE_HOME=/opt/cellbase
-#ENV CELLBASE_CONFIG_DIR=${CELLBASE_HOME}/conf
 COPY --from=Build /appl/cellbase/build /opt/cellbase
-# make a cellbase user
+RUN adduser -D -u 1001 cellbase -h cellbase
 ENTRYPOINT ["/opt/cellbase/bin/cellbase-admin.sh", "server", "--start"]
