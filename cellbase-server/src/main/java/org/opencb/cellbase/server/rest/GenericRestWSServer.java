@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.*;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.IOException;
@@ -172,8 +172,6 @@ public class GenericRestWSServer implements IWSServer {
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
 
-        // Initialize Monitor
-        monitor = new Monitor(dbAdaptorFactory);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
@@ -219,6 +217,9 @@ public class GenericRestWSServer implements IWSServer {
 
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
             dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+
+            // Initialize Monitor
+            monitor = new Monitor(dbAdaptorFactory);
         }
     }
 
