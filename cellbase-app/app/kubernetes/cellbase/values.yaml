@@ -5,13 +5,15 @@
 replicaCount: 1
 
 deployMongo: false
-deployMongoSharded: false
   
 mongodb:
   mongodbRootPassword: 
 
+global:
+  storageClass: managed-premium
+
 settings:
-  CELLBASE_DATABASES_MONGODB_USER: admin
+  CELLBASE_DATABASES_MONGODB_USER: root
   CELLBASE_DATABASES_MONGODB_HOST: cellbase-mongodb-replicaset-client
   CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE: "admin"
   CELLBASE_DATABASES_MONGODB_OPTIONS_REPLICA_SET: "rs0"

@@ -21,13 +21,12 @@ version: 0.1.0
 appVersion: 1.16.0
 
 dependencies:
-  - name: mongodb
-    condition: deployMongo
-    repository: "https://charts.bitnami.com/bitnami"
-    version: "7.5.0" 
-    alias: mongodb
-  - name: mongodb-sharded
-    condition: deployMongoSharded
-    repository: "https://charts.bitnami.com/bitnami"
-    version: "1.0.0" 
-    alias: mongodb
+- name: mongodb
+  condition: deployMongo
+  repository: "https://charts.bitnami.com/"
+  version: "7.5.0" 
+# - name: mongodb-sharded
+#   condition: deployMongo
+#   repository: "https://charts.bitnami.com/"
+#   version: "1.0.0" 
+#   alias: mongodb
