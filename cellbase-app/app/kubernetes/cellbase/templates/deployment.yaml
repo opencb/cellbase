@@ -31,7 +31,7 @@ spec:
             - name: CELLBASE_DATABASES_MONGODB_HOST
               value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_HOST }}
             - name: CELLBASE_DATABASES_MONGODB_USER
-              value: {{ .Values.mongodb.adminUser }}
+              value: {{ .Values.settings.CELLBASE_DATABASES_MONGODB_USER }}
             - name: CELLBASE_DATABASES_MONGODB_PASSWORD
               value: {{ .Values.mongodb.mongodbRootPassword }}
             - name: CELLBASE_DATABASES_MONGODB_OPTIONS_AUTHENTICATION_DATABASE
