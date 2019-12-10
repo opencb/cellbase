@@ -59,8 +59,8 @@ public class VariantWSServer extends GenericRestWSServer {
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
 
     public VariantWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Possible values: v3, v4",
-                                   defaultValue = "v4") String version,
+                           @ApiParam(name = "version", value = "Possible values: v4, v5",
+                                   defaultValue = "v5") String version,
                            @PathParam("species")
                            @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                    + "of potentially available species ids, please refer to: "

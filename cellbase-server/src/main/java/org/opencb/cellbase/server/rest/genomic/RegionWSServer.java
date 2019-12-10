@@ -42,8 +42,8 @@ public class RegionWSServer extends GenericRestWSServer {
     private int histogramIntervalSize = 200000;
 
     public RegionWSServer(@PathParam("version")
-                          @ApiParam(name = "version", value = "Possible values: v3, v4",
-                                  defaultValue = "v4") String version,
+                          @ApiParam(name = "version", value = "Possible values: v4, v5",
+                                  defaultValue = "v5") String version,
                           @PathParam("species")
                           @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                   + "of potentially available species ids, please refer to: "
