@@ -9,3 +9,4 @@ RUN apk --no-cache --update add openssh-client sshpass ca-certificates curl && \
 
 COPY ${buildPath} ${CELLBASE_HOME} 
 WORKDIR ${CELLBASE_HOME}/bin
+ENTRYPOINT ["./cellbase-admin.sh", "server", "--start"]
