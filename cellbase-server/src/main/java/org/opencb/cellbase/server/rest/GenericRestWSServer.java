@@ -238,6 +238,24 @@ public class GenericRestWSServer implements IWSServer {
         if (checkSpecies && species == null) {
             throw new SpeciesException("Species not valid: '" + species + "'");
         }
+
+        /**
+         * Check version parameter, must be: v1, v2, ... If 'latest' then is
+         * converted to appropriate version
+         */
+        if (version.equalsIgnoreCase("latest")) {
+            version = cellBaseConfiguration.getVersion();
+            logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
+        } else {
+            // FIXME this will only work when no database schemas are done, in version 3 and 4 this can raise some problems
+            // we set the version from the URL, this will decide which database is queried,
+            cellBaseConfiguration.setVersion(version);
+        }
+
+        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
+            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
+            throw new VersionException("Version not valid: '" + version + "'");
+        }
     }
 
     @Override
