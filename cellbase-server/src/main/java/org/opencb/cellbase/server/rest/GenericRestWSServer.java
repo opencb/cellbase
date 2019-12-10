@@ -178,7 +178,7 @@ public class GenericRestWSServer implements IWSServer {
         this.httpServletRequest = hsr;
 
         init();
-        logger.debug("Executing GenericRestWSServer constructor with no Species");
+        logger.info("Executing GenericRestWSServer constructor with no Species");
         initQuery(false);
     }
 
@@ -190,7 +190,7 @@ public class GenericRestWSServer implements IWSServer {
         this.httpServletRequest = hsr;
 
         init();
-        logger.debug("Executing GenericRestWSServer constructor with a Species");
+        logger.info("Executing GenericRestWSServer constructor with a Species");
         initQuery(true);
     }
 
@@ -450,5 +450,31 @@ public class GenericRestWSServer implements IWSServer {
             queries.add(q);
         }
         return queries;
+    }
+
+    /*
+     * TO DELETE
+     */
+    @Deprecated
+    protected Response generateResponse(String queryString, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is deprecated");
+    }
+
+    @Deprecated
+    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
+        return createOkResponse("TODO: generateResponse is deprecated");
+    }
+
+    @Deprecated
+    private boolean isSpecieAvailable(String species) {
+        List<SpeciesConfiguration> speciesList = cellBaseConfiguration.getAllSpecies();
+        for (int i = 0; i < speciesList.size(); i++) {
+            // This only allows to show the information if species is in 3
+            // letters format
+            if (species.equalsIgnoreCase(speciesList.get(i).getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
