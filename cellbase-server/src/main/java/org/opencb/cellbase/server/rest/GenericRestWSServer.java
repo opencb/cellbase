@@ -120,9 +120,6 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Query query;
     protected QueryOptions queryOptions;
-    protected CellBaseDataResponse queryResponse;
-
-//    protected CellBaseDataResponse response;
     protected ObjectMap params;
 
     protected UriInfo uriInfo;
@@ -228,7 +225,6 @@ public class GenericRestWSServer implements IWSServer {
         query = new Query();
         // This needs to be an ArrayList since it may be added some extra fields later
         queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
-        queryResponse = new CellBaseDataResponse<>();
         params = new ObjectMap();
 
         checkPathParams(checkSpecies);
@@ -332,7 +328,7 @@ public class GenericRestWSServer implements IWSServer {
         e.printStackTrace();
 
         // Now we prepare the response to client
-        queryResponse = new CellBaseDataResponse();
+        CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         queryResponse.setParams(new ObjectMap(queryOptions));
@@ -363,15 +359,10 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     protected Response createOkResponse(Object obj) {
-        queryResponse = new CellBaseDataResponse();
+        CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setParams(queryOptions);
 
-
-        // Now:
-
-//        params.put("id", ((CellBaseDataResult) obj).getId());
         params.put("species", species);
         params.putAll(query);
         params.putAll(queryOptions);
