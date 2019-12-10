@@ -22,6 +22,7 @@ import org.opencb.cellbase.app.cli.main.executors.QueryCommandExecutor;
 import org.opencb.cellbase.app.cli.main.executors.VariantAnnotationCommandExecutor;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 /**
  * Created by imedina on 03/02/15.
@@ -73,9 +74,9 @@ public class CellBaseMain {
 
             if (commandExecutor != null) {
                 try {
-                    commandExecutor.loadClientConfiguration();
+                    commandExecutor.loadCellBaseConfiguration();
                     commandExecutor.execute();
-                } catch (IOException e) {
+                } catch (IOException | URISyntaxException e) {
                     commandExecutor.getLogger().error("Error reading CellBase configuration: " + e.getMessage());
                     System.exit(1);
                 }

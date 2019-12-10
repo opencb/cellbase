@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.*;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.IOException;
@@ -120,9 +120,6 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Query query;
     protected QueryOptions queryOptions;
-    protected CellBaseDataResponse queryResponse;
-
-//    protected CellBaseDataResponse response;
     protected ObjectMap params;
 
     protected UriInfo uriInfo;
@@ -172,8 +169,6 @@ public class GenericRestWSServer implements IWSServer {
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectWriter = jsonObjectMapper.writer();
 
-        // Initialize Monitor
-        monitor = new Monitor(dbAdaptorFactory);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
@@ -183,7 +178,8 @@ public class GenericRestWSServer implements IWSServer {
         this.httpServletRequest = hsr;
 
         init();
-        initQuery();
+        logger.info("Executing GenericRestWSServer constructor with no Species");
+        initQuery(false);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
@@ -194,7 +190,8 @@ public class GenericRestWSServer implements IWSServer {
         this.httpServletRequest = hsr;
 
         init();
-        initQuery();
+        logger.info("Executing GenericRestWSServer constructor with a Species");
+        initQuery(true);
     }
 
     protected void init() throws VersionException, SpeciesException, IOException, CellbaseException {
@@ -203,33 +200,36 @@ public class GenericRestWSServer implements IWSServer {
             logger = LoggerFactory.getLogger(this.getClass());
 
             // We must load the configuration file from CELLBASE_HOME, this must happen only the first time!
-            ServletContext context = httpServletRequest.getServletContext();
-            String cellbaseHome = context.getInitParameter("CELLBASE_HOME");
+            String cellbaseHome = System.getenv("CELLBASE_HOME");
             if (StringUtils.isEmpty(cellbaseHome)) {
-                // If not exists then we try the environment variable OPENCGA_HOME
-                if (StringUtils.isNotEmpty(System.getenv("CELLBASE_HOME"))) {
-                    cellbaseHome = System.getenv("CELLBASE_HOME");
+                // ENV variable isn't set, try the servlet context instead
+                ServletContext context = httpServletRequest.getServletContext();
+                if (StringUtils.isNotEmpty(context.getInitParameter("CELLBASE_HOME"))) {
+                    cellbaseHome = context.getInitParameter("CELLBASE_HOME");
                 } else {
                     logger.error("No valid configuration directory provided!");
                     throw new CellbaseException("No CELLBASE_HOME found");
                 }
             }
+
             logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
 
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
             dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(cellBaseConfiguration);
+
+            // Initialize Monitor
+            monitor = new Monitor(dbAdaptorFactory);
         }
     }
 
-    private void initQuery() throws VersionException, SpeciesException {
+    private void initQuery(boolean checkSpecies) throws VersionException, SpeciesException {
         startTime = System.currentTimeMillis();
         query = new Query();
         // This needs to be an ArrayList since it may be added some extra fields later
         queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
-        queryResponse = new CellBaseDataResponse<>();
         params = new ObjectMap();
 
-        checkPathParams(true);
+        checkPathParams(checkSpecies);
     }
 
     private void checkPathParams(boolean checkSpecies) throws VersionException, SpeciesException {
@@ -239,6 +239,24 @@ public class GenericRestWSServer implements IWSServer {
 
         if (checkSpecies && species == null) {
             throw new SpeciesException("Species not valid: '" + species + "'");
+        }
+
+        /**
+         * Check version parameter, must be: v1, v2, ... If 'latest' then is
+         * converted to appropriate version
+         */
+        if (version.equalsIgnoreCase("latest")) {
+            version = cellBaseConfiguration.getVersion();
+            logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
+        } else {
+            // FIXME this will only work when no database schemas are done, in version 3 and 4 this can raise some problems
+            // we set the version from the URL, this will decide which database is queried,
+            cellBaseConfiguration.setVersion(version);
+        }
+
+        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
+            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
+            throw new VersionException("Version not valid: '" + version + "'");
         }
     }
 
@@ -330,7 +348,7 @@ public class GenericRestWSServer implements IWSServer {
         e.printStackTrace();
 
         // Now we prepare the response to client
-        queryResponse = new CellBaseDataResponse();
+        CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
         queryResponse.setParams(new ObjectMap(queryOptions));
@@ -361,15 +379,10 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     protected Response createOkResponse(Object obj) {
-        queryResponse = new CellBaseDataResponse();
+        CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setParams(queryOptions);
 
-
-        // Now:
-
-//        params.put("id", ((CellBaseDataResult) obj).getId());
         params.put("species", species);
         params.putAll(query);
         params.putAll(queryOptions);

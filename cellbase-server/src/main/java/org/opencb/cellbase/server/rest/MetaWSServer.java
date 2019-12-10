@@ -60,8 +60,8 @@ public class MetaWSServer extends GenericRestWSServer {
     private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
 
     public MetaWSServer(@PathParam("version")
-                        @ApiParam(name = "version", value = "Possible values: v3, v4",
-                                defaultValue = "v4") String version,
+                        @ApiParam(name = "version", value = "Possible values: v4, v5",
+                                defaultValue = "v5") String version,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, uriInfo, hsr);
@@ -187,7 +187,6 @@ public class MetaWSServer extends GenericRestWSServer {
         CellBaseDataResult<HealthStatus> queryResult = new CellBaseDataResult();
         queryResult.setId(STATUS);
         queryResult.setTime(0);
-        queryResult.setNumTotalResults(1);
         queryResult.setNumResults(1);
         queryResult.setResults(Collections.singletonList(health));
 
