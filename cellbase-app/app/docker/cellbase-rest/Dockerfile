@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM cellabse-base
 
 ARG buildPath="./build/"
 

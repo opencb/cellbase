@@ -19,7 +19,7 @@ RUN cd /opt && \
 
 VOLUME /ensembl-data
 
-COPY ../../bin/ensembl-scripts/* /opt/
+COPY bin/ensembl-scripts/* /opt/
 COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
