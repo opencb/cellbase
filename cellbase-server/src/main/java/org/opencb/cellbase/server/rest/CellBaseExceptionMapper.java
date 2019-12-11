@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -36,7 +37,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by imedina on 02/03/16.
@@ -75,9 +78,11 @@ public class CellBaseExceptionMapper implements ExceptionMapper<Exception> {
         queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
-        CellBaseDataResponse result = new CellBaseDataResponse();
-        result.addEvent(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
-        result.addEvent(new Event(Event.Type.ERROR, "DEPRECATED: " + e.toString()));
+        CellBaseDataResult result = new CellBaseDataResult();
+        List<Event> events = new ArrayList();
+        events.add(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
+        events.add(new Event(Event.Type.ERROR, "DEPRECATED: " + e.toString()));
+        result.setEvents(events);
 
         queryResponse.setResponses(Collections.singletonList(result));
 

@@ -61,7 +61,7 @@ public class RestServer  {
             this.port = (this.port == 0) ? configuration.getServer().getRest().getPort() : this.port;
 
             logger.info("|  * Configuration folder: '{}'", cellbaseHome.resolve("conf").toAbsolutePath());
-            logger.info("|  * Configuration file: configuration.yml'");
+            logger.info("|  * Configuration file:  '{}'", cellbaseHome.resolve("conf").resolve("configuration.yml"));
             logger.info("|  * Port: '{}'", port);
 
         } catch (IOException e) {

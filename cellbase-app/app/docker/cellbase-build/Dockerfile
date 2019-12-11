@@ -17,15 +17,10 @@ RUN cd /opt && \
     export PATH=/opt/ensembl-git-tools/bin:$PATH && \
     git ensembl --clone api
 
-COPY entrypoint.sh /usr/local/bin/
-
-COPY registry.conf /opt/
-COPY DB_CONFIG.pm /opt/
-COPY gene_extra_info.pl /opt/
-COPY protein_function_prediction_matrices.pl /opt/
-COPY genome_info.pl /opt/
-
 VOLUME /ensembl-data
+
+COPY bin/ensembl-scripts/* /opt/
+COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

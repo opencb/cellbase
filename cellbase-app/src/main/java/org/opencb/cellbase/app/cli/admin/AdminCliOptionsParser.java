@@ -57,8 +57,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         jCommander.parse(args);
     }
 
-    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.yml" +
-            " file")
+    @Parameters(commandNames = {"download"}, commandDescription = "Download all different data sources provided in the configuration.yml file")
     public class DownloadCommandOptions {
 
         @ParametersDelegate
@@ -69,20 +68,16 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid formats include 'Homo sapiens'" +
+                " or hsapiens", required = false, arity = 1)
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
-        public String assembly = null;
+        public String assembly;
 
-        @Parameter(names = {"-o", "--output"}, description = "The output directory, species folder will be created", required = false, arity = 1)
-        public String output = "/tmp";
-
-        @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
-        public String common;
-
+        @Parameter(names = {"-t", "--target-directory"}, description = "Downloaded files will be saved here.", required = true, arity = 1)
+        public String targetDirectory;
     }
-
 
     @Parameters(commandNames = {"build"}, commandDescription = "Build CellBase data models from all data sources downloaded")
     public class BuildCommandOptions {
@@ -95,27 +90,21 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "clinical_variants, repeats, svs. 'all' builds everything.", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid format include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be built, valid formats include 'Homo sapiens' or 'hsapiens'", required = false, arity = 1)
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
-        public String assembly = null;
+        public String assembly;
 
-        @Parameter(names = {"-i", "--input"}, description = "Input directory with the downloaded data sources to be loaded", required = true, arity = 1)
-        public String input;
-
-        @Parameter(names = {"-o", "--output"}, description = "Output directory where the JSON data models are saved", required = false, arity = 1)
-        public String output = "/tmp";
-
-        @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
-        public String common;
+        @Parameter(names = {"-t", "--target-directory"}, description = "Location of data files and where generated JSON files will be " +
+                "saved", required = true, arity = 1)
+        public String targetDirectory;
 
         @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of clinical variants. Normalization"
                 + " includes allele trimming and left alignment. **NOTE** this parameter will only be used when building"
                 + " the clinical_variants dataset.",
                 required = false, arity = 0)
         public boolean skipNormalize = false;
-
 
         @Parameter(names = {"--flexible-gtf-parsing"}, description = "By default, ENSEMBL GTF format is expected. "
                 + " Nevertheless, GTF specification is quite loose and other GTFs may be provided in which the order "
@@ -137,16 +126,19 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "clinical_variants, repeats, svs. 'all' loads everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded. Can also be used to specify a" +
-                "custom json file to be loaded (look at the --field parameter).", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded, e.g. "
+                + "'/tmp/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
+                + "--fields"
+                + " parameter).", required = true, arity = 1)
         public String input;
 
         @Parameter(names = {"--database"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
         public String database;
 
-        @Parameter(names = {"--fields"}, description = "Use this parameter when an custom update of the database documents is required. Indicate here" +
-                " the full path to the document field that must be updated, e.g. annotation.populationFrequencies. This parameter must be used together" +
-                "with a custom file provided at --input and the data to update indicated at --data.", required = false, arity = 1)
+        @Parameter(names = {"--fields"}, description = "Use this parameter when an custom update of the database documents is required. "
+                + "Indicate here the full path to the document field that must be updated, e.g. annotation.populationFrequencies. This "
+                + "parameter must be used together with a custom file provided at --input and the data to update indicated at --data.",
+                required = false, arity = 1)
         public String field;
 
         @Parameter(names = {"--overwrite-inner-fields"}, description = "Use this parameter together with --fields to specify"

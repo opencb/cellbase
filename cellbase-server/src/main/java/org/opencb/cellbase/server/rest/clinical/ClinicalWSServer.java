@@ -44,8 +44,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
 
 
     public ClinicalWSServer(@PathParam("version")
-                                  @ApiParam(name = "version", value = "Possible values: v3, v4",
-                                          defaultValue = "v4") String version,
+                                  @ApiParam(name = "version", value = "Possible values: v4, v5",
+                                          defaultValue = "v5") String version,
                                   @PathParam("species")
                                   @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                                           + "of potentially available species ids, please refer to: "
@@ -107,8 +107,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "modeInheritance",
                     value = "Comma separated list of mode of inheritance labels. A list of searchable mode of inheritance "
                             + " labels can be accessed at "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/"
-                                + "clinical/variant/mode_inheritance_labels",
+                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant"
+                            + "/mode_inheritance_labels",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "alleleOrigin",
                     value = "Comma separated list of allele origin labels. A list of searchable allele origin "
