@@ -1,4 +1,4 @@
-FROM cellabse-base
+FROM cellbase-base
 
 ARG buildPath="./build/"
 
