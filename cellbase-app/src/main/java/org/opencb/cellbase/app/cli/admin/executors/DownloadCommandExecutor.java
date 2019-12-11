@@ -17,12 +17,14 @@
 package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.download.DownloadManager;
-import org.opencb.cellbase.lib.download.EnsemblInfo;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -35,30 +37,14 @@ import java.util.*;
 public class DownloadCommandExecutor extends CommandExecutor {
 
     private AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions;
-
-    private Path output = null;
-    private Path common = null;
-
-    private String ensemblVersion;
-    private String ensemblRelease;
-
-    private SpeciesConfiguration speciesConfiguration;
-
+    private Path targetDirectory;
 
     public DownloadCommandExecutor(AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
         super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
                 downloadCommandOptions.commonOptions.conf);
 
         this.downloadCommandOptions = downloadCommandOptions;
-
-        if (downloadCommandOptions.output != null) {
-            output = Paths.get(downloadCommandOptions.output);
-        }
-        if (downloadCommandOptions.common != null) {
-            common = Paths.get(downloadCommandOptions.common);
-        } else {
-            common = output.resolve("common");
-        }
+        this.targetDirectory = Paths.get(downloadCommandOptions.targetDirectory);
     }
 
     /**
@@ -66,130 +52,60 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     public void execute() {
         try {
-            if (downloadCommandOptions.species != null && !downloadCommandOptions.species.isEmpty()) {
-                // We need to get the Species object from the CLI name
-                // This can be the scientific or common name, or the ID
-                //            Species speciesToDownload = null;
-                for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
-                    if (downloadCommandOptions.species.equalsIgnoreCase(sp.getScientificName())
-                            || downloadCommandOptions.species.equalsIgnoreCase(sp.getCommonName())
-                            || downloadCommandOptions.species.equalsIgnoreCase(sp.getId())) {
-                        speciesConfiguration = sp;
-                        break;
-                    }
-                }
-
-                // If everything is right we launch the download
-                if (speciesConfiguration != null) {
-                    processSpecies(speciesConfiguration);
-                } else {
-                    logger.error("Species '{}' not valid", downloadCommandOptions.species);
+            SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, downloadCommandOptions.species);
+            if (speciesConfiguration == null) {
+                throw new CellbaseException("Invalid species: '" + downloadCommandOptions.species + "'");
+            }
+            SpeciesConfiguration.Assembly assembly = null;
+            if (!StringUtils.isEmpty(downloadCommandOptions.assembly)) {
+                assembly = SpeciesUtils.getAssembly(speciesConfiguration, downloadCommandOptions.assembly);
+                if (assembly == null) {
+                    throw new CellbaseException("Invalid assembly: '" + downloadCommandOptions.assembly + "'");
                 }
             } else {
-                logger.error("--species parameter '{}' not valid", downloadCommandOptions.species);
-            }
-        } catch (ParameterException e) {
-            logger.error("Error in 'download' command line: " + e.getMessage());
-        } catch (IOException | InterruptedException e) {
-            logger.error("Error downloading '" + downloadCommandOptions.species + "' files: " + e.getMessage());
-        }
-
-    }
-
-    private void processSpecies(SpeciesConfiguration sp) throws IOException, InterruptedException {
-        logger.info("Processing species " + sp.getScientificName());
-
-        // We need to find which is the correct Ensembl host URL.
-        // This can different depending on if is a vertebrate species.
-        String ensemblHostUrl;
-        if (configuration.getSpecies().getVertebrates().contains(sp)) {
-            ensemblHostUrl = configuration.getDownload().getEnsembl().getUrl().getHost();
-        } else {
-            ensemblHostUrl = configuration.getDownload().getEnsemblGenomes().getUrl().getHost();
-        }
-
-        // Getting the assembly.
-        // By default the first assembly in the configuration.json
-        SpeciesConfiguration.Assembly assembly = null;
-        if (downloadCommandOptions.assembly == null || downloadCommandOptions.assembly.isEmpty()) {
-            assembly = sp.getAssemblies().get(0);
-        } else {
-            for (SpeciesConfiguration.Assembly assembly1 : sp.getAssemblies()) {
-                if (downloadCommandOptions.assembly.equalsIgnoreCase(assembly1.getName())) {
-                    assembly = assembly1;
-                    break;
-                }
-            }
-        }
-
-        // Checking that the species and assembly are correct
-        if (ensemblHostUrl == null || assembly == null) {
-            logger.error("Something is not correct, check the species '{}' or the assembly '{}'",
-                    downloadCommandOptions.species, downloadCommandOptions.assembly);
-            return;
-        }
-
-        // Output folder creation
-        String spShortName = sp.getScientificName().toLowerCase()
-                .replaceAll("\\.", "")
-                .replaceAll("\\)", "")
-                .replaceAll("\\(", "")
-                .replaceAll("[-/]", " ")
-                .replaceAll("\\s+", "_");
-        String spAssembly = assembly.getName().toLowerCase();
-        Path spFolder = output.resolve(spShortName + "_" + spAssembly);
-        makeDir(spFolder);
-        makeDir(common);
-
-        ensemblVersion = assembly.getEnsemblVersion();
-        ensemblRelease = "release-" + ensemblVersion.split("_")[0];
-
-        if (downloadCommandOptions.data != null && !downloadCommandOptions.data.isEmpty()) {
-            List<String> dataList;
-            if (downloadCommandOptions.data.equals("all")) {
-                dataList = sp.getData();
-            } else {
-                dataList = Arrays.asList(downloadCommandOptions.data.split(","));
+                assembly = SpeciesUtils.getDefaultAssembly(speciesConfiguration);
             }
 
-            EnsemblInfo ensemblInfo = new EnsemblInfo(ensemblHostUrl, ensemblVersion, ensemblRelease);
-            DownloadManager downloadManager = new DownloadManager(configuration, ensemblInfo, common, downloadCommandOptions.assembly);
+            logger.info("Processing species " + speciesConfiguration.getScientificName());
+
+            List<String> dataList = getDataList(speciesConfiguration);
+            DownloadManager downloadManager = new DownloadManager(configuration, targetDirectory, speciesConfiguration, assembly);
 
             for (String data : dataList) {
                 switch (data) {
                     case EtlCommons.GENOME_DATA:
-                        downloadManager.downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder);
+                        downloadManager.downloadReferenceGenome();
                         break;
                     case EtlCommons.GENE_DATA:
-                        downloadManager.downloadEnsemblGene(sp, spShortName, assembly.getName(), spFolder);
+                        downloadManager.downloadEnsemblGene();
                         if (!dataList.contains(EtlCommons.GENOME_DATA)) {
                             // user didn't specify genome data to download, but we need it for gene data sources
-                            downloadManager.downloadReferenceGenome(sp, spShortName, assembly.getName(), spFolder);
+                            downloadManager.downloadReferenceGenome();
                         }
                         break;
                     case EtlCommons.VARIATION_DATA:
-                        downloadManager.downloadVariation(sp, spShortName, spFolder);
+                        downloadManager.downloadVariation();
                         break;
                     case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-                        downloadManager.downloadCaddScores(sp, assembly.getName(), spFolder);
+                        downloadManager.downloadCaddScores();
                         break;
                     case EtlCommons.REGULATION_DATA:
-                        downloadManager.downloadRegulation(sp, spShortName, assembly.getName(), spFolder);
+                        downloadManager.downloadRegulation();
                         break;
                     case EtlCommons.PROTEIN_DATA:
-                        downloadManager.downloadProtein(sp);
+                        downloadManager.downloadProtein();
                         break;
                     case EtlCommons.CONSERVATION_DATA:
-                        downloadManager.downloadConservation(sp, assembly.getName(), spFolder);
+                        downloadManager.downloadConservation();
                         break;
                     case EtlCommons.CLINICAL_VARIANTS_DATA:
-                        downloadManager.downloadClinical(sp, assembly.getName(), spFolder);
+                        downloadManager.downloadClinical();
                         break;
                     case EtlCommons.STRUCTURAL_VARIANTS_DATA:
-                        downloadManager.downloadStructuralVariants(sp, assembly.getName(), spFolder);
+                        downloadManager.downloadStructuralVariants();
                         break;
                     case EtlCommons.REPEATS_DATA:
-                        downloadManager.downloadRepeats(sp, assembly.getName(), spFolder);
+                        downloadManager.downloadRepeats();
                         break;
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
@@ -198,7 +114,23 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                 }
             }
+        } catch (ParameterException e) {
+            logger.error("Error in 'download' command line: " + e.getMessage());
+        } catch (IOException | InterruptedException | CellbaseException e) {
+            logger.error("Error downloading '" + downloadCommandOptions.species + "' files: " + e.getMessage());
         }
+
     }
+
+    private List<String> getDataList(SpeciesConfiguration sp) {
+        List<String> dataList;
+        if (downloadCommandOptions.data.equals("all")) {
+            dataList = sp.getData();
+        } else {
+            dataList = Arrays.asList(downloadCommandOptions.data.split(","));
+        }
+        return dataList;
+    }
+
 
 }
