@@ -79,7 +79,6 @@ public class GeneParserUtils {
         String[] fields;
         if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
             List<String> lines = Files.readAllLines(xrefsFile, Charset.forName("ISO-8859-1"));
-//            List<String> lines = Files.readAllLines(xrefsFile, Charset.defaultCharset());
             for (String line : lines) {
                 fields = line.split("\t", -1);
                 if (fields.length >= 4) {
@@ -224,8 +223,16 @@ public class GeneParserUtils {
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
-                GeneTraitAssociation disease = new GeneTraitAssociation(fields[3], fields[4], "", Float.parseFloat(fields[5]),
-                        Integer.parseInt(fields[6]), Arrays.asList(fields[7]), Arrays.asList(fields[8].split(", ")), "disgenet");
+
+                String diseaseId = fields[4];
+                String diseaseName = fields[5];
+                String score = fields[9];
+                String numberOfPubmeds = fields[13].trim();
+                String numberOfSNPs = fields[14];
+                String source = fields[15];
+
+                GeneTraitAssociation disease = new GeneTraitAssociation(diseaseId, diseaseName, "", Float.parseFloat(score),
+                        Integer.parseInt(numberOfPubmeds), Arrays.asList(numberOfSNPs), Arrays.asList(source), "disgenet");
                 addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
             }
             bufferedReader.close();

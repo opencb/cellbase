@@ -1,0 +1,2 @@
+#Format: diseaseId<tab>gene-symbol<tab>gene-id(entrez)<tab>HPO-ID<tab>HPO-term-name
+OMIM:278000	LIPA	3988	HP:0002092	Pulmonary arterial hypertension
