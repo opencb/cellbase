@@ -125,62 +125,37 @@ public class GenericRestWSServer implements IWSServer {
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
 
-    protected static ObjectMapper jsonObjectMapper;
-    protected static ObjectWriter jsonObjectWriter;
-    protected static final String SERVICE_START_DATE;
-    protected static final StopWatch WATCH;
+    protected ObjectMapper jsonObjectMapper;
+    protected ObjectWriter jsonObjectWriter;
+    protected String SERVICE_START_DATE;
+    protected StopWatch WATCH;
 
-    protected static AtomicBoolean initialized;
+    protected AtomicBoolean initialized;
 
     protected long startTime;
     protected long endTime;
 
-    protected static Logger logger;
+    protected Logger logger;
 
     /**
      * Loading properties file just one time to be more efficient. All methods
      * will check parameters so to avoid extra operations this config can load
      * versions and species
      */
-    protected static CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
+    protected CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
 
     /**
      * DBAdaptorFactory creation, this object can be initialize with an
      * HibernateDBAdaptorFactory or an HBaseDBAdaptorFactory. This object is a
      * factory for creating adaptors like GeneDBAdaptor
      */
-    protected static DBAdaptorFactory dbAdaptorFactory;
-    protected static Monitor monitor;
+    protected DBAdaptorFactory dbAdaptorFactory;
+    protected Monitor monitor;
 
     private static final int LIMIT_DEFAULT = 1000;
     private static final int LIMIT_MAX = 5000;
     private static final String ERROR = "error";
     private static final String OK = "ok";
-
-    static {
-        initialized = new AtomicBoolean(false);
-
-        SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-        WATCH = new StopWatch();
-        WATCH.start();
-
-        jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-        jsonObjectWriter = jsonObjectMapper.writer();
-
-    }
-
-    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
-        this.version = version;
-        this.uriInfo = uriInfo;
-        this.httpServletRequest = hsr;
-
-        init();
-        logger.info("Executing GenericRestWSServer constructor with no Species");
-        initQuery(false);
-    }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
@@ -190,13 +165,35 @@ public class GenericRestWSServer implements IWSServer {
         this.httpServletRequest = hsr;
 
         init();
-        logger.info("Executing GenericRestWSServer constructor with a Species");
+        logger.debug("Executing GenericRestWSServer constructor with a Species");
         initQuery(true);
     }
 
-    protected void init() throws VersionException, SpeciesException, IOException, CellbaseException {
+    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
+                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+        this.version = version;
+        this.uriInfo = uriInfo;
+        this.httpServletRequest = hsr;
+
+        init();
+        logger.debug("Executing GenericRestWSServer constructor with no Species");
+        initQuery(false);
+    }
+
+    private void init() throws IOException, CellbaseException {
         // we need to make sure we only init one single time
         if (initialized.compareAndSet(false, true)) {
+            initialized = new AtomicBoolean(false);
+
+            SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+            WATCH = new StopWatch();
+            WATCH.start();
+
+            jsonObjectMapper = new ObjectMapper();
+            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+            jsonObjectWriter = jsonObjectMapper.writer();
+
             logger = LoggerFactory.getLogger(this.getClass());
 
             // We must load the configuration file from CELLBASE_HOME, this must happen only the first time!
