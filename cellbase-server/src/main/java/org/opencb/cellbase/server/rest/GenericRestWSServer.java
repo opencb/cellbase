@@ -116,25 +116,17 @@ public class GenericRestWSServer implements IWSServer {
     @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json",
             allowableValues = "json,pb (Not implemented yet)")
     protected String outputFormat;
-
-
     protected Query query;
     protected QueryOptions queryOptions;
     protected ObjectMap params;
-
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
-
     protected ObjectMapper jsonObjectMapper;
     protected ObjectWriter jsonObjectWriter;
     protected String SERVICE_START_DATE;
     protected StopWatch WATCH;
-
     protected AtomicBoolean initialized;
-
     protected long startTime;
-    protected long endTime;
-
     protected Logger logger;
 
     /**
@@ -156,28 +148,31 @@ public class GenericRestWSServer implements IWSServer {
     private static final int LIMIT_MAX = 5000;
     private static final String ERROR = "error";
     private static final String OK = "ok";
+    // this webservice has no species, do not validate
+    private static final String DONT_CHECK_SPECIES = "do not validate species";
 
-    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
-        this.version = version;
-        this.species = species;
-        this.uriInfo = uriInfo;
-        this.httpServletRequest = hsr;
-
-        init();
-        logger.debug("Executing GenericRestWSServer constructor with a Species");
-        initQuery(true);
+    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException, CellbaseException {
+        this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
-    public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo,
-                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+    public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
+                               @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException, CellbaseException {
+
         this.version = version;
         this.uriInfo = uriInfo;
         this.httpServletRequest = hsr;
+        this.species = species;
 
         init();
-        logger.debug("Executing GenericRestWSServer constructor with no Species");
-        initQuery(false);
+        if (DONT_CHECK_SPECIES.equals(species)) {
+            logger.debug("Executing GenericRestWSServer constructor with no Species");
+            initQuery(false);
+        } else {
+            logger.debug("Executing GenericRestWSServer constructor with Species");
+            initQuery(true);
+        }
     }
 
     private void init() throws IOException, CellbaseException {
