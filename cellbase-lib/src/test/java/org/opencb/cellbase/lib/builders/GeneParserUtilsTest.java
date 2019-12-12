@@ -132,7 +132,7 @@ public class GeneParserUtilsTest {
     public void testGetGeneDiseaseAssociationMap() throws IOException {
 
         Path hpoFilePath = Paths.get(getClass().getResource("/gene/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").getFile());
-        Path disgenetFilePath = Paths.get(getClass().getResource("/all_gene_disease_associations.tsv.gz").getFile());
+        Path disgenetFilePath = Paths.get(getClass().getResource("/gene/all_gene_disease_associations.tsv.gz").getFile());
         Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFilePath, disgenetFilePath);
 
         assertEquals(3, geneDiseaseAssociationMap.size());
