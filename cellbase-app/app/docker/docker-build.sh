@@ -1,8 +1,12 @@
 #!/bin/bash
 
 ## Get cellbase 'build' folder
-BASEDIR=`dirname $0`
-BUILD_FOLDER=`cd "$BASEDIR/.." >/dev/null; pwd`
+if [ -z "$2" ]; then
+  BASEDIR=`dirname $0`
+  BUILD_FOLDER=`cd "$BASEDIR/.." >/dev/null; pwd`
+else
+  BUILD_FOLDER=$2
+fi
 
 build () {
   echo "Building images ..."
