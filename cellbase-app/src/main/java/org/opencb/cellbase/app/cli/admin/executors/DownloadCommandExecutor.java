@@ -114,6 +114,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                 }
             }
+            downloadManager.writeDownloadLogFile();
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
         } catch (IOException | InterruptedException | CellbaseException e) {
@@ -131,6 +132,4 @@ public class DownloadCommandExecutor extends CommandExecutor {
         }
         return dataList;
     }
-
-
 }

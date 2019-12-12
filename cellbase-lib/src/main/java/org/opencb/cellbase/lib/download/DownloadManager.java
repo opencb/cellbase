@@ -17,10 +17,13 @@
 package org.opencb.cellbase.lib.download;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -28,8 +31,8 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.SpeciesUtils;
-import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
+import java.nio.file.Files;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
@@ -38,10 +41,11 @@ import javax.ws.rs.client.WebTarget;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -94,7 +98,9 @@ public class DownloadManager {
     private static final String[] DEPRECATED_REGULATION_FILES = {"AnnotatedFeatures.gff.gz", "MotifFeatures.gff.gz",
             "RegulatoryFeatures_MultiCell.gff.gz", };
 
-    private static final Map<String, String> GENE_UNIPROT_XREF_FILES = new HashMap() {
+    private List<DownloadFile> downloadFiles = new ArrayList<>();
+
+    private static final HashMap GENE_UNIPROT_XREF_FILES = new HashMap() {
         {
             put("Homo sapiens", "HUMAN_9606_idmapping_selected.tab.gz");
             put("Mus musculus", "MOUSE_10090_idmapping_selected.tab.gz");
@@ -612,7 +618,7 @@ public class DownloadManager {
     }
 
     private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
-        BufferedReader br = FileUtils.newBufferedReader(uniprotFilePath);
+        BufferedReader br = Files.newBufferedReader(uniprotFilePath);
         PrintWriter pw = null;
         StringBuilder header = new StringBuilder();
         boolean beforeEntry = true;
@@ -839,7 +845,7 @@ public class DownloadManager {
     }
 
     private void downloadDocm(List<String> hgvsList, Path path) throws IOException, InterruptedException {
-        BufferedWriter bufferedWriter = FileUtils.newBufferedWriter(path);
+        BufferedWriter bufferedWriter = Files.newBufferedWriter(path);
         Client client = ClientBuilder.newClient();
         WebTarget restUrlBase = client
                 .target(URI.create(configuration.getDownload().getDocm().getHost() + "v1/variants"));
@@ -927,15 +933,6 @@ public class DownloadManager {
         }
     }
 
-    private void downloadReactomeData() throws IOException, InterruptedException {
-        Path proteinFolder = downloadFolder.resolve("protein");
-
-        String url = configuration.getDownload().getReactome().getHost();
-        downloadFile(url, proteinFolder.resolve("biopax.zip").toString());
-        saveVersionData(EtlCommons.PROTEIN_DATA, REACTOME_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                proteinFolder.resolve("reactomeVersion.json"));
-    }
-
     public void downloadRepeats() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
             return;
@@ -989,7 +986,8 @@ public class DownloadManager {
         downloadFiles(host, fileNames, fileNames);
     }
 
-    private void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames) throws IOException, InterruptedException {
+    private void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames)
+        throws IOException, InterruptedException {
         for (int i = 0; i < fileNames.size(); i++) {
             downloadFile(host + "/" + fileNames.get(i), ouputFileNames.get(i), null);
         }
@@ -997,37 +995,77 @@ public class DownloadManager {
 
     private void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "--no-clobber", "-O", outputFileName, "-o",
-                outputFileName + ".log"));
+        Long startTime = System.currentTimeMillis();
+        LocalDateTime now = LocalDateTime.now();
+        DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(now).toString());
+        final String outputLog = outputFileName + ".log";
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("-N --tries=10", url, "-O", outputFileName, "-o", outputLog));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }
+        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
+        setDownloadStatusAndMessage(outputFileName, downloadFileInfo, outputLog, downloaded);
+        downloadFileInfo.setElapsedTime(startTime, System.currentTimeMillis());
+        downloadFiles.add(downloadFileInfo);
+    }
 
-        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, null);
+    private void setDownloadStatusAndMessage(String outputFileName, DownloadFile downloadFile, String outputLog, boolean downloaded)
+            throws IOException {
         if (downloaded) {
-            logger.info(outputFileName + " created OK");
+            boolean validFileSize = validateDownloadFile(downloadFile, outputFileName, outputLog);
+            if (validFileSize) {
+                downloadFile.setStatus(DownloadFile.Status.OK);
+                downloadFile.setMessage("File downloaded successfully");
+            } else {
+                downloadFile.setStatus(DownloadFile.Status.ERROR);
+                downloadFile.setMessage("Expected downloaded file size " + downloadFile.getExpectedFileSize()
+                + ", Actual file size " + downloadFile.getActualFileSize());
+            }
         } else {
-            logger.warn(url + " cannot be downloaded");
+            downloadFile.setMessage("See full error message in " + outputLog);
+            downloadFile.setStatus(DownloadFile.Status.ERROR);
+            // because we use the -O flag, a file will be written, even on error. See #467
+            Files.deleteIfExists((new File(outputFileName)).toPath());
         }
+    }
+
+    public void writeDownloadLogFile() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+        writer.writeValue(new File(downloadFolder + "/download_log.json"), downloadFiles);
+    }
+
+    private boolean validateDownloadFile(DownloadFile downloadFile, String outputFileName, String outputFileLog) {
+        int expectedFileSize = getExpectedFileSize(outputFileLog);
+        long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
+        downloadFile.setActualFileSize(Math.toIntExact(actualFileSize));
+        downloadFile.setExpectedFileSize(expectedFileSize);
+        if (expectedFileSize != actualFileSize) {
+            return false;
+        }
+        return true;
+    }
+
+    private int getExpectedFileSize(String outputFileLog) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(outputFileLog))) {
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                // looking for: Length: 13846591 (13M)
+                if (line.startsWith("Length:")) {
+                    String[] parts = line.split("\\s");
+                    return Integer.parseInt(parts[1]);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        return 0;
     }
 
     private void makeDir(Path folderPath) throws IOException {
         if (!Files.exists(folderPath)) {
             Files.createDirectories(folderPath);
         }
-    }
-
-    private SpeciesConfiguration.Assembly getAssembly(SpeciesConfiguration sp, String userProvidedAssembly) {
-        if (StringUtils.isEmpty(userProvidedAssembly)) {
-            return sp.getAssemblies().get(0);
-        } else {
-            for (SpeciesConfiguration.Assembly assembly : sp.getAssemblies()) {
-                if (userProvidedAssembly.equalsIgnoreCase(assembly.getName())) {
-                    return assembly;
-                }
-            }
-        }
-        return null;
     }
 
     private String getEnsemblURL(SpeciesConfiguration sp) {
@@ -1042,3 +1080,5 @@ public class DownloadManager {
         return ensemblHostUrl;
     }
 }
+
+
