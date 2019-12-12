@@ -25,7 +25,7 @@ databases:
    password: "${CELLBASE.DB.PASSWORD}"
 server:
  rest:
-  port: '9090'
+  port: "${CELLBASE.SERVER.REST.PORT}"
 defaultOutdir: "/tmp"
 download:
  ensembl:
