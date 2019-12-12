@@ -57,7 +57,7 @@ public class IdWSServer extends GenericRestWSServer {
                       @PathParam("species")
                       @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
                               + "of potentially available species ids, please refer to: "
-                              + "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                              + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
             SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -122,7 +122,7 @@ public class IdWSServer extends GenericRestWSServer {
                                            @ApiParam(name = "dbname", value = "Comma separated list of source DB names"
                                                    + " to include in the search, e.g.: ensembl_gene,vega_gene,havana_gene."
                                                    + " Available db names are shown by this web service: "
-                                                   + " http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Xref/"
+                                                   + " https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Xref/"
                                                    + "getDBNames", required = false) String dbname) {
         try {
             parseQueryParams();
