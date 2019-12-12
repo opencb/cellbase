@@ -222,7 +222,6 @@
                                 org/opencb/cellbase/app/cli/CliOptionsParser.java,
                                 org/opencb/cellbase/app/cli/admin/AdminCliOptionsParser.java,
                                 org/opencb/cellbase/app/cli/main/CellBaseCliOptionsParser.java,
-                                org/opencb/cellbase/lib/builders/GeneParserProto.java,
                                 org/opencb/cellbase/client/rest/models/GroupByFields.java,
                                 org/opencb/cellbase/client/rest/models/GroupCount.java
                             </excludes>
@@ -306,6 +305,8 @@
                 <CELLBASE.DB.PASSWORD></CELLBASE.DB.PASSWORD>
                 <CELLBASE.DB.MONGODB.READPREFERENCE>primary</CELLBASE.DB.MONGODB.READPREFERENCE>
                 <CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>admin</CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE>
+
+                <CELLBASE.SERVER.REST.PORT>9090</CELLBASE.SERVER.REST.PORT>
             </properties>
         </profile>
 

@@ -79,7 +79,7 @@
                     <repositoryName>libs</repositoryName>
                     <repositoryLayout>flat</repositoryLayout>
                     <useWildcardClassPath>true</useWildcardClassPath>
-                    <extraJvmArguments>-Xms256m -Xmx16384m -Dfile.encoding=UTF-8</extraJvmArguments>
+                    <extraJvmArguments>-Xms256m -Xmx5384m -Dfile.encoding=UTF-8</extraJvmArguments>
                     <programs>
                         <program>
                             <name>cellbase.sh</name>
@@ -131,8 +131,9 @@
                                 <echo>Copying to ${build.dir}</echo>
                                 <exec executable="cp">
                                     <arg value="-r"/>
-                                    <arg value="${project.basedir}/app/bin"/>
+                                    <arg value="${project.basedir}/app/cloud"/>
                                     <arg value="${project.basedir}/app/example"/>
+                                    <arg value="${project.basedir}/app/scripts"/>
                                     <arg value="${project.basedir}/target/appassembler/bin"/>
                                     <arg value="${project.basedir}/target/appassembler/libs"/>
                                     <arg value="${project.basedir}/../README.md"/>

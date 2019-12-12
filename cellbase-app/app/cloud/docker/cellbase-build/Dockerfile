@@ -5,7 +5,7 @@
 # CREDITS Started as a fork of helios/ensembl-docker
 
 FROM        ubuntu:18.04
-MAINTAINER  Julie Sullivan <julie.sullivan@gmail.com>
+LABEL maintainer="Julie Sullivan <julie.sullivan@gmail.com>"
 
 RUN apt-get update --fix-missing && \
     apt-get install -y inotify-tools nano wget curl rsync bc git git-core apt-transport-https libxml2 libxml2-dev libcurl4-openssl-dev openssl sqlite3 libsqlite3-dev gawk libreadline6-dev libyaml-dev autoconf libgdbm-dev libncurses5-dev automake libtool bison libffi-dev make m4 git build-essential software-properties-common libdbi-perl libdbd-mysql-perl libdbd-sqlite3-perl libcatalyst-perl liblog-log4perl-perl libcatalyst-action-rest-perl libcatalyst-modules-perl libchi-perl libxml-writer-perl
@@ -17,15 +17,10 @@ RUN cd /opt && \
     export PATH=/opt/ensembl-git-tools/bin:$PATH && \
     git ensembl --clone api
 
-COPY entrypoint.sh /usr/local/bin/
-
-COPY registry.conf /opt/
-COPY DB_CONFIG.pm /opt/
-COPY gene_extra_info.pl /opt/
-COPY protein_function_prediction_matrices.pl /opt/
-COPY genome_info.pl /opt/
-
 VOLUME /ensembl-data
+
+COPY scripts/ensembl-scripts/* /opt/
+COPY cloud/docker/cellbase-build/entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

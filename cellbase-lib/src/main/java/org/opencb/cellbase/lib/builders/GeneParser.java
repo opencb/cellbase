@@ -105,6 +105,8 @@ public class GeneParser extends CellBaseParser {
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
+
+        this.genomeSequenceFilePath = genomeSequenceFastaFile;
     }
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
@@ -195,7 +197,6 @@ public class GeneParser extends CellBaseParser {
 
             if (gtf.getFeature().equalsIgnoreCase("exon")) {
                 // Obtaining the exon sequence
-                //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
                 String exonSequence = null;
                 try {
                     exonSequence = fastaIndexManager.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
@@ -224,11 +225,6 @@ public class GeneParser extends CellBaseParser {
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
-                // FIXME We need to clean up this
-//                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
-//                    //System.out.println("Empty block, this should be redesigned");
-//                }
-
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
                     //                      no need to set it at the beginning of next feature
@@ -410,7 +406,6 @@ public class GeneParser extends CellBaseParser {
         if (!fastaIndexManager.isConnected()) {
             fastaIndexManager.index();
         }
-
         return fastaIndexManager;
     }
 
