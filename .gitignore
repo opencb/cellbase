@@ -1,0 +1,29 @@
+
+build
+bower_components
+node_modules
+bower_components
+private
+
+# General
+*.jar
+*.war
+*.o
+*.lib
+*.a
+*.so
+*.so.*
+*.out
+*.log
+*.zip
+sonar-project.properties
+git.properties
+
+# Maven
+target/
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
