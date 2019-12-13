@@ -30,17 +30,17 @@ build () {
   echo "****************************"
   echo "Building cellbase-base ..."
   echo "***************************"
-  docker build -t cellbase-base:$TAG   -f cellbase-app/app/cloud/docker/cellbase-base/Dockerfile .
+  docker build -t opencb/cellbase-base:$TAG   -f cellbase-app/app/cloud/docker/cellbase-base/Dockerfile .
 
   echo "***************************"
   echo "Building cellbase-rest ..."
   echo "***************************"
-  docker build -t cellbase-rest:$TAG   -f cellbase-app/app/cloud/docker/cellbase-rest/Dockerfile  . --build-arg TAG=$TAG
+  docker build -t opencb/cellbase-rest:$TAG   -f cellbase-app/app/cloud/docker/cellbase-rest/Dockerfile  . --build-arg TAG=$TAG
 
   echo "***************************"
   echo "Building cellbase-build ..."
   echo "***************************"
-  docker build -t cellbase-build:$TAG  -f cellbase-app/app/cloud/docker/cellbase-build/Dockerfile .
+  docker build -t opencb/cellbase-build:$TAG  -f cellbase-app/app/cloud/docker/cellbase-build/Dockerfile .
 }
 
 if [ $1 = "build" ]; then
@@ -50,5 +50,6 @@ fi
 if [ $1 = "push" ]; then
   build
   echo "Pushing images to DockerHub..."
-
+  docker push opencb/cellbase-base:$TAG
+  docker push opencb/cellbase-rest:$TAG
 fi
