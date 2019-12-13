@@ -1,20 +1,18 @@
 FROM openjdk:8-jre-alpine
 
-# Metadata
 LABEL org.label-schema.vendor="OpenCB" \
       org.label-schema.url="http://docs.opencb.org/" \
       org.label-schema.name="cellbase" \
       org.label-schema.description="An Open Computational Genomics Analysis platform for big data processing and analysis in genomics"
 
-# Install local dependencies
-#RUN apt-get update && apt-get dist-upgrade \
-#  && apt-get clean
+ENV CELLBASE_USER cellbase
 
-RUN apk update && apk upgrade && \
-    addgroup -S cellbase && adduser -S cellbase -G cellbase
+RUN addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER
 
-USER cellbase
-COPY . /opt/cellbase/
+ARG buildPath="./build"
 ENV CELLBASE_HOME /opt/cellbase/
+
+USER $CELLBASE_USER
+COPY ${buildPath} ${CELLBASE_HOME}
 
 WORKDIR /opt/cellbase
