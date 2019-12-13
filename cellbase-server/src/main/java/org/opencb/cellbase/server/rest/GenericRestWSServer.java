@@ -122,7 +122,7 @@ public class GenericRestWSServer implements IWSServer {
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
     protected ObjectMapper jsonObjectMapper;
-    protected ObjectWriter jsonObjectWriter;
+    protected static ObjectWriter jsonObjectWriter;
     protected String SERVICE_START_DATE;
     protected StopWatch WATCH;
     protected AtomicBoolean initialized;
