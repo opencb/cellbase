@@ -34,7 +34,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BASE_BRANCH: next # The branch the action should deploy from.
         BRANCH: gh-pages # The branch the action should deploy to.
-        FOLDER: build/target/site/apidocs # The folder the action should deploy.
+        FOLDER: target/site/apidocs # The folder the action should deploy.
     - name: Export IOTCL for GPG
       run: echo ::set-env name=GPG_TTY::$(tty)
     - name: Release Maven package
