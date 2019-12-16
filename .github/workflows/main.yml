@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         mongodb-version: ["4.0", "4.2"]
@@ -26,8 +26,17 @@ jobs:
       run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
     - name: Build with Maven
       run: mvn -T 2 clean install
+    - name: Generate Javadocs
+      run: mvn javadoc:aggregate
+    - name: Deploy Javadocs
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BASE_BRANCH: master # The branch the action should deploy from.
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: mvn target/site/apidocs # The folder the action should deploy.
     - name: Export IOTCL for GPG
-      run: echo ::set-env name=GPG_TTY::"$(tty)"
+      run: echo ::set-env name=GPG_TTY::$(tty)
     - name: Release Maven package
       uses: samuelmeuli/action-maven-publish@v1
       with:

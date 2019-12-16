@@ -2,7 +2,6 @@
 set -e
 
 # run this script in the root CellBase directory, next to the ./build directory
-# otherwise the paths to the scripts, docker files and build directory
 
 #########################
 # The command line help #
@@ -13,7 +12,6 @@ display_help() {
     echo "   build           Build the three CellBase docker files"
     echo "   push            Publish the CellBase docker files on DockerHub"
     echo "   tag_name        Name of tag on GitHub"
-    echo "   build_folder    (optional) absolute path to location of build directory"
     echo
     echo " ** Script expects to be run in the root CellBase directory **  "
     exit 1
