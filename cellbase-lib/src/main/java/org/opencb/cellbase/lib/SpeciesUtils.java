@@ -112,7 +112,7 @@ public class SpeciesUtils {
     }
 
     /**
-     * Formats the species name, e.g. Homo sapiens > hsapiens. Used in the download for the species directory.
+     * Formats the species name, e.g. Homo sapiens to hsapiens. Used in the download for the species directory.
      *
      * @param speciesConfiguration configuration entry for this species
      * @return formatted species name

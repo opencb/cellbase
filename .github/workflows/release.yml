@@ -29,12 +29,12 @@ jobs:
     - name: Build and publish Docker images to DockerHub
       run: ./cellbase-app/app/cloud/docker/docker-build.sh push ${{ steps.get_version.outputs.VERSION }}
     - name: Release Maven package
-        uses: samuelmeuli/action-maven-publish@v1
-        with:
-          gpg_private_key: ${{ secrets.MAVEN_PRIVATE_KEY }}
-          gpg_passphrase: ${{ secrets.MAVEN_PASSPHRASE }}
-          nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
-          nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+      uses: samuelmeuli/action-maven-publish@v1
+      with:
+        gpg_private_key: ${{ secrets.MAVEN_PRIVATE_KEY }}
+        gpg_passphrase: ${{ secrets.MAVEN_PASSPHRASE }}
+        nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
+        nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
     - name: Build and Deploy Javadocs
       uses: JamesIves/github-pages-deploy-action@releases/v3
       with:

@@ -41,16 +41,16 @@ public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
      * bound, then a RunTime exception will be thrown. HOWEVER: if start is within the bounds BUT end is out of the
      * right bound, then THIS implementaiton will return available nucleotides while SamtoolsFastaIndex will keep
      * returning the exception.
-     * @param contig
-     * @param start
-     * @param end
+     * @param contig contig id of interest
+     * @param start start coordinate of contig
+     * @param end end coordinate of contig
      * @return String containing the sequence of contig "contig" in the range [start, end] (1-based, both inclusive).
      * Throws RunTimeException if contig does not exist, or start is under the left bound, or start AND end are out of the right
      * bound. If start is within the bounds BUT end is out of the
      * right bound, then THIS implementaiton will return available nucleotides while SamtoolsFastaIndex will keep
      * returning the exception.
-     * @throws Exception
-     * @throws RuntimeException
+     * @throws Exception if something goes wrong
+     * @throws RuntimeException if something goes wrong
      */
     @Override
     public String query(String contig, int start, int end) throws Exception {
