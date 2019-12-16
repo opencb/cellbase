@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # run this script in the root CellBase directory, next to the ./build directory
 # otherwise the paths to the scripts, docker files and build directory
