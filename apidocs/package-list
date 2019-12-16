@@ -34,6 +34,7 @@ org.opencb.cellbase.lib.builders.utils
 org.opencb.cellbase.lib.builders.variation
 org.opencb.cellbase.lib.download
 org.opencb.cellbase.lib.impl
+org.opencb.cellbase.lib.indexer
 org.opencb.cellbase.lib.loader
 org.opencb.cellbase.lib.loader.converters
 org.opencb.cellbase.lib.model
