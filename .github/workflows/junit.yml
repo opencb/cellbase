@@ -1,0 +1,24 @@
+name: JUnit tests (only)
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mongodb-version: ["4.0", "4.2"]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Clone and build java-common-libs
+      run: cd ~ && git clone -b develop https://github.com/opencb/java-common-libs.git && cd ~/java-common-libs && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
+    - name: Clone and build biodata
+      run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
+    - name: Launch MongoDB 
+      run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
+    - name: Build with Maven
+      run: mvn -T 2 clean install
