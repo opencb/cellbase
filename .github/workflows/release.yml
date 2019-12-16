@@ -1,8 +1,9 @@
 name: CellBase Release
 
-on: [create]
-# publishes to dockerhub on create branch AND tag
-# for production, we want to use the "release" action
+on:
+  push:
+    tags:
+    - '*'
 
 jobs:
   build:
