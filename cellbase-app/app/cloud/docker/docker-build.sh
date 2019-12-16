@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# run this script in the root CellBase directory, next to the ./build directory
+# otherwise the paths to the scripts, docker files and build directory
+
 #########################
 # The command line help #
 #########################
@@ -11,6 +14,7 @@ display_help() {
     echo "   tag_name        Name of tag on GitHub"
     echo "   build_folder    (optional) absolute path to location of build directory"
     echo
+    echo " ** Script expects to be run in the root CellBase directory **  "
     exit 1
 }
 
@@ -23,7 +27,7 @@ if [ -z "$2" ]; then
   display_help
 fi
 
-## tag
+## set tag
 TAG="$2"
 
 build () {
@@ -49,7 +53,10 @@ fi
 
 if [ $1 = "push" ]; then
   build
+  echo "******************************"
   echo "Pushing images to DockerHub..."
+  echo "******************************"
   docker push opencb/cellbase-base:$TAG
   docker push opencb/cellbase-rest:$TAG
+  docker push opencb/cellbase-build:$TAG
 fi
