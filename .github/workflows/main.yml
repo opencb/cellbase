@@ -1,6 +1,10 @@
 name: Java Unit tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - develop
+      - next
 
 jobs:
   build:
@@ -22,3 +26,10 @@ jobs:
       run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
     - name: Build with Maven
       run: mvn -T 2 clean install
+    - name: Release Maven package
+      uses: samuelmeuli/action-maven-publish@v1
+      with:
+        gpg_private_key: ${{ secrets.MAVEN_PRIVATE_KEY }}
+        gpg_passphrase: ${{ secrets.MAVEN_PASSPHRASE }}
+        nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
+        nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
