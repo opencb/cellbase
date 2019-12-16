@@ -1,0 +1,26 @@
+name: CellBase Release
+
+on: [create]
+# publishes to dockerhub on create branch AND tag
+# for production, we want to use the "release" action
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mongodb-version: ["4.2"]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Launch MongoDB 
+      run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
+    - name: Build with Maven
+      run: mvn -T 2 clean install
+    - name: Login to dockerhub
+      run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+    - name: Build and publish Docker images to DockerHub
+      run: ./cellbase-app/app/cloud/docker/docker-build.sh publish $GITHUB_REF
