@@ -22,5 +22,8 @@ jobs:
       run: mvn -T 2 clean install
     - name: Login to dockerhub
       run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: Build and publish Docker images to DockerHub
-      run: ./cellbase-app/app/cloud/docker/docker-build.sh push $GITHUB_REF
+      run: ./cellbase-app/app/cloud/docker/docker-build.sh push ${{ steps.get_version.outputs.VERSION }}
