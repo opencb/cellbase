@@ -35,10 +35,12 @@ jobs:
         gpg_passphrase: ${{ secrets.MAVEN_PASSPHRASE }}
         nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
         nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
-    - name: Build and Deploy Javadocs
+    - name: Generate Javadocs
+      run: mvn javadoc:aggregate
+    - name: Deploy Javadocs
       uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BASE_BRANCH: master # The branch the action should deploy from.
+        BASE_BRANCH: next # The branch the action should deploy from.
         BRANCH: gh-pages # The branch the action should deploy to.
-        FOLDER: build # The folder the action should deploy.
+        FOLDER: target/site # The folder the action should deploy.

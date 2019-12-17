@@ -28,13 +28,6 @@ jobs:
       run: mvn -T 2 clean install
     - name: Generate Javadocs
       run: mvn javadoc:aggregate
-    - name: Deploy Javadocs
-      uses: JamesIves/github-pages-deploy-action@releases/v3
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BASE_BRANCH: next # The branch the action should deploy from.
-        BRANCH: gh-pages # The branch the action should deploy to.
-        FOLDER: target/site # The folder the action should deploy.
     - name: Export IOTCL for GPG
       run: echo ::set-env name=GPG_TTY::$(tty)
     - name: Release Maven package
