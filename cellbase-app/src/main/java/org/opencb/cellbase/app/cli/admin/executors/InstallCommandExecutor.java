@@ -37,6 +37,7 @@ public class InstallCommandExecutor extends CommandExecutor {
 
     public void execute() {
         try {
+            logger.info("Starting installation ...");
             InstallManager installManager = new InstallManager(configuration);
             installManager.shard(installCommandOptions.species, installCommandOptions.assembly);
         } catch (CellbaseException | IOException e) {

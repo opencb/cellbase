@@ -8,6 +8,11 @@ databases:
   host: "${CELLBASE.DB.MONGODB.HOST}"
   user: "${CELLBASE.DB.USER}"
   password: "${CELLBASE.DB.PASSWORD}"
+  replicaSets:
+    - name: "${CELLBASE.DB.MONGODB.REPLICASET.0.NAME}"
+      nodes: "${CELLBASE.DB.MONGODB.REPLICASET.0}"
+    - name: "${CELLBASE.DB.MONGODB.REPLICASET.1.NAME}"
+      nodes: "${CELLBASE.DB.MONGODB.REPLICASET.1}"
   options:
    authenticationDatabase: "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}"
    readPreference: "${CELLBASE.DB.MONGODB.READPREFERENCE}"
@@ -15,11 +20,6 @@ databases:
    connectionsPerHost: 20
    sslEnabled: false
    enableSharding: true
-   replicaSets:
-     - name: "${CELLBASE.DB.MONGODB.REPLICASET.0.NAME}"
-       replicaset: "${CELLBASE.DB.MONGODB.REPLICASET.0}"
-     - name: "${CELLBASE.DB.MONGODB.REPLICASET.1.NAME}"
-       replicaset: "${CELLBASE.DB.MONGODB.REPLICASET.1}"
  neo4j:
   hsapiens:
    host: "${CELLBASE.DB.NEO4J.HOST}"
@@ -139,28 +139,29 @@ species:
      - clinical
      - svs
      - repeats
-    sharding:
+    shards:
       - collection: "variation"
-        - key:
-          - chromosome
-          - start
-          - end
-        - numberOfShards: 2
-        - rangeKey: "chromosome"
-        - shard0:
-            - start: "1"
-              end: "10"
-            - start: "2"
-              end: "20"
-            - start: "3"
-              end: "9"
-        - shard1:
-            - start: "10"
-              end: "2"
-            - start: "20"
-              end: "3"
-            - start: "9"
-              end: "Z"
+        key:
+         - chromosome
+         - start
+         - end
+        numberOfShards: 2
+        rangeKey: "chromosome"
+#        shardRanges:
+#          - range0:
+#            - start: "1"
+#              end: "10"
+#            - start: "2"
+#              end: "20"
+#            - start: "3"
+#              end: "9"
+#          - range1:
+#            - start: "10"
+#              end: "2"
+#            - start: "20"
+#              end: "3"
+#            - start: "9"
+#              end: "Z"
   - id: mmusculus
     scientificName: Mus musculus
     assemblies:

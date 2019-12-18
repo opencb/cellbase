@@ -48,6 +48,6 @@ public class InstallManager {
         Species species = SpeciesUtils.getSpecies(configuration, speciesName, assemblyName);
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
         MongoDataStore mongoDataStore = factory.getMongoDBDatastore(species.getSpecies(), species.getAssembly());
-        ShardUtils.shard(mongoDataStore, configuration);
+        MongoDBShardUtils.shard(mongoDataStore, configuration, species);
     }
 }

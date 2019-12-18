@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.config;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 19/08/16.
@@ -28,17 +29,20 @@ public class SpeciesConfiguration {
     private String commonName;
     private List<Assembly> assemblies;
     private List<String> data;
+    private List<ShardConfig> shards;
 
 
     public SpeciesConfiguration() {
     }
 
-    public SpeciesConfiguration(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data) {
+    public SpeciesConfiguration(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data,
+                                List<ShardConfig> shards) {
         this.id = id;
         this.scientificName = scientificName;
         this.commonName = commonName;
         this.assemblies = assemblies;
         this.data = data;
+        this.shards = shards;
     }
 
 
@@ -121,6 +125,96 @@ public class SpeciesConfiguration {
 
         public void setEnsemblCollection(String ensemblCollection) {
             this.ensemblCollection = ensemblCollection;
+        }
+    }
+
+    public List<ShardConfig> getShards() {
+        return shards;
+    }
+
+    public SpeciesConfiguration setShards(List<ShardConfig> shards) {
+        this.shards = shards;
+        return this;
+    }
+
+    public static class ShardConfig {
+        private String collection;
+        private List<String> key;
+        private int numberOfShards;
+        private String rangeKey;
+        private Map<String, List<ShardRange>> shards;
+
+        public String getCollection() {
+            return collection;
+        }
+
+        public ShardConfig setCollection(String collection) {
+            this.collection = collection;
+            return this;
+        }
+
+        public List<String> getKey() {
+            return key;
+        }
+
+        public ShardConfig setKey(List<String> key) {
+            this.key = key;
+            return this;
+        }
+
+        public int getNumberOfShards() {
+            return numberOfShards;
+        }
+
+        public ShardConfig setNumberOfShards(int numberOfShards) {
+            this.numberOfShards = numberOfShards;
+            return this;
+        }
+
+        public String getRangeKey() {
+            return rangeKey;
+        }
+
+        public ShardConfig setRangeKey(String rangeKey) {
+            this.rangeKey = rangeKey;
+            return this;
+        }
+
+//        public Map<String, List<ShardRange>> getShards() {
+//            return shards;
+//        }
+
+        /**
+         *
+         * @param shards map of zone to shard range, e.g. zone0, chromosome 1 - chromosome 10
+         * @return map of shards
+         */
+//        public ShardConfig setShards(Map<String, List<ShardRange>> shards) {
+//            this.shards = shards;
+//            return this;
+//        }
+    }
+
+    public static class ShardRange {
+        private String start;
+        private String end;
+
+        public String getStart() {
+            return start;
+        }
+
+        public ShardRange setStart(String start) {
+            this.start = start;
+            return this;
+        }
+
+        public String getEnd() {
+            return end;
+        }
+
+        public ShardRange setEnd(String end) {
+            this.end = end;
+            return this;
         }
     }
 }
