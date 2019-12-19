@@ -100,8 +100,8 @@ public class MongoDBShardUtils {
                 List<SpeciesConfiguration.ShardRange> shardRanges = zone.getShardRanges();
                 for (SpeciesConfiguration.ShardRange shardRange : shardRanges) {
                     adminDB.runCommand(new Document("updateZoneKeyRange", fullCollectionName)
-                            .append("minimum", new Document(rangeKey, shardRange.getMinimum()))
-                            .append("maximum", new Document(rangeKey, shardRange.getMaximum()))
+                            .append("min", new Document(rangeKey, shardRange.getMinimum()))
+                            .append("max", new Document(rangeKey, shardRange.getMaximum()))
                             .append("tag", zone.getName()));
                 }
             }
