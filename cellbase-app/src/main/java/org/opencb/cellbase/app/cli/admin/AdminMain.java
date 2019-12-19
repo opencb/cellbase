@@ -68,6 +68,9 @@ public class AdminMain {
                     case "index":
                         commandExecutor = new IndexCommandExecutor(cliOptionsParser.getIndexCommandOptions());
                         break;
+                    case "install":
+                        commandExecutor = new InstallCommandExecutor(cliOptionsParser.getInstallCommandOptions());
+                        break;
                     case "server":
                         commandExecutor = new ServerCommandExecutor(cliOptionsParser.getServerCommandOptions());
                         break;

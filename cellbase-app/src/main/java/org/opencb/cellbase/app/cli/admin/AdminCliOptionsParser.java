@@ -34,6 +34,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     private BuildCommandOptions buildCommandOptions;
     private LoadCommandOptions loadCommandOptions;
     private IndexCommandOptions indexCommandOptions;
+    private InstallCommandOptions installCommandOptions;
     private ServerCommandOptions serverCommandOptions;
 
     public AdminCliOptionsParser() {
@@ -44,12 +45,14 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         buildCommandOptions = new BuildCommandOptions();
         loadCommandOptions = new LoadCommandOptions();
         indexCommandOptions = new IndexCommandOptions();
+        installCommandOptions = new InstallCommandOptions();
         serverCommandOptions = new ServerCommandOptions();
 
         jCommander.addCommand("download", downloadCommandOptions);
         jCommander.addCommand("build", buildCommandOptions);
         jCommander.addCommand("load", loadCommandOptions);
         jCommander.addCommand("index", indexCommandOptions);
+        jCommander.addCommand("install", installCommandOptions);
         jCommander.addCommand("server", serverCommandOptions);
     }
 
@@ -183,6 +186,20 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public boolean dropIndexesFirst;
     }
 
+    @Parameters(commandNames = {"install"}, commandDescription = "Set up sharding for CellBase")
+    public class InstallCommandOptions {
+
+        @ParametersDelegate
+        public CommonCommandOptions commonOptions = commonCommandOptions;
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or "
+                + "'hsapiens'", required = true, arity = 1)
+        public String species = "Homo sapiens";
+
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", arity = 1)
+        public String assembly = "GRCh38";
+    }
+
     @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")
     public class ServerCommandOptions {
 
@@ -231,6 +248,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     public IndexCommandOptions getIndexCommandOptions() {
         return indexCommandOptions;
     }
+
+    public InstallCommandOptions getInstallCommandOptions() { return installCommandOptions; }
 
     public ServerCommandOptions getServerCommandOptions() { return serverCommandOptions; }
 
