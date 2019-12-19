@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.CaseFormat;
+import org.apache.commons.lang.StringUtils;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.LoggerFactory;
 
@@ -26,10 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CellBaseConfiguration {
 
@@ -135,6 +133,9 @@ public class CellBaseConfiguration {
         if (configuration.getDatabases().getMongodb() == null) {
             configuration.getDatabases().setMongodb(new DatabaseCredentials());
         }
+        if (configuration.getDatabases().getMongodb().getReplicaSets() == null) {
+            configuration.getDatabases().getMongodb().setReplicaSets(Collections.emptyList());
+        }
         if (configuration.getDatabases().getMongodb().getOptions() == null) {
             configuration.getDatabases().getMongodb().setOptions(new HashMap<>());
         }
@@ -212,6 +213,24 @@ public class CellBaseConfiguration {
 
     public void setSpecies(SpeciesProperties species) {
         this.species = species;
+    }
+
+    /**
+     * get the config for this species.
+     * @param id shortName for species, e.g. hsapiens
+     * @return configuration for this species
+     */
+    public SpeciesConfiguration getSpeciesConfig(String id) {
+        if (StringUtils.isEmpty(id)) {
+            return null;
+        }
+        List<SpeciesConfiguration> allSpecies = getAllSpecies();
+        for (SpeciesConfiguration config : allSpecies) {
+            if (config.getId().equals(id)) {
+                return config;
+            }
+        }
+        return null;
     }
 
     public List<SpeciesConfiguration> getAllSpecies() {

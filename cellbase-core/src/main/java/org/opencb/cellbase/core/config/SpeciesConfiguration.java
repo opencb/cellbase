@@ -28,17 +28,20 @@ public class SpeciesConfiguration {
     private String commonName;
     private List<Assembly> assemblies;
     private List<String> data;
+    private List<ShardConfig> shards;
 
 
     public SpeciesConfiguration() {
     }
 
-    public SpeciesConfiguration(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data) {
+    public SpeciesConfiguration(String id, String scientificName, String commonName, List<Assembly> assemblies, List<String> data,
+                                List<ShardConfig> shards) {
         this.id = id;
         this.scientificName = scientificName;
         this.commonName = commonName;
         this.assemblies = assemblies;
         this.data = data;
+        this.shards = shards;
     }
 
 
@@ -50,6 +53,7 @@ public class SpeciesConfiguration {
         sb.append(", commonName='").append(commonName).append('\'');
         sb.append(", assemblies=").append(assemblies);
         sb.append(", data=").append(data);
+        sb.append(", shards=").append(shards);
         sb.append('}');
         return sb.toString();
     }
@@ -121,6 +125,104 @@ public class SpeciesConfiguration {
 
         public void setEnsemblCollection(String ensemblCollection) {
             this.ensemblCollection = ensemblCollection;
+        }
+    }
+
+    public List<ShardConfig> getShards() {
+        return shards;
+    }
+
+    public SpeciesConfiguration setShards(List<ShardConfig> shards) {
+        this.shards = shards;
+        return this;
+    }
+
+    public static class ShardConfig {
+        private String collection;
+        private List<String> key;
+        private String rangeKey;
+        private List<Zone> zones;
+
+        public String getCollection() {
+            return collection;
+        }
+
+        public ShardConfig setCollection(String collection) {
+            this.collection = collection;
+            return this;
+        }
+
+        public List<String> getKey() {
+            return key;
+        }
+
+        public ShardConfig setKey(List<String> key) {
+            this.key = key;
+            return this;
+        }
+
+        public String getRangeKey() {
+            return rangeKey;
+        }
+
+        public ShardConfig setRangeKey(String rangeKey) {
+            this.rangeKey = rangeKey;
+            return this;
+        }
+
+        public List<Zone> getZones() {
+            return zones;
+        }
+
+        public ShardConfig setZones(List<Zone> zones) {
+            this.zones = zones;
+            return this;
+        }
+    }
+
+    public static class Zone {
+        private String name;
+        private List<ShardRange> shardRanges;
+
+        public String getName() {
+            return name;
+        }
+
+        public Zone setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public List<ShardRange> getShardRanges() {
+            return shardRanges;
+        }
+
+        public Zone setShardRanges(List<ShardRange> shardRanges) {
+            this.shardRanges = shardRanges;
+            return this;
+        }
+    }
+
+    public static class ShardRange {
+        private String minimum;
+        private String maximum;
+
+        public String getMinimum() {
+            return minimum;
+        }
+
+        public ShardRange setMinimum(String minimum) {
+            this.minimum = minimum;
+            return this;
+        }
+
+        public String getMaximum() {
+            return maximum;
+        }
+
+        public ShardRange setMaximum(String maximum) {
+            this.maximum = maximum;
+            return this;
         }
     }
 }

@@ -8,12 +8,18 @@ databases:
   host: "${CELLBASE.DB.MONGODB.HOST}"
   user: "${CELLBASE.DB.USER}"
   password: "${CELLBASE.DB.PASSWORD}"
+  replicaSets:
+    - name: "${CELLBASE.DB.MONGODB.REPLICASET.0.NAME}"
+      nodes: "${CELLBASE.DB.MONGODB.REPLICASET.0}"
+    - name: "${CELLBASE.DB.MONGODB.REPLICASET.1.NAME}"
+      nodes: "${CELLBASE.DB.MONGODB.REPLICASET.1}"
   options:
    authenticationDatabase: "${CELLBASE.DB.MONGODB.AUTHENTICATIONDATABASE}"
    readPreference: "${CELLBASE.DB.MONGODB.READPREFERENCE}"
    replicaSet: "${CELLBASE.DB.MONGODB.REPLICASET}"
    connectionsPerHost: 20
    sslEnabled: false
+   enableSharding: true
  neo4j:
   hsapiens:
    host: "${CELLBASE.DB.NEO4J.HOST}"
@@ -133,6 +139,30 @@ species:
      - clinical
      - svs
      - repeats
+    shards:
+      - collection: "variation"
+        key:
+         - chromosome
+         - start
+         - end
+        rangeKey: "chromosome"
+        zones:
+          - name: "zone0"
+            shardRanges:
+             - minimum: "1"
+               maximum: "10"
+             - minimum: "2"
+               maximum: "20"
+             - minimum: "3"
+               maximum: "9"
+          - name: "zone1"
+            shardRanges:
+            - minimum: "10"
+              maximum: "2"
+            - minimum: "20"
+              maximum: "3"
+            - minimum: "9"
+              maximum: "Z"
   - id: mmusculus
     scientificName: Mus musculus
     assemblies:
