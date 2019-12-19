@@ -81,6 +81,7 @@ public class MongoDBShardUtils {
                 return;
             }
 
+            // different from our shard key, this is the key used for the zones ONLY
             final String rangeKey = shardConfig.getRangeKey();
 
             int i = 0;
@@ -98,7 +99,7 @@ public class MongoDBShardUtils {
                 //sh.addTagRange("cellbase_hsapiens_grch37_v4.variation", { "chromosome" :  "1" },  { "chromosome" :  "10"  }, "zone0" )
                 List<SpeciesConfiguration.ShardRange> shardRanges = zone.getShardRanges();
                 for (SpeciesConfiguration.ShardRange shardRange : shardRanges) {
-                    adminDB.runCommand(new Document("addTagRange", fullCollectionName)
+                    adminDB.runCommand(new Document("updateZoneKeyRange", fullCollectionName)
                             .append("minimum", new Document(rangeKey, shardRange.getMinimum()))
                             .append("maximum", new Document(rangeKey, shardRange.getMaximum()))
                             .append("tag", zone.getName()));
