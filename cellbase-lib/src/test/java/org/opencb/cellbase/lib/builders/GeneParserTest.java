@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GeneParserTest {
     private GeneParser geneParser;
-    private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null);
+    private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null, null);
     public GeneParserTest() throws URISyntaxException {
         init();
     }
