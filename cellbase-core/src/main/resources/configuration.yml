@@ -145,7 +145,6 @@ species:
          - chromosome
          - start
          - end
-        numberOfShards: 2
         rangeKey: "chromosome"
 #        shardRanges:
 #          - range0:

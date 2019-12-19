@@ -16,11 +16,12 @@
 
 package org.opencb.cellbase.lib.install;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang.StringUtils;
+import org.bson.Document;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -53,40 +54,71 @@ public class MongoDBShardUtils {
         List<SpeciesConfiguration.ShardConfig> shards = speciesConfiguration.getShards();
         for (SpeciesConfiguration.ShardConfig shardConfig : shards) {
 
-            // create collection
-            String collectionName = shardConfig.getCollection();
-            if (StringUtils.isEmpty(collectionName)) {
-                throw new CellbaseException("Sharding failed: collection name not found in config");
-            }
-            mongoDataStore.createCollection(collectionName);
+            // create the collection, if it's there already do nothing
+            String collectionName = createCollection(mongoDataStore, shardConfig);
 
-            // create index
-            List<String> keys = shardConfig.getKey();
-            Map<String, ObjectMap> indexes = new HashMap<>();
-            Map<String, Integer> keyMap = new HashMap<>();
-            for (String key : keys) {
-                keyMap.put(key, 1);
-            }
-            HashMap<String, String> options = new HashMap<>();
-            options.put("background", "true");
+            // set the keymap, e.g. chromosome, start, end. Also can be a single key
+            Map<String, Object> keyMap = createKeyMap(shardConfig);
 
-            indexes.put("fields", new ObjectMap((Map) keyMap));
-            indexes.put("options", new ObjectMap((Map) options));
-            MongoDBIndexUtils.createIndex(mongoDataStore, collectionName, Arrays.asList(indexes));
+            // shard keys must be indexed FIRST
+            createIndex(mongoDataStore, keyMap, collectionName);
 
-            int shardCount = shardConfig.getNumberOfShards();
-            String rangeKey = shardConfig.getRangeKey();
-
+            String databaseName = mongoDataStore.getDatabaseName();
             String fullCollectionName = mongoDataStore.getDatabaseName() + "." + collectionName;
+            MongoClient mongoClient = mongoDataStore.getMongoClient();
+            MongoDatabase adminDB = mongoClient.getDatabase("admin");
 
-            MongoDatabase adminDB = mongoDataStore.getAdminDB();
+            adminDB.runCommand(new Document("enableSharding", databaseName));
+            adminDB.runCommand(new Document("shardcollection", fullCollectionName).append("key", new Document(keyMap)));
 
-            // shard the collection
-            DBObject cmd = new BasicDBObject("shardCollection", fullCollectionName).
-                    append("key", new BasicDBObject(keyMap));
-//                    adminDB.(cmd);
+            DatabaseCredentials databaseCreds = cellBaseConfiguration.getDatabases().getMongodb();
+            List<DatabaseCredentials.ReplicaSet> replicaSets = databaseCreds.getReplicaSets();
+            if (replicaSets == null || replicaSets.isEmpty()) {
+                LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No replicaset config found for '" + species.getSpecies() + "'");
+                return;
+            }
+            int i = 0;
+            for (DatabaseCredentials.ReplicaSet replicaSet : replicaSets) {
+                // sh.addShard( "rs0/cb-mongo-shard1-1:27017,cb-mongo-shard1-2:27017,cb-mongo-shard1-3:27017" )
+                String replicaSetName = replicaSet.getName() + "/" + replicaSet.getNodes();
+                adminDB.runCommand(new Document("addShard", replicaSetName));
+                List<String> params = new ArrayList<>();
+                params.add(replicaSet.getName());
+                params.add("zone" + i++);
+                adminDB.runCommand(new Document("addShardToZone", params));
+            }
 
             // TODO add ranges
         }
+    }
+
+    private static String createCollection(MongoDataStore mongoDataStore, SpeciesConfiguration.ShardConfig shardConfig)
+            throws CellbaseException {
+        String collectionName = shardConfig.getCollection();
+        if (StringUtils.isEmpty(collectionName)) {
+            throw new CellbaseException("Sharding failed: collection name not found in config");
+        }
+        if (mongoDataStore.getCollection(collectionName) == null) {
+            mongoDataStore.createCollection(collectionName);
+        }
+        return collectionName;
+    }
+
+    private static void createIndex(MongoDataStore mongoDataStore, Map<String, Object> keyMap, String collectionName) {
+        HashMap<String, String> options = new HashMap<>();
+        options.put("background", "true");
+        Map<String, ObjectMap> indexes = new HashMap<>();
+        indexes.put("fields", new ObjectMap((Map) keyMap));
+        indexes.put("options", new ObjectMap((Map) options));
+        MongoDBIndexUtils.createIndex(mongoDataStore, collectionName, Arrays.asList(indexes));
+    }
+
+    private static Map<String, Object> createKeyMap(SpeciesConfiguration.ShardConfig shardConfig) {
+        List<String> keys = shardConfig.getKey();
+        Map<String, Object> keyMap = new HashMap<>();
+        for (String key : keys) {
+            keyMap.put(key, 1);
+        }
+        return keyMap;
     }
 }

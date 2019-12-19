@@ -140,7 +140,6 @@ public class SpeciesConfiguration {
     public static class ShardConfig {
         private String collection;
         private List<String> key;
-        private int numberOfShards;
         private String rangeKey;
         private Map<String, List<ShardRange>> shards;
 
@@ -159,15 +158,6 @@ public class SpeciesConfiguration {
 
         public ShardConfig setKey(List<String> key) {
             this.key = key;
-            return this;
-        }
-
-        public int getNumberOfShards() {
-            return numberOfShards;
-        }
-
-        public ShardConfig setNumberOfShards(int numberOfShards) {
-            this.numberOfShards = numberOfShards;
             return this;
         }
 
