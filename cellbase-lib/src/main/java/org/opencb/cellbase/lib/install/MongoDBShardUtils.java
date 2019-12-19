@@ -102,7 +102,7 @@ public class MongoDBShardUtils {
                     adminDB.runCommand(new Document("updateZoneKeyRange", fullCollectionName)
                             .append("min", new Document(rangeKey, shardRange.getMinimum()))
                             .append("max", new Document(rangeKey, shardRange.getMaximum()))
-                            .append("tag", zone.getName()));
+                            .append("zone", zone.getName()));
                 }
             }
         }
