@@ -82,10 +82,7 @@ public class MongoDBShardUtils {
                 // sh.addShard( "rs0/cb-mongo-shard1-1:27017,cb-mongo-shard1-2:27017,cb-mongo-shard1-3:27017" )
                 String replicaSetName = replicaSet.getName() + "/" + replicaSet.getNodes();
                 adminDB.runCommand(new Document("addShard", replicaSetName));
-                List<String> params = new ArrayList<>();
-                params.add(replicaSet.getName());
-                params.add("zone" + i++);
-                adminDB.runCommand(new Document("addShardToZone", params));
+                adminDB.runCommand(new Document("addShardToZone", replicaSet.getName()).append("zone", "zone" + i++));
             }
 
             // TODO add ranges
