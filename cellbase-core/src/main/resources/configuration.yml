@@ -146,21 +146,23 @@ species:
          - start
          - end
         rangeKey: "chromosome"
-#        shardRanges:
-#          - range0:
-#            - start: "1"
-#              end: "10"
-#            - start: "2"
-#              end: "20"
-#            - start: "3"
-#              end: "9"
-#          - range1:
-#            - start: "10"
-#              end: "2"
-#            - start: "20"
-#              end: "3"
-#            - start: "9"
-#              end: "Z"
+        zones:
+          - name: "zone0"
+            shardRanges:
+             - minimum: "1"
+               maximum: "10"
+             - minimum: "2"
+               maximum: "20"
+             - minimum: "3"
+               maximum: "9"
+          - name: "zone1"
+            shardRanges:
+            - minimum: "10"
+              maximum: "2"
+            - minimum: "20"
+              maximum: "3"
+            - minimum: "9"
+              maximum: "Z"
   - id: mmusculus
     scientificName: Mus musculus
     assemblies:

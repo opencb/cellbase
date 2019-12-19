@@ -68,7 +68,10 @@ public class MongoDBShardUtils {
             MongoClient mongoClient = mongoDataStore.getMongoClient();
             MongoDatabase adminDB = mongoClient.getDatabase("admin");
 
+            // sh.enableSharding( "cellbase_hsapiens_grch37_v4" )
             adminDB.runCommand(new Document("enableSharding", databaseName));
+
+            // sh.shardCollection("cellbase_hsapiens_grch37_v4.variation", { "chromosome": 1, "start": 1, "end": 1 } )
             adminDB.runCommand(new Document("shardcollection", fullCollectionName).append("key", new Document(keyMap)));
 
             DatabaseCredentials databaseCreds = cellBaseConfiguration.getDatabases().getMongodb();
@@ -77,15 +80,30 @@ public class MongoDBShardUtils {
                 LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No replicaset config found for '" + species.getSpecies() + "'");
                 return;
             }
+
+            final String rangeKey = shardConfig.getRangeKey();
+
             int i = 0;
-            for (DatabaseCredentials.ReplicaSet replicaSet : replicaSets) {
+            for (SpeciesConfiguration.Zone zone : shardConfig.getZones()) {
+                DatabaseCredentials.ReplicaSet replicaSet = replicaSets.get(i++);
+
                 // sh.addShard( "rs0/cb-mongo-shard1-1:27017,cb-mongo-shard1-2:27017,cb-mongo-shard1-3:27017" )
                 String replicaSetName = replicaSet.getName() + "/" + replicaSet.getNodes();
                 adminDB.runCommand(new Document("addShard", replicaSetName));
-                adminDB.runCommand(new Document("addShardToZone", replicaSet.getName()).append("zone", "zone" + i++));
-            }
 
-            // TODO add ranges
+                // sh.addShardToZone("rs0", "zone0")
+                adminDB.runCommand(new Document("addShardToZone", replicaSet.getName()).append("zone", zone.getName()));
+
+                // put chromosome 1 in shard0
+                //sh.addTagRange("cellbase_hsapiens_grch37_v4.variation", { "chromosome" :  "1" },  { "chromosome" :  "10"  }, "zone0" )
+                List<SpeciesConfiguration.ShardRange> shardRanges = zone.getShardRanges();
+                for (SpeciesConfiguration.ShardRange shardRange : shardRanges) {
+                    adminDB.runCommand(new Document("addTagRange", fullCollectionName)
+                            .append("minimum", new Document(rangeKey, shardRange.getMinimum()))
+                            .append("maximum", new Document(rangeKey, shardRange.getMaximum()))
+                            .append("tag", zone.getName()));
+                }
+            }
         }
     }
 

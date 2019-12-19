@@ -17,7 +17,6 @@
 package org.opencb.cellbase.core.config;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by imedina on 19/08/16.
@@ -54,6 +53,7 @@ public class SpeciesConfiguration {
         sb.append(", commonName='").append(commonName).append('\'');
         sb.append(", assemblies=").append(assemblies);
         sb.append(", data=").append(data);
+        sb.append(", shards=").append(shards);
         sb.append('}');
         return sb.toString();
     }
@@ -141,7 +141,7 @@ public class SpeciesConfiguration {
         private String collection;
         private List<String> key;
         private String rangeKey;
-        private Map<String, List<ShardRange>> shards;
+        private List<Zone> zones;
 
         public String getCollection() {
             return collection;
@@ -170,40 +170,58 @@ public class SpeciesConfiguration {
             return this;
         }
 
-//        public Map<String, List<ShardRange>> getShards() {
-//            return shards;
-//        }
-
-        /**
-         *
-         * @param shards map of zone to shard range, e.g. zone0, chromosome 1 - chromosome 10
-         * @return map of shards
-         */
-//        public ShardConfig setShards(Map<String, List<ShardRange>> shards) {
-//            this.shards = shards;
-//            return this;
-//        }
-    }
-
-    public static class ShardRange {
-        private String start;
-        private String end;
-
-        public String getStart() {
-            return start;
+        public List<Zone> getZones() {
+            return zones;
         }
 
-        public ShardRange setStart(String start) {
-            this.start = start;
+        public ShardConfig setZones(List<Zone> zones) {
+            this.zones = zones;
+            return this;
+        }
+    }
+
+    public static class Zone {
+        private String name;
+        private List<ShardRange> shardRanges;
+
+        public String getName() {
+            return name;
+        }
+
+        public Zone setName(String name) {
+            this.name = name;
             return this;
         }
 
-        public String getEnd() {
-            return end;
+        public List<ShardRange> getShardRanges() {
+            return shardRanges;
         }
 
-        public ShardRange setEnd(String end) {
-            this.end = end;
+        public Zone setShardRanges(List<ShardRange> shardRanges) {
+            this.shardRanges = shardRanges;
+            return this;
+        }
+    }
+
+    public static class ShardRange {
+        private String minimum;
+        private String maximum;
+
+        public String getMinimum() {
+            return minimum;
+        }
+
+        public ShardRange setMinimum(String minimum) {
+            this.minimum = minimum;
+            return this;
+        }
+
+        public String getMaximum() {
+            return maximum;
+        }
+
+        public ShardRange setMaximum(String maximum) {
+            this.maximum = maximum;
             return this;
         }
     }
