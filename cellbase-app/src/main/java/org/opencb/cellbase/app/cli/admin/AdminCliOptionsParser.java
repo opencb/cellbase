@@ -29,6 +29,7 @@ import java.util.Map;
 public class AdminCliOptionsParser extends CliOptionsParser {
 
     private final CommonCommandOptions commonCommandOptions;
+    private final SpeciesAndAssemblyCommandOptions speciesAndAssemblyCommandOptions;
 
     private DownloadCommandOptions downloadCommandOptions;
     private BuildCommandOptions buildCommandOptions;
@@ -40,6 +41,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
     public AdminCliOptionsParser() {
         jCommander.setProgramName("cellbase-admin.sh");
         commonCommandOptions = new CommonCommandOptions();
+        speciesAndAssemblyCommandOptions = new SpeciesAndAssemblyCommandOptions();
 
         downloadCommandOptions = new DownloadCommandOptions();
         buildCommandOptions = new BuildCommandOptions();
@@ -66,17 +68,20 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
+        @ParametersDelegate
+        public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
+
         @Parameter(names = {"-d", "--data"}, description = "Comma separated list of data to download: genome, gene, "
                 + "variation, variation_functional_score, regulation, protein, conservation, "
                 + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid formats include 'Homo sapiens'" +
-                " or hsapiens", required = false, arity = 1)
-        public String species = "Homo sapiens";
-
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
-        public String assembly;
+//        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid formats include 'Homo sapiens'" +
+//                " or hsapiens", required = false, arity = 1)
+//        public String species = "Homo sapiens";
+//
+//        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
+//        public String assembly;
 
         @Parameter(names = {"-t", "--target-directory"}, description = "Downloaded files will be saved here.", required = true, arity = 1)
         public String targetDirectory;
@@ -192,12 +197,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @ParametersDelegate
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or "
-                + "'hsapiens'", required = true, arity = 1)
-        public String species = "Homo sapiens";
-
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", arity = 1)
-        public String assembly = "GRCh38";
+        @ParametersDelegate
+        public SpeciesAndAssemblyCommandOptions speciesAndAssemblyOptions = speciesAndAssemblyCommandOptions;
     }
 
     @Parameters(commandNames = {"server"}, commandDescription = "Manage REST server")

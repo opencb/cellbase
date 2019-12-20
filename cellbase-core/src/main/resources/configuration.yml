@@ -8,7 +8,7 @@ databases:
   host: "${CELLBASE.DB.MONGODB.HOST}"
   user: "${CELLBASE.DB.USER}"
   password: "${CELLBASE.DB.PASSWORD}"
-  replicaSets:
+  shards:
     - name: "${CELLBASE.DB.MONGODB.REPLICASET.0.NAME}"
       nodes: "${CELLBASE.DB.MONGODB.REPLICASET.0}"
     - name: "${CELLBASE.DB.MONGODB.REPLICASET.1.NAME}"

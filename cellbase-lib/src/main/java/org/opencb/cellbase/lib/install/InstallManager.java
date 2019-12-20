@@ -36,6 +36,10 @@ public class InstallManager {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
+    public void install(String speciesName, String assemblyName) throws CellbaseException, IOException {
+
+    }
+
     /**
      * Add shard indexes and ranges in Mongo based on config file entries.
      *

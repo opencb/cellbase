@@ -77,6 +77,18 @@ public abstract class CliOptionsParser {
 
     }
 
+    public class SpeciesAndAssemblyCommandOptions {
+
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid formats include 'Homo sapiens' or hsapiens",
+                required = true, arity = 1)
+        public String species;
+
+        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used",
+                required = false, arity = 1)
+        public String assembly;
+
+    }
+
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";

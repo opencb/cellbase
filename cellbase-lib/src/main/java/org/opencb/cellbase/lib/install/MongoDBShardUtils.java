@@ -47,13 +47,17 @@ public class MongoDBShardUtils {
             throws CellbaseException {
         SpeciesConfiguration speciesConfiguration = cellBaseConfiguration.getSpeciesConfig(species.getSpecies());
         if (speciesConfiguration == null) {
-            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No sharding config found for '" + species.getSpecies() + "'");
+            LoggerFactory.getLogger(MongoDBShardUtils.class).error("No Species found for '" + species.getSpecies() + "'");
             return;
         }
 
         List<SpeciesConfiguration.ShardConfig> shards = speciesConfiguration.getShards();
-        for (SpeciesConfiguration.ShardConfig shardConfig : shards) {
+        if (shards == null) {
+            LoggerFactory.getLogger(MongoDBShardUtils.class).error("No sharding config found for '" + species.getSpecies() + "'");
+            return;
+        }
 
+        for (SpeciesConfiguration.ShardConfig shardConfig : shards) {
             // create the collection, if it's there already do nothing
             String collectionName = createCollection(mongoDataStore, shardConfig);
 
@@ -66,7 +70,8 @@ public class MongoDBShardUtils {
             String databaseName = mongoDataStore.getDatabaseName();
             String fullCollectionName = mongoDataStore.getDatabaseName() + "." + collectionName;
             MongoClient mongoClient = mongoDataStore.getMongoClient();
-            MongoDatabase adminDB = mongoClient.getDatabase("admin");
+            MongoDatabase adminDB = mongoClient
+                    .getDatabase(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("authenticationDatabase"));
 
             // sh.enableSharding( "cellbase_hsapiens_grch37_v4" )
             adminDB.runCommand(new Document("enableSharding", databaseName));
@@ -74,8 +79,8 @@ public class MongoDBShardUtils {
             // sh.shardCollection("cellbase_hsapiens_grch37_v4.variation", { "chromosome": 1, "start": 1, "end": 1 } )
             adminDB.runCommand(new Document("shardcollection", fullCollectionName).append("key", new Document(keyMap)));
 
-            DatabaseCredentials databaseCreds = cellBaseConfiguration.getDatabases().getMongodb();
-            List<DatabaseCredentials.ReplicaSet> replicaSets = databaseCreds.getReplicaSets();
+            DatabaseCredentials databaseCredentials = cellBaseConfiguration.getDatabases().getMongodb();
+            List<DatabaseCredentials.ReplicaSet> replicaSets = databaseCredentials.getReplicaSets();
             if (replicaSets == null || replicaSets.isEmpty()) {
                 LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No replicaset config found for '" + species.getSpecies() + "'");
                 return;
