@@ -131,7 +131,7 @@ public class CellBaseConfiguration {
             configuration.setDatabases(new Databases());
         }
         if (configuration.getDatabases().getMongodb() == null) {
-            configuration.getDatabases().setMongodb(new DatabaseCredentials());
+            configuration.getDatabases().setMongodb(new MongoDBDatabaseCredentials());
         }
         if (configuration.getDatabases().getMongodb().getShards() == null) {
             configuration.getDatabases().getMongodb().setShards(Collections.emptyList());

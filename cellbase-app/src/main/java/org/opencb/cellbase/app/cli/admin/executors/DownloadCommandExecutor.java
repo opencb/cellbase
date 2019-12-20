@@ -52,7 +52,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     public void execute() {
         try {
-            SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, downloadCommandOptions.speciesAndAssemblyOptions.species);
+            SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration,
+                    downloadCommandOptions.speciesAndAssemblyOptions.species);
             if (speciesConfiguration == null) {
                 throw new CellbaseException("Invalid species: '" + downloadCommandOptions.speciesAndAssemblyOptions.species + "'");
             }

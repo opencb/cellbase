@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.core.config;
 
-import java.util.List;
 import java.util.Map;
 
 /**

@@ -21,7 +21,6 @@ import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.MongoDBDatabaseCredentials;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;

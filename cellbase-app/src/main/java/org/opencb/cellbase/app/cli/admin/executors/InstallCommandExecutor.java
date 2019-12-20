@@ -21,9 +21,6 @@ import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.install.InstallManager;
 
-import java.io.IOException;
-
-
 public class InstallCommandExecutor extends CommandExecutor {
 
     private AdminCliOptionsParser.InstallCommandOptions installCommandOptions;

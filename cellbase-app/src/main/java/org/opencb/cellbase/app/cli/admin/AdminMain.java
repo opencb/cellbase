@@ -20,6 +20,7 @@ import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.executors.*;
+import org.opencb.cellbase.core.exception.CellbaseException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -83,7 +84,7 @@ public class AdminMain {
                 try {
                     commandExecutor.loadCellBaseConfiguration();
                     commandExecutor.execute();
-                } catch (IOException | URISyntaxException e) {
+                } catch (IOException | URISyntaxException | CellbaseException e) {
                     commandExecutor.getLogger().error("Error reading CellBase configuration: " + e.getMessage());
                     System.exit(1);
                 }
