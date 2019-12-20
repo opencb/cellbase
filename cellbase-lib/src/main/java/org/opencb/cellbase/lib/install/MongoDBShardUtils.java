@@ -54,12 +54,11 @@ public class MongoDBShardUtils {
 
         List<SpeciesConfiguration.ShardConfig> shards = speciesConfiguration.getShards();
         if (shards == null) {
-            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No sharding config found for '" + species.getSpecies() + "'");
+            LoggerFactory.getLogger(MongoDBShardUtils.class).error("No sharding config found for '" + species.getSpecies() + "'");
             return;
         }
 
         for (SpeciesConfiguration.ShardConfig shardConfig : shards) {
-
             // create the collection, if it's there already do nothing
             String collectionName = createCollection(mongoDataStore, shardConfig);
 
@@ -72,7 +71,8 @@ public class MongoDBShardUtils {
             String databaseName = mongoDataStore.getDatabaseName();
             String fullCollectionName = mongoDataStore.getDatabaseName() + "." + collectionName;
             MongoClient mongoClient = mongoDataStore.getMongoClient();
-            MongoDatabase adminDB = mongoClient.getDatabase("admin");
+            MongoDatabase adminDB = mongoClient
+                    .getDatabase(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("authenticationDatabase"));
 
             // sh.enableSharding( "cellbase_hsapiens_grch37_v4" )
             adminDB.runCommand(new Document("enableSharding", databaseName));
@@ -82,6 +82,7 @@ public class MongoDBShardUtils {
 
             MongoDBDatabaseCredentials databaseCredentials = cellBaseConfiguration.getDatabases().getMongodb();
             List<MongoDBDatabaseCredentials.ReplicaSet> replicaSets = databaseCredentials.getShards();
+
             if (replicaSets == null || replicaSets.isEmpty()) {
                 LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No replicaset config found for '" + species.getSpecies() + "'");
                 return;

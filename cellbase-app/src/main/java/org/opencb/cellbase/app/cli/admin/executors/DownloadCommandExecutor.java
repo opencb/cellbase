@@ -52,15 +52,15 @@ public class DownloadCommandExecutor extends CommandExecutor {
      */
     public void execute() {
         try {
-            SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, downloadCommandOptions.species);
+            SpeciesConfiguration speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, downloadCommandOptions.speciesAndAssemblyOptions.species);
             if (speciesConfiguration == null) {
-                throw new CellbaseException("Invalid species: '" + downloadCommandOptions.species + "'");
+                throw new CellbaseException("Invalid species: '" + downloadCommandOptions.speciesAndAssemblyOptions.species + "'");
             }
             SpeciesConfiguration.Assembly assembly = null;
-            if (!StringUtils.isEmpty(downloadCommandOptions.assembly)) {
-                assembly = SpeciesUtils.getAssembly(speciesConfiguration, downloadCommandOptions.assembly);
+            if (!StringUtils.isEmpty(downloadCommandOptions.speciesAndAssemblyOptions.assembly)) {
+                assembly = SpeciesUtils.getAssembly(speciesConfiguration, downloadCommandOptions.speciesAndAssemblyOptions.assembly);
                 if (assembly == null) {
-                    throw new CellbaseException("Invalid assembly: '" + downloadCommandOptions.assembly + "'");
+                    throw new CellbaseException("Invalid assembly: '" + downloadCommandOptions.speciesAndAssemblyOptions.assembly + "'");
                 }
             } else {
                 assembly = SpeciesUtils.getDefaultAssembly(speciesConfiguration);
@@ -118,7 +118,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
         } catch (IOException | InterruptedException | CellbaseException e) {
-            logger.error("Error downloading '" + downloadCommandOptions.species + "' files: " + e.getMessage());
+            logger.error("Error downloading '" + downloadCommandOptions.speciesAndAssemblyOptions.species + "' files: " + e.getMessage());
         }
 
     }
