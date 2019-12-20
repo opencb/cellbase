@@ -74,7 +74,7 @@ public class MongoDBShardUtils {
                     .getDatabase(cellBaseConfiguration.getDatabases().getMongodb().getOptions().get("authenticationDatabase"));
 
             // sh.enableSharding( "cellbase_hsapiens_grch37_v4" )
-            adminDB.runCommand(new Document("enableSharding", databaseName));
+//            adminDB.runCommand(new Document("enableSharding", databaseName));
 
             // sh.shardCollection("cellbase_hsapiens_grch37_v4.variation", { "chromosome": 1, "start": 1, "end": 1 } )
             adminDB.runCommand(new Document("shardcollection", fullCollectionName).append("key", new Document(keyMap)));
@@ -95,8 +95,8 @@ public class MongoDBShardUtils {
                 MongoDBDatabaseCredentials.ReplicaSet replicaSet = replicaSets.get(i++);
 
                 // sh.addShard( "rs0/cb-mongo-shard1-1:27017,cb-mongo-shard1-2:27017,cb-mongo-shard1-3:27017" )
-                String replicaSetName = replicaSet.getId() + "/" + replicaSet.getNodes();
-                adminDB.runCommand(new Document("addShard", replicaSetName));
+//                String replicaSetName = replicaSet.getId() + "/" + replicaSet.getNodes();
+//                adminDB.runCommand(new Document("addShard", replicaSetName));
 
                 // sh.addShardToZone("rs0", "zone0")
                 adminDB.runCommand(new Document("addShardToZone", replicaSet.getId()).append("zone", zone.getName()));
