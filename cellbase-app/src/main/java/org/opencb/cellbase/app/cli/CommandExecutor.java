@@ -22,6 +22,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +80,7 @@ public abstract class CommandExecutor {
         }
     }
 
-    public abstract void execute();
+    public abstract void execute() throws CellbaseException;
 
     public String getLogLevel() {
         return logLevel;

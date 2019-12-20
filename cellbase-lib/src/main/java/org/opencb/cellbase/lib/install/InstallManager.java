@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.install;
 
 import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
@@ -25,6 +26,7 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import java.util.List;
 
 public class InstallManager {
 
@@ -41,11 +43,31 @@ public class InstallManager {
      *
      * @param speciesName name of species
      * @param assemblyName name of assembly
-     * @throws IOException if configuration file can't be read
-     * @throws CellbaseException if indexes file isn't found, or invalid input
+     * @throws CellbaseException if invalid input
      */
-    public void shard(String speciesName, String assemblyName) throws CellbaseException, IOException {
+    public void install(String speciesName, String assemblyName) throws CellbaseException {
+        // TDDO check database credentials
+
+        // user API perms
+
+        // check repl sets
+
         Species species = SpeciesUtils.getSpecies(configuration, speciesName, assemblyName);
+
+        SpeciesConfiguration speciesConfiguration = configuration.getSpeciesConfig(species.getSpecies());
+        if (speciesConfiguration == null) {
+            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No config found for '" + species.getSpecies() + "'");
+            return;
+        }
+
+        List<SpeciesConfiguration.ShardConfig> shards = speciesConfiguration.getShards();
+        if (shards != null) {
+            // if sharding in config
+            shard(species);
+        }
+    }
+
+    private void shard(Species species) throws CellbaseException {
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
         MongoDataStore mongoDataStore = factory.getMongoDBDatastore(species.getSpecies(), species.getAssembly());
         MongoDBShardUtils.shard(mongoDataStore, configuration, species);

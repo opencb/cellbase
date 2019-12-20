@@ -23,13 +23,13 @@ import java.util.Map;
  */
 public class Databases {
 
-    private DatabaseCredentials mongodb;
+    private MongoDBDatabaseCredentials mongodb;
     private Map<String, DatabaseCredentials> neo4j;
 
     public Databases() {
     }
 
-    public Databases(DatabaseCredentials mongodb, Map<String, DatabaseCredentials> neo4j) {
+    public Databases(MongoDBDatabaseCredentials mongodb, Map<String, DatabaseCredentials> neo4j) {
         this.mongodb = mongodb;
         this.neo4j = neo4j;
     }
@@ -43,11 +43,11 @@ public class Databases {
         return sb.toString();
     }
 
-    public DatabaseCredentials getMongodb() {
+    public MongoDBDatabaseCredentials getMongodb() {
         return mongodb;
     }
 
-    public Databases setMongodb(DatabaseCredentials mongodb) {
+    public Databases setMongodb(MongoDBDatabaseCredentials mongodb) {
         this.mongodb = mongodb;
         return this;
     }

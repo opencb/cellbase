@@ -35,12 +35,12 @@ public class InstallCommandExecutor extends CommandExecutor {
         this.installCommandOptions = installCommandOptions;
     }
 
-    public void execute() {
+    public void execute() throws CellbaseException {
         try {
             logger.info("Starting installation ...");
             InstallManager installManager = new InstallManager(configuration);
-            installManager.shard(installCommandOptions.species, installCommandOptions.assembly);
-        } catch (CellbaseException | IOException e) {
+            installManager.install(installCommandOptions.species, installCommandOptions.assembly);
+        } catch (CellbaseException e) {
             logger.error("Error installing:" + e.toString());
         }
     }

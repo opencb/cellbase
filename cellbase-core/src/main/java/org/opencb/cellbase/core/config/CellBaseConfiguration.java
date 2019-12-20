@@ -133,8 +133,8 @@ public class CellBaseConfiguration {
         if (configuration.getDatabases().getMongodb() == null) {
             configuration.getDatabases().setMongodb(new DatabaseCredentials());
         }
-        if (configuration.getDatabases().getMongodb().getReplicaSets() == null) {
-            configuration.getDatabases().getMongodb().setReplicaSets(Collections.emptyList());
+        if (configuration.getDatabases().getMongodb().getShards() == null) {
+            configuration.getDatabases().getMongodb().setShards(Collections.emptyList());
         }
         if (configuration.getDatabases().getMongodb().getOptions() == null) {
             configuration.getDatabases().getMongodb().setOptions(new HashMap<>());

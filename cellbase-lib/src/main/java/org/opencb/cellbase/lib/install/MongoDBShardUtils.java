@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
+import org.opencb.cellbase.core.config.MongoDBDatabaseCredentials;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -47,11 +48,16 @@ public class MongoDBShardUtils {
             throws CellbaseException {
         SpeciesConfiguration speciesConfiguration = cellBaseConfiguration.getSpeciesConfig(species.getSpecies());
         if (speciesConfiguration == null) {
-            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No sharding config found for '" + species.getSpecies() + "'");
+            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No config found for '" + species.getSpecies() + "'");
             return;
         }
 
         List<SpeciesConfiguration.ShardConfig> shards = speciesConfiguration.getShards();
+        if (shards == null) {
+            LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No sharding config found for '" + species.getSpecies() + "'");
+            return;
+        }
+
         for (SpeciesConfiguration.ShardConfig shardConfig : shards) {
 
             // create the collection, if it's there already do nothing
@@ -74,8 +80,8 @@ public class MongoDBShardUtils {
             // sh.shardCollection("cellbase_hsapiens_grch37_v4.variation", { "chromosome": 1, "start": 1, "end": 1 } )
             adminDB.runCommand(new Document("shardcollection", fullCollectionName).append("key", new Document(keyMap)));
 
-            DatabaseCredentials databaseCreds = cellBaseConfiguration.getDatabases().getMongodb();
-            List<DatabaseCredentials.ReplicaSet> replicaSets = databaseCreds.getReplicaSets();
+            MongoDBDatabaseCredentials databaseCredentials = cellBaseConfiguration.getDatabases().getMongodb();
+            List<MongoDBDatabaseCredentials.ReplicaSet> replicaSets = databaseCredentials.getShards();
             if (replicaSets == null || replicaSets.isEmpty()) {
                 LoggerFactory.getLogger(MongoDBShardUtils.class).warn("No replicaset config found for '" + species.getSpecies() + "'");
                 return;
@@ -86,14 +92,14 @@ public class MongoDBShardUtils {
 
             int i = 0;
             for (SpeciesConfiguration.Zone zone : shardConfig.getZones()) {
-                DatabaseCredentials.ReplicaSet replicaSet = replicaSets.get(i++);
+                MongoDBDatabaseCredentials.ReplicaSet replicaSet = replicaSets.get(i++);
 
                 // sh.addShard( "rs0/cb-mongo-shard1-1:27017,cb-mongo-shard1-2:27017,cb-mongo-shard1-3:27017" )
-                String replicaSetName = replicaSet.getName() + "/" + replicaSet.getNodes();
+                String replicaSetName = replicaSet.getId() + "/" + replicaSet.getNodes();
                 adminDB.runCommand(new Document("addShard", replicaSetName));
 
                 // sh.addShardToZone("rs0", "zone0")
-                adminDB.runCommand(new Document("addShardToZone", replicaSet.getName()).append("zone", zone.getName()));
+                adminDB.runCommand(new Document("addShardToZone", replicaSet.getId()).append("zone", zone.getName()));
 
                 // put chromosome 1 in shard0
                 //sh.addTagRange("cellbase_hsapiens_grch37_v4.variation", { "chromosome" :  "1" },  { "chromosome" :  "10"  }, "zone0" )
