@@ -48,7 +48,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Build with Maven CLI
-          run: mvn -T 2 clean install -DskipTests
+        run: mvn -T 2 clean install -DskipTests
       - name: Deploy to Maven Central respository
         uses: samuelmeuli/action-maven-publish@v1
         with:
@@ -86,8 +86,8 @@ jobs:
         with:
           java-version: 1.8
       - name: Get CellBase version
-          id: get_version
-          run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
       - name: Deploy Javadocs
