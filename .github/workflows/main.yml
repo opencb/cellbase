@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    name: Build and test CellBase
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -55,7 +56,7 @@ jobs:
 #        FOLDER: target/site     # The folder the action should deploy.
 #        TARGET_FOLDER: apidocs/ ${{ github.ref }}
   deploy:
-    name: Build and deploy CellBase libs and Docker images in Maven Central and DockerHub repositories
+    name: Build and deploy CellBase libs, Java docs and Docker images in Maven Central and DockerHub repositories
     runs-on: ubuntu-18.04
     needs: build
     steps:
@@ -81,6 +82,19 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Build and publish Docker images to DockerHub
         run: ./build/cloud/docker/docker-build.sh push
+      - name: Get CellBase version
+        id: get_version
+        run: echo ::set-output name=VERSION::5.0.0-SNAPSHOT
+      - name: Generate Javadocs
+        run: mvn javadoc:aggregate
+      - name: Deploy Javadocs
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: next               # The branch the action should deploy from.
+          BRANCH: gh-pages                # The branch the action should deploy to.
+          FOLDER: target/site/apidocs     # The folder the action should deploy.
+          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
 #  docker:
 #    name: This job builds and pushes Docker images to DockerHub
 #    runs-on: ubuntu-18.04
@@ -104,26 +118,26 @@ jobs:
 ##        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 #      - name: Build and publish Docker images to DockerHub
 #        run: ./build/cloud/docker/docker-build.sh push ${{ github.ref }}
-  javadocs:
-    name: Generate and push Java Docs
-    runs-on: ubuntu-18.04
-    needs: build
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Get CellBase version
-        id: get_version
-        run: echo ::set-output name=VERSION::5.0.0-SNAPSHOT
-      - name: Generate Javadocs
-        run: mvn javadoc:aggregate
-      - name: Deploy Javadocs
-        uses: JamesIves/github-pages-deploy-action@releases/v3
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_BRANCH: next               # The branch the action should deploy from.
-          BRANCH: gh-pages                # The branch the action should deploy to.
-          FOLDER: target/site/apidocs     # The folder the action should deploy.
-          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
+#  javadocs:
+#    name: Generate and push Java Docs
+#    runs-on: ubuntu-18.04
+#    needs: build
+#    steps:
+#      - uses: actions/checkout@v1
+#      - name: Set up JDK 1.8
+#        uses: actions/setup-java@v1
+#        with:
+#          java-version: 1.8
+#      - name: Get CellBase version
+#        id: get_version
+#        run: echo ::set-output name=VERSION::5.0.0-SNAPSHOT
+#      - name: Generate Javadocs
+#        run: mvn javadoc:aggregate
+#      - name: Deploy Javadocs
+#        uses: JamesIves/github-pages-deploy-action@releases/v3
+#        with:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          BASE_BRANCH: next               # The branch the action should deploy from.
+#          BRANCH: gh-pages                # The branch the action should deploy to.
+#          FOLDER: target/site/apidocs     # The folder the action should deploy.
+#          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
