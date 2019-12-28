@@ -7,26 +7,32 @@ set -e
 # The command line help #
 #########################
 display_help() {
-    echo "Usage: {build|push} tag_name [build_folder]" >&2
+    echo "Usage: {build|push} [tag] [build_folder]" >&2
     echo
-    echo "   build           Build the three CellBase docker files"
-    echo "   push            Publish the CellBase docker files on DockerHub"
-    echo "   tag_name        Name of tag on GitHub"
-    echo "   [build_folder]  Path of CellBase build folder [optional]"
+    echo "   build            Build the three CellBase docker files"
+    echo "   push             Publish the CellBase docker files on DockerHub"
+    echo "   [tag]            Name of tag on GitHub"
+    echo "   [build_folder]   Path of CellBase build folder [optional]"
     echo
     echo " ** Script expects to be run in the root CellBase directory **  "
     exit 1
 }
 
 ## check mandatory parameters 'action' and 'tag' exist
-if [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Error: action and tag are required"
+if [ -z "$1" ]; then
+  echo "Error: action is required"
   display_help
+else
+  ACTION=$1
 fi
 
-## set avtion and tag
-ACTION=$1
-TAG=$2
+## get optional 'tag' value from cellbase-admin.sh help output
+if [ -z "$2" ]; then
+  BASEDIR=`dirname $0`
+  TAG=`$BASEDIR/../../bin/cellbase-admin.sh 2>&1 | grep "Version" | sed 's/ //g' | cut -d ':' -f 2`
+else
+  TAG=$2
+fi
 
 ## get optional 'build' folder
 if [ -z "$3" ]; then
