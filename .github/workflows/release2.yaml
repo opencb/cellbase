@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         mongodb-version: ["4.2"]
@@ -22,7 +22,7 @@ jobs:
       - name: Build with Maven
         run: mvn -T 2 clean install
   deploy_maven:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     needs: build
     steps:
       - uses: actions/checkout@v1
@@ -40,7 +40,7 @@ jobs:
           nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
           nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     needs: build
     steps:
       - uses: actions/checkout@v1
@@ -56,9 +56,9 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Build and publish Docker images to DockerHub
-        run: ./cellbase-app/app/cloud/docker/docker-build.sh push ${{ steps.get_version.outputs.VERSION }}
+        run: ./build/cloud/docker/docker-build.sh push ${{ steps.get_version.outputs.VERSION }}
   javadocs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     needs: build
     steps:
       - uses: actions/checkout@v1
@@ -78,7 +78,7 @@ jobs:
           BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: target/site # The folder the action should deploy.
   pypi:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     needs: build
     steps:
       - uses: actions/checkout@v1
