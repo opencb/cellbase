@@ -21,8 +21,8 @@ jobs:
         java-version: 1.8
     - name: Clone and build java-common-libs
       run: cd ~ && git clone -b develop https://github.com/opencb/java-common-libs.git && cd ~/java-common-libs && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
-    - name: Clone and build biodata
-      run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
+#    - name: Clone and build biodata
+#      run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
     - name: Launch MongoDB 
       run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
     - name: Build with Maven
@@ -67,17 +67,18 @@ jobs:
           java-version: 1.8
       - name: Clone and build java-common-libs
         run: cd ~ && git clone -b develop https://github.com/opencb/java-common-libs.git && cd ~/java-common-libs && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
-      - name: Clone and build biodata
-        run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
-      - name: Build with Maven CLI
-        run: mvn -T 2 clean install -DskipTests
+#      - name: Clone and build biodata
+#        run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
+#      - name: Build with Maven CLI
+#        run: mvn -T 2 clean install -DskipTests
       - name: Deploy to Maven Central respository
         uses: samuelmeuli/action-maven-publish@v1
         with:
-          gpg_private_key: ${{ secrets.MAVEN_PRIVATE_KEY }}
-          gpg_passphrase: ${{ secrets.MAVEN_PASSPHRASE }}
           nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
           nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+          gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          maven_args: -DskipTests
       - name: Login to dockerhub
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Build and publish Docker images to DockerHub

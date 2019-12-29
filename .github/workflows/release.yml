@@ -31,10 +31,10 @@ jobs:
     - name: Release Maven package
       uses: samuelmeuli/action-maven-publish@v1
       with:
-        gpg_private_key: ${{ secrets.MAVEN_PRIVATE_KEY }}
-        gpg_passphrase: ${{ secrets.MAVEN_PASSPHRASE }}
         nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
         nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+        gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
     - name: Generate Javadocs
       run: mvn javadoc:aggregate
     - name: Deploy Javadocs
