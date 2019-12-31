@@ -238,32 +238,37 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.gmaven</groupId>
-                <artifactId>gmaven-plugin</artifactId>
-                <version>1.5</version>
-                <configuration>
-                    <providerSelection>2.0</providerSelection>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.gmaven.runtime</groupId>
-                        <artifactId>gmaven-runtime-2.0</artifactId>
-                        <version>1.5</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-all</artifactId>
-                        <version>2.0.8</version>
-                    </dependency>
-                </dependencies>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.gmaven</groupId>-->
+<!--                <artifactId>gmaven-plugin</artifactId>-->
+<!--                <version>1.5</version>-->
+<!--                <configuration>-->
+<!--                    <providerSelection>2.0</providerSelection>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>testCompile</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <dependencies>-->
+<!--                    <dependency>-->
+<!--                        <groupId>org.codehaus.gmaven.runtime</groupId>-->
+<!--                        <artifactId>gmaven-runtime-2.0</artifactId>-->
+<!--                        <version>1.5</version>-->
+<!--                    </dependency>-->
+<!--                    <dependency>-->
+<!--                        <groupId>org.codehaus.groovy</groupId>-->
+<!--                        <artifactId>groovy-all</artifactId>-->
+<!--                        <version>2.0.8</version>-->
+<!--                    </dependency>-->
+<!--                </dependencies>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -286,16 +291,26 @@
         </plugins>
     </build>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.0.0-M4</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <profiles>
-        <profile>
-            <id>prod-war</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <cellbase.war.name>cellbase</cellbase.war.name>
-            </properties>
-        </profile>
+<!--        <profile>-->
+<!--            <id>prod-war</id>-->
+<!--            <activation>-->
+<!--                <activeByDefault>false</activeByDefault>-->
+<!--            </activation>-->
+<!--            <properties>-->
+<!--                <cellbase.war.name>cellbase</cellbase.war.name>-->
+<!--            </properties>-->
+<!--        </profile>-->
         <profile>
             <id>default-config</id>
             <activation>
@@ -314,7 +329,6 @@
                 <CELLBASE.SERVER.REST.PORT>9090</CELLBASE.SERVER.REST.PORT>
             </properties>
         </profile>
-
         <profile>
             <id>deploy</id>
             <build>

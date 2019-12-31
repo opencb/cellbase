@@ -73,17 +73,11 @@
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
-        <!--        <resources>-->
-        <!--            <resource>-->
-        <!--                <directory>src/main/resources</directory>-->
-        <!--                <filtering>true</filtering>-->
-        <!--            </resource>-->
-        <!--        </resources>-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.6</version>
+                <version>3.2.3</version>
                 <executions>
                     <execution>
                         <id>make-a-war</id>
@@ -95,16 +89,11 @@
                 </executions>
                 <configuration>
                     <warName>${cellbase.war.name}</warName>
-                    <!--
-                      Exclude JCL and LOG4J since all logging should go through SLF4J.
-                      Note that we're excluding log4j-<version>.jar but keeping
-                      log4j-over-slf4j-<version>.jar
-                    -->
                     <webResources>
                         <resource>
                             <directory>src/main/webapp/WEB-INF/</directory>
-                            <filtering>true</filtering>
                             <targetPath>WEB-INF</targetPath>
+                            <filtering>true</filtering>
                         </resource>
                     </webResources>
                 </configuration>
