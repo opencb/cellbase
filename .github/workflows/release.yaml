@@ -1,4 +1,4 @@
-name: CellBase Release
+name: CellBase Release workflow
 
 on:
   push:
@@ -63,7 +63,7 @@ jobs:
         run: ./build/cloud/docker/docker-build.sh push
       - name: Get CellBase version
         id: get_version
-        run: echo ::set-output name=VERSION::5.0.0-SNAPSHOT
+        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
       - name: Deploy Javadocs
@@ -74,6 +74,38 @@ jobs:
           BRANCH: gh-pages                # The branch the action should deploy to.
           FOLDER: target/site/apidocs     # The folder the action should deploy.
           TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
+  site:
+    name: Generate site
+    runs-on: ubuntu-18.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Generate Site with Maven CLI
+        run: mvn site
+      - name: Copy
+        run: cp -r cellbase-app/target/site target/site/cellbase-app &&
+          cp -r cellbase-client/target/site target/site/cellbase-client &&
+          cp -r cellbase-core/target/site target/site/cellbase-core &&
+          cp -r cellbase-lib/target/site target/site/cellbase-lib &&
+          cp -r cellbase-server/target/site target/site/cellbase-server
+      - name: Get CellBase version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+      - name: Get data YYMM
+        id: get_date
+        run: echo ::set-output name=YYMM::$(date +%Y%m)
+      - name: Copy folder content recursively to remote
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: target/site
+          remote: /mnt/data/site/cellbase/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}
+          host: 128.232.224.128
+          username: ${{ secrets.SCP_SITE_USER }}
+          password: ${{ secrets.SCP_SITE_PASSWORD }}
   pypi:
     name: Deploy in PyPI
     runs-on: ubuntu-18.04
