@@ -89,5 +89,11 @@ jobs:
         run: mvn site
       - name: Copy
         run: cp -r cellbase-core/target/site target/site/cellbase-core
-      - name: SCP
-        run: scp -r target/site ${{ secrets.SCP_SITE_USER }}@swdev.bioinfo.hpc.cam.ac.uk:/mnt/data/site/cellbase/5.0.0-SNAPSHOT
+      - name: Copy folder content recursively to remote
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: target/site
+          remote: /mnt/data/site/cellbase/5.0.0-SNAPSHOT
+          host: 128.232.224.128
+          username: ${{ secrets.SCP_SITE_USER }}
+          password: ${{ secrets.SCP_SITE_PASSWORD }}
