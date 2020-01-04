@@ -64,7 +64,7 @@ jobs:
         run: ./build/cloud/docker/docker-build.sh push
       - name: Get CellBase version
         id: get_version
-        run: echo ::set-output name=VERSION::5.0.0-SNAPSHOT
+        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
       - name: Deploy Javadocs
@@ -93,6 +93,9 @@ jobs:
               cp -r cellbase-core/target/site target/site/cellbase-core &&
               cp -r cellbase-lib/target/site target/site/cellbase-lib &&
               cp -r cellbase-server/target/site target/site/cellbase-server
+      - name: Get CellBase version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Get data YYMM
         id: get_date
         run: echo ::set-output name=YYMM::$(date +%Y%m)
@@ -100,7 +103,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/site
-          remote: /mnt/data/site/cellbase/5.0.0-SNAPSHOT/${{ steps.get_date.YYMM }}
+          remote: /mnt/data/site/cellbase/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.YYMM }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
