@@ -88,7 +88,11 @@ jobs:
       - name: Generate Site with Maven CLI
         run: mvn site
       - name: Copy
-        run: cp -r cellbase-core/target/site target/site/cellbase-core
+        run: cp -r cellbase-app/target/site target/site/cellbase-app && \
+              cp -r cellbase-client/target/site target/site/cellbase-client && \
+              cp -r cellbase-core/target/site target/site/cellbase-core && \
+              cp -r cellbase-lib/target/site target/site/cellbase-lib && \
+              cp -r cellbase-server/target/site target/site/cellbase-server
       - name: Copy folder content recursively to remote
         uses: garygrossgarten/github-action-scp@release
         with:
