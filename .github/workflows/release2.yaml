@@ -7,79 +7,77 @@ on:
 
 jobs:
   build:
+    name: CellBase Build
     runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        mongodb-version: ["4.2"]
     steps:
       - uses: actions/checkout@v1
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Launch MongoDB
-        run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
-      - name: Build with Maven
-        run: mvn -T 2 clean install
-  deploy_maven:
+      - name: Maven Build (skip tests)
+        run: mvn -T 2 clean install -DskipTests
+      - name: Maven Validate
+        run: mvn validate
+  test:
+    name: CellBase Test
     runs-on: ubuntu-18.04
     needs: build
+    strategy:
+      matrix:
+        java: ["1.8"]
+        mongodb: ["4.0", "4.2"]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Launch MongoDB
+        run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb }}
+      - name: Build with Maven
+        run: mvn -T 2 clean install -Dcheckstyle.skip
+  deploy:
+    name: Build and deploy CellBase libs, Java docs and Docker images in Maven Central and DockerHub repositories
+    runs-on: ubuntu-18.04
+    needs: test
     steps:
       - uses: actions/checkout@v1
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Build with Maven
+      - name: Build with Maven CLI
         run: mvn -T 2 clean install -DskipTests
-      - name: Release Maven package
+      - name: Deploy to Maven Central respository
         uses: samuelmeuli/action-maven-publish@v1
         with:
           nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
           nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
           gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-  docker:
-    runs-on: ubuntu-18.04
-    needs: build
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build with Maven
-        run: mvn -T 2 clean install -DskipTests
+          maven_args: -DskipTests
       - name: Login to dockerhub
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Build and publish Docker images to DockerHub
-        run: ./build/cloud/docker/docker-build.sh push ${{ steps.get_version.outputs.VERSION }}
-  javadocs:
-    runs-on: ubuntu-18.04
-    needs: build
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Build with Maven
-        run: mvn -T 2 clean install -DskipTests
+        run: ./build/cloud/docker/docker-build.sh push
+      - name: Get CellBase version
+        id: get_version
+        run: echo ::set-output name=VERSION::5.0.0-SNAPSHOT
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
       - name: Deploy Javadocs
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_BRANCH: next # The branch the action should deploy from.
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: target/site # The folder the action should deploy.
+          BASE_BRANCH: next               # The branch the action should deploy from.
+          BRANCH: gh-pages                # The branch the action should deploy to.
+          FOLDER: target/site/apidocs     # The folder the action should deploy.
+          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
   pypi:
+    name: Deploy in PyPI
     runs-on: ubuntu-18.04
-    needs: build
+    needs: test
     steps:
       - uses: actions/checkout@v1
       - name: Build PyPI

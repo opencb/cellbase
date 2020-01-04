@@ -13,5 +13,7 @@ ENV CELLBASE_USER cellbase
 RUN addgroup -S $CELLBASE_USER && adduser -S $CELLBASE_USER -G $CELLBASE_USER
 USER $CELLBASE_USER
 
+VOLUME /opt/cellbase/conf
+
 COPY . /opt/cellbase
 WORKDIR /opt/cellbase
