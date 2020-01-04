@@ -103,7 +103,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/site
-          remote: /mnt/data/site/cellbase/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.YYMM }}
+          remote: /mnt/data/site/cellbase/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
