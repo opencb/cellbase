@@ -46,12 +46,17 @@ build () {
   echo "****************************"
   echo "Building cellbase-base ..."
   echo "***************************"
-  docker build -t opencb/cellbase-base:$TAG   -f $BUILD_FOLDER/cloud/docker/cellbase-base/Dockerfile $BUILD_FOLDER
+  docker build -t opencb/cellbase-base:$TAG     -f $BUILD_FOLDER/cloud/docker/cellbase-base/Dockerfile $BUILD_FOLDER
 
   echo "***************************"
   echo "Building cellbase-rest ..."
   echo "***************************"
-  docker build -t opencb/cellbase-rest:$TAG   -f $BUILD_FOLDER/cloud/docker/cellbase-rest/Dockerfile --build-arg TAG=$TAG $BUILD_FOLDER
+  docker build -t opencb/cellbase-rest:$TAG     -f $BUILD_FOLDER/cloud/docker/cellbase-rest/Dockerfile  --build-arg TAG=$TAG $BUILD_FOLDER
+
+  echo "***************************"
+  echo "Building cellbase-python ..."
+  echo "***************************"
+  docker build -t opencb/cellbase-python:$TAG   -f $BUILD_FOLDER/cloud/docker/cellbase-python/Dockerfile --build-arg TAG=$TAG $BUILD_FOLDER
 
   echo "***************************"
   echo "Building cellbase-build ..."
@@ -71,5 +76,6 @@ if [ $ACTION = "push" ]; then
   echo "******************************"
   docker push opencb/cellbase-base:$TAG
   docker push opencb/cellbase-rest:$TAG
+  docker push opencb/cellbase-python:$TAG
 #  docker push opencb/cellbase-build:$TAG
 fi

@@ -123,11 +123,14 @@ jobs:
       - name: Build with Maven CLI
         run: mvn -T 2 clean install -DskipTests
       - name: Build Python package for PyPI
-        run: ./build/clients/python/python-build.sh build
-      - name: Push Python package to test PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_TEST_PASSWORD }}
-          packages_dir: build/clients/python/dist
-          repository_url: https://test.pypi.org/legacy/
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_TEST_TWINE_USER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TEST_TWINE_PASSWORD }}
+        run: ./build/clients/python/python-build.sh push-test
+#      - name: Push Python package to test PyPI
+#        uses: pypa/gh-action-pypi-publish@master
+#        with:
+#          user: __token__
+#          password: ${{ secrets.PYPI_TEST_PASSWORD }}
+#          packages_dir: build/clients/python/dist
+#          repository_url: https://test.pypi.org/legacy/
