@@ -70,7 +70,7 @@ jobs:
           gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           server_id: ossrh
           maven_args: -DskipTests
-          directory: ${{ GITHUB_WORKSPACE }}
+          directory: $GITHUB_WORKSPACE
 
       ## Deploying to DockerHub
       - name: Login to dockerhub
