@@ -79,7 +79,7 @@ jobs:
       - name: Cat
         run: cat $GITHUB_WORKSPACE/private-key.txt
       - name: Import GPG Private key
-        run: gpg --import $GITHUB_WORKSPACE/private-key.txt
+        run: gpg --import --no-tty --batch --yes $GITHUB_WORKSPACE/private-key.txt
       - name: Deploy to Maven Central respository 2
         run: mvn deploy -P deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests
 
