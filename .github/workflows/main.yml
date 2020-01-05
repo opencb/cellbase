@@ -129,5 +129,5 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_PASSWORD }}
-          packages_dir: clients/python/dist
+          packages_dir: build/clients/python/dist
           repository_url: https://test.pypi.org/legacy/

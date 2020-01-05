@@ -88,10 +88,10 @@ jobs:
         run: mvn site
       - name: Copy
         run: cp -r cellbase-app/target/site target/site/cellbase-app &&
-          cp -r cellbase-client/target/site target/site/cellbase-client &&
-          cp -r cellbase-core/target/site target/site/cellbase-core &&
-          cp -r cellbase-lib/target/site target/site/cellbase-lib &&
-          cp -r cellbase-server/target/site target/site/cellbase-server
+              cp -r cellbase-client/target/site target/site/cellbase-client &&
+              cp -r cellbase-core/target/site target/site/cellbase-core &&
+              cp -r cellbase-lib/target/site target/site/cellbase-lib &&
+              cp -r cellbase-server/target/site target/site/cellbase-server
       - name: Get CellBase version
         id: get_version
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
@@ -125,4 +125,4 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_PASSWORD }}
-          packages_dir: clients/python/dist
+          packages_dir: build/clients/python/dist
