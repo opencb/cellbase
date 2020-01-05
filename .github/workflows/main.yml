@@ -73,9 +73,13 @@ jobs:
 #          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 #          server_id: ossrh
 #          maven_args: -DskipTests
-#          directory: $GITHUB_WORKSPACE#
+#          directory: $GITHUB_WORKSPACE
       - name: Copy GPG Private key
-        run: echo ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} > private-key.txt && gpg --import private-key.txt
+        run: echo ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} > $GITHUB_WORKSPACE/private-key.txt
+      - name: Cat
+        run: cat $GITHUB_WORKSPACE/private-key.txt
+      - name: Import GPG Private key
+        run: gpg --import $GITHUB_WORKSPACE/private-key.txt
       - name: Deploy to Maven Central respository 2
         run: mvn deploy -P deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests
 
