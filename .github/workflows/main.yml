@@ -60,8 +60,8 @@ jobs:
           server-id: ossrh                        # Value of the distributionManagement/repository/id field of the pom.xml
           server-username: MAVEN_NEXUS_USER       # env variable for username in deploy
           server-password: MAVEN_NEXUS_PASSWORD   # env variable for token in deploy
-      - name: Build with Maven CLI
-        run: mvn -T 2 clean install -DskipTests
+#      - name: Build with Maven CLI
+#        run: mvn -T 2 clean install -DskipTests
 
       ## Deploying in Maven repository
 #      - name: Deploy to Maven Central respository
@@ -73,16 +73,15 @@ jobs:
 #          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 #          server_id: ossrh
 #          maven_args: -DskipTests
-#          directory: $GITHUB_WORKSPACE
       - name: Copy GPG Private key
-        run: echo "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}" > $GITHUB_WORKSPACE/private-key.txt
-      - name: Import GPG Private key
-        run: gpg --import --no-tty --batch --yes $GITHUB_WORKSPACE/private-key.txt
-      - name: Deploy to Maven Central respository 2
-        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy
+        run: echo "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}" > $GITHUB_WORKSPACE/private-key.txt && gpg --import --no-tty --batch --yes $GITHUB_WORKSPACE/private-key.txt
+#      - name: Import GPG Private key
+#        run: gpg --import --no-tty --batch --yes $GITHUB_WORKSPACE/private-key.txt
+      - name: Deploy to Maven Central respository
         env:
           MAVEN_NEXUS_USER: ${{ secrets.MAVEN_NEXUS_USER }}
           MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy
 
       ## Deploying to DockerHub
       - name: Login to dockerhub
