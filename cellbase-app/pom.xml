@@ -125,6 +125,7 @@
                                 <exec executable="mkdir">
                                     <arg value="${build.dir}"/>
                                     <arg value="${build.dir}/test"/>
+                                    <arg value="${build.dir}/clients"/>
                                     <arg value="${build.dir}/conf"/>
                                 </exec>
 
@@ -139,6 +140,14 @@
                                     <arg value="${project.basedir}/../README.md"/>
                                     <arg value="${project.basedir}/../LICENSE"/>
                                     <arg value="${build.dir}"/>
+                                </exec>
+
+                                <echo>Copying to ${build.dir}/clients</echo>
+                                <exec executable="cp">
+                                    <arg value="-r"/>
+                                    <arg value="${project.basedir}/../cellbase-client/src/main/python"/>
+                                    <arg value="${project.basedir}/../cellbase-client/src/main/R"/>
+                                    <arg value="${build.dir}/clients"/>
                                 </exec>
 
                                 <echo>Copying to ${build.dir}/conf</echo>
