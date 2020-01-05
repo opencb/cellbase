@@ -76,12 +76,12 @@ jobs:
 #          directory: $GITHUB_WORKSPACE
       - name: Copy GPG Private key
         run: echo "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}" > $GITHUB_WORKSPACE/private-key.txt
-      - name: Cat
-        run: cat $GITHUB_WORKSPACE/private-key.txt
+#      - name: Cat
+#        run: cat $GITHUB_WORKSPACE/private-key.txt
       - name: Import GPG Private key
         run: gpg --import --no-tty --batch --yes $GITHUB_WORKSPACE/private-key.txt
       - name: Deploy to Maven Central respository 2
-        run: mvn deploy -P deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests
+        run: mvn clean deploy -P deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests
 
       ## Deploying to DockerHub
       - name: Login to dockerhub
