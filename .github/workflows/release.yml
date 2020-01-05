@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Build PyPI
-        run: ./clients/python/pypi-build.sh build
+        run: ./clients/python/python-build.sh build
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
