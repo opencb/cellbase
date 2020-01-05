@@ -62,7 +62,7 @@ jobs:
 
       ## Deploying in Maven repository
       - name: Deploy to Maven Central respository
-        uses: samuelmeuli/action-maven-publish@v1.2
+        uses: samuelmeuli/action-maven-publish@v1
         with:
           nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
           nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
@@ -70,6 +70,7 @@ jobs:
           gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           server_id: ossrh
           maven_args: -DskipTests
+          directory: ${{ GITHUB_WORKSPACE }}
 
       ## Deploying to DockerHub
       - name: Login to dockerhub
