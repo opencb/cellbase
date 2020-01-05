@@ -128,6 +128,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
-          password: ${{ secrets.PYPI_PASSWORD }}
+          password: ${{ secrets.PYPI_TEST_PASSWORD }}
           packages_dir: build/clients/python/dist
           repository_url: https://test.pypi.org/legacy/
