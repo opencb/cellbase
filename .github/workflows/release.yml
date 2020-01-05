@@ -119,7 +119,7 @@ jobs:
       - name: Build with Maven CLI
         run: mvn -T 2 clean install -DskipTests
       - name: Build Python package for PyPI
-        run: ./clients/python/python-build.sh build
+        run: ./build/clients/python/python-build.sh build
       - name: Push Python package to PyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
