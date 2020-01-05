@@ -57,20 +57,27 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+          server-id: ossrh                                      # Value of the distributionManagement/repository/id field of the pom.xml
+          server-username: ${{ secrets.MAVEN_NEXUS_USER }}      # env variable for username in deploy
+          server-password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}  # env variable for token in deploy
       - name: Build with Maven CLI
         run: mvn -T 2 clean install -DskipTests
 
       ## Deploying in Maven repository
-      - name: Deploy to Maven Central respository
-        uses: samuelmeuli/action-maven-publish@v1
-        with:
-          nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
-          nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
-          gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          server_id: ossrh
-          maven_args: -DskipTests
-          directory: $GITHUB_WORKSPACE
+#      - name: Deploy to Maven Central respository
+#        uses: samuelmeuli/action-maven-publish@v1
+#        with:
+#          nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
+#          nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+#          gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+#          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+#          server_id: ossrh
+#          maven_args: -DskipTests
+#          directory: $GITHUB_WORKSPACE#
+      - name: Copy GPG Private key
+        run: echo ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} > private-key.txt && gpg --import private-key.txt
+      - name: Deploy to Maven Central respository 2
+        run: mvn deploy -P deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests
 
       ## Deploying to DockerHub
       - name: Login to dockerhub
@@ -90,6 +97,19 @@ jobs:
           BRANCH: gh-pages                # The branch the action should deploy to.
           FOLDER: target/site/apidocs     # The folder the action should deploy.
           TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
+  pypi:
+    name: Deploy Python package in test PyPI
+    runs-on: ubuntu-18.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
+      - name: Build Python package for PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_TWINE_USER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
+        run: ./cellbase-client/src/main/python/python-build.sh push-test
   site:
     name: Generate site
     runs-on: ubuntu-18.04
@@ -124,16 +144,4 @@ jobs:
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
-  pypi:
-    name: Deploy Python package in test PyPI
-    runs-on: ubuntu-18.04
-    needs: test
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: '10'
-      - name: Build Python package for PyPI
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_TWINE_USER }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
-        run: ./cellbase-client/src/main/python/python-build.sh push-test
+
