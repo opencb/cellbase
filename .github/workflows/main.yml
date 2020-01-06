@@ -34,6 +34,11 @@ jobs:
       matrix:
         java: ["1.8"]
         mongodb: ["4.0", "4.2"]
+    services:
+      mongodb:
+        image: mongo:${{ matrix.mongodb }}
+        ports:
+          - 27017:27017
     steps:
       - uses: actions/checkout@v2
         with:
@@ -42,8 +47,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
-      - name: Launch MongoDB
-        run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb }}
       - name: Build with Maven
         run: mvn -T 2 clean install -Dcheckstyle.skip
   deploy:
