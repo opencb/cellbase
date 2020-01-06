@@ -150,12 +150,12 @@ jobs:
         run: echo ::set-output name=YYMM::$(date +%Y%m)
       - name: Get current date in YYMM format
         id: get_time
-        run: echo ::set-output name=DDHHMM::$(date ++%d%H%M)
+        run: echo ::set-output name=DDHHMM::$(date +%d%H%M)
       - name: Deploy Site web recursively to remote
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/site
-          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}//${{ steps.get_time.outputs.DDHHMM }}-${{ github.sha }}
+          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}/${{ steps.get_time.outputs.DDHHMM }}-${{ github.sha }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
