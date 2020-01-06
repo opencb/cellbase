@@ -93,14 +93,22 @@ jobs:
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
-      - name: Deploy Javadocs
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+#      - name: Deploy Javadocs
+#        uses: JamesIves/github-pages-deploy-action@releases/v3
+#        with:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          BASE_BRANCH: next               # The branch the action should deploy from.
+#          BRANCH: gh-pages                # The branch the action should deploy to.
+#          FOLDER: target/site/apidocs     # The folder the action should deploy.
+#          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
+      - name: Deploy Site web recursively to remote
+        uses: garygrossgarten/github-action-scp@release
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_BRANCH: next               # The branch the action should deploy from.
-          BRANCH: gh-pages                # The branch the action should deploy to.
-          FOLDER: target/site/apidocs     # The folder the action should deploy.
-          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
+          local: target/site/apidocs
+          remote: /mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
+          host: 128.232.224.128
+          username: ${{ secrets.SCP_SITE_USER }}
+          password: ${{ secrets.SCP_SITE_PASSWORD }}
   pypi:
     name: Deploy Python package in test PyPI
     runs-on: ubuntu-18.04
@@ -140,11 +148,14 @@ jobs:
       - name: Get current date in YYMM format
         id: get_date
         run: echo ::set-output name=YYMM::$(date +%Y%m)
+      - name: Get current date in YYMM format
+        id: get_time
+        run: echo ::set-output name=DDHHMM::$(date ++%d%H%M)
       - name: Deploy Site web recursively to remote
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/site
-          remote: /mnt/data/site/cellbase/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}
+          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}//${{ steps.get_time.outputs.DDHHMM }}-${{ github.sha }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
