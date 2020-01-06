@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# By default run this script from CellBase 'build' directory
+## List containing the Docker images to be built or pushed
+IMAGES="base rest python"
 
-#########################
-# The command line help #
-#########################
+
+## The command line help #
 display_help() {
     echo "Usage: {build|push} [tag] [build_folder]" >&2
     echo
@@ -18,7 +18,7 @@ display_help() {
     exit 1
 }
 
-## check mandatory parameters 'action' and 'tag' exist
+## Check mandatory parameters 'action' and 'tag' exist
 if [ -z "$1" ]; then
   echo "Error: action is required"
   display_help
@@ -26,7 +26,7 @@ else
   ACTION=$1
 fi
 
-## get optional 'tag' value from cellbase-admin.sh help output
+## Get optional 'tag' value from cellbase-admin.sh help output
 if [ -z "$2" ]; then
   BASEDIR=`dirname $0`
   TAG=`$BASEDIR/../../bin/cellbase-admin.sh 2>&1 | grep "Version" | sed 's/ //g' | cut -d ':' -f 2`
@@ -34,7 +34,7 @@ else
   TAG=$2
 fi
 
-## get optional 'build' folder
+## Get optional 'build' folder
 if [ -z "$3" ]; then
   BASEDIR=`dirname $0`
   BUILD_FOLDER=`cd "$BASEDIR/../.." >/dev/null; pwd`
@@ -43,25 +43,15 @@ else
 fi
 
 build () {
-  echo "****************************"
-  echo "Building cellbase-base ..."
-  echo "***************************"
-  docker build -t opencb/cellbase-base:$TAG     -f $BUILD_FOLDER/cloud/docker/cellbase-base/Dockerfile $BUILD_FOLDER
-
-  echo "***************************"
-  echo "Building cellbase-rest ..."
-  echo "***************************"
-  docker build -t opencb/cellbase-rest:$TAG     -f $BUILD_FOLDER/cloud/docker/cellbase-rest/Dockerfile  --build-arg TAG=$TAG $BUILD_FOLDER
-
-#  echo "***************************"
-#  echo "Building cellbase-python ..."
-#  echo "***************************"
-#  docker build -t opencb/cellbase-python:$TAG   -f $BUILD_FOLDER/cloud/docker/cellbase-python/Dockerfile --build-arg TAG=$TAG $BUILD_FOLDER
-
-  echo "***************************"
-  echo "Building cellbase-build ..."
-  echo "***************************"
-#  docker build -t opencb/cellbase-build:$TAG  -f $BUILD_FOLDER/cloud/docker/cellbase-build/Dockerfile $BUILD_FOLDER
+  for i in $IMAGES; do
+    echo "Building cellbase-$i ..."
+    if [ $i = "base" ]; then
+      docker build -t opencb/cellbase-$i:$TAG -f $BUILD_FOLDER/cloud/docker/cellbase-$i/Dockerfile $BUILD_FOLDER
+    else
+      docker build -t opencb/cellbase-$i:$TAG -f $BUILD_FOLDER/cloud/docker/cellbase-$i/Dockerfile --build-arg TAG=$TAG $BUILD_FOLDER
+    fi
+    echo ""
+  done
 }
 
 if [ $ACTION = "build" ]; then
@@ -71,11 +61,9 @@ fi
 if [ $ACTION = "push" ]; then
   build
 
-  echo "******************************"
+  echo ""
   echo "Pushing images to DockerHub..."
-  echo "******************************"
-  docker push opencb/cellbase-base:$TAG
-  docker push opencb/cellbase-rest:$TAG
-#  docker push opencb/cellbase-python:$TAG
-#  docker push opencb/cellbase-build:$TAG
+  for i in $IMAGES; do
+    docker push opencb/cellbase-$i:$TAG
+  done
 fi
