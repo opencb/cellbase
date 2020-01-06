@@ -10,13 +10,16 @@ jobs:
     name: CellBase Build
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          # do not remove, will fail.
+          fetch-depth: '10'
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
       - name: Maven Build (skip tests)
-        run: mvn -T 2 clean install -DskipTests
+        run: mvn clean install -DskipTests
       - name: Maven Validate
         run: mvn validate
   test:
@@ -28,7 +31,9 @@ jobs:
         java: ["1.8"]
         mongodb: ["4.0", "4.2"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v1
         with:
@@ -36,73 +41,45 @@ jobs:
       - name: Launch MongoDB
         run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb }}
       - name: Build with Maven
-        run: mvn -T 2 clean install -Dcheckstyle.skip
+        run: mvn clean install -Dcheckstyle.skip
   deploy:
     name: Build and deploy CellBase libs, Java docs and Docker images in Maven Central and DockerHub repositories
     runs-on: ubuntu-18.04
     needs: test
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Build with Maven CLI
-        run: mvn -T 2 clean install -DskipTests
+          server-id: ossrh                        # Value of the distributionManagement/repository/id field of the pom.xml
+          server-username: MAVEN_NEXUS_USER       # env variable for username in deploy
+          server-password: MAVEN_NEXUS_PASSWORD   # env variable for token in deploy
+      - name: Copy GPG Private key
+        run: echo "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}" > private-key.txt && gpg --import --no-tty --batch --yes private-key.txt
       - name: Deploy to Maven Central respository
-        uses: samuelmeuli/action-maven-publish@v1
-        with:
-          nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
-          nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
-          gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-          maven_args: -DskipTests
+        env:
+          MAVEN_NEXUS_USER: ${{ secrets.MAVEN_NEXUS_USER }}
+          MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
+        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy
+      ## Build and deploy Docker images to DockerHub
       - name: Login to dockerhub
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Build and publish Docker images to DockerHub
         run: ./build/cloud/docker/docker-build.sh push
+      ## Generate and deploy Javadocs
       - name: Get CellBase version
         id: get_version
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
-      - name: Deploy Javadocs
-        uses: JamesIves/github-pages-deploy-action@releases/v3
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_BRANCH: next               # The branch the action should deploy from.
-          BRANCH: gh-pages                # The branch the action should deploy to.
-          FOLDER: target/site/apidocs     # The folder the action should deploy.
-          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
-  site:
-    name: Generate site
-    runs-on: ubuntu-18.04
-    needs: build
-    steps:
-      - uses: actions/checkout@v1
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Generate Site with Maven CLI
-        run: mvn site
-      - name: Copy
-        run: cp -r cellbase-app/target/site target/site/cellbase-app &&
-              cp -r cellbase-client/target/site target/site/cellbase-client &&
-              cp -r cellbase-core/target/site target/site/cellbase-core &&
-              cp -r cellbase-lib/target/site target/site/cellbase-lib &&
-              cp -r cellbase-server/target/site target/site/cellbase-server
-      - name: Get CellBase version
-        id: get_version
-        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
-      - name: Get data YYMM
-        id: get_date
-        run: echo ::set-output name=YYMM::$(date +%Y%m)
-      - name: Copy folder content recursively to remote
+      - name: Deploy Site web recursively to remote
         uses: garygrossgarten/github-action-scp@release
         with:
-          local: target/site
-          remote: /mnt/data/site/cellbase/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}
+          local: target/site/apidocs
+          remote: /mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
@@ -111,18 +88,50 @@ jobs:
     runs-on: ubuntu-18.04
     needs: test
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
+      - name: Build with Maven CLI
+        run: mvn -T 2 clean install -DskipTests
+      - name: Build Python package for PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_TWINE_USER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
+        run: ./cellbase-client/src/main/python/python-build.sh push-test
+  site:
+    name: Generate Maven site
+    runs-on: ubuntu-18.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Build with Maven CLI
-        run: mvn -T 2 clean install -DskipTests
-      - name: Build Python package for PyPI
-        run: ./build/clients/python/python-build.sh build
-      - name: Push Python package to PyPI
-        uses: pypa/gh-action-pypi-publish@master
+      - name: Generate Site with Maven CLI
+        run: mvn site
+      - name: Prepare Maven Site submodules
+        run: cp -r cellbase-app/target/site target/site/cellbase-app &&
+          cp -r cellbase-client/target/site target/site/cellbase-client &&
+          cp -r cellbase-core/target/site target/site/cellbase-core &&
+          cp -r cellbase-lib/target/site target/site/cellbase-lib &&
+          cp -r cellbase-server/target/site target/site/cellbase-server
+      - name: Get CellBase version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+      - name: Get current date in YYMMDD format
+        id: get_date
+        run: echo ::set-output name=YYMMDD::$(date +%Y%m%d)
+      - name: Get current date in HHMMSS format
+        id: get_time
+        run: echo ::set-output name=HHMMSS::$(date +%H%M%S)
+      - name: Deploy Site web recursively to remote
+        uses: garygrossgarten/github-action-scp@release
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_PASSWORD }}
-          packages_dir: build/clients/python/dist
+          local: target/site
+          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+          host: 128.232.224.128
+          username: ${{ secrets.SCP_SITE_USER }}
+          password: ${{ secrets.SCP_SITE_PASSWORD }}
