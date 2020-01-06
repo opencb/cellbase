@@ -7,6 +7,7 @@ on:
       - next
     paths:
       - '**.java'
+      - '**.py'
       - '**.xml'
       - '**.yml'
 
@@ -64,15 +65,6 @@ jobs:
 
       ## IMPORTANT: this creates the 'build' installation folder and must be the FIRST action!
       ## Deploy in Maven repository
-#      - name: Deploy to Maven Central respository
-#        uses: samuelmeuli/action-maven-publish@v1
-#        with:
-#          nexus_username: ${{ secrets.MAVEN_NEXUS_USER }}
-#          nexus_password: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
-#          gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-#          gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-#          server_id: ossrh
-#          maven_args: -DskipTests
       - name: Copy GPG Private key
         run: echo "${{ secrets.MAVEN_GPG_PRIVATE_KEY }}" > private-key.txt && gpg --import --no-tty --batch --yes private-key.txt
       - name: Deploy to Maven Central respository
@@ -93,15 +85,7 @@ jobs:
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
-#      - name: Deploy Javadocs
-#        uses: JamesIves/github-pages-deploy-action@releases/v3
-#        with:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          BASE_BRANCH: next               # The branch the action should deploy from.
-#          BRANCH: gh-pages                # The branch the action should deploy to.
-#          FOLDER: target/site/apidocs     # The folder the action should deploy.
-#          TARGET_FOLDER: apidocs/${{ steps.get_version.outputs.VERSION }}
-      - name: Deploy Site web recursively to remote
+      - name: Deploy Javadocs
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/site/apidocs
