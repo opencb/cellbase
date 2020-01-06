@@ -145,17 +145,17 @@ jobs:
       - name: Get CellBase version
         id: get_version
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
-      - name: Get current date in YYMM format
+      - name: Get current date in YYMMDD format
         id: get_date
-        run: echo ::set-output name=YYMM::$(date +%Y%m)
-      - name: Get current date in YYMM format
+        run: echo ::set-output name=YYMMDD::$(date +%Y%m%d)
+      - name: Get current date in HHMMSS format
         id: get_time
-        run: echo ::set-output name=DDHHMM::$(date +%d%H%M)
+        run: echo ::set-output name=HHMMSS::$(date +%H%M%S)
       - name: Deploy Site web recursively to remote
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/site
-          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMM }}/${{ steps.get_time.outputs.DDHHMM }}-${{ github.sha }}
+          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
