@@ -312,15 +312,6 @@
     </reporting>
 
     <profiles>
-<!--        <profile>-->
-<!--            <id>prod-war</id>-->
-<!--            <activation>-->
-<!--                <activeByDefault>false</activeByDefault>-->
-<!--            </activation>-->
-<!--            <properties>-->
-<!--                <cellbase.war.name>cellbase</cellbase.war.name>-->
-<!--            </properties>-->
-<!--        </profile>-->
         <profile>
             <id>default-config</id>
             <activation>

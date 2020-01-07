@@ -4,7 +4,6 @@ set -e
 ## List containing the Docker images to be built or pushed
 IMAGES="base rest python"
 
-
 ## The command line help #
 display_help() {
     echo "Usage: {build|push} [tag] [build_folder]" >&2
@@ -60,14 +59,12 @@ fi
 if [ $ACTION = "push" ]; then
   build
 
-  
-
   echo ""
   echo "Pushing images to DockerHub..."
   for i in $IMAGES; do
     docker push opencb/cellbase-$i:$TAG
 
-    ALL_TAGS=$(wget -q https://registry.hub.docker.com/v1/repositories/opencb/cellbase-$i/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' -e 's/latest//g' | tr '}' '\n'  | awk -F: '{print $3}')
+    ALL_TAGS=$(wget -q https://registry.hub.docker.com/v1/repositories/opencb/cellbase-$i/tags -O - | sed -e 's/[][]//g' -e 's/"//g' -e 's/[ ]//g' -e 's/latest//g' | tr '}' '\n'  | awk -F: '{print $3}')
     LATEST_TAG=$(echo $ALL_TAGS | cut -d' ' -f1 | sort -h | head)
 
     # add 'latest' tag if appropriate
@@ -75,6 +72,5 @@ if [ $ACTION = "push" ]; then
         docker tag opencb/cellbase-$i:$TAG opencb/cellbase-$i:latest
         docker push opencb/cellbase-$i:latest
     fi
-
   done
 fi

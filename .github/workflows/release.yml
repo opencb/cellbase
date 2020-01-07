@@ -69,7 +69,7 @@ jobs:
         env:
           MAVEN_NEXUS_USER: ${{ secrets.MAVEN_NEXUS_USER }}
           MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
-        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy -DCELLBASE.WAR.NAME=cellbase
+        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -DCELLBASE.WAR.NAME=cellbase -P deploy
 
       ## Build and deploy Docker images to DockerHub
       - name: Login to dockerhub
@@ -81,6 +81,11 @@ jobs:
       - name: Get CellBase version
         id: get_version
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+
+      ## Delete snapshot
+      - name: delete snapshot
+        run: ./build/cloud/docker/docker-delete.sh ${{ secrets.DOCKER_HUB_USER }} ${{ secrets.DOCKER_HUB_PASSWORD }} {{ steps
+        .get_version.outputs.VERSION }}-SNAPSHOT
 
       ## Generate and deploy Javadocs
       - name: Generate Javadocs
