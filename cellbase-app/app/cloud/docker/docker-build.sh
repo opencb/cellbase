@@ -67,7 +67,7 @@ if [ $ACTION = "push" ]; then
   for i in $IMAGES; do
     docker push opencb/cellbase-$i:$TAG
 
-    ALL_TAGS=$(wget -q https://registry.hub.docker.com/v1/repositories/opencb/cellbase-$i/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' -e 's/"latest"//g' | tr '}' '\n'  | awk -F: '{print $3}')
+    ALL_TAGS=$(wget -q https://registry.hub.docker.com/v1/repositories/opencb/cellbase-$i/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' -e 's/latest//g' | tr '}' '\n'  | awk -F: '{print $3}')
     LATEST_TAG=$(echo $ALL_TAGS | cut -d' ' -f1 | sort -h | head)
 
     # add 'latest' tag if appropriate
