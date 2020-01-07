@@ -7,7 +7,7 @@ pipeline {
                 timeout(time: 30, unit: 'MINUTES')
             }
             steps {
-                sh 'mvn clean install -DskipTests -Dcellbase.war.name=cellbase'
+                sh 'mvn clean install -DskipTests -DCELLBASE.WAR.NAME=cellbase'
             }
         }
 

@@ -66,7 +66,7 @@ jobs:
         env:
           MAVEN_NEXUS_USER: ${{ secrets.MAVEN_NEXUS_USER }}
           MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
-        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy
+        run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy -DCELLBASE.WAR.NAME=cellbase
 
       ## Build and deploy Docker images to DockerHub
       - name: Login to dockerhub
@@ -74,10 +74,12 @@ jobs:
       - name: Build and publish Docker images to DockerHub
         run: ./build/cloud/docker/docker-build.sh push
 
-      ## Generate and deploy Javadocs
+      ## Get CellBase version
       - name: Get CellBase version
         id: get_version
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+
+      ## Generate and deploy Javadocs
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
       - name: Create a tar.gz
@@ -85,7 +87,6 @@ jobs:
       - name: Deploy Javadocs
         uses: garygrossgarten/github-action-scp@release
         with:
-#          local: target/site/apidocs
           local: javadocs.tar.gz
           remote: /mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
           host: 128.232.224.128
@@ -98,7 +99,6 @@ jobs:
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           passphrase: ${{ secrets.SCP_SITE_PASSWORD }}
-#          privateKey: ${{ secrets.PRIVATE_KEY}}
   pypi:
     name: Deploy Python package in PyPI
     runs-on: ubuntu-18.04
