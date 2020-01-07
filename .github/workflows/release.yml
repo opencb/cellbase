@@ -80,14 +80,25 @@ jobs:
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
+      - name: Create a tar.gz
+        run: tar zcvf javadocs.tar.gz target/site/apidocs
       - name: Deploy Javadocs
         uses: garygrossgarten/github-action-scp@release
         with:
-          local: target/site/apidocs
+#          local: target/site/apidocs
+          local: javadocs.tar.gz
           remote: /mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}
+      - name: Uncompress SSH
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          command: tar zxvf /mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}/javadocs.tar.gz
+          host: 128.232.224.128
+          username: ${{ secrets.SCP_SITE_USER }}
+          passphrase: ${{ secrets.SCP_SITE_PASSWORD }}
+#          privateKey: ${{ secrets.PRIVATE_KEY}}
   pypi:
     name: Deploy Python package in PyPI
     runs-on: ubuntu-18.04
