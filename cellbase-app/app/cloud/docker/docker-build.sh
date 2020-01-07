@@ -60,15 +60,18 @@ fi
 if [ $ACTION = "push" ]; then
   build
 
-  LATEST_VERSION=$(curl --silent "https://api.github.com/repos/opencb/cellbase/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+  
 
   echo ""
   echo "Pushing images to DockerHub..."
   for i in $IMAGES; do
     docker push opencb/cellbase-$i:$TAG
 
+    ALL_TAGS=$(wget -q https://registry.hub.docker.com/v1/repositories/opencb/cellbase-$i/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' -e 's/"latest"//g' | tr '}' '\n'  | awk -F: '{print $3}')
+    LATEST_TAG=$(echo $ALL_TAGS | cut -d' ' -f1 | sort -h | head)
+
     # add 'latest' tag if appropriate
-    if [ $TAG >= $LATEST_VERSION ]; then
+    if [ $TAG >= $LATEST_TAG ]; then
         docker tag opencb/cellbase-$i:$TAG opencb/cellbase-$i:latest
         docker push opencb/cellbase-$i:latest
     fi
