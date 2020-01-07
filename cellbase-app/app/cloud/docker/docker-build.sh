@@ -11,10 +11,9 @@ display_help() {
     echo
     echo "   build            Build the three CellBase docker files"
     echo "   push             Publish the CellBase docker files on DockerHub"
-    echo "   [tag]            Name of tag on GitHub"
+    echo "   [tag]            Name of tag on GitHub [optional]"
     echo "   [build_folder]   Path of CellBase build folder [optional]"
     echo
-    echo " ** Script expects to be run in the root CellBase directory **  "
     exit 1
 }
 
@@ -61,9 +60,18 @@ fi
 if [ $ACTION = "push" ]; then
   build
 
+  LATEST_VERSION=$(curl --silent "https://api.github.com/repos/opencb/cellbase/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+
   echo ""
   echo "Pushing images to DockerHub..."
   for i in $IMAGES; do
     docker push opencb/cellbase-$i:$TAG
+
+    # add 'latest' tag if appropriate
+    if [ $TAG >= $LATEST_VERSION ]; then
+        docker tag opencb/cellbase-$i:$TAG opencb/cellbase-$i:latest
+        docker push opencb/cellbase-$i:latest
+    fi
+
   done
 fi
