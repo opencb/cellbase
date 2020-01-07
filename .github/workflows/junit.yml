@@ -7,7 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        mongodb-version: ["4.0", "4.2"]
+        mongodb: ["4.0", "4.2"]
+    services:
+      mongodb:
+        image: mongo:${{ matrix.mongodb }}
+        ports:
+          - 27017:27017
     steps:
     - uses: actions/checkout@v1
     - name: Set up JDK 1.8
@@ -18,7 +23,5 @@ jobs:
       run: cd ~ && git clone -b develop https://github.com/opencb/java-common-libs.git && cd ~/java-common-libs && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
     - name: Clone and build biodata
       run: cd ~ && git clone -b develop https://github.com/opencb/biodata.git && cd ~/biodata && mvn -T 2 clean install -DskipTests && cd $GITHUB_WORKSPACE
-    - name: Launch MongoDB 
-      run: sudo docker run --name mongo -d -p 27017:27017 mongo:${{ matrix.mongodb-version }}
     - name: Build with Maven
       run: mvn -T 2 clean install
