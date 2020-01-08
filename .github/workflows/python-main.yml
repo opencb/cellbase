@@ -16,4 +16,4 @@ jobs:
       - name: Python Pylin GitHub Action
         uses: fylein/python-pylint-github-action@v1
         with:
-          args: pip3 install -r requirements.txt && pylint --rcfile=.pylintrc cellbase-client/src/main/python
+          args: pip3 install -r cellbase-client/src/main/python/requirements.txt && pylint --rcfile=.pylintrc cellbase-client/src/main/python
