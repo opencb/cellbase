@@ -38,6 +38,6 @@ jobs:
           mkdir ~/.ssh
           echo "${{ secrets.SCP_PUBLIC_KEY }}" >> ~/.ssh/key
       - name: Copy javadocs to OpenCB server
-        run: rsync -av --delete target/site/apidocs/* ${{ secrets.SCP_SITE_USER }}R@128.232.224.128:/mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
+        run: rsync -av --delete target/site/apidocs/* ${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
 
 
