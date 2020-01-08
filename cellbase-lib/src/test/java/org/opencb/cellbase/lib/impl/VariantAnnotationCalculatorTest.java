@@ -50,12 +50,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 
 public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
@@ -118,6 +117,9 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/variant-annotation/repeats.json.gz").toURI());
         loadRunner.load(path, "repeats");
+        path = Paths.get(getClass()
+                .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
+        loadRunner.load(path, "clinical_variants");
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
                 dbAdaptorFactory);
 
@@ -692,6 +694,91 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 //    }
 
     @Test
+    public void testQueryResultGroupingDecomposedMNVs() throws Exception {
+
+        QueryOptions queryOptions = (new QueryOptions("normalize", true));
+        queryOptions.put("skipDecompose", false);
+
+        // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
+        // option to true which probably breaks some other tests.
+        VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens",
+                "GRCh37",
+                dbAdaptorFactory);
+
+        // One MNV and one singleton SNV. Two QueryResults must be returned: first with two VariantAnnotation objects
+        // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
+        List<QueryResult<VariantAnnotation>> queryResultList =
+                localScopeCalculator
+                        .getAnnotationByVariantList(Arrays.asList(new Variant("19:33167329:AC:TT"),
+                                new Variant("MT:1438:A:G")),
+                                queryOptions);
+
+        assertEquals(2, queryResultList.size());
+
+        // First QueryResult (MNV one)
+        QueryResult<VariantAnnotation> queryResult = queryResultList.get(0);
+        assertNotNull(queryResult.getResult());
+        assertEquals(2, queryResult.getNumTotalResults());
+        assertEquals(2, queryResult.getNumResults());
+        assertEquals("19:33167329:AC:TT", queryResult.getId());
+
+        VariantAnnotation variantAnnotation =  queryResult.getResult().get(0);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167329"), variantAnnotation.getStart());
+        assertEquals("A", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+        variantAnnotation =  queryResult.getResult().get(1);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167330"), variantAnnotation.getStart());
+        assertEquals("C", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+        // Second QueryResult (singleton SNV)
+        queryResult = queryResultList.get(1);
+        assertNotNull(queryResult.getResult());
+        assertEquals(1, queryResult.getNumTotalResults());
+        assertEquals(1, queryResult.getNumResults());
+        assertEquals("MT:1438:A:G", queryResult.getId());
+
+        variantAnnotation =  queryResult.getResult().get(0);
+        assertEquals("MT", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("1438"), variantAnnotation.getStart());
+        assertEquals("A", variantAnnotation.getReference());
+        assertEquals("G", variantAnnotation.getAlternate());
+
+        // One MNV gets decomposed into two SNVs; Only one QueryResult to be returned. This QueryResult must contain
+        // two annotation objects, one for each decomposed SNV. Id of the query result must be equal to the .toString()
+        // of the original MNV
+        queryResultList =
+                localScopeCalculator
+                        .getAnnotationByVariantList(Arrays.asList(new Variant("19:33167329:AC:TT")),
+                                queryOptions);
+
+        assertEquals(1, queryResultList.size());
+        queryResult = queryResultList.get(0);
+        assertNotNull(queryResult.getResult());
+        assertEquals(2, queryResult.getNumTotalResults());
+        assertEquals(2, queryResult.getNumResults());
+        assertEquals("19:33167329:AC:TT", queryResult.getId());
+
+        variantAnnotation =  queryResult.getResult().get(0);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167329"), variantAnnotation.getStart());
+        assertEquals("A", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+        variantAnnotation =  queryResult.getResult().get(1);
+        assertEquals("19", variantAnnotation.getChromosome());
+        assertEquals(Integer.valueOf("33167330"), variantAnnotation.getStart());
+        assertEquals("C", variantAnnotation.getReference());
+        assertEquals("T", variantAnnotation.getAlternate());
+
+
+
+    }
+
+    @Test
     public void testPopulationFrequencies() throws Exception {
 
         QueryOptions queryOptions = new QueryOptions("normalize", true);
@@ -1014,153 +1101,113 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-    private void assertVariantAnnotationQueryResultEquals(List<QueryResult<VariantAnnotation>> actualQueryResultList,
-                                                          List expectedObjectList) {
-        assertEquals(actualQueryResultList.size(), expectedObjectList.size());
-        for (int i = 0; i < actualQueryResultList.size(); i++) {
-            VariantAnnotation expected = jsonObjectMapper.convertValue(((List) ((Map) expectedObjectList.get(i)).get("result")).get(0),
-                    VariantAnnotation.class);
-            VariantAnnotation actual = actualQueryResultList.get(i).getResult().get(0);
-            assertEquals(expected, actual);
-        }
+    @Test
+    public void testClinicalAnnotation() throws Exception {
+        QueryOptions queryOptions = new QueryOptions("useCache", false);
+        queryOptions.put("include", "clinical");
+        queryOptions.put("normalize", true);
+
+        Variant variant = new Variant("5", 112136975, "GAG", "G");
+        QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(112136974), queryResult.getResult().get(0).getStart());
+        assertEquals("AG", queryResult.getResult().get(0).getReference());
+        assertEquals("", queryResult.getResult().get(0).getAlternate());
+        assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
+        assertTrue(containsAccession(queryResult, "RCV000000829"));
+
+        variant = new Variant("11", 64577375, "G", "GGGGGC");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(64577376), queryResult.getResult().get(0).getStart());
+        assertEquals("", queryResult.getResult().get(0).getReference());
+        assertEquals("GGGGC", queryResult.getResult().get(0).getAlternate());
+        assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
+        assertTrue(containsAccession(queryResult, "RCV000161945"));
+
+        variant = new Variant("3", 37090475, "C", "CTT");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(37090476), queryResult.getResult().get(0).getStart());
+        assertEquals("", queryResult.getResult().get(0).getReference());
+        assertEquals("TT", queryResult.getResult().get(0).getAlternate());
+        assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
+        assertTrue(containsAccession(queryResult, "RCV000221270"));
+
+        // This example is peculiar. Was sent to me by Alona (slack 30th May). She expected this var below
+        // 3:37089111:TGTTGAGTTTCTGAA:T
+        // to match this other one in the variant_summary.txt
+        // 3  37089112  37089125  GTTGAGTTTCTGAA  T
+        // These two variants ARE NOT the same one! The first one is a deletion of GTTGAGTTTCTGAA. This second one is
+        // a SUBSTITUTION of GTTGAGTTTCTGAA by T. This second one adds an extra T to the sequence context, therefore
+        // are not the same and therefore should not be returned when annotating the first variant. The sequence context
+        // is:   ...CATTGTTGAGTTTCTGAAGAAGAAGGCT...
+        //             ^^
+        variant = new Variant("3", 37089111, "TGTTGAGTTTCTGAA", "T");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(37089112), queryResult.getResult().get(0).getStart());
+        assertEquals("GTTGAGTTTCTGAA", queryResult.getResult().get(0).getReference());
+        assertEquals("", queryResult.getResult().get(0).getAlternate());
+        assertNull(queryResult.getResult().get(0).getTraitAssociation());
+
+        variant = new Variant("3", 37045937, "A", "AAA");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(37045937), queryResult.getResult().get(0).getStart());
+        assertEquals("", queryResult.getResult().get(0).getReference());
+        assertEquals("AA", queryResult.getResult().get(0).getAlternate());
+        assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
+        assertTrue(containsAccession(queryResult, "RCV000075667"));
+
+        variant = new Variant("13", 32912901, "TAAGA", "T");
+        queryResult = variantAnnotationCalculator
+                .getAnnotationByVariant(variant, queryOptions);
+        assertEquals(Integer.valueOf(32912902), queryResult.getResult().get(0).getStart());
+        assertEquals("AAGA", queryResult.getResult().get(0).getReference());
+        assertEquals("", queryResult.getResult().get(0).getAlternate());
+        assertNotNull(queryResult.getResult().get(0).getTraitAssociation());
+        assertTrue(containsAccession(queryResult, "RCV000044410"));
+
+
     }
 
-    private int countLines(String fileName) throws IOException {
-        System.out.println("Counting lines...");
-        BufferedReader reader = new BufferedReader(new FileReader(fileName));
-        int lines = 0;
-        while (reader.readLine() != null) lines++;
-        reader.close();
-
-        return lines;
-    }
-
-    public class ConsequenceTypeComparator implements Comparator<ConsequenceType> {
-        public int compare(ConsequenceType consequenceType1, ConsequenceType consequenceType2) {
-            String geneId1 = consequenceType1.getEnsemblGeneId()==null?"":consequenceType1.getEnsemblGeneId();
-            String geneId2 = consequenceType2.getEnsemblGeneId()==null?"":consequenceType2.getEnsemblGeneId();
-
-            int geneComparison = geneId1.compareTo(geneId2);
-            if(geneComparison == 0 && !geneId1.equals("")) {
-                return consequenceType1.getEnsemblTranscriptId().compareTo(consequenceType2.getEnsemblTranscriptId());
-            } else {
-                return geneComparison;
+    private boolean containsAccession(QueryResult<VariantAnnotation> queryResult, String accession) {
+        boolean found = false;
+        int i = 0;
+        while (i < queryResult.getNumResults() && !found) {
+            int j = 0;
+            while (j < queryResult.getResult().get(i).getTraitAssociation().size() && !found) {
+                found = queryResult
+                        .getResult()
+                        .get(i)
+                        .getTraitAssociation()
+                        .get(j)
+                        .getId()
+                        .equals(accession);
+                j++;
             }
+            i++;
         }
-    }
-
-    private class AnnotationComparisonObject {
-        String chr;
-        String pos;
-        String alt;
-        String ensemblGeneId;
-        String ensemblTranscriptId;
-        String biotype;
-        String SOname;
-
-        public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId,
-                                          String ensemblTranscriptId, String SOname) {
-            this(chr, pos, alt, ensemblGeneId, ensemblTranscriptId, "-", SOname);
-        }
-
-        public AnnotationComparisonObject(String chr, String pos, String alt, String ensemblGeneId,
-                                          String ensemblTranscriptId, String biotype, String SOname) {
-            this.chr = chr;
-            this.pos = pos;
-            this.alt = alt;
-            this.ensemblGeneId = ensemblGeneId;
-            this.ensemblTranscriptId = ensemblTranscriptId;
-            this.biotype = biotype;
-            this.SOname = SOname;
-        }
-
-        public String getChr() {
-            return chr;
-        }
-
-        public String getPos() {
-            return pos;
-        }
-
-        public String getAlt() {
-            return alt;
-        }
-
-        public String getEnsemblGeneId() {
-            return ensemblGeneId;
-        }
-
-        public String getSOname() {
-            return SOname;
-        }
-
-        public String getEnsemblTranscriptId() {
-            return ensemblTranscriptId;
-        }
-
-        public void setEnsemblTranscriptId(String ensemblTranscriptId) {
-            this.ensemblTranscriptId = ensemblTranscriptId;
-        }
-
-        public String getBiotype() {
-            return biotype;
-        }
-
-        public void setBiotype(String biotype) {
-            this.biotype = biotype;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof AnnotationComparisonObject)) return false;
-
-            AnnotationComparisonObject that = (AnnotationComparisonObject) o;
-
-            if (SOname != null ? !SOname.equals(that.SOname) : that.SOname != null) return false;
-            if (alt != null ? !alt.equals(that.alt) : that.alt != null) return false;
-            if (chr != null ? !chr.equals(that.chr) : that.chr != null) return false;
-            if (ensemblGeneId != null ? !ensemblGeneId.equals(that.ensemblGeneId) : that.ensemblGeneId != null)
-                return false;
-            if (ensemblTranscriptId != null ? !ensemblTranscriptId.equals(that.ensemblTranscriptId) : that.ensemblTranscriptId != null)
-                return false;
-            if (pos != null ? !pos.equals(that.pos) : that.pos != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = chr != null ? chr.hashCode() : 0;
-            result = 31 * result + (pos != null ? pos.hashCode() : 0);
-            result = 31 * result + (alt != null ? alt.hashCode() : 0);
-            result = 31 * result + (ensemblGeneId != null ? ensemblGeneId.hashCode() : 0);
-            result = 31 * result + (ensemblTranscriptId != null ? ensemblTranscriptId.hashCode() : 0);
-            result = 31 * result + (SOname != null ? SOname.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return chr+"\t"+pos+"\t"+alt+"\t"+ensemblGeneId+"\t"+ensemblTranscriptId+"\t"+biotype+"\t"+SOname+"\n";
-        }
-    }
-
-    public class AnnotationComparisonObjectComparator implements Comparator<AnnotationComparisonObject> {
-        public int compare(AnnotationComparisonObject annotationComparisonObject1, AnnotationComparisonObject annotationComparisonObject2) {
-
-            int chrComparison = annotationComparisonObject1.getChr().compareTo(annotationComparisonObject2.getChr());
-            if(chrComparison == 0) {
-                return annotationComparisonObject1.getPos().compareTo(annotationComparisonObject2.getPos());
-            } else {
-                return chrComparison;
-            }
-        }
-
+        return found;
     }
 
     @Test
-    public void testGetAllConsequenceTypesByVariant() throws IOException, URISyntaxException {
+    public void testGetAllConsequenceTypesByVariant() throws IOException {
+
+
+//        try {
+//            List<QueryResult<VariantAnnotation>> consequenceTypeResult = variantAnnotationCalculator.getAnnotationByVariantList(Collections.singletonList(new Variant("19:45411941:TG:CC")),
+//                    new QueryOptions("normalize", true));
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000401847").getSequenceOntologyTerms(),
+//                CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0002012","start_lost")));
+//        assertThat(getConsequenceType(consequenceTypeResult.getResult(), "ENST00000401847").getSequenceOntologyTerms(),
+//                CoreMatchers.not(CoreMatchers.hasItems(new SequenceOntologyTerm("SO:0001583","missense_variant"))));
 
         /**
          * start codon SNV on negative transcript
@@ -1446,6 +1493,13 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         consequenceTypeResult =
             variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("MT", 12906, "C", "A"),
+                    new QueryOptions());
+        assertObjectListEquals("[{\"geneName\":\"MT-CO2\",\"ensemblGeneId\":\"ENSG00000198712\",\"ensemblTranscriptId\":\"ENST00000361739\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-TK\",\"ensemblGeneId\":\"ENSG00000210156\",\"ensemblTranscriptId\":\"ENST00000387421\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ATP8\",\"ensemblGeneId\":\"ENSG00000228253\",\"ensemblTranscriptId\":\"ENST00000361851\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ATP6\",\"ensemblGeneId\":\"ENSG00000198899\",\"ensemblTranscriptId\":\"ENST00000361899\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-CO3\",\"ensemblGeneId\":\"ENSG00000198938\",\"ensemblTranscriptId\":\"ENST00000362079\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-TG\",\"ensemblGeneId\":\"ENSG00000210164\",\"ensemblTranscriptId\":\"ENST00000387429\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ND3\",\"ensemblGeneId\":\"ENSG00000198840\",\"ensemblTranscriptId\":\"ENST00000361227\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-TR\",\"ensemblGeneId\":\"ENSG00000210174\",\"ensemblTranscriptId\":\"ENST00000387439\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ND4L\",\"ensemblGeneId\":\"ENSG00000212907\",\"ensemblTranscriptId\":\"ENST00000361335\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ND4\",\"ensemblGeneId\":\"ENSG00000198886\",\"ensemblTranscriptId\":\"ENST00000361381\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TH\",\"ensemblGeneId\":\"ENSG00000210176\",\"ensemblTranscriptId\":\"ENST00000387441\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TS2\",\"ensemblGeneId\":\"ENSG00000210184\",\"ensemblTranscriptId\":\"ENST00000387449\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TL2\",\"ensemblGeneId\":\"ENSG00000210191\",\"ensemblTranscriptId\":\"ENST00000387456\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-ND5\",\"ensemblGeneId\":\"ENSG00000198786\",\"ensemblTranscriptId\":\"ENST00000361567\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":0.05518763796909492,\"number\":\"1/1\"}],\"transcriptAnnotationFlags\":[\"basic\"],\"cdnaPosition\":570,\"cdsPosition\":570,\"codon\":\"atC/atA\",\"proteinVariantAnnotation\":{\"uniprotAccession\":\"P03915\",\"position\":190,\"reference\":\"ILE\",\"alternate\":\"MET\",\"substitutionScores\":[{\"score\":0.31,\"source\":\"sift\",\"description\":\"tolerated\"},{\"score\":0.052,\"source\":\"polyphen\",\"description\":\"benign\"}],\"keywords\":[\"Complete proteome\",\"Disease mutation\",\"Electron transport\",\"Leber hereditary optic neuropathy\",\"Leigh syndrome\",\"MELAS syndrome\",\"Membrane\",\"Mitochondrion\",\"Mitochondrion inner membrane\",\"NAD\",\"Oxidoreductase\",\"Polymorphism\",\"Reference proteome\",\"Respiratory chain\",\"Transmembrane\",\"Transmembrane helix\",\"Transport\",\"Ubiquinone\"],\"features\":[{\"id\":\"IPR003945\",\"start\":8,\"end\":501,\"description\":\"NADH-plastoquinone oxidoreductase, chain 5\"},{\"id\":\"IPR001750\",\"start\":134,\"end\":418,\"description\":\"NADH:quinone oxidoreductase/Mrp antiporter, membrane subunit\"},{\"start\":171,\"end\":191,\"type\":\"transmembrane region\",\"description\":\"Helical\"},{\"id\":\"PRO_0000118101\",\"start\":1,\"end\":603,\"type\":\"chain\",\"description\":\"NADH-ubiquinone oxidoreductase chain 5\"}]},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001583\",\"name\":\"missense_variant\"}]},{\"geneName\":\"MT-ND6\",\"ensemblGeneId\":\"ENSG00000198695\",\"ensemblTranscriptId\":\"ENST00000361681\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TE\",\"ensemblGeneId\":\"ENSG00000210194\",\"ensemblTranscriptId\":\"ENST00000387459\",\"strand\":\"-\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-CYB\",\"ensemblGeneId\":\"ENSG00000198727\",\"ensemblTranscriptId\":\"ENST00000361789\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001636\",\"name\":\"2KB_upstream_variant\"}]},{\"geneName\":\"MT-TT\",\"ensemblGeneId\":\"ENSG00000210195\",\"ensemblTranscriptId\":\"ENST00000387460\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001631\",\"name\":\"upstream_gene_variant\"}]},{\"geneName\":\"MT-TP\",\"ensemblGeneId\":\"ENSG00000210196\",\"ensemblTranscriptId\":\"ENST00000387461\",\"strand\":\"-\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]},{\"geneName\":null,\"ensemblGeneId\":null,\"ensemblTranscriptId\":null,\"strand\":null,\"biotype\":null,\"exonOverlap\":null,\"transcriptAnnotationFlags\":null,\"cdnaPosition\":null,\"cdsPosition\":null,\"codon\":null,\"proteinVariantAnnotation\":null,\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001782\",\"name\":\"TF_binding_site_variant\"}]}]",
+                consequenceTypeResult.getResult(), ConsequenceType.class);
+
+        // Tests normalisation of chromosome MT: should transform chrM -> MT
+        consequenceTypeResult =
+            variantAnnotationCalculator.getAllConsequenceTypesByVariant(new Variant("chrM", 12906, "C", "A"),
                     new QueryOptions());
         assertObjectListEquals("[{\"geneName\":\"MT-CO2\",\"ensemblGeneId\":\"ENSG00000198712\",\"ensemblTranscriptId\":\"ENST00000361739\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-TK\",\"ensemblGeneId\":\"ENSG00000210156\",\"ensemblTranscriptId\":\"ENST00000387421\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ATP8\",\"ensemblGeneId\":\"ENSG00000228253\",\"ensemblTranscriptId\":\"ENST00000361851\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ATP6\",\"ensemblGeneId\":\"ENSG00000198899\",\"ensemblTranscriptId\":\"ENST00000361899\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-CO3\",\"ensemblGeneId\":\"ENSG00000198938\",\"ensemblTranscriptId\":\"ENST00000362079\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-TG\",\"ensemblGeneId\":\"ENSG00000210164\",\"ensemblTranscriptId\":\"ENST00000387429\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ND3\",\"ensemblGeneId\":\"ENSG00000198840\",\"ensemblTranscriptId\":\"ENST00000361227\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-TR\",\"ensemblGeneId\":\"ENSG00000210174\",\"ensemblTranscriptId\":\"ENST00000387439\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ND4L\",\"ensemblGeneId\":\"ENSG00000212907\",\"ensemblTranscriptId\":\"ENST00000361335\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"geneName\":\"MT-ND4\",\"ensemblGeneId\":\"ENSG00000198886\",\"ensemblTranscriptId\":\"ENST00000361381\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TH\",\"ensemblGeneId\":\"ENSG00000210176\",\"ensemblTranscriptId\":\"ENST00000387441\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TS2\",\"ensemblGeneId\":\"ENSG00000210184\",\"ensemblTranscriptId\":\"ENST00000387449\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TL2\",\"ensemblGeneId\":\"ENSG00000210191\",\"ensemblTranscriptId\":\"ENST00000387456\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-ND5\",\"ensemblGeneId\":\"ENSG00000198786\",\"ensemblTranscriptId\":\"ENST00000361567\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"exonOverlap\":[{\"percentage\":0.05518763796909492,\"number\":\"1/1\"}],\"transcriptAnnotationFlags\":[\"basic\"],\"cdnaPosition\":570,\"cdsPosition\":570,\"codon\":\"atC/atA\",\"proteinVariantAnnotation\":{\"uniprotAccession\":\"P03915\",\"position\":190,\"reference\":\"ILE\",\"alternate\":\"MET\",\"substitutionScores\":[{\"score\":0.31,\"source\":\"sift\",\"description\":\"tolerated\"},{\"score\":0.052,\"source\":\"polyphen\",\"description\":\"benign\"}],\"keywords\":[\"Complete proteome\",\"Disease mutation\",\"Electron transport\",\"Leber hereditary optic neuropathy\",\"Leigh syndrome\",\"MELAS syndrome\",\"Membrane\",\"Mitochondrion\",\"Mitochondrion inner membrane\",\"NAD\",\"Oxidoreductase\",\"Polymorphism\",\"Reference proteome\",\"Respiratory chain\",\"Transmembrane\",\"Transmembrane helix\",\"Transport\",\"Ubiquinone\"],\"features\":[{\"id\":\"IPR003945\",\"start\":8,\"end\":501,\"description\":\"NADH-plastoquinone oxidoreductase, chain 5\"},{\"id\":\"IPR001750\",\"start\":134,\"end\":418,\"description\":\"NADH:quinone oxidoreductase/Mrp antiporter, membrane subunit\"},{\"start\":171,\"end\":191,\"type\":\"transmembrane region\",\"description\":\"Helical\"},{\"id\":\"PRO_0000118101\",\"start\":1,\"end\":603,\"type\":\"chain\",\"description\":\"NADH-ubiquinone oxidoreductase chain 5\"}]},\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001583\",\"name\":\"missense_variant\"}]},{\"geneName\":\"MT-ND6\",\"ensemblGeneId\":\"ENSG00000198695\",\"ensemblTranscriptId\":\"ENST00000361681\",\"strand\":\"-\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-TE\",\"ensemblGeneId\":\"ENSG00000210194\",\"ensemblTranscriptId\":\"ENST00000387459\",\"strand\":\"-\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0002083\",\"name\":\"2KB_downstream_variant\"}]},{\"geneName\":\"MT-CYB\",\"ensemblGeneId\":\"ENSG00000198727\",\"ensemblTranscriptId\":\"ENST00000361789\",\"strand\":\"+\",\"biotype\":\"protein_coding\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001636\",\"name\":\"2KB_upstream_variant\"}]},{\"geneName\":\"MT-TT\",\"ensemblGeneId\":\"ENSG00000210195\",\"ensemblTranscriptId\":\"ENST00000387460\",\"strand\":\"+\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001631\",\"name\":\"upstream_gene_variant\"}]},{\"geneName\":\"MT-TP\",\"ensemblGeneId\":\"ENSG00000210196\",\"ensemblTranscriptId\":\"ENST00000387461\",\"strand\":\"-\",\"biotype\":\"Mt_tRNA\",\"transcriptAnnotationFlags\":[\"basic\"],\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001632\",\"name\":\"downstream_gene_variant\"}]},{\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001566\",\"name\":\"regulatory_region_variant\"}]},{\"geneName\":null,\"ensemblGeneId\":null,\"ensemblTranscriptId\":null,\"strand\":null,\"biotype\":null,\"exonOverlap\":null,\"transcriptAnnotationFlags\":null,\"cdnaPosition\":null,\"cdsPosition\":null,\"codon\":null,\"proteinVariantAnnotation\":null,\"sequenceOntologyTerms\":[{\"accession\":\"SO:0001782\",\"name\":\"TF_binding_site_variant\"}]}]",
                 consequenceTypeResult.getResult(), ConsequenceType.class);
@@ -1849,18 +1903,5 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         }
     }
 
-    private int getEndFromInfoField(VcfRecord vcfRecord) {
-        String[] infoFields = vcfRecord.getInfo().split(";");
-        int i = 0;
-        while (i < infoFields.length && !infoFields[i].startsWith("END=")) {
-            i++;
-        }
-
-        if(i<infoFields.length) {
-            return Integer.parseInt(infoFields[i].split("=")[1]);
-        } else {
-            return -1;
-        }
-    }
 
 }

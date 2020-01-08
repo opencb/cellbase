@@ -1,8 +1,10 @@
 package org.opencb.cellbase.client.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.client.config.ClientConfiguration;
+import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResponse;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -13,8 +15,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager.GENOTYPE_TAG;
+import static org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager.PHASE_SET_TAG;
+
 
 public final class VariantClient extends FeatureClient<Variant> {
+
+    private static final String IGNORE_PHASE = "ignorePhase";
+    private static final char PHASE_DATA_URL_SEPARATOR = '+';
+    private static final char ABSENT_ALLELE = '0';
+    private static final String REFERENCE_HOMOZYGOUS_GENOTYPE = "0|0";
 
     public VariantClient(String species, String assembly, ClientConfiguration configuration) {
         super(species, assembly, configuration);
@@ -50,7 +60,7 @@ public final class VariantClient extends FeatureClient<Variant> {
     }
 
     public QueryResponse<Variant> annotate(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
-        List<String> variantIds = getVariantAnnotationIds(variants);
+        List<String> variantIds = getVariantAnnotationIds(variants, options.getBoolean(IGNORE_PHASE));
         QueryResponse<VariantAnnotation> annotations = this.getAnnotationByVariantIds(variantIds, options, post);
 
         int timePerId = annotations.getTime() / variants.size();
@@ -69,25 +79,61 @@ public final class VariantClient extends FeatureClient<Variant> {
     }
 
     public QueryResponse<VariantAnnotation> getAnnotation(List<Variant> variants, QueryOptions options, boolean post) throws IOException {
-        QueryResponse<VariantAnnotation> result = execute(getVariantAnnotationIds(variants), "annotation", options,
+        QueryResponse<VariantAnnotation> result = execute(getVariantAnnotationIds(variants,
+                options.getBoolean(IGNORE_PHASE)),
+                "annotation",
+                options,
                 VariantAnnotation.class, post);
         return initRequiredAnnotation(result);
     }
 
 
     // FIXME Next two methods should be moved near the Variant Annotation tool
-    public String getVariantAnnotationId(Variant variant) {
-        return variant.getChromosome() + ":" + variant.getStart() + ":" + variant.getReference() + ":" + variant.getAlternate();
+    public String getVariantAnnotationId(Variant variant, Boolean ignorePhase) {
+        StringBuilder stringBuilder = new StringBuilder(variant.toString());
+
+        if (!ignorePhase) {
+            String phaseSet = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, PHASE_SET_TAG);
+            if (StringUtils.isNotBlank(phaseSet)) {
+                stringBuilder.append(PHASE_DATA_URL_SEPARATOR)
+                        .append(getGenotypeString(variant))
+                        .append(PHASE_DATA_URL_SEPARATOR)
+                        .append(phaseSet);
+            }
+        }
+        return stringBuilder.toString();
     }
 
-    public List<String> getVariantAnnotationIds(List<Variant> variants) {
+    private String getGenotypeString(Variant variant) {
+        String genotypeString = AnnotationBasedPhasedQueryManager.getSampleAttribute(variant, GENOTYPE_TAG);
+        if (genotypeString == null) {
+            return EMPTY_STRING;
+        }
+
+        // Unphased genotype - we don't really care about it then since here we're just interested in the genotype
+        // for being able to determine wheter two variants are potentially in cis in the server
+        if (StringUtils.countMatches(genotypeString, AnnotationBasedPhasedQueryManager.UNPHASED_GENOTYPE_SEPARATOR) > 0) {
+            // However, if genotype is homozygous for the reference, must make this explicit so that server knows
+            // this variant is not present when deciding to return or not MNVs
+            if (StringUtils.countMatches(genotypeString, ABSENT_ALLELE) == 2) {
+                return REFERENCE_HOMOZYGOUS_GENOTYPE;
+            } else {
+                return EMPTY_STRING;
+            }
+        }
+
+        return genotypeString;
+
+    }
+
+    public List<String> getVariantAnnotationIds(List<Variant> variants, Boolean ignorePhase) {
         if (variants == null) {
             return null;
         }
 
         List<String> variantIds = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            variantIds.add(getVariantAnnotationId(variant));
+            variantIds.add(getVariantAnnotationId(variant, ignorePhase));
         }
         return variantIds;
     }

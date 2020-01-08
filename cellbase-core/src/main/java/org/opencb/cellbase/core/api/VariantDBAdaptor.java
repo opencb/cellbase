@@ -53,6 +53,7 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         XREFS("xrefs", TEXT_ARRAY, ""),
         IMPRECISE("imprecise", BOOLEAN, ""),
         SV_TYPE("svType", STRING, ""),
+        PHASE("phased", TEXT_ARRAY, ""),
         TYPE("type", STRING, "");
 
         QueryParams(String key, Type type, String description) {
@@ -159,4 +160,5 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         return queryResults;
     }
 
+    List<QueryResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions);
 }

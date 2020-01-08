@@ -17,7 +17,8 @@
 package org.opencb.cellbase.app.transform.clinical.variant;
 
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
+import org.opencb.biodata.formats.variant.clinvar.v54jaxb.*;
+//import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.cellbase.app.transform.CellBaseParser;
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -262,7 +263,7 @@ public class ClinVarParser extends CellBaseParser {
 
     @Deprecated
     private SequenceLocationType obtainAssembly37SequenceLocation(PublicSetType publicSet) {
-        for (MeasureSetType.Measure measure : publicSet.getReferenceClinVarAssertion().getMeasureSet().getMeasure()) {
+        for (MeasureType measure : publicSet.getReferenceClinVarAssertion().getMeasureSet().getMeasure()) {
             for (SequenceLocationType location : measure.getSequenceLocation()) {
                 if (validLocation(location)) {
                     return location;

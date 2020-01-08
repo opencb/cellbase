@@ -1,4 +1,7 @@
-from setuptools import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 from codecs import open  # To use a consistent encoding
 from os import path
 
@@ -10,7 +13,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup_kwargs = {
     'name': 'pycellbase',
-    'version': '4.5.1',
+    'version': '4.7.1',
     'description': 'Python client for CellBase',
     'long_description': long_description,
     'long_description_content_type': 'text/x-rst',
@@ -37,7 +40,7 @@ setup_kwargs = {
         'Bug Reports': 'https://github.com/opencb/cellbase/issues',
     },
     'packages': ['pycellbase'],
-    'install_requires': ['requests', 'pyyaml'],
+    'install_requires': ['requests', 'pyyaml', 'retrying'],
     'scripts': ['tools/cbtools.py']
 }
 

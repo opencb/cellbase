@@ -2,25 +2,20 @@ import unittest
 
 import pycellbase.cbrestclients as cbfts
 from pycellbase.cbconfig import ConfigClient
+from requests import Session
 
 
 class GeneClientTest(unittest.TestCase):
     """Tests the GeneClient class"""
     def setUp(self):
         """Initializes the gene client"""
-        self._gc = cbfts.GeneClient(ConfigClient())
+        self._gc = cbfts.GeneClient(Session(), ConfigClient())
 
     def test_get_biotypes(self):
         """Checks retrieval of gene biotypes"""
         res = self._gc.get_biotypes()
         assert len(res[0]['result']) == 29
         assert 'protein_coding' in res[0]['result']
-
-    def test_get_clinical(self):
-        """Checks retrieval of gene clinical info"""
-        res = self._gc.get_clinical('BRCA1')
-        assert len(res[0]['result']) == 6412
-        assert res[0]['result'][0]['source'] == 'clinvar'
 
     def test_get_list(self):
         """Checks retrieval of gene list"""
@@ -73,7 +68,7 @@ class ProteinClientTest(unittest.TestCase):
     """Tests the ProteinClient class"""
     def setUp(self):
         """Initializes the protein client"""
-        self._pc = cbfts.ProteinClient(ConfigClient())
+        self._pc = cbfts.ProteinClient(Session(), ConfigClient())
 
     def test_get_substitution_scores(self):
         """Checks retrieval of protein substitution scores"""
@@ -93,7 +88,7 @@ class TrancriptClientTest(unittest.TestCase):
     """Tests the TrancriptClient class"""
     def setUp(self):
         """Initializes the transcript client"""
-        self._tc = cbfts.TranscriptClient(ConfigClient())
+        self._tc = cbfts.TranscriptClient(Session(), ConfigClient())
 
     def test_get_function_prediction(self):
         """Checks retrieval of function predictions"""
@@ -125,7 +120,7 @@ class VariationClientTest(unittest.TestCase):
     """Tests the VariationClient class"""
     def setUp(self):
         """Initializes the variation client"""
-        self._vc = cbfts.VariationClient(ConfigClient())
+        self._vc = cbfts.VariationClient(Session(), ConfigClient())
 
     def test_get_consequence_types(self):
         """Checks retrieval of consequence types list"""
@@ -143,7 +138,7 @@ class GenomicRegionTest(unittest.TestCase):
     """Tests the GenomicRegion class"""
     def setUp(self):
         """Initializes the variation client"""
-        self._gr = cbfts.GenomicRegionClient(ConfigClient())
+        self._gr = cbfts.RegionClient(Session(), ConfigClient())
 
     def test_get_clinical(self):
         """Checks retrieval of clinical data"""
@@ -197,7 +192,7 @@ class VariantTest(unittest.TestCase):
     """Tests the Variant class"""
     def setUp(self):
         """Initializes the variation client"""
-        self._vc = cbfts.VariantClient(ConfigClient())
+        self._vc = cbfts.VariantClient(Session(), ConfigClient())
 
     def test_get_annotation(self):
         """Checks retrieval of annotation data"""

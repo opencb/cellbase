@@ -979,7 +979,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         clinicalFolder.resolve("docmVersion.json"));
             } else {
                 logger.warn("No DOCM variants found for assembly {}. Please double-check that this is the correct "
-                        + "assembly");
+                        + "assembly", assembly);
             }
 
             if (assembly.equalsIgnoreCase("grch37")) {

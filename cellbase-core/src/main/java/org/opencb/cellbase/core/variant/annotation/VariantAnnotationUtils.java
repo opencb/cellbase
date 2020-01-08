@@ -127,8 +127,11 @@ public class VariantAnnotationUtils {
     public static final Set<String> CODING_SO_NAMES = new HashSet<>();
     public static final Map<String, ClinicalSignificance> CLINVAR_CLINSIG_TO_ACMG = new HashMap<>();
     public static final Map<String, TraitAssociation> CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION = new HashMap<>();
-    public static final Map<String, DrugResponseClassification> CLINVAR_CLINSIG_TO_DRUG_RESPONSE = new HashMap<>();
     public static final HashMap<String, ConsistencyStatus> CLINVAR_REVIEW_TO_CONSISTENCY_STATUS = new HashMap<>();
+    // Currently left empty since the only item within DrugResponseClassification that seemed to match any clinvar
+    // tag ("responsive") was removed at some point from the model
+    public static final Map<String, DrugResponseClassification> CLINVAR_CLINSIG_TO_DRUG_RESPONSE = new HashMap<>();
+
     public static final HashMap<Object, ModeOfInheritance> MODEOFINHERITANCE_MAP = new HashMap<>();
     public static final HashMap<String, AlleleOrigin> COSMIC_SOMATICSTATUS_TO_ALLELE_ORIGIN = new HashMap<>();
     public static final HashMap<String, String> TO_ABBREVIATED_AA = new HashMap<>(22); // 22 AA
@@ -179,8 +182,6 @@ public class VariantAnnotationUtils {
 
         CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.put("risk factor", TraitAssociation.established_risk_allele);
         CLINVAR_CLINSIG_TO_TRAIT_ASSOCIATION.put("protective", TraitAssociation.protective);
-
-        CLINVAR_CLINSIG_TO_DRUG_RESPONSE.put("drug response", DrugResponseClassification.responsive);
 
         ///////////////////////////////////////////////////////////////////////
         /////   ClinVar and Cosmic allele origins to SO terms   ///////////////

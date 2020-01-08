@@ -52,6 +52,7 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         MODE_INHERITANCE("modeInheritance", TEXT_ARRAY, ""),
         ALLELE_ORIGIN("alleleOrigin", TEXT_ARRAY, ""),
         ACCESSION("accession", TEXT_ARRAY, ""),
+        PHASE("phased", TEXT_ARRAY, ""),
 
         @Deprecated
         GENE("gene", TEXT_ARRAY, ""),

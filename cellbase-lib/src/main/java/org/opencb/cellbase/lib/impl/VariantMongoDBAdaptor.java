@@ -31,6 +31,7 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
+import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
@@ -55,6 +56,9 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     private static final float DECIMAL_RESOLUTION = 100f;
     private static final String ENSEMBL_GENE_ID_PATTERN = "ENSG00";
     private static final String ENSEMBL_TRANSCRIPT_ID_PATTERN = "ENST00";
+    private static PopulationFrequencyPhasedQueryManager populationFrequencyPhasedQueryManager
+            = new PopulationFrequencyPhasedQueryManager();
+
 
     private MongoDBCollection caddDBCollection;
 
@@ -557,4 +561,26 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         result.setResult(scores);
         return result;
     }
+
+    /**
+     * Created an specific method for pop freqs here since in this case phase is managed at the Pop. freq level.
+     * @param variants list of Variant objects to query
+     * @param queryOptions query options, e.g. phased={true, false}
+     * @return list of QueryResult<Variant> objects, each of which contains the query result of each variant in the
+     * input list ("variants"). Positions within the list of QueryResult must always correspond to the position Variant
+     * objects occupy in the "variants" query list.
+     */
+    public List<QueryResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions) {
+        List<QueryResult<Variant>> results = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            results.add(getByVariant(variant, queryOptions));
+        }
+
+        if (queryOptions.get(QueryParams.PHASE.key()) != null && queryOptions.getBoolean(QueryParams.PHASE.key())) {
+            results = populationFrequencyPhasedQueryManager.run(variants, results);
+
+        }
+        return results;
+    }
+
 }

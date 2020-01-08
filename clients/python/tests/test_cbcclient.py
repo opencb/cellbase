@@ -13,14 +13,14 @@ class CellBaseClientTest(unittest.TestCase):
         cbc = CellBaseClient(cc)
 
         # Checking some default config params
-        assert cbc.get_config()['species'] == 'hsapiens'
-        assert cbc.get_config()['version'] == 'v4'
+        assert cbc.show_configuration()['species'] == 'hsapiens'
+        assert cbc.show_configuration()['version'] == 'v4'
 
         # Checking some setters for config params
         cc.species = 'mmusculus'
-        assert cbc.get_config()['species'] == 'mmusculus'
+        assert cbc.show_configuration()['species'] == 'mmusculus'
         cc.version = 'v3'
-        assert cbc.get_config()['version'] == 'v3'
+        assert cbc.show_configuration()['version'] == 'v3'
 
     def test_get(self):
         """"Checks generic fetcher for RESTful service"""

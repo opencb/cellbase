@@ -170,6 +170,13 @@ public class CliOptionsParser {
         @Parameter(names = {"--common"}, description = "Directory where common multi-species data will be downloaded, this is mainly protein and expression data [<OUTPUT>/common]", required = false, arity = 1)
         public String common;
 
+        @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of clinical variants. Normalization"
+                + " includes allele trimming and left alignment. **NOTE** this parameter will only be used when building"
+                + " the clinical_variants dataset.",
+                required = false, arity = 0)
+        public boolean skipNormalize = false;
+
+
         @Parameter(names = {"--flexible-gtf-parsing"}, description = "By default, ENSEMBL GTF format is expected. "
                 + " Nevertheless, GTF specification is quite loose and other GTFs may be provided in which the order "
                 + "of the features is not as systematic as within the ENSEMBL's GTFs. Use this option to enable a more "
@@ -378,8 +385,12 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean benchmark;
 
-        @Parameter(names = {"--reference-fasta"}, description = "To use only with the --benchmark flag. Full path to a "
-                + " fasta file containing the reference genome.",
+        @Parameter(names = {"--reference-fasta"}, description = "Required for left aligning when annotating in remote"
+                + " mode, i.e. --local NOT present. It's strongly discouraged to use --reference-fasta together with "
+                + " the --local flag. IF however --reference-fasta is set together with --local, then the genome sequence "
+                + " in the fasta file will override CellBase database reference genome sequence. This --reference-fasta"
+                + " parameter will be ignored if --skip-normalize is present. Finally, this parameter is required when"
+                + " the --benchmark flag is enabled.",
                 required = false, arity = 1)
         public String referenceFasta;
 
@@ -400,23 +411,26 @@ public class CliOptionsParser {
                 required = false, arity = 0)
         public boolean skipDecompose = false;
 
-        @Parameter(names = {"--server-cache"}, description = "Use of this parameter is discouraged unless the "
-                + "server administrator advises so. Annotation was already pre-calculated and cached in "
-                + "our servers for the whole ENSEMBL variation collection. Most of variants will be included in that "
-                + "collection, meaning that the use of this cache may improve performance. Use this flag "
-                + "if you want to use this server cache.",
+        @Parameter(names = {"--skip-left-align"}, description = "Use this flag to avoid left alignment as part of the"
+                + " normalization process. If this"
+                + " flag is NOT activated, as a step during the normalization process will left align the variant with"
+                + " respect to the reference genome."
+                + " This flag has no effect if --skip-normalize is present.",
                 required = false, arity = 0)
-        public boolean cache = false;
+        public boolean skipLeftAlign = false;
 
-        @Parameter(names = {"--no-server-cache"}, description = "DEPRECATED. Current implementation completely ignores" +
-                " this parameter. Please, have a look at --server-cache instead.",
-                required = false, arity = 0)
+        // TODO: remove "phased" CLI parameter in next release. Default behavior from here onwards should be
+        //  ignorePhase = false
+        @Parameter(names = {"--phased"}, description = "This parameter is now deprecated and will be removed in next" +
+                " release. Please, use --ignorePhase instead. Flag to indicate whether phased annotation shall be " +
+                " activated.", required = false, arity = 0)
         @Deprecated
-        public boolean noCache = false;
+        public Boolean phased;
 
-        @Parameter(names = {"--phased"}, description = "Flag to indicate whether phased annotation shall be activated." +
-                " By default phased annotation is not enabled.", required = false, arity = 0)
-        public boolean phased;
+        @Parameter(names = {"--ignorePhase"}, description = "Flag to indicate whether phase should be ignored during" +
+                " annotation. By default phased annotation is enabled, i.e. ignorePhase=false.", required = false,
+                arity = 0)
+        public Boolean ignorePhase;
 
         @Parameter(names = {"--no-imprecision"}, description = "Flag to indicate whether imprecision borders (CIPOS, CIEND)"
                 + " should be taken into account when annotating structural variants or CNVs."

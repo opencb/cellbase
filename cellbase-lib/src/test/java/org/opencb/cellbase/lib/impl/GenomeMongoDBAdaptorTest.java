@@ -25,6 +25,8 @@ import static org.junit.Assert.assertEquals;
  * Created by fjlopez on 18/04/16.
  */
 public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
+    private GenomeDBAdaptor dbAdaptor;
+
     public GenomeMongoDBAdaptorTest() throws IOException {
         super();
     }
@@ -38,11 +40,11 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/genome/genome_sequence.test.json.gz").toURI());
         loadRunner.load(path, "genome_sequence");
+        dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
     }
 
     @Test
     public void getChromosomeInfo() throws Exception {
-        GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
         QueryResult queryResult = dbAdaptor.getChromosomeInfo("20", new QueryOptions());
         assertEquals(Integer.valueOf(64444167),
                 ((Document) ((List) ((Document) queryResult.getResult().get(0)).get("chromosomes")).get(0)).get("size"));
@@ -50,7 +52,6 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void getGenomicSequence() {
-        GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
         QueryResult<GenomeSequenceFeature> queryResult = dbAdaptor.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions());
         assertEquals(StringUtils.repeat("N", 1999), queryResult.getResult().get(0).getSequence());
 
@@ -62,8 +63,34 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
+    public void testGenomicSequenceChromosomeNotPresent() {
+        QueryResult<GenomeSequenceFeature> queryResult = dbAdaptor.getSequence(new Region("1234:1-1999"), new QueryOptions());
+        assertEquals(0, queryResult.getResult().size());
+    }
+
+    @Test
+    public void testGenomicSequenceQueryOutOfBounds() {
+        // Both start & end out of the right bound
+        QueryResult<GenomeSequenceFeature> queryResult = dbAdaptor
+                .getSequence(new Region("17", 73973989, 73974999), new QueryOptions());
+        assertEquals(0, queryResult.getResult().size());
+
+        // start within the bounds, end out of the right bound. Should return last 10 nts.
+        queryResult = dbAdaptor
+                .getSequence(new Region("17", 63973989, 63974999), new QueryOptions());
+        assertEquals(1, queryResult.getResult().size());
+        assertEquals("TCAAGACCAGC", queryResult.getResult().get(0).getSequence());
+
+        // Start out of the left bound
+        queryResult = dbAdaptor
+                .getSequence(new Region("1", -100, 1999), new QueryOptions());
+        assertEquals(0, queryResult.getResult().size());
+
+
+    }
+
+    @Test
     public void getCytoband() {
-        GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37");
         List<QueryResult<Cytoband>> queryResultList
                 = dbAdaptor.getCytobands(Arrays.asList(new Region("19:55799900-55803000"),
                 new Region("11:121300000-124030001")));

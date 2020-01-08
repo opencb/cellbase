@@ -2,6 +2,7 @@ import unittest
 
 from pycellbase.commons import get
 from pycellbase.cbconfig import ConfigClient
+from requests import Session
 
 
 class CommonsTest(unittest.TestCase):
@@ -12,17 +13,21 @@ class CommonsTest(unittest.TestCase):
         self._host = cc.host
         self._version = cc.version
         self._species = cc.species
+        self._session = Session()
+
+    def tearDown(self):
+        self._session.close()
 
     def test_url_creation(self):
         """Tests the correct creation of the url"""
         # Normal query
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1', options={'limit': 200})
         assert len(res[0]['result']) == 200
 
         # Query with a dict option
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1',
                   options={'limit': 200, 'include': ['chromosome', 'start']})
@@ -31,27 +36,27 @@ class CommonsTest(unittest.TestCase):
     def test_get_single_id(self):
         """Tests the retrieval of information for one ID"""
         # Normal query
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1')
-        assert len(res[0]['result']) == 8140
+        assert len(res[0]['result']) == 8152
 
         # Query with limit
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1',
                   options={'limit': 2042})
         assert len(res[0]['result']) == 2042
 
         # Query with skip
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1',
                   options={'skip': 3000})
-        assert len(res[0]['result']) == 5140
+        assert len(res[0]['result']) == 5152
 
         # Query with limit and skip
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1',
                   options={'limit': 2000, 'skip': 42})
@@ -61,25 +66,22 @@ class CommonsTest(unittest.TestCase):
         """Tests the retrieval of information for multiple IDs"""
 
         # Normal query with string ids
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR')
-        assert len(res) == 3
-        assert len(res[0]['result']) == 8140
-        assert len(res[1]['result']) == 10419
-        assert len(res[2]['result']) == 4108
+        self.check_counts(res)
 
-        # Normal query with list ids
-        res = get(host=self._host, version=self._version,
+    def test_get_multiple_ids_with_list_ids(self):
+        """Normal query with list ids"""
+
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id=['BRCA1', 'BRCA2', 'LDLR'])
-        assert len(res) == 3
-        assert len(res[0]['result']) == 8140
-        assert len(res[1]['result']) == 10419
-        assert len(res[2]['result']) == 4108
+        self.check_counts(res)
 
-        # Query with limit
-        res = get(host=self._host, version=self._version,
+    def test_get_multiple_ids_with_list_ids(self):
+        """Query with limit"""
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 8000})
@@ -88,23 +90,25 @@ class CommonsTest(unittest.TestCase):
         assert len(res[1]['result']) == 8000
         assert len(res[2]['result']) == 4108
 
-        # Query with skip
-        res = get(host=self._host, version=self._version,
+    def test_get_multiple_ids_with_list_ids(self):
+        """Query with skip"""
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'skip': 4000})
         assert len(res) == 3
-        assert len(res[0]['result']) == 4140
+        assert len(res[0]['result']) == 4152
         assert len(res[1]['result']) == 6419
         assert len(res[2]['result']) == 108
 
-        # Query with limit and skip
-        res = get(host=self._host, version=self._version,
+    def test_get_multiple_ids_with_list_ids(self):
+        """Query with limit and skip"""
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 6000, 'skip': 4000})
         assert len(res) == 3
-        assert len(res[0]['result']) == 4140
+        assert len(res[0]['result']) == 4152
         assert len(res[1]['result']) == 6000
         assert len(res[2]['result']) == 108
 
@@ -115,16 +119,15 @@ class CommonsTest(unittest.TestCase):
         get.__globals__['_CALL_BATCH_SIZE'] = 2
 
         # Normal query
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR')
-        assert len(res) == 3
-        assert len(res[0]['result']) == 8140
-        assert len(res[1]['result']) == 10419
-        assert len(res[2]['result']) == 4108
+        self.check_counts(res)
 
+    def test_multiple_threads_with_limit(self):
+        """Tests the retrieval of information with multiple threads with limit"""
         # Query with limit
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 8000})
@@ -133,23 +136,25 @@ class CommonsTest(unittest.TestCase):
         assert len(res[1]['result']) == 8000
         assert len(res[2]['result']) == 4108
 
-        # Query with skip
-        res = get(host=self._host, version=self._version,
+    def test_multiple_threads_with_skip(self):
+        """Tests the retrieval of information with multiple threads with skip"""
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'skip': 4000})
         assert len(res) == 3
-        assert len(res[0]['result']) == 4140
+        assert len(res[0]['result']) == 4152
         assert len(res[1]['result']) == 6419
         assert len(res[2]['result']) == 108
 
-        # Query with limit and skip
-        res = get(host=self._host, version=self._version,
+    def test_multiple_threads_with_limit_and_skip(self):
+        """Tests the retrieval of information with multiple threads with limit and skip"""
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id='BRCA1,BRCA2,LDLR',
                   options={'limit': 6000, 'skip': 4000})
         assert len(res) == 3
-        assert len(res[0]['result']) == 4140
+        assert len(res[0]['result']) == 4152
         assert len(res[1]['result']) == 6000
         assert len(res[2]['result']) == 108
 
@@ -161,7 +166,7 @@ class CommonsTest(unittest.TestCase):
 
         # Normal query
         n = 10  # Number of duplications
-        res = get(host=self._host, version=self._version,
+        res = get(session=self._session, host=self._host, version=self._version,
                   species=self._species, category='feature', subcategory='gene',
                   resource='snp', query_id=','.join(['LDLR']*n))
         assert len(res) == n
@@ -169,3 +174,8 @@ class CommonsTest(unittest.TestCase):
         for i, r in enumerate(res):
             assert len(r['result']) == 4108
 
+    def check_counts(self, res):
+        self.assertEquals(len(res), 3)
+        self.assertEquals(len(res[0]['result']), 8152)
+        self.assertEquals(len(res[1]['result']), 10419)
+        self.assertEquals(len(res[2]['result']), 4108)

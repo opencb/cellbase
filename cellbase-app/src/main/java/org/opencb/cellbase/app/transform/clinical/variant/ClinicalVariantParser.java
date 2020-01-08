@@ -36,10 +36,11 @@ public class ClinicalVariantParser extends CellBaseParser {
     private final Path iarctp53SomaticReferencesFile;
     private final Path genomeSequenceFilePath;
     private final Path docmFile;
+    private boolean normalize = true;
 
 
-    public ClinicalVariantParser(Path clinicalVariantFolder, Path genomeSequenceFilePath, String assembly,
-                                 CellBaseSerializer serializer) {
+    public ClinicalVariantParser(Path clinicalVariantFolder, boolean normalize, Path genomeSequenceFilePath,
+                                 String assembly, CellBaseSerializer serializer) {
         this(clinicalVariantFolder.resolve(EtlCommons.CLINVAR_XML_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE),
@@ -52,6 +53,7 @@ public class ClinicalVariantParser extends CellBaseParser {
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_FILE),
                 clinicalVariantFolder.resolve("datasets/" + EtlCommons.IARCTP53_SOMATIC_REFERENCES_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.DOCM_FILE),
+                normalize,
                 genomeSequenceFilePath, assembly, serializer);
     }
 
@@ -59,7 +61,8 @@ public class ClinicalVariantParser extends CellBaseParser {
                                  Path clinvarEFOFile, Path cosmicFile, Path gwasFile, Path dbsnpFile,
                                  Path iarctp53GermlineFile, Path iarctp53GermlineReferencesFile,
                                  Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile, Path docmFile,
-                                 Path genomeSequenceFilePath, String assembly, CellBaseSerializer serializer) {
+                                 boolean normalize, Path genomeSequenceFilePath, String assembly,
+                                 CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;
@@ -73,6 +76,7 @@ public class ClinicalVariantParser extends CellBaseParser {
         this.iarctp53SomaticFile = iarctp53SomaticFile;
         this.iarctp53SomaticReferencesFile = iarctp53SomaticReferencesFile;
         this.docmFile = docmFile;
+        this.normalize = normalize;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.assembly = assembly;
     }
@@ -93,7 +97,7 @@ public class ClinicalVariantParser extends CellBaseParser {
                     && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
                     && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
                 ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile, clinvarSummaryFile,
-                        clinvarVariationAlleleFile, clinvarEFOFile, assembly, rdb);
+                        clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 clinvarIndexer.index();
             } else {
                 logger.warn("One or more of required ClinVar files are missing. Skipping ClinVar data.\n"
@@ -103,7 +107,8 @@ public class ClinicalVariantParser extends CellBaseParser {
             }
 
             if (this.cosmicFile != null && Files.exists(this.cosmicFile)) {
-                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, assembly, rdb);
+                CosmicIndexer cosmicIndexer = new CosmicIndexer(cosmicFile, normalize, genomeSequenceFilePath,
+                        assembly, rdb);
                 cosmicIndexer.index();
             } else {
                 logger.warn("Cosmic file {} missing. Skipping Cosmic data", cosmicFile);
@@ -117,14 +122,14 @@ public class ClinicalVariantParser extends CellBaseParser {
                     && Files.exists(iarctp53GermlineFile) && Files.exists(iarctp53SomaticFile)) {
                 IARCTP53Indexer iarctp53Indexer = new IARCTP53Indexer(iarctp53GermlineFile,
                         iarctp53GermlineReferencesFile, iarctp53SomaticFile, iarctp53SomaticReferencesFile,
-                        genomeSequenceFilePath, assembly, rdb);
+                        normalize, genomeSequenceFilePath, assembly, rdb);
                 iarctp53Indexer.index();
             } else {
                 logger.warn("One or more of required IARCTP53 files are missing. Skipping IARCTP53 data.");
             }
 
             if (this.docmFile != null && Files.exists(docmFile)) {
-                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, assembly, rdb);
+                DOCMIndexer docmIndexer = new DOCMIndexer(docmFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 docmIndexer.index();
             } else {
                 logger.warn("The DOCM file {} is missing. Skipping DOCM data.", docmFile);

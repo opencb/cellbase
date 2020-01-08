@@ -3,6 +3,7 @@ package org.opencb.cellbase.lib.monitor;
 import com.google.common.io.Files;
 import org.apache.tools.ant.util.FileUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -23,11 +24,11 @@ import static org.junit.Assert.assertEquals;
  */
 public class MonitorTest extends GenericMongoDBAdaptorTest {
 
-    private static final String REST_API_HOST = "http://localhost:8080/cellbase-4.6.0-SNAPSHOT";
+    private static final String REST_API_HOST = "http://localhost:8080/cellbase";
 //    private static final String REST_API_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase";
     private static final String SPECIES = "hsapiens";
     private static final String ASSEMBLY = "GRCh37";
-    private static final String UNKNOWN_HTTP_HOST = "http://foo:8080/cellbase-4.6.0-SNAPSHOT";
+    private static final String UNKNOWN_HTTP_HOST = "http://foo:8080/cellbase";
     private static final String REST_API_DOES_NOT_IMPLEMENT_STATUS = "http://bioinfo.hpc.cam.ac.uk/hgva";
     private static final String FAKE = "fake";
 
@@ -35,6 +36,7 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         super();
     }
 
+    @Ignore
     @Test
     public void run() throws Exception {
 

@@ -35,6 +35,7 @@ import java.util.List;
 /**
  * Created by fjlopez on 02/03/15.
  */
+@Deprecated
 public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithException<String, Variant, Exception> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -52,14 +53,15 @@ public class JsonStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcep
     private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)|(<DUP>)|(<DEL>)|(<INS>)|(<INV>)";
 
     public JsonStringAnnotatorTask(List<VariantAnnotator> variantAnnotatorList) {
-        this(variantAnnotatorList, true, true);
+        this(variantAnnotatorList, true, new VariantNormalizer.VariantNormalizerConfig());
     }
 
     public JsonStringAnnotatorTask(List<VariantAnnotator> variantAnnotatorList, boolean normalize,
-                                   boolean decompose) {
+                                   VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig) {
         this.variantAnnotatorList = variantAnnotatorList;
         this.normalize = normalize;
-        normalizer = new VariantNormalizer(true, false, decompose);
+        //normalizer = new VariantNormalizer(true, false, decompose);
+        normalizer = new VariantNormalizer(variantNormalizerConfig);
     }
 
     public void pre() {

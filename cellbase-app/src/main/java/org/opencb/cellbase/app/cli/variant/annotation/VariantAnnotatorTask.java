@@ -1,9 +1,13 @@
 package org.opencb.cellbase.app.cli.variant.annotation;
 
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,6 +16,7 @@ import java.util.List;
 public class VariantAnnotatorTask implements
         ParallelTaskRunner.TaskWithException<Variant, Variant, Exception> {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private List<VariantAnnotator> variantAnnotatorList;
 
     public VariantAnnotatorTask(List<VariantAnnotator> variantAnnotatorList) {
@@ -25,10 +30,22 @@ public class VariantAnnotatorTask implements
     }
 
     public List<Variant> apply(List<Variant> batch) throws Exception {
+        List<Variant> variantListToAnnotate = filterReferenceBlocksOut(batch);
         for (VariantAnnotator variantAnnotator : variantAnnotatorList) {
-            variantAnnotator.run(batch);
+            variantAnnotator.run(variantListToAnnotate);
         }
-        return batch;
+        return variantListToAnnotate;
+    }
+
+    private List<Variant> filterReferenceBlocksOut(List<Variant> variantList) {
+        List<Variant> filteredVariantList = new ArrayList<>(variantList.size());
+        for (Variant variant : variantList) {
+            if (!VariantType.NO_VARIATION.equals(variant.getType())) {
+                filteredVariantList.add(variant);
+            }
+        }
+
+        return filteredVariantList;
     }
 
     public void post() {

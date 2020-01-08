@@ -21,34 +21,30 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import htsjdk.tribble.readers.LineIterator;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFFileReader;
-import htsjdk.variant.vcf.VCFHeader;
-import htsjdk.variant.vcf.VCFHeaderVersion;
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.opencb.biodata.formats.variant.annotation.io.JsonAnnotationWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VariantAvroDataWriter;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatReader;
 import org.opencb.biodata.formats.variant.annotation.io.VepFormatWriter;
-import org.opencb.biodata.formats.variant.io.JsonVariantReader;
-import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
+import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.tools.variant.VariantNormalizer;
+import org.opencb.biodata.models.variant.VariantFileMetadata;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.biodata.models.variant.avro.VariantAvro;
-import org.opencb.biodata.models.variant.exceptions.NonStandardCompliantSampleField;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
-import org.opencb.biodata.tools.variant.converters.avro.VariantContextToVariantConverter;
+import org.opencb.biodata.tools.variant.VariantJsonReader;
+import org.opencb.biodata.tools.variant.VariantNormalizer;
+import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.cellbase.app.cli.variant.annotation.*;
+import org.opencb.cellbase.app.cli.variant.annotation.indexers.CustomAnnotationVariantIndexer;
+import org.opencb.cellbase.app.cli.variant.annotation.indexers.PopulationFrequencyVariantIndexer;
+import org.opencb.cellbase.app.cli.variant.annotation.indexers.VariantIndexer;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.CellBaseClient;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
 import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.ProgressLogger;
@@ -57,21 +53,22 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
-import org.opencb.commons.io.StringDataReader;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.opencb.commons.utils.FileUtils;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.zip.GZIPInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 
@@ -93,6 +90,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private Path referenceFasta;
     private boolean normalize;
     private boolean decompose;
+    private boolean leftAlign;
     private List<String> chromosomeList;
     private int port;
     private String species;
@@ -102,16 +100,15 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private List<Path> customFiles;
     private Path populationFrequenciesFile = null;
     private Boolean completeInputPopulation;
-    private List<RocksDB> dbIndexes;
-    private List<Options> dbOptions;
-    private List<String> dbLocations;
+    private List<VariantIndexer> variantIndexerList;
     private List<String> customFileIds;
     private List<List<String>> customFileFields;
     private int maxOpenFiles = -1;
     private FileFormat inputFormat;
     private FileFormat outputFormat;
 
-    private QueryOptions queryOptions;
+    // Only options meant to be sent to the server should be included in this serverQueryOptions
+    private QueryOptions serverQueryOptions;
 
     private DBAdaptorFactory dbAdaptorFactory = null;
 
@@ -124,7 +121,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 variantAnnotationCommandOptions.commonOptions.conf);
 
         this.variantAnnotationCommandOptions = variantAnnotationCommandOptions;
-        this.queryOptions = new QueryOptions();
+        this.serverQueryOptions = new QueryOptions();
 
         if (variantAnnotationCommandOptions.input != null) {
             input = Paths.get(variantAnnotationCommandOptions.input);
@@ -214,7 +211,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                     VariantAnnotationCalculator variantAnnotationCalculator =
                             new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
                     List<QueryResult<VariantAnnotation>> annotationByVariantList =
-                            variantAnnotationCalculator.getAnnotationByVariantList(variants, queryOptions);
+                            variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
                     ObjectMapper jsonObjectMapper = new ObjectMapper();
                     jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -237,14 +234,14 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // expensive to parse, i.e.: multisample vcf with thousands of samples. A specific task is created to enable
             // parallel parsing of these lines
             if (input != null) {
-                DataReader<String> dataReader = new StringDataReader(input);
-                List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList
-                        = getStringTaskList();
+                VariantReader variantReader = getVariantReader(input);
+                List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList
+                        = getVariantAnnotatorTaskList();
                 DataWriter<Variant> dataWriter = getVariantDataWriter(output.toString());
 
                 ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
-                ParallelTaskRunner<String, Variant> runner =
-                        new ParallelTaskRunner<>(dataReader, variantAnnotatorTaskList, dataWriter, config);
+                ParallelTaskRunner<Variant, Variant> runner =
+                        new ParallelTaskRunner<Variant, Variant>(variantReader, variantAnnotatorTaskList, dataWriter, config);
                 runner.run();
                 // For internal use only - will only be run when -Dpopulation-frequencies is activated
                 writeRemainingPopFrequencies();
@@ -257,7 +254,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 //                    Query query = new Query();
                     QueryOptions options = new QueryOptions("include", "chromosome,start,reference,alternate,type");
                     List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList
-                            = getVariantTaskList();
+                            = getVariantAnnotatorTaskList();
                     ParallelTaskRunner.Config config = new ParallelTaskRunner.Config(numThreads, batchSize, QUEUE_CAPACITY, false);
 
                     for (String chromosome : chromosomeList) {
@@ -286,6 +283,31 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return false;
     }
 
+    private VariantReader getVariantReader(Path input) throws IOException {
+        return getVariantReader(input, serverQueryOptions.getBoolean("ignorePhase"));
+    }
+
+    private VariantReader getVariantReader(Path input, boolean ignorePhase) throws IOException {
+        // Leaving variantNormalizer = null if CLI indicates to skip normalisation. If no normalizer is provided to
+        // the readers they will NOT perform normalisation
+        VariantNormalizer variantNormalizer = normalize ? new VariantNormalizer(getNormalizerConfig()) : null;
+
+        switch (getFileFormat(input)) {
+            case VCF:
+                logger.info("Using HTSJDK to read variants.");
+                return (new VariantVcfHtsjdkReader(input,
+                        new VariantFileMetadata(input.getFileName().toString(),
+                                input.toAbsolutePath().toString()).toVariantStudyMetadata(input.getFileName()
+                                .toString()), variantNormalizer)).setIgnorePhaseSet(ignorePhase);
+            case JSON:
+                logger.info("Using a JSON parser to read variants...");
+                return new VariantJsonReader(input, variantNormalizer);
+            default:
+                throw new ParameterException("Only VCF and JSON formats are currently accepted. Please provide a "
+                        + "valid .vcf, .vcf.gz, json or .json.gz file");
+        }
+    }
+
     private void writeRemainingPopFrequencies() throws IOException {
         // For internal use only - will only be run when -Dpopulation-frequencies is activated
         if (populationFrequenciesFile != null) {
@@ -296,18 +318,20 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
                 // Population frequencies rocks db will always be the last one in the list. DO NOT change the name of the
                 // rocksIterator variable - for some unexplainable reason Java VM crashes if it's named "iterator"
-                RocksIterator rocksIterator = dbIndexes.get(dbIndexes.size() - 1).newIterator();
+                RocksIterator rocksIterator = variantIndexerList.get(variantIndexerList.size() - 1)
+                        .getDbIndex()
+                        .newIterator();
 
                 ObjectMapper mapper = new ObjectMapper();
-                logger.info("Writing variants with frequencies that were not found within the input file to {}",
+                logger.info("Writing variants with frequencies that were not found within the input file {} to {}",
                         populationFrequenciesFile.toString(), output.toString());
                 int counter = 0;
                 for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
-                    VariantAvro variantAvro = mapper.readValue(rocksIterator.value(), VariantAvro.class);
+                    Variant variant = mapper.readValue(rocksIterator.value(), Variant.class);
                     // The additional attributes field initialized with an empty map is used as the flag to indicate that
                     // this variant was not visited during the annotation process
-                    if (variantAvro.getAnnotation().getAdditionalAttributes() == null) {
-                        dataWriter.write(new Variant(variantAvro));
+                    if (variant.getAnnotation().getAdditionalAttributes() == null) {
+                        dataWriter.write(variant);
                     }
 
                     counter++;
@@ -363,59 +387,50 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> getStringTaskList() throws IOException {
-        List<ParallelTaskRunner.TaskWithException<String, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
-        VcfStringAnnotatorTask.SharedContext sharedContext = new VcfStringAnnotatorTask.SharedContext(numThreads);
-//        Set<String> breakendMates = Collections.synchronizedSet(new HashSet<>());
-        for (int i = 0; i < numThreads; i++) {
-            List<VariantAnnotator> variantAnnotatorList = createAnnotators();
-            switch (inputFormat) {
-                case VCF:
-                    logger.info("Using HTSJDK to read variants.");
-                    FullVcfCodec codec = new FullVcfCodec();
-                    try (InputStream fileInputStream = input.toString().endsWith("gz")
-                            ? new GZIPInputStream(new FileInputStream(input.toFile()))
-                            : new FileInputStream(input.toFile())) {
-                        LineIterator lineIterator = codec.makeSourceFromStream(fileInputStream);
-                        VCFHeader header = (VCFHeader) codec.readActualHeader(lineIterator);
-                        VCFHeaderVersion headerVersion = codec.getVCFHeaderVersion();
-                        variantAnnotatorTaskList.add(new VcfStringAnnotatorTask(header, headerVersion,
-                                variantAnnotatorList, sharedContext, normalize, decompose));
-                    } catch (IOException e) {
-                        throw new IOException("Unable to read VCFHeader");
-                    }
-                    break;
-                case JSON:
-                    logger.info("Using a JSON parser to read variants...");
-                    variantAnnotatorTaskList.add(new JsonStringAnnotatorTask(variantAnnotatorList, normalize, decompose));
-                    break;
-                default:
-                    break;
-            }
-        }
-        return variantAnnotatorTaskList;
-    }
+    private List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> getVariantAnnotatorTaskList() throws IOException {
+        List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
 
-    private List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> getVariantTaskList()
-            throws IOException {
-        List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList
-                = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
             List<VariantAnnotator> variantAnnotatorList = createAnnotators();
             variantAnnotatorTaskList.add(new VariantAnnotatorTask(variantAnnotatorList));
         }
-
         return variantAnnotatorTaskList;
     }
 
+    private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() throws IOException {
+        VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig = (new VariantNormalizer.VariantNormalizerConfig())
+                .setReuseVariants(true)
+                .setNormalizeAlleles(false)
+                .setDecomposeMNVs(decompose);
+
+        // Enable left align
+        if (leftAlign) {
+            // WARN: If --reference-fasta is present will override CellBase reference genome even if --local was present
+            if (referenceFasta != null) {
+                return variantNormalizerConfig.enableLeftAlign(referenceFasta.toString());
+            } else {
+                // dbAdaptorFactory may have been already initialized while creating CellBase annotators or at execute if
+                // annotating CellBase variation collection
+                if (dbAdaptorFactory == null) {
+                    dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+                }
+                return variantNormalizerConfig
+                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(dbAdaptorFactory
+                                .getGenomeDBAdaptor(species, assembly)));
+            }
+        }
+        return variantNormalizerConfig;
+    }
+
     private void closeIndexes() throws IOException {
-        for (int i = 0; i < dbIndexes.size(); i++) {
-            dbIndexes.get(i).close();
-            dbOptions.get(i).dispose();
+        for (VariantIndexer variantIndexer : variantIndexerList) {
+            variantIndexer.close();
         }
 
         if (populationFrequenciesFile != null) {
-            org.apache.commons.io.FileUtils.deleteDirectory(new File(dbLocations.get(dbLocations.size() - 1)));
+            // Rocks db indexer for population frequencies  is always the last in the list
+            org.apache.commons.io.FileUtils
+                    .deleteDirectory(new File(variantIndexerList.get(variantIndexerList.size() - 1).getDbLocation()));
         }
     }
 
@@ -430,18 +445,20 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         if (customFiles != null) {
             for (int i = 0; i < customFiles.size(); i++) {
                 if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
-                    variantAnnotatorList.add(new VcfVariantAnnotator(customFiles.get(i).toString(), dbIndexes.get(i),
-                            customFileIds.get(i), customFileFields.get(i)));
+                    variantAnnotatorList.add(new VcfVariantAnnotator(customFiles.get(i).toString(),
+                            variantIndexerList.get(i).getDbIndex(),
+                            customFileIds.get(i),
+                            serverQueryOptions));
                 }
             }
         }
 
         // Include population-frequencies file if required
         if (populationFrequenciesFile != null) {
-            // Rocks db connection is always the last in the list
-            int i = dbIndexes.size() - 1;
+            // Rocks db indexer for population frequencies  is always the last in the list
+            int i = variantIndexerList.size() - 1;
             variantAnnotatorList.add(new PopulationFrequenciesAnnotator(populationFrequenciesFile.toString(),
-                    dbIndexes.get(i)));
+                    variantIndexerList.get(i).getDbIndex(), serverQueryOptions));
 
         }
 
@@ -459,7 +476,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    dbAdaptorFactory), queryOptions);
+                    dbAdaptorFactory), serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()
@@ -474,7 +491,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
                 // TODO: normalization must be carried out in the client - phase set must be sent together with the
                 // TODO: variant string to the server for proper phase annotation by REST
-                return new CellBaseWSVariantAnnotator(cellBaseClient.getVariantClient(), queryOptions);
+                return new CellBaseWSVariantAnnotator(cellBaseClient.getVariantClient(), serverQueryOptions);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -484,243 +501,56 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     }
 
-    private void getIndexes() {
-        dbIndexes = new ArrayList<>();
-        dbOptions = new ArrayList<>();
-        dbLocations = new ArrayList<>();
+    private void getIndexes() throws IOException, RocksDBException {
+        variantIndexerList = new ArrayList<>();
 
         // Index custom files if provided
         if (customFiles != null) {
             for (int i = 0; i < customFiles.size(); i++) {
-                if (customFiles.get(i).toString().endsWith(".vcf") || customFiles.get(i).toString().endsWith(".vcf.gz")) {
-                    Object[] dbConnection = getDBConnection(customFiles.get(i).toString() + ".idx");
-                    RocksDB rocksDB = (RocksDB) dbConnection[0];
-                    Options dbOption = (Options) dbConnection[1];
-                    String dbLocation = (String) dbConnection[2];
-                    boolean indexingNeeded = (boolean) dbConnection[3];
-                    if (indexingNeeded) {
-                        logger.info("Creating index DB at {} ", dbLocation);
-                        indexCustomVcfFile(i, rocksDB);
-                    } else {
-                        logger.info("Index found at {}", dbLocation);
-                        logger.info("Skipping index creation");
-                    }
-                    dbIndexes.add(rocksDB);
-                    dbOptions.add(dbOption);
-                    dbLocations.add(dbLocation);
-                }
+                // Setting ignorePhase=true since the reader for the custom annotation indexer does not care
+                // about batches splitting phase sets
+                VariantIndexer variantIndexer
+                        = new CustomAnnotationVariantIndexer(getVariantReader(customFiles.get(i), true),
+                        maxOpenFiles,
+                        customFileFields.get(i));
+                variantIndexer.open();
+                variantIndexer.run();
+                variantIndexerList.add(variantIndexer);
             }
         }
 
         // Index population frequencies file if provided
         if (populationFrequenciesFile != null) {
+            VariantReader variantReader = getVariantReader(populationFrequenciesFile);
+
             // We force the creation of a new index even if there was one already - Annotation of frequencies from
             // these files implies deletions on the RocksDB database. Whatever is already there will probably be wrong
-            Object[] dbConnection = getDBConnection(populationFrequenciesFile + ".idx", true);
-            RocksDB rocksDB = (RocksDB) dbConnection[0];
-            Options dbOption = (Options) dbConnection[1];
-            String dbLocation = (String) dbConnection[2];
-
-            logger.info("Creating index DB at {} ", dbLocation);
-            indexPopulationFrequencies(rocksDB);
-
-            dbIndexes.add(rocksDB);
-            dbOptions.add(dbOption);
-            dbLocations.add(dbLocation);
-        }
-    }
-
-    private void indexPopulationFrequencies(RocksDB db) {
-        ObjectMapper jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-        ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
-
-        try {
-            DataReader<Variant> dataReader = new JsonVariantReader(populationFrequenciesFile.toString());
-            dataReader.open();
-            dataReader.pre();
-            int lineCounter = 0;
-            List<Variant> variant = dataReader.read();
-            while (variant != null) {
-                db.put(VariantAnnotationUtils.buildVariantId(variant.get(0).getChromosome(), variant.get(0).getStart(),
-                        variant.get(0).getReference(), variant.get(0).getAlternate()).getBytes(),
-                        jsonObjectWriter.writeValueAsBytes(variant.get(0).getImpl()));
-                lineCounter++;
-                if (lineCounter % 100000 == 0) {
-                    logger.info("{} lines indexed", lineCounter);
-                }
-                variant = dataReader.read();
-            }
-            dataReader.post();
-            dataReader.close();
-        } catch (IOException | RocksDBException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Object[] getDBConnection(String dbLocation) {
-        return getDBConnection(dbLocation, false);
-    }
-
-    private Object[] getDBConnection(String dbLocation, boolean forceCreate) {
-        boolean indexingNeeded = forceCreate || !Files.exists(Paths.get(dbLocation));
-        // a static method that loads the RocksDB C++ library.
-        RocksDB.loadLibrary();
-        // the Options class contains a set of configurable DB options
-        // that determines the behavior of a database.
-        Options options = new Options().setCreateIfMissing(true);
-        if (maxOpenFiles > 0) {
-            options.setMaxOpenFiles(maxOpenFiles);
-        }
-
-        RocksDB db = null;
-        try {
-            // a factory method that returns a RocksDB instance
-            if (indexingNeeded) {
-                db = RocksDB.open(options, dbLocation);
-            } else {
-                db = RocksDB.openReadOnly(options, dbLocation);
-            }
-            // do something
-        } catch (RocksDBException e) {
-            // do some error handling
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        return new Object[]{db, options, dbLocation, indexingNeeded};
-
-    }
-
-    private void indexCustomVcfFile(int customFileNumber, RocksDB db) {
-        ObjectMapper jsonObjectMapper = new ObjectMapper();
-        ObjectWriter jsonObjectWriter = jsonObjectMapper.writer();
-        int lineCounter = -1;
-        VariantContext variantContext = null;
-        try {
-            VCFFileReader vcfFileReader = new VCFFileReader(customFiles.get(customFileNumber).toFile(), false);
-            Iterator<VariantContext> iterator = vcfFileReader.iterator();
-            VariantContextToVariantConverter converter = new VariantContextToVariantConverter("", "",
-                    vcfFileReader.getFileHeader().getSampleNamesInOrder());
-            // Currently, only VCF files are supported for custom-annotation so makes no sense to allow no normalisation
-            // of variants.
-            // However, decomposition of MNVs/Block substitutions can still be optional
-            VariantNormalizer normalizer = new VariantNormalizer(true, false, decompose);
-            lineCounter = 0;
-            while (iterator.hasNext()) {
-                variantContext = iterator.next();
-                // Reference positions will not be indexed
-                if (variantContext.getAlternateAlleles().size() > 0) {
-                    // Currently, only VCF files are supported for custom-annotation so makes no sense to allow no normalisation
-                    // of variants.
-                    List<Variant> variantList = normalizer.normalize(converter.apply(Collections.singletonList(variantContext)), true);
-                    for (Variant variant : variantList) {
-                        db.put((variant.getChromosome() + "_" + variant.getStart() + "_" + variant.getReference() + "_"
-                                        + variant.getAlternate()).getBytes(),
-                                jsonObjectWriter.writeValueAsBytes(parseInfoAttributes(variant, customFileNumber)));
-                    }
-                }
-                lineCounter++;
-                if (lineCounter % 100000 == 0) {
-                    logger.info("{} lines indexed", lineCounter);
-                }
-            }
-            vcfFileReader.close();
-        } catch (IOException | RocksDBException | NonStandardCompliantSampleField e) {
-            e.printStackTrace();
-            System.exit(1);
-        } catch (Exception e) {
-            if (lineCounter >= 0 && variantContext != null) {
-                logger.error("Error fond while trying to parse {}:{}:{}:{}", variantContext.getContig(),
-                        variantContext.getStart(), variantContext.getReference(), variantContext.getAlternateAlleles());
-            } else {
-                logger.error("Error found while parsing {}", customFiles.get(customFileNumber).toString());
-            }
-            throw e;
-        }
-    }
-
-    protected Map<String, String> parseInfoAttributes(Variant variant, int customFileNumber) {
-        Map<String, String> infoMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
-        Map<String, String> parsedInfo = new HashMap<>();
-        for (String attribute : infoMap.keySet()) {
-            if (customFileFields.get(customFileNumber).contains(attribute)) {
-                parsedInfo.put(attribute, infoMap.get(attribute));
-//                parsedInfo.put(attribute, getValueFromString(infoMap.get(attribute)));
-            }
-        }
-
-        return parsedInfo;
-    }
-
-    @Deprecated
-    protected List<Map<String, Object>> parseInfoAttributes(String info, int numAlleles, int customFileNumber) {
-        List<Map<String, Object>> infoAttributes = new ArrayList<>(numAlleles);
-        for (int i = 0; i < numAlleles; i++) {
-            infoAttributes.add(new HashMap<>());
-        }
-        for (String var : info.split(";")) {
-            String[] splits = var.split("=");
-            if (splits.length == 2 && customFileFields.get(customFileNumber).contains(splits[0])) {
-                // Managing values for the allele
-                String[] values = splits[1].split(",");
-                // numAlleles and values.length may be different. For example, in the Exac vcf AN presents just one
-                // value even if there are multiple alleles or, for example, for the AC_Het provide counts for all posible
-                // heterozigous genotypes. In those cases, the hole string is pasted to all alleles
-                if (values.length == numAlleles) {
-                    for (int i = 0; i < numAlleles; i++) {
-                        infoAttributes.get(i).put(splits[0], getValueFromString(values[i]));
-                    }
-                } else {
-                    for (int i = 0; i < numAlleles; i++) {
-                        infoAttributes.get(i).put(splits[0], getValueFromString(splits[1]));
-                    }
-                }
-            }
-        }
-
-        return infoAttributes;
-    }
-
-    private Object getValueFromString(String value) {
-        if (NumberUtils.isNumber(value)) {
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                try {
-                    return Float.parseFloat(value);
-                } catch (NumberFormatException e1) {
-                    return Double.parseDouble(value);
-                }
-            }
-        } else {
-            return value;
+            VariantIndexer variantIndexer = new PopulationFrequencyVariantIndexer(variantReader,
+                    maxOpenFiles,
+                    true);
+            variantIndexer.open();
+            variantIndexer.run();
+            variantIndexerList.add(variantIndexer);
         }
     }
 
     private void checkParameters() throws IOException {
 
-        // Run benchmark
-        benchmark = variantAnnotationCommandOptions.benchmark;
-        if (benchmark) {
+        // Get reference genome
+        if (org.apache.commons.lang.StringUtils.isNotBlank(variantAnnotationCommandOptions.referenceFasta)) {
             referenceFasta = Paths.get(variantAnnotationCommandOptions.referenceFasta);
             FileUtils.checkFile(referenceFasta);
         }
 
-
-        // Use cache
-//        queryOptions.put("useCache", variantAnnotationCommandOptions.noCache ? "false" : "true");
-        if (variantAnnotationCommandOptions.noCache) {
-            logger.warn("********************************************************************************************");
-            logger.warn("PLEASE NOTE that parameter --no-server-cache is no longer in use. It is deprecated and "
-                    + "completely ignored by current implementation. Is just kept visible not to break scripts using "
-                    + "it and will soon be removed from the interface. Please, have a look at the --server-cache "
-                    + "parameter instead");
-            logger.warn("********************************************************************************************");
+        // Run benchmark
+        benchmark = variantAnnotationCommandOptions.benchmark;
+        if (benchmark) {
+            if (referenceFasta == null) {
+                throw new ParameterException("Reference genome must be provided for running the benchmark. Please, "
+                        + "provide a valid path to a fasta file with the reference genome sequence by using the "
+                        + "--reference-fasta parameter.");
+            }
         }
-
-        queryOptions.put("useCache", variantAnnotationCommandOptions.cache);
-        queryOptions.put("phased", variantAnnotationCommandOptions.phased);
 
         // input file
         if (variantAnnotationCommandOptions.input != null) {
@@ -731,22 +561,16 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             } else {
                 normalize =  !variantAnnotationCommandOptions.skipNormalize;
                 FileUtils.checkFile(input);
-                String fileName = input.toFile().getName();
-                if (fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz")) {
-                    inputFormat = FileFormat.VCF;
-                } else if (fileName.endsWith(".json") || fileName.endsWith(".json.gz")) {
-                    inputFormat = FileFormat.JSON;
-                } else {
-                    throw new ParameterException("Only VCF and JSON formats are currently accepted. Please provide a "
-                            + "valid .vcf, .vcf.gz, json or .json.gz file");
-                }
+                inputFormat = getFileFormat(input);
             }
         // Expected to read from variation collection - normalization must be avoided
         } else {
             normalize = false;
         }
 
+        parsePhaseConfiguration();
         decompose = !variantAnnotationCommandOptions.skipDecompose;
+        leftAlign = !variantAnnotationCommandOptions.skipLeftAlign;
 
         // output file
         if (variantAnnotationCommandOptions.output != null) {
@@ -786,12 +610,18 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
         }
 
+        // Normalisation nor decomposition are NEVER performed on the server. This QueryOptions is meant to be sent
+        // to the server. Actual normalization and decomposition options are set and processed here in the server code
+        // using this.decompose and this.normalize fields.
+        serverQueryOptions.add("normalize", false);
+        serverQueryOptions.add("skipDecompose", true);
+
         if (variantAnnotationCommandOptions.include != null && !variantAnnotationCommandOptions.include.isEmpty()) {
-            queryOptions.add("include", variantAnnotationCommandOptions.include);
+            serverQueryOptions.add("include", variantAnnotationCommandOptions.include);
         }
 
         if (variantAnnotationCommandOptions.exclude != null && !variantAnnotationCommandOptions.exclude.isEmpty()) {
-            queryOptions.add("exclude", variantAnnotationCommandOptions.exclude);
+            serverQueryOptions.add("exclude", variantAnnotationCommandOptions.exclude);
         }
 
         // Num threads
@@ -819,6 +649,21 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             } else {
                 throw new ParameterException("Please check command line sintax. Provide a valid URL to access CellBase web services.");
             }
+            // Left align in remote mode can only be enabled if a reference fasta is provided
+            if (leftAlign) {
+                if (referenceFasta == null) {
+                    throw new ParameterException("Please provide a valid reference fasta file. Left align when annotating"
+                            + " in remote mode (--local flag NOT present) can only be enabled if a fasta file with"
+                            + " the reference genome sequence is provided within --reference-fasta. Alternatively"
+                            + " you can disable left align by using --skip-left-align.");
+                }
+            }
+        // --local flag enabled
+        // Use of --reference-fasta and --local together will cause --reference-fasta to override the reference genome
+        // in CellBase database (DISCOURAGED!)
+        } else if (leftAlign && referenceFasta != null) {
+            logger.warn("--reference-fasta and --local parameters found together. This is strongly discouraged. Please"
+                    + " NOTE: the sequence within the fasta file will override CellBase reference sequence.");
         }
 
         // Species
@@ -831,8 +676,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         // Assembly
         if (variantAnnotationCommandOptions.assembly != null) {
             assembly = variantAnnotationCommandOptions.assembly;
-            // In case annotation is made through WS assembly must be set in the queryOptions
-            queryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
+            // In case annotation is made through WS assembly must be set in the serverQueryOptions
+            serverQueryOptions.put("assembly", variantAnnotationCommandOptions.assembly);
         } else {
             assembly = null;
             logger.warn("No assembly provided. Using default assembly for {}", species);
@@ -889,7 +734,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
 
         // Enable/Disable imprecise annotation
-        queryOptions.put("imprecise", !variantAnnotationCommandOptions.noImprecision);
+        serverQueryOptions.put("imprecise", !variantAnnotationCommandOptions.noImprecision);
 
         // Parameter not expected to be very used - provide extra padding (bp) to be used for structural variant annotation
         if (variantAnnotationCommandOptions.buildParams.get("sv-extra-padding") != null) {
@@ -898,7 +743,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Extra padding for SV annotation cannot be < 0, value provided: "
                         + svExtraPadding + ". Please provide a value >= 0");
             }
-            queryOptions.put("svExtraPadding", svExtraPadding);
+            serverQueryOptions.put("svExtraPadding", svExtraPadding);
         }
 
         // Parameter not expected to be very used - provide extra padding (bp) to be used for CNV annotation
@@ -908,7 +753,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 throw new ParameterException("Extra padding for CNV annotation cannot be < 0, value provided: "
                         + cnvExtraPadding + ". Please provide a value >= 0");
             }
-            queryOptions.put("cnvExtraPadding", cnvExtraPadding);
+            serverQueryOptions.put("cnvExtraPadding", cnvExtraPadding);
         }
 
         // Annotate variation collection in CellBase
@@ -920,6 +765,34 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             setChromosomeList();
         }
 
+    }
+
+    private void parsePhaseConfiguration() {
+        // TODO: remove "phased" CLI parameter in next release. Default behavior from here onwards should be
+        //  ignorePhase = false
+        // If ignorePhase (new parameter) is present, then overrides presence of "phased"
+        if (variantAnnotationCommandOptions.ignorePhase != null) {
+            serverQueryOptions.put("ignorePhase", variantAnnotationCommandOptions.ignorePhase);
+        // If the new parameter (ignorePhase) is not present but old one ("phased") is, then follow old one - probably
+        // someone who has not moved to the new parameter yet
+        } else if (variantAnnotationCommandOptions.phased != null) {
+            serverQueryOptions.put("ignorePhase", !variantAnnotationCommandOptions.phased);
+        // Default behavior is to perform phased annotation
+        } else {
+            serverQueryOptions.put("ignorePhase", false);
+        }
+    }
+
+    private FileFormat getFileFormat(Path path) {
+        String fileName = path.toFile().getName();
+        if (fileName.endsWith(".vcf") || fileName.endsWith(".vcf.gz")) {
+            return FileFormat.VCF;
+        } else if (fileName.endsWith(".json") || fileName.endsWith(".json.gz")) {
+            return FileFormat.JSON;
+        } else {
+            throw new ParameterException("Only VCF and JSON formats are currently accepted. Please provide a "
+                    + "valid .vcf, .vcf.gz, json or .json.gz file");
+        }
     }
 
 
