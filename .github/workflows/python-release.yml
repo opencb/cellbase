@@ -1,0 +1,21 @@
+name: CellBase PyCellBase Release workflow
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  pypi:
+    name: Deploy Python package in PyPI
+    runs-on: ubuntu-18.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
+      - name: Build Python package for PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_TWINE_USER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
+        run: ./cellbase-client/src/main/python/python-build.sh push
