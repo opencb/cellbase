@@ -88,12 +88,7 @@ jobs:
 
       ## Deploy in GitHub repository
       - name: Deploy to GitHub packages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir ~/.m2
-          echo "<settings><servers><server><id>github</id><username>opencb</username><password>${GITHUB_TOKEN}</password></server></servers></settings>" > ~/.m2/settings.xml
-          mvn clean deploy -DskipTests -DCELLBASE.WAR.NAME=cellbase -P deploy-github
+        run: mvn deploy -Dregistry=https://maven.pkg.github.com/opencb/cellbase -Dtoken=${{ secrets.GITHUB_TOKEN }}
   site:
     name: Generate Maven site
     runs-on: ubuntu-18.04
