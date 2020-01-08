@@ -9,7 +9,6 @@ jobs:
   deploy:
     name: Build and deploy CellBase libs, Java docs and Docker images in Maven Central and DockerHub repositories
     runs-on: ubuntu-18.04
-    needs: test
     steps:
       ## Deploy in GitHub repository
       - name: Deploy to GitHub packages
