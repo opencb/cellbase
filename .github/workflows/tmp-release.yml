@@ -1,4 +1,4 @@
-name: CellBase github workflow - to be deleted
+name: CellBase github packages test (to be deleted)
 
 on:
   push:
