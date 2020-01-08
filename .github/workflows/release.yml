@@ -83,8 +83,17 @@ jobs:
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
 
       ## Delete snapshot
-      - name: delete snapshot
+      - name: Delete SNAPSHOT image on dockerhub, if present
         run: ./build/cloud/docker/docker-delete.sh ${{ secrets.DOCKER_HUB_USER }} ${{ secrets.DOCKER_HUB_PASSWORD }} {{ steps.get_version.outputs.VERSION }}-SNAPSHOT
+
+      ## Deploy in GitHub repository
+      - name: Deploy to GitHub packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir ~/.m2
+          echo "<settings><servers><server><id>github</id><username>opencb</username><password>${GITHUB_TOKEN}</password></server></servers></settings>" > ~/.m2/settings.xml
+          mvn clean deploy -DskipTests -DCELLBASE.WAR.NAME=cellbase -P deploy-github
   site:
     name: Generate Maven site
     runs-on: ubuntu-18.04
