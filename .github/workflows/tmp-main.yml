@@ -1,4 +1,4 @@
-name: CellBase develop main workflow
+name: testing javadoc copying (to be deleted)
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   deploy:
-    name: Build and Deploy CellBase libs, Javadocs and Docker images in Maven Central and DockerHub repositories
+    name: Copy over javadocs
     runs-on: ubuntu-18.04
     needs: test
     steps:
