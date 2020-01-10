@@ -7,9 +7,10 @@ jobs:
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v1
-      - run: cd cellbase-client/src/main/R
       - uses: r-lib/actions/setup-r@master
       - name: Install dependencies
         run: Rscript -e "install.packages(c('remotes', 'rcmdcheck'))" -e "remotes::install_deps(dependencies = TRUE)"
+      - name: change to correct dir
+        run: cd cellbase-client/src/main/R
       - name: Check
-        run: Rscript -e "rcmdcheck::rcmdcheck(args = '--no-manual', error_on = 'error')"
+        run: R CMD check
