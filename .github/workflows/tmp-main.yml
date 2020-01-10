@@ -47,7 +47,7 @@ jobs:
         id: deploy
         uses: Pendect/action-rsyncer@v1.1.0
         env:
-          DEPLOY_KEY: ${{secrets.SCP_SITE_PASSWORD}}
+          DEPLOY_KEY: ${{secrets.SCP_PUBLIC_KEY}}
         with:
           flags: '-avzr --delete'
           options: ''
