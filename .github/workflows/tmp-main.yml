@@ -43,22 +43,16 @@ jobs:
 #          RSYNC_PASSWORD: ${{ secrets.SCP_SITE_PASSWORD }}
 #        run: sshpass -p "${{ secrets.SCP_SITE_PASSWORD }}" rsync -av --delete  target/site/apidocs/org/opencb/cellbase/app/cli/admin/executors/class-use/* ${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
 #        run: rsync -av --delete target/site/apidocs/* ${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}
-      - name: Install Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '10.x'
-      - name: init npm
-        run: npm init
-      - name: Install npm dependencies
-        run: npm install
-      - name: Run build task
-        run: npm run build --if-present
-      - name: Deploy to Server
-        uses: easingthemes/ssh-deploy@v2.0.7
+      - name: Deploy to server
+        id: deploy
+        uses: Pendect/action-rsyncer@v1.1.0
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SCP_PRIVATE_KEY }}
-          ARGS: "-av --delete"
-          SOURCE: "target/site/apidocs/*"
-          REMOTE_HOST: "128.232.224.128"
-          REMOTE_USER: ${{ secrets.SCP_SITE_USER }}
-          TARGET: "/mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}"
+          DEPLOY_KEY: ${{secrets.SCP_SITE_PASSWORD}}
+        with:
+          flags: '-avzr --delete'
+          options: ''
+          ssh_options: ''
+          src: 'target/site/apidocs/*'
+          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}'
+      - name: Display status from deploy
+        run: echo "${{ steps.deploy.outputs.status }}"
