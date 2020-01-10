@@ -28,8 +28,8 @@ RUN cd /opt && \
 
 VOLUME /ensembl-data
 
-COPY cellbase-app/app/scripts/ensembl-scripts/* /opt/
-COPY cellbase-app/app/cloud/docker/cellbase-build/entrypoint.sh /usr/local/bin/
+COPY scripts/ensembl-scripts/* /opt/
+COPY cloud/docker/cellbase-build/entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
