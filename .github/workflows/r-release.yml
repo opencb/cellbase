@@ -1,6 +1,12 @@
 name: R-CMD-check
 
-on: [push]
+on:
+  push:
+    branches:
+      - develop
+      - next
+    paths:
+      - '**.R'
 
 jobs:
   R-CMD-check:
