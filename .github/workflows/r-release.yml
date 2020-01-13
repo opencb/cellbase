@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - name: install curl
+        run: sudo apt-get install libcurl4-openssl-dev r-base
       - name: Move R to root directory
         run: mv cellbase-client/src/main/R /tmp && rm -rf * && mv /tmp/R/* .
       - uses: r-lib/actions/setup-r@master
