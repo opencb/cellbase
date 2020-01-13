@@ -53,6 +53,9 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         ALLELE_ORIGIN("alleleOrigin", TEXT_ARRAY, ""),
         ACCESSION("accession", TEXT_ARRAY, ""),
         PHASE("phased", TEXT_ARRAY, ""),
+        CHECK_AMINO_ACID_CHANGE("checkAminoacidChange", BOOLEAN, ""),
+        BATCH_GENE_LIST("batchGeneList", TEXT_ARRAY, ""),
+        HGVS("hgvs", TEXT_ARRAY, ""),
 
         @Deprecated
         GENE("gene", TEXT_ARRAY, ""),
@@ -68,8 +71,6 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         CLINVARRS("rs", TEXT_ARRAY, ""),
         @Deprecated
         COSMICID("cosmicId", TEXT_ARRAY, "");
-
-
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -108,7 +109,5 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
     QueryResult<String> getConsistencyLabels();
 
     QueryResult<String> getVariantTypes();
-
-//    List<QueryResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options);
 
 }

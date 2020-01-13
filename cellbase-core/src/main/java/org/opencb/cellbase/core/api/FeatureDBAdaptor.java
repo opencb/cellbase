@@ -16,9 +16,11 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
@@ -86,6 +88,10 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
     }
 
     default QueryResult<T> getByVariant(Variant variant, QueryOptions options) {
+        return getByVariant(variant, null, options);
+    }
+
+    default QueryResult<T> getByVariant(Variant variant, GenomeDBAdaptor genomeDBAdaptor, QueryOptions options) {
         Query query;
         if (VariantType.CNV.equals(variant.getType())) {
             query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
@@ -100,6 +106,15 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
                     .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
                     .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
                     .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+            if (options.get("checkAminoacidChange") != null && (Boolean) options.get("checkAminoacidChange")
+                    && genomeDBAdaptor != null) {
+                List<Gene> batchedGeneList = (List<Gene>) options.get("batchGeneList");
+                if (batchedGeneList != null && !batchedGeneList.isEmpty()) {
+                    HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
+                    List<String> hgvs = hgvsCalculator.run(variant, batchedGeneList);
+                    query.append(ClinicalDBAdaptor.QueryParams.HGVS.key(), hgvs);
+                }
+            }
         }
         QueryResult<T> queryResult = get(query, options);
         queryResult.setId(variant.toString());

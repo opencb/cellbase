@@ -8,6 +8,9 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -26,12 +29,15 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
     private static final String SEPARATOR = ",";
-    private static ClinicalPhasedQueryManager phasedQueryManager
-            = new ClinicalPhasedQueryManager();
+    private static ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
+    private GenomeDBAdaptor genomeDBAdaptor;
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                                  CellBaseConfiguration cellBaseConfiguration) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
+        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+        this.genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
 
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
@@ -197,6 +203,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
         createTraitQuery(query.getString(QueryParams.TRAIT.key()), andBsonList);
 
+        if (query.containsKey(QueryParams.HGVS.key())) {
+            createOrQuery(query, QueryParams.HGVS.key(), "annotation.hgvs", andBsonList);
+        }
+
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
@@ -210,9 +220,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             keywordString = keywordString.toLowerCase();
             createOrQuery(Arrays.asList(keywordString.split(SEPARATOR)), PRIVATE_TRAIT_FIELD, andBsonList);
         }
-//        for (String keyword : keywords) {
-//            andBsonList.add(Filters.regex(PRIVATE_TRAIT_FIELD, keyword, "i"));
-//        }
     }
 
     private void createImprecisePositionQuery(Query query, String leftQueryParam, String rightQueryParam,
@@ -363,16 +370,12 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     public List<QueryResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
         List<QueryResult<Variant>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            results.add(getByVariant(variant, queryOptions));
+            results.add(getByVariant(variant, genomeDBAdaptor, queryOptions));
         }
-
         if (queryOptions.get(QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(QueryParams.PHASE.key())) {
             results = phasedQueryManager.run(variants, results);
 
         }
         return results;
     }
-
-
-
 }
