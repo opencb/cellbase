@@ -88,13 +88,10 @@ jobs:
 
       ## Delete snapshot
       - name: Delete SNAPSHOT image on dockerhub, if present
-        run: python3 ./build/cloud/docker/docker-build.py --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag {{ steps.get_version.outputs.VERSION }}-SNAPSHOT
+        run: python3 ./build/cloud/docker/docker-build.py --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag {{ steps.get_version.outputs.VERSION }} + "-SNAPSHOT"
 
-      ## Deploy in GitHub repository
-      - name: Deploy to GitHub packages
-        run: mvn deploy -Dregistry=https://maven.pkg.github.com/opencb/cellbase -Dtoken=${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Release
+      ## Publish GitHub release
+      - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
