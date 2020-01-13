@@ -9,7 +9,6 @@ jobs:
   pypi:
     name: Deploy Python package in PyPI
     runs-on: ubuntu-18.04
-    needs: test
     steps:
       - uses: actions/checkout@v2
         with:
