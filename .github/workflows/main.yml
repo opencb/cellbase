@@ -87,6 +87,20 @@ jobs:
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
+
+      - name: Deploy to server
+          id: deploy
+          uses: Pendect/action-rsyncer@v1.1.0
+          env:
+            DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
+          with:
+            flags: '-avzr --delete'
+            options: ''
+            ssh_options: ''
+            src: 'target/site/apidocs/*'
+            dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/javadocs/${{ steps.get_version.outputs.VERSION }}'
+      - name: Display status from deploy
+        run: echo "${{ steps.deploy.outputs.status }}"
   site:
     name: Generate Maven site
     runs-on: ubuntu-18.04
