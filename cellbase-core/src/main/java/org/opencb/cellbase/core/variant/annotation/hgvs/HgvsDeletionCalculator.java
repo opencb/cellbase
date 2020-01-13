@@ -170,7 +170,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
             // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
             // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-            if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
+            if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() <= transcript.getProteinSequence().length()) {
                 proteinVariant.setAlternate(EMPTY_STRING);
                 // start and end fall within the same codon - affect the same aminoacid
                 if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
@@ -236,12 +236,8 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             char substitutingNt;
             // Means we've reached the beginning of the transcript, i.e. transcript.start
             if (i >=  transcriptSequence.length()) {
-                int genomicCoordinate = transcript.getStart() + i; // recall that i is negative if we get here
-                Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), chromosome
-                        + ":" + genomicCoordinate
-                        + "-" + (genomicCoordinate + 1));
-                substitutingNt = genomeDBAdaptor
-                        .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
+                // Adding +1 to i since it's originally 0-based and want to make it 1-based for the function call
+                substitutingNt = getNextGenomicNt(chromosome, transcript, i + 1);
             } else {
                 // Paste reference nts after deletion in the corresponding codon position
                 substitutingNt = transcriptSequence.charAt(i);
@@ -258,6 +254,34 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         } else {
             return 0;
         }
+    }
+
+    /**
+     *
+     * @param chromosome
+     * @param transcript
+     * @param virtualCdnaPosition: named "virtual" since it is expected to be beyond the transcript sequence end limit.
+     * @return
+     */
+    private char getNextGenomicNt(String chromosome, Transcript transcript, int virtualCdnaPosition) {
+        char substitutingNt;
+
+        int genomicCoordinate;
+        // Need to differentiate between + and - since need to calculate the next genomic position from the cdna
+        // position
+        if (POSITIVE.equals(transcript.getStrand())) {
+            genomicCoordinate = transcript.getEnd() + (virtualCdnaPosition - transcript.getcDnaSequence().length());
+        } else {
+            genomicCoordinate = transcript.getStart() - (virtualCdnaPosition - transcript.getcDnaSequence().length());
+        }
+
+        Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), chromosome
+                + ":" + genomicCoordinate
+                + "-" + (genomicCoordinate + 1));
+        substitutingNt = genomeDBAdaptor
+                .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
+
+        return substitutingNt;
     }
 
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {

@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 /**
  * Created by fjlopez on 14/02/17.
  */
-public class    HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
+public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     private HgvsCalculator hgvsCalculator;
     private GeneDBAdaptor geneDBAdaptor;
 
@@ -47,19 +47,48 @@ public class    HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testProteinHgvs() throws Exception {
-//        List<String> hgvsList = getVariantHgvs(new Variant("22", 38379525, "G", "-"));
-//        // There may be more than these, but these 4 are the ones that I can actually validate
-//        assertTrue(!hgvsList.);
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENST00000396884(ENSG00000100146):c.267delC",
-//                "ENST00000360880(ENSG00000100146):c.267delC", "ENST00000427770(ENSG00000100146):c.267delC",
-//                "ENST00000470555(ENSG00000100146):n.70+821delC"));
+        // Removes last CODING nt (the one right before the STOP codon) - will require additional query to genome
+        // sequence
+        List<String> hgvsList = getVariantHgvs(new Variant("5",
+                1057643,
+                "TTCT",
+                "-"));
+        // two transcript hgvs expected
+        assertEquals(2, hgvsList.size());
+        // no PROTEIN hgvs expected
+        for (String hgvs : hgvsList) {
+            assertThat(hgvs, CoreMatchers.startsWith("ENST"));
+        }
 
-//        List<String> hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
-//        assertEquals(2, hgvsList.size());
-        // There may be more than these, but these 4 are the ones that I can actually validate
-//        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
+        // Removes whole STOP codon and just those 3 nts - out of protein seq boundaries, warning message expected and
+        // no PROTEIN hgvs must be returned
+        hgvsList = getVariantHgvs(new Variant("21",
+                46058088,
+                "TGA",
+                "-"));
+        // two transcript hgvs expected
+        assertEquals(2, hgvsList.size());
+        // no PROTEIN hgvs expected
+        for (String hgvs : hgvsList) {
+            assertThat(hgvs, CoreMatchers.startsWith("ENST"));
+        }
 
-        List<String> hgvsList = getVariantHgvs(new Variant("10", 135369109,
+        // Requires right-aligning
+        //      93 94 95 96
+        // ...QQA  C  C  V  PV...
+        //         |
+        hgvsList = getVariantHgvs(new Variant("21",
+                46057614,
+                "TGC",
+                "-"));
+        assertEquals(3, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys95del"));
+
+        hgvsList = getVariantHgvs(new Variant("21", 46057613, "CTGCTGTGTGCCTGT", "-"));
+        assertEquals(3, hgvsList.size());
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000369438:p.Cys105_Cys109del"));
+
+        hgvsList = getVariantHgvs(new Variant("10", 135369109,
                 "CTTCTGCTGCTGTTGTTGGCA", "-"));
         assertEquals(9, hgvsList.size());
         // There may be more than these, but these 4 are the ones that I can actually validate
@@ -92,7 +121,6 @@ public class    HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     public void testTranscriptHgvs() throws Exception {
         List<String> hgvsList = getVariantHgvs(new Variant("22", 38308486, "C", "T"));
         assertEquals(3, hgvsList.size());
-        // There may be more than these, but these 4 are the ones that I can actually validate
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000445494(ENSG00000100139):c.72C>T",
                 "ENST00000215957(ENSG00000100139):c.324C>T", "ENST00000489812(ENSG00000100139):n.775C>T"));
 
