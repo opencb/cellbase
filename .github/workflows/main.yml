@@ -75,6 +75,10 @@ jobs:
           MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
         run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -P deploy
 
+      ## making requests via Python needs special package
+      - name: Install Python package
+        run: pip3 install requests
+
       ## Build and deploy Docker images to DockerHub
       - name: Login to dockerhub
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
