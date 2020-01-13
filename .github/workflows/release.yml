@@ -71,11 +71,15 @@ jobs:
           MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
         run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -DCELLBASE.WAR.NAME=cellbase -P deploy
 
+      ## making requests via Python needs special package
+      - name: Install Python package
+        run: pip3 install requests
+
       ## Build and deploy Docker images to DockerHub
       - name: Login to dockerhub
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Build and publish Docker images to DockerHub
-        run: ./build/cloud/docker/docker-build.py push
+        run: python3 ./build/cloud/docker/docker-build.py push
 
       ## Get CellBase version
       - name: Get CellBase version
@@ -84,7 +88,7 @@ jobs:
 
       ## Delete snapshot
       - name: Delete SNAPSHOT image on dockerhub, if present
-        run: ./build/cloud/docker/docker-build.py --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag {{ steps.get_version.outputs.VERSION }}-SNAPSHOT
+        run: python3 ./build/cloud/docker/docker-build.py --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag {{ steps.get_version.outputs.VERSION }}-SNAPSHOT
 
       ## Deploy in GitHub repository
       - name: Deploy to GitHub packages
