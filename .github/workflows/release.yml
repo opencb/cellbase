@@ -89,6 +89,21 @@ jobs:
       ## Deploy in GitHub repository
       - name: Deploy to GitHub packages
         run: mvn deploy -Dregistry=https://maven.pkg.github.com/opencb/cellbase -Dtoken=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
   site:
     name: Generate Maven site
     runs-on: ubuntu-18.04
