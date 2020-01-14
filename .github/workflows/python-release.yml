@@ -6,18 +6,6 @@ on:
       - '*'
 
 jobs:
-  pypi:
-    name: Deploy Python package in PyPI
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: '10'
-      - name: Build Python package for PyPI
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_TWINE_USER }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
-        run: ./cellbase-client/src/main/python/python-build.sh push
   deploy:
     name: Copy Python client to server
     runs-on: ubuntu-18.04
@@ -50,3 +38,15 @@ jobs:
           dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/python/'
       - name: Display status from deploy
         run: echo "${{ steps.deploy.outputs.status }}"
+  pypi:
+    name: Deploy Python package in PyPI
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: '10'
+      - name: Build Python package for PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_TWINE_USER }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TWINE_PASSWORD }}
+        run: ./cellbase-client/src/main/python/python-build.sh push
