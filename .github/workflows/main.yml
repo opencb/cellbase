@@ -91,7 +91,6 @@ jobs:
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
-
       - name: Deploy to server
         id: deploy
         uses: Pendect/action-rsyncer@v1.1.0

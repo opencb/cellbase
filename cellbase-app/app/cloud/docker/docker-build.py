@@ -36,8 +36,8 @@ if args.build_folder is not None:
 else:
     build_folder = basedir + "/build/"
 
-images = args.images
-images = images.split(",")
+# get a list with all images
+images = args.images.split(",")
 
 def build():
     print("Building docker images")
