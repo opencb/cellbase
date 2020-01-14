@@ -86,6 +86,12 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
 
+      ## Delete snapshot
+      - name: Delete SNAPSHOT image on dockerhub, if present
+        env:
+          SNAPSHOT_TAG: "${{ steps.get_version.outputs.VERSION }}-SNAPSHOT"
+        run: python3 ./build/cloud/docker/docker-build.py delete --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag ${SNAPSHOT_TAG}
+
       ## Publish GitHub release
       - name: Create GitHub Release
         id: create_release
@@ -95,18 +101,9 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
+          body: "Description of release"
           draft: false
           prerelease: false
-
-      ## Delete snapshot
-      - name: Delete SNAPSHOT image on dockerhub, if present
-        env:
-          SNAPSHOT_TAG: "${{ steps.get_version.outputs.VERSION }}-SNAPSHOT"
-        run: python3 ./build/cloud/docker/docker-build.py --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag ${SNAPSHOT_TAG}
 
   site:
     name: Generate Maven site
