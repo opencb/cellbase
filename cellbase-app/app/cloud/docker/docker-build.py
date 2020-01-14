@@ -5,6 +5,7 @@ import os
 import requests
 import sys
 import json
+import pathlib
 
 parser = argparse.ArgumentParser()
 
@@ -20,7 +21,7 @@ parser.add_argument('--password', help="credentials for dockerhub (REQUIRED if d
 args = parser.parse_args()
 
 # root of the cellbase repo
-basedir = os.getcwd()
+basedir = pathlib.Path(__file__).parent.absolute()
 
 # set tag to default value if not set
 if args.tag is not None:
@@ -36,8 +37,7 @@ if args.build_folder is not None:
 else:
     build_folder = basedir + "/build/"
 
-images = args.images
-images = images.split(",")
+images = args.images.split(",")
 
 def build():
     print("Building docker images")

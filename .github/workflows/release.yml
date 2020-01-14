@@ -75,11 +75,16 @@ jobs:
       - name: Install Python package
         run: pip3 install requests
 
+      ## set tag name
+      - name: Get tag
+        id: get_tag
+        run: echo ::set-output name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
+
       ## Build and deploy Docker images to DockerHub
       - name: Login to dockerhub
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Build and publish Docker images to DockerHub
-        run: python3 ./build/cloud/docker/docker-build.py push
+        run: python3 ./build/cloud/docker/docker-build.py push --tags ${{ steps.get_tag.outputs.TAG_NAME }}
 
       ## Get CellBase version
       - name: Get CellBase version
@@ -101,34 +106,27 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: "Description of release"
+          body: |
+            See http://docs.opencb.org/display/cellbase/Release+Notes for the full list of features and fixes in this release.
           draft: false
           prerelease: false
 
-      ## Get zip
-      - name: wget
-        id: wget
-        run:  wget https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
+      ## Tar the build directory
+        - name: zip
+         id: zip
+         run: tar -zcf cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz build --transform s/build/cellbase-${{ steps.get_tag.outputs.TAG_NAME }}/
 
-      ## set tag name
-      - name: Get tag
-        id: get_tag
-        run: echo ::set-output name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
-
-      ## copy tarball to server
-      - name: Deploy to server
-        id: deploy
-        uses: Pendect/action-rsyncer@v1.1.0
+      ## Upload tarball
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.1
         env:
-          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          flags: '-avzr '
-          options: ''
-          ssh_options: ''
-          src: '${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz'
-          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/'
-      - name: Display status from deploy
-        run: echo "${{ steps.deploy.outputs.status }}"
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz
+          asset_name: cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz
+          asset_content_type: application/tar+gzip
 
   site:
     name: Generate Maven site
@@ -159,11 +157,14 @@ jobs:
       - name: Get current date in HHMMSS format
         id: get_time
         run: echo ::set-output name=HHMMSS::$(date +%H%M%S)
-      - name: Deploy Site web recursively to remote
-        uses: garygrossgarten/github-action-scp@release
+      - name: Deploy mvn site to server
+        id: deploy_site
+        uses: Pendect/action-rsyncer@v1.1.0
+        env:
+          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
         with:
-          local: target/site
-          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
-          host: 128.232.224.128
-          username: ${{ secrets.SCP_SITE_USER }}
-          password: ${{ secrets.SCP_SITE_PASSWORD }}
+          flags: '-avzr'
+          options: ''
+          ssh_options: ''
+          src: 'target/site'
+          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}'

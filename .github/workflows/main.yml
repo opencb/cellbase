@@ -1,4 +1,4 @@
-name: CellBase develop main workflow
+name: CellBase Develop workflow
 
 on:
   push:
@@ -91,7 +91,6 @@ jobs:
         run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
       - name: Generate Javadocs
         run: mvn javadoc:aggregate
-
       - name: Deploy to server
         id: deploy
         uses: Pendect/action-rsyncer@v1.1.0
@@ -134,12 +133,14 @@ jobs:
       - name: Get current date in HHMMSS format
         id: get_time
         run: echo ::set-output name=HHMMSS::$(date +%H%M%S)
-      - name: Deploy Site web recursively to remote
-        uses: garygrossgarten/github-action-scp@release
+      - name: Deploy mvn site to server
+        id: deploy_site
+        uses: Pendect/action-rsyncer@v1.1.0
+        env:
+          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
         with:
-          local: target/site
-          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
-          host: 128.232.224.128
-          username: ${{ secrets.SCP_SITE_USER }}
-          password: ${{ secrets.SCP_SITE_PASSWORD }}
-
+          flags: '-avzr'
+          options: ''
+          ssh_options: ''
+          src: 'target/site'
+          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}'
