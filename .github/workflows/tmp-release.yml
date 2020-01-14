@@ -29,7 +29,7 @@ jobs:
 
       - name: Get tag
         id: get_tag
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo ::set-output name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
 
       - name: Deploy to server
         id: deploy
@@ -40,7 +40,7 @@ jobs:
           flags: '-avzr '
           options: ''
           ssh_options: ''
-          src: '${{ steps.get_version.outputs.VERSION }}.tar.gz'
+          src: '${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz'
           dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/'
       - name: Display status from deploy
         run: echo "${{ steps.deploy.outputs.status }}"
