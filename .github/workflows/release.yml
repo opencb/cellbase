@@ -112,9 +112,9 @@ jobs:
           prerelease: false
 
       ## Tar the build directory
-        - name: zip
-         id: zip
-         run: tar -zcf cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz build --transform s/build/cellbase-${{ steps.get_tag.outputs.TAG_NAME }}/
+      - name: zip
+        id: zip
+        run: tar -zcf cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz build --transform s/build/cellbase-${{ steps.get_tag.outputs.TAG_NAME }}/
 
       ## Upload tarball
       - name: Upload Release Asset
