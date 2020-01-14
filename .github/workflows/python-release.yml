@@ -26,27 +26,27 @@ jobs:
         with:
           fetch-depth: '10'
 
-    ## set tag name
-    - name: Get tag
-      id: get_tag
-      run: echo ::set-output name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
+      ## set tag name
+      - name: Get tag
+        id: get_tag
+        run: echo ::set-output name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
 
-   ## zip
-   - name: zip
-     id: zip
-     run: tar -zcvf cellbase-python-client-${TAG_NAME}.tar.gz cellbase-client/src/main/python/
+      ## zip
+      - name: zip
+        id: zip
+        run: tar -zcvf cellbase-python-client-${TAG_NAME}.tar.gz cellbase-client/src/main/python/
 
-    ## copy tarball to server
-    - name: Deploy to server
-      id: deploy
-      uses: Pendect/action-rsyncer@v1.1.0
-      env:
-        DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
-      with:
-        flags: '-avzr '
-        options: ''
-        ssh_options: ''
-        src: 'cellbase-python-client-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz'
-        dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/python/'
-    - name: Display status from deploy
-      run: echo "${{ steps.deploy.outputs.status }}"
+      ## copy tarball to server
+      - name: Deploy to server
+        id: deploy
+        uses: Pendect/action-rsyncer@v1.1.0
+        env:
+          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
+        with:
+          flags: '-avzr '
+          options: ''
+          ssh_options: ''
+          src: 'cellbase-python-client-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz'
+          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/python/'
+      - name: Display status from deploy
+        run: echo "${{ steps.deploy.outputs.status }}"
