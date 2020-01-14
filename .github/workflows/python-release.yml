@@ -34,7 +34,7 @@ jobs:
       ## zip
       - name: zip
         id: zip
-        run: tar -zcvf cellbase-python-client-${TAG_NAME}.tar.gz cellbase-client/src/main/python/
+        run: tar -zcvf cellbase-python-client-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz cellbase-client/src/main/python/
 
       ## copy tarball to server
       - name: Deploy to server
