@@ -177,8 +177,9 @@ public class GenericRestWSServer implements IWSServer {
 
     private void init() throws IOException, CellbaseException {
         // we need to make sure we only init one single time
-        if (initialized.compareAndSet(false, true)) {
-            initialized = new AtomicBoolean(false);
+//        initialized = (initialized == null) ? initialized = new AtomicBoolean(false) : null;
+        if (initialized == null || initialized.compareAndSet(false, true)) {
+            initialized = new AtomicBoolean(true);
 
             SERVICE_START_DATE = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
             WATCH = new StopWatch();

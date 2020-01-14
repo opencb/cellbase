@@ -88,7 +88,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <warName>${cellbase.war.name}</warName>
+                    <warName>${CELLBASE.WAR.NAME}</warName>
                     <webResources>
                         <resource>
                             <directory>src/main/webapp/WEB-INF/</directory>

@@ -35,7 +35,7 @@
         <jacoco.version>0.8.5</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
 
-        <cellbase.war.name>cellbase</cellbase.war.name>
+        <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
         <compileSource>1.8</compileSource>
     </properties>
