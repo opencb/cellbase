@@ -1,4 +1,4 @@
-name: CellBase Release workflow
+name: CellBase Release workflow (tmp)
 
 on:
   push:
@@ -20,6 +20,9 @@ jobs:
           server-id: ossrh                        # Value of the distributionManagement/repository/id field of the pom.xml
           server-username: MAVEN_NEXUS_USER       # env variable for username in deploy
           server-password: MAVEN_NEXUS_PASSWORD   # env variable for token in deploy
+
+      - name: install CellBase
+        run: mvn install -DskipTests=true
 
       ## making requests via Python needs special package
       - name: Install Python package
