@@ -36,8 +36,13 @@ jobs:
           body: "Description of release"
           draft: false
           prerelease: false
-      - name: Display status from GitHub Release
-        run: echo "${{ steps.create_release.outputs.tarball_url }}"
+      - id: create_release_result
+        uses: gr2m/get-json-paths-action@v1.x
+        with:
+          json: ${{ steps.create_release.outputs.data }}
+          tarball_url: "data.tarball_url"
+      - name: Display URL from GitHub Release
+        run: echo "${{ steps.create_release_result.outputs.tarball_url }}"
 
       ## Copy jar zip file to server
       - name: Get CellBase version
