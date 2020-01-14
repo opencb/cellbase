@@ -37,11 +37,14 @@ jobs:
           draft: false
           prerelease: false
 
-      ## Zip up repo
+      ## Get zip
+#      - name: wget
+#        uses: wei/wget@v1
+#        with:
+#          args: https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
       - name: wget
-        uses: wei/wget@v1
-        with:
-          args: https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
+        id: wget
+        run:  wget https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
 
       ## Copy jar zip file to server
       - name: Get CellBase version
