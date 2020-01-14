@@ -24,31 +24,10 @@ jobs:
       - name: install CellBase
         run: mvn install -DskipTests=true
 
-      ## making requests via Python needs special package
-      - name: Install Python package
-        run: pip3 install requests
-
-      ## Build and deploy Docker images to DockerHub
-      - name: Login to dockerhub
-        run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - name: Build and publish Docker images to DockerHub
-        run: python3 ./build/cloud/docker/docker-build.py push
-
-      ## Get CellBase version
-      - name: Get CellBase version
-        id: get_version
-        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
-
-      ## Delete snapshot
-      - name: Delete SNAPSHOT image on dockerhub, if present
-        env:
-          SNAPSHOT_TAG: "${{ steps.get_version.outputs.VERSION }}-SNAPSHOT"
-        run: python3 ./build/cloud/docker/docker-build.py delete --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag ${SNAPSHOT_TAG}
-
       ## Publish GitHub release
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
