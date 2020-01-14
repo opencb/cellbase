@@ -36,13 +36,6 @@ jobs:
           body: "Description of release"
           draft: false
           prerelease: false
-      - id: create_release_result
-        uses: gr2m/get-json-paths-action@v1.x
-        with:
-          json: ${{ steps.create_release.outputs.data }}
-          tarball_url: "data.tarball_url"
-      - name: Display URL from GitHub Release
-        run: echo "${{ steps.create_release_result.outputs.tarball_url }}"
 
       ## Copy jar zip file to server
       - name: Get CellBase version
@@ -58,7 +51,7 @@ jobs:
           flags: '-avzr '
           options: ''
           ssh_options: ''
-          src: '${{ steps.create_release.outputs.tarball_url }}/*'
+          src: 'https://api.github.com/repos/opencb/cellbase/tarball/${{ steps.get_version.outputs.VERSION }}/*'
           dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/${{ steps.get_version.outputs.VERSION }}'
       - name: Display status from deploy
         run: echo "${{ steps.deploy.outputs.status }}"
