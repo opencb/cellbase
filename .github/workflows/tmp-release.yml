@@ -21,35 +21,15 @@ jobs:
           server-username: MAVEN_NEXUS_USER       # env variable for username in deploy
           server-password: MAVEN_NEXUS_PASSWORD   # env variable for token in deploy
 
-      - name: install CellBase
-        run: mvn install -DskipTests=true
-
-      ## Publish GitHub release
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: "Description of release"
-          draft: false
-          prerelease: false
-
       ## Get zip
-#      - name: wget
-#        uses: wei/wget@v1
-#        with:
-#          args: https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
       - name: wget
         id: wget
         run:  wget https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
 
-      ## Copy jar zip file to server
-      - name: Get CellBase version
-        id: get_version
-        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+
+      - name: Get tag
+        id: get_tag
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
       - name: Deploy to server
         id: deploy
@@ -60,7 +40,7 @@ jobs:
           flags: '-avzr '
           options: ''
           ssh_options: ''
-          src: '${{ github.ref }}.tar.gz'
-          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/${{ steps.get_version.outputs.VERSION }}'
+          src: '${{ steps.get_version.outputs.VERSION }}.tar.gz'
+          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/'
       - name: Display status from deploy
         run: echo "${{ steps.deploy.outputs.status }}"
