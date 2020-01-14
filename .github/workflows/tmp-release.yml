@@ -37,6 +37,12 @@ jobs:
           draft: false
           prerelease: false
 
+      ## Zip up repo
+      - name: wget
+        uses: wei/wget@v1
+        with:
+          args: https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
+
       ## Copy jar zip file to server
       - name: Get CellBase version
         id: get_version
@@ -51,7 +57,7 @@ jobs:
           flags: '-avzr '
           options: ''
           ssh_options: ''
-          src: 'https://api.github.com/repos/opencb/cellbase/tarball/${{ steps.get_version.outputs.VERSION }}/*'
+          src: '${{ github.ref }}.tar.gz'
           dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/${{ steps.get_version.outputs.VERSION }}'
       - name: Display status from deploy
         run: echo "${{ steps.deploy.outputs.status }}"
