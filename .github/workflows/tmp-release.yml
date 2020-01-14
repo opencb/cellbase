@@ -36,3 +36,24 @@ jobs:
           body: "Description of release"
           draft: false
           prerelease: false
+      - name: Display status from GitHub Release
+        run: echo "${{ steps.create_release.outputs.tarball_url }}"
+
+      ## Copy jar zip file to server
+      - name: Get CellBase version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+
+      - name: Deploy to server
+        id: deploy
+        uses: Pendect/action-rsyncer@v1.1.0
+        env:
+          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
+        with:
+          flags: '-avzr '
+          options: ''
+          ssh_options: ''
+          src: '${{ steps.create_release.outputs.tarball_url }}/*'
+          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/${{ steps.get_version.outputs.VERSION }}'
+      - name: Display status from deploy
+        run: echo "${{ steps.deploy.outputs.status }}"
