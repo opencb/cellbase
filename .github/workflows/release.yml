@@ -87,14 +87,14 @@ jobs:
         run: python3 ./build/cloud/docker/docker-build.py push --tags ${{ steps.get_tag.outputs.TAG_NAME }}
 
       ## Get CellBase version
-      - name: Get CellBase version
-        id: get_version
-        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+#      - name: Get CellBase version
+#        id: get_version
+#        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
 
       ## Delete snapshot
       - name: Delete SNAPSHOT image on dockerhub, if present
         env:
-          SNAPSHOT_TAG: "${{ steps.get_version.outputs.VERSION }}-SNAPSHOT"
+          SNAPSHOT_TAG: "${{ steps.get_tag.outputs.TAG_NAME }}-SNAPSHOT"
         run: python3 ./build/cloud/docker/docker-build.py delete --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag ${SNAPSHOT_TAG}
 
       ## Publish GitHub release
