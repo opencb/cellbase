@@ -71,10 +71,6 @@ jobs:
           MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
         run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -DCELLBASE.WAR.NAME=cellbase -P deploy
 
-      ## making requests via Python needs special package
-      - name: Install Python package
-        run: pip3 install requests
-
       ## set tag name
       - name: Get tag
         id: get_tag
@@ -85,11 +81,6 @@ jobs:
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Build and publish Docker images to DockerHub
         run: python3 ./build/cloud/docker/docker-build.py push --tag ${{ steps.get_tag.outputs.TAG_NAME }}
-
-      ## Get CellBase version
-#      - name: Get CellBase version
-#        id: get_version
-#        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
 
       ## Delete snapshot
       - name: Delete SNAPSHOT image on dockerhub, if present
@@ -157,14 +148,11 @@ jobs:
       - name: Get current date in HHMMSS format
         id: get_time
         run: echo ::set-output name=HHMMSS::$(date +%H%M%S)
-      - name: Deploy mvn site to server
-        id: deploy_site
-        uses: Pendect/action-rsyncer@v1.1.0
-        env:
-          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
+      - name: Deploy Site web recursively to remote
+        uses: garygrossgarten/github-action-scp@release
         with:
-          flags: '-avzrR'
-          options: ''
-          ssh_options: ''
-          src: 'target/site'
-          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}'
+          local: target/site
+          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_tag.outputs.TAG_NAME }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+          host: 128.232.224.128
+          username: ${{ secrets.SCP_SITE_USER }}
+          password: ${{ secrets.SCP_SITE_PASSWORD }}
