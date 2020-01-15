@@ -60,4 +60,4 @@ jobs:
           destination: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
           # runs this on remote server
           ssh_before: |
-            mkdir /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+            mkdir --parents /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
