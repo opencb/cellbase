@@ -21,7 +21,7 @@ parser.add_argument('--password', help="credentials for dockerhub (REQUIRED if d
 args = parser.parse_args()
 
 # root of the cellbase repo
-basedir = pathlib.Path(__file__).parent.absolute()
+basedir = str(pathlib.Path(__file__).parent.absolute())
 
 # set tag to default value if not set
 if args.tag is not None:
