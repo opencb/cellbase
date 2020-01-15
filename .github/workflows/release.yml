@@ -71,25 +71,21 @@ jobs:
           MAVEN_NEXUS_PASSWORD: ${{ secrets.MAVEN_NEXUS_PASSWORD }}
         run: mvn clean deploy -Dgpg.passphrase=${{ secrets.MAVEN_GPG_PASSPHRASE }} -DskipTests -DCELLBASE.WAR.NAME=cellbase -P deploy
 
-      ## making requests via Python needs special package
-      - name: Install Python package
-        run: pip3 install requests
+      ## set tag name
+      - name: Get tag
+        id: get_tag
+        run: echo ::set-output name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
 
       ## Build and deploy Docker images to DockerHub
       - name: Login to dockerhub
         run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Build and publish Docker images to DockerHub
-        run: python3 ./build/cloud/docker/docker-build.py push
-
-      ## Get CellBase version
-      - name: Get CellBase version
-        id: get_version
-        run: echo ::set-output name=VERSION::$(grep '<cellbase.version>' pom.xml | sed 's/cellbase.version//g' | sed 's/[<>/ ]//g')
+        run: python3 ./build/cloud/docker/docker-build.py push --tag ${{ steps.get_tag.outputs.TAG_NAME }}
 
       ## Delete snapshot
       - name: Delete SNAPSHOT image on dockerhub, if present
         env:
-          SNAPSHOT_TAG: "${{ steps.get_version.outputs.VERSION }}-SNAPSHOT"
+          SNAPSHOT_TAG: "${{ steps.get_tag.outputs.TAG_NAME }}-SNAPSHOT"
         run: python3 ./build/cloud/docker/docker-build.py delete --username ${{ secrets.DOCKER_HUB_USER }} --password ${{ secrets.DOCKER_HUB_PASSWORD}} --tag ${SNAPSHOT_TAG}
 
       ## Publish GitHub release
@@ -101,34 +97,27 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: "Description of release"
+          body: |
+            See http://docs.opencb.org/display/cellbase/Release+Notes for the full list of features and fixes in this release.
           draft: false
           prerelease: false
 
-      ## Get zip
-      - name: wget
-        id: wget
-        run:  wget https://github.com/opencb/cellbase/archive/${{ github.ref }}.tar.gz
+      ## Tar the build directory
+      - name: zip
+        id: zip
+        run: tar -zcf cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz build --transform s/build/cellbase-${{ steps.get_tag.outputs.TAG_NAME }}/
 
-      ## set tag name
-      - name: Get tag
-        id: get_tag
-        run: echo ::set-output name=TAG_NAME::${GITHUB_REF/refs\/tags\//}
-
-      ## copy tarball to server
-      - name: Deploy to server
-        id: deploy
-        uses: Pendect/action-rsyncer@v1.1.0
+      ## Upload tarball
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.1
         env:
-          DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          flags: '-avzr '
-          options: ''
-          ssh_options: ''
-          src: '${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz'
-          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/java/'
-      - name: Display status from deploy
-        run: echo "${{ steps.deploy.outputs.status }}"
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz
+          asset_name: cellbase-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz
+          asset_content_type: application/tar+gzip
 
   site:
     name: Generate Maven site
@@ -163,7 +152,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: target/site
-          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+          remote: /mnt/data/opencb/cellbase/site/${{ steps.get_tag.outputs.TAG_NAME }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
           host: 128.232.224.128
           username: ${{ secrets.SCP_SITE_USER }}
           password: ${{ secrets.SCP_SITE_PASSWORD }}

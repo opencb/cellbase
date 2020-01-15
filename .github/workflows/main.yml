@@ -1,4 +1,4 @@
-name: CellBase develop main workflow
+name: CellBase Develop workflow
 
 on:
   push:
