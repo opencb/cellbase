@@ -163,7 +163,7 @@ jobs:
         env:
           DEPLOY_KEY: ${{secrets.SCP_PRIVATE_KEY}}
         with:
-          flags: '-avzr'
+          flags: '-avzrR'
           options: ''
           ssh_options: ''
           src: 'target/site'
