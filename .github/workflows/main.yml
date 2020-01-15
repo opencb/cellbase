@@ -141,6 +141,6 @@ jobs:
         with:
           flags: '-avzr'
           options: ''
-          ssh_options: 'mkdir -p /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}/'
+          ssh_options: 'mkdir --parents /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}/'
           src: 'target/site'
           dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}'
