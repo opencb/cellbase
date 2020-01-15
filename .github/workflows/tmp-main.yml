@@ -50,14 +50,24 @@ jobs:
       #          ssh_options: 'mkdir --parents /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}/'
       #          src: 'target/site'
       #          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{ steps.get_time.outputs.HHMMSS }}-${{ github.sha }}'
-      - name: Deploy with rsync
-        uses: BuildPC/rsync-with-ssh-github-actions@master
+#      - name: Deploy with rsync
+#        uses: BuildPC/rsync-with-ssh-github-actions@master
+#        with:
+#          key: ${{ secrets.SCP_PRIVATE_KEY }}
+#          host: 128.232.224.128
+#          port: 22
+#          user: ${{ secrets.SCP_SITE_USER }}
+#          destination: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+#          # runs this on remote server
+#          ssh_before: |
+#            mkdir --parents /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+      - name: rsync deployments
+        uses: burnett01/rsync-deployments@4.0
         with:
-          key: ${{ secrets.SCP_PRIVATE_KEY }}
-          host: 128.232.224.128
-          port: 22
-          user: ${{ secrets.SCP_SITE_USER }}
-          destination: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD }}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
-          # runs this on remote server
-          ssh_before: |
-            mkdir --parents /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+          switches: -avzr
+          path: target/site
+          remote_path: /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
+          remote_host: 128.232.224.128
+          remote_user: ${{ secrets.SCP_SITE_USER }}
+          remote_key: ${{ secrets.SCP_PRIVATE_KEY }}
+          rsh: mkdir --parents /mnt/data/opencb/cellbase/site/${{ steps.get_version.outputs.VERSION }}/${{ steps.get_date.outputs.YYMMDD}}/${{steps.get_time.outputs.HHMMSS }}-${{ github.sha }}
