@@ -177,7 +177,6 @@ public class GenericRestWSServer implements IWSServer {
 
     private void init() throws IOException, CellbaseException {
         // we need to make sure we only init one single time
-//        initialized = (initialized == null) ? initialized = new AtomicBoolean(false) : null;
         if (initialized == null || initialized.compareAndSet(false, true)) {
             initialized = new AtomicBoolean(true);
 
