@@ -92,11 +92,6 @@ public class VariantWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    public Response defaultMethod() {
-        return help();
-    }
-
     @POST
     @Consumes("text/plain")
     @Path("/annotation")

@@ -73,7 +73,6 @@ public class RegionWSServer extends GenericRestWSServer {
             int value = this.histogramIntervalSize;
             try {
                 value = Integer.parseInt(parameters.get("interval").get(0));
-                logger.debug("Interval: " + value);
                 return value;
             } catch (Exception exp) {
                 exp.printStackTrace();
@@ -385,35 +384,7 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getSnpByRegion(@PathParam("chrRegionId") String region,
                                    @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
                                    @DefaultValue("") @QueryParam("phenotype") String phenotype) {
-//        return getVariationByRegion(region, consequenceTypes);
         return getVariationByRegion(region);
-//        try {
-//            parseQueryParams();
-//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-//
-//            List<Region> regions = Region.parseRegions(region);
-//            // remove regions bigger than 10Mb
-//            if (regions != null) {
-//                for (Region r : regions) {
-//                    if ((r.getEnd() - r.getStart()) > 10000000) {
-//                        return createErrorResponse("getSNpByRegion", "Regions must be smaller than 10Mb");
-//                    }
-//                }
-//            }
-//
-//            query.put(VariantDBAdaptor.QueryParams.REGION.key(), region);
-//
-//            if (hasHistogramQueryParam()) {
-//                queryOptions.put("interval", getHistogramIntervalSize());
-//                return createOkResponse(variationDBAdaptor.getIntervalFrequencies(query, histogramIntervalSize, queryOptions));
-//            } else {
-//                System.out.println("query = " + query.toJson());
-//                System.out.println("queryOptions = " + queryOptions.toJson());
-//                return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
-//            }
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
     }
 
 
@@ -451,7 +422,6 @@ public class RegionWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-
 
     @GET
     @Path("/{chrRegionId}/clinical")
@@ -493,10 +463,6 @@ public class RegionWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
     })
     public Response getClinicalByRegion(@PathParam("chrRegionId") String chrRegionId) {
-//    public Response getClinicalByRegion(@PathParam("chrRegionId") String region,
-//                                        @DefaultValue("") @QueryParam("gene") String gene,
-//                                        @DefaultValue("") @QueryParam("id") String id,
-//                                        @DefaultValue("") @QueryParam("phenotype") String phenotype) {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
@@ -561,7 +527,6 @@ public class RegionWSServer extends GenericRestWSServer {
                                           value = "Comma separated list of genomic regions to be queried, e.g.: "
                                                   + "1:6635137-6635325",
                                           required = false) String chrRegionId) {
-//                                  @DefaultValue("") @QueryParam("name") String name) {
         try {
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
@@ -610,12 +575,6 @@ public class RegionWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-    }
-
-
-    @GET
-    public Response defaultMethod() {
-        return help();
     }
 
     @GET

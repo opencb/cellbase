@@ -82,6 +82,7 @@ public class VariationWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/count")
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects for the regions.",
             response = Integer.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -313,34 +314,4 @@ public class VariationWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-
-    // FIXME: 29/04/16 update implementation
-    @GET
-    @Path("/{snpId}/population_frequency")
-    @ApiOperation(httpMethod = "GET", value = "Get the frequencies in the population for the SNP(s)", hidden = true)
-    public Response getPopulationFrequency(@PathParam("snpId") String snpId) {
-        try {
-            parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            return generateResponse(snpId, "SNP_POPULATION_FREQUENCY", Arrays.asList(""));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    // FIXME: 29/04/16 finish implementation
-    @GET
-    @Path("/{snpId}/xref")
-    @ApiOperation(httpMethod = "GET", value = "Retrieve all external references for the SNP(s)", hidden = true)
-    public Response getXrefs(@PathParam("snpId") String query) {
-        try {
-            parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            return null;
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-
 }

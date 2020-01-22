@@ -35,6 +35,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author imedina
  */
 @Path("/{version}/{species}/genomic/chromosome")
-@Produces("application/json")
+@Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Genome Sequence", description = "Genome Sequence RESTful Web Services API")
 public class ChromosomeWSServer extends GenericRestWSServer {
 
@@ -86,6 +87,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/list")
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = CellBaseDataResult.class)
     public Response getChromosomes() {
         try {
@@ -110,7 +112,6 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(dbAdaptor.getAllByChromosomeIdList(Splitter.on(",").splitToList(query), queryOptions));
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
             List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
             for (String chromosome : chromosomeList) {
@@ -126,6 +127,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{chromosomeName}/size")
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Not properly implemented - to be fixed",
             response = Chromosome.class, responseContainer = "QueryResponse", hidden = true)
     public Response getChromosomeSize(@PathParam("chromosomeName") String chromosomeId) {
@@ -133,7 +135,6 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             parseQueryParams();
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             QueryOptions options = new QueryOptions("include", "chromosomes.size");
-//            return createOkResponse(dbAdaptor.getChromosomeById(query, options));
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
             List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
             for (String chromosome : chromosomeList) {
@@ -143,11 +144,6 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-    }
-
-    @GET
-    public Response defaultMethod() {
-        return help();
     }
 
     @GET

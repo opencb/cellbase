@@ -75,6 +75,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the first transcript in the database", response = Transcript.class,
         responseContainer = "QueryResponse")
     public Response first() {
@@ -85,6 +86,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/count")
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the number of transcripts in the database", response = Integer.class,
         responseContainer = "QueryResponse")
     public Response count(@DefaultValue("")
@@ -349,26 +351,6 @@ public class TranscriptWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-    }
-
-//    @GET
-//    @Path("/{transcriptId}/protein_feature")
-//    public Response getProteinFeaturesByTranscriptId(@PathParam("transcriptId") String query) {
-//        try {
-//            parseQueryParams();
-//            ProteinDBAdaptor proteinAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-//            List<List<FeatureType>> geneList = proteinAdaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query));
-//            return generateResponse(query, "PROTEIN_FEATURE", geneList);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getMutationByGene", e.toString());
-//        }
-//    }
-
-
-    @GET
-    public Response defaultMethod() {
-        return help();
     }
 
     @GET

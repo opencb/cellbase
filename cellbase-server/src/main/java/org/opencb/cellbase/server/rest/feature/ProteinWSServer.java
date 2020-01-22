@@ -217,83 +217,6 @@ public class ProteinWSServer extends GenericRestWSServer {
         return null;
     }
 
-//  @GET
-//    @Path("/{proteinId}/feature")
-//    public Response getFeatures(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("type") String type) {
-//        try {
-//            parseQueryParams();
-//            ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-//            return generateResponse(query, "PROTEIN_FEATURE",
-// adaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query)));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getFeatures", e.toString());
-//        }
-//    }
-
-//    @GET
-//    @Path("/{proteinName}/function_prediction")
-//    public Response getFunctionalPredictions(@PathParam("proteinName") String query,
-// @DefaultValue("") @QueryParam("source") String source) {
-//        try {
-//            parseQueryParams();
-//            queryOptions.put("disease", Splitter.on(",").splitToList(source));
-//            ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-//            return generateResponse(query, "PROTEIN_FEATURE",
-// adaptor.getAllProteinFeaturesByProteinXrefList(Splitter.on(",").splitToList(query)));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getFeatures", e.toString());
-//        }
-//    }
-
-//    @GET
-//    @Path("/{proteinId}/association")
-//    public Response getInteraction(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("type") String type) {
-//        return null;
-//    }
-
-//    @GET
-//    @Path("/{proteinId}/xref")
-//    public Response getXrefs(@PathParam("proteinId") String proteinId, @DefaultValue("") @QueryParam("dbname") String dbname) {
-//        try {
-//            parseQueryParams();
-//            ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-//            return generateResponse(proteinId, "XREFS",
-// adaptor.getAllProteinXrefsByProteinNameList(Splitter.on(",").splitToList(proteinId)));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getXrefs", e.toString());
-//        }
-//    }
-
-    @Deprecated
-    @GET
-    @Path("/{proteinId}/reference")
-    @ApiOperation(httpMethod = "GET", value = "Deprecated", hidden = true)
-    public Response getReference(@PathParam("proteinId") String query) {
-        return null;
-    }
-
-//    @GET
-//    @Path("/{proteinId}/interaction")
-//    public Response getInteraction(@PathParam("proteinId") String query, @DefaultValue("") @QueryParam("source") String source) {
-//        try {
-//            parseQueryParams();
-//            ProteinDBAdaptor adaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-//            if(source != null && !source.equals("")) {
-//                return generateResponse(query, "PROTEIN_INTERACTION",
-// adaptor.getAllProteinInteractionsByProteinNameList(Splitter.on(",").splitToList(query), source));
-//            }else{
-//                return generateResponse(query, "PROTEIN_INTERACTION",
-// adaptor.getAllProteinInteractionsByProteinNameList(Splitter.on(",").splitToList(query)));
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getInteraction", e.toString());
-//        }
-//    }
-
     @GET
     @Path("/{proteinId}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
@@ -311,11 +234,6 @@ public class ProteinWSServer extends GenericRestWSServer {
         queryResult1.setResults(Collections.singletonList(queryResult.first().getSequence().getValue()));
         queryResult1.setId(proteinId);
         return createOkResponse(queryResult1);
-    }
-
-    @GET
-    public Response defaultMethod() {
-        return help();
     }
 
     @GET

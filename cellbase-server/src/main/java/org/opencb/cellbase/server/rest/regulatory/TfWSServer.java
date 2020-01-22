@@ -137,25 +137,6 @@ public class TfWSServer extends RegulatoryWSServer {
             return createErrorResponse(e);
         }
     }
-//
-//    @GET
-//    @Path("/{tfId}/target_gene")
-//    public Response getTargetGenes(@PathParam("tfId") String query) {
-//        try {
-//            parseQueryParams();
-//            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-//            return  generateResponse(query, "GENE", geneDBAdaptor.getAllTargetsByTfList(Splitter.on(",").splitToList(query)));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return createErrorResponse("getEnsemblGenes", e.toString());
-//        }
-//    }
-
-
-    @GET
-    public Response defaultMethod() {
-        return help();
-    }
 
     @GET
     @Path("/help")

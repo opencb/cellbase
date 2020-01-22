@@ -74,6 +74,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/first")
     @Override
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the first object in the database", response = Gene.class,
             responseContainer = "QueryResponse")
     public Response first() {
@@ -83,6 +84,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/count")
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the number of genes in the database", response = Integer.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -341,6 +343,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/list")
+    @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs", response = List.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -904,11 +907,6 @@ public class GeneWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-    }
-
-    @GET
-    public Response defaultMethod() {
-        return help();
     }
 
     @GET

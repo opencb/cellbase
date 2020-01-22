@@ -31,7 +31,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -91,12 +90,12 @@ public class GenericRestWSServer implements IWSServer {
             + " Please note that this option may not be available for all web services.")
     protected int skip;
 
-    @DefaultValue("false")
-    @QueryParam("skipCount")
-    @ApiParam(name = "skipCount", value = "Skip counting the total number of results. In other words, will leave "
-            + "numTotalResults in the QueryResult object to -1. This can make queries much faster."
-            + " Please note that this option may not be available for all web services.")
-    protected String skipCount;
+//    @DefaultValue("false")
+//    @QueryParam("skipCount")
+//    @ApiParam(name = "skipCount", value = "Skip counting the total number of results. In other words, will leave "
+//            + "numTotalResults in the QueryResult object to -1. This can make queries much faster."
+//            + " Please note that this option may not be available for all web services.")
+//    protected String skipCount;
 
     @DefaultValue("false")
     @QueryParam("count")
@@ -279,7 +278,7 @@ public class GenericRestWSServer implements IWSServer {
 
         queryOptions.put(QueryOptions.LIMIT, (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
         queryOptions.put(QueryOptions.SKIP, (skip >= 0) ? skip : -1);
-        queryOptions.put(QueryOptions.SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
+//        queryOptions.put(QueryOptions.SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
         queryOptions.put(QueryOptions.COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
 
         // Add all the others QueryParams from the URL
@@ -308,17 +307,6 @@ public class GenericRestWSServer implements IWSServer {
     @ApiOperation(httpMethod = "GET", value = "To be implemented", response = CellBaseDataResponse.class, hidden = true)
     public Response help() {
         return createOkResponse("No help available");
-    }
-
-    @GET
-    public Response defaultMethod() {
-        switch (species) {
-            case "echo":
-                return createStringResponse("Status active");
-            default:
-                break;
-        }
-        return createOkResponse("Not valid option");
     }
 
     protected Response createModelResponse(Class clazz) {
@@ -442,31 +430,5 @@ public class GenericRestWSServer implements IWSServer {
             queries.add(q);
         }
         return queries;
-    }
-
-    /*
-     * TO DELETE
-     */
-    @Deprecated
-    protected Response generateResponse(String queryString, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is deprecated");
-    }
-
-    @Deprecated
-    protected Response generateResponse(String queryString, String headerTag, List features) throws IOException {
-        return createOkResponse("TODO: generateResponse is deprecated");
-    }
-
-    @Deprecated
-    private boolean isSpecieAvailable(String species) {
-        List<SpeciesConfiguration> speciesList = cellBaseConfiguration.getAllSpecies();
-        for (int i = 0; i < speciesList.size(); i++) {
-            // This only allows to show the information if species is in 3
-            // letters format
-            if (species.equalsIgnoreCase(speciesList.get(i).getId())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

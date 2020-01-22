@@ -85,11 +85,6 @@ public class IdWSServer extends GenericRestWSServer {
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
 
             List<String> list = Splitter.on(",").splitToList(id);
-//            String[] ids = id.split(",");
-//            List<Query> queries = new ArrayList<>(ids.length);
-//            for (String s : ids) {
-//                queries.add(new Query(XRefDBAdaptor.QueryParams.ID.key(), s));
-//            }
             List<Query> queries = createQueries(id, XRefDBAdaptor.QueryParams.ID.key());
 
             List<CellBaseDataResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
@@ -133,7 +128,6 @@ public class IdWSServer extends GenericRestWSServer {
             if (dbname != null && !dbname.isEmpty()) {
                 query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
             }
-//            return createOkResponse(xRefDBAdaptor.nativeGet(Splitter.on(",").splitToList(ids), queryOptions));
             CellBaseDataResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
             queryResult.setId(ids);
             return createOkResponse(queryResult);
@@ -220,11 +214,6 @@ public class IdWSServer extends GenericRestWSServer {
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-    }
-
-    @GET
-    public Response defaultMethod() {
-        return help();
     }
 
     @GET
