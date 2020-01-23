@@ -514,8 +514,10 @@ public class VariantAnnotationUtils {
 
     public static String buildUpperLowerCaseString(String aa) {
         StringBuilder stringBuilder = new StringBuilder(aa);
-        stringBuilder.setCharAt(1, String.valueOf(stringBuilder.charAt(1)).toLowerCase().charAt(0));
-        stringBuilder.setCharAt(2, String.valueOf(stringBuilder.charAt(2)).toLowerCase().charAt(0));
+
+        for (int i = 1; i < stringBuilder.length(); i++) {
+            stringBuilder.setCharAt(i, String.valueOf(stringBuilder.charAt(i)).toLowerCase().charAt(0));
+        }
 
         return stringBuilder.toString();
     }

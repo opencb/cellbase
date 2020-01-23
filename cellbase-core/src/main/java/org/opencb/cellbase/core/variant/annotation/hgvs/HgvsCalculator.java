@@ -167,7 +167,7 @@ public class HgvsCalculator {
         buildingComponents.setCdnaEnd(genomicToCdnaCoord(transcript, end));
     }
 
-    private String reverseComplementary(String string) {
+    protected String reverseComplementary(String string) {
         StringBuilder stringBuilder = new StringBuilder(string).reverse();
         for (int i = 0; i < stringBuilder.length(); i++) {
             stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(stringBuilder.charAt(i)));
@@ -526,7 +526,26 @@ public class HgvsCalculator {
         }
     }
 
-    protected int getAminoAcidPosition(int cdsPosition) {
+    protected int getAminoAcidPosition(int cdsPosition, Transcript transcript) {
+        // cdsPosition might need adjusting for transcripts with unclear start
+        if (transcript.unconfirmedStart()) {
+            int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
+            // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
+            // - 0 if fits perfectly with the reading frame, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons            ---|||---|||
+            // - 1 if shifted one position, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons             ---|||---||||
+            // - 2 if shifted two positions, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons              ---|||---|||
+            if (firstCodingExonPhase != -1) {
+                cdsPosition += (3 - firstCodingExonPhase) % 3;
+                return ((cdsPosition - 1) / 3) + 1;
+            }
+        }
+
         return ((cdsPosition - 1) / 3) + 1;
     }
 
@@ -536,6 +555,39 @@ public class HgvsCalculator {
             cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
         }
         return cdnaCodingStart;
+    }
+
+    protected int getFirstCodingExonPhase(Transcript transcript) {
+        // Assuming exons are ordered
+        for (Exon exon : transcript.getExons()) {
+            if (exon.getPhase() != -1) {
+                return exon.getPhase();
+            }
+        }
+
+        return -1;
+    }
+
+    protected int getPhaseShift(int cdsPosition, Transcript transcript) {
+        if (transcript.unconfirmedStart()) {
+            int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
+            // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
+            // - 0 if fits perfectly with the reading frame, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons            ---|||---|||
+            // - 1 if shifted one position, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons             ---|||---||||
+            // - 2 if shifted two positions, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons              ---|||---|||
+            if (firstCodingExonPhase != -1) {
+                cdsPosition += (3 - firstCodingExonPhase) % 3;
+                return (cdsPosition - 1) % 3;
+            }
+        }
+
+        return (cdsPosition - 1) % 3;
     }
 
     protected String formatCdnaCoords(BuildingComponents buildingComponents) {

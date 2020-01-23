@@ -150,8 +150,8 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // NOTE: protein coordinates set at the protein variant object are NOT the ones from buildingComponent, i.e.
             // before hgvs normalization. HOWEVER, within getGeneratedAa the buildingComponents ones will be used which
             // already reflect hgvs normalization
-            int aminoAcidPosition1 = getAminoAcidPosition(cdsPosition1);
-            int aminoAcidPosition2 = getAminoAcidPosition(cdsPosition2);
+            int aminoAcidPosition1 = getAminoAcidPosition(cdsPosition1, transcript);
+            int aminoAcidPosition2 = getAminoAcidPosition(cdsPosition2, transcript);
             int cdsStart;
             int cdsEnd;
             if (POSITIVE.equals(transcript.getStrand())) {
@@ -219,7 +219,8 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         // There's no need to differentiate between + and - strands since the Transcript object contains the transcript
         // sequence already complementary-reversed if necessary.
-        Integer variantPhaseShift = (cdsStart - 1) % 3;
+//        Integer variantPhaseShift = (cdsStart - 1) % 3;
+        int variantPhaseShift = getPhaseShift(cdsStart, transcript);
         int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsStart - 1;
         int cdnaVariantEnd = getCdnaCodingStart(transcript) + cdsEnd - 1;
 //        Integer variantPhaseShift = (buildingComponents.getCdnaStart().getReferencePosition() - 1) % 3;
@@ -227,7 +228,9 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 //        int cdnaVariantEnd = getCdnaCodingStart(transcript) + buildingComponents.getCdnaEnd().getReferencePosition() - 1;
         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
         String transcriptSequence = transcript.getcDnaSequence();
-        char[] referenceCodonArray = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2).toCharArray();
+        char[] referenceCodonArray = transcriptSequence
+                .substring(modifiedCodonStart - 1, modifiedCodonStart + 2)
+                .toCharArray();
         int i = cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
         int codonPosition;
         // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
@@ -237,7 +240,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
             // Means we've reached the beginning of the transcript, i.e. transcript.start
             if (i >=  transcriptSequence.length()) {
                 // Adding +1 to i since it's originally 0-based and want to make it 1-based for the function call
-                substitutingNt = getNextGenomicNt(chromosome, transcript, i + 1);
+                substitutingNt = getNextNt(chromosome, transcript, i + 1);
             } else {
                 // Paste reference nts after deletion in the corresponding codon position
                 substitutingNt = transcriptSequence.charAt(i);
@@ -263,7 +266,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
      * @param virtualCdnaPosition: named "virtual" since it is expected to be beyond the transcript sequence end limit.
      * @return
      */
-    private char getNextGenomicNt(String chromosome, Transcript transcript, int virtualCdnaPosition) {
+    private char getNextNt(String chromosome, Transcript transcript, int virtualCdnaPosition) {
         char substitutingNt;
 
         int genomicCoordinate;
@@ -281,7 +284,11 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         substitutingNt = genomeDBAdaptor
                 .getGenomicSequence(query, new QueryOptions()).getResult().get(0).getSequence().charAt(0);
 
-        return substitutingNt;
+        if (POSITIVE.equals(transcript.getStrand())) {
+            return substitutingNt;
+        } else {
+            return VariantAnnotationUtils.COMPLEMENTARY_NT.get(substitutingNt);
+        }
     }
 
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {

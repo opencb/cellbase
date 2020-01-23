@@ -23,6 +23,10 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private static final char UNKNOWN_AA = 'X';
     private static final String STOP_STRING = "STOP";
     private static final String FRAMESHIFT_SUFFIX = "fs";
+    private static final String EMPTY_STRING = "";
+    private static final char STOP_CODON_INDICATOR = '*';
+    private static final String STOP_GAIN = "stopGain";
+    private static final String TERMINATION_SUFFIX = "Ter";
 
     public HgvsInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
@@ -46,21 +50,29 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private String calculateProteinHgvs(Variant variant, Transcript transcript) {
         // Check if protein HGVS can be calculated
         if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
+            // Additional normalization required for insertions
+            Variant normalizedVariant = new Variant();
+            genomicHgvsNormalize(variant, transcript, normalizedVariant);
             buildingComponents.setProteinId(transcript.getProteinID());
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
-            Variant proteinVariant = createProteinVariant(variant, transcript);
+            Variant proteinVariant = createProteinVariant(normalizedVariant, transcript);
             if (proteinVariant != null) {
                 String mutationType = proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
                 buildingComponents.setStart(proteinVariant.getStart());
                 buildingComponents.setEnd(proteinVariant.getEnd());
-                buildingComponents.setReferenceStart(String.valueOf(transcript.getProteinSequence()
-                        .charAt(proteinVariant.getStart() - 1)));
-                buildingComponents.setReferenceEnd(String.valueOf(transcript.getProteinSequence()
-                        .charAt(proteinVariant.getStart())));
+                buildingComponents.setReferenceStart(VariantAnnotationUtils
+                        .buildUpperLowerCaseString(VariantAnnotationUtils
+                                .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getStart() - 1)))));
+                buildingComponents.setReferenceEnd(VariantAnnotationUtils
+                        .buildUpperLowerCaseString(VariantAnnotationUtils
+                                .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getStart())))));
                 buildingComponents.setAlternate(proteinVariant.getAlternate());
                 buildingComponents.setMutationType(mutationType);
-                buildingComponents.setKind(variant.getAlternate().length() % 3 == 0 ? BuildingComponents.Kind.INFRAME
+                buildingComponents.setKind(normalizedVariant.getAlternate().length() % 3 == 0
+                        ? BuildingComponents.Kind.INFRAME
                         : BuildingComponents.Kind.FRAMESHIFT);
 
                 return formatProteinString(buildingComponents);
@@ -76,27 +88,45 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
      * @return String containing an HGVS formatted variant representation
      */
     protected String formatProteinString(BuildingComponents buildingComponents) {
-        StringBuilder stringBuilder = (new StringBuilder(buildingComponents.getTranscriptId()))
+        StringBuilder stringBuilder = (new StringBuilder(buildingComponents.getProteinId()))
                 .append(PROTEIN_CHAR);
 
         if (DUP.equals(buildingComponents.getMutationType())) {
             if (buildingComponents.getAlternate().length() == 1) {
                 // assuming end = start - 1
-                stringBuilder.append(buildingComponents.getEnd());
+                stringBuilder.append(VariantAnnotationUtils
+                        .buildUpperLowerCaseString(VariantAnnotationUtils
+                                .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
+                        .append(buildingComponents.getEnd());
             } else {
                 // assuming end = start - 1
-                stringBuilder.append(buildingComponents.getStart() - buildingComponents.getAlternate().length())
+                stringBuilder.append(VariantAnnotationUtils
+                        .buildUpperLowerCaseString(VariantAnnotationUtils
+                                .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
+                        .append(buildingComponents.getStart() - buildingComponents.getAlternate().length())
                         .append(UNDERSCORE)
+                        .append(VariantAnnotationUtils
+                                .buildUpperLowerCaseString(VariantAnnotationUtils
+                                        .TO_LONG_AA.get(String.valueOf(buildingComponents
+                                                .getAlternate()
+                                                .charAt(buildingComponents.getAlternate().length() - 1)))))
                         .append(buildingComponents.getEnd());
             }
-            stringBuilder.append(buildingComponents.getAlternate())
-                    .append(DUP);
+            stringBuilder.append(DUP);
+//            .append(buildingComponents.getAlternate())
+
 
         } else if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
             // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
-            stringBuilder.append(VariantAnnotationUtils.TO_LONG_AA.get(buildingComponents.getAlternate().charAt(0)))
+            stringBuilder.append(VariantAnnotationUtils.TO_LONG_AA.get(String.valueOf(buildingComponents
+                    .getReferenceStart()
+                    .charAt(0))))
                     .append(buildingComponents.getStart())
                     .append(FRAMESHIFT_SUFFIX);
+        } else if (STOP_GAIN.equals(buildingComponents.getMutationType())) {
+            stringBuilder.append(buildingComponents.getReferenceEnd())
+                    .append(buildingComponents.getStart())
+                    .append(TERMINATION_SUFFIX);
         } else {
             // assuming end = start - 1
             stringBuilder.append(buildingComponents.getReferenceStart())
@@ -116,12 +146,22 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < alternate.length(); i++) {
             stringBuilder.append(VariantAnnotationUtils
-                    .buildUpperLowerCaseString(VariantAnnotationUtils.TO_LONG_AA.get(alternate.charAt(i))));
+                    .buildUpperLowerCaseString(VariantAnnotationUtils.TO_LONG_AA
+                            .get(String.valueOf(alternate.charAt(i)))));
         }
         return stringBuilder.toString();
     }
 
     private String proteinHgvsNormalize(Variant proteinVariant, String proteinSequence) {
+
+        // If stop gained then skip any normalisation; If there's a stop gain the stop indicator will always be the last
+        // element of the predicted sequence, as prediction stops as soon as a STOP codon is found
+        if (STOP_CODON_INDICATOR == proteinVariant.getAlternate().charAt(proteinVariant.getAlternate().length() - 1)) {
+            return STOP_GAIN;
+        }
+
+        proteinVariant = trimProteinSequences(proteinVariant);
+
         // It's not worth calling the justify method of the super class, too complicated and the code is relatively
         // simple
         // Justify
@@ -140,51 +180,91 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         // Check duplication
         // TODO: Assuming end = start - 1; might need adjusting
         String previousSequence = proteinSequence.substring(Math.max(0, proteinVariant.getStart()
-                - proteinVariant.getAlternate().length()), proteinVariant.getStart());
+                - proteinVariant.getAlternate().length() - 1), proteinVariant.getStart() - 1);
         // normalized one in order to take into
         // account potential
         // normalization/lef-right alignment
         // differences
         if (previousSequence.equals(proteinVariant.getAlternate())) {
             return DUP;
-        } else {
-            // TODO: Assuming end = start - 1; might need adjusting
-            String nextSequence = proteinSequence.substring(proteinVariant.getStart(),
-                    Math.min(proteinSequence.length(), proteinVariant.getEnd() + proteinSequence.length()));
-            // normalized one in order to take into
-            // account potential
-            // normalization/lef-right alignment
-            // differences
-            if (nextSequence.equals(proteinVariant.getAlternate())) {
-                return DUP;
-            }
         }
+
+        // I don't think this can ever happen as the alternate has been fully justified to the right in the loop above;
+        // if there was a duplication on the right it'd no longer be true once it gets here as it'd have been shifted
+        // to the right
+//        else {
+//            // TODO: Assuming end = start - 1; might need adjusting
+//            String nextSequence = proteinSequence.substring(proteinVariant.getStart() - 1,
+//                    Math.min(proteinSequence.length() - 1, proteinVariant.getEnd() + proteinSequence.length() - 1));
+//            // normalized one in order to take into
+//            // account potential
+//            // normalization/lef-right alignment
+//            // differences
+//            if (nextSequence.equals(proteinVariant.getAlternate())) {
+//                return DUP;
+//            }
+//        }
+
         return INS;
 
+    }
+
+    private Variant trimProteinSequences(Variant proteinVariant) {
+        String reference = proteinVariant.getReference();
+        String alternate = proteinVariant.getAlternate();
+
+        if (StringUtils.isNotBlank(reference)
+                && StringUtils.isNotBlank(alternate)) {
+            // Shift backwards until a different aa is found
+            int referencePosition = reference.length() - 1;
+            int alternatePosition = alternate.length() - 1;
+            while (referencePosition >= 0
+                    && alternatePosition >= 0
+                    && reference.charAt(referencePosition) == alternate.charAt(alternatePosition)) {
+                referencePosition--;
+                alternatePosition--;
+            }
+            // Update proteinVariant.reference and alternate strings after duplicated subsequence has been identified
+            // above no need to update coordinates as it's an insertion
+            proteinVariant.setReference(referencePosition < 0
+                    ? EMPTY_STRING
+                    : reference.substring(0, referencePosition + 1));
+            proteinVariant.setAlternate(alternatePosition < 0
+                    ? EMPTY_STRING
+                    : alternate.substring(0, alternatePosition + 1));
+        }
+
+        return proteinVariant;
     }
 
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
         Variant proteinVariant = new Variant();
 
 //        int cdnaCodingStart = getCdnaCodingStart(transcript);
-        proteinVariant.setStart(getAminoAcidPosition(buildingComponents.getCdnaStart().getOffset()));
-        proteinVariant.setEnd(getAminoAcidPosition(buildingComponents.getCdnaEnd().getOffset()));
+        proteinVariant.setStart(getAminoAcidPosition(getCdsStart(transcript, variant.getStart()), transcript));
+        proteinVariant.setEnd(proteinVariant.getStart() - 1);
+//        proteinVariant.setEnd(getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getEnd()).getReferencePosition()));
 
         // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-        if (proteinVariant.getStart() > 0 && proteinVariant.getEnd() < transcript.getProteinSequence().length()) {
+        if (proteinVariant.getEnd() > 0 && proteinVariant.getStart() <= transcript.getProteinSequence().length()) {
             String predictedProteinSequence = getPredictedProteinSequence(variant, transcript);
             if (StringUtils.isNotBlank(predictedProteinSequence)) {
                 proteinVariant.setAlternate(predictedProteinSequence);
                 // If insertion affects two different aa, paste both of them in the reference
-                if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
-                    proteinVariant.setReference((new StringBuilder(transcript.getProteinSequence().charAt(proteinVariant.getStart())))
-                            .append(transcript.getProteinSequence().charAt(proteinVariant.getEnd())).toString());
-                    // If it just affects one aa, paste just that aa in the reference
-                } else {
-                    proteinVariant.setReference(String.valueOf(transcript.getProteinSequence().charAt(proteinVariant.getStart())));
-                }
+//                if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
+//                    proteinVariant
+//                            .setReference((new StringBuilder(transcript
+//                                    .getProteinSequence()
+//                                    .charAt(proteinVariant.getStart() - 1)))
+//                            .append(transcript.getProteinSequence().charAt(proteinVariant.getEnd() - 1)).toString());
+//                    // If it just affects one aa, paste just that aa in the reference
+//                } else {
+                    proteinVariant.setReference(String.valueOf(transcript
+                            .getProteinSequence()
+                            .charAt(proteinVariant.getStart() - 1)));
+//                }
 
                 return proteinVariant;
             } else {
@@ -192,30 +272,61 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                                 + "will not be returned. Please, check variant {}, transcript {}, protein {}",
                         variant.toString(), transcript.getId(), transcript.getProteinID());
             }
+        } else {
+            logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
+                            + " not happen and protein HGVS will not be returned. Could be expected for "
+                            + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
+                    buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
+                    transcript.getProteinSequence().length());
         }
-        logger.warn("Protein start/end out of protein seq boundaries: {}, {}-{}, prot length: {}. This should, in principle,"
-                        + " not happen and protein HGVS will not be returned. Could be expected for "
-                        + "unconfirmedStart/unconfirmedEnd transcripts. Please, check.",
-                buildingComponents.getProteinId(), proteinVariant.getStart(), proteinVariant.getEnd(),
-                transcript.getProteinSequence().length());
 
         return null;
     }
 
+
+    /**
+     * Required due to the peculiarities of insertion coordinates.
+     * Translation to transcript cds position slightly varies for positive and negative strands because of the way
+     * the insertion coordinates are interpreted in the genomic context; imagine following GENOMIC variant:
+     * 7:-:GTATCCA
+     * and following GENOMIC sequence
+     * COORDINATES                             123456789 10 11 12 13 14 15 16 17 18 19 20
+     * GENOMIC SEQUENCE                        AAGACTGTA T  C  C  A  G  G  T  G  G  G  C
+     * ORF(bars indicate last nt of the codon)   |  |  |       |        |        |
+     * VARIANT                                       ^
+     * VARIANT                                       GTATCCA
+     *
+     * In a positive transcript shifted codon is GTA (genomic positions [7,9])
+     * In a negative transcript shifted codon is AGT (reverse complementary of ACT, genomic positions [4,6]) and
+     * therefore the cds start coordinate of the insertion must be +1
+     * @param transcript  affected transcript data
+     * @param genomicStart start genomic coordinate of the variant
+     * @return corresponding cds start coordinate appropriately adjusted according to the transcript strand
+     */
+    protected int getCdsStart(Transcript transcript, int genomicStart) {
+        return POSITIVE.equals(transcript.getStrand())
+                ? genomicToCdnaCoord(transcript, genomicStart).getReferencePosition()
+                : genomicToCdnaCoord(transcript, genomicStart).getReferencePosition() + 1;
+    }
+
     private String getPredictedProteinSequence(Variant variant, Transcript transcript) {
-        int cdsPosition = buildingComponents.getCdnaStart().getReferencePosition();
-        int cdnaCodingStart = getCdnaCodingStart(transcript);
+        int cdsPosition = getCdsStart(transcript, variant.getStart());
+//        int variantPhaseShift = (cdsPosition - 1) % 3;
+        int variantPhaseShift = getPhaseShift(cdsPosition, transcript);
+        int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsPosition - 1;
+//        // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates:
+//        // cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
+//        Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3;
+//        int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
+
+        int modifiedCodonStart =  cdnaVariantStart - variantPhaseShift;
         String transcriptSequence = transcript.getcDnaSequence();
 
-        // What buildingComponents.cdnaStart.offset really stores is the cdsStart
-        int cdnaVariantStart = cdsPosition + cdnaCodingStart - 1; // TODO: might need adjusting +-1
-
-        // Sum 1 to cdnaVariantStart because of the peculiarities of insertion coordinates:
-        // cdnaVariantStart coincides with the vcf position, the actual substituted nt is the one on the right
-        Integer variantPhaseShift = (cdnaVariantStart + 1 - cdnaCodingStart) % 3;
-        int modifiedCodonStart = cdnaVariantStart + 1 - variantPhaseShift;
         if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
-            String alternate = variant.getAlternate();
+            // alternate provided in genomic representation
+            String alternate = POSITIVE.equals(transcript.getStrand())
+                    ? variant.getAlternate()
+                    : reverseComplementary(variant.getAlternate());
             // -1 and +2 because of base 0 String indexing
             String referenceCodon = transcriptSequence.substring(modifiedCodonStart - 1, modifiedCodonStart + 2);
             char[] modifiedCodonArray = referenceCodon.toCharArray();
@@ -234,12 +345,15 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                 modifiedCodonPosition = (modifiedCodonPosition + 1) % 3;
             }
 
-            // Last predicted codon from the alternate needs to be completed with transcript nts
-            if (modifiedCodonPosition < 2) {
+            // Last predicted codon from the alternate needs to be completed with transcript nts;
+            // modifiedCodonPosition == 0 if is inframe insertion and it occurrs between two codons without disrupting
+            // any of them
+            if (modifiedCodonPosition > 0) {
                 // indexing over transcriptSequence is 0 based
                 int transcriptSequencePosition = cdnaVariantStart - 1;
                 for (; modifiedCodonPosition < 3; modifiedCodonPosition++) {
-                    modifiedCodonArray[modifiedCodonPosition] = alternate.toCharArray()[transcriptSequencePosition];
+                    modifiedCodonArray[modifiedCodonPosition]
+                            = transcriptSequence.toCharArray()[transcriptSequencePosition];
                     transcriptSequencePosition++;
                 }
                 addNewAa(variant, transcriptSequence, modifiedCodonArray, predictedProteinSequence);
@@ -256,15 +370,21 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
             // If STOP codon is gained prediction is interrupted and returned sequence is only predicted until
             // aa position before the STOP codon
             if (STOP_STRING.equals(aa)) {
+                predictedProteinSequence.append(STOP_CODON_INDICATOR);
                 return false;
             } else {
                 predictedProteinSequence.append(VariantAnnotationUtils.TO_ABBREVIATED_AA.get(aa));
             }
         } else {
             predictedProteinSequence.append(UNKNOWN_AA);
-            logger.warn("Unknown AA translation, setting an {}. Variant {}, Codon {}, cdnaVariantStart {}, "
-                            + "transcriptSequence {} ", UNKNOWN_AA, variant.toString(),
-                    String.valueOf(modifiedCodonArray), transcriptSequence);
+            logger.warn("Unknown AA translation. Protein HGVS will not be returned as protein sequence cannot be "
+                            + "predicted. Variant {}, Codon {}, transcriptSequence {} ",
+                    variant.toString(),
+                    String.valueOf(modifiedCodonArray),
+                    transcriptSequence);
+            // Empty predicted protein sequence
+            predictedProteinSequence.delete(0, predictedProteinSequence.length());
+            return false;
         }
         return true;
     }
@@ -286,7 +406,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private String calculateTranscriptHgvs(Variant variant, Transcript transcript, String geneId) {
         // Additional normalization required for insertions
         Variant normalizedVariant = new Variant();
-        String mutationType = hgvsNormalize(variant, transcript, normalizedVariant);
+        String mutationType = genomicHgvsNormalize(variant, transcript, normalizedVariant);
 
         // Use cDNA coordinates.
         buildingComponents.setKind(isCoding(transcript) ? BuildingComponents.Kind.CODING : BuildingComponents.Kind.NON_CODING);
@@ -302,14 +422,23 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                     normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, buildingComponents);
             // dup of more than 1nt
         } else {
-            // WARNING: -1 to fit the HGVS specification so that setRangeCoordsAndAlleles appropriately calculates
-            // the offset to the nearest exon limit. This normalizedVariant object is not used after this line
-            // and therefore has no other effect. Be careful
-//            normalizedVariant.setStart(normalizedVariant.getStart() - 1);
-//            setRangeCoordsAndAlleles(normalizedVariant, transcript, buildingComponents);
-            setRangeCoordsAndAlleles(normalizedVariant.getStart(),
-                    normalizedVariant.getStart() + normalizedVariant.getLength() - 1,
-                    normalizedVariant.getReference(), normalizedVariant.getAlternate(), transcript, buildingComponents);
+            // DUPLICATION: in order for the setRangeCoordsAndAlleles to adequately set the range that is duplicated in
+            // positive strands we need to substract the size of the insertion, e.g. :
+            //             12345678 9 10 11 12
+            //             GATGGTGG A C  A  T  GA
+            //                     ^
+            //                    TGG
+            //   The insertion occurs at position 9; the actual duplicated sequence is that in the range [6, 8]
+            int genomicStart = POSITIVE.equals(transcript.getStrand())
+                    ? normalizedVariant.getStart() - normalizedVariant.getLength(): normalizedVariant.getStart();
+            int genomicEnd = genomicStart + normalizedVariant.getLength() - 1;
+
+            setRangeCoordsAndAlleles(genomicStart,
+                    genomicEnd,
+                    normalizedVariant.getReference(),
+                    normalizedVariant.getAlternate(),
+                    transcript,
+                    buildingComponents);
         }
 
         buildingComponents.setMutationType(mutationType);
@@ -345,7 +474,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         return buildingComponents.getMutationType() + buildingComponents.getAlternate();
     }
 
-    private String hgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {
+    private String genomicHgvsNormalize(Variant variant, Transcript transcript, Variant normalizedVariant) {
         // Get genomic sequence around the lesion.
         int start = Math.max(variant.getStart() - NEIGHBOURING_SEQUENCE_SIZE, 1);  // TODO: might need to adjust +-1 nt
         int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
