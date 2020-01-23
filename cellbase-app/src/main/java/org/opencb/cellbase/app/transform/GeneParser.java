@@ -696,7 +696,7 @@ public class GeneParser extends CellBaseParser {
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
             for (Fasta fasta : fastaList) {
-                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0], fasta);
+                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0].split("\\.")[0], fasta);
             }
         } else {
             logger.warn("Protein fasta file " + proteinFastaFile + " not found");
