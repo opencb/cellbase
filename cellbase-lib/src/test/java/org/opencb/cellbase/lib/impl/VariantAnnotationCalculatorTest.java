@@ -857,10 +857,12 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         QueryResult<VariantAnnotation> queryResult = variantAnnotationCalculator
                 .getAnnotationByVariant(new Variant("19:45411941:T:C"), queryOptions);
         assertEquals(1, queryResult.getNumTotalResults());
-        assertEquals(4, queryResult.getResult().get(0).getHgvs().size());
+        assertEquals(8, queryResult.getResult().get(0).getHgvs().size());
         assertEquals(new HashSet<>(Arrays.asList("ENST00000252486(ENSG00000130203):c.388T>C",
                 "ENST00000446996(ENSG00000130203):c.388T>C", "ENST00000434152(ENSG00000130203):c.466T>C",
-                "ENST00000425718(ENSG00000130203):c.388T>C")), new HashSet<String>(queryResult.getResult().get(0).getHgvs()));
+                "ENST00000425718(ENSG00000130203):c.388T>C", "ENSP00000252486:p.Cys130Arg",
+                "ENSP00000413135:p.Cys130Arg", "ENSP00000413653:p.Cys156Arg", "ENSP00000410423:p.Cys130Arg")),
+                new HashSet<String>(queryResult.getResult().get(0).getHgvs()));
     }
 
     @Test
