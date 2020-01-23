@@ -72,7 +72,7 @@ public class VariantAnnotationCalculator {
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
     private Integer cnvExtraPadding = 0;
-    private Boolean checkAminoacidChange;
+    private Boolean checkAminoAcidChange;
 
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
     private static HgvsCalculator hgvsCalculator;
@@ -361,8 +361,8 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("clinical")) {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased);
-            queryOptions.add(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoacidChange);
-            if (checkAminoacidChange) {
+            queryOptions.add(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
+            if (checkAminoAcidChange) {
                 // HGVS calc needs to genes too
                 queryOptions.add(ClinicalDBAdaptor.QueryParams.BATCH_GENE_LIST.key(), batchGeneList);
             }
@@ -569,8 +569,8 @@ public class VariantAnnotationCalculator {
         cnvExtraPadding = (queryOptions.get("cnvExtraPadding") != null ? (Integer) queryOptions.get("cnvExtraPadding") : 0);
         logger.debug("cnvExtraPadding = {}", cnvExtraPadding);
 
-        checkAminoacidChange = (queryOptions.get("checkAminoacidChange") != null && (Boolean) queryOptions.get("checkAminoacidChange"));
-        logger.debug("checkAminoacidChange = {}", checkAminoacidChange);
+        checkAminoAcidChange = (queryOptions.get("checkAminoAcidChange") != null && (Boolean) queryOptions.get("checkAminoAcidChange"));
+        logger.debug("checkAminoAcidChange = {}", checkAminoAcidChange);
     }
 
     private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {

@@ -223,11 +223,11 @@ public class VariantWSServer extends GenericRestWSServer {
                                                                + " padding to be used when annotating imprecise (or not)"
                                                                + " CNVs",
                                                        defaultValue = "0", required = false) Integer cnvExtraPadding,
-                                               @QueryParam("checkAminoacidChange")
-                                                   @ApiParam(name = "checkAminoacidChange",
+                                               @QueryParam("checkAminoAcidChange")
+                                               @ApiParam(name = "checkAminoAcidChange",
                                                            value = "<DESCRIPTION GOES HERE>",
                                                            allowableValues = "false,true",
-                                                           defaultValue = "false", required = false) Boolean checkAminoacidChange) {
+                                                           defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
         return getAnnotationByVariant(variants,
                 normalize,
                 skipDecompose,
@@ -236,7 +236,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 imprecise,
                 svExtraPadding,
                 cnvExtraPadding,
-                checkAminoacidChange);
+                checkAminoAcidChange);
     }
 
     private Response getAnnotationByVariant(String variants,
@@ -247,7 +247,7 @@ public class VariantWSServer extends GenericRestWSServer {
                                             Boolean imprecise,
                                             Integer svExtraPadding,
                                             Integer cnvExtraPadding,
-                                            Boolean checkAminoacidChange) {
+                                            Boolean checkAminoAcidChange) {
         try {
             parseQueryParams();
             List<Variant> variantList = parseVariants(variants);
@@ -280,8 +280,8 @@ public class VariantWSServer extends GenericRestWSServer {
             if (cnvExtraPadding != null) {
                 queryOptions.put("cnvExtraPadding", cnvExtraPadding);
             }
-            if (checkAminoacidChange != null) {
-                queryOptions.put("checkAminoacidChange", checkAminoacidChange);
+            if (checkAminoAcidChange != null) {
+                queryOptions.put("checkAminoAcidChange", checkAminoAcidChange);
             }
             VariantAnnotationCalculator variantAnnotationCalculator =
                     new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);

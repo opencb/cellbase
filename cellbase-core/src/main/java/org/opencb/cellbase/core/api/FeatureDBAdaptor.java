@@ -106,7 +106,7 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
                     .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
                     .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
                     .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
-            if (options.get("checkAminoacidChange") != null && (Boolean) options.get("checkAminoacidChange")
+            if (options.get("checkAminoAcidChange") != null && (Boolean) options.get("checkAminoAcidChange")
                     && genomeDBAdaptor != null) {
                 List<Gene> batchedGeneList = (List<Gene>) options.get("batchGeneList");
                 if (batchedGeneList != null && !batchedGeneList.isEmpty()) {
