@@ -16,14 +16,16 @@
 
 package org.opencb.cellbase.server.rest;
 
+import org.opencb.cellbase.core.exception.CellbaseException;
+
 import javax.ws.rs.core.Response;
 
 public interface IWSServer {
 
 
-    void parseQueryParams();
+    void parseQueryParams() throws CellbaseException;
 
-    default Response first() {
+    default Response first() throws Exception {
         return Response.ok("No implemented yet").build();
     }
 

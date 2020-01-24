@@ -88,7 +88,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @GET
     @Path("/list")
     @Deprecated
-    @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = CellBaseDataResult.class)
+    @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = CellBaseDataResult.class,
+        hidden = true)
     public Response getChromosomes() {
         try {
             parseQueryParams();

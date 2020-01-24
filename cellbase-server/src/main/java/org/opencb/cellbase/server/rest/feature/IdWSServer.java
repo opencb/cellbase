@@ -137,7 +137,7 @@ public class IdWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{id}/starts_with")
+    @Path("/{id}/startsWith")
     @ApiOperation(httpMethod = "GET", value = "Get the gene HGNC symbols of genes for which there is an Xref id that "
             + "matches the beginning of the given string", response = Map.class, responseContainer = "QueryResponse")
     public Response getByLikeQuery(@PathParam("id")

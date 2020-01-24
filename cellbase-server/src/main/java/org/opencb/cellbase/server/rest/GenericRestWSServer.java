@@ -78,15 +78,15 @@ public class GenericRestWSServer implements IWSServer {
             + " Please note that this parameter may not be enabled for all web services.")
     protected String include;
 
-    @DefaultValue("-1")
+    @DefaultValue("10")
     @QueryParam("limit")
-    @ApiParam(name = "limit", value = "Max number of results to be returned. No limit applied when -1."
+    @ApiParam(name = "limit", value = "Max number of results to be returned. Cannot exceed 5,000."
             + " Please note that this option may not be available for all web services.")
     protected int limit;
 
-    @DefaultValue("-1")
+    @DefaultValue("0")
     @QueryParam("skip")
-    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when -1. "
+    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when 0. "
             + " Please note that this option may not be available for all web services.")
     protected int skip;
 
@@ -252,7 +252,7 @@ public class GenericRestWSServer implements IWSServer {
     }
 
     @Override
-    public void parseQueryParams() {
+    public void parseQueryParams() throws CellbaseException {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
 
         queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
@@ -276,9 +276,18 @@ public class GenericRestWSServer implements IWSServer {
             queryOptions.put(QueryOptions.SORT, sort);
         }
 
-        queryOptions.put(QueryOptions.LIMIT, (limit > 0) ? Math.min(limit, LIMIT_MAX) : LIMIT_DEFAULT);
-        queryOptions.put(QueryOptions.SKIP, (skip >= 0) ? skip : -1);
-//        queryOptions.put(QueryOptions.SKIP_COUNT, StringUtils.isNotBlank(skipCount) && Boolean.parseBoolean(skipCount));
+        if (limit < 0) {
+            throw new CellbaseException("Limit is not valid. Expected a number greater than zero but was " + limit);
+        } else if (limit > LIMIT_MAX) {
+            throw new CellbaseException("Limit is not valid. Expected a number less than " + LIMIT_MAX + " but was " + limit);
+        }
+
+        if (skip < 0) {
+            throw new CellbaseException("Skip is not valid. Expected a number greater than zero but was " + skip);
+        }
+
+        queryOptions.put(QueryOptions.LIMIT, limit);
+        queryOptions.put(QueryOptions.SKIP, skip);
         queryOptions.put(QueryOptions.COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
 
         // Add all the others QueryParams from the URL

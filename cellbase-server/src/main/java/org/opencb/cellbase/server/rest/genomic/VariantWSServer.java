@@ -16,9 +16,7 @@
 
 package org.opencb.cellbase.server.rest.genomic;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -29,10 +27,12 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("/{version}/{species}/genomic/variant")
 @Produces(MediaType.APPLICATION_JSON)
@@ -99,7 +100,7 @@ public class VariantWSServer extends GenericRestWSServer {
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
-            response = VariantAnnotation.class, responseContainer = "QueryResponse")
+            response = VariantAnnotation.class, responseContainer = "QueryResponse", hidden = true)
     public Response getAnnotationByVariantsPOST(@ApiParam(name = "variants", value = "Comma separated list of variants to"
                                                         + "annotate, e.g. "
                                                         + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
@@ -328,9 +329,10 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Deprecated
     @Path("/{variants}/cadd")
     @ApiOperation(httpMethod = "GET", value = "Get CADD scores for a (list of) variant(s)", response = Score.class,
-            responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse", hidden = true)
     public Response getCaddScoreByVariant(@PathParam("variants")
                                           @ApiParam(name = "variants", value = "Comma separated list of variants for"
                                                   + "which CADD socores will be returned, e.g. "
@@ -344,6 +346,191 @@ public class VariantWSServer extends GenericRestWSServer {
             List<CellBaseDataResult<Score>> functionalScoreVariant =
                     variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);
             return createOkResponse(functionalScoreVariant);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/stats")
+    @Override
+    @ApiOperation(httpMethod = "GET", value = "Not implemented yet.",
+            response = Integer.class, responseContainer = "QueryResponse", hidden = true)
+    public Response stats() {
+        return super.stats();
+    }
+
+    @GET
+    @Path("/{id}/info")
+    @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) SNPs", notes = "An independent"
+            + " database query will be issued for each region in id, meaning that results for each region will be"
+            + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
+            response = Variant.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "consequenceType",
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
+                            + "matches will be returned.",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list ENSEMBL gene ids, e.g.: ENSG00000161905. Exact text matches will be "
+                            + "returned.",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "chromosome",
+                    value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "reference",
+                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "alternate",
+                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getByEnsemblId(@PathParam("id")
+                                   @ApiParam(name = "id",
+                                           value = "Comma separated list of rs ids, e.g.: rs6025",
+                                           required = true) String id) {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+            List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
+            List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
+            }
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Retrieves all variation objects", response = Variant.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "id",
+                    value = "Comma separated list of rs ids, e.g.: rs6025, rs666"
+                            + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "consequenceType",
+                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant."
+                            + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "gene",
+                    value = "Comma separated list ENSEMBL gene ids, e.g.: ENSG00000161905. Exact text matches will be "
+                            + "returned.", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "chromosome",
+                    value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
+                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "reference",
+                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "alternate",
+                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+                    dataType = "java.util.List", paramType = "query")
+    })
+    public Response search() {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+            return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{id}/next")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP", hidden = true)
+    public Response getNextById(@PathParam("id")
+                                @ApiParam(name = "id",
+                                        value = "Rs id, e.g.: rs6025",
+                                        required = true) String id) {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+            query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
+            CellBaseDataResult queryResult = variationDBAdaptor.next(query, queryOptions);
+            queryResult.setId(id);
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/consequenceTypes")
+    @ApiOperation(httpMethod = "GET", value = "Get all sequence ontology terms describing consequence types",
+            response = String.class, responseContainer = "QueryResponse")
+    public Response getAllConsequenceTypes() {
+        try {
+            parseQueryParams();
+            List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+            CellBaseDataResult<String> queryResult = new CellBaseDataResult<>("consequence_types");
+            queryResult.setNumResults(consequenceTypes.size());
+            queryResult.setResults(consequenceTypes);
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    // FIXME: 29/04/16 GET and POST web services to be fixed
+    @GET
+    @Path("/{snpId}/consequenceType")
+    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the SNP(s)", response = String.class,
+            responseContainer = "QueryResponse")
+    public Response getConsequenceTypeByGetMethod(@PathParam("snpId") String snpId) {
+        return getConsequenceType(snpId);
+    }
+
+    private Response getConsequenceType(String snpId) {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+            query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
+            queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
+            CellBaseDataResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
+            CellBaseDataResult queryResult1 = new CellBaseDataResult<>(
+                    queryResult.getId(), queryResult.getTime(), queryResult.getEvents(), queryResult.getNumResults(),
+                    Collections.singletonList(queryResult.getResults().get(0).getAnnotation().getDisplayConsequenceType()), 1);
+            return createOkResponse(queryResult1);
+        } catch (Exception e) {
+            return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
+        }
+    }
+
+    // FIXME: 29/04/16 GET and POST methods to be fixed
+    @GET
+    @Path("/{snpId}/regulatory")
+    @ApiOperation(httpMethod = "GET", value = "Get the regulatory impact of the SNP(s)", hidden = true)
+    public Response getRegulatoryByGetMethod(@PathParam("snpId") String snpId) {
+        return getRegulatoryType(snpId);
+    }
+
+    private Response getRegulatoryType(String snpId) {
+        try {
+            parseQueryParams();
+            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+            return null;
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{snpId}/sequence")
+    @ApiOperation(httpMethod = "GET", value = "Get the adjacent sequence to the SNP(s) - Not yet implemented",
+            hidden = true)
+    public Response getSequence(@PathParam("snpId") String query) {
+        try {
+            return null;
         } catch (Exception e) {
             return createErrorResponse(e);
         }

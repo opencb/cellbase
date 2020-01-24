@@ -128,7 +128,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/allele_origin_labels")
+    @Path("/variant/alleleOriginLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available allele origin labels", response = Variant.class,
             responseContainer = "QueryResponse")
@@ -143,7 +143,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/mode_inheritance_labels")
+    @Path("/variant/modeInheritanceLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available mode of inheritance labels", response = Variant.class,
             responseContainer = "QueryResponse")
@@ -158,7 +158,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/clinsig_labels")
+    @Path("/variant/clinsigLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available clinical significance labels", response = Variant.class,
             responseContainer = "QueryResponse")
@@ -173,7 +173,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/variant/consistency_labels")
+    @Path("/variant/consistencyLabels")
     @ApiOperation(httpMethod = "GET", notes = "",
             value = "Retrieves all available consistency labels", response = Variant.class,
             responseContainer = "QueryResponse")

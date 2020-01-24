@@ -76,7 +76,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @Override
     @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the first object in the database", response = Gene.class,
-            responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse", hidden = true)
     public Response first() {
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
         return createOkResponse(geneDBAdaptor.first(queryOptions));
@@ -86,7 +86,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/count")
     @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the number of genes in the database", response = Integer.class,
-            responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",

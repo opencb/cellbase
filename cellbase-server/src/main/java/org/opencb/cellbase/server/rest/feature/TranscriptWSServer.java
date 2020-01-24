@@ -77,8 +77,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Override
     @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the first transcript in the database", response = Transcript.class,
-        responseContainer = "QueryResponse")
-    public Response first() {
+        responseContainer = "QueryResponse", hidden = true)
+    public Response first() throws Exception {
         parseQueryParams();
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         return createOkResponse(transcriptDBAdaptor.first(queryOptions));
@@ -88,7 +88,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/count")
     @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Get the number of transcripts in the database", response = Integer.class,
-        responseContainer = "QueryResponse")
+        responseContainer = "QueryResponse", hidden = true)
     public Response count(@DefaultValue("")
                           @QueryParam("region")
                           @ApiParam(name = "region",
@@ -315,7 +315,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{transcriptId}/function_prediction")
+    @Path("/{transcriptId}/functionPrediction")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the protein of a"
             + " certain transcript",
             notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "

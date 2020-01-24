@@ -135,7 +135,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{proteinId}/substitution_scores")
+    @Path("/{proteinId}/substitutionScores")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
         notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
                 + " position is provided, all scores will be returned for every possible amino acid"
@@ -161,7 +161,6 @@ public class ProteinWSServer extends GenericRestWSServer {
                                                   required = true) String id) {
         try {
             parseQueryParams();
-//            query.put(ProteinDBAdaptor.QueryParams.XREFS.key(), id);
 
             // Fetch Ensembl transcriptId to query substiturion scores
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);

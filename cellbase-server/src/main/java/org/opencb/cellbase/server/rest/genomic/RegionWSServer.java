@@ -96,7 +96,7 @@ public class RegionWSServer extends GenericRestWSServer {
             + "histogram=false Gene objects will be returned "
             + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
             + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
-            responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "histogram",
                     value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
