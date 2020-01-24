@@ -1113,7 +1113,8 @@ public class VariantAnnotationCalculator {
     }
 
     private String getIncludedGeneFields(Set<String> annotatorSet) {
-        String includeGeneFields = "name,id,chromosome,start,end,transcripts.id,transcripts.start,transcripts.end,"
+        String includeGeneFields = "name,id,chromosome,start,end,transcripts.id,transcripts.proteinID,"
+                + "transcripts.start,transcripts.end,transcripts.cDnaSequence,transcripts.proteinSequence,"
                 + "transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,"
                 + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
                 + "transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.cdsStart,transcripts.exons.end,"

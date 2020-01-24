@@ -4,7 +4,7 @@
 \name{cbXrefClient,CellBaseR-method}
 \alias{cbXrefClient}
 \alias{cbXrefClient,CellBaseR-method}
-\title{A method to query cross reference data from Cellbase web services.}
+\title{A method to query cross referenceStart data from Cellbase web services.}
 \usage{
 \S4method{cbXrefClient}{CellBaseR}(object, ids, resource, filters = NULL, ...)
 }
@@ -24,7 +24,7 @@ uniprot ids,etc.}
 an object of class CellBaseResponse which holds a dataframe with the results of the query
 }
 \description{
-A method to query cross reference data from Cellbase web services.
+A method to query cross referenceStart data from Cellbase web services.
 }
 \details{
 Please, for details on possible values for the 
