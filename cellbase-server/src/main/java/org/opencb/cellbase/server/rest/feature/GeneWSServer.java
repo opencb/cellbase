@@ -343,7 +343,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @Path("/list")
     @Deprecated
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene Ensembl IDs", response = List.class,
-            responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -552,8 +552,8 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/biotype")
-    @ApiOperation(httpMethod = "GET", value = "Get the list of existing biotypes")
+    @Path("/distinct/{fieldName}")
+    @ApiOperation(httpMethod = "GET", value = "Get a unique list of values for a given field, e.g. biotype")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -611,11 +611,14 @@ public class GeneWSServer extends GenericRestWSServer {
                             + "Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAllBiotypes() {
+    public Response getUniqueValues(
+            @PathParam("fieldName")
+            @ApiParam(name = "fieldName",
+                    value = "Name of column to return, e.g. biotype") String fieldName) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.distinct(query, "biotype"));
+            return createOkResponse(geneDBAdaptor.distinct(query, fieldName));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

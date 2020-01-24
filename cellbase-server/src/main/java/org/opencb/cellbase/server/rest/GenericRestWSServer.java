@@ -66,48 +66,36 @@ public class GenericRestWSServer implements IWSServer {
     @QueryParam("assembly")
     protected String assembly;
 
-    @ApiParam(name = "exclude", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. "
-            + " Please note that this option may not be enabled for all web services.")
+    @ApiParam(name = "exclude", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. ")
     @DefaultValue("")
     @QueryParam("exclude")
     protected String exclude;
 
     @DefaultValue("")
     @QueryParam("include")
-    @ApiParam(name = "include", value = "Set which fields are included in the response, e.g.: transcripts.id. "
-            + " Please note that this parameter may not be enabled for all web services.")
+    @ApiParam(name = "include", value = "Set which fields are included in the response, e.g.: transcripts.id. ")
     protected String include;
 
     @DefaultValue("10")
     @QueryParam("limit")
-    @ApiParam(name = "limit", value = "Max number of results to be returned. Cannot exceed 5,000."
-            + " Please note that this option may not be available for all web services.")
+    @ApiParam(name = "limit", value = "Max number of results to be returned. Cannot exceed 5,000.")
     protected int limit;
 
     @DefaultValue("0")
     @QueryParam("skip")
-    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when 0. "
-            + " Please note that this option may not be available for all web services.")
+    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when 0.")
     protected int skip;
-
-//    @DefaultValue("false")
-//    @QueryParam("skipCount")
-//    @ApiParam(name = "skipCount", value = "Skip counting the total number of results. In other words, will leave "
-//            + "numTotalResults in the QueryResult object to -1. This can make queries much faster."
-//            + " Please note that this option may not be available for all web services.")
-//    protected String skipCount;
 
     @DefaultValue("false")
     @QueryParam("count")
-    @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default. "
-            + " Please note that this option may not be available for all web services.",
+    @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default.",
             defaultValue = "false", allowableValues = "false,true")
     protected String count;
 
     @DefaultValue("")
     @QueryParam("sort")
-    @ApiParam(name = "sort", value = "Sort returned results by a certain data model attribute."
-            + " Please note that this option may not be available for all web services.")
+    @ApiParam(name = "sort", value = "Sort returned results by a certain data model attribute.", defaultValue = "ASC",
+            allowableValues = "ASC,DESC")
     protected String sort;
 
     @DefaultValue("json")

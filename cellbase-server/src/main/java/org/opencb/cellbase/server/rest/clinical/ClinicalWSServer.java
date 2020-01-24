@@ -25,10 +25,7 @@ import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -41,6 +38,7 @@ import java.io.IOException;
 @Produces("application/json")
 @Api(value = "Clinical", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
+
 
 
     public ClinicalWSServer(@PathParam("version")
