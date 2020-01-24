@@ -147,7 +147,8 @@ public class ClinicalVariantParserTest {
         for (Variant variant : variantList) {
             // Each simple variant must contain two EvidenceEntry objects: one for the variation ID, another one for
             // the RCV
-            assertEquals(2, variant.getAnnotation().getTraitAssociation().size());
+            // And one SCV
+            assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
             assertEvidenceEntriesHaplotype("9:107594021:-:GTAC,"
                     + "9:107594027:-:TGGCGTGACCTCAGCTCACTGC,"
                     + "9:107594052:-:CTCTGCCTCCTGAG,"
@@ -311,7 +312,8 @@ public class ClinicalVariantParserTest {
         assertEquals("A", variant.getReference());
         assertEquals("C", variant.getAlternate());
         // Two evidenceEntry for the two variation records, another for the RCV
-        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        // and one for SCV
+        assertEquals(4, variant.getAnnotation().getTraitAssociation().size());
         // Check proper variation record is there
         // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
         EvidenceEntry evidenceEntry = getEvidenceEntryByAccession(variant, "242756");
@@ -335,6 +337,13 @@ public class ClinicalVariantParserTest {
         property = getProperty(evidenceEntry.getAdditionalProperties(), "GenotypeSet");
         assertNotNull(property.getValue());
         assertEquals("18:55217992:A:T,18:55217991:G:A", property.getValue());
+
+        // SCV
+        evidenceEntry = getEvidenceEntryByAccession(variant, "SCV000020740");
+        assertNotNull(evidenceEntry);
+        assertEquals(1, evidenceEntry.getGenomicFeatures().size());
+        assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
+
         // Second variant in the haplotype
         variant = variantList.get(1);
         assertEquals("18", variant.getChromosome());
@@ -342,7 +351,7 @@ public class ClinicalVariantParserTest {
         assertEquals("G", variant.getReference());
         assertEquals("A", variant.getAlternate());
         // Two evidenceEntry for the two variation records, another for the RCV
-        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        assertEquals(4, variant.getAnnotation().getTraitAssociation().size());
         // Check proper variation record is there
         // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
         evidenceEntry = getEvidenceEntryByAccession(variant, "242755");
@@ -373,7 +382,7 @@ public class ClinicalVariantParserTest {
         assertEquals("A", variant.getReference());
         assertEquals("T", variant.getAlternate());
         // Two evidenceEntry for the two variation records, another for the RCV
-        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        assertEquals(4, variant.getAnnotation().getTraitAssociation().size());
         // Check variation records are there
         // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
         evidenceEntry = getEvidenceEntryByAccession(variant, "242821");
@@ -410,7 +419,7 @@ public class ClinicalVariantParserTest {
         assertEquals("A", variant.getReference());
         assertEquals("G", variant.getAlternate());
         // Two evidenceEntry for the two variation records, another for the RCV
-        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        assertEquals(4, variant.getAnnotation().getTraitAssociation().size());
         // Check variation records are there
         // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
         evidenceEntry = getEvidenceEntryByAccession(variant, "242617");
@@ -440,7 +449,7 @@ public class ClinicalVariantParserTest {
         assertEquals("C", variant.getReference());
         assertEquals("", variant.getAlternate());
         // Two evidenceEntry for the two variation records, another for the RCV
-        assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
+        assertEquals(4, variant.getAnnotation().getTraitAssociation().size());
         // Check proper variation record is there
         // This is the variation record that corresponds to the variant alone: there cannot be GenotypeSet property
         evidenceEntry = getEvidenceEntryByAccession(variant, "242616");

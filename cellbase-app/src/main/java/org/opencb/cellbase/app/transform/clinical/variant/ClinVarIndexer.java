@@ -98,9 +98,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
             logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
             ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", clinvarRelease.getValue().getClinVarSet().size(),
                     200).setBatchSize(10000);
+
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 List<AlleleLocationData> alleleLocationDataList =
                         rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+
                 if (alleleLocationDataList != null) {
                     boolean success = false;
                     // Actually this list is currently not allowed to be > 2
@@ -229,8 +231,27 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     clinicalHaplotypeString = StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR);
                 }
 
+                // parse RCVs
+                String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+                String clinicalSignficanceDescription = publicSet.getReferenceClinVarAssertion()
+                        .getClinicalSignificance().getReviewStatus().name();
+                String reviewStatusName = publicSet.getReferenceClinVarAssertion().getClinicalSignificance()
+                        .getReviewStatus().name();
+                List<ObservationSet> getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
                 addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
-                        clinicalHaplotypeString, traitsToEfoTermsMap);
+                        clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
+                        reviewStatusName, getObservedIn);
+
+                // parse SCVs
+                for (MeasureTraitType measureTraitType : publicSet.getClinVarAssertion()) {
+                    accession = measureTraitType.getClinVarAccession().getAcc();
+                    clinicalSignficanceDescription = measureTraitType.getClinicalSignificance().getReviewStatus().name();
+                    reviewStatusName = measureTraitType.getClinicalSignificance().getReviewStatus().name();
+                    getObservedIn = measureTraitType.getObservedIn();
+                    addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
+                            clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
+                            reviewStatusName, getObservedIn);
+                }
 
                 rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
@@ -317,21 +338,21 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
     private void addNewEntries(VariantAnnotation variantAnnotation, PublicSetType publicSet, String alleleId,
                                String mateVariantString, String clinicalHaplotypeString,
-                               Map<String, EFO> traitsToEfoTermsMap) throws JsonProcessingException {
+                               Map<String, EFO> traitsToEfoTermsMap, String accession,
+                               String clinicalSignficanceDescription, String reviewStatusName,
+                               List<ObservationSet> getObservedIn)
+        throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
-        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+//        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
         VariantClassification variantClassification = getVariantClassification(
-                Arrays.asList(publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getDescription().split("[,/;]")));
-        additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE, publicSet.getReferenceClinVarAssertion()
-                .getClinicalSignificance().getDescription()));
+                Arrays.asList(clinicalSignficanceDescription.split("[,/;]")));
+        additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE, clinicalSignficanceDescription));
 
-        ConsistencyStatus consistencyStatus = getConsistencyStatus(publicSet.getReferenceClinVarAssertion()
-                .getClinicalSignificance().getReviewStatus().name());
-        additionalProperties.add(new Property(null, REVIEW_STATUS_IN_SOURCE_FILE, publicSet.getReferenceClinVarAssertion()
-                .getClinicalSignificance().getReviewStatus().name()));
+        ConsistencyStatus consistencyStatus = getConsistencyStatus(reviewStatusName);
+        additionalProperties.add(new Property(null, REVIEW_STATUS_IN_SOURCE_FILE, reviewStatusName));
 
         // Multiple vars within the same RCV. Maximum of two vars permitted so far
         if (mateVariantString != null) {
@@ -348,8 +369,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<EvidenceSubmission> submissions = getSubmissionList(publicSet);
 
         List<String> bibliography = new ArrayList<>();
-        Set<String> originSet = new HashSet<>(publicSet.getReferenceClinVarAssertion().getObservedIn().size());
-        for (ObservationSet observationSet : publicSet.getReferenceClinVarAssertion().getObservedIn()) {
+        Set<String> originSet = new HashSet<>(getObservedIn.size());
+        for (ObservationSet observationSet : getObservedIn) {
             // Origin for a number of the variants may not be clear, values found in the database for this field are:
             // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
             // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
@@ -632,7 +653,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             // Check assembly
             // Check coordinates fields are not missing
             // Check reference != alternate
-            if (parts[VARIANT_SUMMARY_ASSEMBLY_COLUMN].equals(assembly)
+            if (parts[VARIANT_SUMMARY_ASSEMBLY_COLUMN].equalsIgnoreCase(assembly)
                     && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_CHR_COLUMN])
                     && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_START_COLUMN])
                     && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_END_COLUMN])
@@ -661,6 +682,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                 + line);
                     } else {
                         alleleLocationDataList.add(new AlleleLocationData(parts[0], sequenceLocation));
+
                     }
                 }
                 // Index the Germline/Somatic documents corresponding to the aggregated variation object
