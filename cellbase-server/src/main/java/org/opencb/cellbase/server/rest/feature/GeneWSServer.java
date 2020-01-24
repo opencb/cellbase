@@ -330,8 +330,6 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll() {
-//    public Response getAll(@ApiParam(value = "String with the list of biotypes to return")
-//                           @DefaultValue("") @QueryParam("biotype") String biotype) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
@@ -796,22 +794,6 @@ public class GeneWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
-
-
-//    @GET
-//    @Path("/{geneId}/mirna_target")
-//    @ApiOperation(httpMethod = "GET", value = "Get all microRNAs binding sites for this gene(s). Not yet implemented",
-//            hidden = true)
-//    public Response getAllMirna(@PathParam("geneId") String geneId) {
-//        try {
-//            parseQueryParams();
-//            MirnaDBAdaptor mirnaDBAdaptor = dbAdaptorFactory.getMirnaDBAdaptor(this.species, this.assembly);
-//            return createOkResponse(mirnaDBAdaptor.getAllMiRnaTargetsByGeneNameList(Splitter.on(",").splitToList(geneId)));
-//        } catch (Exception e) {
-//            return createErrorResponse(e);
-//        }
-//    }
-
 
     @GET
     @Path("/{geneId}/protein")

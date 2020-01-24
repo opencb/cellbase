@@ -143,7 +143,7 @@ public class GenericRestWSServer implements IWSServer {
     protected DBAdaptorFactory dbAdaptorFactory;
     protected Monitor monitor;
 
-    private static final int LIMIT_DEFAULT = 1000;
+    private static final int LIMIT_DEFAULT = 10;
     private static final int LIMIT_MAX = 5000;
     private static final String ERROR = "error";
     private static final String OK = "ok";
