@@ -33,12 +33,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private GenomeDBAdaptor genomeDBAdaptor;
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
-                                  CellBaseConfiguration cellBaseConfiguration) {
+                                  GenomeDBAdaptor genomeDBAdaptor) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
-        DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        this.genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-
+        this.genomeDBAdaptor = genomeDBAdaptor;
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
 
@@ -202,10 +200,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                 "annotation.traitAssociation.alleleOrigin", andBsonList);
 
         createTraitQuery(query.getString(QueryParams.TRAIT.key()), andBsonList);
-
-        if (query.containsKey(QueryParams.HGVS.key())) {
-            createOrQuery(query, QueryParams.HGVS.key(), "annotation.hgvs", andBsonList);
-        }
+        createOrQuery(query, QueryParams.HGVS.key(), "annotation.hgvs", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

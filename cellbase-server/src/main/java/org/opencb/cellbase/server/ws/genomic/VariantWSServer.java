@@ -153,7 +153,12 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         value = "Integer to optionally provide the size of the extra"
                                                                 + " padding to be used when annotating imprecise (or not)"
                                                                 + " CNVs",
-                                                        defaultValue = "0", required = false) Integer cnvExtraPadding) {
+                                                        defaultValue = "0", required = false) Integer cnvExtraPadding,
+                                                @QueryParam("checkAminoAcidChange")
+                                                @ApiParam(name = "checkAminoAcidChange",
+                                                value = "<DESCRIPTION GOES HERE>",
+                                                allowableValues = "false,true",
+                                                defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -163,7 +168,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 imprecise,
                 svExtraPadding,
                 cnvExtraPadding,
-                false);
+                checkAminoAcidChange);
     }
 
     @GET
