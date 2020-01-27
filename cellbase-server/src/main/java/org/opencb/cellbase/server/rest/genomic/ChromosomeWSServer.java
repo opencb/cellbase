@@ -76,12 +76,18 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true")
     })
-    public Response getChromosomesAll(@QueryParam("limit") @DefaultValue("10")
-                                          @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
-                                      @QueryParam("skip") @DefaultValue("0")
-                                          @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
+    public Response getAll(@QueryParam("exclude")
+                           @ApiParam(value = "Set which fields are excluded in the response, e.g.: transcripts.exons.") String exclude,
+                           @QueryParam("include")
+                           @ApiParam(value = "Set which fields are include in the response, e.g.: transcripts.exons.") String include,
+                           @QueryParam("sort")
+                           @ApiParam(value = "Sort returned results by a certain data model attribute.") String sort,
+                           @QueryParam("limit") @DefaultValue("10")
+                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                           @QueryParam("skip") @DefaultValue("0")
+                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
-            parseExtraQueryParams(limit, skip);
+            parseExtraQueryParams(exclude, include, sort, limit, skip);
             parseQueryParams();
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             return createOkResponse(dbAdaptor.getGenomeInfo(queryOptions));

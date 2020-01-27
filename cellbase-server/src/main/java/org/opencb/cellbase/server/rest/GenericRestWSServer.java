@@ -66,21 +66,6 @@ public class GenericRestWSServer implements IWSServer {
     @QueryParam("assembly")
     protected String assembly;
 
-    @ApiParam(name = "exclude", value = "Set which fields are excluded in the response, e.g.: transcripts.exons. ")
-    @DefaultValue("")
-    @QueryParam("exclude")
-    protected String exclude;
-
-    @DefaultValue("")
-    @QueryParam("include")
-    @ApiParam(name = "include", value = "Set which fields are included in the response, e.g.: transcripts.id. ")
-    protected String include;
-
-    @DefaultValue("")
-    @QueryParam("sort")
-    @ApiParam(name = "sort", value = "Sort returned results by a certain data model attribute.")
-    protected String sort;
-
     @DefaultValue("json")
     @QueryParam("of")
     @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json",
@@ -229,6 +214,17 @@ public class GenericRestWSServer implements IWSServer {
 
         queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
 
+        // Add all the others QueryParams from the URL
+        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+            if (!queryOptions.containsKey(entry.getKey())) {
+                query.put(entry.getKey(), entry.getValue().get(0));
+            }
+        }
+    }
+
+    public void parseExtraQueryParams(String exclude, String include, String sort, Integer limit, Integer skip)
+            throws CellbaseException {
+        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         if (exclude != null && !exclude.isEmpty()) {
             // We add the user's 'exclude' fields to the default values _id and _chunks
             if (queryOptions.containsKey(QueryOptions.EXCLUDE)) {
@@ -248,15 +244,6 @@ public class GenericRestWSServer implements IWSServer {
             queryOptions.put(QueryOptions.SORT, sort);
         }
 
-        // Add all the others QueryParams from the URL
-        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-            if (!queryOptions.containsKey(entry.getKey())) {
-                query.put(entry.getKey(), entry.getValue().get(0));
-            }
-        }
-    }
-
-    public void parseExtraQueryParams(Integer limit, Integer skip) throws CellbaseException {
         if (limit != null) {
             if (limit > MAX_RECORDS) {
                 throw new CellbaseException("Limit cannot exceed " + MAX_RECORDS + " but was " + limit);
