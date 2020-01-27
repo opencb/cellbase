@@ -79,8 +79,18 @@ public class IdWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getByFeatureIdInfo(@PathParam("id")
                                        @ApiParam(name = "id", value = "Comma separated list of ids, e.g.: BRCA2. Exact "
-                                               + "text matches will be returned.", required = true) String id) {
+                                               + "text matches will be returned.", required = true) String id,
+                                       @QueryParam("exclude")
+                                       @ApiParam(value = "Set which fields are excluded in the response, "
+                                               + "e.g.: transcripts.exons.") String exclude,
+                                       @QueryParam("include")
+                                           @ApiParam(value = "Set which fields are include in the response, "
+                                                   + "e.g.: transcripts.exons.") String include,
+                                       @QueryParam("sort")
+                                           @ApiParam(value = "Sort returned results by a certain data model attribute.")
+                                                   String sort) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
 

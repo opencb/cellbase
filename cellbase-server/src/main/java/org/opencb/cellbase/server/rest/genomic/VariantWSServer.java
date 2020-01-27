@@ -95,7 +95,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @POST
     @Consumes("text/plain")
-    @Path("/annotation/run")
+    @Path("/annotation")
     @ApiOperation(httpMethod = "POST",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
@@ -391,8 +391,18 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("id")
                                    @ApiParam(name = "id",
                                            value = "Comma separated list of rs ids, e.g.: rs6025",
-                                           required = true) String id) {
+                                           required = true) String id,
+                                   @QueryParam("exclude")
+                                   @ApiParam(value = "Set which fields are excluded in the response, "
+                                           + "e.g.: transcripts.exons.") String exclude,
+                                   @QueryParam("include")
+                                       @ApiParam(value = "Set which fields are include in the response, "
+                                               + "e.g.: transcripts.exons.") String include,
+                                   @QueryParam("sort")
+                                       @ApiParam(value = "Sort returned results by a certain data model attribute.")
+                                               String sort) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
@@ -448,7 +458,8 @@ public class VariantWSServer extends GenericRestWSServer {
                            @QueryParam("skip") @DefaultValue("0")
                            @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
-            parseExtraQueryParams(exclude, include, sort, limit, skip);
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
             return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));

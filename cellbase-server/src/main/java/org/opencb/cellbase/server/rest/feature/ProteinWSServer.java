@@ -79,8 +79,18 @@ public class ProteinWSServer extends GenericRestWSServer {
                                        @ApiParam(name = "proteinId",
                                                value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,"
                                                        + " ENST00000278314. Exact text matches will be returned",
-                                               required = true) String id) {
+                                               required = true) String id,
+                                       @QueryParam("exclude")
+                                       @ApiParam(value = "Set which fields are excluded in the response, "
+                                               + "e.g.: transcripts.exons.") String exclude,
+                                       @QueryParam("include")
+                                       @ApiParam(value = "Set which fields are include in the response, "
+                                               + "e.g.: transcripts.exons.") String include,
+                                       @QueryParam("sort")
+                                       @ApiParam(value = "Sort returned results by a certain data model attribute.")
+                                                   String sort) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, ProteinDBAdaptor.QueryParams.XREFS.key());
@@ -135,7 +145,8 @@ public class ProteinWSServer extends GenericRestWSServer {
                            @QueryParam("skip") @DefaultValue("0")
                            @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
-            parseExtraQueryParams(exclude, include, sort, limit, skip);
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(proteinDBAdaptor.nativeGet(query, queryOptions));

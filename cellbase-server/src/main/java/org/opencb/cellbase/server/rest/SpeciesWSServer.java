@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.server.rest;
 
+import com.mongodb.MongoException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -26,12 +27,8 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
-
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -64,13 +61,23 @@ public class SpeciesWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
             responseContainer = "QueryResponse")
-    public Response getSpeciesInfo() {
+    public Response getSpeciesInfo(@QueryParam("exclude")
+                                   @ApiParam(value = "Set which fields are excluded in the response, "
+                                           + "e.g.: transcripts.exons.") String exclude,
+                                   @QueryParam("include")
+                                   @ApiParam(value = "Set which fields are include in the response, "
+                                           + "e.g.: transcripts.exons.") String include,
+                                   @QueryParam("sort")
+                                   @ApiParam(value = "Sort returned results by a certain data model attribute.")
+                                               String sort) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseQueryParams();
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
             CellBaseDataResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
             queryResult.setId(species);
             return createOkResponse(queryResult);
-        } catch (com.mongodb.MongoException e) {
+        } catch (MongoException | CellbaseException e) {
             e.printStackTrace();
             return null;
         }

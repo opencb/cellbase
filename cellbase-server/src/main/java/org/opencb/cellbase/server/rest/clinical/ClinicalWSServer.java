@@ -128,7 +128,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
                            @QueryParam("skip") @DefaultValue("0")
                            @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
-            parseExtraQueryParams(exclude, include, sort, limit, skip);
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 

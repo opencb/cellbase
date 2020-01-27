@@ -135,7 +135,8 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                            @QueryParam("skip") @DefaultValue("0")
                            @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
-            parseExtraQueryParams(exclude, include, sort, limit, skip);
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
             return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));

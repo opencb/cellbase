@@ -222,8 +222,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    public void parseExtraQueryParams(String exclude, String include, String sort, Integer limit, Integer skip)
-            throws CellbaseException {
+    public void parseIncludesAndExcludes(String exclude, String include, String sort) {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         if (exclude != null && !exclude.isEmpty()) {
             // We add the user's 'exclude' fields to the default values _id and _chunks
@@ -231,7 +230,6 @@ public class GenericRestWSServer implements IWSServer {
                 queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
             }
         }
-
         if (include != null && !include.isEmpty()) {
             queryOptions.put(QueryOptions.INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
         } else {
@@ -239,11 +237,12 @@ public class GenericRestWSServer implements IWSServer {
                     ? Splitter.on(",").splitToList(multivaluedMap.get(QueryOptions.INCLUDE).get(0))
                     : null);
         }
-
         if (sort != null && !sort.isEmpty()) {
             queryOptions.put(QueryOptions.SORT, sort);
         }
+    }
 
+    public void parseLimitAndSkip(Integer limit, Integer skip) throws CellbaseException {
         if (limit != null) {
             if (limit > MAX_RECORDS) {
                 throw new CellbaseException("Limit cannot exceed " + MAX_RECORDS + " but was " + limit);

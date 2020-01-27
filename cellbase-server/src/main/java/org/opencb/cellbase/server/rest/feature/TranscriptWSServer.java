@@ -244,14 +244,15 @@ public class TranscriptWSServer extends GenericRestWSServer {
                            @QueryParam("skip") @DefaultValue("0")
                            @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
-            parseExtraQueryParams(exclude, include, sort, limit, skip);
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             CellBaseDataResult queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
             // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
             // properly fixed
             queryResult.setNumTotalResults(-1);
-            queryResult.setNumResults(-1);
+            queryResult.setNumMatches(-1);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
