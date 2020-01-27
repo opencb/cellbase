@@ -33,6 +33,7 @@ import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.PositiveOrZero;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -332,9 +333,9 @@ public class GeneWSServer extends GenericRestWSServer {
                             + " Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll(@QueryParam("limit") @DefaultValue("10")
+    public Response getAll(@QueryParam("limit") @DefaultValue("10") @PositiveOrZero
                            @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
-                           @QueryParam("skip") @DefaultValue("0")
+                           @QueryParam("skip") @DefaultValue("0") @PositiveOrZero
                            @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
             parseExtraQueryParams(limit, skip);
