@@ -19,6 +19,8 @@ package org.opencb.cellbase.lib.impl;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ClinVar;
 import org.opencb.biodata.models.variant.avro.Cosmic;
 import org.opencb.biodata.models.variant.avro.Gwas;
@@ -346,6 +348,13 @@ public class ClinicalLegacyMongoDBAdaptor extends MongoDBAdaptor implements Clin
 
     @Override
     public QueryResult<String> getVariantTypes() {
+        return null;
+    }
+
+    @Override
+    public List<QueryResult<Variant>> getByVariant(List<Variant> variants,
+                                                   List<Gene> geneList,
+                                                   QueryOptions queryOptions) {
         return null;
     }
 

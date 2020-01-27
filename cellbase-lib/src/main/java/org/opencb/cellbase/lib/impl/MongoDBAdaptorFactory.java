@@ -321,7 +321,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return geneMongoDBAdaptor;
     }
 
-
     @Override
     public TranscriptDBAdaptor getTranscriptDBAdaptor(String species) {
         return getTranscriptDBAdaptor(species, null);
@@ -332,7 +331,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new TranscriptMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 
     @Override
     public ConservationDBAdaptor getConservationDBAdaptor(String species) {
@@ -345,7 +343,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
     @Override
     public XRefDBAdaptor getXRefDBAdaptor(String species) {
         return getXRefDBAdaptor(species, null);
@@ -357,7 +354,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new XRefMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
     @Override
     public VariantDBAdaptor getVariationDBAdaptor(String species) {
         return getVariationDBAdaptor(species, null);
@@ -368,30 +364,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
-//        return getVariantAnnotationDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new VariantAnnotationCalculator(species, assembly, mongoDatastore, this);
-//    }
-
-
-//    @Override
-//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species) {
-//        return getVariantFunctionalScoreDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariantFunctionalScoreDBAdaptor getVariantFunctionalScoreDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new VariantFunctionalScoreMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-
 
     @Override
     public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species) {
@@ -412,7 +384,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     @Override
     public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore, getGenomeDBAdaptor(species, assembly));
     }
 
     @Override
@@ -420,33 +392,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new RepeatsMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
-
-//
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species) {
-//        return getVariantAnnotationDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariantAnnotationDBAdaptor getVariantAnnotationDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        VariantAnnotationDBAdaptor variantAnnotationDBAdaptor = new VariantAnnotationMongoDBAdaptor(species, assembly,
-//                mongoDatastore);
-//        variantAnnotationDBAdaptor.setGeneDBAdaptor(getGeneDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setRegulationDBAdaptor(getRegulatoryRegionDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setVariantDBAdaptor(getVariationDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setVariantClinicalDBAdaptor(getClinicalLegacyDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setProteinDBAdaptor(getProteinDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setConservationDBAdaptor(getConservedRegionDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setVariantFunctionalScoreDBAdaptor(getVariantFunctionalScoreDBAdaptor(species, assembly));
-//        variantAnnotationDBAdaptor.setGenomeDBAdaptor(getGenomeDBAdaptor(species, assembly));
-//
-//        return variantAnnotationDBAdaptor;
-//    }
-//
-//
-
 
     @Override
     public ProteinDBAdaptor getProteinDBAdaptor(String species) {
@@ -459,7 +404,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
     @Override
     public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {
         return getProteinProteinInteractionDBAdaptor(species, null);
@@ -471,7 +415,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
     @Override
     public RegulationDBAdaptor getRegulationDBAdaptor(String species) {
         return getRegulationDBAdaptor(species, null);
@@ -482,65 +425,4 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new RegulationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-//
-//    @Override
-//    public TfbsDBAdaptor getTfbsDBAdaptor(String species) {
-//        return getTfbsDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public TfbsDBAdaptor getTfbsDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new TfbsMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-//
-//
-//    @Override
-//    public PathwayDBAdaptor getPathwayDBAdaptor(String species) {
-//        return getPathwayDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public PathwayDBAdaptor getPathwayDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new PathwayMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-//
-//
-//    @Override
-//    public VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species) {
-//        return getVariationPhenotypeAnnotationDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public VariationPhenotypeAnnotationDBAdaptor getVariationPhenotypeAnnotationDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return (VariationPhenotypeAnnotationDBAdaptor) new VariationPhenotypeAnnotationMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-//
-//
-//    @Override
-//    public StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public StructuralVariationDBAdaptor getStructuralVariationDBAdaptor(String species, String assembly) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public MirnaDBAdaptor getMirnaDBAdaptor(String species) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public MirnaDBAdaptor getMirnaDBAdaptor(String species, String assembly) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
 }
