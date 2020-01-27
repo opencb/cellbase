@@ -76,26 +76,9 @@ public class GenericRestWSServer implements IWSServer {
     @ApiParam(name = "include", value = "Set which fields are included in the response, e.g.: transcripts.id. ")
     protected String include;
 
-    @DefaultValue("10")
-    @QueryParam("limit")
-    @ApiParam(name = "limit", value = "Max number of results to be returned. Cannot exceed 5,000.")
-    protected int limit;
-
-    @DefaultValue("0")
-    @QueryParam("skip")
-    @ApiParam(name = "skip", value = "Number of results to be skipped. No skip applied when 0.")
-    protected int skip;
-
-    @DefaultValue("false")
-    @QueryParam("count")
-    @ApiParam(name = "count", value = "Get a count of the number of results obtained. Deactivated by default.",
-            defaultValue = "false", allowableValues = "false,true")
-    protected String count;
-
     @DefaultValue("")
     @QueryParam("sort")
-    @ApiParam(name = "sort", value = "Sort returned results by a certain data model attribute.", defaultValue = "ASC",
-            allowableValues = "ASC,DESC")
+    @ApiParam(name = "sort", value = "Sort returned results by a certain data model attribute.")
     protected String sort;
 
     @DefaultValue("json")
@@ -131,8 +114,9 @@ public class GenericRestWSServer implements IWSServer {
     protected DBAdaptorFactory dbAdaptorFactory;
     protected Monitor monitor;
 
+    private static final int SKIP_DEFAULT = 0;
     private static final int LIMIT_DEFAULT = 10;
-    private static final int LIMIT_MAX = 5000;
+    private static final int MAX_RECORDS = 5000;
     private static final String ERROR = "error";
     private static final String OK = "ok";
     // this webservice has no species, do not validate
@@ -264,25 +248,36 @@ public class GenericRestWSServer implements IWSServer {
             queryOptions.put(QueryOptions.SORT, sort);
         }
 
-        if (limit < 0) {
-            throw new CellbaseException("Limit is not valid. Expected a number greater than zero but was " + limit);
-        } else if (limit > LIMIT_MAX) {
-            throw new CellbaseException("Limit is not valid. Expected a number less than " + LIMIT_MAX + " but was " + limit);
-        }
-
-        if (skip < 0) {
-            throw new CellbaseException("Skip is not valid. Expected a number greater than zero but was " + skip);
-        }
-
-        queryOptions.put(QueryOptions.LIMIT, limit);
-        queryOptions.put(QueryOptions.SKIP, skip);
-        queryOptions.put(QueryOptions.COUNT, StringUtils.isNotBlank(count) && Boolean.parseBoolean(count));
-
         // Add all the others QueryParams from the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
             if (!queryOptions.containsKey(entry.getKey())) {
                 query.put(entry.getKey(), entry.getValue().get(0));
             }
+        }
+    }
+
+    public void parseExtraQueryParams(Integer limit, Integer skip) throws CellbaseException {
+        if (limit != null) {
+            if (limit > MAX_RECORDS) {
+                throw new CellbaseException("Limit cannot exceed " + MAX_RECORDS + " but was " + limit);
+            }
+            if (limit < 0) {
+                throw new CellbaseException("Limit must be >= 0, but was " + limit);
+            }
+            queryOptions.put(QueryOptions.LIMIT, limit);
+        } else {
+            queryOptions.put(QueryOptions.LIMIT, LIMIT_DEFAULT);
+        }
+        if (skip != null) {
+            if (skip > MAX_RECORDS) {
+                throw new CellbaseException("Skip cannot exceed " + MAX_RECORDS + " but was " + skip);
+            }
+            if (skip < 0) {
+                throw new CellbaseException("Skip must be >= 0, but was " + skip);
+            }
+            queryOptions.put(QueryOptions.SKIP, skip);
+        } else {
+            queryOptions.put(QueryOptions.SKIP, SKIP_DEFAULT);
         }
     }
 

@@ -17,9 +17,7 @@
 package org.opencb.cellbase.server.rest.genomic;
 
 import com.google.common.base.Splitter;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -30,10 +28,7 @@ import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -75,8 +70,18 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @Path("/search")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = Chromosome.class,
         responseContainer = "QueryResponse")
-    public Response getChromosomesAll() {
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "count",
+                    value = "Get a count of the number of results obtained. Deactivated by default.",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true")
+    })
+    public Response getChromosomesAll(@QueryParam("limit") @DefaultValue("10")
+                                          @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                                      @QueryParam("skip") @DefaultValue("0")
+                                          @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
+            parseExtraQueryParams(limit, skip);
             parseQueryParams();
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             return createOkResponse(dbAdaptor.getGenomeInfo(queryOptions));

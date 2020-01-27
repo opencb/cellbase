@@ -205,6 +205,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
             value = "Retrieves all transcript objects", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "count",
+                    value = "Get a count of the number of results obtained.",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     dataType = "java.util.List", paramType = "query"),
@@ -229,14 +233,19 @@ public class TranscriptWSServer extends GenericRestWSServer {
                             + "within the gene model, e.g.: basic,CCDS. Exact text matches will be returned",
                     dataType = "string", paramType = "query"),
     })
-    public Response getAll() {
+    public Response getAll(@QueryParam("limit") @DefaultValue("10")
+                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                           @QueryParam("skip") @DefaultValue("0")
+                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
+            parseExtraQueryParams(limit, skip);
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             CellBaseDataResult queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
             // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
             // properly fixed
             queryResult.setNumTotalResults(-1);
+            queryResult.setNumResults(-1);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);

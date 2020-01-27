@@ -32,7 +32,6 @@ import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
 
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -259,6 +258,10 @@ public class GeneWSServer extends GenericRestWSServer {
             value = "Retrieves all gene objects", response = Gene.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "count",
+                    value = "Get a count of the number of results obtained.",
+                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -329,8 +332,12 @@ public class GeneWSServer extends GenericRestWSServer {
                             + " Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll() {
+    public Response getAll(@QueryParam("limit") @DefaultValue("10")
+                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                           @QueryParam("skip") @DefaultValue("0")
+                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
+            parseExtraQueryParams(limit, skip);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
@@ -553,7 +560,8 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/distinct/{fieldName}")
-    @ApiOperation(httpMethod = "GET", value = "Get a unique list of values for a given field, e.g. biotype")
+    @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values for specified gene, e.g. biotype or chromosome",
+            value = "Get a unique list of values for a given field.")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
@@ -563,11 +571,11 @@ public class GeneWSServer extends GenericRestWSServer {
                             + "Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "name",
-                    value = "Comma separated list of gene HGNC names, e.g.: BRCA2,TTN,MUC4"
+                    value = "Comma separated list of gene HGNC names, e.g.: BRCA2,TTN,MUC4. "
                             + "Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs",
-                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020. "
                             + "Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.id",
@@ -829,7 +837,8 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{geneId}/ppi")
-    @ApiOperation(httpMethod = "GET", value = "Get the protein-protein interactions in which this gene is involved")
+    @ApiOperation(httpMethod = "GET", value = "Get the protein-protein interactions in which this gene is involved",
+            hidden = true)
     public Response getPPIByEnsemblId(@PathParam("geneId") String gene) {
         try {
             parseQueryParams();
@@ -852,7 +861,7 @@ public class GeneWSServer extends GenericRestWSServer {
             + "a look at "
             + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
             value = "[DEPRECATED] Use {version}/{species}/clinical/variant/search instead.", response = Document.class,
-            responseContainer = "QueryResponse")
+            responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "source",
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "

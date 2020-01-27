@@ -54,7 +54,8 @@ public class SpeciesWSServer extends GenericRestWSServer {
                                    + "of potentially available species ids, please refer to: "
                                    + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
                            @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException,
+            CellbaseException {
         super(version, species, uriInfo, hsr);
     }
 

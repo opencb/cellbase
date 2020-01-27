@@ -27,6 +27,7 @@ import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -35,11 +36,9 @@ import java.io.IOException;
  * Created by fjlopez on 06/12/16.
  */
 @Path("/{version}/{species}/clinical")
-@Produces("application/json")
+@Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Clinical", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
-
-
 
     public ClinicalWSServer(@PathParam("version")
                                   @ApiParam(name = "version", value = "Possible values: v4, v5",
@@ -58,6 +57,10 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. ",
             value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "count",
+                    value = "Get a count of the number of results obtained.",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "source",
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "
                             + " are clinvar,cosmic or iarctp53. E.g.: clinvar,cosmic",
@@ -114,8 +117,12 @@ public class ClinicalWSServer extends GenericRestWSServer {
                             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/allele_origin_labels",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll() {
+    public Response getAll(@QueryParam("limit") @DefaultValue("10")
+                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                           @QueryParam("skip") @DefaultValue("0")
+                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
+            parseExtraQueryParams(limit, skip);
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
 

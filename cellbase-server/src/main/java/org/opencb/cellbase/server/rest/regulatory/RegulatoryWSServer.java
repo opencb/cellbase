@@ -25,10 +25,7 @@ import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -107,6 +104,10 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             value = "Retrieves all regulatory elements", response = RegulatoryFeature.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "count",
+                    value = "Get a count of the number of results obtained.",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "region",
                     value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -123,8 +124,12 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureClass",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll() {
+    public Response getAll(@QueryParam("limit") @DefaultValue("10")
+                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                           @QueryParam("skip") @DefaultValue("0")
+                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
+            parseExtraQueryParams(limit, skip);
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
             return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));

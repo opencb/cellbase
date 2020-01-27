@@ -29,12 +29,8 @@ import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -103,6 +99,10 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Get all proteins", response = Entry.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "count",
+                    value = "Get a count of the number of results obtained. ",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "accession",
                     value = "Comma separated list of UniProt accession ids, e.g.: Q9UL59,B2R8Q1,Q9UKT9."
                             + "Exact text matches will be returned",
@@ -124,8 +124,12 @@ public class ProteinWSServer extends GenericRestWSServer {
                             + "Transcription,Zinc. Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll() {
+    public Response getAll(@QueryParam("limit") @DefaultValue("10")
+                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                           @QueryParam("skip") @DefaultValue("0")
+                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
+            parseExtraQueryParams(limit, skip);
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             return createOkResponse(proteinDBAdaptor.nativeGet(query, queryOptions));
