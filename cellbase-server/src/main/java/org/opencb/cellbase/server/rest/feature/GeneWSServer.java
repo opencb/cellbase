@@ -31,6 +31,7 @@ import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.PositiveOrZero;
@@ -254,6 +255,89 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
+    @Path("/aggregationStats")
+    @ApiOperation(httpMethod = "GET", value = "Counts gene HGNC symbols by a field(s). ", response = Integer.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "id",
+                    value = "Comma separated list of ENSEMBL gene ids, e.g.: ENST00000380152,ENSG00000155657."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "name",
+                    value = "Comma separated list of gene HGNC names, e.g.: BRCA2,TTN,MUC4."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "biotype",
+                    value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.biotype",
+                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.xrefs",
+                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.id",
+                    value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992,ENST00000380152,"
+                            + "ENST00000544455. Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.name",
+                    value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.tfbs.name",
+                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.id",
+                    value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
+                            + "OMIM:613390. Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.name",
+                    value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
+                            + "kidney disease. Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.gene",
+                    value = "Comma separated list of ENSEMBL gene ids for which expression values are available, "
+                            + "e.g.: ENSG00000139618,ENSG00000155657. Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.tissue",
+                    value = "Comma separated list of tissues for which expression values are available, "
+                            + "e.g.: adipose tissue,heart atrium,tongue."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.name",
+                    value = "Comma separated list of drug names, "
+                            + "e.g.: BMN673,OLAPARIB,VELIPARIB."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.gene",
+                    value = "Comma separated list of gene names for which drug data is available, "
+                            + "e.g.: BRCA2,TTN."
+                            + " Exact text matches will be returned",
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getAggregationStats(@DefaultValue("")
+                            @QueryParam("fields")
+                            @ApiParam(name = "fields",
+                                    value = "Comma separated list of field(s) to group by, e.g.: biotype.",
+                                    required = true) String fields) {
+        try {
+            parseQueryParams();
+            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+            queryOptions.put(QueryOptions.COUNT, true);
+            return createOkResponse(geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
     @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Retrieves all gene objects", response = Gene.class,
@@ -333,9 +417,9 @@ public class GeneWSServer extends GenericRestWSServer {
                             + " Exact text matches will be returned",
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll(@QueryParam("limit") @DefaultValue("10") @PositiveOrZero
+    public Response getAll(@QueryParam("limit") @DefaultValue("10")
                            @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
-                           @QueryParam("skip") @DefaultValue("0") @PositiveOrZero
+                           @QueryParam("skip") @DefaultValue("0") @PositiveOrZero(message = "Fruit colour must not be null")
                            @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
         try {
             parseExtraQueryParams(limit, skip);
