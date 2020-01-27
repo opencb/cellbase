@@ -72,7 +72,7 @@ public class VariantAnnotationCalculator {
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
     private Integer cnvExtraPadding = 0;
-    private Boolean checkAminoAcidChange;
+    private Boolean checkAminoAcidChange = false;
 
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
     private static HgvsCalculator hgvsCalculator;
@@ -362,11 +362,7 @@ public class VariantAnnotationCalculator {
             QueryOptions queryOptions = new QueryOptions();
             queryOptions.add(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased);
             queryOptions.add(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
-            if (checkAminoAcidChange) {
-                // HGVS calc needs to genes too
-                queryOptions.add(ClinicalDBAdaptor.QueryParams.BATCH_GENE_LIST.key(), batchGeneList);
-            }
-            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, queryOptions);
+            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
 
@@ -1539,17 +1535,21 @@ public class VariantAnnotationCalculator {
         private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
         private static final String SYMBOL = "symbol";
         private List<Variant> variantList;
+        private List<Gene> batchGeneList;
         private QueryOptions queryOptions;
 
-        FutureClinicalAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureClinicalAnnotator(List<Variant> variantList, List<Gene> batchGeneList, QueryOptions queryOptions) {
             this.variantList = variantList;
+            this.batchGeneList = batchGeneList;
             this.queryOptions = queryOptions;
         }
 
         @Override
         public List<QueryResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<QueryResult<Variant>> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
+            List<QueryResult<Variant>> clinicalQueryResultList = clinicalDBAdaptor.getByVariant(variantList,
+                    batchGeneList,
+                    queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalQueryResultList;
         }
