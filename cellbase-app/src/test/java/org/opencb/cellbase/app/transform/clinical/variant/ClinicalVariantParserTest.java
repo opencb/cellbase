@@ -145,9 +145,8 @@ public class ClinicalVariantParserTest {
         // Check corresponding EvidenceEntry objects for all 6 variants have been flagged with the proper "haplotype"
         // additional property
         for (Variant variant : variantList) {
-            // Each simple variant must contain two EvidenceEntry objects: one for the variation ID, another one for
-            // the RCV
-            // And one SCV
+            // Each simple variant must contain three EvidenceEntry objects: one for the variation ID, another one for
+            // the RCV and one SCV
             assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
             assertEvidenceEntriesHaplotype("9:107594021:-:GTAC,"
                     + "9:107594027:-:TGGCGTGACCTCAGCTCACTGC,"
@@ -343,6 +342,9 @@ public class ClinicalVariantParserTest {
         assertNotNull(evidenceEntry);
         assertEquals(1, evidenceEntry.getGenomicFeatures().size());
         assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
+        assertNotNull(evidenceEntry.getVariantClassification());
+        assertEquals(ClinicalSignificance.pathogenic,
+                evidenceEntry.getVariantClassification().getClinicalSignificance());
 
         // Second variant in the haplotype
         variant = variantList.get(1);

@@ -31,7 +31,7 @@ public class EtlCommons {
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
-    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2019-06.xml.gz";
+    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2020-01.xml.gz";
     public static final String CLINVAR_EFO_FILE = "ClinVar_Traits_EFO_Names.csv";
     public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
     public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";
