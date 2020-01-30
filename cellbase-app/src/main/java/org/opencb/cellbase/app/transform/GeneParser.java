@@ -678,7 +678,7 @@ public class GeneParser extends CellBaseParser {
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
             for (Fasta fasta : fastaList) {
-                cDnaSequencesMap.put(fasta.getId(), fasta);
+                cDnaSequencesMap.put(fasta.getId().split("\\.")[0], fasta);
             }
         } else {
             logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
