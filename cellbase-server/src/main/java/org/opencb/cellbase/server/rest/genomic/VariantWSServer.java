@@ -160,7 +160,7 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{variants}/annotation/run")
+    @Path("/{variants}/annotation")
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves variant annotation for a list of variants.", notes = "Include and exclude lists take"
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
@@ -365,40 +365,31 @@ public class VariantWSServer extends GenericRestWSServer {
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
             response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region",
-                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "consequenceType",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
                             + "matches will be returned.",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene",
-                    value = "Comma separated list ENSEMBL gene ids, e.g.: ENSG00000161905. Exact text matches will be "
-                            + "returned.",
+            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "chromosome",
                     value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference",
-                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+            @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate",
-                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+            @ApiImplicitParam(name = "alternate", value = ParamConstants.SNP_ALTERNATE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("id")
-                                   @ApiParam(name = "id",
-                                           value = "Comma separated list of rs ids, e.g.: rs6025",
-                                           required = true) String id,
+                                   @ApiParam(name = "id", value = "Comma separated list of rs ids, e.g.: rs6025",
+                                        required = true) String id,
                                    @QueryParam("exclude")
-                                   @ApiParam(value = "Set which fields are excluded in the response, "
-                                           + "e.g.: transcripts.exons.") String exclude,
+                                        @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                                    @QueryParam("include")
-                                       @ApiParam(value = "Set which fields are include in the response, "
-                                               + "e.g.: transcripts.exons.") String include,
+                                        @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                                    @QueryParam("sort")
-                                       @ApiParam(value = "Sort returned results by a certain data model attribute.")
-                                               String sort) {
+                                        @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
@@ -419,42 +410,37 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Retrieves all variation objects", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count",
-                    value = "Get a count of the number of results obtained.",
-                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "region",
-                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "id",
                     value = "Comma separated list of rs ids, e.g.: rs6025, rs666"
                             + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "consequenceType",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant."
                             + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene",
-                    value = "Comma separated list ENSEMBL gene ids, e.g.: ENSG00000161905. Exact text matches will be "
-                            + "returned.", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
+                    dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "chromosome",
                     value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference",
-                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+            @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate",
-                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+            @ApiImplicitParam(name = "alternate", value = ParamConstants.SNP_ALTERNATE,
                     dataType = "java.util.List", paramType = "query")
     })
     public Response search(@QueryParam("exclude")
-                           @ApiParam(value = "Set which fields are excluded in the response, e.g.: transcripts.exons.") String exclude,
+                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                            @QueryParam("include")
-                           @ApiParam(value = "Set which fields are include in the response, e.g.: transcripts.exons.") String include,
+                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                            @QueryParam("sort")
-                           @ApiParam(value = "Sort returned results by a certain data model attribute.") String sort,
+                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                            @QueryParam("limit") @DefaultValue("10")
-                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                            @QueryParam("skip") @DefaultValue("0")
-                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
+                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);

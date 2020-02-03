@@ -61,14 +61,11 @@ public class SpeciesWSServer extends GenericRestWSServer {
             value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
             responseContainer = "QueryResponse")
     public Response getSpeciesInfo(@QueryParam("exclude")
-                                   @ApiParam(value = "Set which fields are excluded in the response, "
-                                           + "e.g.: transcripts.exons.") String exclude,
+                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                                    @QueryParam("include")
-                                   @ApiParam(value = "Set which fields are include in the response, "
-                                           + "e.g.: transcripts.exons.") String include,
+                                       @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                                    @QueryParam("sort")
-                                   @ApiParam(value = "Sort returned results by a certain data model attribute.")
-                                               String sort) {
+                                       @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
