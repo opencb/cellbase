@@ -97,7 +97,7 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
-                    required = false, dataType = "string", paramType = "query"),
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
