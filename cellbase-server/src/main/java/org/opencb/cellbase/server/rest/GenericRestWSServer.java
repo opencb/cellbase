@@ -66,11 +66,6 @@ public class GenericRestWSServer implements IWSServer {
     @QueryParam("assembly")
     protected String assembly;
 
-    @DefaultValue("json")
-    @QueryParam("of")
-    @ApiParam(name = "Output format", value = "Output format, Protobuf is not yet implemented", defaultValue = "json",
-            allowableValues = "json,pb (Not implemented yet)")
-    protected String outputFormat;
     protected Query query;
     protected QueryOptions queryOptions;
     protected ObjectMap params;

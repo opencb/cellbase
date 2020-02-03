@@ -22,6 +22,7 @@ import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.CellBaseDataResponse;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.VariantDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -33,7 +34,6 @@ import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -60,12 +60,10 @@ public class VariantWSServer extends GenericRestWSServer {
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
 
     public VariantWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                   defaultValue = "v5") String version,
+                           @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                   defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                            @PathParam("species")
-                           @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                   + "of potentially available species ids, please refer to: "
-                                   + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);

@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.rest.feature;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -46,12 +47,10 @@ import java.util.Map;
 public class ProteinWSServer extends GenericRestWSServer {
 
     public ProteinWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                   defaultValue = "v5") String version,
+                           @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                   defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                            @PathParam("species")
-                           @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                   + "of potentially available species ids, please refer to: "
-                                   + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                            @Context UriInfo uriInfo,
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -109,8 +108,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
             value = "Get all proteins", response = Entry.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count",
-                    value = "Get a count of the number of results obtained. ",
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "accession",

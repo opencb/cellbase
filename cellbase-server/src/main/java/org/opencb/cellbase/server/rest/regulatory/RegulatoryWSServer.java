@@ -18,6 +18,7 @@ package org.opencb.cellbase.server.rest.regulatory;
 
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -37,12 +38,10 @@ import java.io.IOException;
 public class RegulatoryWSServer extends GenericRestWSServer {
 
     public RegulatoryWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                      defaultValue = "v5") String version,
+                              @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                               @PathParam("species")
-                              @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                      + "of potentially available species ids, please refer to: "
-                                      + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                              @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);

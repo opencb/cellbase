@@ -18,6 +18,7 @@ package org.opencb.cellbase.server.rest.clinical;
 
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -41,13 +42,11 @@ import java.io.IOException;
 public class ClinicalWSServer extends GenericRestWSServer {
 
     public ClinicalWSServer(@PathParam("version")
-                                  @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                          defaultValue = "v5") String version,
-                                  @PathParam("species")
-                                  @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                          + "of potentially available species ids, please refer to: "
-                                          + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
-                                  @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+                            @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+                            @PathParam("species")
+                            @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
+                                @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
@@ -57,8 +56,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. ",
             value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count",
-                    value = "Get a count of the number of results obtained.",
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "source",

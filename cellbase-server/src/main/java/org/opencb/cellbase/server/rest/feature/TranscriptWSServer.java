@@ -20,6 +20,7 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.TranscriptDBAdaptor;
@@ -30,7 +31,6 @@ import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
-
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -52,13 +52,10 @@ import java.util.Map;
 public class TranscriptWSServer extends GenericRestWSServer {
 
     public TranscriptWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                defaultValue = "v5") String version,
+                              @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                               @PathParam("species")
-                              @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                      + "of potentially available species ids, please refer to: "
-                                      + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
-                              @DefaultValue("") @QueryParam("exclude") String exclude,
+                              @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
