@@ -62,8 +62,8 @@ public class TfWSServer extends RegulatoryWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAllByTfbs(@PathParam("tfId")
-                                             @ApiParam(name = "tfId", value = "String containing a comma separated list "
-                                                     + " of TF names to search, e.g.: CTCF", required = true) String tfId,
+                                     @ApiParam(name = "tfId",
+                                             value = ParamConstants.TFBS_IDS, required = true) String tfId,
                                  @DefaultValue("") @QueryParam("celltype") String celltype) {
         try {
             parseQueryParams();
@@ -101,9 +101,8 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getEnsemblGenes(@PathParam("tfId")
-                                                @ApiParam(name = "tfId", value = "String containing a comma separated "
-                                                        + " list of HGNC symbols, e.g.: CTCF", required = true) String tfId) {
+    public Response getEnsemblGenes(@PathParam("tfId") @ApiParam(name = "tfId", value = ParamConstants.TFBS_IDS,
+            required = true) String tfId) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);

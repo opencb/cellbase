@@ -64,8 +64,8 @@ public class VariantWSServer extends GenericRestWSServer {
                                    defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                            @PathParam("species")
                            @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                           @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+                           @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -367,14 +367,11 @@ public class VariantWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType",
-                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
-                            + "matches will be returned.",
+            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.SNP_CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "chromosome",
-                    value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
+            @ApiImplicitParam(name = "chromosome", value = ParamConstants.CHROMOSOMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -382,7 +379,7 @@ public class VariantWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("id")
-                                   @ApiParam(name = "id", value = "Comma separated list of rs ids, e.g.: rs6025",
+                                   @ApiParam(name = "id", value = ParamConstants.RS_IDS,
                                         required = true) String id,
                                    @QueryParam("exclude")
                                         @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
@@ -415,16 +412,13 @@ public class VariantWSServer extends GenericRestWSServer {
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of rs ids, e.g.: rs6025, rs666"
-                            + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType",
-                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant."
-                            + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "id", value = ParamConstants.RS_IDS,
+                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.SNP_CONSEQUENCE_TYPE,
+                    dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "chromosome",
-                    value = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT",
+            @ApiImplicitParam(name = "chromosome", value = ParamConstants.CHROMOSOMES,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
                     dataType = "java.util.List", paramType = "query"),

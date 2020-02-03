@@ -99,8 +99,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                           @DefaultValue("")
                           @QueryParam("xrefs")
                           @ApiParam(name = "xrefs",
-                                  value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
-                                          + " Exact text matches will be returned",
+                                  value = ParamConstants.TRANSCRIPT_XREFS,
                                   required = false) String xrefs) throws Exception {
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
         query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
@@ -159,9 +158,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getGeneById(@PathParam("transcriptId")
-                                @ApiParam(name = "transcriptId", value = "Comma separated list of ENSEMBL "
-                                        + "transcript ids, e.g.: ENST00000342992,ENST00000380152,ENST00000544455. Exact "
-                                        + "text matches will be returned",
+                                @ApiParam(name = "transcriptId", value = ParamConstants.TRANSCRIPT_IDS,
                                         required = true) String id) {
         try {
             parseQueryParams();
@@ -188,16 +185,14 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992"
-                            + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "id", value = ParamConstants.TRANSCRIPT_IDS,
+                    dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "name", value = ParamConstants.TRANSCRIPT_NAMES,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "xrefs",
-                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
-                            + " Exact text matches will be returned", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
+                    dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS,
@@ -279,11 +274,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD, required = false,
                     dataType = "java.util.List", paramType = "query")
     })
-    public Response getProtein(@PathParam("transcriptId")
-                                   @ApiParam(name = "transcriptId",
-                                   value = "Comma-separated string with ENSEMBL transcript ids  e.g.: "
-                                           + "ENST00000536068,ENST00000544455. Exact text matches will be returned",
-                                   required = true) String transcriptId) {
+    public Response getProtein(@PathParam("transcriptId") @ApiParam(name = "transcriptId",
+            value = ParamConstants.TRANSCRIPT_IDS, required = true) String transcriptId) {
         try {
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);

@@ -557,7 +557,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                                      required = true) String geneId,
                                              @QueryParam("merge")
                                              @ApiParam(name = "merge",
-                                                     value = ParamConstants.SNP_MERGE,
+                                                     value = ParamConstants.TFBS_MERGE,
                                                      defaultValue = "false", required = true) boolean merge) {
         try {
             parseQueryParams();

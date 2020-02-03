@@ -47,12 +47,12 @@ import java.util.Map;
 public class ProteinWSServer extends GenericRestWSServer {
 
     public ProteinWSServer(@PathParam("version")
-                           @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                                   defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+                                @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                        defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                            @PathParam("species")
-                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                           @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+                                @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
+                           @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
 
@@ -69,15 +69,11 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the protein info", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "keyword",
-                    value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
-                            + "Transcription,Zinc. Exact text matches will be returned",
+            @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getInfoByEnsemblId(@PathParam("proteinId")
-                                       @ApiParam(name = "proteinId",
-                                               value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,"
-                                                       + " ENST00000278314. Exact text matches will be returned",
+                                       @ApiParam(name = "proteinId", value = ParamConstants.PROTEIN_XREF_IDS,
                                                required = true) String id,
                                        @QueryParam("exclude")
                                        @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
@@ -108,25 +104,15 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "accession",
-                    value = "Comma separated list of UniProt accession ids, e.g.: Q9UL59,B2R8Q1,Q9UKT9."
-                            + "Exact text matches will be returned",
+            @ApiImplicitParam(name = "accession", value = ParamConstants.PROTEIN_ACCESSIONS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "name",
-                    value = "Comma separated list of protein names, e.g.: ZN214_HUMAN,MKS1_HUMAN"
-                            + "Exact text matches will be returned",
+            @ApiImplicitParam(name = "name", value = ParamConstants.PROTEIN_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene",
-                    value = "Comma separated list gene ids, e.g.: BRCA2."
-                            + "Exact text matches will be returned",
+            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "xrefs",
-                    value = "Comma separated list of xrefs ids, e.g.: CCDS31418.1,Q9UL59,ENST00000278314"
-                            + "Exact text matches will be returned",
+            @ApiImplicitParam(name = "xrefs", value = ParamConstants.PROTEIN_XREF_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "keyword",
-                    value = "Comma separated list of keywords that may be associated with the protein(s), e.g.: "
-                            + "Transcription,Zinc. Exact text matches will be returned",
+            @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll(@QueryParam("exclude")
