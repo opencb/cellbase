@@ -63,8 +63,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     value = "Comma separated list of database sources of the documents to be returned. Possible values "
                             + " are clinvar,cosmic or iarctp53. E.g.: clinvar,cosmic",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "region",
-                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "so",
                     value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
@@ -116,15 +115,15 @@ public class ClinicalWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll(@QueryParam("exclude")
-                           @ApiParam(value = "Set which fields are excluded in the response, e.g.: transcripts.exons.") String exclude,
+                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                            @QueryParam("include")
-                           @ApiParam(value = "Set which fields are include in the response, e.g.: transcripts.exons.") String include,
+                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                            @QueryParam("sort")
-                           @ApiParam(value = "Sort returned results by a certain data model attribute.") String sort,
+                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                            @QueryParam("limit") @DefaultValue("10")
-                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                            @QueryParam("skip") @DefaultValue("0")
-                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
+                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);

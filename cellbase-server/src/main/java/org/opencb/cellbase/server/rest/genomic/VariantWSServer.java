@@ -71,7 +71,7 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Get JSON specification of Variant data model", response = Map.class,
+    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
             responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Variant.class);

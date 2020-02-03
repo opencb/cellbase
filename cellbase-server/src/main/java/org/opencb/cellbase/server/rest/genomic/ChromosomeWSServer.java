@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.rest.genomic;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GenomeDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -47,12 +48,10 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
 
     public ChromosomeWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                      defaultValue = "v5") String version,
+                              @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                               @PathParam("species")
-                              @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                      + "of potentially available species ids, please refer to: "
-                                      + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                              @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -60,7 +59,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Returns a JSON specification of the Chromosome data model",
+    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION,
             response = Chromosome.class, responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Chromosome.class);
@@ -71,21 +70,20 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the chromosome objects", response = Chromosome.class,
         responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count",
-                    value = "Get a count of the number of results obtained. Deactivated by default.",
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true")
     })
     public Response getAll(@QueryParam("exclude")
-                           @ApiParam(value = "Set which fields are excluded in the response, e.g.: transcripts.exons.") String exclude,
+                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                            @QueryParam("include")
-                           @ApiParam(value = "Set which fields are include in the response, e.g.: transcripts.exons.") String include,
+                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                            @QueryParam("sort")
-                           @ApiParam(value = "Sort returned results by a certain data model attribute.") String sort,
+                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                            @QueryParam("limit") @DefaultValue("10")
-                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                            @QueryParam("skip") @DefaultValue("0")
-                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
+                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);

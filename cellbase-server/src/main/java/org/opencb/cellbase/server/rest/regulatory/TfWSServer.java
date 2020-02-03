@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.rest.regulatory;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.RegulationDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -26,7 +27,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Query;
-
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -44,25 +44,21 @@ import java.util.List;
 public class TfWSServer extends RegulatoryWSServer {
 
     public TfWSServer(@PathParam("version")
-                      @ApiParam(name = "version", value = "Possible values: v4, v5",
-                              defaultValue = "v5") String version,
+                      @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                              defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                       @PathParam("species")
-                      @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                              + "of potentially available species ids, please refer to: "
-                              + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
-                      @Context UriInfo uriInfo,
-                      @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+                      @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
+                      @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
     }
-
 
     @GET
     @Path("/{tfId}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Retrieves the corresponding TFBS objects",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region",
-                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAllByTfbs(@PathParam("tfId")
@@ -90,35 +86,19 @@ public class TfWSServer extends RegulatoryWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves gene info for a (list of) TF(s)", response = Gene.class,
         responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "transcripts.id",
-                    value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992,ENST00000380152,"
-                            + "ENST00000544455. Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.name",
-                    value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.name",
-                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.id",
-                    value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
-                            + "OMIM:613390. Exact text matches will be returned",
+            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.name",
-                    value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
-                            + "kidney disease. Exact text matches will be returned",
+            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.tissue",
-                    value = "Comma separated list of tissues for which expression values are available, "
-                            + "e.g.: adipose tissue,heart atrium,tongue."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.name",
-                    value = "Comma separated list of drug names, "
-                            + "e.g.: BMN673,OLAPARIB,VELIPARIB."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
+                    required = false, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getEnsemblGenes(@PathParam("tfId")

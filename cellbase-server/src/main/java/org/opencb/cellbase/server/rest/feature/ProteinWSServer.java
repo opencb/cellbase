@@ -58,8 +58,8 @@ public class ProteinWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Returns a JSON specification of the protein data model",
-            response = Map.class, responseContainer = "QueryResponse")
+    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
+            responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Entry.class);
     }
@@ -80,14 +80,11 @@ public class ProteinWSServer extends GenericRestWSServer {
                                                        + " ENST00000278314. Exact text matches will be returned",
                                                required = true) String id,
                                        @QueryParam("exclude")
-                                       @ApiParam(value = "Set which fields are excluded in the response, "
-                                               + "e.g.: transcripts.exons.") String exclude,
+                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                                        @QueryParam("include")
-                                       @ApiParam(value = "Set which fields are include in the response, "
-                                               + "e.g.: transcripts.exons.") String include,
+                                       @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                                        @QueryParam("sort")
-                                       @ApiParam(value = "Sort returned results by a certain data model attribute.")
-                                                   String sort) {
+                                       @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
@@ -133,15 +130,15 @@ public class ProteinWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll(@QueryParam("exclude")
-                           @ApiParam(value = "Set which fields are excluded in the response, e.g.: transcripts.exons.") String exclude,
+                           @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                            @QueryParam("include")
-                           @ApiParam(value = "Set which fields are include in the response, e.g.: transcripts.exons.") String include,
+                           @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                            @QueryParam("sort")
-                           @ApiParam(value = "Sort returned results by a certain data model attribute.") String sort,
+                           @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                            @QueryParam("limit") @DefaultValue("10")
-                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                           @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                            @QueryParam("skip") @DefaultValue("0")
-                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
+                           @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);

@@ -53,7 +53,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             response = String.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
-                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+                    value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureClass",
                     value = "Comma separated list of regulatory region classes, e.g.: "
@@ -77,8 +77,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves a list of available regulatory feature classes",
             response = String.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "region",
-                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
                     value = "Comma separated list of regulatory region types, e.g.: "
@@ -103,12 +102,10 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             value = "Retrieves all regulatory elements", response = RegulatoryFeature.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count",
-                    value = "Get a count of the number of results obtained.",
-                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "region",
-                    value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
+            @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
                     value = "Comma separated list of regulatory region types, e.g.: "
@@ -124,15 +121,15 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll(@QueryParam("exclude")
-                           @ApiParam(value = "Set which fields are excluded in the response, e.g.: transcripts.exons.") String exclude,
+                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                            @QueryParam("include")
-                           @ApiParam(value = "Set which fields are include in the response, e.g.: transcripts.exons.") String include,
+                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
                            @QueryParam("sort")
-                           @ApiParam(value = "Sort returned results by a certain data model attribute.") String sort,
+                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                            @QueryParam("limit") @DefaultValue("10")
-                           @ApiParam(value = "Max number of results to be returned. Cannot exceed 5,000.") Integer limit,
+                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                            @QueryParam("skip") @DefaultValue("0")
-                           @ApiParam(value = "Number of results to be skipped.")  Integer skip) {
+                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);

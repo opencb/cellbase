@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.rest.genomic;
 import io.swagger.annotations.*;
 import org.bson.Document;
 import org.opencb.biodata.models.core.*;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.*;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -42,12 +43,10 @@ public class RegionWSServer extends GenericRestWSServer {
     private int histogramIntervalSize = 200000;
 
     public RegionWSServer(@PathParam("version")
-                          @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                  defaultValue = "v5") String version,
+                          @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                  defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                           @PathParam("species")
-                          @ApiParam(name = "species", value = "Name of the species, e.g.: hsapiens. For a full list "
-                                  + "of potentially available species ids, please refer to: "
-                                  + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species") String species,
+                          @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                           @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, species, uriInfo, hsr);
@@ -55,7 +54,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/model")
-    @ApiOperation(httpMethod = "GET", value = "Returns a JSON specification of the region data model",
+    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION,
             response = Map.class, responseContainer = "QueryResponse")
     public Response getModel() {
         return createModelResponse(Region.class);
@@ -165,44 +164,24 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "interval",
                     value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
                     defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
-            @ApiImplicitParam(name = "biotype",
-                    value = "Comma separated list of gene gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.biotype",
-                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.xrefs",
-                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.name",
-                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.id",
-                    value = "Comma separated list of phenotype ids (OMIM, UMLS), e.g.: umls:C0030297,OMIM:613390,"
-                            + "OMIM:613390. Exact text matches will be returned",
+            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.name",
-                    value = "Comma separated list of phenotypes, e.g.: Cryptorchidism,Absent thumb,Stage 5 chronic "
-                            + "kidney disease. Exact text matches will be returned",
+            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.gene",
-                    value = "Comma separated list of ENSEMBL gene ids for which expression values are available, "
-                            + "e.g.: ENSG00000139618,ENSG00000155657. Exact text matches will be returned",
+            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.tissue",
-                    value = "Comma separated list of tissues for which expression values are available, "
-                            + "e.g.: adipose tissue,heart atrium,tongue."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.name",
-                    value = "Comma separated list of drug names, "
-                            + "e.g.: BMN673,OLAPARIB,VELIPARIB."
-                            + " Exact text matches will be returned",
-                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
+                    required = false, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getGenesByRegion(@PathParam("chrRegionId")
                                      @ApiParam(name = "chrRegionId",
@@ -239,25 +218,15 @@ public class RegionWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "transcripts.biotype",
-                    value = "Comma separated list of transcript gencode biotypes, e.g.: protein_coding,miRNA,lincRNA."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.xrefs",
-                    value = "Comma separated list transcript xrefs ids, e.g.: ENSG00000145113,35912_at,GO:0002020."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id",
-                    value = "Comma separated list of ENSEMBL transcript ids, e.g.: ENST00000342992,ENST00000380152,"
-                            + "ENST00000544455. Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.name",
-                    value = "Comma separated list of transcript names, e.g.: BRCA2-201,TTN-003."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.name",
-                    value = "Comma separated list of TFBS names, e.g.: CTCF,Gabp."
-                            + " Exact text matches will be returned",
+            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getTranscriptByRegion(@PathParam("chrRegionId")
@@ -327,11 +296,9 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "id",
                     value = "Comma separated list of rs ids, e.g.: rs6025",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference",
-                    value = "Comma separated list of possible reference to be queried, e.g.: A,T",
+            @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate",
-                    value = "Comma separated list of possible alternate to be queried, e.g.: A,T",
+            @ApiImplicitParam(name = "alternate", value = ParamConstants.SNP_ALTERNATE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getVariationByRegion(@PathParam("chrRegionId")
