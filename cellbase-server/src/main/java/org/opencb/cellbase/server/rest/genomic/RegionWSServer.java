@@ -263,8 +263,7 @@ public class RegionWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getRepeatByRegion(@PathParam("chrRegionId")
                                           @ApiParam(name = "chrRegionId",
-                                                  value = "comma-separated list of genomic regions to be queried, "
-                                                          + "e.g. 1:11869-14412", required = true) String region) {
+                                                  value = ParamConstants.REGION_DESCRIPTION, required = true) String region) {
         try {
             parseQueryParams();
             RepeatsDBAdaptor repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(this.species, this.assembly);

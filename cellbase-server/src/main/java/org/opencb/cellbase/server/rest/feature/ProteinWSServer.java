@@ -160,8 +160,20 @@ public class ProteinWSServer extends GenericRestWSServer {
                                           @ApiParam(name = "proteinId",
                                                   value = "String indicating one xref id, e.g.: Q9UL59, Exact text "
                                                           + "matches will be returned",
-                                                  required = true) String id) {
+                                                  required = true) String id,
+                                          @QueryParam("exclude")
+                                          @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                          @QueryParam("include")
+                                              @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                          @QueryParam("sort")
+                                              @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                          @QueryParam("limit") @DefaultValue("10")
+                                              @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                          @QueryParam("skip") @DefaultValue("0")
+                                              @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
 
             // Fetch Ensembl transcriptId to query substiturion scores
