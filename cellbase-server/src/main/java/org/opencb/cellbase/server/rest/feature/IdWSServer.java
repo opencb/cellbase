@@ -185,8 +185,20 @@ public class IdWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getGeneByEnsemblId(@PathParam("id")
                                        @ApiParam(name = "id", value = "Comma separated list of ids to look"
-                                               + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
+                                               + " for within gene xrefs, e.g.: BRCA2", required = true) String id,
+                                       @QueryParam("exclude")
+                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                       @QueryParam("include")
+                                           @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                       @QueryParam("sort")
+                                           @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                       @QueryParam("limit") @DefaultValue("10")
+                                           @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                       @QueryParam("skip") @DefaultValue("0")
+                                           @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
