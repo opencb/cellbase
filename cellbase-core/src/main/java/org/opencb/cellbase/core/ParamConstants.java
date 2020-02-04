@@ -166,8 +166,8 @@ public class ParamConstants {
     public static final String SKIP_DECOMPOSE = "Boolean to indicate whether input MNVs should be "
             + "decomposed or not as part of the normalisation step. MNV decomposition is strongly encouraged.";
     public static final String IGNORE_PHASE = "Boolean to indicate whether phase data should be taken into account.";
-    public static final String PHASED = "DEPRECATED. Will be removed in next release. Please, use ignorePhase instead. " +
-            " Boolean to indicate whether phase should be considered during the annotation process";
+    public static final String PHASED = "DEPRECATED. Will be removed in next release. Please, use ignorePhase instead. "
+            + " Boolean to indicate whether phase should be considered during the annotation process";
     public static final String IMPRECISE = "Boolean to indicate whether imprecise search must be  used or not";
     public static final String SV_EXTRA_PADDING = "Integer to optionally provide the size of the extra"
             + " padding to be used when annotating imprecise (or not) structural variants";
