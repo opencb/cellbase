@@ -156,7 +156,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 phased,
                 imprecise,
                 svExtraPadding,
-                cnvExtraPadding);
+                cnvExtraPadding, null, null, null, null, null);
     }
 
     @GET
@@ -215,7 +215,17 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        value = "Integer to optionally provide the size of the extra"
                                                                + " padding to be used when annotating imprecise (or not)"
                                                                + " CNVs",
-                                                       defaultValue = "0", required = false) Integer cnvExtraPadding) {
+                                                       defaultValue = "0", required = false) Integer cnvExtraPadding,
+                                               @QueryParam("exclude")
+                                                   @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                               @QueryParam("include")
+                                                   @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                               @QueryParam("sort")
+                                                   @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                               @QueryParam("limit") @DefaultValue("10")
+                                                   @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                               @QueryParam("skip") @DefaultValue("0")
+                                                   @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         return getAnnotationByVariant(variants,
                 normalize,
                 skipDecompose,
@@ -223,7 +233,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 phased,
                 imprecise,
                 svExtraPadding,
-                cnvExtraPadding);
+                cnvExtraPadding, exclude, include, sort, limit, skip);
     }
 
     private Response getAnnotationByVariant(String variants,
@@ -233,8 +243,11 @@ public class VariantWSServer extends GenericRestWSServer {
                                             @Deprecated Boolean phased,
                                             Boolean imprecise,
                                             Integer svExtraPadding,
-                                            Integer cnvExtraPadding) {
+                                            Integer cnvExtraPadding,
+                                            String exclude, String include, String sort, Integer limit, Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             List<Variant> variantList = parseVariants(variants);
             logger.debug("queryOptions: " + queryOptions);
