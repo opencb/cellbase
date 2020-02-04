@@ -58,14 +58,29 @@ public class TfWSServer extends RegulatoryWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves the corresponding TFBS objects",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAllByTfbs(@PathParam("tfId")
                                      @ApiParam(name = "tfId",
                                              value = ParamConstants.TFBS_IDS, required = true) String tfId,
-                                 @DefaultValue("") @QueryParam("celltype") String celltype) {
+                                 @DefaultValue("") @QueryParam("celltype") String celltype,
+                                 @QueryParam("exclude")
+                                     @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                 @QueryParam("include")
+                                     @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                 @QueryParam("sort")
+                                     @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                 @QueryParam("limit") @DefaultValue("10")
+                                     @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                 @QueryParam("skip") @DefaultValue("0")
+                                     @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(tfId, RegulationDBAdaptor.QueryParams.NAME.key(),
@@ -86,6 +101,9 @@ public class TfWSServer extends RegulatoryWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves gene info for a (list of) TF(s)", response = Gene.class,
         responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
@@ -102,8 +120,20 @@ public class TfWSServer extends RegulatoryWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getEnsemblGenes(@PathParam("tfId") @ApiParam(name = "tfId", value = ParamConstants.TFBS_IDS,
-            required = true) String tfId) {
+            required = true) String tfId,
+                                    @QueryParam("exclude")
+                                    @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                    @QueryParam("include")
+                                        @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                    @QueryParam("sort")
+                                        @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                    @QueryParam("limit") @DefaultValue("10")
+                                        @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                    @QueryParam("skip") @DefaultValue("0")
+                                        @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(tfId, GeneDBAdaptor.QueryParams.NAME.key());
