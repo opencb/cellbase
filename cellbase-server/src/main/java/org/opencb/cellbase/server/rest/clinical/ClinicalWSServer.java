@@ -59,59 +59,29 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "source",
-                    value = "Comma separated list of database sources of the documents to be returned. Possible values "
-                            + " are clinvar,cosmic or iarctp53. E.g.: clinvar,cosmic",
+            @ApiImplicitParam(name = "source", value = ParamConstants.SOURCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "so",
-                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
-                            + "matches will be returned. A list of searchable SO term names can be accessed at "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/variation/consequence_types",
+            @ApiImplicitParam(name = "so", value = ParamConstants.SEQUENCE_ONTOLOGY,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "feature",
-                    value = "Comma separated list of feature ids, which can be either ENSEMBL gene ids, HGNC gene symbols,"
-                            + " transcript symbols or ENSEMBL transcript ids, e.g.: BRCA2, ENST00000409047. Exact text"
-                            + " matches will be returned.",
+            @ApiImplicitParam(name = "feature", value = ParamConstants.FEATURE_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "trait",
-                    value = "Keywords search. Comma separated (no spaces in between) list of keywords describing required"
-                            + " phenotype/disease. All variants related somehow with all those keywords (case insensitive) "
-                            + " will be returned, e.g: carcinoma,lung or acute,myeloid,leukaemia. WARNING: returned "
-                            + " numTotalResults will always be -1 when searching by trait keywords.",
+            @ApiImplicitParam(name = "trait", value = ParamConstants.TRAITS,
                     required = false, dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "accession",
-                    value = "Comma separated list of database accesions, e.g.: RCV000033215,COSM306824 Exact text "
-                            + "matches will be returned.",
+            @ApiImplicitParam(name = "accession", value = ParamConstants.VARIANT_ACCESSIONS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of ids, e.g.: rs6025 Exact text matches will be returned.",
+            @ApiImplicitParam(name = "id", value = ParamConstants.VARIANT_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "type",
-                    value = "Comma separated list of variant types, e.g. \"SNV\" A list of searchable types can be accessed at "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/type",
+            @ApiImplicitParam(name = "type", value = ParamConstants.VARIANT_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "consistencyStatus",
-                    value = "Comma separated list of consistency labels. A list of searchable consistency labels can be accessed at "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/consistency_labels",
+            @ApiImplicitParam(name = "consistencyStatus", value = ParamConstants.CONSISTENCY_STATUS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "clinicalSignificance",
-                    value = "Comma separated list of clinical significance labels. A list of searchable clinical "
-                            + " significance labels can be accessed at "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/clinsig_labels"
-                            + " WARNING: returned numTotalResults will always be -1 if more than 1 label is provided.",
+            @ApiImplicitParam(name = "clinicalSignificance", value = ParamConstants.CLINICAL_SIGNFICANCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "modeInheritance",
-                    value = "Comma separated list of mode of inheritance labels. A list of searchable mode of inheritance "
-                            + " labels can be accessed at "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant"
-                            + "/mode_inheritance_labels",
+            @ApiImplicitParam(name = "modeInheritance", value = ParamConstants.MODE_INHERITANCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alleleOrigin",
-                    value = "Comma separated list of allele origin labels. A list of searchable allele origin "
-                            + " labels can be accessed at "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/clinical/variant/allele_origin_labels",
+            @ApiImplicitParam(name = "alleleOrigin", value = ParamConstants.ALLELE_ORIGIN,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getAll(@QueryParam("exclude")

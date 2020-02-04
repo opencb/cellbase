@@ -117,10 +117,16 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves chromosome data for specified chromosome names",
             response = Chromosome.class, responseContainer = "QueryResponse")
     public Response getChromosomes(@PathParam("chromosomeName")
-                                   @ApiParam(name = "chromosomeName", value = "Comma separated list of chromosome ids,"
-                                           + " e.g.: 1,2,X,MT. Exact text matches will be returned.",
-                                                required = true) String chromosomeId) {
+                                   @ApiParam(name = "chromosomeName", value = ParamConstants.CHROMOSOMES,
+                                                required = true) String chromosomeId,
+                                   @QueryParam("exclude")
+                                   @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                   @QueryParam("include")
+                                       @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                   @QueryParam("sort")
+                                       @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
             List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
