@@ -122,11 +122,19 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getGenesByRegionPost(@FormParam("region")
-                                         @ApiParam(name = "region",
-                                                 value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                                                 required = true) String region) {
-        return getGenesByRegion(region);
+    public Response getGenesByRegionPost(@FormParam("region") @ApiParam(name = "region",
+            value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
+                                         @QueryParam("exclude")
+                                         @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                         @QueryParam("include")
+                                             @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                         @QueryParam("sort")
+                                             @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                         @QueryParam("limit") @DefaultValue("10")
+                                             @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                         @QueryParam("skip") @DefaultValue("0")
+                                             @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+        return getGenesByRegion(region, exclude, include, sort, limit, skip);
     }
 
     @GET
@@ -165,9 +173,21 @@ public class RegionWSServer extends GenericRestWSServer {
     })
     public Response getGenesByRegion(@PathParam("chrRegionId")
                                      @ApiParam(name = "chrRegionId",
-                                             value = "Comma separated list of genomic regions to be queried, e.g.: 1:6635137-6635325",
-                                             required = true) String region) {
+                                             value = ParamConstants.REGION_DESCRIPTION,
+                                             required = true) String region,
+                                     @QueryParam("exclude")
+                                     @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                     @QueryParam("include")
+                                         @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                     @QueryParam("sort")
+                                         @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                     @QueryParam("limit") @DefaultValue("10")
+                                         @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                     @QueryParam("skip") @DefaultValue("0")
+                                         @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
 
@@ -209,11 +229,21 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getTranscriptByRegion(@PathParam("chrRegionId")
-                                          @ApiParam(name = "chrRegionId",
-                                                  value = "comma-separated list of genomic regions to be queried, "
-                                                          + "e.g. 1:11869-14412", required = true) String region) {
+    public Response getTranscriptByRegion(@PathParam("chrRegionId") @ApiParam(name = "chrRegionId",
+            value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
+                                          @QueryParam("exclude")
+                                          @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                          @QueryParam("include")
+                                              @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                          @QueryParam("sort")
+                                              @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                          @QueryParam("limit") @DefaultValue("10")
+                                              @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                          @QueryParam("skip") @DefaultValue("0")
+                                              @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(region, TranscriptDBAdaptor.QueryParams.REGION.key());

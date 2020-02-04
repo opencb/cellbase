@@ -159,8 +159,20 @@ public class TranscriptWSServer extends GenericRestWSServer {
     })
     public Response getGeneById(@PathParam("transcriptId")
                                 @ApiParam(name = "transcriptId", value = ParamConstants.TRANSCRIPT_IDS,
-                                        required = true) String id) {
+                                        required = true) String id,
+                                @QueryParam("exclude")
+                                @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                @QueryParam("include")
+                                    @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                @QueryParam("sort")
+                                    @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                @QueryParam("limit") @DefaultValue("10")
+                                    @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                @QueryParam("skip") @DefaultValue("0")
+                                    @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(id, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
@@ -275,8 +287,20 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     dataType = "java.util.List", paramType = "query")
     })
     public Response getProtein(@PathParam("transcriptId") @ApiParam(name = "transcriptId",
-            value = ParamConstants.TRANSCRIPT_IDS, required = true) String transcriptId) {
+            value = ParamConstants.TRANSCRIPT_IDS, required = true) String transcriptId,
+                               @QueryParam("exclude")
+                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                               @QueryParam("include")
+                                   @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                               @QueryParam("sort")
+                                   @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                               @QueryParam("limit") @DefaultValue("10")
+                                   @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                               @QueryParam("skip") @DefaultValue("0")
+                                   @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+            parseIncludesAndExcludes(exclude, include, sort);
+            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
             List<Query> queries = createQueries(transcriptId, ProteinDBAdaptor.QueryParams.XREFS.key());
