@@ -167,54 +167,35 @@ public class VariantWSServer extends GenericRestWSServer {
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
     public Response getAnnotationByVariantsGET(@PathParam("variants")
-                                               @ApiParam(name = "variants", value = "Comma separated list of variants to"
-                                                       + "annotate, e.g. "
-                                                       + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
-                                                       + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT,1:816505-825225:<CNV>",
+                                               @ApiParam(name = "variants", value = ParamConstants.VARIANTS,
                                                        required = true) String variants,
                                                @QueryParam("normalize")
-                                               @ApiParam(name = "normalize",
-                                                       value = "Boolean to indicate whether input variants shall be "
-                                                               + "normalized or not. Normalization process does NOT "
-                                                               + "include decomposing ", allowableValues = "false,true",
+                                               @ApiParam(name = "normalize", value = ParamConstants.NORMALISE,
+                                                       allowableValues = "false,true",
                                                        defaultValue = "true", required = false) Boolean normalize,
                                                @QueryParam("skipDecompose")
-                                               @ApiParam(name = "skipDecompose",
-                                                       value = "Boolean to indicate whether input MNVs should be "
-                                                               + "decomposed or not as part of the normalisation step."
-                                                               + " MNV decomposition is strongly encouraged.",
+                                               @ApiParam(name = "skipDecompose", value = ParamConstants.SKIP_DECOMPOSE,
                                                        allowableValues = "false,true",
                                                        defaultValue = "false", required = false) Boolean skipDecompose,
                                                @QueryParam("ignorePhase")
-                                               @ApiParam(name = "ignorePhase",
-                                                       value = "Boolean to indicate whether phase data should be "
-                                                               + "taken into account.", allowableValues = "false,true",
+                                               @ApiParam(name = "ignorePhase", value = ParamConstants.IGNORE_PHASE,
+                                                       allowableValues = "false,true",
                                                        required = false) Boolean ignorePhase,
                                                @Deprecated
                                                @QueryParam("phased")
-                                               @ApiParam(name = "phased",
-                                                       value = "DEPRECATED. Will be removed in next release. "
-                                                               + "Please, use ignorePhase instead. Boolean to "
-                                                               + "indicate whether phase should be considered "
-                                                               + "during the annotation process",
-                                                       allowableValues = "false,true",
-                                                       required = false) Boolean phased,
+                                               @ApiParam(name = "phased", value = ParamConstants.PHASED,
+                                                       allowableValues = "false,true", required = false) Boolean phased,
                                                @QueryParam("imprecise")
                                                @ApiParam(name = "imprecise",
-                                                       value = "Boolean to indicate whether imprecise search must be"
-                                                               + " used or not", allowableValues = "false,true",
+                                                       value = ParamConstants.IMPRECISE, allowableValues = "false,true",
                                                        defaultValue = "true", required = false) Boolean imprecise,
                                                @QueryParam("svExtraPadding")
                                                @ApiParam(name = "svExtraPadding",
-                                                       value = "Integer to optionally provide the size of the extra"
-                                                               + " padding to be used when annotating imprecise (or not)"
-                                                               + " structural variants",
+                                                       value = ParamConstants.SV_EXTRA_PADDING,
                                                        defaultValue = "0", required = false) Integer svExtraPadding,
                                                @QueryParam("cnvExtraPadding")
                                                @ApiParam(name = "cnvExtraPadding",
-                                                       value = "Integer to optionally provide the size of the extra"
-                                                               + " padding to be used when annotating imprecise (or not)"
-                                                               + " CNVs",
+                                                       value = ParamConstants.CNV_EXTRA_PADDING,
                                                        defaultValue = "0", required = false) Integer cnvExtraPadding,
                                                @QueryParam("exclude")
                                                    @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,

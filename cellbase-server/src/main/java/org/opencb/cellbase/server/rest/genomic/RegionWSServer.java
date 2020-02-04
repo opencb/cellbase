@@ -306,16 +306,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "interval",
                     value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
                     defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType",
-                    value = "Comma separated list of sequence ontology term names, e.g.: missense_variant. Exact text "
-                            + "matches will be returned.",
+            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.SNP_CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "gene",
-                    value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
-                            + " ENSEMBL gene ids. Exact text matches will be returned.",
+            @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id",
-                    value = "Comma separated list of rs ids, e.g.: rs6025",
+            @ApiImplicitParam(name = "id", value = "Comma separated list of rs ids, e.g.: rs6025",
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -404,9 +399,8 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getSequenceByRegion(@PathParam("chrRegionId")
                                         @ApiParam(name = "chrRegionId", value = ParamConstants.REGION_DESCRIPTION,
                                                 required = true) String chrRegionId,
-                                        @DefaultValue("1")
-                                        @QueryParam("strand")
-                                        @ApiParam(name = "strand", value = "Strand to query, either 1 or -1",
+                                        @DefaultValue("1") @QueryParam("strand")
+                                        @ApiParam(name = "strand", value = ParamConstants.STRAND,
                                             allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
             parseQueryParams();
