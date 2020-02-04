@@ -117,7 +117,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{transcriptId}/info")
+    @Path("/{transcripts}/info")
     @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
     public Response getByEnsemblId(@PathParam("transcriptId") String id) {
         try {
@@ -131,7 +131,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{transcriptId}/gene")
+    @Path("/{transcripts}/gene")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all gene objects for given ENSEMBL transcript ids.",
             response = Gene.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -157,19 +157,13 @@ public class TranscriptWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getGeneById(@PathParam("transcriptId")
-                                @ApiParam(name = "transcriptId", value = ParamConstants.TRANSCRIPT_IDS,
-                                        required = true) String id,
-                                @QueryParam("exclude")
-                                @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                @QueryParam("include")
-                                    @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                @QueryParam("sort")
-                                    @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                @QueryParam("limit") @DefaultValue("10")
-                                    @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                @QueryParam("skip") @DefaultValue("0")
-                                    @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
+                                    value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String id,
+                                @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
@@ -197,7 +191,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "name", value = ParamConstants.TRANSCRIPT_NAMES,
                     dataType = "java.util.List", paramType = "query"),
@@ -210,16 +204,11 @@ public class TranscriptWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS,
                     dataType = "string", paramType = "query"),
     })
-    public Response getAll(@QueryParam("exclude")
-                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                           @QueryParam("include")
-                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                           @QueryParam("sort")
-                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                           @QueryParam("limit") @DefaultValue("10")
-                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                           @QueryParam("skip") @DefaultValue("0")
-                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getAll(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                           @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                           @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                           @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                           @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
@@ -239,9 +228,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
     // FIXME: 28/04/16 must look for the transcript id within the consequence type object. Requires previous loading of
     // the annoation into th evariation collection
     @GET
-    @Path("/{transcriptId}/variation")
+    @Path("/{transcripts}/variation")
     @ApiOperation(httpMethod = "GET", value = "To be fixed", hidden = true)
-    public Response getVariationsByTranscriptId(@PathParam("transcriptId") String id) {
+    public Response getVariationsBytranscripts(@PathParam("transcripts") String id) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
@@ -257,20 +246,18 @@ public class TranscriptWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{transcriptId}/sequence")
+    @Path("/{transcripts}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Retrieve transcript cDNA sequence", response = String.class,
         responseContainer = "QueryResponse")
-    public Response getSequencesByIdList(@PathParam("transcriptId")
-                                         @ApiParam(name = "transcriptId", value = "String indicating one transcript ID,"
-                                                 + " e.g:  ENST00000342992. Other transcript symbols such as HGNC symbols"
-                                                 + " are allowed as well, e.g.: BRCA2-001", required = true) String id) {
+    public Response getSequencesByIdList(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_IDS,
+            required = true) String id) {
         try {
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            List<String> transcriptIdList = Arrays.asList(id.split(","));
-            List<CellBaseDataResult> queryResult = transcriptDBAdaptor.getCdna(transcriptIdList);
-            for (int i = 0; i < transcriptIdList.size(); i++) {
-                queryResult.get(i).setId(transcriptIdList.get(i));
+            List<String> transcriptsList = Arrays.asList(id.split(","));
+            List<CellBaseDataResult> queryResult = transcriptDBAdaptor.getCdna(transcriptsList);
+            for (int i = 0; i < transcriptsList.size(); i++) {
+                queryResult.get(i).setId(transcriptsList.get(i));
             }
             return createOkResponse(queryResult);
         } catch (Exception e) {
@@ -279,31 +266,26 @@ public class TranscriptWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{transcriptId}/protein")
+    @Path("/{transcripts}/protein")
     @ApiOperation(httpMethod = "GET", value = "Get the protein info for the given transcript(s)", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD, required = false,
                     dataType = "java.util.List", paramType = "query")
     })
-    public Response getProtein(@PathParam("transcriptId") @ApiParam(name = "transcriptId",
-            value = ParamConstants.TRANSCRIPT_IDS, required = true) String transcriptId,
-                               @QueryParam("exclude")
-                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                               @QueryParam("include")
-                                   @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                               @QueryParam("sort")
-                                   @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                               @QueryParam("limit") @DefaultValue("10")
-                                   @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                               @QueryParam("skip") @DefaultValue("0")
-                                   @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
+            value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String transcripts,
+                               @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                               @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                               @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                               @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                               @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(transcriptId, ProteinDBAdaptor.QueryParams.XREFS.key());
+            List<Query> queries = createQueries(transcripts, ProteinDBAdaptor.QueryParams.XREFS.key());
             List<CellBaseDataResult> queryResultList = proteinDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResultList.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
@@ -315,7 +297,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{transcriptId}/functionPrediction")
+    @Path("/{transcripts}/functionPrediction")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the protein of a"
             + " certain transcript",
             notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
@@ -335,8 +317,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
                             + " of aminoacid names, e.g.: CYS",
                     required = false, dataType = "String", paramType = "query")
     })
-    public Response getProteinFunctionPredictionByTranscriptId(@PathParam("transcriptId")
-                                                               @ApiParam(name = "transcriptId",
+    public Response getProteinFunctionPredictionBytranscripts(@PathParam("transcript")
+                                                               @ApiParam(name = "transcript",
                                                                 value = "String indicating one ENSEMBL transcript id"
                                                                         + " e.g.: ENST00000536068. Exact text matches "
                                                                         + "will be returned",

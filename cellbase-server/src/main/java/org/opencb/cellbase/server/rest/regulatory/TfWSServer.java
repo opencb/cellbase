@@ -54,7 +54,7 @@ public class TfWSServer extends RegulatoryWSServer {
     }
 
     @GET
-    @Path("/{tfId}/tfbs")
+    @Path("/{tf}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Retrieves the corresponding TFBS objects",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -64,9 +64,9 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAllByTfbs(@PathParam("tfId")
-                                     @ApiParam(name = "tfId",
-                                             value = ParamConstants.TFBS_IDS, required = true) String tfId,
+    public Response getAllByTfbs(@PathParam("tf")
+                                     @ApiParam(name = "tf",
+                                             value = ParamConstants.TFBS_IDS, required = true) String tf,
                                  @DefaultValue("") @QueryParam("celltype") String celltype,
                                  @QueryParam("exclude")
                                      @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
@@ -83,7 +83,7 @@ public class TfWSServer extends RegulatoryWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(tfId, RegulationDBAdaptor.QueryParams.NAME.key(),
+            List<Query> queries = createQueries(tf, RegulationDBAdaptor.QueryParams.NAME.key(),
                     RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                             + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
             List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
@@ -97,14 +97,14 @@ public class TfWSServer extends RegulatoryWSServer {
     }
 
     @GET
-    @Path("/{tfId}/gene")
+    @Path("/{tf}/gene")
     @ApiOperation(httpMethod = "GET", value = "Retrieves gene info for a (list of) TF(s)", response = Gene.class,
         responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -119,14 +119,10 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getEnsemblGenes(@PathParam("tfId") @ApiParam(name = "tfId", value = ParamConstants.TFBS_IDS,
-            required = true) String tfId,
-                                    @QueryParam("exclude")
-                                    @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                    @QueryParam("include")
-                                        @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                    @QueryParam("sort")
-                                        @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+    public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf,
+                                    @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                    @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                    @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                                     @QueryParam("limit") @DefaultValue("10")
                                         @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                                     @QueryParam("skip") @DefaultValue("0")
@@ -136,7 +132,7 @@ public class TfWSServer extends RegulatoryWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(tfId, GeneDBAdaptor.QueryParams.NAME.key());
+            List<Query> queries = createQueries(tf, GeneDBAdaptor.QueryParams.NAME.key());
             List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));

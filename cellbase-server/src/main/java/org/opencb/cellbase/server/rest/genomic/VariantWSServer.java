@@ -354,26 +354,26 @@ public class VariantWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{id}/info")
-    @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) SNPs", notes = "An independent"
+    @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) variants", notes = "An independent"
             + " database query will be issued for each region in id, meaning that results for each region will be"
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
             response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.SNP_CONSEQUENCE_TYPE,
+            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "chromosome", value = ParamConstants.CHROMOSOMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
+            @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate", value = ParamConstants.SNP_ALTERNATE,
+            @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getByEnsemblId(@PathParam("id")
-                                   @ApiParam(name = "id", value = ParamConstants.RS_IDS,
+    public Response getByEnsemblId(@PathParam("variants")
+                                   @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
                                         required = true) String id,
                                    @QueryParam("exclude")
                                         @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
@@ -408,15 +408,15 @@ public class VariantWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "id", value = ParamConstants.RS_IDS,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.SNP_CONSEQUENCE_TYPE,
+            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_ENSEMBL_IDS,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "chromosome", value = ParamConstants.CHROMOSOMES,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
+            @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate", value = ParamConstants.SNP_ALTERNATE,
+            @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
                     dataType = "java.util.List", paramType = "query")
     })
     public Response search(@QueryParam("exclude")
@@ -480,18 +480,18 @@ public class VariantWSServer extends GenericRestWSServer {
 
     // FIXME: 29/04/16 GET and POST web services to be fixed
     @GET
-    @Path("/{snpId}/consequenceType")
-    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the SNP(s)", response = String.class,
+    @Path("/{variants}/consequenceType")
+    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the variant(s)", response = String.class,
             responseContainer = "QueryResponse")
-    public Response getConsequenceTypeByGetMethod(@PathParam("snpId") String snpId) {
-        return getConsequenceType(snpId);
+    public Response getConsequenceTypeByGetMethod(@PathParam("variants") String variants) {
+        return getConsequenceType(variants);
     }
 
-    private Response getConsequenceType(String snpId) {
+    private Response getConsequenceType(String variants) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            query.put(VariantDBAdaptor.QueryParams.ID.key(), snpId);
+            query.put(VariantDBAdaptor.QueryParams.ID.key(), variants);
             queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
             CellBaseDataResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
             CellBaseDataResult queryResult1 = new CellBaseDataResult<>(
@@ -505,13 +505,13 @@ public class VariantWSServer extends GenericRestWSServer {
 
     // FIXME: 29/04/16 GET and POST methods to be fixed
     @GET
-    @Path("/{snpId}/regulatory")
-    @ApiOperation(httpMethod = "GET", value = "Get the regulatory impact of the SNP(s)", hidden = true)
-    public Response getRegulatoryByGetMethod(@PathParam("snpId") String snpId) {
-        return getRegulatoryType(snpId);
+    @Path("/{variants}/regulatory")
+    @ApiOperation(httpMethod = "GET", value = "Get the regulatory impact of the variant(s)", hidden = true)
+    public Response getRegulatoryByGetMethod(@PathParam("variants") String variants) {
+        return getRegulatoryType(variants);
     }
 
-    private Response getRegulatoryType(String snpId) {
+    private Response getRegulatoryType(String variants) {
         try {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
@@ -522,10 +522,10 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{snpId}/sequence")
+    @Path("/{variants}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the adjacent sequence to the SNP(s) - Not yet implemented",
             hidden = true)
-    public Response getSequence(@PathParam("snpId") String query) {
+    public Response getSequence(@PathParam("variants") String query) {
         try {
             return null;
         } catch (Exception e) {

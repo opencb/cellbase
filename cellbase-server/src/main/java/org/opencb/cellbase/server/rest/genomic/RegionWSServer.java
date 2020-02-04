@@ -138,7 +138,7 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{chrRegionId}/gene")
+    @Path("/{regions}/gene")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects for the regions. If query param "
             + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
             + "histogram=false Gene objects will be returned "
@@ -171,8 +171,8 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getGenesByRegion(@PathParam("chrRegionId")
-                                     @ApiParam(name = "chrRegionId",
+    public Response getGenesByRegion(@PathParam("regions")
+                                     @ApiParam(name = "regions",
                                              value = ParamConstants.REGION_DESCRIPTION,
                                              required = true) String region,
                                      @QueryParam("exclude")
@@ -214,7 +214,7 @@ public class RegionWSServer extends GenericRestWSServer {
 
 
     @GET
-    @Path("/{chrRegionId}/transcript")
+    @Path("/{regions}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcript objects for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -222,14 +222,14 @@ public class RegionWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getTranscriptByRegion(@PathParam("chrRegionId") @ApiParam(name = "chrRegionId",
+    public Response getTranscriptByRegion(@PathParam("regions") @ApiParam(name = "regions",
             value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
                                           @QueryParam("exclude")
                                           @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
@@ -258,11 +258,11 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{chrRegionId}/repeat")
+    @Path("/{regions}/repeat")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all repeats for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
-    public Response getRepeatByRegion(@PathParam("chrRegionId")
-                                          @ApiParam(name = "chrRegionId",
+    public Response getRepeatByRegion(@PathParam("regions")
+                                          @ApiParam(name = "regions",
                                                   value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
                                       @QueryParam("exclude")
                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
@@ -291,7 +291,7 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{chrRegionId}/variation")
+    @Path("/{regions}/variation")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the variant objects for the regions. If query param "
             + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
             + "histogram=false Variant objects will be returned "
@@ -306,27 +306,22 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "interval",
                     value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
                     defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.SNP_CONSEQUENCE_TYPE,
+            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene", value = ParamConstants.GENE_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "id", value = "Comma separated list of rs ids, e.g.: rs6025",
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
+            @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate", value = ParamConstants.SNP_ALTERNATE,
+            @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getVariationByRegion(@PathParam("chrRegionId")
-                                         @ApiParam(name = "chrRegionId",
-                                                 value = ParamConstants.REGION_DESCRIPTION,
-                                                 required = true) String chrRegionId,
-                                         @QueryParam("exclude")
-                                         @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                         @QueryParam("include")
-                                             @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                         @QueryParam("sort")
-                                             @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+    public Response getVariationByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+                                                 required = true) String regions,
+                                         @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                         @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                         @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                                          @QueryParam("limit") @DefaultValue("10")
                                              @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                                          @QueryParam("skip") @DefaultValue("0")
@@ -337,18 +332,18 @@ public class RegionWSServer extends GenericRestWSServer {
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
 
-            List<Region> regions = Region.parseRegions(chrRegionId);
+            List<Region> regionList = Region.parseRegions(regions);
             // remove regions bigger than 10Mb
-            if (regions != null) {
-                for (Region r : regions) {
+            if (regionList != null) {
+                for (Region r : regionList) {
                     if ((r.getEnd() - r.getStart()) > 10000000) {
-                        return createErrorResponse("getSNpByRegion", "Regions must be smaller than 10Mb");
+                        return createErrorResponse("getVariationByRegion", "Regions must be smaller than 10Mb");
                     }
                 }
             }
 
             if (hasHistogramQueryParam()) {
-                List<Query> queries = createQueries(chrRegionId, GeneDBAdaptor.QueryParams.REGION.key());
+                List<Query> queries = createQueries(regions, GeneDBAdaptor.QueryParams.REGION.key());
                 List<CellBaseDataResult> queryResults = variationDBAdaptor.getIntervalFrequencies(queries,
                         getHistogramIntervalSize(), queryOptions);
                 for (int i = 0; i < queries.size(); i++) {
@@ -356,10 +351,10 @@ public class RegionWSServer extends GenericRestWSServer {
                 }
                 return createOkResponse(queryResults);
             } else {
-                query.put(VariantDBAdaptor.QueryParams.REGION.key(), chrRegionId);
+                query.put(VariantDBAdaptor.QueryParams.REGION.key(), regions);
                 logger.debug("query = " + query.toJson());
                 logger.debug("queryOptions = " + queryOptions.toJson());
-                List<Query> queries = createQueries(chrRegionId, VariantDBAdaptor.QueryParams.REGION.key());
+                List<Query> queries = createQueries(regions, VariantDBAdaptor.QueryParams.REGION.key());
                 List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
                 for (int i = 0; i < queries.size(); i++) {
                     queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
@@ -373,17 +368,14 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Deprecated
-    @Path("/{chrRegionId}/snp")
+    @Path("/{regions}/snp")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects", hidden = true)
-    public Response getSnpByRegion(@PathParam("chrRegionId") String region,
+    public Response getSnpByRegion(@PathParam("regions") String region,
                                    @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
                                    @DefaultValue("") @QueryParam("phenotype") String phenotype,
-                                   @QueryParam("exclude")
-                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                   @QueryParam("include")
-                                       @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                   @QueryParam("sort")
-                                       @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                   @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                   @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                   @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                                    @QueryParam("limit") @DefaultValue("10")
                                        @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                                    @QueryParam("skip") @DefaultValue("0")
@@ -393,12 +385,12 @@ public class RegionWSServer extends GenericRestWSServer {
 
 
     @GET
-    @Path("/{chrRegionId}/sequence")
+    @Path("/{regions}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Retrieves genomic sequence", response = String.class,
             responseContainer = "QueryResponse")
-    public Response getSequenceByRegion(@PathParam("chrRegionId")
-                                        @ApiParam(name = "chrRegionId", value = ParamConstants.REGION_DESCRIPTION,
-                                                required = true) String chrRegionId,
+    public Response getSequenceByRegion(@PathParam("regions")
+                                        @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+                                                required = true) String regions,
                                         @DefaultValue("1") @QueryParam("strand")
                                         @ApiParam(name = "strand", value = ParamConstants.STRAND,
                                             allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
@@ -406,19 +398,19 @@ public class RegionWSServer extends GenericRestWSServer {
             parseQueryParams();
             GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
 
-            if (chrRegionId.contains(",")) {
-                List<Region> regionList = Region.parseRegions(chrRegionId);
+            if (regions.contains(",")) {
+                List<Region> regionList = Region.parseRegions(regions);
                 List<CellBaseDataResult<GenomeSequenceFeature>> queryResults =
-                        genomeDBAdaptor.getSequence(Region.parseRegions(chrRegionId), queryOptions);
+                        genomeDBAdaptor.getSequence(Region.parseRegions(regions), queryOptions);
                 for (int i = 0; i < regionList.size(); i++) {
                     queryResults.get(i).setId(regionList.get(i).toString());
                 }
                 return createOkResponse(queryResults);
             } else {
-                query.put(GenomeDBAdaptor.QueryParams.REGION.key(), chrRegionId);
+                query.put(GenomeDBAdaptor.QueryParams.REGION.key(), regions);
                 query.put("strand", strand);
                 CellBaseDataResult queryResult = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
-                queryResult.setId(chrRegionId);
+                queryResult.setId(regions);
                 return createOkResponse(queryResult);
             }
         } catch (Exception e) {
@@ -427,7 +419,7 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{chrRegionId}/clinical")
+    @Path("/{regions}/clinical")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the clinical variants",
             notes = "No more than 1000 objects are allowed to be returned at a time. "
             + "Please note that ClinVar, COSMIC or GWAS objects may be returned as stored in the database. Please have "
@@ -463,9 +455,9 @@ public class RegionWSServer extends GenericRestWSServer {
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "java.util.List", paramType = "query"),
     })
-    public Response getClinicalByRegion(@PathParam("chrRegionId")
-                                            @ApiParam(name = "chrRegionId", value = ParamConstants.REGION_DESCRIPTION,
-            required = true) String chrRegionId,
+    public Response getClinicalByRegion(@PathParam("regions")
+                                            @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+            required = true) String regions,
                                         @QueryParam("exclude")
                                         @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                                         @QueryParam("include")
@@ -481,12 +473,12 @@ public class RegionWSServer extends GenericRestWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), chrRegionId);
+            query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), regions);
             if (hasHistogramQueryParam()) {
                 return null;
             } else {
                 CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
-                queryResult.setId(chrRegionId);
+                queryResult.setId(regions);
                 return createOkResponse(queryResult);
             }
 
@@ -496,7 +488,7 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{chrRegionId}/regulatory")
+    @Path("/{regions}/regulatory")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all regulatory elements in a region", notes = "An independent"
             + " database query will be issued for each region in regionStr, meaning that results for each region will be"
             + " returned in independent QueryResult objects within the QueryResponse object.",
@@ -509,9 +501,9 @@ public class RegionWSServer extends GenericRestWSServer {
                             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
                     required = false, dataType = "java.util.List", paramType = "query"),
     })
-    public Response getFeatureMap(@PathParam("chrRegionId")
-                                      @ApiParam(name = "chrRegionId", value = ParamConstants.REGION_DESCRIPTION,
-                                              required = true) String chrRegionId,
+    public Response getFeatureMap(@PathParam("regions")
+                                      @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+                                              required = true) String regions,
                                   @QueryParam("exclude")
                                   @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                                   @QueryParam("include")
@@ -527,7 +519,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(chrRegionId, RegulationDBAdaptor.QueryParams.REGION.key());
+            List<Query> queries = createQueries(regions, RegulationDBAdaptor.QueryParams.REGION.key());
             List<CellBaseDataResult> queryResults = regRegionDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
@@ -539,7 +531,7 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{chrRegionId}/tfbs")
+    @Path("/{regions}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. "
             + "If query param "
             + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
@@ -549,9 +541,9 @@ public class RegionWSServer extends GenericRestWSServer {
             + "region will be returned in independent QueryResult objects within the QueryResponse object."
             + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
             responseContainer = "QueryResponse")
-    public Response getTfByRegion(@PathParam("chrRegionId")
-                                  @ApiParam(name = "chrRegionId", value = ParamConstants.REGION_DESCRIPTION,
-                                          required = false) String chrRegionId,
+    public Response getTfByRegion(@PathParam("regions")
+                                  @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+                                          required = false) String regions,
                                   @QueryParam("exclude")
                                   @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                                   @QueryParam("include")
@@ -569,7 +561,7 @@ public class RegionWSServer extends GenericRestWSServer {
             RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
 
             if (hasHistogramQueryParam()) {
-                List<Query> queries = createQueries(chrRegionId, GeneDBAdaptor.QueryParams.REGION.key());
+                List<Query> queries = createQueries(regions, GeneDBAdaptor.QueryParams.REGION.key());
                 List<CellBaseDataResult> queryResults = regulationDBAdaptor.getIntervalFrequencies(queries,
                         getHistogramIntervalSize(), queryOptions);
                 for (int i = 0; i < queries.size(); i++) {
@@ -577,7 +569,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 }
                 return createOkResponse(queryResults);
             } else {
-                List<Query> queries = createQueries(chrRegionId, RegulationDBAdaptor.QueryParams.REGION.key(),
+                List<Query> queries = createQueries(regions, RegulationDBAdaptor.QueryParams.REGION.key(),
                         RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
                         RegulationDBAdaptor.FeatureType.TF_binding_site + ","
                                 + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
@@ -593,20 +585,20 @@ public class RegionWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{chrRegionId}/conservation")
+    @Path("/{regions}/conservation")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the conservation scores", response = GenomicScoreRegion.class,
         responseContainer = "QueryResponse")
-    public Response conservation(@PathParam("chrRegionId")
-                                 @ApiParam(name = "chrRegionId", value = ParamConstants.REGION_DESCRIPTION,
-                                         required = true) String chrRegionId) {
+    public Response conservation(@PathParam("regions")
+                                 @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+                                         required = true) String regions) {
         try {
             parseQueryParams();
             GenomeDBAdaptor conservationDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
-            List<Region> regionList = Region.parseRegions(chrRegionId);
+            List<Region> regionList = Region.parseRegions(regions);
             List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList
                     = conservationDBAdaptor.getConservation(regionList, queryOptions);
             for (int i = 0; i < regionList.size(); i++) {
-                queryResultList.get(i).setId(chrRegionId);
+                queryResultList.get(i).setId(regions);
             }
             return createOkResponse(queryResultList);
         } catch (Exception e) {

@@ -56,11 +56,14 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
+
+    public static final String TRANSCRIPT_IDS = "Comma separated list of transcript IDs, e.g.  ENST00000342992. Other transcript symbols "
+            + "such as HGNC symbols are allowed as well, e.g.: BRCA2-001";
     public static final String TRANSCRIPT_BIOTYPES = "Comma separated list of transcript gencode biotypes, "
             + "e.g. protein_coding,miRNA,lincRNA. Exact text matches will be returned";
     public static final String TRANSCRIPT_XREFS = "Comma separated list transcript xrefs ids, "
             + "e.g. ENSG00000145113,35912_at,GO:0002020. Exact text matches will be returned";
-    public static final String TRANSCRIPT_IDS = "Comma separated list of ENSEMBL transcript ids, "
+    public static final String TRANSCRIPT_ENSEMBL_IDS = "Comma separated list of ENSEMBL transcript ids, "
             + "e.g. ENST00000342992,ENST00000380152,ENST00000544455. Exact text matches will be returned";
     public static final String TRANSCRIPT_NAMES = "Comma separated list of transcript names, e.g. BRCA2-201,TTN-003."
             + " Exact text matches will be returned";
@@ -91,17 +94,13 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-    public static final String SNP_REFERENCE = "Comma separated list of possible reference to be queried, e.g. A,T";
-    public static final String SNP_ALTERNATE = "Comma separated list of possible alternate to be queried, e.g. A,T";
-    public static final String SNP_CONSEQUENCE_TYPE = "Comma separated list of possible SO names describing consequence"
+    public static final String REFERENCE = "Comma separated list of possible reference to be queried, e.g. A,T";
+    public static final String ALTERNATE = "Comma separated list of possible alternate to be queried, e.g. A,T";
+    public static final String CONSEQUENCE_TYPE = "Comma separated list of possible SO names describing consequence"
             + " types to be queried, e.g. missense_variant,downstream_variant. Exact text matches will be retrieved.";
-    public static final String SNP_MERGE = "Return variants for a gene per CellBaseDataResult or all of them merged"
-            + " into the same CellBaseDataResult object.";
 
     // ---------------------------------------------
 
-    public static final String TFBS_MERGE = "Return one TFBs per CellBaseDataResult or all of them merged"
-            + " into the same CellBaseDataResult object.";
     public static final String TFBS_IDS = "String containing a comma separated list of TF names to search, e.g. CTCF";
 
     // ---------------------------------------------

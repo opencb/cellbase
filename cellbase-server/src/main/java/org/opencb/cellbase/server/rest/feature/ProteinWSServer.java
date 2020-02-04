@@ -65,15 +65,15 @@ public class ProteinWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{proteinId}/info")
+    @Path("/{proteins}/info")
     @ApiOperation(httpMethod = "GET", value = "Get the protein info", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfoByEnsemblId(@PathParam("proteinId")
-                                       @ApiParam(name = "proteinId", value = ParamConstants.PROTEIN_XREF_IDS,
+    public Response getInfoByEnsemblId(@PathParam("proteins")
+                                       @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
                                                required = true) String id,
                                        @QueryParam("exclude")
                                        @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
@@ -137,7 +137,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{proteinId}/substitutionScores")
+    @Path("/{proteins}/substitutionScores")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
         notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
                 + " position is provided, all scores will be returned for every possible amino acid"
@@ -156,8 +156,8 @@ public class ProteinWSServer extends GenericRestWSServer {
                             + " of aminoacid names, e.g.: CYS",
                     required = false, dataType = "String", paramType = "query")
     })
-    public Response getSubstitutionScores(@PathParam("proteinId")
-                                          @ApiParam(name = "proteinId",
+    public Response getSubstitutionScores(@PathParam("proteins")
+                                          @ApiParam(name = "proteins",
                                                   value = "String indicating one xref id, e.g.: Q9UL59, Exact text "
                                                           + "matches will be returned",
                                                   required = true) String id,
@@ -203,10 +203,10 @@ public class ProteinWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{proteinId}/name")
+    @Path("/{proteins}/name")
     @ApiOperation(httpMethod = "GET", value = "Deprecated", hidden = true)
     @Deprecated
-    public Response getproteinByName(@PathParam("proteinId") String id) {
+    public Response getproteinByName(@PathParam("proteins") String id) {
         try {
             parseQueryParams();
             ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
@@ -217,35 +217,35 @@ public class ProteinWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{proteinId}/gene")
+    @Path("/{proteins}/gene")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein", hidden = true)
-    public Response getGene(@PathParam("proteinId") String query) {
+    public Response getGene(@PathParam("proteins") String query) {
         return null;
     }
 
     @GET
-    @Path("/{proteinId}/transcript")
+    @Path("/{proteins}/transcript")
     @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = true)
-    public Response getTranscript(@PathParam("proteinId") String query) {
+    public Response getTranscript(@PathParam("proteins") String query) {
         return null;
     }
 
     @GET
-    @Path("/{proteinId}/sequence")
+    @Path("/{proteins}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
         responseContainer = "QueryResponse")
-    public Response getSequence(@PathParam("proteinId")
-                                @ApiParam (name = "proteinId", value = "UniProt accession id, e.g: Q9UL59",
-                                        required = true) String proteinId) {
+    public Response getSequence(@PathParam("proteins")
+                                @ApiParam (name = "proteins", value = "UniProt accession id, e.g: Q9UL59",
+                                        required = true) String proteins) {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-        query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteinId);
+        query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteins);
         queryOptions.put("include", "sequence.value");
         // split by comma
         CellBaseDataResult<Entry> queryResult = proteinDBAdaptor.get(query, queryOptions);
         CellBaseDataResult<String> queryResult1 = new CellBaseDataResult<>(queryResult.getId(), queryResult.getTime(),
                 queryResult.getEvents(), queryResult.getNumResults(), Collections.emptyList(), 1);
         queryResult1.setResults(Collections.singletonList(queryResult.first().getSequence().getValue()));
-        queryResult1.setId(proteinId);
+        queryResult1.setId(proteins);
         return createOkResponse(queryResult1);
     }
 

@@ -98,7 +98,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -137,7 +137,7 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/group")
+    @Path("/groupby")
     @ApiOperation(httpMethod = "GET", value = "Groups gene HGNC symbols by a field(s). ", response = Integer.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -153,7 +153,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -203,7 +203,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -255,7 +255,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -312,7 +312,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -343,7 +343,7 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{geneId}/info")
+    @Path("/{genes}/info")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -351,7 +351,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -372,8 +372,8 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getByEnsemblId(@PathParam("geneId")
-                @ApiParam(name = "geneId", value = ParamConstants.GENE_XREF_IDS, required = true) String geneId,
+    public Response getByEnsemblId(@PathParam("genes")
+                @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes,
             @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
             @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
             @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
@@ -381,7 +381,7 @@ public class GeneWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(geneId, GeneDBAdaptor.QueryParams.XREFS.key());
+            List<Query> queries = createQueries(genes, GeneDBAdaptor.QueryParams.XREFS.key());
             List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
@@ -393,22 +393,21 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{geneId}/next")
+    @Path("/{genes}/next")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s) - Not yet implemented",
             hidden = true)
-    public Response getNextByEnsemblId(@PathParam("geneId") String geneId) {
+    public Response getNextByEnsemblId(@PathParam("genes") String genes) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            CellBaseDataResult genes = geneDBAdaptor.next(query, queryOptions);
-            return createOkResponse(genes);
+            return createOkResponse(geneDBAdaptor.next(query, queryOptions));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
     @GET
-    @Path("/{geneId}/transcript")
+    @Path("/{genes}/transcript")
     @ApiOperation(httpMethod = "GET", value = "Get the transcripts of a list of gene IDs", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -424,8 +423,8 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getTranscriptsByGeneId(@PathParam("geneId") @ApiParam(name = "geneId",
-            value = ParamConstants.GENE_XREF_IDS, required = true) String geneId,
+    public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
+            value = ParamConstants.GENE_XREF_IDS, required = true) String genes,
             @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
             @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
             @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
@@ -436,7 +435,7 @@ public class GeneWSServer extends GenericRestWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(geneId, TranscriptDBAdaptor.QueryParams.XREFS.key());
+            List<Query> queries = createQueries(genes, TranscriptDBAdaptor.QueryParams.XREFS.key());
             List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
@@ -448,7 +447,7 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/distinct/{fieldName}")
+    @Path("/distinct")
     @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values, e.g. biotype or chromosome",
             value = "Get a unique list of values for a given field.")
     @ApiImplicitParams({
@@ -464,7 +463,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_IDS,
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -483,22 +482,20 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getUniqueValues(
-            @PathParam("fieldName")
-            @ApiParam(name = "fieldName",
-                    value = "Name of column to count, e.g. biotype") String fieldName) {
+    public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", value = "Name of column to return, e.g. biotype")
+                                                String field) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.distinct(query, fieldName));
+            return createOkResponse(geneDBAdaptor.distinct(query, field));
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
     @GET
-    @Path("/{geneId}/snp")
-    @ApiOperation(httpMethod = "GET", value = "Get all SNPs within the specified genes", response = Variant.class,
+    @Path("/{genes}/variant")
+    @ApiOperation(httpMethod = "GET", value = "Get all variants within the specified genes", response = Variant.class,
             notes = "A large number of variants are usually associated to genes. Variant data tends to be heavy. Please,"
                     + "make use of the limit/exclude/include and the rest of query parameters to limit the size of your "
                     + "results.", responseContainer = "QueryResponse")
@@ -508,17 +505,15 @@ public class GeneWSServer extends GenericRestWSServer {
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference", value = ParamConstants.SNP_REFERENCE,
+            @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate", value = ParamConstants.SNP_ALTERNATE,
+            @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.SNP_CONSEQUENCE_TYPE,
+            @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getSNPByGeneId(@PathParam("geneId")
-                @ApiParam(name = "geneId", value = ParamConstants.GENE_XREF_IDS) String geneId,
-            @QueryParam("merge")
-                @ApiParam(name = "merge", value = ParamConstants.SNP_MERGE, defaultValue = "false") boolean merge,
+    public Response getSNPByGenes(@PathParam("genes")
+                @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes,
             @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
             @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
             @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
@@ -529,18 +524,12 @@ public class GeneWSServer extends GenericRestWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            if (merge) {
-                query.put(VariantDBAdaptor.QueryParams.GENE.key(), geneId);
-                CellBaseDataResult queryResult = variationDBAdaptor.nativeGet(query, queryOptions);
-                return createOkResponse(queryResult);
-            } else {
-                List<Query> queries = createQueries(geneId, VariantDBAdaptor.QueryParams.GENE.key());
-                List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
-                for (int i = 0; i < queries.size(); i++) {
-                    queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.GENE.key()));
-                }
-                return createOkResponse(queryResults);
+            List<Query> queries = createQueries(genes, VariantDBAdaptor.QueryParams.GENE.key());
+            List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.GENE.key()));
             }
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -548,42 +537,29 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{geneId}/regulation")
+    @Path("/{genes}/regulation")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s) - Not yet implemented",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse", hidden = true)
-    public Response getAllRegulatoryElements(@PathParam("geneId")
-                                             @ApiParam(name = "geneId",
-                                                     value = ParamConstants.GENE_XREF_IDS,
-                                                     required = true) String geneId,
-                                             @QueryParam("merge")
-                                             @ApiParam(name = "merge",
-                                                     value = ParamConstants.TFBS_MERGE,
-                                                     defaultValue = "false", required = true) boolean merge) {
+    public Response getAllRegulatoryElements(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS,
+            required = true) String genes) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            if (merge) {
-                query.put(GeneDBAdaptor.QueryParams.ID.key(), geneId);
+            String[] geneArray = genes.split(",");
+            List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
+            for (String gene : geneArray) {
+                query.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
                 CellBaseDataResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
-                return createOkResponse(queryResult);
-            } else {
-                String[] genes = geneId.split(",");
-                List<CellBaseDataResult> queryResults = new ArrayList<>(genes.length);
-                for (String gene : genes) {
-                    query.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
-                    CellBaseDataResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
-                    queryResults.add(queryResult);
-                }
-                return createOkResponse(queryResults);
+                queryResults.add(queryResult);
             }
-
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
     @GET
-    @Path("/{geneId}/tfbs")
+    @Path("/{genes}/tfbs")
     @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s)",
             response = TranscriptTfbs.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -609,10 +585,8 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAllTfbs(@PathParam("geneId") @ApiParam(name = "geneId", value = ParamConstants.GENE_ENSEMBL_IDS,
-                                       required = true) String geneId,
-                               @QueryParam("merge") @ApiParam(name = "merge", value = ParamConstants.TFBS_MERGE,
-                                       defaultValue = "false", required = true) boolean merge,
+    public Response getAllTfbs(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_ENSEMBL_IDS,
+                                       required = true) String genes,
             @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
             @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
             @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
@@ -623,28 +597,24 @@ public class GeneWSServer extends GenericRestWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            if (merge) {
-                query.put(GeneDBAdaptor.QueryParams.XREFS.key(), geneId);
+
+            String[] geneArray = genes.split(",");
+            List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
+            for (String gene : geneArray) {
+                query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
                 CellBaseDataResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
-                return createOkResponse(queryResult);
-            } else {
-                String[] genes = geneId.split(",");
-                List<CellBaseDataResult> queryResults = new ArrayList<>(genes.length);
-                for (String gene : genes) {
-                    query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
-                    CellBaseDataResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
-                    queryResult.setId(gene);
-                    queryResults.add(queryResult);
-                }
-                return createOkResponse(queryResults);
+                queryResult.setId(gene);
+                queryResults.add(queryResult);
             }
+            return createOkResponse(queryResults);
+
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
     @GET
-    @Path("/{geneId}/protein")
+    @Path("/{genes}/protein")
     @ApiOperation(httpMethod = "GET", value = "Return info of the corresponding proteins", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -654,8 +624,8 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true")
     })
-    public Response getProteinById(@PathParam("geneId") @ApiParam(name = "geneId", value = ParamConstants.GENE_IDS,
-                                           required = true) String geneId,
+    public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
+                                           required = true) String genes,
             @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
             @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
             @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
@@ -666,7 +636,7 @@ public class GeneWSServer extends GenericRestWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
             ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(geneId, ProteinDBAdaptor.QueryParams.XREFS.key());
+            List<Query> queries = createQueries(genes, ProteinDBAdaptor.QueryParams.XREFS.key());
             List<CellBaseDataResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
@@ -678,10 +648,10 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{geneId}/ppi")
+    @Path("/{genes}/ppi")
     @ApiOperation(httpMethod = "GET", value = "Get the protein-protein interactions in which this gene is involved",
             hidden = true)
-    public Response getPPIByEnsemblId(@PathParam("geneId") String gene) {
+    public Response getPPIByEnsemblId(@PathParam("genes") String gene) {
         try {
             parseQueryParams();
             ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
@@ -694,7 +664,7 @@ public class GeneWSServer extends GenericRestWSServer {
     }
 
     @GET
-    @Path("/{geneId}/clinical")
+    @Path("/{genes}/clinical")
     @ApiOperation(httpMethod = "GET", notes = "WARNING: this web service is currently deprecated, is no longer "
             + " supported and will"
             + " soon be removed. No more than 1000 objects are allowed to be returned at a time. "
@@ -729,15 +699,15 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     @Deprecated
-    public Response getAllClinvarByGene(@PathParam("geneId")
-                                        @ApiParam(name = "geneId", value = "String containing one gene symbol, e.g:"
-                                                + " BRCA2", required = true) String geneId) {
+    public Response getAllClinvarByGene(@PathParam("genes")
+                                        @ApiParam(name = "genes", value = "String containing one gene symbol, e.g:"
+                                                + " BRCA2", required = true) String genes) {
         try {
             parseQueryParams();
             ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-            query.put("gene", geneId);
+            query.put("gene", genes);
             CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(geneId);
+            queryResult.setId(genes);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
