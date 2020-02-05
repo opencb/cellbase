@@ -71,7 +71,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
-                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true")
     })
     public Response getAll(@QueryParam("exclude")

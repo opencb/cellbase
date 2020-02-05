@@ -102,7 +102,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             value = "Get all proteins", response = Entry.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
-                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "accession", value = ParamConstants.PROTEIN_ACCESSIONS,
                     required = false, dataType = "java.util.List", paramType = "query"),
