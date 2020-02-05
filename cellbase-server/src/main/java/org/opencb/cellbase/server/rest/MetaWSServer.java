@@ -16,9 +16,8 @@
 
 package org.opencb.cellbase.server.rest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
@@ -28,23 +27,28 @@ import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
+import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
+import org.opencb.cellbase.server.rest.feature.GeneWSServer;
+import org.opencb.cellbase.server.rest.feature.IdWSServer;
+import org.opencb.cellbase.server.rest.feature.ProteinWSServer;
+import org.opencb.cellbase.server.rest.feature.TranscriptWSServer;
+import org.opencb.cellbase.server.rest.genomic.ChromosomeWSServer;
+import org.opencb.cellbase.server.rest.genomic.RegionWSServer;
+import org.opencb.cellbase.server.rest.genomic.VariantWSServer;
+import org.opencb.cellbase.server.rest.regulatory.RegulatoryWSServer;
+import org.opencb.cellbase.server.rest.regulatory.TfWSServer;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.*;
 
 /**
  * Created by imedina on 04/08/15.
@@ -192,6 +196,140 @@ public class MetaWSServer extends GenericRestWSServer {
 
         return createOkResponse(queryResult);
 
+    }
+
+    @GET
+    @Path("/api")
+    @ApiOperation(value = "API", response = Map.class)
+    public Response api(@ApiParam(value = "List of categories to get API from") @QueryParam("category") String categoryStr) {
+        List<LinkedHashMap<String, Object>> api = new ArrayList<>(20);
+        Map<String, Class> classes = new LinkedHashMap<>();
+        classes.put("clinical", ClinicalWSServer.class);
+        classes.put("gene", GeneWSServer.class);
+        classes.put("genomeSequence", ChromosomeWSServer.class);
+        classes.put("meta", MetaWSServer.class);
+        classes.put("protein", ProteinWSServer.class);
+        classes.put("region", RegionWSServer.class);
+        classes.put("regulation", RegulatoryWSServer.class);
+        classes.put("species", SpeciesWSServer.class);
+        classes.put("tfbs", TfWSServer.class);
+        classes.put("transcript", TranscriptWSServer.class);
+        classes.put("variant", VariantWSServer.class);
+        classes.put("xref", IdWSServer.class);
+
+        if (StringUtils.isNotEmpty(categoryStr)) {
+            for (String category : categoryStr.split(",")) {
+                api.add(getHelp(classes.get(category)));
+            }
+        } else {
+            // Get API for all categories
+            for (String category : classes.keySet()) {
+                api.add(getHelp(classes.get(category)));
+            }
+        }
+        return createOkResponse(new CellBaseDataResult<>(null, 0, Collections.emptyList(), 1,
+                Collections.singletonList(api), 1));
+    }
+
+    private LinkedHashMap<String, Object> getHelp(Class clazz) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+
+        map.put("name", ((Api) clazz.getAnnotation(Api.class)).value());
+        map.put("path", ((Path) clazz.getAnnotation(Path.class)).value());
+
+        List<LinkedHashMap<String, Object>> endpoints = new ArrayList<>(20);
+        for (Method method : clazz.getMethods()) {
+            Path pathAnnotation = method.getAnnotation(Path.class);
+            String httpMethod = "GET";
+            if (method.getAnnotation(POST.class) != null) {
+                httpMethod = "POST";
+            } else {
+                if (method.getAnnotation(DELETE.class) != null) {
+                    httpMethod = "DELETE";
+                }
+            }
+            ApiOperation apiOperationAnnotation = method.getAnnotation(ApiOperation.class);
+            if (pathAnnotation != null && apiOperationAnnotation != null && !apiOperationAnnotation.hidden()) {
+                LinkedHashMap<String, Object> endpoint = new LinkedHashMap<>();
+                endpoint.put("path", map.get("path") + pathAnnotation.value());
+                endpoint.put("method", httpMethod);
+                endpoint.put("response", StringUtils.substringAfterLast(apiOperationAnnotation.response().getName()
+                        .replace("Void", ""), "."));
+
+                String responseClass = apiOperationAnnotation.response().getName().replace("Void", "");
+                endpoint.put("responseClass", responseClass.endsWith(";") ? responseClass : responseClass + ";");
+                endpoint.put("notes", apiOperationAnnotation.notes());
+                endpoint.put("description", apiOperationAnnotation.value());
+
+                ApiImplicitParams apiImplicitParams = method.getAnnotation(ApiImplicitParams.class);
+                List<LinkedHashMap<String, Object>> parameters = new ArrayList<>();
+                if (apiImplicitParams != null) {
+                    for (ApiImplicitParam apiImplicitParam : apiImplicitParams.value()) {
+                        LinkedHashMap<String, Object> parameter = new LinkedHashMap<>();
+                        parameter.put("name", apiImplicitParam.name());
+                        parameter.put("param", apiImplicitParam.paramType());
+                        parameter.put("type", apiImplicitParam.dataType());
+                        parameter.put("typeClass", "java.lang." + StringUtils.capitalize(apiImplicitParam.dataType()));
+                        parameter.put("allowedValues", apiImplicitParam.allowableValues());
+                        parameter.put("required", apiImplicitParam.required());
+                        parameter.put("defaultValue", apiImplicitParam.defaultValue());
+                        parameter.put("description", apiImplicitParam.value());
+                        parameters.add(parameter);
+                    }
+                }
+
+                Parameter[] methodParameters = method.getParameters();
+                if (methodParameters != null) {
+                    for (Parameter methodParameter : methodParameters) {
+                        ApiParam apiParam = methodParameter.getAnnotation(ApiParam.class);
+                        if (apiParam != null && !apiParam.hidden()) {
+                            LinkedHashMap<String, Object> parameter = new LinkedHashMap<>();
+                            if (methodParameter.getAnnotation(PathParam.class) != null) {
+                                parameter.put("name", methodParameter.getAnnotation(PathParam.class).value());
+                                parameter.put("param", "path");
+                            } else {
+                                if (methodParameter.getAnnotation(QueryParam.class) != null) {
+                                    parameter.put("name", methodParameter.getAnnotation(QueryParam.class).value());
+                                    parameter.put("param", "query");
+                                } else {
+                                    parameter.put("name", "body");
+                                    parameter.put("param", "body");
+                                }
+                            }
+
+                            // Get type in lower case except for 'body' param
+                            String type = methodParameter.getType().getName();
+                            String typeClass = type;
+                            if (typeClass.contains(".")) {
+                                String[] split = typeClass.split("\\.");
+                                type = split[split.length - 1];
+                                if (!parameter.get("param").equals("body")) {
+                                    type = type.toLowerCase();
+
+                                    // Complex type different from body are enums
+                                    if (type.contains("$")) {
+                                        type = "enum";
+                                    }
+                                } else {
+                                    type = "object";
+                                }
+                            }
+                            parameter.put("type", type);
+                            parameter.put("typeClass", typeClass.endsWith(";") ? typeClass : typeClass + ";");
+                            parameter.put("allowedValues", apiParam.allowableValues());
+                            parameter.put("required", apiParam.required());
+                            parameter.put("defaultValue", apiParam.defaultValue());
+                            parameter.put("description", apiParam.value());
+                            parameters.add(parameter);
+                        }
+                    }
+                }
+                endpoint.put("parameters", parameters);
+                endpoints.add(endpoint);
+            }
+        }
+        map.put("endpoints", endpoints);
+        return map;
     }
 
 }
