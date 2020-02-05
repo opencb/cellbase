@@ -59,7 +59,7 @@ public class TfWSServer extends RegulatoryWSServer {
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
-                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")

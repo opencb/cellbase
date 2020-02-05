@@ -241,7 +241,7 @@ public class GeneWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
-                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -286,6 +286,7 @@ public class GeneWSServer extends GenericRestWSServer {
                            @QueryParam("skip") @DefaultValue("0")
                                @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
+
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();

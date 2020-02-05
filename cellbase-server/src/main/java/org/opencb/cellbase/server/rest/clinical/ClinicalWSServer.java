@@ -57,7 +57,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
-                    required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "source", value = ParamConstants.SOURCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -84,16 +84,11 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "alleleOrigin", value = ParamConstants.ALLELE_ORIGIN,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll(@QueryParam("exclude")
-                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                           @QueryParam("include")
-                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                           @QueryParam("sort")
-                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                           @QueryParam("limit") @DefaultValue("10")
-                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                           @QueryParam("skip") @DefaultValue("0")
-                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getAll(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                           @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                           @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                           @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                           @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);

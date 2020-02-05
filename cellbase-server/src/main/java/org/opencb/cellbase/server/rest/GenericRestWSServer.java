@@ -211,8 +211,16 @@ public class GenericRestWSServer implements IWSServer {
 
         // Add all the others QueryParams from the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-            if (!queryOptions.containsKey(entry.getKey())) {
-                query.put(entry.getKey(), entry.getValue().get(0));
+
+            String key = entry.getKey();
+            String value = entry.getValue().get(0);
+
+            if (!queryOptions.containsKey(key)) {
+                if ("count".equalsIgnoreCase(key)) {
+                    queryOptions.put("count", Boolean.parseBoolean(value));
+                } else {
+                    query.put(key, value);
+                }
             }
         }
     }

@@ -60,12 +60,9 @@ public class SpeciesWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET",
             value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
             responseContainer = "QueryResponse")
-    public Response getSpeciesInfo(@QueryParam("exclude")
-                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                   @QueryParam("include")
-                                       @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                   @QueryParam("sort")
-                                       @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
+    public Response getSpeciesInfo(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                   @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                   @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
