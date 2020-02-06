@@ -6,21 +6,18 @@ import org.junit.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.DBAdaptorFactory;
 import org.opencb.cellbase.core.api.GeneDBAdaptor;
-import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by fjlopez on 14/02/17.
@@ -47,10 +44,94 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testProteinHgvsInsertion() throws Exception {
-        // Affects last incomplete codon (i.e. end of the codon goes beyond transcript ENST00000513223 sequence). Just
-        // one protein HGVS (validated with variant validator) must be returned for the other coding transcript
-        // (ENST00000264930/ENSP00000264930).
-        List<String> hgvsList = getVariantHgvs(new Variant("22",
+        // Made-up variant derived from a ClinVar insertion that used to break the code. After right-shifting ends up
+        // exhausting the reference protein sequence and therefore being an extension, i.e. the start coordinate in
+        // protein coordinates corresopnds to the aa next to the last aa in the protein sequence
+        List<String> hgvsList = getVariantHgvs(new Variant("12",
+                103232958,
+                "-",
+                "T"));
+        // two protein hgvs expected
+        assertNumberProteinHGVS(2, hgvsList);
+        // Can only validate ENSP00000448059:p.Ter453Valext*? using Variant Validator. The other one
+        // (ENSP00000303500:p.Ter448Valext*?) does not seem to appear in Variant Validator but I'm fairly confident
+        // that it's due to some difference in transcript/protein annotation between RefSeq and ENSEMBL
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000448059:p.Ter453Valext*?",
+                "ENSP00000303500:p.Ter448Valext*?"));
+
+        // Made-up variant derived from a ClinVar insertion that used to break the code; affects start of an
+        // unconfirmed-start transcript (ENST00000372421) by affecting the start codon that would span out of the
+        // transcript sequence boundaries. Therefore, no protein HGVS must be returned for the corresponding protein.
+        // I have no good means to validate ENSP00000396608:p.Asn2fs. Rest of protein HGVS have been validated using
+        // Variant Validator.
+        hgvsList = getVariantHgvs(new Variant("10",
+                79397320,
+                "-",
+                "TATTG"));
+        // two protein hgvs expected
+        assertNumberProteinHGVS(11, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000396608:p.Asn2fs",
+                "ENSP00000385717:p.Asn28fs",
+                "ENSP00000361517:p.Asn28fs",
+                "ENSP00000361520:p.Asn28fs",
+                "ENSP00000286628:p.Asn28fs",
+                "ENSP00000286627:p.Asn28fs",
+                "ENSP00000385552:p.Asn28fs",
+                "ENSP00000346321:p.Asn28fs",
+                "ENSP00000385806:p.Asn28fs",
+                "ENSP00000475086:p.Asn28fs",
+                "ENSP00000474686:p.Asn28fs"));
+
+        // insertion of more than one AA
+        hgvsList = getVariantHgvs(new Variant("22",
+                38318124,
+                "-",
+                "CTTTTG"));
+        // two protein hgvs expected, checked against variant validator
+        assertNumberProteinHGVS(2, hgvsList);
+        // I have no good means of checking "ENSP00000404543:p.Lys154_Gln155insLeuLeu" as this
+        // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
+        // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
+        // test this particular bit of code (insertion of a STOP codon). The other one
+        // (ENSP00000215957:p.Lys238_Gln239insLeuLeu) has been properly validated with variant validator
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Lys238_Gln239insLeuLeu",
+                "ENSP00000404543:p.Lys154_Gln155insLeuLeu"));
+
+        // STOP codon gained while spanning insertion
+        hgvsList = getVariantHgvs(new Variant("22",
+                38318124,
+                "-",
+                "CTTTAA"));
+        // two protein hgvs expected, checked against variant validator
+        assertNumberProteinHGVS(2, hgvsList);
+        // I have no good means of checking "ENSP00000404543:p.Gln155Ter" as this
+        // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
+        // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
+        // test this particular bit of code (insertion of a STOP codon). The other one (ENSP00000215957:p.Gln239Ter)
+        // has been properly validated with variant validator
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Gln239Ter", "ENSP00000404543:p.Gln155Ter"));
+
+        // Must fail to predict AA while spanning insertion and therefore must not return any HGVS
+        hgvsList = getVariantHgvs(new Variant("22",
+                38318124,
+                "-",
+                "CTTFGA"));
+        // none protein hgvs expected
+        assertNumberProteinHGVS(0, hgvsList);
+
+        // An example that used to fail taken from ClinVar
+        hgvsList = getVariantHgvs(new Variant("10",
+                104263974,
+                "-",
+                "C"));
+        // three protein hgvs expected, checked against variant validator
+        assertNumberProteinHGVS(3, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000358918:p.Ala25fs",
+                "ENSP00000358915:p.Ala25fs",
+                "ENSP00000411597:p.Ala25fs"));
+
+        // Unexpected nt character "F" should not return any protein HGVS
+        hgvsList = getVariantHgvs(new Variant("22",
                 38318124,
                 "-",
                 "FGA"));
@@ -82,7 +163,7 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
                 "A"));
         // two protein hgvs expected
         assertNumberProteinHGVS(1, hgvsList);
-        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000264930:p.Leu990fs"));
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000264930:p.Lys990fs"));
 
         // Duplication of 1 single aa
         hgvsList = getVariantHgvs(new Variant("22",
@@ -109,8 +190,8 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         // genomic variant is not in ENSEMBL Variation and Variant Validator does not generate HGVS for this particular
         // protein (this protein/transcript is apparently not in RefSeq); I had to make up this particular variant to
         // test this particular bit of code (in-frame insertion)
-        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Gln238_Gln239insVal",
-                "ENSP00000404543:p.Gln154_Gln155insVal"));
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000215957:p.Lys238_Gln239insVal",
+                "ENSP00000404543:p.Lys154_Gln155insVal"));
 
         // Duplication
         hgvsList = getVariantHgvs(new Variant("22",
@@ -145,8 +226,24 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testProteinHgvsSNV() throws Exception {
+        // Synonymous variant
+        List<String> hgvsList = getVariantHgvs(new Variant("10",
+                104865516,
+                "G",
+                "A"));
+        // two protein hgvs expected
+        assertNumberProteinHGVS(0, hgvsList);
+
         // Affects STOP codon - warning message expected and no protein HGVS should be returned
-        List<String> hgvsList = getVariantHgvs(new Variant("21",
+        hgvsList = getVariantHgvs(new Variant("16",
+                28488951,
+                "T",
+                "A"));
+        // two protein hgvs expected
+        assertNumberProteinHGVS(0, hgvsList);
+
+        // Affects STOP codon - warning message expected and no protein HGVS should be returned
+        hgvsList = getVariantHgvs(new Variant("21",
                 46058088,
                 "T",
                 "A"));
@@ -182,8 +279,47 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testProteinHgvsDeletion() throws Exception {
+        // Made-up variant derived from a ClinVar deletion that used to break the code; start falls outside coding
+        // region but after right aligning both fall within the coding region
+        List<String> hgvsList = getVariantHgvs(new Variant("1",
+                156084708,
+                "CCATGGAGA",
+                "-"));
+        // 5 protein hgvs expected
+        assertNumberProteinHGVS(5, hgvsList);
+        // No proper validation could be done for these but he main objective of this test case was to check that a
+        // deletion originally falling outside the coding region, if after normalisation falls within the coding region
+        // then protein hgvs must be returned. Variant Validator returns things like "p.(Met1?)"; i've been searching
+        // for the use of the "?" but couldn't find anything quickly so i'm sticking to this representation
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000357284:p.Met1_Thr3del",
+                "ENSP00000292304:p.Met1_Thr3del",
+                "ENSP00000355292:p.Met1_Thr3del",
+                "ENSP00000357283:p.Met1_Thr3del",
+                "ENSP00000357282:p.Met1_Thr3del"));
+
+        // Made-up variant derived from a ClinVar deletion that used to break the code; affects start of an
+        // unconfirmed-start transcript (ENST00000372421) by affecting the start codon that would span out of the
+        // transcript sequence boundaries. Therefore, no protein HGVS must be returned fot the corresponding protein.
+        // Rest of protein HGVS have been validated using Variant Validator.
+        hgvsList = getVariantHgvs(new Variant("10",
+                79397316,
+                "TATTG",
+                "-"));
+        // two protein hgvs expected
+        assertNumberProteinHGVS(10, hgvsList);
+        assertThat(hgvsList, CoreMatchers.hasItems("ENSP00000385717:p.Asn28fs",
+                "ENSP00000361517:p.Asn28fs",
+                "ENSP00000361520:p.Asn28fs",
+                "ENSP00000286628:p.Asn28fs",
+                "ENSP00000286627:p.Asn28fs",
+                "ENSP00000385552:p.Asn28fs",
+                "ENSP00000346321:p.Asn28fs",
+                "ENSP00000385806:p.Asn28fs",
+                "ENSP00000475086:p.Asn28fs",
+                "ENSP00000474686:p.Asn28fs"));
+
         // Removes last CODING nts positive strand - will require additional query to genome sequence
-        List<String> hgvsList = getVariantHgvs(new Variant("5",
+        hgvsList = getVariantHgvs(new Variant("5",
                 205988,
                 "ATCC",
                 "-"));
@@ -304,16 +440,24 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testTranscriptHgvs() throws Exception {
 
+        // Invalid characters in alternate allele ("TBS") - should not break the code, no transcript hgvs should be
+        // returned
+        List<String> hgvsList = getVariantHgvs(new Variant("5",
+                1057643,
+                "-",
+                "TBS"));
+        // two protein hgvs expected
+        assertEquals(0, hgvsList.size());
+
         // Duplication
-        List<String> hgvsList = getVariantHgvs(new Variant("22",
+        hgvsList = getVariantHgvs(new Variant("22",
                 38318124,
                 "-",
                 "CAGCAGCAC"));
-        // two protein hgvs expected
-        assertNumberProteinHGVS(2, hgvsList);
+        // two transcript hgvs expected
+        assertNumberTranscriptHGVS(2, hgvsList);
         assertThat(hgvsList, CoreMatchers.hasItems("ENST00000445494(ENSG00000100139):c.471_479dup9",
                 "ENST00000215957(ENSG00000100139):c.723_731dup9"));
-
 
         // Duplication in positive transcript - must right align and properly calculate the duplicated range
         hgvsList = getVariantHgvs(new Variant("22",

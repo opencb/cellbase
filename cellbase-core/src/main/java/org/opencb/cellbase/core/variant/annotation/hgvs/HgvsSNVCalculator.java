@@ -28,12 +28,16 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         buildingComponents = new BuildingComponents();
         Variant normalizedVariant = normalize(variant, normalize);
         String transcriptHgvs = calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
-        String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
 
-        if (proteinHgvs == null) {
-            return Collections.singletonList(transcriptHgvs);
+        if (transcriptHgvs != null) {
+            String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
+            if (proteinHgvs == null) {
+                return Collections.singletonList(transcriptHgvs);
+            } else {
+                return Arrays.asList(transcriptHgvs, proteinHgvs);
+            }
         } else {
-            return Arrays.asList(transcriptHgvs, proteinHgvs);
+            return Collections.emptyList();
         }
     }
 
@@ -79,8 +83,6 @@ public class HgvsSNVCalculator extends HgvsCalculator {
 
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
         Variant proteinVariant = new Variant();
-
-//        int cdnaCodingStart = getCdnaCodingStart(transcript);
         proteinVariant.setStart(getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getStart())
                 .getReferencePosition(), transcript));
         proteinVariant.setEnd(proteinVariant.getStart());
@@ -88,7 +90,7 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         // We expect buildingComponents.getStart() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-        if (proteinVariant.getStart() > 0 && proteinVariant.getStart() < transcript.getProteinSequence().length()) {
+        if (proteinVariant.getStart() > 0 && proteinVariant.getStart() <= transcript.getProteinSequence().length()) {
             proteinVariant.setReference(String.valueOf(transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)));
             String predictedAa = getPredictedAa(variant, transcript);
             if (StringUtils.isNotBlank(predictedAa)) {

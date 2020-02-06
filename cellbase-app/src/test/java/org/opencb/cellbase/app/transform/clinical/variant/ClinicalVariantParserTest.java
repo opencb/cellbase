@@ -204,8 +204,12 @@ public class ClinicalVariantParserTest {
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
         assertEquals(29, parsedVariantList.size());
 
+        // ClinVar variant with invalid alternate allele string ("TTBS") must NOT be parsed
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000820150");
+        assertEquals(0, variantList.size());
+
         // COSMIC SNV with more complicated hgvs c.431-1G>A
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "COSM4450061");
+        variantList = getVariantByAccession(parsedVariantList, "COSM4450061");
         assertEquals(1, variantList.size());
         Variant variant = variantList.get(0);
         assertEquals("1", variant.getChromosome());

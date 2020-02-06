@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 
+import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
@@ -64,6 +65,37 @@ public class GeneParserTest {
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
+    /**
+     * Checks a case in which the stop codon is the first 3 nts of an exon. ENSE00003800362 is in the negative strand.
+     * genomicCodingEnd, cdnaCodingStart and cdsStart must be set "manually" within the parser as there's no CDS line
+     * in the GTF since the stop codon itself is not part of the coding sequence (but historically considered part of
+     * the coding region in CellBase)
+     */
+    @Test
+    public void testEdgeExonCodingStart() throws Exception {
+        geneParser.parse();
+        List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
+        Exon exon = getExon("ENSE00003800362", genes);
+        assertNotNull(exon);
+        assertEquals(28477630, exon.getGenomicCodingEnd());
+        assertEquals(1302, exon.getCdnaCodingStart());
+        assertEquals(1198, exon.getCdsStart());
+    }
+
+    private Exon getExon(String exonId, List<Gene> genes) {
+        for (Gene gene : genes) {
+            for (Transcript transcript : gene.getTranscripts()) {
+                for (Exon exon : transcript.getExons()) {
+                    if (exonId.equals(exon.getId())) {
+                        return exon;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     @Test
     public void testTranscriptSequence() throws Exception {
         geneParser.parse();
@@ -91,7 +123,7 @@ public class GeneParserTest {
         geneParser.parse();
         final String PROTEIN_SEQUENCE = "MVTEFIFLGLSDSQELQTFLFMLFFVFYGGIVFGNLLIVITVVSDSHLHSPMYFLLANLSLIDLSLSSVTAPKMITDFFSQRKVISFKGCLVQIFLLHFFGGSEMVILIAMGFDRYIAICKPLHYTTIMCGNACVGIMAVTWGIGFLHSVSQLAFAVHLLFCGPNEVDSFYCDLPRVIKLACTDTYRLDIMVIANSGVLTVCSFVLLIISYTIILMTIQHRPLDKSSKALSTLTAHITVVLLFFGPCVFIYAWPFPIKSLDKFLAVFYSVITPLLNPIIYTLRNKDMKTAIRQLRKWDAHSSVKF";
         List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
-        assertEquals(14, genes.size());
+        assertEquals(15, genes.size());
         for (Gene gene : genes) {
             if (gene.getId().equals("ENSG00000223972")) {
                 for (Transcript transcript : gene.getTranscripts()) {

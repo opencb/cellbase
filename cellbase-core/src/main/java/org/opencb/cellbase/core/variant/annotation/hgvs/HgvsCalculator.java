@@ -126,7 +126,7 @@ public class HgvsCalculator {
         return normalizedVariant;
     }
 
-    protected boolean isCoding(Transcript transcript) {
+    protected static boolean isCoding(Transcript transcript) {
         // 0 in the cdnaCodingEnd means that the transcript doesn't
         // have a coding end <==> is non coding. Just annotating
         // coding transcripts in a first approach
@@ -153,7 +153,6 @@ public class HgvsCalculator {
             end = genomicStart;
             // TODO: probably needs +-1 bp adjust
             start = genomicEnd;
-//            start = variant.getStart() + variant.getReferenceStart().length() - 1;
             reference = genomicReference.length() > MAX_ALLELE_LENGTH
                     ? String.valueOf(genomicReference.length())
                     : reverseComplementary(genomicReference);
@@ -170,7 +169,13 @@ public class HgvsCalculator {
     protected String reverseComplementary(String string) {
         StringBuilder stringBuilder = new StringBuilder(string).reverse();
         for (int i = 0; i < stringBuilder.length(); i++) {
-            stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(stringBuilder.charAt(i)));
+            char nextNt = stringBuilder.charAt(i);
+            // Protection against weird characters, e.g. alternate:"TBS" found in ClinVar
+            if (VariantAnnotationUtils.COMPLEMENTARY_NT.containsKey(nextNt)) {
+                stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(nextNt));
+            } else {
+                return null;
+            }
         }
         return stringBuilder.toString();
     }
@@ -219,7 +224,7 @@ public class HgvsCalculator {
         }
     }
 
-    protected CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
+    protected static CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
         if (isCoding(transcript)) {
             return genomicToCdnaCoordInCodingTranscript(transcript, genomicPosition);
         } else {
@@ -228,7 +233,7 @@ public class HgvsCalculator {
 
     }
 
-    private CdnaCoord genomicToCdnaCoordInNonCodingTranscript(Transcript transcript, int genomicPosition) {
+    private static CdnaCoord genomicToCdnaCoordInNonCodingTranscript(Transcript transcript, int genomicPosition) {
         CdnaCoord cdnaCoord = new CdnaCoord();
         List<Exon> exonList = transcript.getExons();
 
@@ -295,7 +300,7 @@ public class HgvsCalculator {
 
     }
 
-    private CdnaCoord   genomicToCdnaCoordInCodingTranscript(Transcript transcript, int genomicPosition) {
+    private static CdnaCoord genomicToCdnaCoordInCodingTranscript(Transcript transcript, int genomicPosition) {
         CdnaCoord cdnaCoord = new CdnaCoord();
         List<Exon> exonList = transcript.getExons();
 
@@ -332,7 +337,7 @@ public class HgvsCalculator {
                 }
             // Exonic variant
             // -------------S|||p||E------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
-            } else if (genomicPosition - nearestExon.getEnd() < 0) {
+            } else if (genomicPosition - nearestExon.getEnd() <= 0) {
                 // Before coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingStart());
@@ -395,7 +400,7 @@ public class HgvsCalculator {
                 }
             // Exonic variant
             // -------------E|||p||S------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
-            } else if (genomicPosition - nearestExon.getEnd() < 0) {
+            } else if (genomicPosition - nearestExon.getEnd() <= 0) {
                 // Before (genomic) coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingEnd());
@@ -436,7 +441,7 @@ public class HgvsCalculator {
         return cdnaCoord;
     }
 
-    private int getCdnaPosition(Transcript transcript, int genomicPosition) {
+    private static int getCdnaPosition(Transcript transcript, int genomicPosition) {
 
         int i = 0;
         int cdnaPosition = 0;
@@ -518,7 +523,7 @@ public class HgvsCalculator {
         return false;
     }
 
-    protected int getFirstCdsPhase(Transcript transcript) {
+    protected static int getFirstCdsPhase(Transcript transcript) {
         if (transcript.getStrand().equals(POSITIVE)) {
             return transcript.getExons().get(0).getPhase();
         } else {
@@ -526,7 +531,7 @@ public class HgvsCalculator {
         }
     }
 
-    protected int getAminoAcidPosition(int cdsPosition, Transcript transcript) {
+    protected static int getAminoAcidPosition(int cdsPosition, Transcript transcript) {
         // cdsPosition might need adjusting for transcripts with unclear start
         if (transcript.unconfirmedStart()) {
             int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
@@ -549,7 +554,7 @@ public class HgvsCalculator {
         return ((cdsPosition - 1) / 3) + 1;
     }
 
-    protected int getCdnaCodingStart(Transcript transcript) {
+    protected static int getCdnaCodingStart(Transcript transcript) {
         int cdnaCodingStart = transcript.getCdnaCodingStart();
         if (transcript.unconfirmedStart()) {
             cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
@@ -557,7 +562,7 @@ public class HgvsCalculator {
         return cdnaCodingStart;
     }
 
-    protected int getFirstCodingExonPhase(Transcript transcript) {
+    protected static int getFirstCodingExonPhase(Transcript transcript) {
         // Assuming exons are ordered
         for (Exon exon : transcript.getExons()) {
             if (exon.getPhase() != -1) {
@@ -568,7 +573,7 @@ public class HgvsCalculator {
         return -1;
     }
 
-    protected int getPhaseShift(int cdsPosition, Transcript transcript) {
+    protected static int getPhaseShift(int cdsPosition, Transcript transcript) {
         if (transcript.unconfirmedStart()) {
             int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
             // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
