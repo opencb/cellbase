@@ -482,8 +482,8 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", value = "Name of column to return, e.g. biotype")
-                                                String field) {
+    public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
+            value = "Name of column to return, e.g. biotype") String field) {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
