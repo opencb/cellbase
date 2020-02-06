@@ -150,11 +150,11 @@ public class MetaWSServer extends GenericRestWSServer {
             response = Map.class, responseContainer = "QueryResponse")
     public Response getAbout() {
         Map<String, String> info = new HashMap<>(3);
-        info.put("Program: ", "CellBase (OpenCB)");
-        info.put("Version: ", GitRepositoryState.get().getBuildVersion());
-        info.put("Git branch: ", GitRepositoryState.get().getBranch());
-        info.put("Git commit: ", GitRepositoryState.get().getCommitId());
-        info.put("Description: ", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
+        info.put("Program", "CellBase (OpenCB)");
+        info.put("Version", GitRepositoryState.get().getBuildVersion());
+        info.put("Git branch", GitRepositoryState.get().getBranch());
+        info.put("Git commit", GitRepositoryState.get().getCommitId());
+        info.put("Description", "High-Performance NoSQL database and RESTful web services to access the most relevant biological data");
         CellBaseDataResult queryResult = new CellBaseDataResult();
         queryResult.setId("about");
         queryResult.setTime(0);
