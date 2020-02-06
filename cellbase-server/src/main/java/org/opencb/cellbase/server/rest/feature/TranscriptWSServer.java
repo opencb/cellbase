@@ -46,19 +46,19 @@ import java.util.Map;
 /**
  * @author imedina
  */
-@Path("/{version}/{species}/feature/transcript")
+@Path("/{apiVersion}/{species}/feature/transcript")
 @Api(value = "Transcript", description = "Transcript RESTful Web Services API")
 @Produces(MediaType.APPLICATION_JSON)
 public class TranscriptWSServer extends GenericRestWSServer {
 
-    public TranscriptWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                                      defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+    public TranscriptWSServer(@PathParam("apiVersion")
+                              @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                               @PathParam("species")
                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
-        super(version, species, uriInfo, hsr);
+        super(apiVersion, species, uriInfo, hsr);
     }
 
     @GET

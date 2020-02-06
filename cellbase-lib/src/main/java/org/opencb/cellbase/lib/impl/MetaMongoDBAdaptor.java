@@ -41,7 +41,6 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseDBAdap
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
     }
 
-
     @Override
     public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         return null;

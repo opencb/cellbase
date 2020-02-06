@@ -41,20 +41,20 @@ import java.util.List;
 /**
  * @author imedina
  */
-@Path("/{version}/{species}/genomic/chromosome")
+@Path("/{apiVersion}/{species}/genomic/chromosome")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Genome Sequence", description = "Genome Sequence RESTful Web Services API")
 public class ChromosomeWSServer extends GenericRestWSServer {
 
 
-    public ChromosomeWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                                      defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+    public ChromosomeWSServer(@PathParam("apiVersion")
+                              @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                               @PathParam("species")
                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
-        super(version, species, uriInfo, hsr);
+        super(apiVersion, species, uriInfo, hsr);
     }
 
     @GET

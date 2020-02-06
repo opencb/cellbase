@@ -186,13 +186,13 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     public Iterator<Variant> iterator(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
-        return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, options).iterator());
+        return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, options));
     }
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
+        return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
     @Override

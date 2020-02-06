@@ -41,19 +41,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@Path("/{version}/{species}/feature/protein")
+@Path("/{apiVersion}/{species}/feature/protein")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Protein", description = "Protein RESTful Web Services API")
 public class ProteinWSServer extends GenericRestWSServer {
 
-    public ProteinWSServer(@PathParam("version")
-                                @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                                        defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+    public ProteinWSServer(@PathParam("apiVersion")
+                                @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                        defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                            @PathParam("species")
                                 @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
-        super(version, species, uriInfo, hsr);
+        super(apiVersion, species, uriInfo, hsr);
     }
 
     @GET

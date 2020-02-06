@@ -267,7 +267,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
+        return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
     @Override

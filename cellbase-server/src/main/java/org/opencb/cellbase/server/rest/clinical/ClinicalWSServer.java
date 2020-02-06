@@ -36,19 +36,19 @@ import java.io.IOException;
 /**
  * Created by fjlopez on 06/12/16.
  */
-@Path("/{version}/{species}/clinical")
+@Path("/{apiVersion}/{species}/clinical")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Clinical", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
 
-    public ClinicalWSServer(@PathParam("version")
-                            @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                                defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+    public ClinicalWSServer(@PathParam("apiVersion")
+                            @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                             @PathParam("species")
                             @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                                 @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
-        super(version, species, uriInfo, hsr);
+        super(apiVersion, species, uriInfo, hsr);
     }
 
     @GET

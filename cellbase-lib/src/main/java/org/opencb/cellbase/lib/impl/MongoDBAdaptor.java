@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.QueryBuilder;
-import com.mongodb.client.MongoCursor;
+import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import com.mongodb.client.model.*;
 import org.bson.*;
 import org.bson.conversions.Bson;
@@ -359,10 +359,10 @@ public class MongoDBAdaptor {
             if (options.containsKey("count") && options.getBoolean("count")) {
                 cellBaseDataResult = new CellBaseDataResult(mongoDBCollection2.count(query));
             } else {
-                MongoCursor<Document> cursor = mongoDBCollection2.nativeQuery().find(query, options).iterator();
+                MongoDBIterator<Document> iterator = mongoDBCollection2.nativeQuery().find(query, options);
                 List<Document> dbObjectList = new LinkedList<>();
-                while (cursor.hasNext()) {
-                    dbObjectList.add(cursor.next());
+                while (iterator.hasNext()) {
+                    dbObjectList.add(iterator.next());
                 }
                 cellBaseDataResult.setNumResults(dbObjectList.size());
                 cellBaseDataResult.setResults(dbObjectList);

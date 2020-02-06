@@ -38,19 +38,19 @@ import java.io.IOException;
 import java.util.List;
 
 
-@Path("/{version}/{species}/regulation/tf")
+@Path("/{apiVersion}/{species}/regulation/tf")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "TFBS", description = "Gene RESTful Web Services API")
 public class TfWSServer extends RegulatoryWSServer {
 
-    public TfWSServer(@PathParam("version")
-                      @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                              defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+    public TfWSServer(@PathParam("apiVersion")
+                      @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                              defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                       @PathParam("species")
                       @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
-        super(version, species, uriInfo, hsr);
+        super(apiVersion, species, uriInfo, hsr);
     }
 
     @GET

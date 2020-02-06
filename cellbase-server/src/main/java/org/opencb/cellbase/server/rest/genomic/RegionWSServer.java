@@ -35,21 +35,21 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@Path("/{version}/{species}/genomic/region")
+@Path("/{apiVersion}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Region", description = "Region RESTful Web Services API")
 public class RegionWSServer extends GenericRestWSServer {
 
     private int histogramIntervalSize = 200000;
 
-    public RegionWSServer(@PathParam("version")
-                          @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                                  defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+    public RegionWSServer(@PathParam("apiVersion")
+                          @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                  defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                           @PathParam("species")
                           @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                           @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
-        super(version, species, uriInfo, hsr);
+        super(apiVersion, species, uriInfo, hsr);
     }
 
     @GET

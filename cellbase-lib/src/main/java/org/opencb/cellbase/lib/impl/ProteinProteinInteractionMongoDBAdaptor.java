@@ -96,7 +96,7 @@ public class ProteinProteinInteractionMongoDBAdaptor extends MongoDBAdaptor impl
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        return mongoDBCollection.nativeQuery().find(parseQuery(query), options).iterator();
+        return mongoDBCollection.nativeQuery().find(parseQuery(query), options);
     }
 
     @Override

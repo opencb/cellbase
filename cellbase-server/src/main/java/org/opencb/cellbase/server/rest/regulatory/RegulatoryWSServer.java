@@ -32,19 +32,19 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 
-@Path("/{version}/{species}/regulatory")
+@Path("/{apiVersion}/{species}/regulatory")
 @Produces("text/plain")
 @Api(value = "Regulation", description = "Gene expression regulation RESTful Web Services API")
 public class RegulatoryWSServer extends GenericRestWSServer {
 
-    public RegulatoryWSServer(@PathParam("version")
-                              @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
-                                      defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+    public RegulatoryWSServer(@PathParam("apiVersion")
+                              @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                      defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                               @PathParam("species")
                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
-        super(version, species, uriInfo, hsr);
+        super(apiVersion, species, uriInfo, hsr);
     }
 
     @GET
