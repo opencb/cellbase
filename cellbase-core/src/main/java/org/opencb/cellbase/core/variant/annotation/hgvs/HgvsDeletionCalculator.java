@@ -243,14 +243,22 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         // There's no need to differentiate between + and - strands since the Transcript object contains the transcript
         // sequence already complementary-reversed if necessary.
-//        Integer variantPhaseShift = (cdsStart - 1) % 3;
+
+        // Only use the "unconfirmedStart" data to determine the variant phase and the codon it belongs to.
+        // getPhaseShift adjusts the phase taking into account the "unconfirmedStart" status.
         int variantPhaseShift = getPhaseShift(cdsStart, transcript);
-        int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsStart - 1;
-        int cdnaVariantEnd = getCdnaCodingStart(transcript) + cdsEnd - 1;
-//        Integer variantPhaseShift = (buildingComponents.getCdnaStart().getReferencePosition() - 1) % 3;
-//        int cdnaVariantStart = getCdnaCodingStart(transcript) + buildingComponents.getCdnaStart().getReferencePosition() - 1;
-//        int cdnaVariantEnd = getCdnaCodingStart(transcript) + buildingComponents.getCdnaEnd().getReferencePosition() - 1;
+
+        // NOTE: unconfirmedStart status not taken into account to calculate the cdnaVariantStart/End. This was decided
+        // as otherwise cdnaVariantStart/End would not correlate (would be shifted) regarding the corresponding position
+        // within the corresponding transcript.getSequence String, as this String does not include the "unknown" nts at
+        // the beginning of the transcript for unconfirmedStart transcripts.
+        int cdnaVariantStart = transcript.getCdnaCodingStart() + cdsStart - 1;
+        int cdnaVariantEnd = transcript.getCdnaCodingStart() + cdsEnd - 1;
+
+        // use the variantPhaseShift (calculated taking into account unconfirmedStart status) to determine the start
+        // coordinate of the codon containing the variant
         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+
         String transcriptSequence = transcript.getcDnaSequence();
         String aa = null;
         // Out of boundaries can happen for unconfirmed start transcripts, for example

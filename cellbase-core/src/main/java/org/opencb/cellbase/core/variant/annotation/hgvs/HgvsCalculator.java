@@ -30,6 +30,7 @@ public class HgvsCalculator {
     protected static final String PROTEIN_CHAR = ":p.";
     protected static final char UNDERSCORE = '_';
     protected static final String POSITIVE = "+";
+    private static final String UNKNOWN_AMINOACID = "X";
     protected static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeDBAdaptor genomeDBAdaptor;
@@ -533,7 +534,9 @@ public class HgvsCalculator {
 
     protected static int getAminoAcidPosition(int cdsPosition, Transcript transcript) {
         // cdsPosition might need adjusting for transcripts with unclear start
-        if (transcript.unconfirmedStart()) {
+        // Found GRCh38 transcript which does not have the unconfirmed start flag BUT the first aa is an X;
+        // ENST00000618610 (ENSP00000484524)
+        if (transcript.unconfirmedStart() || transcript.getProteinSequence().startsWith(UNKNOWN_AMINOACID)) {
             int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
             // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
             // - 0 if fits perfectly with the reading frame, i.e.
@@ -547,7 +550,6 @@ public class HgvsCalculator {
             // Codons              ---|||---|||
             if (firstCodingExonPhase != -1) {
                 cdsPosition += (3 - firstCodingExonPhase) % 3;
-                return ((cdsPosition - 1) / 3) + 1;
             }
         }
 
@@ -574,7 +576,10 @@ public class HgvsCalculator {
     }
 
     protected static int getPhaseShift(int cdsPosition, Transcript transcript) {
-        if (transcript.unconfirmedStart()) {
+        // phase might need adjusting for transcripts with unclear start
+        // Found GRCh38 transcript which does not have the unconfirmed start flag BUT the first aa is an X;
+        // ENST00000618610 (ENSP00000484524)
+        if (transcript.unconfirmedStart() || transcript.getProteinSequence().startsWith(UNKNOWN_AMINOACID)) {
             int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
             // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
             // - 0 if fits perfectly with the reading frame, i.e.

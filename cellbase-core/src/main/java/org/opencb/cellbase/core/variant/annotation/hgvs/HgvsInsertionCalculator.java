@@ -151,13 +151,18 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
 
 
         } else if (EXTENSION.equals(buildingComponents.getMutationType())) {
-            stringBuilder.append(TERMINATION_SUFFIX)
-                    .append(buildingComponents.getStart())
-                    .append(VariantAnnotationUtils
-                            .buildUpperLowerCaseString(VariantAnnotationUtils
-                                    .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
-                    .append(EXTENSION_TAG)
-                    .append(UNKOWN_STOP_CODON_POSITION);
+            try {
+                stringBuilder.append(TERMINATION_SUFFIX)
+                        .append(buildingComponents.getStart())
+                        .append(VariantAnnotationUtils
+                                .buildUpperLowerCaseString(VariantAnnotationUtils
+                                        .TO_LONG_AA.get(String.valueOf(buildingComponents.getAlternate().charAt(0)))))
+                        .append(EXTENSION_TAG)
+                        .append(UNKOWN_STOP_CODON_POSITION);
+            } catch (NullPointerException e) {
+                int a = 1;
+                throw e;
+            }
 
         } else if (BuildingComponents.Kind.FRAMESHIFT.equals(buildingComponents.getKind())) {
             // Appends aa name properly formated; first letter uppercase, two last letters lowercase e.g. Arg
@@ -248,14 +253,14 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
                         // No prediction could be made
                         if (predictedAA == 0) {
                             sequenceComparisonState = SequenceComparisonState.FAILED;
+                        } else if (predictedAA == STOP_CODON_INDICATOR) {
+                            sequenceComparisonState = SequenceComparisonState.FINISHED;
                         // Reached end of reference protein sequence - comparison finished successfully
                         } else if (referencePosition == reference.length()) {
                             alternatePosition++;
                             // transform to base 1
                             start = referencePosition + 1;
                             end = start - 1;
-                            sequenceComparisonState = SequenceComparisonState.FINISHED;
-                        } else if (predictedAA == STOP_CODON_INDICATOR) {
                             sequenceComparisonState = SequenceComparisonState.FINISHED;
                         } else if (reference.charAt(referencePosition) == predictedAA) {
                             referencePosition++;

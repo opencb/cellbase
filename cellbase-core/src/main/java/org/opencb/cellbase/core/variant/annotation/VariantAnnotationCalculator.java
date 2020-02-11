@@ -566,7 +566,7 @@ public class VariantAnnotationCalculator {
         logger.debug("cnvExtraPadding = {}", cnvExtraPadding);
 
         checkAminoAcidChange = (queryOptions.get("checkAminoAcidChange") != null && (Boolean) queryOptions.get("checkAminoAcidChange"));
-        logger.info("checkAminoAcidChange = {}", checkAminoAcidChange);
+        logger.debug("checkAminoAcidChange = {}", checkAminoAcidChange);
     }
 
     private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
