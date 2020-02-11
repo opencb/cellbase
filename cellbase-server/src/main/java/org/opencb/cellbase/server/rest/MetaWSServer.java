@@ -18,7 +18,7 @@ package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.cellbase.core.api.CellBaseDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesProperties;

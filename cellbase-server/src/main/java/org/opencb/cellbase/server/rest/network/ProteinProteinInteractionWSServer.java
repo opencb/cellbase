@@ -17,7 +17,7 @@
 package org.opencb.cellbase.server.rest.network;
 
 import org.opencb.biodata.models.protein.Interaction;
-import org.opencb.cellbase.core.api.ProteinProteinInteractionDBAdaptor;
+import org.opencb.cellbase.core.api.core.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;

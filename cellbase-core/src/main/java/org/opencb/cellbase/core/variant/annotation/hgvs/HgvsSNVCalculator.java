@@ -18,7 +18,7 @@ package org.opencb.cellbase.core.variant.annotation.hgvs;
 
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 
 import java.util.Collections;

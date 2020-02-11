@@ -21,7 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
-import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.api.core.*;
+import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -58,7 +59,7 @@ public class QueryCommandExecutor extends CommandExecutor {
 
     @Override
     public void execute() {
-        dbAdaptorFactory = new org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory(configuration);
+        dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
 
         if (queryCommandOptions.limit == 0) {
             queryCommandOptions.limit = 10;

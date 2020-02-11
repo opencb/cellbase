@@ -25,7 +25,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 
 import java.io.File;
 import java.io.IOException;

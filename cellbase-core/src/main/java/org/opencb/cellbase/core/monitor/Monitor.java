@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.opencb.cellbase.core.CellBaseDataResponse;
-import org.opencb.cellbase.core.api.DBAdaptorFactory;
+import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 
 import org.opencb.cellbase.core.result.CellBaseDataResult;

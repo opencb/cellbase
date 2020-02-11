@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.tools.sequence.SequenceAdaptor;
-import org.opencb.cellbase.core.api.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;

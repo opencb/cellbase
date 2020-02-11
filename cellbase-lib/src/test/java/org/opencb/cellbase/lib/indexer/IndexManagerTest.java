@@ -1,11 +1,10 @@
 package org.opencb.cellbase.lib.indexer;
 
 import org.bson.Document;
-import org.junit.jupiter.api.Assertions;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.lib.impl.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;

@@ -20,7 +20,7 @@ import io.swagger.annotations.*;
 import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.*;
+import org.opencb.cellbase.core.api.core.*;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
