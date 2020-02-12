@@ -380,11 +380,11 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
                     .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
         } else {
             query = new Query();
-                if (options.get(QueryParams.CHECK_AMINO_ACID_CHANGE.key()) != null
-                    && (Boolean) options.get(QueryParams.CHECK_AMINO_ACID_CHANGE.key())
-                    && genomeDBAdaptor != null
-                    && geneList != null
-                    && !geneList.isEmpty()) {
+            if (options.get(QueryParams.CHECK_AMINO_ACID_CHANGE.key()) != null
+                && (Boolean) options.get(QueryParams.CHECK_AMINO_ACID_CHANGE.key())
+                && genomeDBAdaptor != null
+                && geneList != null
+                && !geneList.isEmpty()) {
                 HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
                 List<String> proteinHgvsList = getProteinHgvs(hgvsCalculator.run(variant, geneList));
                 // Only add the protein HGVS query if it's a protein coding variant

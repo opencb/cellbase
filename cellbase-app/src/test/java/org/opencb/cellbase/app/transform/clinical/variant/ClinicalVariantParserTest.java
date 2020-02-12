@@ -145,9 +145,8 @@ public class ClinicalVariantParserTest {
         // Check corresponding EvidenceEntry objects for all 6 variants have been flagged with the proper "haplotype"
         // additional property
         for (Variant variant : variantList) {
-            // Each simple variant must contain two EvidenceEntry objects: one for the variation ID, another one for
-            // the RCV
-            // And one SCV
+            // Each simple variant must contain three EvidenceEntry objects: one for the variation ID, another one for
+            // the RCV and one SCV
             assertEquals(3, variant.getAnnotation().getTraitAssociation().size());
             assertEvidenceEntriesHaplotype("9:107594021:-:GTAC,"
                     + "9:107594027:-:TGGCGTGACCTCAGCTCACTGC,"
@@ -205,8 +204,12 @@ public class ClinicalVariantParserTest {
         List<Variant> parsedVariantList = loadSerializedVariants("/tmp/" + EtlCommons.CLINICAL_VARIANTS_JSON_FILE);
         assertEquals(29, parsedVariantList.size());
 
+        // ClinVar variant with invalid alternate allele string ("TTBS") must NOT be parsed
+        List<Variant> variantList = getVariantByAccession(parsedVariantList, "RCV000820150");
+        assertEquals(0, variantList.size());
+
         // COSMIC SNV with more complicated hgvs c.431-1G>A
-        List<Variant> variantList = getVariantByAccession(parsedVariantList, "COSM4450061");
+        variantList = getVariantByAccession(parsedVariantList, "COSM4450061");
         assertEquals(1, variantList.size());
         Variant variant = variantList.get(0);
         assertEquals("1", variant.getChromosome());
@@ -343,6 +346,9 @@ public class ClinicalVariantParserTest {
         assertNotNull(evidenceEntry);
         assertEquals(1, evidenceEntry.getGenomicFeatures().size());
         assertEquals("FECH", evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"));
+        assertNotNull(evidenceEntry.getVariantClassification());
+        assertEquals(ClinicalSignificance.pathogenic,
+                evidenceEntry.getVariantClassification().getClinicalSignificance());
 
         // Second variant in the haplotype
         variant = variantList.get(1);

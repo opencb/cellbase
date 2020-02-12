@@ -19,6 +19,7 @@ public class HgvsSNVCalculator extends HgvsCalculator {
     private static final String METIONINE = "M";
     private static final String STOP = "Stop";
     private static final String STOP_GAINED_TAG = "Ter";
+    private static final String SYNONYMOUS_VARIANT_SUFFIX = "=";
 
     public HgvsSNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
         super(genomeDBAdaptor);
@@ -28,12 +29,16 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         buildingComponents = new BuildingComponents();
         Variant normalizedVariant = normalize(variant, normalize);
         String transcriptHgvs = calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
-        String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
 
-        if (proteinHgvs == null) {
-            return Collections.singletonList(transcriptHgvs);
+        if (transcriptHgvs != null) {
+            String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
+            if (proteinHgvs == null) {
+                return Collections.singletonList(transcriptHgvs);
+            } else {
+                return Arrays.asList(transcriptHgvs, proteinHgvs);
+            }
         } else {
-            return Arrays.asList(transcriptHgvs, proteinHgvs);
+            return Collections.emptyList();
         }
     }
 
@@ -44,14 +49,18 @@ public class HgvsSNVCalculator extends HgvsCalculator {
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
             Variant proteinVariant = createProteinVariant(variant, transcript);
-            // Only non-synonymous variants shall have protein hgvs
-            if (proteinVariant != null && !proteinVariant.getReference().equals(proteinVariant.getAlternate())) {
-                buildingComponents.setStart(proteinVariant.getStart());
-                buildingComponents.setEnd(proteinVariant.getEnd());
-                buildingComponents.setReferenceStart(VariantAnnotationUtils.TO_LONG_AA.get(proteinVariant.getReference()));
-                buildingComponents.setAlternate(VariantAnnotationUtils.TO_LONG_AA.get(proteinVariant.getAlternate()));
+            if (proteinVariant != null) {
+                String referenceStart = VariantAnnotationUtils.TO_LONG_AA.get(proteinVariant.getReference());
+                String alternate = VariantAnnotationUtils.TO_LONG_AA.get(proteinVariant.getAlternate());
+                // Could happen if unexpected characters are found in the protein seq, for example ENST00000525566
+                if (referenceStart != null && alternate != null) {
+                    buildingComponents.setStart(proteinVariant.getStart());
+                    buildingComponents.setEnd(proteinVariant.getEnd());
+                    buildingComponents.setReferenceStart(referenceStart);
+                    buildingComponents.setAlternate(alternate);
 
-                return formatProteinString(buildingComponents);
+                    return formatProteinString(buildingComponents);
+                }
             }
         }
         return null;
@@ -67,8 +76,12 @@ public class HgvsSNVCalculator extends HgvsCalculator {
                 .append(PROTEIN_CHAR)
                 .append(buildingComponents.getReferenceStart())
                 .append(buildingComponents.getStart());
+
+        // Synonymous variant
+        if (buildingComponents.getReferenceStart().equals(buildingComponents.getAlternate())) {
+            stringBuilder.append(SYNONYMOUS_VARIANT_SUFFIX);
         // Stop gained variant
-        if (STOP.equals(buildingComponents.getAlternate())) {
+        } else if (STOP.equals(buildingComponents.getAlternate())) {
             stringBuilder.append(STOP_GAINED_TAG);
         // missense_variant
         } else {
@@ -79,8 +92,6 @@ public class HgvsSNVCalculator extends HgvsCalculator {
 
     private Variant createProteinVariant(Variant variant, Transcript transcript) {
         Variant proteinVariant = new Variant();
-
-//        int cdnaCodingStart = getCdnaCodingStart(transcript);
         proteinVariant.setStart(getAminoAcidPosition(genomicToCdnaCoord(transcript, variant.getStart())
                 .getReferencePosition(), transcript));
         proteinVariant.setEnd(proteinVariant.getStart());
@@ -88,7 +99,7 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         // We expect buildingComponents.getStart() to be within the sequence boundaries.
         // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
         // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
-        if (proteinVariant.getStart() > 0 && proteinVariant.getStart() < transcript.getProteinSequence().length()) {
+        if (proteinVariant.getStart() > 0 && proteinVariant.getStart() <= transcript.getProteinSequence().length()) {
             proteinVariant.setReference(String.valueOf(transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)));
             String predictedAa = getPredictedAa(variant, transcript);
             if (StringUtils.isNotBlank(predictedAa)) {
@@ -117,12 +128,22 @@ public class HgvsSNVCalculator extends HgvsCalculator {
         // There's no need to differentiate between + and - strands since the Transcript object contains the transcript
         // sequence already complementary-reversed if necessary.
         int cdsPosition = genomicToCdnaCoord(transcript, variant.getStart()).getReferencePosition();
-//        int variantPhaseShift = (cdsPosition - 1) % 3;
-        int variantPhaseShift = getPhaseShift(cdsPosition, transcript);
-        int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsPosition - 1;
-        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
-        String transcriptSequence = transcript.getcDnaSequence();
 
+        // Only use the "unconfirmedStart" data to determine the variant phase and the codon it belongs to.
+        // getPhaseShift adjusts the phase taking into account the "unconfirmedStart" status.
+        int variantPhaseShift = getPhaseShift(cdsPosition, transcript);
+
+        // NOTE: unconfirmedStart status not taken into account to calculate the cdnaVariantStart. This was decided as
+        // otherwise cdnaVariantStart would not correlate (would be shifted) regarding the corresponding position within
+        // the corresponding transcript.getSequence String, as this String does not include the "unknown" nts at the
+        // beginning of the transcript for unconfirmedStart transcripts.
+        int cdnaVariantStart = transcript.getCdnaCodingStart() + cdsPosition - 1;
+
+        // use the variantPhaseShift (calculated taking into account unconfirmedStart status) to determine the start
+        // coordinate of the codon containing the variant
+        int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+
+        String transcriptSequence = transcript.getcDnaSequence();
         if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
             // -1 and +2 because of base 0 String indexing
             char[] modifiedCodonArray = transcriptSequence

@@ -32,12 +32,16 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
         Variant normalizedVariant = normalize(variant, normalize);
         String transcriptHgvs = calculateTranscriptHgvs(normalizedVariant, transcript, geneId);
-        String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
 
-        if (proteinHgvs == null) {
-            return Collections.singletonList(transcriptHgvs);
+        if (transcriptHgvs != null) {
+            String proteinHgvs = calculateProteinHgvs(normalizedVariant, transcript);
+            if (proteinHgvs == null) {
+                return Collections.singletonList(transcriptHgvs);
+            } else {
+                return Arrays.asList(transcriptHgvs, proteinHgvs);
+            }
         } else {
-            return Arrays.asList(transcriptHgvs, proteinHgvs);
+            return Collections.emptyList();
         }
     }
 
@@ -53,32 +57,44 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
     private String calculateProteinHgvs(Variant variant, Transcript transcript) {
         // Check if protein HGVS can be calculated
         if (isCoding(transcript) && onlySpansCodingSequence(variant, transcript)) {
+            Variant normalizedVariant = new Variant();
+            transcriptHgvsNormalize(variant, transcript, normalizedVariant);
             buildingComponents.setMutationType(DEL);
             buildingComponents.setProteinId(transcript.getProteinID());
             // We are storing aa position, ref aa and alt aa within a Variant object. This is just a technical issue to
             // be able to re-use methods and available objects
-            Variant proteinVariant = createProteinVariant(variant, transcript);
+            Variant proteinVariant = createProteinVariant(normalizedVariant, transcript);
             if (proteinVariant != null) {
-                proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
-                buildingComponents.setStart(proteinVariant.getStart());
-                buildingComponents.setEnd(proteinVariant.getEnd());
-                buildingComponents.setReferenceStart(VariantAnnotationUtils
-                        .buildUpperLowerCaseString(VariantAnnotationUtils
-                                .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
-                                        .charAt(proteinVariant.getStart() - 1)))));
-                buildingComponents.setReferenceEnd(VariantAnnotationUtils
-                        .buildUpperLowerCaseString(VariantAnnotationUtils
-                                .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
-                        .charAt(proteinVariant.getEnd() - 1)))));
+                String referenceStartShortSymbol = String.valueOf(transcript.getProteinSequence()
+                        .charAt(proteinVariant.getEnd() - 1));
+                String referenceEndShortSymbol = String.valueOf(transcript
+                        .getProteinSequence()
+                        .charAt(proteinVariant.getStart() - 1));
 
-                // Check frameshift/inframe
-                if (variant.getReference().length() % 3 == 0) {
-                    buildingComponents.setKind(BuildingComponents.Kind.INFRAME);
-                } else {
-                    buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+                // Do not generate protein HGVS if insertion affects an unconfirmed start, i.e. overlaps with an "X"
+                // symbol in the protein sequence
+                if (VariantAnnotationUtils.TO_LONG_AA.containsKey(referenceStartShortSymbol)
+                        && VariantAnnotationUtils.TO_LONG_AA.containsKey(referenceEndShortSymbol)) {
+                    proteinHgvsNormalize(proteinVariant, transcript.getProteinSequence());
+                    buildingComponents.setStart(proteinVariant.getStart());
+                    buildingComponents.setEnd(proteinVariant.getEnd());
+                    buildingComponents.setReferenceStart(VariantAnnotationUtils
+                            .buildUpperLowerCaseString(VariantAnnotationUtils
+                                    .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
+                                            .charAt(proteinVariant.getStart() - 1)))));
+                    buildingComponents.setReferenceEnd(VariantAnnotationUtils
+                            .buildUpperLowerCaseString(VariantAnnotationUtils
+                                    .TO_LONG_AA.get(String.valueOf(transcript.getProteinSequence()
+                                            .charAt(proteinVariant.getEnd() - 1)))));
+                    // Check frameshift/inframe
+                    if (variant.getReference().length() % 3 == 0) {
+                        buildingComponents.setKind(BuildingComponents.Kind.INFRAME);
+                    } else {
+                        buildingComponents.setKind(BuildingComponents.Kind.FRAMESHIFT);
+                    }
+
+                    return formatProteinString(buildingComponents);
                 }
-
-                return formatProteinString(buildingComponents);
             }
         }
         return null;
@@ -166,7 +182,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                 proteinVariant.setEnd(aminoAcidPosition1);
             }
 
-            char generatedAa = 0;
+            String generatedAa = null;
             // We expect buildingComponents.getStart() and buildingComponents.getEnd() to be within the sequence boundaries.
             // However, there are pretty weird cases such as unconfirmedStart/unconfirmedEnd transcript which could be
             // potentially dangerous in this sense. Just double-checking with this if to avoid potential exceptions
@@ -175,24 +191,32 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
                 // start and end fall within the same codon - affect the same aminoacid
                 if (!proteinVariant.getStart().equals(proteinVariant.getEnd())) {
                     generatedAa = getGeneratedAa(variant.getChromosome(), cdsStart, cdsEnd, transcript);
-                    // generatedAa == 0 if whole codons (3 nts) are removed from the start and end of the variant
-                    if (generatedAa != 0) {
-                        // Generated aa after pasting the two ends of remaining sequence coincides with the aa at start position
-                        // on the original seq
-                        if (generatedAa == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
-                            // Skip the first aa since coincides with the generated one
-                            //proteinVariant.setStart(proteinVariant.getStart() + 1);
-                            cdsPosition1++;
-                            cdsPosition2++;
-                            checkNewShiftedPosition = true;
+
+                    // Might be null for deletions affecting start of transcript in unconfirmed start transcripts
+                    if (generatedAa != null) {
+                        // generatedAa == 0 if whole codons (3 nts) are removed from the start and end of the variant
+                        if (!generatedAa.isEmpty()) {
+                            // Generated aa after pasting the two ends of remaining sequence coincides with the aa at start position
+                            // on the original seq
+                            if (generatedAa.charAt(0)
+                                    == transcript.getProteinSequence().charAt(proteinVariant.getStart() - 1)) {
+                                // Skip the first aa since coincides with the generated one
+                                //proteinVariant.setStart(proteinVariant.getStart() + 1);
+                                cdsPosition1++;
+                                cdsPosition2++;
+                                checkNewShiftedPosition = true;
+                            } else {
+                                proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
+                                        proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                            }
                         } else {
                             proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                                    proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not include this nt
+                                    proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not
+                            // include this nt
                         }
+                    // Avoiding logging a warning since it's been observed it gets too verbose with normal samples
                     } else {
-                        proteinVariant.setReference(transcript.getProteinSequence().substring(proteinVariant.getStart() - 1,
-                                proteinVariant.getEnd())); // don't rest -1 since it's base 0 and substring does not
-                                                           // include this nt
+                        return null;
                     }
                 } else {
                     proteinVariant.setReference(String.valueOf(transcript
@@ -215,48 +239,63 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
     }
 
-    private char getGeneratedAa(String chromosome, int cdsStart, int cdsEnd, Transcript transcript) {
+    private String getGeneratedAa(String chromosome, int cdsStart, int cdsEnd, Transcript transcript) {
 
         // There's no need to differentiate between + and - strands since the Transcript object contains the transcript
         // sequence already complementary-reversed if necessary.
-//        Integer variantPhaseShift = (cdsStart - 1) % 3;
+
+        // Only use the "unconfirmedStart" data to determine the variant phase and the codon it belongs to.
+        // getPhaseShift adjusts the phase taking into account the "unconfirmedStart" status.
         int variantPhaseShift = getPhaseShift(cdsStart, transcript);
-        int cdnaVariantStart = getCdnaCodingStart(transcript) + cdsStart - 1;
-        int cdnaVariantEnd = getCdnaCodingStart(transcript) + cdsEnd - 1;
-//        Integer variantPhaseShift = (buildingComponents.getCdnaStart().getReferencePosition() - 1) % 3;
-//        int cdnaVariantStart = getCdnaCodingStart(transcript) + buildingComponents.getCdnaStart().getReferencePosition() - 1;
-//        int cdnaVariantEnd = getCdnaCodingStart(transcript) + buildingComponents.getCdnaEnd().getReferencePosition() - 1;
+
+        // NOTE: unconfirmedStart status not taken into account to calculate the cdnaVariantStart/End. This was decided
+        // as otherwise cdnaVariantStart/End would not correlate (would be shifted) regarding the corresponding position
+        // within the corresponding transcript.getSequence String, as this String does not include the "unknown" nts at
+        // the beginning of the transcript for unconfirmedStart transcripts.
+        int cdnaVariantStart = transcript.getCdnaCodingStart() + cdsStart - 1;
+        int cdnaVariantEnd = transcript.getCdnaCodingStart() + cdsEnd - 1;
+
+        // use the variantPhaseShift (calculated taking into account unconfirmedStart status) to determine the start
+        // coordinate of the codon containing the variant
         int modifiedCodonStart = cdnaVariantStart - variantPhaseShift;
+
         String transcriptSequence = transcript.getcDnaSequence();
-        char[] referenceCodonArray = transcriptSequence
-                .substring(modifiedCodonStart - 1, modifiedCodonStart + 2)
-                .toCharArray();
-        int i = cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
-        int codonPosition;
-        // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
-        // calling this method
-        for (codonPosition = variantPhaseShift; codonPosition < 3; codonPosition++) {
-            char substitutingNt;
-            // Means we've reached the beginning of the transcript, i.e. transcript.start
-            if (i >=  transcriptSequence.length()) {
-                // Adding +1 to i since it's originally 0-based and want to make it 1-based for the function call
-                substitutingNt = getNextNt(chromosome, transcript, i + 1);
-            } else {
-                // Paste reference nts after deletion in the corresponding codon position
-                substitutingNt = transcriptSequence.charAt(i);
+        String aa = null;
+        // Out of boundaries can happen for unconfirmed start transcripts, for example
+        if (modifiedCodonStart > 0 && (modifiedCodonStart + 2) <= transcriptSequence.length()) {
+            char[] referenceCodonArray = transcriptSequence
+                    .substring(modifiedCodonStart - 1, modifiedCodonStart + 2)
+                    .toCharArray();
+            int i = cdnaVariantEnd;  // Position (0 based index) in transcriptSequence of the first nt after the deletion
+            int codonPosition;
+            // If we get here, cdnaVariantStart and cdnaVariantEnd != -1; this is an assumption that was made just before
+            // calling this method
+            for (codonPosition = variantPhaseShift; codonPosition < 3; codonPosition++) {
+                char substitutingNt;
+                // Means we've reached the beginning of the transcript, i.e. transcript.start
+                if (i >= transcriptSequence.length()) {
+                    // Adding +1 to i since it's originally 0-based and want to make it 1-based for the function call
+                    substitutingNt = getNextNt(chromosome, transcript, i + 1);
+                } else {
+                    // Paste reference nts after deletion in the corresponding codon position
+                    substitutingNt = transcriptSequence.charAt(i);
+                }
+                referenceCodonArray[codonPosition] = substitutingNt;
+                i++;
             }
-            referenceCodonArray[codonPosition] = substitutingNt;
-            i++;
-        }
 
-        String aa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(VariantAnnotationUtils
-                .getAminoacid(MT.equals(chromosome), String.valueOf(referenceCodonArray)));
+            aa = VariantAnnotationUtils.TO_ABBREVIATED_AA.get(VariantAnnotationUtils
+                    .getAminoacid(MT.equals(chromosome), String.valueOf(referenceCodonArray)));
 
-        if (StringUtils.isNotBlank(aa)) {
-            return aa.charAt(0);
+            if (StringUtils.isNotBlank(aa)) {
+                return aa;
+            } else {
+                return EMPTY_STRING;
+            }
         } else {
-            return 0;
+            return null;
         }
+
     }
 
     /**

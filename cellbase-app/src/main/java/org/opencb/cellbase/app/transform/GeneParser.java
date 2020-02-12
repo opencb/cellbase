@@ -188,7 +188,7 @@ public class GeneParser extends CellBaseParser {
 
                 GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
                         diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), null);
+                        geneDrugMap.get(gtf.getAttributes().get("gene_name")));
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(), gtf.getEnd(),
@@ -208,7 +208,7 @@ public class GeneParser extends CellBaseParser {
                         "KNOWN", transcriptChrosome, gtf.getStart(), gtf.getEnd(),
                         gtf.getStrand(), 0, 0, 0, 0,
                         0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
-                        transcriptTfbses, null);
+                        transcriptTfbses);
 
                 // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
                 // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
@@ -341,24 +341,18 @@ public class GeneParser extends CellBaseParser {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
                     //                      no need to set it at the beginning of next feature
                     if (exon.getStrand().equals("+")) {
-                        // we need to increment 3 nts, the stop_codon length.
-                        exon.setGenomicCodingEnd(gtf.getEnd());
-                        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-                        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
-                        cds += gtf.getEnd() - gtf.getStart();
+                        updateStopCodingDataPositiveExon(exon, cdna, cds, gtf);
 
+                        cds += gtf.getEnd() - gtf.getStart();
                         // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingEnd(gtf.getEnd());
                         transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
                         transcript.setCdsLength(cds - 1);
-                    } else {
-                        // we need to increment 3 nts, the stop_codon length.
-                        exon.setGenomicCodingStart(gtf.getStart());
-                        // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-                        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
-                        cds += gtf.getEnd() - gtf.getStart();
 
+                    } else {
+                        updateNegativeExonCodingData(exon, cdna, cds, gtf);
+
+                        cds += gtf.getEnd() - gtf.getStart();
                         // If stop_codon appears, overwrite values
                         transcript.setGenomicCodingStart(gtf.getStart());
                         // cdnaCodingEnd points to the same base position than genomicCodingStart
@@ -376,6 +370,47 @@ public class GeneParser extends CellBaseParser {
         gtfReader.close();
         serializer.close();
         fastaIndexManager.close();
+    }
+
+    private void updateNegativeExonCodingData(Exon exon, int cdna, int cds, Gtf gtf) {
+        // we need to increment 3 nts, the stop_codon length.
+        exon.setGenomicCodingStart(gtf.getStart());
+        // cdnaCodingEnd points to the same base position than genomicCodingStart
+        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
+
+        // If the STOP codon corresponds to the first three nts of the exon then no CDS will be defined
+        // in the gtf -as technically the STOP codon is non-coding- and we must manually set coding
+        // starts
+        if (exon.getGenomicCodingEnd() == 0) {
+            exon.setGenomicCodingEnd(exon.getGenomicCodingStart() + 2);
+        }
+        if (exon.getCdnaCodingStart() == 0) {
+            exon.setCdnaCodingStart(exon.getCdnaCodingEnd() - 2);
+        }
+        if (exon.getCdsStart() == 0) {
+            exon.setCdsStart(exon.getCdsEnd() - 2);
+        }
+    }
+
+    private void updateStopCodingDataPositiveExon(Exon exon, int cdna, int cds, Gtf gtf) {
+        // we need to increment 3 nts, the stop_codon length.
+        exon.setGenomicCodingEnd(gtf.getEnd());
+        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
+
+        // If the STOP codon corresponds to the first three nts of the exon then no CDS will be defined
+        // in the gtf -as technically the STOP codon is non-coding- and we must manually set coding
+        // starts
+        if (exon.getGenomicCodingStart() == 0) {
+            exon.setGenomicCodingStart(exon.getGenomicCodingEnd() - 2);
+        }
+        if (exon.getCdnaCodingStart() == 0) {
+            exon.setCdnaCodingStart(exon.getCdnaCodingEnd() - 2);
+        }
+        if (exon.getCdsStart() == 0) {
+            exon.setCdsStart(exon.getCdsEnd() - 2);
+        }
     }
 
     private FastaIndexManager getFastaIndexManager() throws Exception {
@@ -678,7 +713,7 @@ public class GeneParser extends CellBaseParser {
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
             for (Fasta fasta : fastaList) {
-                cDnaSequencesMap.put(fasta.getId(), fasta);
+                cDnaSequencesMap.put(fasta.getId().split("\\.")[0], fasta);
             }
         } else {
             logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
@@ -696,7 +731,7 @@ public class GeneParser extends CellBaseParser {
             List<Fasta> fastaList = fastaReader.readAll();
             fastaReader.close();
             for (Fasta fasta : fastaList) {
-                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0], fasta);
+                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0].split("\\.")[0], fasta);
             }
         } else {
             logger.warn("Protein fasta file " + proteinFastaFile + " not found");
