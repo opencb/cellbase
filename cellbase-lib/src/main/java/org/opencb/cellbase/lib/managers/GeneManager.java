@@ -17,8 +17,15 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class GeneManager extends AbstractManager {
 
@@ -26,10 +33,68 @@ public class GeneManager extends AbstractManager {
         super(configuration);
     }
 
-    public CellBaseDataResult<Gene> search() {
+    public CellBaseDataResult<Gene> search(Query query, QueryOptions queryOptions, String species, String assembly) {
         logger.debug("blahh...");
-        // Wants to use 2 dbapadaptors: neo4j and mongodb?
-        return null;
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        return geneDBAdaptor.nativeGet(query, queryOptions);
     }
+
+    public CellBaseDataResult<Gene> groupBy(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
+        logger.debug("blahh...");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        return geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+    }
+
+    public CellBaseDataResult<Gene> aggregationStats(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
+        logger.debug("blahh...");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        queryOptions.put(QueryOptions.COUNT, true);
+        return geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+    }
+
+    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String genes) {
+        logger.debug("blahh...");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        List<Query> queries = createQueries(genes, GeneDBAdaptor.QueryParams.XREFS.key());
+        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+        for (int i = 0; i < queries.size(); i++) {
+            queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
+        }
+        return queryResults;
+    }
+
+    public CellBaseDataResult<Gene> distinct(Query query, String species, String assembly, String field) {
+        logger.debug("blahh...");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        return geneDBAdaptor.distinct(query, field);
+    }
+
+    public List<CellBaseDataResult> getRegulatoryElements(Query query, QueryOptions queryOptions, String species, String assembly,
+                                                          String genes) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        String[] geneArray = genes.split(",");
+        List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
+        for (String gene : geneArray) {
+            query.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
+            CellBaseDataResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
+            queryResults.add(queryResult);
+        }
+        return queryResults;
+    }
+
+    public List<CellBaseDataResult> getTfbs(Query query, QueryOptions queryOptions, String species, String assembly, String genes) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        String[] geneArray = genes.split(",");
+        List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
+        for (String gene : geneArray) {
+            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
+            CellBaseDataResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
+            queryResult.setId(gene);
+            queryResults.add(queryResult);
+        }
+        return queryResults;
+    }
+
+
 
 }

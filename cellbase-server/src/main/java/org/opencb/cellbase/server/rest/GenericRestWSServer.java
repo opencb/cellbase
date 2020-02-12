@@ -35,6 +35,7 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.managers.CellBaseManagers;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.*;
@@ -87,12 +88,8 @@ public class GenericRestWSServer implements IWSServer {
      */
     protected CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
 
-    /**
-     * DBAdaptorFactory creation, this object can be initialize with an
-     * HibernateDBAdaptorFactory or an HBaseDBAdaptorFactory. This object is a
-     * factory for creating adaptors like GeneDBAdaptor
-     */
-    protected DBAdaptorFactory dbAdaptorFactory;
+
+    protected CellBaseManagers cellBaseManagers;
     protected Monitor monitor;
 
     private static final int SKIP_DEFAULT = 0;
@@ -159,7 +156,7 @@ public class GenericRestWSServer implements IWSServer {
             logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
 
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
-            dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
+            cellBaseManagers = new CellBaseManagers(cellBaseConfiguration);
 
             // Initialize Monitor
             monitor = new Monitor(dbAdaptorFactory);
@@ -398,19 +395,5 @@ public class GenericRestWSServer implements IWSServer {
                 .build();
     }
 
-    protected List<Query> createQueries(String csvField, String queryKey, String... args) {
-        String[] ids = csvField.split(",");
-        List<Query> queries = new ArrayList<>(ids.length);
-        for (String id : ids) {
-            Query q = new Query(query);
-            q.put(queryKey, id);
-            if (args != null && args.length > 0 && args.length % 2 == 0) {
-                for (int i = 0; i < args.length; i += 2) {
-                    q.put(args[i], args[i + 1]);
-                }
-            }
-            queries.add(q);
-        }
-        return queries;
-    }
+
 }

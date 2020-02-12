@@ -25,14 +25,20 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.*;
+import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
+import org.opencb.cellbase.core.api.core.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.managers.ProteinManager;
+import org.opencb.cellbase.lib.managers.TranscriptManager;
+import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -41,7 +47,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author imedina
@@ -51,6 +59,10 @@ import java.util.*;
 @Api(value = "Gene", description = "Gene RESTful Web Services API")
 public class GeneWSServer extends GenericRestWSServer {
 
+    GeneManager geneManager;
+    TranscriptManager transcriptManager;
+    VariantManager variantManager;
+    ProteinManager proteinManager;
 
     public GeneWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -59,6 +71,9 @@ public class GeneWSServer extends GenericRestWSServer {
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
             SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+        geneManager = cellBaseManagers.getGeneManager();
+        transcriptManager = cellBaseManagers.getTranscriptManager();
+        variantManager = cellBaseManagers.getVariantManager();
     }
 
     @GET
@@ -179,8 +194,8 @@ public class GeneWSServer extends GenericRestWSServer {
                                     required = true) String fields) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
+            CellBaseDataResult<Gene> queryResults = geneManager.groupBy(query, queryOptions, species, assembly, fields);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -226,9 +241,8 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiParam(name = "fields", value = ParamConstants.GROUP_BY_FIELDS, required = true) String fields) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            queryOptions.put(QueryOptions.COUNT, true);
-            return createOkResponse(geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions));
+            CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(query, queryOptions, species, assembly, fields);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -286,12 +300,11 @@ public class GeneWSServer extends GenericRestWSServer {
                            @QueryParam("skip") @DefaultValue("0")
                                @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
-
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.nativeGet(query, queryOptions));
+            CellBaseDataResult<Gene> queryResults = geneManager.search(query, queryOptions, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -381,12 +394,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(genes, GeneDBAdaptor.QueryParams.XREFS.key());
-            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
-            }
+            List<CellBaseDataResult> queryResults = geneManager.info(query, queryOptions, species, assembly, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -434,12 +442,7 @@ public class GeneWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(genes, TranscriptDBAdaptor.QueryParams.XREFS.key());
-            List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
-            }
+            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, species, assembly, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -486,8 +489,8 @@ public class GeneWSServer extends GenericRestWSServer {
             value = "Name of column to return, e.g. biotype") String field) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.distinct(query, field));
+            CellBaseDataResult<Gene> queryResults = geneManager.distinct(query, species, assembly, field);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -523,17 +526,11 @@ public class GeneWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(genes, VariantDBAdaptor.QueryParams.GENE.key());
-            List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.GENE.key()));
-            }
+            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, species, assembly, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
-
     }
 
     @GET
@@ -544,14 +541,7 @@ public class GeneWSServer extends GenericRestWSServer {
             required = true) String genes) {
         try {
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            String[] geneArray = genes.split(",");
-            List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
-            for (String gene : geneArray) {
-                query.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
-                CellBaseDataResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
-                queryResults.add(queryResult);
-            }
+            List<CellBaseDataResult> queryResults = geneManager.getRegulatoryElements(query, queryOptions, species, assembly, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -596,16 +586,7 @@ public class GeneWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-
-            String[] geneArray = genes.split(",");
-            List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
-            for (String gene : geneArray) {
-                query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
-                CellBaseDataResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
-                queryResult.setId(gene);
-                queryResults.add(queryResult);
-            }
+            List<CellBaseDataResult> queryResults = geneManager.getTfbs(query, queryOptions, species, assembly, genes);
             return createOkResponse(queryResults);
 
         } catch (Exception e) {
@@ -635,12 +616,7 @@ public class GeneWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(genes, ProteinDBAdaptor.QueryParams.XREFS.key());
-            List<CellBaseDataResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
-            }
+            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, species, assembly, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

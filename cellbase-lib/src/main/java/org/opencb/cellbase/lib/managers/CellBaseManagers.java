@@ -22,6 +22,9 @@ public class CellBaseManagers {
 
     private CellBaseConfiguration configuration;
     private GeneManager geneManager;
+    private TranscriptManager transcriptManager;
+    private VariantManager variantManager;
+    private ProteinManager proteinManager;
 
     public CellBaseManagers(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -32,5 +35,26 @@ public class CellBaseManagers {
             geneManager = new GeneManager(configuration);
         }
         return geneManager;
+    }
+
+    public TranscriptManager getTranscriptManager() {
+        if (transcriptManager == null) {
+            transcriptManager = new TranscriptManager(configuration);
+        }
+        return transcriptManager;
+    }
+
+    public VariantManager getVariantManager() {
+        if (variantManager == null) {
+            variantManager = new VariantManager(configuration);
+        }
+        return variantManager;
+    }
+
+    public ProteinManager getProteinManager() {
+        if (proteinManager == null) {
+            proteinManager = new ProteinManager(configuration);
+        }
+        return proteinManager;
     }
 }
