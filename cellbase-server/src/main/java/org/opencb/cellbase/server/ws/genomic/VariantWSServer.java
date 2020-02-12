@@ -156,7 +156,8 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         defaultValue = "0", required = false) Integer cnvExtraPadding,
                                                 @QueryParam("checkAminoAcidChange")
                                                 @ApiParam(name = "checkAminoAcidChange",
-                                                value = "<DESCRIPTION GOES HERE>",
+                                                value = "true/false to specify whether variant match in the clinical variant collection "
+                                                        + "should also be performed at the aminoacid change level",
                                                 allowableValues = "false,true",
                                                 defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
 
