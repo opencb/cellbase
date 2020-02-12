@@ -22,9 +22,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -44,6 +44,8 @@ import java.io.IOException;
 @Api(value = "Species", description = "Species RESTful Web Services API")
 public class SpeciesWSServer extends GenericRestWSServer {
 
+    GenomeManager genomeManager;
+
     public SpeciesWSServer(@PathParam("apiVersion")
                            @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                    defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -53,12 +55,12 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException,
             CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+        genomeManager = cellBaseManagers.getGenomeManager();
     }
 
     @GET
     @Path("/info")
-    @ApiOperation(httpMethod = "GET",
-            value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
+    @ApiOperation(httpMethod = "GET", value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
             responseContainer = "QueryResponse")
     public Response getSpeciesInfo(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
                                    @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
@@ -66,9 +68,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, this.assembly);
-            CellBaseDataResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
-            queryResult.setId(species);
+            CellBaseDataResult queryResult = genomeManager.info(queryOptions, species, assembly);
             return createOkResponse(queryResult);
         } catch (MongoException | CellbaseException e) {
             e.printStackTrace();

@@ -35,7 +35,12 @@ public class TranscriptManager extends AbstractManager {
     public CellBaseDataResult<Transcript> search(Query query, QueryOptions queryOptions, String species, String assembly) {
         logger.debug("blahh...");
         TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-        return dbAdaptor.nativeGet(query, queryOptions);
+        CellBaseDataResult<Transcript> queryResult = dbAdaptor.nativeGet(query, queryOptions);
+        // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
+        // properly fixed
+        queryResult.setNumTotalResults(-1);
+        queryResult.setNumMatches(-1);
+        return queryResult;
     }
 
     public CellBaseDataResult<Transcript> groupBy(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
@@ -51,13 +56,35 @@ public class TranscriptManager extends AbstractManager {
         return dbAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String genes) {
+    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String id) {
         logger.debug("blahh...");
         TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-        List<Query> queries = createQueries(genes, TranscriptDBAdaptor.QueryParams.XREFS.key());
+        List<Query> queries = createQueries(query, id, TranscriptDBAdaptor.QueryParams.XREFS.key());
         List<CellBaseDataResult> queryResults = dbAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
+        }
+        return queryResults;
+    }
+
+    public List<CellBaseDataResult> getSequence(String species, String assembly, String id) {
+        logger.debug("blahh...");
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+        List<String> transcriptsList = Arrays.asList(id.split(","));
+        List<CellBaseDataResult> queryResult = transcriptDBAdaptor.getCdna(transcriptsList);
+        for (int i = 0; i < transcriptsList.size(); i++) {
+            queryResult.get(i).setId(transcriptsList.get(i));
+        }
+        return queryResult;
+    }
+
+    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String region) {
+        logger.debug("blahh...");
+        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+        List<Query> queries = createQueries(query region, TranscriptDBAdaptor.QueryParams.REGION.key());
+        List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+        for (int i = 0; i < queries.size(); i++) {
+            queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.REGION.key()));
         }
         return queryResults;
     }

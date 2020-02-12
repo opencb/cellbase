@@ -22,17 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Created by fjlopez on 06/12/16.
@@ -42,8 +39,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
     private static final String SEPARATOR = ",";
-    private static ClinicalPhasedQueryManager phasedQueryManager
-            = new ClinicalPhasedQueryManager();
+
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -238,115 +234,4 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
     }
 
-    public List<CellBaseDataResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
-        Set<String> sourceContent = query.getAsStringList(QueryParams.SOURCE.key()) != null
-                ? new HashSet<>(query.getAsStringList(QueryParams.SOURCE.key())) : null;
-        List<CellBaseDataResult> cellBaseDataResultList = new ArrayList<>();
-        if (sourceContent == null || sourceContent.contains("clinvar")) {
-            cellBaseDataResultList.add(getClinvarPhenotypeGeneRelations(queryOptions));
-
-        }
-        if (sourceContent == null || sourceContent.contains("gwas")) {
-            cellBaseDataResultList.add(getGwasPhenotypeGeneRelations(queryOptions));
-        }
-
-        return cellBaseDataResultList;
-    }
-
-    @Override
-    public CellBaseDataResult<String> getAlleleOriginLabels() {
-        List<String> alleleOriginLabels = Arrays.stream(AlleleOrigin.values())
-                .map((value) -> value.name()).collect(Collectors.toList());
-        return new CellBaseDataResult<String>("allele_origin_labels", 0, Collections.emptyList(),
-                alleleOriginLabels.size(), alleleOriginLabels, alleleOriginLabels.size());
-    }
-
-    @Override
-    public CellBaseDataResult<String> getModeInheritanceLabels() {
-        List<String> modeInheritanceLabels = Arrays.stream(ModeOfInheritance.values())
-                .map((value) -> value.name()).collect(Collectors.toList());
-        return new CellBaseDataResult<String>("mode_inheritance_labels", 0, Collections.emptyList(),
-                modeInheritanceLabels.size(), modeInheritanceLabels, modeInheritanceLabels.size());
-    }
-
-    @Override
-    public CellBaseDataResult<String> getClinsigLabels() {
-        List<String> clinsigLabels = Arrays.stream(ClinicalSignificance.values())
-                .map((value) -> value.name()).collect(Collectors.toList());
-        return new CellBaseDataResult<String>("clinsig_labels", 0, Collections.emptyList(),
-                clinsigLabels.size(), clinsigLabels, clinsigLabels.size());
-    }
-
-    @Override
-    public CellBaseDataResult<String> getConsistencyLabels() {
-        List<String> consistencyLabels = Arrays.stream(ConsistencyStatus.values())
-                .map((value) -> value.name()).collect(Collectors.toList());
-        return  new CellBaseDataResult<String>("consistency_labels", 0, Collections.emptyList(),
-                consistencyLabels.size(), consistencyLabels, consistencyLabels.size());
-    }
-
-    @Override
-    public CellBaseDataResult<String> getVariantTypes() {
-        List<String> variantTypes = Arrays.stream(VariantType.values())
-                .map((value) -> value.name()).collect(Collectors.toList());
-        return new CellBaseDataResult<String>("variant_types", 0, Collections.emptyList(),
-                variantTypes.size(), variantTypes, variantTypes.size());
-    }
-
-    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
-        List<Bson> pipeline = new ArrayList<>();
-        pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-                new Document("$exists", 1))));
-        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure"));
-        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship"));
-        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol"));
-        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait"));
-        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name"));
-        Document groupFields = new Document();
-        groupFields.put("_id", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
-        groupFields.put("associatedGenes",
-                new Document("$addToSet",
-                        "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value"));
-        pipeline.add(new Document("$group", groupFields));
-        Document fields = new Document();
-        fields.put("_id", 0);
-        fields.put("phenotype", "$_id");
-        fields.put("associatedGenes", 1);
-        pipeline.add(new Document("$project", fields));
-
-        return executeAggregation2("", pipeline, queryOptions);
-
-    }
-
-    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
-        List<Bson> pipeline = new ArrayList<>();
-        // Select only GWAS documents
-        pipeline.add(new Document("$match", new Document("snpIdCurrent", new Document("$exists", 1))));
-        pipeline.add(new Document("$unwind", "$studies"));
-        pipeline.add(new Document("$unwind", "$studies.traits"));
-        Document groupFields = new Document();
-        groupFields.put("_id", "$studies.traits.diseaseTrait");
-        groupFields.put("associatedGenes", new Document("$addToSet", "$reportedGenes"));
-        pipeline.add(new Document("$group", groupFields));
-        Document fields = new Document();
-        fields.put("_id", 0);
-        fields.put("phenotype", "$_id");
-        fields.put("associatedGenes", 1);
-        pipeline.add(new Document("$project", fields));
-
-        return executeAggregation2("", pipeline, queryOptions);
-    }
-
-    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
-        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
-        for (Variant variant : variants) {
-            results.add(getByVariant(variant, queryOptions));
-        }
-
-        if (queryOptions.get(QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(QueryParams.PHASE.key())) {
-            results = phasedQueryManager.run(variants, results);
-
-        }
-        return results;
-    }
 }

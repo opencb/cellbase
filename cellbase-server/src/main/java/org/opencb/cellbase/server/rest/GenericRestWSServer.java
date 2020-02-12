@@ -294,7 +294,6 @@ public class GenericRestWSServer implements IWSServer {
             SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
             mapper.acceptJsonFormatVisitor(mapper.constructType(clazz), visitor);
             JsonSchema jsonSchema = visitor.finalSchema();
-
             return createOkResponse(new CellBaseDataResult<>(clazz.toString(), 0, Collections.emptyList(), 1,
                     Collections.singletonList(jsonSchema), 1));
         } catch (Exception e) {

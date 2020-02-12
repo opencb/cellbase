@@ -55,7 +55,7 @@ public class GeneManager extends AbstractManager {
     public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String genes) {
         logger.debug("blahh...");
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
-        List<Query> queries = createQueries(genes, GeneDBAdaptor.QueryParams.XREFS.key());
+        List<Query> queries = createQueries(query, genes, GeneDBAdaptor.QueryParams.XREFS.key());
         List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
@@ -95,6 +95,39 @@ public class GeneManager extends AbstractManager {
         return queryResults;
     }
 
+    public List<CellBaseDataResult> getByTranscript(Query query, QueryOptions queryOptions, String species, String assembly,
+                                                    String transcriptId) {
+        logger.debug("blahh...");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        List<Query> queries = createQueries(query, transcriptId, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
+        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+        for (int i = 0; i < queries.size(); i++) {
+            queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key()));
+        }
+        return queryResults;
+    }
 
+
+
+    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String region) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+
+        if (hasHistogramQueryParam(queryOptions)) {
+            List<Query> queries = createQueries(query, region, GeneDBAdaptor.QueryParams.REGION.key());
+            List<CellBaseDataResult> queryResults = geneDBAdaptor.getIntervalFrequencies(queries, getHistogramIntervalSize(queryOptions),
+                    queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) query.get(GeneDBAdaptor.QueryParams.REGION.key()));
+            }
+            return queryResults;
+        } else {
+            List<Query> queries = createQueries(query, region, GeneDBAdaptor.QueryParams.REGION.key());
+            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.REGION.key()));
+            }
+            return queryResults;
+        }
+    }
 
 }

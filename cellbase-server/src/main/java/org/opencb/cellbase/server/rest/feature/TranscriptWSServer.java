@@ -21,12 +21,14 @@ import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.managers.ProteinManager;
+import org.opencb.cellbase.lib.managers.TranscriptManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -39,7 +41,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,10 @@ import java.util.Map;
 @Produces(MediaType.APPLICATION_JSON)
 public class TranscriptWSServer extends GenericRestWSServer {
 
+    TranscriptManager transcriptManager;
+    GeneManager geneManager;
+    ProteinManager proteinManager;
+
     public TranscriptWSServer(@PathParam("apiVersion")
                               @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                       defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -59,6 +64,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+
+        transcriptManager = cellBaseManagers.getTranscriptManager();
+        geneManager = cellBaseManagers.getGeneManager();
+        proteinManager = cellBaseManagers.getProteinManager();
     }
 
     @GET
@@ -122,9 +131,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("transcriptId") String id) {
         try {
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(id, TranscriptDBAdaptor.QueryParams.XREFS.key());
-            return createOkResponse(transcriptDBAdaptor.nativeGet(queries, queryOptions));
+            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, species, assembly, id);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -168,12 +176,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(id, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
-            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key()));
-            }
+            List<CellBaseDataResult> queryResults = geneManager.getByTranscript(query, queryOptions, species, assembly, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -213,12 +216,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            CellBaseDataResult queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
-            // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
-            // properly fixed
-            queryResult.setNumTotalResults(-1);
-            queryResult.setNumMatches(-1);
+            CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query, queryOptions, species, assembly);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -253,13 +251,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
             required = true) String id) {
         try {
             parseQueryParams();
-            TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-            List<String> transcriptsList = Arrays.asList(id.split(","));
-            List<CellBaseDataResult> queryResult = transcriptDBAdaptor.getCdna(transcriptsList);
-            for (int i = 0; i < transcriptsList.size(); i++) {
-                queryResult.get(i).setId(transcriptsList.get(i));
-            }
-            return createOkResponse(queryResult);
+            List<CellBaseDataResult> queryResults = transcriptManager.getSequence(species, assembly, id);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -284,13 +277,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(transcripts, ProteinDBAdaptor.QueryParams.XREFS.key());
-            List<CellBaseDataResult> queryResultList = proteinDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResultList.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
-            }
-            return createOkResponse(queryResultList);
+            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, species, assembly, transcripts);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -325,10 +313,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                                 required = true) String id) {
         try {
             parseQueryParams();
-            ProteinDBAdaptor mutationAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            query.put("transcript", id);
-            CellBaseDataResult queryResults = mutationAdaptor.getSubstitutionScores(query, queryOptions);
-            queryResults.setId(id);
+            CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, queryOptions, species, assembly, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

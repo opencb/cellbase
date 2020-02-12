@@ -193,31 +193,6 @@ public class MongoDBAdaptor {
         }
     }
 
-    protected CellBaseDataResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
-        if (groupByField == null || groupByField.isEmpty()) {
-            return new CellBaseDataResult();
-        }
-
-        if (groupByField.contains(",")) {
-            // call to multiple groupBy if commas are present
-            return groupBy(query, Arrays.asList(groupByField.split(",")), featureIdField, options);
-        } else {
-            Bson match = Aggregates.match(query);
-            Bson project = Aggregates.project(Projections.include(groupByField, featureIdField));
-            Bson group;
-            if (options.getBoolean("count", false)) {
-                group = Aggregates.group("$" + groupByField, Accumulators.sum("count", 1));
-                return new CellBaseDataResult<>(mongoDBCollection.aggregate(Arrays.asList(match, project, group), options));
-            } else {
-                // Limit the documents passed if count is false
-                Bson limit = Aggregates.limit(options.getInt("limit", 10));
-                group = Aggregates.group("$" + groupByField, Accumulators.addToSet("features", "$" + featureIdField));
-                // TODO change the default "_id" returned by mongodb to id
-                return new CellBaseDataResult<>(mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options));
-            }
-        }
-    }
-
     protected CellBaseDataResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
         Boolean count = options.getBoolean("count", false);
         List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(query, groupByField, featureIdField, count);

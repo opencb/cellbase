@@ -109,6 +109,7 @@ public class ParamConstants {
             + " protein(s), e.g. Transcription,Zinc. Exact text matches will be returned";
     public static final String PROTEIN_XREF_IDS = "Comma separated list of xrefs ids, e.g. CCDS31418.1,Q9UL59,"
             + " ENST00000278314. Exact text matches will be returned";
+    public static final String PROTEIN_XREF_ID = "String indicating one xref id, e.g.: Q9UL59, Exact text matches will be returned";
     public static final String PROTEIN_ACCESSIONS = "Comma separated list of UniProt accession ids, "
             + "e.g. Q9UL59,B2R8Q1,Q9UKT9. Exact text matches will be returned";
     public static final String PROTEIN_NAMES = "Comma separated list of protein names, e.g.: ZN214_HUMAN,MKS1_HUMAN"

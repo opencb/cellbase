@@ -19,8 +19,9 @@ package org.opencb.cellbase.server.rest.clinical;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.ClinicalManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -41,6 +42,8 @@ import java.io.IOException;
 @Api(value = "Clinical", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
 
+    ClinicalManager clinicalManager;
+
     public ClinicalWSServer(@PathParam("apiVersion")
                             @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -49,6 +52,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                                 @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+        clinicalManager = cellBaseManagers.getClinicalManager();
     }
 
     @GET
@@ -93,9 +97,8 @@ public class ClinicalWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-
-            return createOkResponse(clinicalDBAdaptor.nativeGet(query, queryOptions));
+            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query, queryOptions, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -108,9 +111,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getAlleleOriginLabels() {
         try {
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-
-            return createOkResponse(clinicalDBAdaptor.getAlleleOriginLabels());
+            return createOkResponse(clinicalManager.getAlleleOriginLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -123,9 +124,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getModeInheritanceLabels() {
         try {
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-
-            return createOkResponse(clinicalDBAdaptor.getModeInheritanceLabels());
+            return createOkResponse(clinicalManager.getModeInheritanceLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -138,9 +137,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getClinicalSignificanceLabels() {
         try {
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-
-            return createOkResponse(clinicalDBAdaptor.getClinsigLabels());
+            return createOkResponse(clinicalManager.getClinsigLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -153,9 +150,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getConsistencyLabels() {
         try {
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-
-            return createOkResponse(clinicalDBAdaptor.getConsistencyLabels());
+            return createOkResponse(clinicalManager.getConsistencyLabels());
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -168,9 +163,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     public Response getVariantTypes() {
         try {
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
-
-            return createOkResponse(clinicalDBAdaptor.getVariantTypes());
+            return createOkResponse(clinicalManager.getVariantTypes());
         } catch (Exception e) {
             return createErrorResponse(e);
         }

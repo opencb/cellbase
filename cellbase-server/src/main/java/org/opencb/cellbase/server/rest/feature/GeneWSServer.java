@@ -27,7 +27,6 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.core.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;

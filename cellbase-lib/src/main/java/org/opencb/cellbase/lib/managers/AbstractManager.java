@@ -16,10 +16,12 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +33,11 @@ public class AbstractManager {
     protected CellBaseConfiguration configuration;
     protected CellBaseManagers managers;
     protected DBAdaptorFactory dbAdaptorFactory;
-
+    protected static ObjectWriter jsonObjectWriter;
     protected Logger logger;
 
     public static final int DEFAULT_LIMIT = 10;
+    protected int histogramIntervalSize = 200000;
 
     public AbstractManager(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -49,7 +52,7 @@ public class AbstractManager {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    protected List<Query> createQueries(String csvField, String queryKey, String... args) {
+    protected List<Query> createQueries(Query query, String csvField, String queryKey, String... args) {
         String[] ids = csvField.split(",");
         List<Query> queries = new ArrayList<>(ids.length);
         for (String id : ids) {
@@ -63,5 +66,29 @@ public class AbstractManager {
             queries.add(q);
         }
         return queries;
+    }
+
+    private String getHistogramParameter(QueryOptions queryOptions) {
+        return (queryOptions.get("histogram") != null) ? queryOptions.getString("histogram") : "false";
+    }
+
+    protected int getHistogramIntervalSize(QueryOptions queryOptions) {
+        if (queryOptions.containsKey("interval")) {
+            int value = histogramIntervalSize;
+            try {
+                value = queryOptions.getInt("interval");
+                return value;
+            } catch (Exception exp) {
+                exp.printStackTrace();
+                /** malformed string y no se puede castear a int **/
+                return value;
+            }
+        } else {
+            return histogramIntervalSize;
+        }
+    }
+
+    protected boolean hasHistogramQueryParam(QueryOptions queryOptions) {
+        return Boolean.parseBoolean(getHistogramParameter(queryOptions));
     }
 }
