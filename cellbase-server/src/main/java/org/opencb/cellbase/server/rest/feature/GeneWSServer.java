@@ -74,6 +74,7 @@ public class GeneWSServer extends GenericRestWSServer {
         geneManager = cellBaseManagers.getGeneManager();
         transcriptManager = cellBaseManagers.getTranscriptManager();
         variantManager = cellBaseManagers.getVariantManager();
+        proteinManager = cellBaseManagers.getProteinManager();
     }
 
     @GET
