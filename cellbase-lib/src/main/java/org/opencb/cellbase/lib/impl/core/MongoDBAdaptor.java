@@ -28,6 +28,7 @@ import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,36 +219,9 @@ public class MongoDBAdaptor {
     }
 
     protected CellBaseDataResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
-        if (groupByField == null || groupByField.isEmpty()) {
-            return new CellBaseDataResult();
-        }
-
-        if (groupByField.size() == 1) {
-            // if only one field then we call to simple groupBy
-            return groupBy(query, groupByField.get(0), featureIdField, options);
-        } else {
-            Bson match = Aggregates.match(query);
-            // add all group-by fields to the projection together with the aggregation field name
-            List<String> groupByFields = new ArrayList<>(groupByField);
-            groupByFields.add(featureIdField);
-            Bson project = Aggregates.project(Projections.include(groupByFields));
-            // _id document creation to have the multiple id
-            Document id = new Document();
-            for (String s : groupByField) {
-                id.append(s, "$" + s);
-            }
-            Bson group;
-            if (options.getBoolean("count", false)) {
-                group = Aggregates.group(id, Accumulators.sum("count", 1));
-                return new CellBaseDataResult<>(mongoDBCollection.aggregate(Arrays.asList(match, project, group), options));
-            } else {
-                // Limit the documents passed if count is false
-                Bson limit = Aggregates.limit(options.getInt("limit", 10));
-                group = Aggregates.group(id, Accumulators.addToSet("features", "$" + featureIdField));
-                // TODO change the default "_id" returned by mongodb to id
-                return new CellBaseDataResult<>(mongoDBCollection.aggregate(Arrays.asList(match, limit, project, group), options));
-            }
-        }
+        Boolean count = options.getBoolean("count", false);
+        List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(query, groupByField, featureIdField, count);
+        return new CellBaseDataResult<>(mongoDBCollection.aggregate(groupBy, options));
     }
 
     public CellBaseDataResult getIntervalFrequencies(Bson query, Region region, int intervalSize, QueryOptions options) {
