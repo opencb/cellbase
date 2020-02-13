@@ -16,12 +16,16 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.apache.commons.collections.map.MultiKeyMap;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+
+import java.util.Map;
 
 public class CellBaseManagers {
 
     private CellBaseConfiguration configuration;
-    private GeneManager geneManager;
+
+    private Map<String, GeneManager> geneManager;
     private TranscriptManager transcriptManager;
     private VariantManager variantManager;
     private ProteinManager proteinManager;
@@ -34,11 +38,23 @@ public class CellBaseManagers {
         this.configuration = configuration;
     }
 
-    public GeneManager getGeneManager() {
-        if (geneManager == null) {
-            geneManager = new GeneManager(configuration);
+    private String getMultiKey(String species, String assembly) {
+        return species + "_" + assembly;
+    }
+
+    public GeneManager getGeneManager(String species) {
+        // get the unique assembly
+
+        return getGeneManager(species, null);
+    }
+
+    public GeneManager getGeneManager(String species, String assembly) {
+        if (!geneManager.containsKey(getMultiKey(species, assembly))) {
+            // check
+
+            geneManager.put(species + "_" + assembly, new GeneManager(species, assembly, configuration));
         }
-        return geneManager;
+        return geneManager.get(getMultiKey(species, assembly));
     }
 
     public TranscriptManager getTranscriptManager() {
