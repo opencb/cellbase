@@ -52,9 +52,9 @@ import java.util.Map;
 @Produces(MediaType.APPLICATION_JSON)
 public class TranscriptWSServer extends GenericRestWSServer {
 
-    TranscriptManager transcriptManager;
-    GeneManager geneManager;
-    ProteinManager proteinManager;
+    private TranscriptManager transcriptManager;
+    private GeneManager geneManager;
+    private ProteinManager proteinManager;
 
     public TranscriptWSServer(@PathParam("apiVersion")
                               @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,

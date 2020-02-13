@@ -81,7 +81,7 @@ public class TranscriptManager extends AbstractManager {
     public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String region) {
         logger.debug("blahh...");
         TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-        List<Query> queries = createQueries(query region, TranscriptDBAdaptor.QueryParams.REGION.key());
+        List<Query> queries = createQueries(query, region, TranscriptDBAdaptor.QueryParams.REGION.key());
         List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.REGION.key()));

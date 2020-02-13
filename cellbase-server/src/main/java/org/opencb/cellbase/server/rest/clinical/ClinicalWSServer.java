@@ -42,7 +42,7 @@ import java.io.IOException;
 @Api(value = "Clinical", description = "Clinical RESTful Web Services API")
 public class ClinicalWSServer extends GenericRestWSServer {
 
-    ClinicalManager clinicalManager;
+    private ClinicalManager clinicalManager;
 
     public ClinicalWSServer(@PathParam("apiVersion")
                             @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,

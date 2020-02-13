@@ -31,6 +31,24 @@ public class RegulatoryManager extends AbstractManager {
         super(configuration);
     }
 
+    public CellBaseDataResult getFeatureTypes(Query query, String species, String assembly) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+        CellBaseDataResult queryResults = regulationDBAdaptor.distinct(query, "featureType");
+        return queryResults;
+    }
+
+    public CellBaseDataResult getFeatureClasses(Query query, String species, String assembly) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+        CellBaseDataResult queryResults = regulationDBAdaptor.distinct(query, "featureClass");
+        return queryResults;
+    }
+
+    public CellBaseDataResult search(Query query, QueryOptions queryOptions, String species, String assembly) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+        CellBaseDataResult queryResults = regulationDBAdaptor.nativeGet(query, queryOptions);
+        return queryResults;
+    }
+
     public List<CellBaseDataResult> getByRegions(Query query, QueryOptions queryOptions, String species,
                                                  String assembly, String regions) {
         RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
@@ -38,6 +56,19 @@ public class RegulatoryManager extends AbstractManager {
         List<CellBaseDataResult> queryResults = regRegionDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
+        }
+        return queryResults;
+    }
+
+    public List<CellBaseDataResult> getAllByTfbs(Query query, QueryOptions queryOptions, String species,
+                                                   String assembly, String tf) {
+        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+        List<Query> queries = createQueries(query, tf, RegulationDBAdaptor.QueryParams.NAME.key(),
+                RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
+                        + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
+        List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
+        for (int i = 0; i < queries.size(); i++) {
+            queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.NAME.key()));
         }
         return queryResults;
     }
@@ -66,4 +97,5 @@ public class RegulatoryManager extends AbstractManager {
             return queryResults;
         }
     }
+
 }

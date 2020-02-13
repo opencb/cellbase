@@ -19,8 +19,9 @@ package org.opencb.cellbase.server.rest.regulatory;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -37,6 +38,8 @@ import java.io.IOException;
 @Api(value = "Regulation", description = "Gene expression regulation RESTful Web Services API")
 public class RegulatoryWSServer extends GenericRestWSServer {
 
+    private RegulatoryManager regulatoryManager;
+
     public RegulatoryWSServer(@PathParam("apiVersion")
                               @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                       defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -45,6 +48,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+        regulatoryManager = cellBaseManagers.getRegulatoryManager();
     }
 
     @GET
@@ -65,8 +69,8 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureTypes() {
         try {
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(regulationDBAdaptor.distinct(query, "featureType"));
+            CellBaseDataResult queryResults = regulatoryManager.getFeatureTypes(query, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -89,8 +93,8 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureClasses() {
         try {
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(regulationDBAdaptor.distinct(query, "featureClass"));
+            CellBaseDataResult queryResults = regulatoryManager.getFeatureClasses(query, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -134,8 +138,8 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(regulationDBAdaptor.nativeGet(query, queryOptions));
+            CellBaseDataResult queryResults = regulatoryManager.search(query, queryOptions, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

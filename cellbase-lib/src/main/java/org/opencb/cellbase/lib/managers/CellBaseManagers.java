@@ -27,7 +27,8 @@ public class CellBaseManagers {
     private ProteinManager proteinManager;
     private GenomeManager genomeManager;
     private ClinicalManager clinicalManager;
-    private RegionManager regionManager;
+    private RegulatoryManager regulatoryManager;
+    private XrefManager xrefManager;
 
     public CellBaseManagers(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -75,10 +76,17 @@ public class CellBaseManagers {
         return clinicalManager;
     }
 
-    public RegionManager getRegionManager() {
-        if (regionManager == null) {
-            regionManager = new RegionManager(configuration);
+    public RegulatoryManager getRegulatoryManager() {
+        if (regulatoryManager == null) {
+            regulatoryManager = new RegulatoryManager(configuration);
         }
-        return regionManager;
+        return regulatoryManager;
+    }
+
+    public XrefManager getXrefManager() {
+        if (xrefManager == null) {
+            xrefManager = new XrefManager(configuration);
+        }
+        return xrefManager;
     }
 }

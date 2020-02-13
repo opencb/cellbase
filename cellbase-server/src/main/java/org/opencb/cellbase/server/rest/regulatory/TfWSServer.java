@@ -20,13 +20,12 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.commons.datastore.core.Query;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -43,6 +42,9 @@ import java.util.List;
 @Api(value = "TFBS", description = "Gene RESTful Web Services API")
 public class TfWSServer extends RegulatoryWSServer {
 
+    private RegulatoryManager regulatoryManager;
+    private GeneManager geneManager;
+
     public TfWSServer(@PathParam("apiVersion")
                       @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                               defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -51,6 +53,9 @@ public class TfWSServer extends RegulatoryWSServer {
                       @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+
+        regulatoryManager = cellBaseManagers.getRegulatoryManager();
+        geneManager = cellBaseManagers.getGeneManager();
     }
 
     @GET
@@ -64,32 +69,18 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAllByTfbs(@PathParam("tf")
-                                     @ApiParam(name = "tf",
-                                             value = ParamConstants.TFBS_IDS, required = true) String tf,
+    public Response getAllByTfbs(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf,
                                  @DefaultValue("") @QueryParam("celltype") String celltype,
-                                 @QueryParam("exclude")
-                                     @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                 @QueryParam("include")
-                                     @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                 @QueryParam("sort")
-                                     @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                 @QueryParam("limit") @DefaultValue("10")
-                                     @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                 @QueryParam("skip") @DefaultValue("0")
-                                     @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                 @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                 @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                 @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                 @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                                 @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(tf, RegulationDBAdaptor.QueryParams.NAME.key(),
-                    RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
-                            + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-            List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.NAME.key()));
-            }
+            List<CellBaseDataResult> queryResults = regulatoryManager.getAllByTfbs(query, queryOptions, species, assembly, tf);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -131,12 +122,7 @@ public class TfWSServer extends RegulatoryWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(tf, GeneDBAdaptor.QueryParams.NAME.key());
-            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));
-            }
+            List<CellBaseDataResult> queryResults = geneManager.getByTf(query, queryOptions, species, assembly, tf);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

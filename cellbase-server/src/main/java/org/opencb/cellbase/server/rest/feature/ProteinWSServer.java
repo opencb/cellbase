@@ -45,7 +45,7 @@ import java.util.Map;
 @Api(value = "Protein", description = "Protein RESTful Web Services API")
 public class ProteinWSServer extends GenericRestWSServer {
 
-    ProteinManager proteinManager;
+    private ProteinManager proteinManager;
 
     public ProteinWSServer(@PathParam("apiVersion")
                                 @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,

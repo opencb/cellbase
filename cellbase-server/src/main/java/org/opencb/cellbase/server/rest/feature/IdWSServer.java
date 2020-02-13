@@ -16,21 +16,20 @@
 
 package org.opencb.cellbase.server.rest.feature;
 
-import com.google.common.base.Splitter;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.managers.XrefManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.Query;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -39,7 +38,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +49,9 @@ import java.util.Map;
 @Api(value = "Xref", description = "External References RESTful Web Services API")
 public class IdWSServer extends GenericRestWSServer {
 
+    private XrefManager xrefManager;
+    private GeneManager geneManager;
+
     public IdWSServer(@PathParam("apiVersion")
                       @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                               defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -59,6 +60,9 @@ public class IdWSServer extends GenericRestWSServer {
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
             SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+
+        xrefManager = cellBaseManagers.getXrefManager();
+        geneManager = cellBaseManagers.getGeneManager();
     }
 
     @GET
@@ -80,24 +84,8 @@ public class IdWSServer extends GenericRestWSServer {
                                                + "text matches will be returned.", required = true) String id) {
         try {
             parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-
-            List<String> list = Splitter.on(",").splitToList(id);
-            List<Query> queries = createQueries(id, XRefDBAdaptor.QueryParams.ID.key());
-
-            List<CellBaseDataResult<Document>> dbNameList = xRefDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < dbNameList.size(); i++) {
-                dbNameList.get(i).setId(list.get(i));
-                for (Document document : dbNameList.get(i).getResults()) {
-                    if (document.get("id").equals(list.get(i))) {
-                        List<Document> objectList = new ArrayList<>(1);
-                        objectList.add(document);
-                        dbNameList.get(i).setResults(objectList);
-                        break;
-                    }
-                }
-            }
-            return createOkResponse(dbNameList);
+            List<CellBaseDataResult<Document>> queryResults = xrefManager.info(query, queryOptions, species, assembly, id);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -119,16 +107,8 @@ public class IdWSServer extends GenericRestWSServer {
                                                    + "getDBNames", required = false) String dbname) {
         try {
             parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-
-            Query query = new Query();
-            query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
-            if (dbname != null && !dbname.isEmpty()) {
-                query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
-            }
-            CellBaseDataResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(ids);
-            return createOkResponse(queryResult);
+            CellBaseDataResult queryResults = xrefManager.getAllXrefsByFeatureId(queryOptions, species, assembly, ids, dbname);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -193,17 +173,7 @@ public class IdWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-
-            String[] ids = id.split(",");
-            List<Query> queries = new ArrayList<>(ids.length);
-            for (String s : ids) {
-                queries.add(new Query(GeneDBAdaptor.QueryParams.XREFS.key(), s));
-            }
-            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < ids.length; i++) {
-                queryResults.get(i).setId(ids[i]);
-            }
+            List<CellBaseDataResult> queryResults = geneManager.getGeneByEnsemblId(queryOptions, species, assembly, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -217,9 +187,8 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getDBNames() {
         try {
             parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            CellBaseDataResult xrefs = xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
-            return createOkResponse(xrefs);
+            CellBaseDataResult queryResults = xrefManager.getDBNames(query, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

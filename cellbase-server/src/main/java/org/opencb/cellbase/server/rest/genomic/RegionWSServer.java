@@ -65,6 +65,7 @@ public class RegionWSServer extends GenericRestWSServer {
         genomeManager = cellBaseManagers.getGenomeManager();
         transcriptManager = cellBaseManagers.getTranscriptManager();
         clinicalManager = cellBaseManagers.getClinicalManager();
+        regulatoryManager = cellBaseManagers.getRegulatoryManager();
     }
 
     @GET

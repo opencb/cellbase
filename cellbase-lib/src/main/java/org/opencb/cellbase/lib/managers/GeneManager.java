@@ -130,4 +130,31 @@ public class GeneManager extends AbstractManager {
         }
     }
 
+    public List<CellBaseDataResult> getByTf(Query query, QueryOptions queryOptions, String species, String assembly,
+                                                    String tf) {
+        logger.debug("blahh...");
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        List<Query> queries = createQueries(query, tf, GeneDBAdaptor.QueryParams.NAME.key());
+        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+        for (int i = 0; i < queries.size(); i++) {
+            queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));
+        }
+        return queryResults;
+    }
+
+    public List<CellBaseDataResult> getGeneByEnsemblId(QueryOptions queryOptions, String species, String assembly, String id) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+
+        String[] ids = id.split(",");
+        List<Query> queries = new ArrayList<>(ids.length);
+        for (String s : ids) {
+            queries.add(new Query(GeneDBAdaptor.QueryParams.XREFS.key(), s));
+        }
+        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+        for (int i = 0; i < ids.length; i++) {
+            queryResults.get(i).setId(ids[i]);
+        }
+        return queryResults;
+    }
+
 }

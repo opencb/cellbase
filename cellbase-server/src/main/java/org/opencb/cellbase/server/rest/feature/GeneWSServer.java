@@ -58,10 +58,10 @@ import java.util.Map;
 @Api(value = "Gene", description = "Gene RESTful Web Services API")
 public class GeneWSServer extends GenericRestWSServer {
 
-    GeneManager geneManager;
-    TranscriptManager transcriptManager;
-    VariantManager variantManager;
-    ProteinManager proteinManager;
+    private GeneManager geneManager;
+    private TranscriptManager transcriptManager;
+    private VariantManager variantManager;
+    private ProteinManager proteinManager;
 
     public GeneWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,

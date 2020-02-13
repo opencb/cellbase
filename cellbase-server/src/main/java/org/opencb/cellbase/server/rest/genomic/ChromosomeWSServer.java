@@ -23,6 +23,7 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -46,6 +47,7 @@ import java.util.List;
 @Api(value = "Genome Sequence", description = "Genome Sequence RESTful Web Services API")
 public class ChromosomeWSServer extends GenericRestWSServer {
 
+    private GenomeManager genomeManager;
 
     public ChromosomeWSServer(@PathParam("apiVersion")
                               @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
@@ -55,6 +57,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+
+        genomeManager = cellBaseManagers.getGenomeManager();
     }
 
     @GET
@@ -88,8 +92,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
-            return createOkResponse(dbAdaptor.getGenomeInfo(queryOptions));
+            CellBaseDataResult queryResults = genomeManager.info(queryOptions, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -116,26 +120,15 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     @Path("/{chromosomeName}/info")
     @ApiOperation(httpMethod = "GET", value = "Retrieves chromosome data for specified chromosome names",
             response = Chromosome.class, responseContainer = "QueryResponse")
-    public Response getChromosomes(@PathParam("chromosomeName")
-                                   @ApiParam(name = "chromosomeName", value = ParamConstants.CHROMOSOMES,
+    public Response getChromosomes(@PathParam("chromosomeName") @ApiParam(name = "chromosomeName", value = ParamConstants.CHROMOSOMES,
                                                 required = true) String chromosomeId,
-                                   @QueryParam("exclude")
-                                   @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                   @QueryParam("include")
-                                       @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                   @QueryParam("sort")
-                                       @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
+                                   @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                   @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                   @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
-            List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
-            List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
-            for (String chromosome : chromosomeList) {
-                CellBaseDataResult queryResult = dbAdaptor.getChromosomeInfo(chromosome, queryOptions);
-                queryResult.setId(chromosome);
-                queryResults.add(queryResult);
-            }
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, species, assembly, chromosomeId);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -193,6 +193,12 @@ public class MongoDBAdaptor {
         }
     }
 
+    protected CellBaseDataResult groupBy(Bson query, String groupByField, String featureIdField, QueryOptions options) {
+        Boolean count = options.getBoolean("count", false);
+        List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(query, groupByField, featureIdField, count);
+        return new CellBaseDataResult<>(mongoDBCollection.aggregate(groupBy, options));
+    }
+
     protected CellBaseDataResult groupBy(Bson query, List<String> groupByField, String featureIdField, QueryOptions options) {
         Boolean count = options.getBoolean("count", false);
         List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(query, groupByField, featureIdField, count);

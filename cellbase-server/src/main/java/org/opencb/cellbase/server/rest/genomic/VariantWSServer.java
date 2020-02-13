@@ -29,6 +29,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -53,11 +54,7 @@ import java.util.stream.Collectors;
 @Api(value = "Variant", description = "Variant RESTful Web Services API")
 public class VariantWSServer extends GenericRestWSServer {
 
-    private static final String PHASE_DATA_URL_SEPARATOR = "\\+";
-    private static final String VARIANT_STRING_FORMAT = "(chr)"
-            + ":[(cipos_left)<](start)[<(cipos_right)]" + "[-[(ciend_left)<](end)[<(ciend_right)]]"
-            + "[:(ref)]"
-            + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
+    private VariantManager variantManager;
 
     public VariantWSServer(@PathParam("apiVersion")
                            @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
@@ -67,6 +64,8 @@ public class VariantWSServer extends GenericRestWSServer {
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
+
+        variantManager = cellBaseManagers.getVariantManager();
     }
 
     @GET
@@ -216,7 +215,6 @@ public class VariantWSServer extends GenericRestWSServer {
                 svExtraPadding,
                 cnvExtraPadding, exclude, include, sort, limit, skip);
     }
-
     private Response getAnnotationByVariant(String variants,
                                             Boolean normalize,
                                             Boolean skipDecompose,
@@ -230,95 +228,16 @@ public class VariantWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<Variant> variantList = parseVariants(variants);
-            logger.debug("queryOptions: " + queryOptions);
 
-            // If ignorePhase (new parameter) is present, then overrides presence of "phased"
-            if (ignorePhase != null) {
-                queryOptions.put("ignorePhase", ignorePhase);
-                // If the new parameter (ignorePhase) is not present but old one ("phased") is, then follow old one - probably
-                // someone who has not moved to the new parameter yet
-            } else if (phased != null) {
-                queryOptions.put("ignorePhase", !phased);
-                // Default behavior is to perform phased annotation
-            } else {
-                queryOptions.put("ignorePhase", false);
-            }
-
-            if (normalize != null) {
-                queryOptions.put("normalize", normalize);
-            }
-            if (skipDecompose != null) {
-                queryOptions.put("skipDecompose", skipDecompose);
-            }
-            if (imprecise != null) {
-                queryOptions.put("imprecise", imprecise);
-            }
-            if (svExtraPadding != null) {
-                queryOptions.put("svExtraPadding", svExtraPadding);
-            }
-            if (cnvExtraPadding != null) {
-                queryOptions.put("cnvExtraPadding", cnvExtraPadding);
-            }
-            VariantAnnotationCalculator variantAnnotationCalculator =
-                    new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
-            List<CellBaseDataResult<VariantAnnotation>> queryResultList =
-                    variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
-
-            return createOkResponse(queryResultList);
+            List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(queryOptions, species,
+                    assembly, variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    private List<Variant> parseVariants(String variantsString) {
-        List<Variant> variants = null;
-        if (variantsString != null && !variantsString.isEmpty()) {
-            String[] variantItems = variantsString.split(",");
-            variants = new ArrayList<>(variantItems.length);
 
-            for (String variantString: variantItems) {
-                variants.add(parseVariant(variantString));
-            }
-        }
-        return variants;
-    }
-
-    private Variant parseVariant(String variantString) {
-        String[] variantStringPartArray = variantString.split(PHASE_DATA_URL_SEPARATOR);
-
-        VariantBuilder variantBuilder;
-        if (variantStringPartArray.length > 0) {
-            variantBuilder = new VariantBuilder(variantStringPartArray[0]);
-            // Either 1 or 3 parts expected variant+GT+PS
-            if (variantStringPartArray.length == 3) {
-                List<String> formatList = new ArrayList<>(2);
-                // If phase set tag is not provided not phase data is added at all to the Variant object
-                if (!variantStringPartArray[2].isEmpty()) {
-                    formatList.add(AnnotationBasedPhasedQueryManager.PHASE_SET_TAG);
-                    List<String> sampleData = new ArrayList<>(2);
-                    sampleData.add(variantStringPartArray[2]);
-                    // Genotype field might be empty - just PS would be added to Variant object in that case
-                    if (!variantStringPartArray[1].isEmpty()) {
-                        formatList.add(AnnotationBasedPhasedQueryManager.GENOTYPE_TAG);
-                        sampleData.add(variantStringPartArray[1]);
-                    }
-                    variantBuilder.setFormat(formatList);
-                    variantBuilder.setSamplesData(Collections.singletonList(sampleData));
-                }
-            } else if (variantStringPartArray.length > 3) {
-                throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
-                        + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
-                        + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
-            }
-        } else {
-            throw new IllegalArgumentException("Malformed variant string " + variantString + ". "
-                    + "variantString+GT+PS expected, where variantString needs 3 or 4 fields separated by ':'. "
-                    + "Format: \"" + VARIANT_STRING_FORMAT + "\"");
-        }
-
-        return variantBuilder.build();
-    }
 
     @GET
     @Deprecated
@@ -384,12 +303,7 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(id, VariantDBAdaptor.QueryParams.ID.key());
-            List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
-            }
+            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, species, assembly, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -433,8 +347,8 @@ public class VariantWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            return createOkResponse(variationDBAdaptor.nativeGet(query, queryOptions));
+            CellBaseDataResult queryResults = variantManager.search(query, queryOptions, species, assembly);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -466,12 +380,7 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getAllConsequenceTypes() {
         try {
             parseQueryParams();
-            List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
-                    .sorted()
-                    .collect(Collectors.toList());
-            CellBaseDataResult<String> queryResult = new CellBaseDataResult<>("consequence_types");
-            queryResult.setNumResults(consequenceTypes.size());
-            queryResult.setResults(consequenceTypes);
+            CellBaseDataResult<String> queryResult = variantManager.getConsequenceTypes();
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import com.google.common.base.Splitter;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
@@ -25,6 +26,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GenomeManager extends AbstractManager {
@@ -34,11 +36,22 @@ public class GenomeManager extends AbstractManager {
     }
 
     public CellBaseDataResult info(QueryOptions queryOptions, String species, String assembly) {
-        logger.debug("Querying species...");
         GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
         CellBaseDataResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
         queryResult.setId(species);
         return queryResult;
+    }
+
+    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String species, String assembly, String chromosomeId) {
+        GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+        List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
+        List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
+        for (String chromosome : chromosomeList) {
+            CellBaseDataResult queryResult = dbAdaptor.getChromosomeInfo(chromosome, queryOptions);
+            queryResult.setId(chromosome);
+            queryResults.add(queryResult);
+        }
+        return queryResults;
     }
 
     public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String species, String assembly,

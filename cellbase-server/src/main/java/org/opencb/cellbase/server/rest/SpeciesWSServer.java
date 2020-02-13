@@ -44,7 +44,7 @@ import java.io.IOException;
 @Api(value = "Species", description = "Species RESTful Web Services API")
 public class SpeciesWSServer extends GenericRestWSServer {
 
-    GenomeManager genomeManager;
+    private GenomeManager genomeManager;
 
     public SpeciesWSServer(@PathParam("apiVersion")
                            @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
