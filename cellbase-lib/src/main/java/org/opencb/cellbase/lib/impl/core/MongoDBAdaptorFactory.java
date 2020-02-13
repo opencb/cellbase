@@ -408,17 +408,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     @Override
-    public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species) {
-        return getClinicalLegacyDBAdaptor(species, null);
-    }
-
-    @Override
-    public ClinicalDBAdaptor getClinicalLegacyDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ClinicalLegacyMongoDBAdaptor(species, assembly, mongoDatastore);
-    }
-
-    @Override
     public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
         return getClinicalDBAdaptor(species, null);
     }

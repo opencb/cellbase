@@ -49,13 +49,6 @@ public class ProteinManager extends AbstractManager {
         return dbAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public CellBaseDataResult<Protein> aggregationStats(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
-        logger.debug("Querying for aggregation stats");
-        ProteinDBAdaptor dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
-        queryOptions.put(QueryOptions.COUNT, true);
-        return dbAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
-    }
-
     public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String id) {
         logger.debug("Querying for protein info");
         ProteinDBAdaptor dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
@@ -92,7 +85,8 @@ public class ProteinManager extends AbstractManager {
         }
     }
 
-    public CellBaseDataResult<String> getSequence(Query query, QueryOptions queryOptions, String species, String assembly, String proteins) {
+    public CellBaseDataResult<String> getSequence(Query query, QueryOptions queryOptions, String species, String assembly,
+                                                  String proteins) {
         ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
         query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteins);
         queryOptions.put("include", "sequence.value");

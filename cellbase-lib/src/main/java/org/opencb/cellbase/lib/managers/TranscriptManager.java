@@ -49,13 +49,6 @@ public class TranscriptManager extends AbstractManager {
         return dbAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public CellBaseDataResult<Transcript> aggregationStats(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
-        logger.debug("blahh...");
-        TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-        queryOptions.put(QueryOptions.COUNT, true);
-        return dbAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
-    }
-
     public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String id) {
         logger.debug("blahh...");
         TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);

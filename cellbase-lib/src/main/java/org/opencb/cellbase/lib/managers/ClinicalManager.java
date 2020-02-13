@@ -140,7 +140,8 @@ public class ClinicalManager extends AbstractManager {
 //            results.add(getByVariant(variant, queryOptions));
 //        }
 //        ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
-//        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key())) {
+//        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(ClinicalDBAdaptor
+//        .QueryParams.PHASE.key())) {
 //            results = phasedQueryManager.run(variants, results);
 //
 //        }

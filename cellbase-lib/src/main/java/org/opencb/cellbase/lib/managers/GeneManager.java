@@ -45,7 +45,8 @@ public class GeneManager extends AbstractManager {
         return geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public CellBaseDataResult<Gene> aggregationStats(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
+    public CellBaseDataResult<Gene> aggregationStats(Query query, QueryOptions queryOptions, String species, String assembly,
+                                                     String fields) {
         logger.debug("blahh...");
         GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
         queryOptions.put(QueryOptions.COUNT, true);

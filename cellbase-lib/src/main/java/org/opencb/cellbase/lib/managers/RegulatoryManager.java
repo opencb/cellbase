@@ -97,5 +97,4 @@ public class RegulatoryManager extends AbstractManager {
             return queryResults;
         }
     }
-
 }

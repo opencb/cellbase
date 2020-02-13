@@ -227,26 +227,6 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species, assembly);
                 dbAdaptor = null;
                 break;
-            case "clinvar":
-                clinicalVariantSource = "clinvar";
-                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
-                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
-                // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
-                break;
-            case "gwas":
-                clinicalVariantSource = "gwas";
-                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
-                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
-                // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
-                break;
-            case "clinical":
-                // Default assembly will be selected - it is a bad idea to get the assembly from the database name since
-                // '-', '_', '.' symbols are removed from the assembly before building the database name. This getAdaptor
-                // method will soon be remove
-                dbAdaptor = dbAdaptorFactory.getClinicalLegacyDBAdaptor(species);
-                break;
             case "clinical_variants":
                 dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species);
                 break;
