@@ -23,8 +23,10 @@ import com.mongodb.client.model.Projections;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -40,6 +42,7 @@ import java.util.List;
 public class TranscriptManager extends AbstractManager {
 
     private TranscriptDBAdaptor transcriptDBAdaptor;
+//    private GeneDBAdaptor geneDBAdaptor;
 
     public TranscriptManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -48,6 +51,45 @@ public class TranscriptManager extends AbstractManager {
 
     private void init() {
         transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+//        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+    }
+
+
+
+    public CellBaseDataResult<String> getCdna(String id) {
+        GeneDBAdaptor<Gene> geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+        CellBaseDataResult<Gene> gene = geneDBAdaptor
+                .get(new Query("xrefs", id), new QueryOptions(QueryOptions.INCLUDE, "transcripts.id,transcripts.cDnaSequence"));
+
+        if (gene.getResults().get(0).getTranscripts().size() != 1) {
+            // check id exists
+        }
+
+        String cdnaSequence = null;
+        for (Transcript transcript: gene.getResults().get(0).getTranscripts()) {
+            if (transcript.getId().equals(id)) {
+                cdnaSequence = transcript.getcDnaSequence();
+                break;
+            }
+        }
+
+        return new CellBaseDataResult<>(id, gene.getTime(), gene.getEvents(), gene.getNumResults(),
+                Collections.singletonList(cdnaSequence), 1);
+
+//        Bson bson = Filters.eq("transcripts.xrefs.id", id);
+//        Bson elemMatch = Projections.elemMatch("transcripts", Filters.eq("xrefs.id", id));
+//        Bson include = Projections.include("transcripts.cDnaSequence");
+//        // elemMatch and include are combined to reduce the data sent from the server
+//        Bson projection = Projections.fields(elemMatch, include);
+//        CellBaseDataResult<Document> result = new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, new QueryOptions()));
+//
+//        String sequence = null;
+//        if (result != null && !result.getResults().isEmpty()) {
+//            List<Document> transcripts = (List<Document>) result.getResults().get(0).get("transcripts");
+//            sequence = transcripts.get(0).getString("cDnaSequence");
+//        }
+//        return new CellBaseDataResult<>(id, result.getTime(), result.getEvents(), result.getNumResults(),
+//                Collections.singletonList(sequence), 1);
     }
 
 
@@ -92,6 +134,10 @@ public class TranscriptManager extends AbstractManager {
     }
 
     public CellBaseDataResult count(Query query) {
+        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species);
+        CellBaseDataResult cellBaseDataResult1 = geneDBAdaptor.get(query, new QueryOptions(QueryOptions.COUNT));
+        return cellBaseDataResult1.getNumMatches();
+
         Bson document = parseQuery(query);
         Bson match = Aggregates.match(document);
 
@@ -115,7 +161,6 @@ public class TranscriptManager extends AbstractManager {
         Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
 
         CellBaseDataResult<Long> cellBaseDataResult = transcriptDBAdaptor.count(match, include, unwind, match2, project, group);
-
         Number number = (Number) cellBaseDataResult.first().get("count");
         Long count = number.longValue();
         return new CellBaseDataResult<>(null, cellBaseDataResult.getTime(), cellBaseDataResult.getEvents(),
