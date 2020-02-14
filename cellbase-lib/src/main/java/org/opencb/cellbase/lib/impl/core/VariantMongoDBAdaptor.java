@@ -31,20 +31,18 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 26/11/15.
@@ -77,17 +75,17 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
     }
 
-    @Override
-    public CellBaseDataResult<String> getConsequenceTypes(Query query) {
-        // TODO we need to check if Query is empty!
-        List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
-                .sorted()
-                .collect(Collectors.toList());
-        CellBaseDataResult<String> cellBaseDataResult = new CellBaseDataResult("consequence_types");
-        cellBaseDataResult.setNumResults(consequenceTypes.size());
-        cellBaseDataResult.setResults(consequenceTypes);
-        return cellBaseDataResult;
-    }
+//    @Override
+//    public CellBaseDataResult<String> getConsequenceTypes(Query query) {
+//        // TODO we need to check if Query is empty!
+//        List<String> consequenceTypes = VariantAnnotationUtils.SO_SEVERITY.keySet().stream()
+//                .sorted()
+//                .collect(Collectors.toList());
+//        CellBaseDataResult<String> cellBaseDataResult = new CellBaseDataResult("consequence_types");
+//        cellBaseDataResult.setNumResults(consequenceTypes.size());
+//        cellBaseDataResult.setResults(consequenceTypes);
+//        return cellBaseDataResult;
+//    }
 
     @Override
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {

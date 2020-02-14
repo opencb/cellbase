@@ -16,9 +16,11 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -168,4 +170,39 @@ public class VariantManager extends AbstractManager {
         return queryResult;
     }
 
+    public boolean validateRegionInput(String regions) {
+        List<Region> regionList = Region.parseRegions(regions);
+        // check for regions bigger than 10Mb
+        if (regionList != null) {
+            for (Region r : regionList) {
+                if ((r.getEnd() - r.getStart()) > 10000000) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String regions) {
+        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+        if (hasHistogramQueryParam(queryOptions)) {
+            List<Query> queries = createQueries(query, regions, GeneDBAdaptor.QueryParams.REGION.key());
+            List<CellBaseDataResult> queryResults = variationDBAdaptor.getIntervalFrequencies(queries,
+                    getHistogramIntervalSize(queryOptions), queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId(queries.get(i).getString(GeneDBAdaptor.QueryParams.REGION.key()));
+            }
+            return queryResults;
+        } else {
+            query.put(VariantDBAdaptor.QueryParams.REGION.key(), regions);
+            logger.debug("query = " + query.toJson());
+            logger.debug("queryOptions = " + queryOptions.toJson());
+            List<Query> queries = createQueries(query, regions, VariantDBAdaptor.QueryParams.REGION.key());
+            List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+            for (int i = 0; i < queries.size(); i++) {
+                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
+            }
+            return queryResults;
+        }
+    }
 }

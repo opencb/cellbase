@@ -29,6 +29,7 @@ public class CellBaseManagers {
     private ClinicalManager clinicalManager;
     private RegulatoryManager regulatoryManager;
     private XrefManager xrefManager;
+    private RepeatsManager repeatsManager;
 
     public CellBaseManagers(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -88,5 +89,12 @@ public class CellBaseManagers {
             xrefManager = new XrefManager(configuration);
         }
         return xrefManager;
+    }
+
+    public RepeatsManager getRepeatsManager() {
+        if (repeatsManager == null) {
+            repeatsManager = new RepeatsManager(configuration);
+        }
+        return repeatsManager;
     }
 }

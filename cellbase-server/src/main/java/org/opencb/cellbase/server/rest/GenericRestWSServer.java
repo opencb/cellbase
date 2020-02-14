@@ -33,7 +33,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.managers.CellBaseManagers;
+import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Event;
@@ -89,7 +89,7 @@ public class GenericRestWSServer implements IWSServer {
     protected CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
 
 
-    protected CellBaseManagers cellBaseManagers;
+    protected CellBaseManagerFactory cellBaseManagers;
     protected Monitor monitor;
 
     private static final int SKIP_DEFAULT = 0;
@@ -156,7 +156,7 @@ public class GenericRestWSServer implements IWSServer {
             logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
 
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
-            cellBaseManagers = new CellBaseManagers(cellBaseConfiguration);
+            cellBaseManagers = new CellBaseManagerFactory(cellBaseConfiguration);
 
             // Initialize Monitor
             monitor = new Monitor(dbAdaptorFactory);

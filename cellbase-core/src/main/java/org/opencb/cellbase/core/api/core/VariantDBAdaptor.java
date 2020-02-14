@@ -134,7 +134,7 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         return results;
     }
 
-    CellBaseDataResult<String> getConsequenceTypes(Query query);
+//    CellBaseDataResult<String> getConsequenceTypes(Query query);
 
     CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions options);
 

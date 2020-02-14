@@ -20,14 +20,12 @@ import io.swagger.annotations.*;
 import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.RepeatsDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.Query;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -50,6 +48,7 @@ public class RegionWSServer extends GenericRestWSServer {
     private TranscriptManager transcriptManager;
     private ClinicalManager clinicalManager;
     private RegulatoryManager regulatoryManager;
+    private RepeatsManager repeatsManager;
 
     public RegionWSServer(@PathParam("apiVersion")
                           @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
@@ -65,6 +64,7 @@ public class RegionWSServer extends GenericRestWSServer {
         transcriptManager = cellBaseManagers.getTranscriptManager();
         clinicalManager = cellBaseManagers.getClinicalManager();
         regulatoryManager = cellBaseManagers.getRegulatoryManager();
+        repeatsManager = cellBaseManagers.getRepeatsManager();
     }
 
     @GET
@@ -245,12 +245,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            RepeatsDBAdaptor repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(region, RepeatsDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = repeatsDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(RepeatsDBAdaptor.QueryParams.REGION.key()));
-            }
+            List<CellBaseDataResult> queryResults = repeatsManager.getByRegion(query, queryOptions, species, assembly, region);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
