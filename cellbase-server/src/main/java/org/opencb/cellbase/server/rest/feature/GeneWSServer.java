@@ -38,6 +38,7 @@ import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -70,7 +71,9 @@ public class GeneWSServer extends GenericRestWSServer {
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
             SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-        geneManager = cellBaseManagers.getGeneManager();
+
+        geneManager = cellBaseManagers.getGeneManager(species, assembly);
+
         transcriptManager = cellBaseManagers.getTranscriptManager();
         variantManager = cellBaseManagers.getVariantManager();
         proteinManager = cellBaseManagers.getProteinManager();
@@ -91,8 +94,10 @@ public class GeneWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the first object in the database", response = Gene.class,
             responseContainer = "QueryResponse", hidden = true)
     public Response first() {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-        return createOkResponse(geneDBAdaptor.first(queryOptions));
+//        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+        QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 1);
+        CellBaseDataResult<Gene> search = geneManager.search(new Query(), queryOptions);
+        return createOkResponse(search);
     }
 
     @GET
@@ -136,6 +141,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+//            geneManager.search(new Query(), new QueryOptions(QueryOptions.COUNT, true));
             return createOkResponse(geneDBAdaptor.count(query));
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -680,7 +686,8 @@ public class GeneWSServer extends GenericRestWSServer {
                                                 + " BRCA2", required = true) String genes) {
         try {
             parseQueryParams();
-            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+//            ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(this.species, this.assembly);
+            ClinicalDBAdaptor clinicalDBAdaptor = geneManager.getClinicalDBAdaptor(this.species, this.assembly);
             query.put("gene", genes);
             CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
             queryResult.setId(genes);

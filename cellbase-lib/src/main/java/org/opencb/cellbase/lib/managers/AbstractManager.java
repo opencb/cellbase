@@ -34,12 +34,28 @@ public class AbstractManager {
     protected CellBaseManagers managers;
     protected DBAdaptorFactory dbAdaptorFactory;
     protected static ObjectWriter jsonObjectWriter;
+
+    protected String species;
+    protected String assembly;
+
     protected Logger logger;
 
     public static final int DEFAULT_LIMIT = 10;
     protected int histogramIntervalSize = 200000;
 
     public AbstractManager(CellBaseConfiguration configuration) {
+        this.configuration = configuration;
+
+        this.init();
+    }
+
+    public AbstractManager(String species, CellBaseConfiguration configuration) {
+        this(species, null, configuration);
+    }
+
+    public AbstractManager(String species, String assembly, CellBaseConfiguration configuration) {
+        this.species = species;
+        this.assembly = assembly;
         this.configuration = configuration;
 
         this.init();
