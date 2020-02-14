@@ -115,11 +115,12 @@ public class SpeciesUtils {
      * Get the default assembly for species. Is naive and just gets the first one. Order not guaranteed, don't rely on this at all.
      *
      * @param species name of species
+     * @param configuration for this database
      * @return the default assembly
      * @throws CellbaseException if the species has no associated assembly
      */
     public static SpeciesConfiguration.Assembly getDefaultAssembly(CellBaseConfiguration configuration, String species)
-    throws CellbaseException {
+        throws CellbaseException {
         SpeciesConfiguration speciesConfiguration = getSpeciesConfiguration(configuration, species);
         List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
         if (assemblies == null || assemblies.isEmpty()) {

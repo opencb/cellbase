@@ -16,23 +16,21 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -46,7 +44,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }
-
 
     @Override
     public CellBaseDataResult<String> getCdna(String id) {
@@ -125,17 +122,17 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         return null;
     }
 
-    @Override
-    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-        Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, field, "name", options);
-    }
-
-    @Override
-    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
-        Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, fields, "name", options);
-    }
+//    @Override
+//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
+//        Bson bsonQuery = parseQuery(query);
+//        return groupBy(bsonQuery, field, "name", options);
+//    }
+//
+//    @Override
+//    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
+//        Bson bsonQuery = parseQuery(query);
+//        return groupBy(bsonQuery, fields, "name", options);
+//    }
 
     @Override
     public CellBaseDataResult next(Query query, QueryOptions options) {
@@ -147,15 +144,15 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         return null;
     }
 
-    @Override
-    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
-        if (query.getString("region") != null) {
-            Region region = Region.parseRegion(query.getString("region"));
-            Bson bsonDocument = parseQuery(query);
-            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
-        }
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+//        if (query.getString("region") != null) {
+//            Region region = Region.parseRegion(query.getString("region"));
+//            Bson bsonDocument = parseQuery(query);
+//            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+//        }
+//        return null;
+//    }
 
 
 }
