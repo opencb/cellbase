@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -38,14 +39,20 @@ import java.util.List;
 
 public class TranscriptManager extends AbstractManager {
 
-    public TranscriptManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    private TranscriptDBAdaptor transcriptDBAdaptor;
+
+    public TranscriptManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public CellBaseDataResult<Transcript> search(Query query, QueryOptions queryOptions, String species, String assembly) {
-        logger.debug("blahh...");
-        TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-        CellBaseDataResult<Transcript> queryResult = dbAdaptor.nativeGet(query, queryOptions);
+    private void init() {
+        transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+    }
+
+
+    public CellBaseDataResult<Transcript> search(Query query, QueryOptions queryOptions) {
+        CellBaseDataResult<Transcript> queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
         // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
         // properly fixed
         queryResult.setNumTotalResults(-1);
@@ -53,26 +60,20 @@ public class TranscriptManager extends AbstractManager {
         return queryResult;
     }
 
-    public CellBaseDataResult<Transcript> groupBy(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
-        logger.debug("blahh...");
-        TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-        return dbAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+    public CellBaseDataResult<Transcript> groupBy(Query query, QueryOptions queryOptions, String fields) {
+        return transcriptDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String id) {
-        logger.debug("blahh...");
-        TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
         List<Query> queries = createQueries(query, id, TranscriptDBAdaptor.QueryParams.XREFS.key());
-        List<CellBaseDataResult> queryResults = dbAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
         }
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getSequence(String species, String assembly, String id) {
-        logger.debug("blahh...");
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+    public List<CellBaseDataResult> getSequence(String id) {
         List<String> transcriptsList = Arrays.asList(id.split(","));
         List<CellBaseDataResult> queryResult = transcriptDBAdaptor.getCdna(transcriptsList);
         for (int i = 0; i < transcriptsList.size(); i++) {
@@ -81,9 +82,7 @@ public class TranscriptManager extends AbstractManager {
         return queryResult;
     }
 
-    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String region) {
-        logger.debug("blahh...");
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
+    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
         List<Query> queries = createQueries(query, region, TranscriptDBAdaptor.QueryParams.REGION.key());
         List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
@@ -92,7 +91,7 @@ public class TranscriptManager extends AbstractManager {
         return queryResults;
     }
 
-    public CellBaseDataResult count(String species, String assembly, Query query) {
+    public CellBaseDataResult count(Query query) {
         Bson document = parseQuery(query);
         Bson match = Aggregates.match(document);
 
@@ -115,9 +114,7 @@ public class TranscriptManager extends AbstractManager {
         Bson project = Aggregates.project(new Document("transcripts", "$transcripts.id"));
         Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
 
-        TranscriptDBAdaptor dbAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-
-        CellBaseDataResult<Long> cellBaseDataResult = dbAdaptor.count(match, include, unwind, match2, project, group);
+        CellBaseDataResult<Long> cellBaseDataResult = transcriptDBAdaptor.count(match, include, unwind, match2, project, group);
 
         Number number = (Number) cellBaseDataResult.first().get("count");
         Long count = number.longValue();

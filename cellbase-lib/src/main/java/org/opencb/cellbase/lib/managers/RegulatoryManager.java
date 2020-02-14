@@ -27,42 +27,40 @@ import java.util.List;
 
 public class RegulatoryManager extends AbstractManager {
 
-    public RegulatoryManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    private RegulationDBAdaptor regulationDBAdaptor;
+
+    public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public CellBaseDataResult getFeatureTypes(Query query, String species, String assembly) {
-        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
-        CellBaseDataResult queryResults = regulationDBAdaptor.distinct(query, "featureType");
-        return queryResults;
+    private void init() {
+        regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult getFeatureClasses(Query query, String species, String assembly) {
-        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
-        CellBaseDataResult queryResults = regulationDBAdaptor.distinct(query, "featureClass");
-        return queryResults;
+
+    public CellBaseDataResult getFeatureTypes(Query query) {
+        return regulationDBAdaptor.distinct(query, "featureType");
     }
 
-    public CellBaseDataResult search(Query query, QueryOptions queryOptions, String species, String assembly) {
-        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
-        CellBaseDataResult queryResults = regulationDBAdaptor.nativeGet(query, queryOptions);
-        return queryResults;
+    public CellBaseDataResult getFeatureClasses(Query query) {
+        return regulationDBAdaptor.distinct(query, "featureClass");
     }
 
-    public List<CellBaseDataResult> getByRegions(Query query, QueryOptions queryOptions, String species,
-                                                 String assembly, String regions) {
-        RegulationDBAdaptor regRegionDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+    public CellBaseDataResult search(Query query, QueryOptions queryOptions) {
+        return regulationDBAdaptor.nativeGet(query, queryOptions);
+    }
+
+    public List<CellBaseDataResult> getByRegions(Query query, QueryOptions queryOptions, String regions) {
         List<Query> queries = createQueries(query, regions, RegulationDBAdaptor.QueryParams.REGION.key());
-        List<CellBaseDataResult> queryResults = regRegionDBAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
         }
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getAllByTfbs(Query query, QueryOptions queryOptions, String species,
-                                                   String assembly, String tf) {
-        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
+    public List<CellBaseDataResult> getAllByTfbs(Query query, QueryOptions queryOptions, String tf) {
         List<Query> queries = createQueries(query, tf, RegulationDBAdaptor.QueryParams.NAME.key(),
                 RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                         + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
@@ -73,10 +71,7 @@ public class RegulatoryManager extends AbstractManager {
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getTfByRegions(Query query, QueryOptions queryOptions, String species,
-                   String assembly, String regions) {
-        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
-
+    public List<CellBaseDataResult> getTfByRegions(Query query, QueryOptions queryOptions, String regions) {
         if (hasHistogramQueryParam(queryOptions)) {
             List<Query> queries = createQueries(query, regions, GeneDBAdaptor.QueryParams.REGION.key());
             List<CellBaseDataResult> queryResults = regulationDBAdaptor.getIntervalFrequencies(queries,

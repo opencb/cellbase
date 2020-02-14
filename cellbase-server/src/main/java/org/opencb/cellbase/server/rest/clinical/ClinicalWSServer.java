@@ -52,7 +52,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
                                 @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-        clinicalManager = cellBaseManagers.getClinicalManager();
+        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
     }
 
     @GET
@@ -97,7 +97,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query, queryOptions, species, assembly);
+            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

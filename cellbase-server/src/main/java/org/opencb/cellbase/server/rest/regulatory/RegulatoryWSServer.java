@@ -48,7 +48,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                               @Context UriInfo uriInfo,
                               @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-        regulatoryManager = cellBaseManagers.getRegulatoryManager();
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
     }
 
     @GET
@@ -69,7 +69,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureTypes() {
         try {
             parseQueryParams();
-            CellBaseDataResult queryResults = regulatoryManager.getFeatureTypes(query, species, assembly);
+            CellBaseDataResult queryResults = regulatoryManager.getFeatureTypes(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -93,7 +93,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureClasses() {
         try {
             parseQueryParams();
-            CellBaseDataResult queryResults = regulatoryManager.getFeatureClasses(query, species, assembly);
+            CellBaseDataResult queryResults = regulatoryManager.getFeatureClasses(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -138,7 +138,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult queryResults = regulatoryManager.search(query, queryOptions, species, assembly);
+            CellBaseDataResult queryResults = regulatoryManager.search(query, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -58,13 +58,13 @@ public class RegionWSServer extends GenericRestWSServer {
                           @Context UriInfo uriInfo,
                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-        geneManager = cellBaseManagers.getGeneManager();
-        variantManager = cellBaseManagers.getVariantManager();
-        genomeManager = cellBaseManagers.getGenomeManager();
-        transcriptManager = cellBaseManagers.getTranscriptManager();
-        clinicalManager = cellBaseManagers.getClinicalManager();
-        regulatoryManager = cellBaseManagers.getRegulatoryManager();
-        repeatsManager = cellBaseManagers.getRepeatsManager();
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+        clinicalManager = cellBaseManagerFactory.getClinicalManager(species, assembly);
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+        repeatsManager = cellBaseManagerFactory.getRepeatsManager(species, assembly);
     }
 
     @GET
@@ -159,16 +159,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getGenesByRegion(@PathParam("regions")
-                                     @ApiParam(name = "regions",
-                                             value = ParamConstants.REGION_DESCRIPTION,
+    public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                              required = true) String region,
-                                     @QueryParam("exclude")
-                                     @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                     @QueryParam("include")
-                                         @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                     @QueryParam("sort")
-                                         @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                     @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                     @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                     @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                                      @QueryParam("limit") @DefaultValue("10")
                                          @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                                      @QueryParam("skip") @DefaultValue("0")
@@ -177,13 +172,12 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByRegion(query, queryOptions, species, assembly, region);
+            List<CellBaseDataResult> queryResults = geneManager.getByRegion(query, queryOptions, region);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
-
 
     @GET
     @Path("/{regions}/transcript")
@@ -217,7 +211,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = transcriptManager.getByRegion(query, queryOptions, species, assembly, region);
+            List<CellBaseDataResult> queryResults = transcriptManager.getByRegion(query, queryOptions, region);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -228,15 +222,11 @@ public class RegionWSServer extends GenericRestWSServer {
     @Path("/{regions}/repeat")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all repeats for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
-    public Response getRepeatByRegion(@PathParam("regions")
-                                          @ApiParam(name = "regions",
+    public Response getRepeatByRegion(@PathParam("regions") @ApiParam(name = "regions",
                                                   value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
-                                      @QueryParam("exclude")
-                                      @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                      @QueryParam("include")
-                                          @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                      @QueryParam("sort")
-                                          @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                      @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                      @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                      @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                                       @QueryParam("limit") @DefaultValue("10")
                                           @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                                       @QueryParam("skip") @DefaultValue("0")
@@ -245,7 +235,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = repeatsManager.getByRegion(query, queryOptions, species, assembly, region);
+            List<CellBaseDataResult> queryResults = repeatsManager.getByRegion(query, queryOptions, region);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -295,29 +285,29 @@ public class RegionWSServer extends GenericRestWSServer {
             if (!variantManager.validateRegionInput(regions)) {
                 return createErrorResponse("getVariationByRegion", "Regions must be smaller than 10Mb");
             }
-            List<CellBaseDataResult> queryResults = variantManager.getByRegion(query, queryOptions, species, assembly, regions);
+            List<CellBaseDataResult> queryResults = variantManager.getByRegion(query, queryOptions, regions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Deprecated
-    @Path("/{regions}/snp")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects", hidden = true)
-    public Response getSnpByRegion(@PathParam("regions") String region,
-                                   @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
-                                   @DefaultValue("") @QueryParam("phenotype") String phenotype,
-                                   @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                   @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                   @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                   @QueryParam("limit") @DefaultValue("10")
-                                       @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                   @QueryParam("skip") @DefaultValue("0")
-                                       @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
-        return getVariationByRegion(region, exclude, include, sort, limit, skip);
-    }
+//    @GET
+//    @Deprecated
+//    @Path("/{regions}/snp")
+//    @ApiOperation(httpMethod = "GET", value = "Retrieves all SNP objects", hidden = true)
+//    public Response getSnpByRegion(@PathParam("regions") String region,
+//                                   @DefaultValue("") @QueryParam("consequence_type") String consequenceTypes,
+//                                   @DefaultValue("") @QueryParam("phenotype") String phenotype,
+//                                   @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+//                                   @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+//                                   @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+//                                   @QueryParam("limit") @DefaultValue("10")
+//                                       @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+//                                   @QueryParam("skip") @DefaultValue("0")
+//                                       @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+//        return getVariationByRegion(region, exclude, include, sort, limit, skip);
+//    }
 
 
     @GET
@@ -333,12 +323,10 @@ public class RegionWSServer extends GenericRestWSServer {
         try {
             parseQueryParams();
             if (regions.contains(",")) {
-                List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(queryOptions, species, assembly,
-                        regions);
+                List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(queryOptions, regions);
                 return createOkResponse(queryResults);
             } else {
-                CellBaseDataResult<GenomeSequenceFeature> queryResults = genomeManager.getByRegion(query, queryOptions, species, assembly,
-                        regions, strand);
+                CellBaseDataResult<GenomeSequenceFeature> queryResults = genomeManager.getByRegion(query, queryOptions, regions, strand);
                 return createOkResponse(queryResults);
             }
         } catch (Exception e) {
@@ -396,7 +384,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult queryResult = clinicalManager.getByRegion(query, queryOptions, species, assembly, regions);
+            CellBaseDataResult queryResult = clinicalManager.getByRegion(query, queryOptions, regions);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -434,7 +422,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = regulatoryManager.getByRegions(query, queryOptions, species, assembly, regions);
+            List<CellBaseDataResult> queryResults = regulatoryManager.getByRegions(query, queryOptions, regions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -452,15 +440,11 @@ public class RegionWSServer extends GenericRestWSServer {
             + "region will be returned in independent QueryResult objects within the QueryResponse object."
             + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
             responseContainer = "QueryResponse")
-    public Response getTfByRegion(@PathParam("regions")
-                                  @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getTfByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                           required = false) String regions,
-                                  @QueryParam("exclude")
-                                  @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                  @QueryParam("include")
-                                      @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                  @QueryParam("sort")
-                                      @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                                  @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                  @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                  @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
                                   @QueryParam("limit") @DefaultValue("10")
                                       @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
                                   @QueryParam("skip") @DefaultValue("0")
@@ -469,7 +453,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = regulatoryManager.getTfByRegions(query, queryOptions, species, assembly, regions);
+            List<CellBaseDataResult> queryResults = regulatoryManager.getTfByRegions(query, queryOptions, regions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -485,8 +469,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                          required = true) String regions) {
         try {
             parseQueryParams();
-            List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults = genomeManager.getConservation(query, queryOptions, species,
-                    assembly, regions);
+            List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults = genomeManager.getConservation(queryOptions, regions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

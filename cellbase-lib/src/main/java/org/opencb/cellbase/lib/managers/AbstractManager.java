@@ -31,7 +31,7 @@ import java.util.List;
 public class AbstractManager {
 
     protected CellBaseConfiguration configuration;
-    protected CellBaseManagers managers;
+    protected CellBaseManagerFactory managers;
     protected DBAdaptorFactory dbAdaptorFactory;
     protected static ObjectWriter jsonObjectWriter;
 
@@ -62,7 +62,7 @@ public class AbstractManager {
     }
 
     private void init() {
-        managers = new CellBaseManagers(this.configuration);
+        managers = new CellBaseManagerFactory(this.configuration);
         dbAdaptorFactory = new MongoDBAdaptorFactory(this.configuration);
 
         logger = LoggerFactory.getLogger(this.getClass());

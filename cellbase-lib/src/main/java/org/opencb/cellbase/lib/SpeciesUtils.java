@@ -112,6 +112,23 @@ public class SpeciesUtils {
     }
 
     /**
+     * Get the default assembly for species. Is naive and just gets the first one. Order not guaranteed, don't rely on this at all.
+     *
+     * @param species name of species
+     * @return the default assembly
+     * @throws CellbaseException if the species has no associated assembly
+     */
+    public static SpeciesConfiguration.Assembly getDefaultAssembly(CellBaseConfiguration configuration, String species)
+    throws CellbaseException {
+        SpeciesConfiguration speciesConfiguration = getSpeciesConfiguration(configuration, species);
+        List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
+        if (assemblies == null || assemblies.isEmpty()) {
+            throw new CellbaseException("Species has no associated assembly " + speciesConfiguration.getScientificName());
+        }
+        return assemblies.get(0);
+    }
+
+    /**
      * Formats the species name, e.g. Homo sapiens to hsapiens. Used in the download for the species directory.
      *
      * @param speciesConfiguration configuration entry for this species

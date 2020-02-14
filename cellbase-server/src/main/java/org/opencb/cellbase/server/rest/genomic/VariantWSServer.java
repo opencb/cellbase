@@ -58,7 +58,7 @@ public class VariantWSServer extends GenericRestWSServer {
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
 
-        variantManager = cellBaseManagers.getVariantManager();
+        variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
     }
 
     @GET
@@ -69,19 +69,19 @@ public class VariantWSServer extends GenericRestWSServer {
         return createModelResponse(Variant.class);
     }
 
-    @GET
-    @Path("/{phenotype}/phenotype")
-    @ApiOperation(httpMethod = "GET",
-            value = "Not implemented yet",
-            response = CellBaseDataResponse.class, hidden = true)
-    public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
-        try {
-            parseQueryParams();
-            return Response.ok("Not implemented").build();
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{phenotype}/phenotype")
+//    @ApiOperation(httpMethod = "GET",
+//            value = "Not implemented yet",
+//            response = CellBaseDataResponse.class, hidden = true)
+//    public Response getVariantsByPhenotype(@PathParam("phenotype") String phenotype) {
+//        try {
+//            parseQueryParams();
+//            return Response.ok("Not implemented").build();
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @POST
     @Consumes("text/plain")
@@ -222,47 +222,45 @@ public class VariantWSServer extends GenericRestWSServer {
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
 
-            List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(queryOptions, species,
-                    assembly, variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding);
+            List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(queryOptions, variants,
+                    normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
+//    @GET
+//    @Deprecated
+//    @Path("/{variants}/cadd")
+//    @ApiOperation(httpMethod = "GET", value = "Get CADD scores for a (list of) variant(s)", response = Score.class,
+//            responseContainer = "QueryResponse", hidden = true)
+//    public Response getCaddScoreByVariant(@PathParam("variants")
+//                                          @ApiParam(name = "variants", value = "Comma separated list of variants for"
+//                                                  + "which CADD socores will be returned, e.g. "
+//                                                  + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
+//                                                  + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
+//                                                    required = true) String variants) {
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//
+//            List<CellBaseDataResult<Score>> functionalScoreVariant =
+//                    variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);
+//            return createOkResponse(functionalScoreVariant);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
-
-    @GET
-    @Deprecated
-    @Path("/{variants}/cadd")
-    @ApiOperation(httpMethod = "GET", value = "Get CADD scores for a (list of) variant(s)", response = Score.class,
-            responseContainer = "QueryResponse", hidden = true)
-    public Response getCaddScoreByVariant(@PathParam("variants")
-                                          @ApiParam(name = "variants", value = "Comma separated list of variants for"
-                                                  + "which CADD socores will be returned, e.g. "
-                                                  + "19:45411941:T:C,14:38679764:-:GATCTG,1:6635210:G:-,"
-                                                  + "2:114340663:GCTGGGCATCCT:ACTGGGCATCCT",
-                                                    required = true) String variants) {
-        try {
-            parseQueryParams();
-            VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-
-            List<CellBaseDataResult<Score>> functionalScoreVariant =
-                    variantDBAdaptor.getFunctionalScoreVariant(Variant.parseVariants(variants), queryOptions);
-            return createOkResponse(functionalScoreVariant);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/stats")
-    @Override
-    @ApiOperation(httpMethod = "GET", value = "Not implemented yet.",
-            response = Integer.class, responseContainer = "QueryResponse", hidden = true)
-    public Response stats() {
-        return super.stats();
-    }
+//    @GET
+//    @Path("/stats")
+//    @Override
+//    @ApiOperation(httpMethod = "GET", value = "Not implemented yet.",
+//            response = Integer.class, responseContainer = "QueryResponse", hidden = true)
+//    public Response stats() {
+//        return super.stats();
+//    }
 
     @GET
     @Path("/{id}/info")
@@ -296,7 +294,7 @@ public class VariantWSServer extends GenericRestWSServer {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, species, assembly, id);
+            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -340,31 +338,31 @@ public class VariantWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult queryResults = variantManager.search(query, queryOptions, species, assembly);
+            CellBaseDataResult queryResults = variantManager.search(query, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/{id}/next")
-    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP", hidden = true)
-    public Response getNextById(@PathParam("id")
-                                @ApiParam(name = "id",
-                                        value = "Rs id, e.g.: rs6025",
-                                        required = true) String id) {
-        try {
-            parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
-            CellBaseDataResult queryResult = variationDBAdaptor.next(query, queryOptions);
-            queryResult.setId(id);
-            return createOkResponse(queryResult);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{id}/next")
+//    @ApiOperation(httpMethod = "GET", value = "Get information about the next SNP", hidden = true)
+//    public Response getNextById(@PathParam("id")
+//                                @ApiParam(name = "id",
+//                                        value = "Rs id, e.g.: rs6025",
+//                                        required = true) String id) {
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//            query.put(VariantDBAdaptor.QueryParams.ID.key(), id.split(",")[0]);
+//            CellBaseDataResult queryResult = variationDBAdaptor.next(query, queryOptions);
+//            queryResult.setId(id);
+//            return createOkResponse(queryResult);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/consequenceTypes")
@@ -381,57 +379,57 @@ public class VariantWSServer extends GenericRestWSServer {
     }
 
     // FIXME: 29/04/16 GET and POST web services to be fixed
-    @GET
-    @Path("/{variants}/consequenceType")
-    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the variant(s)", response = String.class,
-            responseContainer = "QueryResponse")
-    public Response getConsequenceTypeByGetMethod(@PathParam("variants") String variants) {
-        return getConsequenceType(variants);
-    }
-
-    private Response getConsequenceType(String variants) {
-        try {
-            parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            query.put(VariantDBAdaptor.QueryParams.ID.key(), variants);
-            queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
-            CellBaseDataResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
-            CellBaseDataResult queryResult1 = new CellBaseDataResult<>(
-                    queryResult.getId(), queryResult.getTime(), queryResult.getEvents(), queryResult.getNumResults(),
-                    Collections.singletonList(queryResult.getResults().get(0).getAnnotation().getDisplayConsequenceType()), 1);
-            return createOkResponse(queryResult1);
-        } catch (Exception e) {
-            return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
-        }
-    }
+//    @GET
+//    @Path("/{variants}/consequenceType")
+//    @ApiOperation(httpMethod = "GET", value = "Get the biological impact of the variant(s)", response = String.class,
+//            responseContainer = "QueryResponse")
+//    public Response getConsequenceTypeByGetMethod(@PathParam("variants") String variants) {
+//        return getConsequenceType(variants);
+//    }
+//
+//    private Response getConsequenceType(String variants) {
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//            query.put(VariantDBAdaptor.QueryParams.ID.key(), variants);
+//            queryOptions.put(QueryOptions.INCLUDE, "annotation.displayConsequenceType");
+//            CellBaseDataResult<Variant> queryResult = variationDBAdaptor.get(query, queryOptions);
+//            CellBaseDataResult queryResult1 = new CellBaseDataResult<>(
+//                    queryResult.getId(), queryResult.getTime(), queryResult.getEvents(), queryResult.getNumResults(),
+//                    Collections.singletonList(queryResult.getResults().get(0).getAnnotation().getDisplayConsequenceType()), 1);
+//            return createOkResponse(queryResult1);
+//        } catch (Exception e) {
+//            return createErrorResponse("getConsequenceTypeByPostMethod", e.toString());
+//        }
+//    }
 
     // FIXME: 29/04/16 GET and POST methods to be fixed
-    @GET
-    @Path("/{variants}/regulatory")
-    @ApiOperation(httpMethod = "GET", value = "Get the regulatory impact of the variant(s)", hidden = true)
-    public Response getRegulatoryByGetMethod(@PathParam("variants") String variants) {
-        return getRegulatoryType(variants);
-    }
+//    @GET
+//    @Path("/{variants}/regulatory")
+//    @ApiOperation(httpMethod = "GET", value = "Get the regulatory impact of the variant(s)", hidden = true)
+//    public Response getRegulatoryByGetMethod(@PathParam("variants") String variants) {
+//        return getRegulatoryType(variants);
+//    }
+//
+//    private Response getRegulatoryType(String variants) {
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//            return null;
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
-    private Response getRegulatoryType(String variants) {
-        try {
-            parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            return null;
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/{variants}/sequence")
-    @ApiOperation(httpMethod = "GET", value = "Get the adjacent sequence to the SNP(s) - Not yet implemented",
-            hidden = true)
-    public Response getSequence(@PathParam("variants") String query) {
-        try {
-            return null;
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{variants}/sequence")
+//    @ApiOperation(httpMethod = "GET", value = "Get the adjacent sequence to the SNP(s) - Not yet implemented",
+//            hidden = true)
+//    public Response getSequence(@PathParam("variants") String query) {
+//        try {
+//            return null;
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 }

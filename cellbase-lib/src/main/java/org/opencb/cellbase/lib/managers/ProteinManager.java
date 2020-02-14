@@ -33,37 +33,39 @@ import java.util.Map;
 
 public class ProteinManager extends AbstractManager {
 
-    public ProteinManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    private ProteinDBAdaptor proteinDBAdaptor;
+    private TranscriptDBAdaptor transcriptDBAdaptor;
+
+    public ProteinManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public CellBaseDataResult<Protein> search(Query query, QueryOptions queryOptions, String species, String assembly) {
-        logger.debug("Searching proteins");
-        ProteinDBAdaptor dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
-        return dbAdaptor.nativeGet(query, queryOptions);
+    private void init() {
+        proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+        transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult<Protein> groupBy(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
-        logger.debug("Querying for groupby");
-        ProteinDBAdaptor dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
-        return dbAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+    public CellBaseDataResult<Protein> search(Query query, QueryOptions queryOptions) {
+        return proteinDBAdaptor.nativeGet(query, queryOptions);
     }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String id) {
-        logger.debug("Querying for protein info");
-        ProteinDBAdaptor dbAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+    public CellBaseDataResult<Protein> groupBy(Query query, QueryOptions queryOptions, String fields) {
+        return proteinDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+    }
+
+    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
         List<Query> queries = createQueries(query, id, ProteinDBAdaptor.QueryParams.XREFS.key());
-        List<CellBaseDataResult> queryResults = dbAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
         }
         return queryResults;
     }
 
-    public CellBaseDataResult getSubstitutionScores(Query query, QueryOptions queryOptions, String species, String assembly, String id)
+    public CellBaseDataResult getSubstitutionScores(Query query, QueryOptions queryOptions, String id)
             throws JsonProcessingException {
         // Fetch Ensembl transcriptId to query substiturion scores
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
         logger.info("Searching transcripts for protein {}", id);
         Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
         QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
@@ -76,7 +78,6 @@ public class ProteinManager extends AbstractManager {
             query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
             logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
             logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
-            ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
             CellBaseDataResult scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
             scoresCellBaseDataResult.setId(id);
             return scoresCellBaseDataResult;
@@ -85,12 +86,9 @@ public class ProteinManager extends AbstractManager {
         }
     }
 
-    public CellBaseDataResult<String> getSequence(Query query, QueryOptions queryOptions, String species, String assembly,
-                                                  String proteins) {
-        ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
+    public CellBaseDataResult<String> getSequence(Query query, QueryOptions queryOptions, String proteins) {
         query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteins);
         queryOptions.put("include", "sequence.value");
-        // split by comma
         CellBaseDataResult<Entry> queryResult = proteinDBAdaptor.get(query, queryOptions);
         CellBaseDataResult<String> queryResult1 = new CellBaseDataResult<>(queryResult.getId(), queryResult.getTime(),
                 queryResult.getEvents(), queryResult.getNumResults(), Collections.emptyList(), 1);

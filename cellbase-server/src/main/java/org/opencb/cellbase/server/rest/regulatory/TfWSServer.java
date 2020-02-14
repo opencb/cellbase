@@ -54,8 +54,8 @@ public class TfWSServer extends RegulatoryWSServer {
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
 
-        regulatoryManager = cellBaseManagers.getRegulatoryManager();
-        geneManager = cellBaseManagers.getGeneManager();
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager();
+        geneManager = cellBaseManagerFactory.getGeneManager();
     }
 
     @GET

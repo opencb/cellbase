@@ -43,29 +43,32 @@ public class VariantManager extends AbstractManager {
             + ":[(cipos_left)<](start)[<(cipos_right)]" + "[-[(ciend_left)<](end)[<(ciend_right)]]"
             + "[:(ref)]"
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
+    private VariantDBAdaptor variantDBAdaptor;
 
-    public VariantManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    public VariantManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String id) {
+    private void init() {
+        variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+    }
+
+    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
         logger.debug("Querying for variant info");
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
         List<Query> queries = createQueries(query, id, VariantDBAdaptor.QueryParams.ID.key());
-        List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
         }
         return queryResults;
     }
 
-    public CellBaseDataResult search(Query query, QueryOptions queryOptions, String species, String assembly) {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
-        CellBaseDataResult queryResults = variationDBAdaptor.nativeGet(query, queryOptions);
-        return queryResults;
+    public CellBaseDataResult search(Query query, QueryOptions queryOptions) {
+        return variantDBAdaptor.nativeGet(query, queryOptions);
     }
 
-    public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariant(QueryOptions queryOptions, String species, String assembly,
+    public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariant(QueryOptions queryOptions,
                                                                               String variants,
                                                                               Boolean normalize,
                                                                               Boolean skipDecompose,
@@ -183,11 +186,10 @@ public class VariantManager extends AbstractManager {
         return true;
     }
 
-    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String regions) {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String regions) {
         if (hasHistogramQueryParam(queryOptions)) {
             List<Query> queries = createQueries(query, regions, GeneDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = variationDBAdaptor.getIntervalFrequencies(queries,
+            List<CellBaseDataResult> queryResults = variantDBAdaptor.getIntervalFrequencies(queries,
                     getHistogramIntervalSize(queryOptions), queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId(queries.get(i).getString(GeneDBAdaptor.QueryParams.REGION.key()));
@@ -198,7 +200,7 @@ public class VariantManager extends AbstractManager {
             logger.debug("query = " + query.toJson());
             logger.debug("queryOptions = " + queryOptions.toJson());
             List<Query> queries = createQueries(query, regions, VariantDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = variationDBAdaptor.nativeGet(queries, queryOptions);
+            List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
             for (int i = 0; i < queries.size(); i++) {
                 queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
             }

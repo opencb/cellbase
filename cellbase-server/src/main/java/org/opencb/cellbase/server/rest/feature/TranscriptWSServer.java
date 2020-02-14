@@ -21,8 +21,6 @@ import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GeneManager;
@@ -31,7 +29,6 @@ import org.opencb.cellbase.lib.managers.TranscriptManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.Query;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -64,9 +61,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
 
-        transcriptManager = cellBaseManagers.getTranscriptManager();
-        geneManager = cellBaseManagers.getGeneManager();
-        proteinManager = cellBaseManagers.getProteinManager();
+        transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
     }
 
     @GET
@@ -77,52 +74,52 @@ public class TranscriptWSServer extends GenericRestWSServer {
         return createModelResponse(Transcript.class);
     }
 
-    @GET
-    @Path("/first")
-    @Override
-    @Deprecated
-    @ApiOperation(httpMethod = "GET", value = "Get the first transcript in the database", response = Transcript.class,
-        responseContainer = "QueryResponse", hidden = true)
-    public Response first() throws Exception {
-        parseQueryParams();
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-        return createOkResponse(transcriptDBAdaptor.first(queryOptions));
-    }
+//    @GET
+//    @Path("/first")
+//    @Override
+//    @Deprecated
+//    @ApiOperation(httpMethod = "GET", value = "Get the first transcript in the database", response = Transcript.class,
+//        responseContainer = "QueryResponse", hidden = true)
+//    public Response first() throws Exception {
+//        parseQueryParams();
+//        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+//        return createOkResponse(transcriptDBAdaptor.first(queryOptions));
+//    }
 
-    @GET
-    @Path("/count")
-    @Deprecated
-    @ApiOperation(httpMethod = "GET", value = "Get the number of transcripts in the database", response = Integer.class,
-        responseContainer = "QueryResponse", hidden = true)
-    public Response count(@DefaultValue("")
-                          @QueryParam("region")
-                          @ApiParam(name = "region",
-                                  value = ParamConstants.REGION_DESCRIPTION,
-                                  required = false) String region,
-                          @DefaultValue("")
-                          @QueryParam("biotype")
-                          @ApiParam(name = "biotype",
-                                  value = ParamConstants.GENE_BIOTYPES,
-                                  required = false) String biotype,
-                          @DefaultValue("")
-                          @QueryParam("xrefs")
-                          @ApiParam(name = "xrefs",
-                                  value = ParamConstants.TRANSCRIPT_XREFS,
-                                  required = false) String xrefs) throws Exception {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
-        query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
-        query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
-        query.append(TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
-        return createOkResponse(transcriptDBAdaptor.count(query));
-    }
+//    @GET
+//    @Path("/count")
+//    @Deprecated
+//    @ApiOperation(httpMethod = "GET", value = "Get the number of transcripts in the database", response = Integer.class,
+//        responseContainer = "QueryResponse", hidden = true)
+//    public Response count(@DefaultValue("")
+//                          @QueryParam("region")
+//                          @ApiParam(name = "region",
+//                                  value = ParamConstants.REGION_DESCRIPTION,
+//                                  required = false) String region,
+//                          @DefaultValue("")
+//                          @QueryParam("biotype")
+//                          @ApiParam(name = "biotype",
+//                                  value = ParamConstants.GENE_BIOTYPES,
+//                                  required = false) String biotype,
+//                          @DefaultValue("")
+//                          @QueryParam("xrefs")
+//                          @ApiParam(name = "xrefs",
+//                                  value = ParamConstants.TRANSCRIPT_XREFS,
+//                                  required = false) String xrefs) throws Exception {
+//        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(this.species, this.assembly);
+//        query.append(TranscriptDBAdaptor.QueryParams.REGION.key(), region);
+//        query.append(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), biotype);
+//        query.append(TranscriptDBAdaptor.QueryParams.XREFS.key(), xrefs);
+//        return createOkResponse(transcriptDBAdaptor.count(query));
+//    }
 
-    @GET
-    @Path("/stats")
-    @Override
-    @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
-    public Response stats() {
-        return super.stats();
-    }
+//    @GET
+//    @Path("/stats")
+//    @Override
+//    @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
+//    public Response stats() {
+//        return super.stats();
+//    }
 
     @GET
     @Path("/{transcripts}/info")
@@ -130,7 +127,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("transcriptId") String id) {
         try {
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, species, assembly, id);
+            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -175,7 +172,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByTranscript(query, queryOptions, species, assembly, id);
+            List<CellBaseDataResult> queryResults = geneManager.getByTranscript(query, queryOptions, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -215,7 +212,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query, queryOptions, species, assembly);
+            CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query, queryOptions);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -224,23 +221,23 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     // FIXME: 28/04/16 must look for the transcript id within the consequence type object. Requires previous loading of
     // the annoation into th evariation collection
-    @GET
-    @Path("/{transcripts}/variation")
-    @ApiOperation(httpMethod = "GET", value = "To be fixed", hidden = true)
-    public Response getVariationsBytranscripts(@PathParam("transcripts") String id) {
-        try {
-            parseQueryParams();
-            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(id, TranscriptDBAdaptor.QueryParams.XREFS.key());
-            List<CellBaseDataResult> queryResultList = variationDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResultList.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
-            }
-            return createOkResponse(queryResultList);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{transcripts}/variation")
+//    @ApiOperation(httpMethod = "GET", value = "To be fixed", hidden = true)
+//    public Response getVariationsBytranscripts(@PathParam("transcripts") String id) {
+//        try {
+//            parseQueryParams();
+//            VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(this.species, this.assembly);
+//            List<Query> queries = createQueries(id, TranscriptDBAdaptor.QueryParams.XREFS.key());
+//            List<CellBaseDataResult> queryResultList = variationDBAdaptor.nativeGet(queries, queryOptions);
+//            for (int i = 0; i < queries.size(); i++) {
+//                queryResultList.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
+//            }
+//            return createOkResponse(queryResultList);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/{transcripts}/sequence")
@@ -250,7 +247,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             required = true) String id) {
         try {
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = transcriptManager.getSequence(species, assembly, id);
+            List<CellBaseDataResult> queryResults = transcriptManager.getSequence(id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -276,7 +273,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, species, assembly, transcripts);
+            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, transcripts);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -312,7 +309,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                                 required = true) String id) {
         try {
             parseQueryParams();
-            CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, queryOptions, species, assembly, id);
+            CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, queryOptions, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

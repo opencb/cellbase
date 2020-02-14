@@ -89,7 +89,7 @@ public class GenericRestWSServer implements IWSServer {
     protected CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
 
 
-    protected CellBaseManagerFactory cellBaseManagers;
+    protected CellBaseManagerFactory cellBaseManagerFactory;
     protected Monitor monitor;
 
     private static final int SKIP_DEFAULT = 0;
@@ -156,7 +156,7 @@ public class GenericRestWSServer implements IWSServer {
             logger.debug("CELLBASE_HOME set to: {}", cellbaseHome);
 
             cellBaseConfiguration = CellBaseConfiguration.load(Paths.get(cellbaseHome).resolve("conf").resolve("configuration.yml"));
-            cellBaseManagers = new CellBaseManagerFactory(cellBaseConfiguration);
+            cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 
             // Initialize Monitor
             monitor = new Monitor(dbAdaptorFactory);

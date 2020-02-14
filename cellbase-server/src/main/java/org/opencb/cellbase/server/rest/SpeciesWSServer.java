@@ -55,7 +55,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
                            @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException,
             CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-        genomeManager = cellBaseManagers.getGenomeManager();
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }
 
     @GET
@@ -68,7 +68,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            CellBaseDataResult queryResult = genomeManager.info(queryOptions, species, assembly);
+            CellBaseDataResult queryResult = genomeManager.info(queryOptions);
             return createOkResponse(queryResult);
         } catch (MongoException | CellbaseException e) {
             e.printStackTrace();

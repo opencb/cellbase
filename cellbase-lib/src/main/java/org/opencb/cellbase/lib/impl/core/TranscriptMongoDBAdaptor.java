@@ -129,7 +129,6 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
-
     }
 
     @Override

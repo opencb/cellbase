@@ -29,14 +29,18 @@ import java.util.List;
 
 public class XrefManager extends AbstractManager {
 
-    public XrefManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    private XRefDBAdaptor xRefDBAdaptor;
+
+    public XrefManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public List<CellBaseDataResult<Document>> info(Query query, QueryOptions queryOptions, String species, String assembly, String id) {
-        logger.debug("Querying for Xref info");
-        XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(species, assembly);
+    private void init() {
+        xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(species, assembly);
+    }
 
+    public List<CellBaseDataResult<Document>> info(Query query, QueryOptions queryOptions, String id) {
         List<String> list = Splitter.on(",").splitToList(id);
         List<Query> queries = createQueries(query, id, XRefDBAdaptor.QueryParams.ID.key());
 
@@ -55,10 +59,7 @@ public class XrefManager extends AbstractManager {
         return dbNameList;
     }
 
-    public CellBaseDataResult getAllXrefsByFeatureId(QueryOptions queryOptions, String species, String assembly, String ids,
-                                                     String dbname) {
-        XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(species, assembly);
-
+    public CellBaseDataResult getAllXrefsByFeatureId(QueryOptions queryOptions, String ids, String dbname) {
         Query query = new Query();
         query.put(XRefDBAdaptor.QueryParams.ID.key(), ids);
         if (dbname != null && !dbname.isEmpty()) {
@@ -69,9 +70,7 @@ public class XrefManager extends AbstractManager {
         return queryResult;
     }
 
-    public CellBaseDataResult getDBNames(Query query, String species, String assembly) {
-        XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(species, assembly);
-        CellBaseDataResult queryResults = xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
-        return queryResults;
+    public CellBaseDataResult getDBNames(Query query) {
+        return xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
     }
 }

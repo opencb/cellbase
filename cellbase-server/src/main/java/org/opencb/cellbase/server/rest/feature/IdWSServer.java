@@ -61,8 +61,8 @@ public class IdWSServer extends GenericRestWSServer {
             SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
 
-        xrefManager = cellBaseManagers.getXrefManager();
-        geneManager = cellBaseManagers.getGeneManager();
+        xrefManager = cellBaseManagerFactory.getXrefManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
     }
 
     @GET
@@ -84,7 +84,7 @@ public class IdWSServer extends GenericRestWSServer {
                                                + "text matches will be returned.", required = true) String id) {
         try {
             parseQueryParams();
-            List<CellBaseDataResult<Document>> queryResults = xrefManager.info(query, queryOptions, species, assembly, id);
+            List<CellBaseDataResult<Document>> queryResults = xrefManager.info(query, queryOptions, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -107,48 +107,48 @@ public class IdWSServer extends GenericRestWSServer {
                                                    + "getDBNames", required = false) String dbname) {
         try {
             parseQueryParams();
-            CellBaseDataResult queryResults = xrefManager.getAllXrefsByFeatureId(queryOptions, species, assembly, ids, dbname);
+            CellBaseDataResult queryResults = xrefManager.getAllXrefsByFeatureId(queryOptions, ids, dbname);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/{id}/startsWith")
-    @ApiOperation(httpMethod = "GET", value = "Get the gene HGNC symbols of genes for which there is an Xref id that "
-            + "matches the beginning of the given string", response = Map.class, responseContainer = "QueryResponse")
-    public Response getByLikeQuery(@PathParam("id")
-                                   @ApiParam(name = "id", value = "One single string to be matched at the beginning of"
-                                           + " the Xref id", required = true) String id) {
-        try {
-            parseQueryParams();
-            XRefDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            CellBaseDataResult queryResult = x.startsWith(id, queryOptions);
-            queryResult.setId(id);
-            return createOkResponse(queryResult);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{id}/startsWith")
+//    @ApiOperation(httpMethod = "GET", value = "Get the gene HGNC symbols of genes for which there is an Xref id that "
+//            + "matches the beginning of the given string", response = Map.class, responseContainer = "QueryResponse")
+//    public Response getByLikeQuery(@PathParam("id")
+//                                   @ApiParam(name = "id", value = "One single string to be matched at the beginning of"
+//                                           + " the Xref id", required = true) String id) {
+//        try {
+//            parseQueryParams();
+//            XRefDBAdaptor x = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
+//            CellBaseDataResult queryResult = x.startsWith(id, queryOptions);
+//            queryResult.setId(id);
+//            return createOkResponse(queryResult);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
-    @GET
-    @Path("/{id}/contains")
-    @ApiOperation(httpMethod = "GET", value = "Get gene HGNC symbols for which there is an Xref id containing the given "
-            + "string", response = Map.class, responseContainer = "QueryResponse")
-    public Response getByContainsQuery(@PathParam("id")
-                                       @ApiParam(name = "id", value = "Comma separated list of strings to "
-                                               + "be contained within the xref id, e.g.: BRCA2", required = true) String id) {
-        try {
-            parseQueryParams();
-            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
-            CellBaseDataResult xrefs = xRefDBAdaptor.contains(id, queryOptions);
-            xrefs.setId(id);
-            return createOkResponse(xrefs);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{id}/contains")
+//    @ApiOperation(httpMethod = "GET", value = "Get gene HGNC symbols for which there is an Xref id containing the given "
+//            + "string", response = Map.class, responseContainer = "QueryResponse")
+//    public Response getByContainsQuery(@PathParam("id")
+//                                       @ApiParam(name = "id", value = "Comma separated list of strings to "
+//                                               + "be contained within the xref id, e.g.: BRCA2", required = true) String id) {
+//        try {
+//            parseQueryParams();
+//            XRefDBAdaptor xRefDBAdaptor = dbAdaptorFactory.getXRefDBAdaptor(this.species, this.assembly);
+//            CellBaseDataResult xrefs = xRefDBAdaptor.contains(id, queryOptions);
+//            xrefs.setId(id);
+//            return createOkResponse(xrefs);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/{id}/gene")
@@ -173,7 +173,7 @@ public class IdWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getGeneByEnsemblId(queryOptions, species, assembly, id);
+            List<CellBaseDataResult> queryResults = geneManager.getGeneByEnsemblId(queryOptions, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -187,7 +187,7 @@ public class IdWSServer extends GenericRestWSServer {
     public Response getDBNames() {
         try {
             parseQueryParams();
-            CellBaseDataResult queryResults = xrefManager.getDBNames(query, species, assembly);
+            CellBaseDataResult queryResults = xrefManager.getDBNames(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

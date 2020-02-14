@@ -16,12 +16,10 @@
 
 package org.opencb.cellbase.server.rest.feature;
 
-import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.forester.protein.Protein;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.ProteinManager;
@@ -54,7 +52,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-        proteinManager = cellBaseManagers.getProteinManager();
+        proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
     }
 
     @GET
@@ -73,19 +71,15 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfoByEnsemblId(@PathParam("proteins")
-                                       @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
+    public Response getInfoByEnsemblId(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
                                                required = true) String id,
-                                       @QueryParam("exclude")
-                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                       @QueryParam("include")
-                                       @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                       @QueryParam("sort")
-                                       @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
+                                       @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                                       @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                                       @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, species, assembly, id);
+            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -125,7 +119,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult<Protein> queryResults = proteinManager.search(query, queryOptions, species, assembly);
+            CellBaseDataResult<Protein> queryResults = proteinManager.search(query, queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -165,40 +159,40 @@ public class ProteinWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult queryResult = proteinManager.getSubstitutionScores(query, queryOptions, species, assembly, id);
+            CellBaseDataResult queryResult = proteinManager.getSubstitutionScores(query, queryOptions, id);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/{proteins}/name")
-    @ApiOperation(httpMethod = "GET", value = "Deprecated", hidden = true)
-    @Deprecated
-    public Response getproteinByName(@PathParam("proteins") String id) {
-        try {
-            parseQueryParams();
-            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
-            return createOkResponse(geneDBAdaptor.get(Splitter.on(",").splitToList(id), queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{proteins}/name")
+//    @ApiOperation(httpMethod = "GET", value = "Deprecated", hidden = true)
+//    @Deprecated
+//    public Response getproteinByName(@PathParam("proteins") String id) {
+//        try {
+//            parseQueryParams();
+//            ProteinDBAdaptor geneDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(this.species, this.assembly);
+//            return createOkResponse(geneDBAdaptor.get(Splitter.on(",").splitToList(id), queryOptions));
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
-    @GET
-    @Path("/{proteins}/gene")
-    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein", hidden = true)
-    public Response getGene(@PathParam("proteins") String query) {
-        return null;
-    }
-
-    @GET
-    @Path("/{proteins}/transcript")
-    @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = true)
-    public Response getTranscript(@PathParam("proteins") String query) {
-        return null;
-    }
+//    @GET
+//    @Path("/{proteins}/gene")
+//    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding to the input protein", hidden = true)
+//    public Response getGene(@PathParam("proteins") String query) {
+//        return null;
+//    }
+//
+//    @GET
+//    @Path("/{proteins}/transcript")
+//    @ApiOperation(httpMethod = "GET", value = "To be implemented", hidden = true)
+//    public Response getTranscript(@PathParam("proteins") String query) {
+//        return null;
+//    }
 
     @GET
     @Path("/{proteins}/sequence")
@@ -206,7 +200,7 @@ public class ProteinWSServer extends GenericRestWSServer {
         responseContainer = "QueryResponse")
     public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = "UniProt accession id, e.g: Q9UL59",
                                         required = true) String proteins) {
-        CellBaseDataResult<String> queryResult = proteinManager.getSequence(query, queryOptions, species, assembly, proteins);
+        CellBaseDataResult<String> queryResult = proteinManager.getSequence(query, queryOptions, proteins);
         return createOkResponse(queryResult);
     }
 

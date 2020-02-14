@@ -16,18 +16,15 @@
 
 package org.opencb.cellbase.server.rest.genomic;
 
-import com.google.common.base.Splitter;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -36,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,7 +54,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
 
-        genomeManager = cellBaseManagers.getGenomeManager();
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }
 
     @GET
@@ -78,43 +74,38 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true")
     })
-    public Response getAll(@QueryParam("exclude")
-                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                           @QueryParam("include")
-                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                           @QueryParam("sort")
-                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                           @QueryParam("limit") @DefaultValue("10")
-                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                           @QueryParam("skip") @DefaultValue("0")
-                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getAll(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
+                           @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
+                           @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
+                           @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
+                           @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            CellBaseDataResult queryResults = genomeManager.info(queryOptions, species, assembly);
+            CellBaseDataResult queryResults = genomeManager.info(queryOptions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/list")
-    @Deprecated
-    @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = CellBaseDataResult.class,
-        hidden = true)
-    public Response getChromosomes() {
-        try {
-            parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
-            QueryOptions options = new QueryOptions();
-            options.put("include", "chromosomes.name");
-            return createOkResponse(dbAdaptor.getGenomeInfo(options));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/list")
+//    @Deprecated
+//    @ApiOperation(httpMethod = "GET", value = "Retrieves the chromosomes names", response = CellBaseDataResult.class,
+//        hidden = true)
+//    public Response getChromosomes() {
+//        try {
+//            parseQueryParams();
+//            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
+//            QueryOptions options = new QueryOptions();
+//            options.put("include", "chromosomes.name");
+//            return createOkResponse(dbAdaptor.getGenomeInfo(options));
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/{chromosomeName}/info")
@@ -128,33 +119,33 @@ public class ChromosomeWSServer extends GenericRestWSServer {
         try {
             parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, species, assembly, chromosomeId);
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, chromosomeId);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
 
-    @GET
-    @Path("/{chromosomeName}/size")
-    @Deprecated
-    @ApiOperation(httpMethod = "GET", value = "Not properly implemented - to be fixed",
-            response = Chromosome.class, responseContainer = "QueryResponse", hidden = true)
-    public Response getChromosomeSize(@PathParam("chromosomeName") String chromosomeId) {
-        try {
-            parseQueryParams();
-            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
-            QueryOptions options = new QueryOptions("include", "chromosomes.size");
-            List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
-            List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
-            for (String chromosome : chromosomeList) {
-                queryResults.add(dbAdaptor.getChromosomeInfo(chromosome, options));
-            }
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{chromosomeName}/size")
+//    @Deprecated
+//    @ApiOperation(httpMethod = "GET", value = "Not properly implemented - to be fixed",
+//            response = Chromosome.class, responseContainer = "QueryResponse", hidden = true)
+//    public Response getChromosomeSize(@PathParam("chromosomeName") String chromosomeId) {
+//        try {
+//            parseQueryParams();
+//            GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(this.species, this.assembly);
+//            QueryOptions options = new QueryOptions("include", "chromosomes.size");
+//            List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
+//            List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
+//            for (String chromosome : chromosomeList) {
+//                queryResults.add(dbAdaptor.getChromosomeInfo(chromosome, options));
+//            }
+//            return createOkResponse(queryResults);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/help")

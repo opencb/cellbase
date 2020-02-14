@@ -31,13 +31,8 @@ public class GeneManager extends AbstractManager {
 
     private GeneDBAdaptor geneDBAdaptor;
 
-    public GeneManager(CellBaseConfiguration configuration) {
-        this(null, null, configuration);
-    }
-
     public GeneManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
-
         this.init();
     }
 
@@ -46,23 +41,19 @@ public class GeneManager extends AbstractManager {
     }
 
     public CellBaseDataResult<Gene> search(Query query, QueryOptions queryOptions) {
-        logger.debug("blahh...");
         return geneDBAdaptor.nativeGet(query, queryOptions);
     }
 
-    public CellBaseDataResult<Gene> groupBy(Query query, QueryOptions queryOptions, String species, String assembly, String fields) {
-        logger.debug("blahh...");
+    public CellBaseDataResult<Gene> groupBy(Query query, QueryOptions queryOptions, String fields) {
         return geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public CellBaseDataResult<Gene> aggregationStats(Query query, QueryOptions queryOptions, String species, String assembly,
-                                                     String fields) {
-        logger.debug("blahh...");
+    public CellBaseDataResult<Gene> aggregationStats(Query query, QueryOptions queryOptions, String fields) {
         queryOptions.put(QueryOptions.COUNT, true);
         return geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String species, String assembly, String genes) {
+    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String genes) {
         logger.debug("blahh...");
         List<Query> queries = createQueries(query, genes, GeneDBAdaptor.QueryParams.XREFS.key());
         List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
@@ -72,13 +63,11 @@ public class GeneManager extends AbstractManager {
         return queryResults;
     }
 
-    public CellBaseDataResult<Gene> distinct(Query query, String species, String assembly, String field) {
-        logger.debug("blahh...");
+    public CellBaseDataResult<Gene> distinct(Query query, String field) {
         return geneDBAdaptor.distinct(query, field);
     }
 
-    public List<CellBaseDataResult> getRegulatoryElements(Query query, QueryOptions queryOptions, String species, String assembly,
-                                                          String genes) {
+    public List<CellBaseDataResult> getRegulatoryElements(Query query, QueryOptions queryOptions, String genes) {
         String[] geneArray = genes.split(",");
         List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
         for (String gene : geneArray) {
@@ -89,7 +78,7 @@ public class GeneManager extends AbstractManager {
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getTfbs(Query query, QueryOptions queryOptions, String species, String assembly, String genes) {
+    public List<CellBaseDataResult> getTfbs(Query query, QueryOptions queryOptions, String genes) {
         String[] geneArray = genes.split(",");
         List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
         for (String gene : geneArray) {
@@ -101,8 +90,7 @@ public class GeneManager extends AbstractManager {
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getByTranscript(Query query, QueryOptions queryOptions, String species, String assembly,
-                                                    String transcriptId) {
+    public List<CellBaseDataResult> getByTranscript(Query query, QueryOptions queryOptions, String transcriptId) {
         logger.debug("blahh...");
         List<Query> queries = createQueries(query, transcriptId, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
         List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
@@ -112,11 +100,7 @@ public class GeneManager extends AbstractManager {
         return queryResults;
     }
 
-
-
-    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String region) {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
-
+    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
         if (hasHistogramQueryParam(queryOptions)) {
             List<Query> queries = createQueries(query, region, GeneDBAdaptor.QueryParams.REGION.key());
             List<CellBaseDataResult> queryResults = geneDBAdaptor.getIntervalFrequencies(queries, getHistogramIntervalSize(queryOptions),
@@ -135,9 +119,7 @@ public class GeneManager extends AbstractManager {
         }
     }
 
-    public List<CellBaseDataResult> getByTf(Query query, QueryOptions queryOptions, String species, String assembly,
-                                                    String tf) {
-        logger.debug("blahh...");
+    public List<CellBaseDataResult> getByTf(Query query, QueryOptions queryOptions, String tf) {
         List<Query> queries = createQueries(query, tf, GeneDBAdaptor.QueryParams.NAME.key());
         List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
@@ -146,8 +128,7 @@ public class GeneManager extends AbstractManager {
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getGeneByEnsemblId(QueryOptions queryOptions, String species, String assembly, String id) {
-
+    public List<CellBaseDataResult> getGeneByEnsemblId(QueryOptions queryOptions, String id) {
         String[] ids = id.split(",");
         List<Query> queries = new ArrayList<>(ids.length);
         for (String s : ids) {

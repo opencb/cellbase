@@ -31,32 +31,35 @@ import java.util.List;
 
 public class GenomeManager extends AbstractManager {
 
-    public GenomeManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    private GenomeDBAdaptor genomeDBAdaptor;
+
+    public GenomeManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public CellBaseDataResult info(QueryOptions queryOptions, String species, String assembly) {
-        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+    private void init() {
+        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+    }
+
+    public CellBaseDataResult info(QueryOptions queryOptions) {
         CellBaseDataResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
         queryResult.setId(species);
         return queryResult;
     }
 
-    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String species, String assembly, String chromosomeId) {
-        GenomeDBAdaptor dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId) {
         List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
         List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
         for (String chromosome : chromosomeList) {
-            CellBaseDataResult queryResult = dbAdaptor.getChromosomeInfo(chromosome, queryOptions);
+            CellBaseDataResult queryResult = genomeDBAdaptor.getChromosomeInfo(chromosome, queryOptions);
             queryResult.setId(chromosome);
             queryResults.add(queryResult);
         }
         return queryResults;
     }
 
-    public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String species, String assembly,
-                                                                        String regions) {
-        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+    public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String regions) {
         List<Region> regionList = Region.parseRegions(regions);
         List<CellBaseDataResult<GenomeSequenceFeature>> queryResults =
                 genomeDBAdaptor.getSequence(Region.parseRegions(regions), queryOptions);
@@ -67,9 +70,7 @@ public class GenomeManager extends AbstractManager {
 
     }
 
-    public CellBaseDataResult<GenomeSequenceFeature> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly,
-                                                                 String regions, String strand) {
-        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+    public CellBaseDataResult<GenomeSequenceFeature> getByRegion(Query query, QueryOptions queryOptions, String regions, String strand) {
         query.put(GenomeDBAdaptor.QueryParams.REGION.key(), regions);
         query.put("strand", strand);
         CellBaseDataResult queryResult = genomeDBAdaptor.getGenomicSequence(query, queryOptions);
@@ -77,12 +78,9 @@ public class GenomeManager extends AbstractManager {
         return queryResult;
     }
 
-    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(Query query, QueryOptions queryOptions, String species,
-                                                                               String assembly, String regions) {
-        GenomeDBAdaptor conservationDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+    public List<CellBaseDataResult<GenomicScoreRegion<Float>>> getConservation(QueryOptions queryOptions, String regions) {
         List<Region> regionList = Region.parseRegions(regions);
-        List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList
-                = conservationDBAdaptor.getConservation(regionList, queryOptions);
+        List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResultList = genomeDBAdaptor.getConservation(regionList, queryOptions);
         for (int i = 0; i < regionList.size(); i++) {
             queryResultList.get(i).setId(regions);
         }

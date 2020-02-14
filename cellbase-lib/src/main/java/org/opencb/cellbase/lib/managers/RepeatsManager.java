@@ -26,12 +26,18 @@ import java.util.List;
 
 public class RepeatsManager extends AbstractManager {
 
-    public RepeatsManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    private RepeatsDBAdaptor repeatsDBAdaptor;
+
+    public RepeatsManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String region) {
-        RepeatsDBAdaptor repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
+    private void init() {
+        repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
+    }
+
+    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
         List<Query> queries = createQueries(query, region, RepeatsDBAdaptor.QueryParams.REGION.key());
         List<CellBaseDataResult> queryResults = repeatsDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {
@@ -39,6 +45,4 @@ public class RepeatsManager extends AbstractManager {
         }
         return queryResults;
     }
-
-
 }

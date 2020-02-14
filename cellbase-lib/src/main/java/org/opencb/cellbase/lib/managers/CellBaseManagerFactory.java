@@ -16,101 +16,167 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.apache.commons.collections.map.MultiKeyMap;
+import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.lib.SpeciesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class CellBaseManagers {
+public class CellBaseManagerFactory {
 
     private CellBaseConfiguration configuration;
 
-    private Map<String, GeneManager> geneManager;
-    private TranscriptManager transcriptManager;
-    private VariantManager variantManager;
-    private ProteinManager proteinManager;
-    private GenomeManager genomeManager;
-    private ClinicalManager clinicalManager;
-    private RegulatoryManager regulatoryManager;
-    private XrefManager xrefManager;
-    private RepeatsManager repeatsManager;
+    private Map<String, GeneManager> geneManagers;
+    private Map<String,TranscriptManager> transcriptManagers;
+    private Map<String,VariantManager> variantManagers;
+    private Map<String,ProteinManager> proteinManagers;
+    private Map<String,GenomeManager> genomeManagers;
+    private Map<String,ClinicalManager> clinicalManagers;
+    private Map<String,RegulatoryManager> regulatoryManagers;
+    private Map<String,XrefManager> xrefManagers;
+    private Map<String,RepeatsManager> repeatsManagers;
+    private Logger logger;
 
-    public CellBaseManagers(CellBaseConfiguration configuration) {
+    public CellBaseManagerFactory(CellBaseConfiguration configuration) {
         this.configuration = configuration;
+        logger = LoggerFactory.getLogger(this.getClass());
     }
 
     private String getMultiKey(String species, String assembly) {
         return species + "_" + assembly;
     }
 
-    public GeneManager getGeneManager(String species) {
-        // get the unique assembly
-
-        return getGeneManager(species, null);
+    public GeneManager getGeneManager(String species) throws CellbaseException {
+        if (species == null) {
+            logger.error("Failed to get GeneManager. Species is required.");
+            return null;
+        }
+        SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
+        return getGeneManager(species, assembly.getName());
     }
 
     public GeneManager getGeneManager(String species, String assembly) {
-        if (!geneManager.containsKey(getMultiKey(species, assembly))) {
-            // check
-
-            geneManager.put(species + "_" + assembly, new GeneManager(species, assembly, configuration));
+        String multiKey = getMultiKey(species, assembly);
+        if (!geneManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            geneManagers.put(multiKey, new GeneManager(species, assembly, configuration));
         }
-        return geneManager.get(getMultiKey(species, assembly));
+        return geneManagers.get(multiKey);
     }
 
-    public TranscriptManager getTranscriptManager() {
-        if (transcriptManager == null) {
-            transcriptManager = new TranscriptManager(configuration);
+    private boolean validateSpeciesAssembly(String species, String assembly) {
+        if (species == null) {
+            logger.error("Species is required.");
+            return false;
         }
-        return transcriptManager;
+        if (assembly == null) {
+            logger.error("Assembly is required.");
+            return false;
+        }
+        try {
+            // check configuration to make sure this species assembly combo is valid.
+            if (SpeciesUtils.getSpecies(configuration, species, assembly) == null) {
+                logger.error("Invalid species or assembly");
+                return false;
+            }
+        } catch (CellbaseException e) {
+            logger.error(e.getMessage());
+            return false;
+        }
+        return true;
     }
 
-    public VariantManager getVariantManager() {
-        if (variantManager == null) {
-            variantManager = new VariantManager(configuration);
+    public TranscriptManager getTranscriptManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!transcriptManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            transcriptManagers.put(multiKey, new TranscriptManager(species, assembly, configuration));
         }
-        return variantManager;
+        return transcriptManagers.get(multiKey);
     }
 
-    public ProteinManager getProteinManager() {
-        if (proteinManager == null) {
-            proteinManager = new ProteinManager(configuration);
+    public VariantManager getVariantManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!variantManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            variantManagers.put(multiKey, new VariantManager(species, assembly, configuration));
         }
-        return proteinManager;
+        return variantManagers.get(multiKey);
     }
 
-    public GenomeManager getGenomeManager() {
-        if (genomeManager == null) {
-            genomeManager = new GenomeManager(configuration);
+    public ProteinManager getProteinManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!proteinManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            proteinManagers.put(multiKey, new ProteinManager(species, assembly, configuration));
         }
-        return genomeManager;
+        return proteinManagers.get(multiKey);
     }
 
-    public ClinicalManager getClinicalManager() {
-        if (clinicalManager == null) {
-            clinicalManager = new ClinicalManager(configuration);
+    public GenomeManager getGenomeManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!genomeManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            genomeManagers.put(multiKey, new GenomeManager(species, assembly, configuration));
         }
-        return clinicalManager;
+        return genomeManagers.get(multiKey);
     }
 
-    public RegulatoryManager getRegulatoryManager() {
-        if (regulatoryManager == null) {
-            regulatoryManager = new RegulatoryManager(configuration);
+    public ClinicalManager getClinicalManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!clinicalManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            clinicalManagers.put(multiKey, new ClinicalManager(species, assembly, configuration));
         }
-        return regulatoryManager;
+        return clinicalManagers.get(multiKey);
     }
 
-    public XrefManager getXrefManager() {
-        if (xrefManager == null) {
-            xrefManager = new XrefManager(configuration);
+    public RegulatoryManager getRegulatoryManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!regulatoryManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            regulatoryManagers.put(multiKey, new RegulatoryManager(species, assembly, configuration));
         }
-        return xrefManager;
+        return regulatoryManagers.get(multiKey);
     }
 
-    public RepeatsManager getRepeatsManager() {
-        if (repeatsManager == null) {
-            repeatsManager = new RepeatsManager(configuration);
+    public XrefManager getXrefManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!xrefManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            xrefManagers.put(multiKey, new XrefManager(species, assembly, configuration));
         }
-        return repeatsManager;
+        return xrefManagers.get(multiKey);
+    }
+
+    public RepeatsManager getRepeatsManager(String species, String assembly) {
+        String multiKey = getMultiKey(species, assembly);
+        if (!repeatsManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                return null;
+            }
+            repeatsManagers.put(multiKey, new RepeatsManager(species, assembly, configuration));
+        }
+        return repeatsManagers.get(multiKey);
     }
 }

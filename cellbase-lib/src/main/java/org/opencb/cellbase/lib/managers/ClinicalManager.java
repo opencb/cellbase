@@ -31,14 +31,19 @@ import java.util.stream.Collectors;
 
 public class ClinicalManager extends AbstractManager {
 
-    public ClinicalManager(CellBaseConfiguration configuration) {
-        super(configuration);
+    private ClinicalDBAdaptor clinicalDBAdaptor;
+
+    public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration) {
+        super(species, assembly, configuration);
+        this.init();
     }
 
-    public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions, String species, String assembly) {
-        logger.debug("blahh...");
-        ClinicalDBAdaptor dbAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
-        return dbAdaptor.nativeGet(query, queryOptions);
+    private void init() {
+        clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+    }
+
+    public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions) {
+        return clinicalDBAdaptor.nativeGet(query, queryOptions);
     }
 
 //    public List<CellBaseDataResult> getPhenotypeGeneRelations(Query query, QueryOptions queryOptions) {
@@ -148,8 +153,7 @@ public class ClinicalManager extends AbstractManager {
 //        return results;
 //    }
 
-    public CellBaseDataResult getByRegion(Query query, QueryOptions queryOptions, String species, String assembly, String regions) {
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+    public CellBaseDataResult getByRegion(Query query, QueryOptions queryOptions, String regions) {
         query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), regions);
         if (hasHistogramQueryParam(queryOptions)) {
             return null;
