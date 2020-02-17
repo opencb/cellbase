@@ -159,7 +159,8 @@ public class GenericRestWSServer implements IWSServer {
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 
             // Initialize Monitor
-            monitor = new Monitor(dbAdaptorFactory);
+            // TODO move to manager
+//            monitor = new Monitor(dbAdaptorFactory);
         }
     }
 

@@ -17,23 +17,21 @@
 package org.opencb.cellbase.server.rest.network;
 
 import org.opencb.biodata.models.protein.Interaction;
-import org.opencb.cellbase.core.api.core.ProteinProteinInteractionDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.Query;
-
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -58,53 +56,53 @@ public class ProteinProteinInteractionWSServer extends GenericRestWSServer {
         return createModelResponse(Interaction.class);
     }
 
-    @GET
-    @Path("/all")
-    public Response getAllPPI(@DefaultValue("") @QueryParam("interactor") String interactor,
-                              @DefaultValue("") @QueryParam("type") String type,
-                              @DefaultValue("") @QueryParam("database") String database,
-                              @DefaultValue("") @QueryParam("status") String status,
-                              @DefaultValue("") @QueryParam("detectionMethod") String detectionMethod) {
-        try {
-            parseQueryParams();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-            return createOkResponse(ppiDBAdaptor.nativeGet(query, queryOptions));
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    @GET
-    @Path("/{interaction}/info")
-    public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
-        try {
-            parseQueryParams();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
-            List<CellBaseDataResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
-
-    // TODO Correct method
-    @GET
-    @Path("/{interaction}/interactors")
-    public Response getInteractorsByInteractionId(@PathParam("interaction") String interaction,
-                                                  @DefaultValue("interactorA,interactorB") @QueryParam("include") String include) {
-        try {
-            parseQueryParams();
-            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
-                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
-            queryOptions.put("include", "interactorA,interactorB");
-            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
-            List<CellBaseDataResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/all")
+//    public Response getAllPPI(@DefaultValue("") @QueryParam("interactor") String interactor,
+//                              @DefaultValue("") @QueryParam("type") String type,
+//                              @DefaultValue("") @QueryParam("database") String database,
+//                              @DefaultValue("") @QueryParam("status") String status,
+//                              @DefaultValue("") @QueryParam("detectionMethod") String detectionMethod) {
+//        try {
+//            parseQueryParams();
+//            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+//                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+//            return createOkResponse(ppiDBAdaptor.nativeGet(query, queryOptions));
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
+//
+//    @GET
+//    @Path("/{interaction}/info")
+//    public Response getPPIByInteractionId(@PathParam("interaction") String interaction) {
+//        try {
+//            parseQueryParams();
+//            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+//                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+//            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
+//            List<CellBaseDataResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
+//            return createOkResponse(queryResults);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
+//
+//    // TODO Correct method
+//    @GET
+//    @Path("/{interaction}/interactors")
+//    public Response getInteractorsByInteractionId(@PathParam("interaction") String interaction,
+//                                                  @DefaultValue("interactorA,interactorB") @QueryParam("include") String include) {
+//        try {
+//            parseQueryParams();
+//            ProteinProteinInteractionDBAdaptor ppiDBAdaptor =
+//                    dbAdaptorFactory.getProteinProteinInteractionDBAdaptor(this.species, this.assembly);
+//            queryOptions.put("include", "interactorA,interactorB");
+//            List<Query> queries = createQueries(interaction, ProteinProteinInteractionDBAdaptor.QueryParams.INTERACTOR_A_XREFS.key());
+//            List<CellBaseDataResult> queryResults = ppiDBAdaptor.nativeGet(queries, queryOptions);
+//            return createOkResponse(queryResults);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 }

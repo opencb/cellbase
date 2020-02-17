@@ -56,10 +56,10 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseDBAdap
         return null;
     }
 
-    @Override
-    public CellBaseDataResult stats(Query query) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult stats(Query query) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult get(Query query, QueryOptions options) {
@@ -82,10 +82,10 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseDBAdap
         return null;
     }
 
-    @Override
-    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {

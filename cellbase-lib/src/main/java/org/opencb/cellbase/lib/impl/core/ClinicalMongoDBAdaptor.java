@@ -58,10 +58,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return null;
     }
 
-    @Override
-    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
@@ -95,10 +95,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
     }
 
-    @Override
-    public CellBaseDataResult stats(Query query) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult stats(Query query) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult<Variant> get(Query query, QueryOptions options) {

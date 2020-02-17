@@ -57,10 +57,10 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
         return null;
     }
 
-    @Override
-    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
@@ -101,10 +101,10 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
     }
 
-    @Override
-    public CellBaseDataResult stats(Query query) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult stats(Query query) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult<RegulatoryFeature> get(Query query, QueryOptions inputOptions) {

@@ -53,11 +53,11 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     CellBaseDataResult<String> distinct(Query query, String field);
 
 
-    default CellBaseDataResult stats() {
-        return stats(new Query());
-    }
-
-    CellBaseDataResult stats(Query query);
+//    default CellBaseDataResult stats() {
+//        return stats(new Query());
+//    }
+//
+//    CellBaseDataResult stats(Query query);
 
     /*
      Main methods to query.
@@ -97,7 +97,7 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     Iterator nativeIterator(Query query, QueryOptions options);
 
-    CellBaseDataResult rank(Query query, String field, int numResults, boolean asc);
+//    CellBaseDataResult rank(Query query, String field, int numResults, boolean asc);
 
     CellBaseDataResult groupBy(Query query, String field, QueryOptions options);
 

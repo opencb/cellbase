@@ -96,10 +96,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
     }
 
-    @Override
-    public CellBaseDataResult stats(Query query) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult stats(Query query) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult<Gene> get(Query query, QueryOptions inputOptions) {
@@ -164,10 +164,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         }
     }
 
-    @Override
-    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
+//        return null;
+//    }
 
     @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {

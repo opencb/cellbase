@@ -18,13 +18,14 @@ package org.opencb.cellbase.server.rest;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
+import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.MetaManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
@@ -37,8 +38,6 @@ import org.opencb.cellbase.server.rest.genomic.RegionWSServer;
 import org.opencb.cellbase.server.rest.genomic.VariantWSServer;
 import org.opencb.cellbase.server.rest.regulatory.RegulatoryWSServer;
 import org.opencb.cellbase.server.rest.regulatory.TfWSServer;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -58,6 +57,8 @@ import java.util.*;
 @Api(value = "Meta", description = "Meta RESTful Web Services API")
 public class MetaWSServer extends GenericRestWSServer {
 
+    private MetaManager metaManager;
+
     private static final String PONG = "pong";
     private static final String STATUS = "status";
     private static final String HEALTH = "health";
@@ -69,22 +70,21 @@ public class MetaWSServer extends GenericRestWSServer {
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, uriInfo, hsr);
+
+        metaManager = cellBaseManagerFactory.getMetaManager();
     }
 
 
     @GET
     @Path("/{species}/versions")
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
-            + "data files were downloaded.",
-            response = DownloadProperties.class, responseContainer = "QueryResponse")
+            + "data files were downloaded.", response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
-                               @ApiParam(name = "species",
-                                       value = "Name of the species, e.g.: hsapiens. For a full list of potentially"
-                                               + "available species ids, please refer to: "
-                                               + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
-                                        required = true) String species) {
-        CellBaseDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor(species, this.assembly);
-        return createOkResponse(metaDBAdaptor.nativeGet(new Query(), new QueryOptions()));
+                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species)
+            throws CellbaseException {
+        parseQueryParams();
+        CellBaseDataResult queryResults = metaManager.getVersions(queryOptions);
+        return createOkResponse(queryResults);
     }
 
     @GET

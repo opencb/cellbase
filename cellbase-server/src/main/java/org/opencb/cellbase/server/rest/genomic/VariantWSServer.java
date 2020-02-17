@@ -18,18 +18,14 @@ package org.opencb.cellbase.server.rest.genomic;
 
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -38,7 +34,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 

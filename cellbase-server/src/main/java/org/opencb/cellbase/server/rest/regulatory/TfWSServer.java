@@ -54,8 +54,8 @@ public class TfWSServer extends RegulatoryWSServer {
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
 
-        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager();
-        geneManager = cellBaseManagerFactory.getGeneManager();
+        regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
     }
 
     @GET
@@ -80,7 +80,7 @@ public class TfWSServer extends RegulatoryWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = regulatoryManager.getAllByTfbs(query, queryOptions, species, assembly, tf);
+            List<CellBaseDataResult> queryResults = regulatoryManager.getAllByTfbs(query, queryOptions, tf);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -122,7 +122,7 @@ public class TfWSServer extends RegulatoryWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByTf(query, queryOptions, species, assembly, tf);
+            List<CellBaseDataResult> queryResults = geneManager.getByTf(query, queryOptions, tf);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -276,12 +276,6 @@ public class QueryCommandExecutor extends CommandExecutor {
             return;
         }
 
-        if (queryCommandOptions.rank != null && !queryCommandOptions.rank.isEmpty()) {
-            CellBaseDataResult rank = featureDBAdaptor.rank(query, queryCommandOptions.rank, queryCommandOptions.limit, true);
-            output.println(objectMapper.writeValueAsString(rank));
-            return;
-        }
-
         if (queryCommandOptions.count) {
             CellBaseDataResult count = featureDBAdaptor.count(query);
             output.println(objectMapper.writeValueAsString(count));

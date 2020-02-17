@@ -247,7 +247,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             required = true) String id) {
         try {
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = transcriptManager.getSequence(id);
+            List<CellBaseDataResult<String>> queryResults = transcriptManager.getSequence(id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -83,9 +83,6 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"--group-by"}, description = "", required = false, arity = 1)
         public String groupBy;
 
-        @Parameter(names = {"--rank"}, description = "", required = false, arity = 1)
-        public String rank;
-
         @Parameter(names = {"--distinct"}, description = "", required = false, arity = 1)
         public String distinct;
 

@@ -22,7 +22,6 @@ import io.swagger.annotations.ApiParam;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GeneManager;
