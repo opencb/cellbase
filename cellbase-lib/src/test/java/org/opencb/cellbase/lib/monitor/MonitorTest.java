@@ -17,15 +17,12 @@
 package org.opencb.cellbase.lib.monitor;
 
 import com.google.common.io.Files;
-
-;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.monitor.HealthStatus;
-import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.MetaManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +43,7 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
     private static final String UNKNOWN_HTTP_HOST = "http://foo:8080/cellbase";
     private static final String REST_API_DOES_NOT_IMPLEMENT_STATUS = "https://bioinfo.hpc.cam.ac.uk/hgva";
     private static final String FAKE = "fake";
+    private MetaManager metaManager;
 
     public MonitorTest() throws IOException {
         super();
@@ -57,28 +55,29 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
 
         // "Local" monitoring all OK
         clearDB(GRCH37_DBNAME);
-        Path path = Paths.get(getClass()
-                .getResource("/gene.test.json.gz").toURI());
+        Path path = Paths.get(getClass().getResource("/gene.test.json.gz").toURI());
         loadRunner.load(path, "gene");
         CellBaseConfiguration cellBaseConfiguration = CellBaseConfiguration.load(
                 MonitorTest.class.getClassLoader().getResourceAsStream("configuration.test.json"),
                 CellBaseConfiguration.ConfigurationFileFormat.JSON);
-        MongoDBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        Monitor monitor = new Monitor(dbAdaptorFactory);
+        CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
+        metaManager = cellBaseManagerFactory.getMetaManager();
+
+        Monitor monitor = new Monitor(metaManager);
         HealthStatus health = monitor.run(SPECIES, ASSEMBLY);
         assertEquals(HealthStatus.ServiceStatus.OK, health.getService().getStatus());
 
         // Empty gene collection
         clearDB(GRCH37_DBNAME);
-        monitor = new Monitor(dbAdaptorFactory);
+        monitor = new Monitor(metaManager);
         health = monitor.run(SPECIES, ASSEMBLY);
         assertEquals(HealthStatus.ServiceStatus.DOWN, health.getService().getStatus());
 
         // "Local" monitoring - maintenance
         // Touch maintenance file
-        File maintenanceFile = new File(dbAdaptorFactory.getCellBaseConfiguration().getMaintenanceFlagFile());
+        File maintenanceFile = new File(metaManager.getMaintenanceFlagFile());
         Files.touch(maintenanceFile);
-        monitor = new Monitor(dbAdaptorFactory);
+        monitor = new Monitor(metaManager);
         health = monitor.run(SPECIES, ASSEMBLY);
         assertEquals(HealthStatus.ServiceStatus.MAINTENANCE, health.getService().getStatus());
         // Remove maintenance file
@@ -86,8 +85,7 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
 
         // "Local" monitoring - unknown mongo host
         cellBaseConfiguration.getDatabases().getMongodb().setHost(FAKE);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
-        monitor = new Monitor(dbAdaptorFactory);
+        monitor = new Monitor(metaManager);
         health = monitor.run(SPECIES, ASSEMBLY);
         assertEquals(HealthStatus.ServiceStatus.DOWN, health.getService().getStatus());
 
@@ -106,6 +104,4 @@ public class MonitorTest extends GenericMongoDBAdaptorTest {
         health = monitor.run(SPECIES, ASSEMBLY);
         assertEquals(HealthStatus.ServiceStatus.DOWN, health.getService().getStatus());
     }
-
-
 }

@@ -16,20 +16,18 @@
 
 package org.opencb.cellbase.core.api.core;
 
+import org.opencb.cellbase.core.DatastoreStatus;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-
 public abstract class DBAdaptorFactory {
 
     protected CellBaseConfiguration cellBaseConfiguration;
     protected Logger logger;
-
 
     public DBAdaptorFactory() {
         this(null);
@@ -55,8 +53,7 @@ public abstract class DBAdaptorFactory {
 
     public abstract void close();
 
-    public abstract Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus>
-    getDatabaseStatus(String species, String assembly);
+    public abstract Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly);
 
     public abstract GenomeDBAdaptor getGenomeDBAdaptor(String species);
 
@@ -110,7 +107,7 @@ public abstract class DBAdaptorFactory {
 
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly);
 
-
+    // TODO replace with method from SpeciesUtils. We shouldn't have this logic in multiple places
     protected SpeciesConfiguration getSpecies(String speciesName) {
         SpeciesConfiguration species = null;
         for (SpeciesConfiguration sp : cellBaseConfiguration.getAllSpecies()) {
@@ -122,6 +119,7 @@ public abstract class DBAdaptorFactory {
         return species;
     }
 
+    // TODO replace with method from SpeciesUtils. We shouldn't have this logic in multiple places
     protected String getAssembly(SpeciesConfiguration speciesConfiguration, String assemblyName) {
         String assembly = null;
         if (assemblyName == null || assemblyName.isEmpty()) {

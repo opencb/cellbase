@@ -31,20 +31,18 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.core.monitor.Monitor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.monitor.Monitor;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.commons.datastore.core.Event;
-import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -159,8 +157,7 @@ public class GenericRestWSServer implements IWSServer {
             cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
 
             // Initialize Monitor
-            // TODO move to manager
-//            monitor = new Monitor(dbAdaptorFactory);
+            monitor = new Monitor(cellBaseManagerFactory.getMetaManager());
         }
     }
 
@@ -315,8 +312,8 @@ public class GenericRestWSServer implements IWSServer {
 
         CellBaseDataResult<ObjectMap> result = new CellBaseDataResult();
         List<Event> events = new ArrayList<>();
-        events.add(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
-        events.add(new Event(Event.Type.ERROR, "DEPRECATED: " + e.toString()));
+//        events.add(new Event(Event.Type.WARNING, "Future errors will ONLY be shown in the QueryResponse body"));
+        events.add(new Event(Event.Type.ERROR, e.toString()));
         queryResponse.setEvents(events);
         queryResponse.setResponses(Arrays.asList(result));
         logQuery(ERROR);
@@ -355,7 +352,10 @@ public class GenericRestWSServer implements IWSServer {
             list = new ArrayList(1);
             list.add(obj);
         }
-        queryResponse.setResponses(list);
+
+        CellBaseDataResult dataResults = new CellBaseDataResult("id", 0, Collections.emptyList(), list.size(), list,
+                list.size());
+        queryResponse.setResponses(Collections.singletonList(dataResults));
         logQuery(OK);
 
         return createJsonResponse(queryResponse);

@@ -62,6 +62,43 @@ public class SpeciesUtils {
         return species;
     }
 
+    public static boolean validateSpeciesAndAssembly(CellBaseConfiguration configuration, String userProvidedSpecies,
+                                     String userProvidedAssembly) {
+        if (userProvidedSpecies == null || userProvidedAssembly == null) {
+            return false;
+        }
+        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+            // match species
+            if (userProvidedSpecies.equalsIgnoreCase(sp.getScientificName())
+                    || userProvidedSpecies.equalsIgnoreCase(sp.getCommonName())
+                    || userProvidedSpecies.equalsIgnoreCase(sp.getId())) {
+                SpeciesConfiguration.Assembly assembly;
+                if (getAssembly(sp, userProvidedAssembly) == null) {
+                    // invalid assembly
+                    return false;
+                }
+                // species and assembly found
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean validateSpecies(CellBaseConfiguration configuration, String userProvidedSpecies) {
+        if (userProvidedSpecies == null) {
+            return false;
+        }
+        for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
+            if (userProvidedSpecies.equalsIgnoreCase(sp.getScientificName())
+                    || userProvidedSpecies.equalsIgnoreCase(sp.getCommonName())
+                    || userProvidedSpecies.equalsIgnoreCase(sp.getId())) {
+                return true;
+            }
+        }
+        // species not found
+        return false;
+    }
+
     /**
      * Get configuration for the specified species.
      *
@@ -106,7 +143,7 @@ public class SpeciesUtils {
     public static SpeciesConfiguration.Assembly getDefaultAssembly(SpeciesConfiguration speciesConfiguration) throws CellbaseException {
         List<SpeciesConfiguration.Assembly> assemblies = speciesConfiguration.getAssemblies();
         if (assemblies == null || assemblies.isEmpty()) {
-            throw new CellbaseException("Species has no associated assembly " + speciesConfiguration.getScientificName());
+            throw new CellbaseException("Species has no associated assembly: " + speciesConfiguration.getScientificName());
         }
         return assemblies.get(0);
     }

@@ -16,26 +16,35 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.cellbase.core.DatastoreStatus;
 import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-public class MetaManager extends AbstractManager {
+import java.util.Map;
 
-    private CellBaseDBAdaptor cellBaseDBAdaptor;
+public class MetaManager extends AbstractManager {
 
     public MetaManager(CellBaseConfiguration configuration) {
         super(configuration);
-        this.init();
     }
 
-    private void init() {
-        cellBaseDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor(species, assembly);
+    public CellBaseDataResult getVersions(String species, String assembly) {
+        CellBaseDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor(species, assembly);
+        return metaDBAdaptor.nativeGet(new Query(), new QueryOptions());
     }
 
-    public CellBaseDataResult getVersions(QueryOptions queryOptions) {
-        return cellBaseDBAdaptor.nativeGet(new Query(), queryOptions);
+    public String getMaintenanceFlagFile() {
+        return configuration.getMaintenanceFlagFile();
+    }
+
+    public String getMaintainerContact() {
+        return configuration.getMaintainerContact();
+    }
+
+    public Map<String, DatastoreStatus> getDataBaseStatus(String species, String assembly) {
+        return dbAdaptorFactory.getDatabaseStatus(species, assembly);
     }
 }

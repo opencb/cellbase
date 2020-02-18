@@ -41,6 +41,8 @@ public class CellBaseManagerFactory {
     private Map<String, RepeatsManager> repeatsManagers;
     private MetaManager metaManager;
     private Logger logger;
+    // this webservice has no species, do not validate
+    private static final String DONT_CHECK_SPECIES = "do not validate species";
 
     public CellBaseManagerFactory(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -255,6 +257,9 @@ public class CellBaseManagerFactory {
     }
 
     public MetaManager getMetaManager() {
+        if (metaManager == null) {
+            metaManager = new MetaManager(configuration);
+        }
         return metaManager;
     }
 }

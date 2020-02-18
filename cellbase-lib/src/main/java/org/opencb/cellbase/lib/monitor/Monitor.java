@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.monitor;
+package org.opencb.cellbase.lib.monitor;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.opencb.cellbase.core.CellBaseDataResponse;
-import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
+import org.opencb.cellbase.core.DatastoreStatus;
 import org.opencb.cellbase.core.common.GitRepositoryState;
-
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.MetaManager;
+import org.opencb.cellbase.lib.monitor.status.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,9 +63,12 @@ public class Monitor {
     private static final String ASSEMBLY = "assembly";
     private static ObjectMapper jsonObjectMapper;
     private static Logger logger;
+    private MetaManager metaManager;
 
     private WebTarget webTarget = null;
-    private DBAdaptorFactory dbAdaptorFactory = null;
+//    private DBAdaptorFactory dbAdaptorFactory = null;
+    // run local monitor to check the status of local databases. remote monitoring just calls the /monitor web service for a remote URL
+    private boolean runLocalMonitor = false;
 
     static {
         jsonObjectMapper = new ObjectMapper();
@@ -72,23 +76,26 @@ public class Monitor {
         logger = LoggerFactory.getLogger(Monitor.class);
     }
 
-    public Monitor(DBAdaptorFactory dbAdaptorFactory) {
-        this.dbAdaptorFactory = dbAdaptorFactory;
+    public Monitor(MetaManager metaManager) {
+        //this.dbAdaptorFactory = dbAdaptorFactory;
+        this.metaManager = metaManager;
+        runLocalMonitor = true;
     }
 
     public Monitor(String restHost) {
         Client client = ClientBuilder.newClient();
         this.webTarget = client.target(URI.create(restHost));
+        runLocalMonitor = false;
     }
 
     public HealthStatus run(String species, String assembly) {
         // Run "local" monitoring
-        if (dbAdaptorFactory != null) {
-            return runLocalMonitoring(species, assembly);
+//        if (runLocalMonitor) {
+        return runLocalMonitoring(species, assembly);
         // Run monitoring in remote machine
-        } else {
-            return runRemoteMonitoring(species, assembly);
-        }
+//        } else {
+//            return runRemoteMonitoring(species, assembly);
+//        }
     }
 
     private HealthStatus runRemoteMonitoring(String species, String assembly) {
@@ -107,29 +114,28 @@ public class Monitor {
             if (!healthStatusList.isEmpty()) {
                 return healthStatusList.get(0);
             } else {
-                return (new HealthStatus()).setService((new HealthStatus.Service()).setStatus(HealthStatus.ServiceStatus.DOWN));
+                return (new HealthStatus()).setService((new Service()).setStatus(HealthStatus.ServiceStatus.DOWN));
             }
             // IOException controls response parsing exceptions, at least
             // ProcessingException controls unknown host exceptions (cannot find specified host), at least
             // NotFoundException controls that remote WS API provides meta/service_details method
         } catch (IOException | ProcessingException | NotFoundException e) {
             e.printStackTrace();
-            return (new HealthStatus()).setService((new HealthStatus.Service()).setStatus(HealthStatus.ServiceStatus.DOWN));
+            return (new HealthStatus()).setService((new Service()).setStatus(HealthStatus.ServiceStatus.DOWN));
         }
     }
 
     private HealthStatus runLocalMonitoring(String species, String assembly) {
         HealthStatus healthStatus = new HealthStatus();
         healthStatus.setApplication(getApplicationDetails(species, assembly));
-        healthStatus.setInfrastructure(new HealthStatus.Infrastructure(1, NONE));
+        healthStatus.setInfrastructure(new Infrastructure(1, NONE));
         healthStatus.setService(getService(healthStatus.getApplication()));
-
         return healthStatus;
     }
 
-    private HealthStatus.Service getService(HealthStatus.ApplicationDetails applicationDetails) {
-        HealthStatus.ApplicationDetails.DependenciesStatus dependencies = applicationDetails.getDependencies();
-        HealthStatus.Service service = new HealthStatus.Service();
+    private Service getService(ApplicationDetails applicationDetails) {
+        DependenciesStatus dependencies = applicationDetails.getDependencies();
+        Service service = new Service();
         service.setName(CELLBASE)
                .setApplicationTier(CELLBASE_TOMCAT);
         service.setStatus(getOverallServiceStatus(dependencies));
@@ -137,12 +143,12 @@ public class Monitor {
         return service;
     }
 
-    private HealthStatus.ServiceStatus getOverallServiceStatus(HealthStatus.ApplicationDetails.DependenciesStatus dependencies) {
+    private HealthStatus.ServiceStatus getOverallServiceStatus(DependenciesStatus dependencies) {
         // If maintenance file exists rest of checks are overridden
-        if (Files.exists(Paths.get(dbAdaptorFactory.getCellBaseConfiguration().getMaintenanceFlagFile()))) {
+        if (Files.exists(Paths.get(metaManager.getMaintenanceFlagFile()))) {
             return HealthStatus.ServiceStatus.MAINTENANCE;
         } else {
-            Map<String, HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus.DatastoreStatus> datastoreStatusMap
+            Map<String, DatastoreStatus> datastoreStatusMap
                     = dependencies.getDatastores().getMongodb();
             if (datastoreStatusMap != null && datastoreStatusMap.size() > 0) {
                 int downServers = 0;
@@ -171,26 +177,26 @@ public class Monitor {
         }
     }
 
-    private HealthStatus.ApplicationDetails.DependenciesStatus getDependenciesStatus(String species, String assembly) {
-        HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus datastores
-                = new HealthStatus.ApplicationDetails.DependenciesStatus.DatastoreDependenciesStatus();
-        datastores.setMongodb(dbAdaptorFactory.getDatabaseStatus(species, assembly));
-        HealthStatus.ApplicationDetails.DependenciesStatus dependenciesStatus = new HealthStatus.ApplicationDetails.DependenciesStatus();
+    private DependenciesStatus getDependenciesStatus(String species, String assembly) {
+        DatastoreDependenciesStatus datastores
+                = new DatastoreDependenciesStatus();
+        datastores.setMongodb(metaManager.getDataBaseStatus(species, assembly));
+        DependenciesStatus dependenciesStatus = new DependenciesStatus();
         dependenciesStatus.setDatastores(datastores);
 
         return dependenciesStatus;
     }
 
-    private HealthStatus.ApplicationDetails getApplicationDetails(String species, String assembly) {
-        HealthStatus.ApplicationDetails applicationDetails = new HealthStatus.ApplicationDetails();
-        applicationDetails.setMaintainer(dbAdaptorFactory.getCellBaseConfiguration().getMaintainerContact());
+    private ApplicationDetails getApplicationDetails(String species, String assembly) {
+        ApplicationDetails applicationDetails = new ApplicationDetails();
+        applicationDetails.setMaintainer(metaManager.getMaintainerContact());
         applicationDetails.setServer(getServerName());
         applicationDetails.setStarted(new SimpleDateFormat("yyyyMMdd_HHmmss")
                 .format(new Date(ManagementFactory.getRuntimeMXBean().getStartTime())));
         applicationDetails.setUptime(TimeUnit.MILLISECONDS.toMinutes(ManagementFactory.getRuntimeMXBean().getUptime())
                 + " minutes");
         applicationDetails.setVersion(
-                new HealthStatus.ApplicationDetails.Version(GitRepositoryState.get().getBuildVersion(),
+                new ApplicationDetails.Version(GitRepositoryState.get().getBuildVersion(),
                         GitRepositoryState.get().getCommitId().substring(0, 8)));
         applicationDetails.setDependencies(getDependenciesStatus(species, assembly));
 

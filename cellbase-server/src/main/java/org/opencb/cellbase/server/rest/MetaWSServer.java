@@ -21,11 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.common.GitRepositoryState;
 import org.opencb.cellbase.core.config.DownloadProperties;
+import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.config.SpeciesProperties;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.core.monitor.HealthStatus;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
+import org.opencb.cellbase.lib.monitor.HealthStatus;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
@@ -42,6 +44,7 @@ import org.opencb.cellbase.server.rest.regulatory.TfWSServer;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -64,27 +67,40 @@ public class MetaWSServer extends GenericRestWSServer {
     private static final String HEALTH = "health";
     private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
 
+
     public MetaWSServer(@PathParam("version")
                         @ApiParam(name = "version", value = "Possible values: v4, v5",
                                 defaultValue = "v5") String version,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(version, uriInfo, hsr);
-
         metaManager = cellBaseManagerFactory.getMetaManager();
     }
-
 
     @GET
     @Path("/{species}/versions")
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
             + "data files were downloaded.", response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
-                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species)
-            throws CellbaseException {
-        parseQueryParams();
-        CellBaseDataResult queryResults = metaManager.getVersions(queryOptions);
-        return createOkResponse(queryResults);
+                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species) {
+        try {
+            MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+            String assemblyName = multivaluedMap.get("assembly").get(0);
+            if (StringUtils.isEmpty(assemblyName)) {
+                SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
+                if (assemblyObject != null) {
+                    assemblyName = assemblyObject.getName();
+                }
+            }
+            if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assemblyName)) {
+                return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                        + assemblyName + "'");
+            }
+            CellBaseDataResult queryResults = metaManager.getVersions(species, assemblyName);
+            return createOkResponse(queryResults);
+        } catch (CellbaseException e) {
+            return createErrorResponse(e);
+        }
     }
 
     @GET
@@ -96,15 +112,12 @@ public class MetaWSServer extends GenericRestWSServer {
         return getAllSpecies();
     }
 
-    /*
-     * Auxiliar methods
-     */
     @GET
     @Path("/{category}")
     @ApiOperation(httpMethod = "GET", value = "Returns available subcategories for a given category",
             response = String.class, responseContainer = "QueryResponse")
     public Response getCategory(@PathParam("category")
-                                @ApiParam(name = "category", value = "String containing the name of the caregory",
+                                @ApiParam(name = "category", value = "String containing the name of the category",
                                             allowableValues = "feature,genomic,network,regulatory", required = true)
                                             String category) {
         if ("feature".equalsIgnoreCase(category)) {
@@ -179,15 +192,22 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/{species}/status")
     @ApiOperation(httpMethod = "GET", value = "Reports on the overall system status based on the status of such things "
-            + "as database connections and the ability to access other API's.",
+            + "as database connections and the ability to access other APIs.",
             response = DownloadProperties.class, responseContainer = "QueryResponse")
-    public Response status(@PathParam("species")
-                               @ApiParam(name = "species",
-                                       value = "Name of the species, e.g.: hsapiens. For a full list of potentially"
-                                               + "available species ids, please refer to: "
-                                               + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species",
-                                       required = true) String species) {
-        HealthStatus health = monitor.run(species, this.assembly);
+    public Response status(@PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
+                                       String species) throws CellbaseException {
+
+        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+        String assemblyName = multivaluedMap.get("assembly").get(0);
+        if (assemblyName == null) {
+            assemblyName = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+        }
+        if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assemblyName)) {
+            return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                    + assemblyName + "'");
+        }
+
+        HealthStatus health = monitor.run(species, assemblyName);
         CellBaseDataResult<HealthStatus> queryResult = new CellBaseDataResult();
         queryResult.setId(STATUS);
         queryResult.setTime(0);
@@ -201,7 +221,8 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/api")
     @ApiOperation(value = "API", response = Map.class)
-    public Response api(@ApiParam(value = "List of categories to get API from") @QueryParam("category") String categoryStr) {
+    public Response api(@ApiParam(value = "List of categories to get API from, e.g. Xref,Gene") @QueryParam("category") String categoryStr)
+            throws CellbaseException {
         List<LinkedHashMap<String, Object>> api = new ArrayList<>(20);
         Map<String, Class> classes = new LinkedHashMap<>();
         classes.put("clinical", ClinicalWSServer.class);
@@ -219,7 +240,12 @@ public class MetaWSServer extends GenericRestWSServer {
 
         if (StringUtils.isNotEmpty(categoryStr)) {
             for (String category : categoryStr.split(",")) {
-                api.add(getHelp(classes.get(category)));
+                Class clazz = classes.get(category.toLowerCase());
+                if (clazz == null) {
+                    return createErrorResponse(new CellbaseException("Category not found: " + category));
+                }
+                LinkedHashMap<String, Object> help = getHelp(clazz);
+                api.add(help);
             }
         } else {
             // Get API for all categories
