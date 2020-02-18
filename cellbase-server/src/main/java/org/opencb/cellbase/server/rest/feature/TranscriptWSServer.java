@@ -23,6 +23,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.lib.managers.TranscriptManager;
@@ -60,7 +61,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-
+        if (assembly == null) {
+            this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+        }
         transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
         geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
         proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);

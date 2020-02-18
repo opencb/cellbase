@@ -195,12 +195,17 @@ public class MetaWSServer extends GenericRestWSServer {
             + "as database connections and the ability to access other APIs.",
             response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response status(@PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
-                                       String species) throws CellbaseException {
+                                       String species) {
 
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         String assemblyName = multivaluedMap.get("assembly").get(0);
         if (assemblyName == null) {
-            assemblyName = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            try {
+                assemblyName = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+            } catch (CellbaseException e) {
+                return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
+                        + assemblyName + "'");
+            }
         }
         if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assemblyName)) {
             return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
