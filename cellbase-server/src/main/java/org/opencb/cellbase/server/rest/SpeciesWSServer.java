@@ -70,7 +70,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
             parseQueryParams();
             CellBaseDataResult queryResult = genomeManager.info(queryOptions);
             return createOkResponse(queryResult);
-        } catch (MongoException | CellbaseException e) {
+        } catch (MongoException e) {
             e.printStackTrace();
             return null;
         }

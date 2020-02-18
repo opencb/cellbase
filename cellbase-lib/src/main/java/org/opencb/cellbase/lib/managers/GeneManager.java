@@ -19,13 +19,17 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.queries.GeneQuery;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class GeneManager extends AbstractManager {
 
@@ -40,8 +44,86 @@ public class GeneManager extends AbstractManager {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult<Gene> search(Query query, QueryOptions queryOptions) {
+    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws CellbaseException {
+        QueryOptions queryOptions = geneQuery.getQueryOptions();
+        validateQueryOptions(queryOptions);
+        queryOptions.putIfAbsent(QueryOptions.LIMIT, 10);
+        queryOptions.putIfAbsent(QueryOptions.SKIP, 0);
+        Query query = geneQuery.getQuery();
         return geneDBAdaptor.nativeGet(query, queryOptions);
+    }
+
+    public GeneQuery parseQueryParams(MultivaluedMap<String, String> multivaluedMap) throws CellbaseException {
+        GeneQuery geneQuery = new GeneQuery();
+
+        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+
+            String key = entry.getKey();
+            String value = entry.getValue().get(0);
+
+            if (QueryOptions.COUNT.equals(key)) {
+                geneQuery.addQueryOption(QueryOptions.COUNT, Boolean.parseBoolean(value));
+            } else if (QueryOptions.SKIP.equals(key)) {
+                int skip;
+                try {
+                    skip = Integer.parseInt(value);
+                } catch (NumberFormatException nfe) {
+                    throw new CellbaseException("Invalid skip value, not a valid number: " + value);
+                }
+                geneQuery.addQueryOption(QueryOptions.SKIP, skip);
+            } else if (QueryOptions.LIMIT.equals(key)) {
+                int limit;
+                try {
+                    limit = Integer.parseInt(value);
+                } catch (NumberFormatException nfe) {
+                    throw new CellbaseException("Invalid limit value, not a valid number: " + value);
+                }
+                geneQuery.addQueryOption(QueryOptions.LIMIT, limit);
+            } else if (QueryOptions.EXCLUDE.equals(key)) {
+                geneQuery.addQueryOption(QueryOptions.EXCLUDE, value);
+            } else if (QueryOptions.INCLUDE.equals(key)) {
+                geneQuery.addQueryOption(QueryOptions.INCLUDE, value);
+            } else {
+                if ("id".equals(key)) {
+                    geneQuery.setId(value);
+                } else if ("name".equals(key)) {
+                    geneQuery.setName(value);
+                } else if ("biotype".equals(key)) {
+                    geneQuery.setBiotype(value);
+                } else if ("region".equals(key)) {
+                    geneQuery.setRegion(value);
+                } else if ("transcriptsBiotype".equals(key)) {
+                    geneQuery.setTranscriptsBiotype(value);
+                } else if ("transcriptsXrefs".equals(key)) {
+                    geneQuery.setTranscriptsXrefs(value);
+                } else if ("transcriptsId".equals(key)) {
+                    geneQuery.setTranscriptsId(value);
+                } else if ("transcriptsName".equals(key)) {
+                    geneQuery.setTranscriptsName(value);
+                } else if ("transcriptsAnnotationFlags".equals(key)) {
+                    geneQuery.setTranscriptsAnnotationFlags(value);
+                } else if ("transcriptsTfbsName".equals(key)) {
+                    geneQuery.setTranscriptsTfbsName(value);
+                } else if ("annotationDiseasesId".equals(key)) {
+                    geneQuery.setAnnotationDiseasesId(value);
+                } else if ("annotationDiseasesName".equals(key)) {
+                    geneQuery.setAnnotationDiseasesName(value);
+                } else if ("annotationExpressionGene".equals(key)) {
+                    geneQuery.setAnnotationExpressionGene(value);
+                } else if ("annotationExpressionTissue".equals(key)) {
+                    geneQuery.setAnnotationExpressionTissue(value);
+                } else if ("annotationexpressionValue".equals(key)) {
+                    geneQuery.setAnnotationexpressionValue(value);
+                } else if ("annotationDrugsName".equals(key)) {
+                    geneQuery.setAnnotationDrugsName(value);
+                } else if ("annotationDrugsGene".equals(key)) {
+                    geneQuery.setAnnotationDrugsGene(value);
+                } else {
+                    throw new CellbaseException("invalid parameter " + key);
+                }
+            }
+        }
+        return geneQuery;
     }
 
     public CellBaseDataResult<Gene> groupBy(Query query, QueryOptions queryOptions, String fields) {
@@ -54,7 +136,6 @@ public class GeneManager extends AbstractManager {
     }
 
     public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String genes) {
-        logger.debug("blahh...");
         List<Query> queries = createQueries(query, genes, GeneDBAdaptor.QueryParams.XREFS.key());
         List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
         for (int i = 0; i < queries.size(); i++) {

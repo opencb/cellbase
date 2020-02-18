@@ -34,15 +34,16 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
 import org.opencb.cellbase.lib.monitor.Monitor;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
-import org.opencb.commons.datastore.core.*;
+import org.opencb.commons.datastore.core.Event;
+import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -99,13 +100,13 @@ public class GenericRestWSServer implements IWSServer {
     private static final String DONT_CHECK_SPECIES = "do not validate species";
 
     public GenericRestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException, CellbaseException {
+            throws VersionException, IOException, CellbaseException {
         this(version, DONT_CHECK_SPECIES, uriInfo, hsr);
     }
 
     public GenericRestWSServer(@PathParam("version") String version, @PathParam("species") String species, @Context UriInfo uriInfo,
                                @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException, CellbaseException {
+            throws VersionException, IOException, CellbaseException {
 
         this.version = version;
         this.uriInfo = uriInfo;
@@ -113,13 +114,7 @@ public class GenericRestWSServer implements IWSServer {
         this.species = species;
 
         init();
-        if (DONT_CHECK_SPECIES.equals(species)) {
-            logger.debug("Executing GenericRestWSServer constructor with no Species");
-            initQuery(false);
-        } else {
-            logger.debug("Executing GenericRestWSServer constructor with Species");
-            initQuery(true);
-        }
+        initQuery();
     }
 
     private void init() throws IOException, CellbaseException {
@@ -161,46 +156,30 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    private void initQuery(boolean checkSpecies) throws VersionException, SpeciesException {
+    private void initQuery() throws VersionException {
         startTime = System.currentTimeMillis();
-        query = new Query();
-        // This needs to be an ArrayList since it may be added some extra fields later
-        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
-        params = new ObjectMap();
+//        query = new Query();
+//        // This needs to be an ArrayList since it may be added some extra fields later
+        // TODO move to manager
+//        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
+//        params = new ObjectMap();
 
-        checkPathParams(checkSpecies);
+        checkVersion();
     }
 
-    private void checkPathParams(boolean checkSpecies) throws VersionException, SpeciesException {
+    private void checkVersion() throws VersionException {
         if (version == null) {
             throw new VersionException("Version not valid: '" + version + "'");
         }
 
-        if (checkSpecies && species == null) {
-            throw new SpeciesException("Species not valid: '" + species + "'");
-        }
-
-        /**
-         * Check version parameter, must be: v1, v2, ... If 'latest' then is
-         * converted to appropriate version
-         */
-        if (version.equalsIgnoreCase("latest")) {
-            version = cellBaseConfiguration.getVersion();
-            logger.info("Version 'latest' detected, setting version parameter to '{}'", version);
-        } else {
-            // FIXME this will only work when no database schemas are done, in version 3 and 4 this can raise some problems
-            // we set the version from the URL, this will decide which database is queried,
-            cellBaseConfiguration.setVersion(version);
-        }
-
-        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(this.version)) {
-            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
-            throw new VersionException("Version not valid: '" + version + "'");
-        }
+//        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
+//            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
+//            throw new VersionException("Version not valid: '" + version + "'");
+//        }
     }
 
-    @Override
-    public void parseQueryParams() throws CellbaseException {
+    @Deprecated
+    public void parseQueryParams() {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
 
         queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
@@ -221,6 +200,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
+    @Deprecated
     public void parseIncludesAndExcludes(String exclude, String include, String sort) {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         if (exclude != null && !exclude.isEmpty()) {
@@ -241,6 +221,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
+    @Deprecated
     public void parseLimitAndSkip(Integer limit, Integer skip) throws CellbaseException {
         if (limit != null) {
             if (limit > MAX_RECORDS) {

@@ -31,6 +31,7 @@ import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.lib.managers.TranscriptManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
+import org.opencb.cellbase.lib.queries.GeneQuery;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -143,14 +144,14 @@ public class GeneWSServer extends GenericRestWSServer {
 //        }
 //    }
 
-    @GET
-    @Path("/stats")
-    @Override
-    @ApiOperation(httpMethod = "GET", value = "Not yet implemented ", response = Integer.class,
-            responseContainer = "QueryResponse", hidden = true)
-    public Response stats() {
-        return super.stats();
-    }
+//    @GET
+//    @Path("/stats")
+//    @Override
+//    @ApiOperation(httpMethod = "GET", value = "Not yet implemented ", response = Integer.class,
+//            responseContainer = "QueryResponse", hidden = true)
+//    public Response stats() {
+//        return super.stats();
+//    }
 
     @GET
     @Path("/groupby")
@@ -252,8 +253,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
-            value = "Retrieves all gene objects", response = Gene.class,
-            responseContainer = "QueryResponse")
+            value = "Retrieves all gene objects", response = Gene.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
@@ -291,24 +291,22 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                           @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                           @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                           @QueryParam("limit") @DefaultValue("10")
-                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                           @QueryParam("skip") @DefaultValue("0")
-                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
-        try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
-            parseQueryParams();
-            CellBaseDataResult<Gene> queryResults = geneManager.search(query, queryOptions);
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
+    public Response getAll() throws CellbaseException {
+        GeneQuery geneQuery = geneManager.parseQueryParams(uriInfo.getQueryParameters());
+        CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
+        return createOkResponse(queryResults);
     }
 
 //    @GET
@@ -385,15 +383,18 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("genes")
-                @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes,
-            @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-            @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-            @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
+                                       @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
+//            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = geneManager.info(query, queryOptions, genes);
             return createOkResponse(queryResults);

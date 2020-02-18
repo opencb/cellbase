@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.managers;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -41,6 +42,9 @@ public class AbstractManager {
     protected Logger logger;
 
     protected int histogramIntervalSize = 200000;
+    private static final int SKIP_DEFAULT = 0;
+    private static final int LIMIT_DEFAULT = 10;
+    private static final int MAX_RECORDS = 5000;
 
     public AbstractManager(CellBaseConfiguration configuration) {
         this.configuration = configuration;
@@ -107,4 +111,28 @@ public class AbstractManager {
         return Boolean.parseBoolean(getHistogramParameter(queryOptions));
     }
 
+    // make sure what is there is legal
+    public void validateQueryOptions(QueryOptions queryOptions) throws CellbaseException {
+        validateQueryOptions(queryOptions, null);
+    }
+
+    public void validateQueryOptions(QueryOptions queryOptions, List<String> illegalParameters) throws CellbaseException {
+        if (queryOptions.containsKey(QueryOptions.LIMIT)) {
+            int limit = queryOptions.getInt("limit");
+            if (limit < 0 || limit > MAX_RECORDS) {
+                throw new CellbaseException("Invalid limit: " + limit + ". Must be between 0 and " + MAX_RECORDS);
+            }
+        }
+        if (queryOptions.containsKey(QueryOptions.SKIP)) {
+            int skip = queryOptions.getInt("skip");
+            if (skip < 0 || skip > MAX_RECORDS) {
+                throw new CellbaseException("Invalid skip: " + skip + ". Must be between 0 and " + MAX_RECORDS);
+            }
+        }
+        for (String illegalParameter : illegalParameters) {
+            if (queryOptions.get(illegalParameter) != null) {
+                throw new CellbaseException("Invalid parameter found: " + illegalParameter);
+            }
+        }
+    }
 }
