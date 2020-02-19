@@ -31,7 +31,7 @@ import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.lib.managers.TranscriptManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
-import org.opencb.cellbase.lib.queries.GeneQuery;
+import org.opencb.cellbase.core.queries.GeneQuery;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;

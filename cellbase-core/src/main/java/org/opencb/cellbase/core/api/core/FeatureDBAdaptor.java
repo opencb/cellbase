@@ -22,6 +22,7 @@ import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.queries.AbstractQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +50,7 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         return nativeGet(new Query(), options);
     }
 
-    CellBaseDataResult<T> next(Query query, QueryOptions options);
+    CellBaseDataResult<T> next(AbstractQuery query, QueryOptions options);
 
     CellBaseDataResult nativeNext(Query query, QueryOptions options);
 

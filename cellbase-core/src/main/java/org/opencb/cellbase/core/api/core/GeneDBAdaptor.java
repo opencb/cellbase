@@ -16,10 +16,10 @@
 
 package org.opencb.cellbase.core.api.core;
 
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.queries.*;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
@@ -78,10 +78,8 @@ public interface GeneDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
     CellBaseDataResult startsWith(String id, QueryOptions options);
 
-    CellBaseDataResult getRegulatoryElements(Query query, QueryOptions queryOptions);
+    CellBaseDataResult getRegulatoryElements(GeneQuery geneQuery, QueryOptions queryOptions);
 
-    CellBaseDataResult getTfbs(Query query, QueryOptions queryOptions);
-
-    CellBaseDataResult<String> getBiotypes(Query query);
+    CellBaseDataResult getTfbs(GeneQuery geneQuery, QueryOptions queryOptions);
 
 }

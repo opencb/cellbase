@@ -21,8 +21,7 @@ import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.queries.GeneQuery;
-import org.opencb.commons.datastore.core.Query;
+import org.opencb.cellbase.core.queries.GeneQuery;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -47,103 +46,103 @@ public class GeneManager extends AbstractManager {
         validateQueryOptions(queryOptions);
         queryOptions.putIfAbsent(QueryOptions.LIMIT, 10);
         queryOptions.putIfAbsent(QueryOptions.SKIP, 0);
-        Query query = geneQuery.getQuery();
-        return geneDBAdaptor.nativeGet(query, queryOptions);
+        return geneDBAdaptor.nativeGet(geneQuery, queryOptions);
     }
 
-    public CellBaseDataResult<Gene> groupBy(Query query, QueryOptions queryOptions, String fields) {
-        return geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+    public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery, String fields) {
+        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(fields.split(",")), geneQuery.getQueryOptions());
     }
 
-    public CellBaseDataResult<Gene> aggregationStats(Query query, QueryOptions queryOptions, String fields) {
+    public CellBaseDataResult<Gene> aggregationStats(GeneQuery geneQuery, String fields) {
+        QueryOptions queryOptions = geneQuery.getQueryOptions();
         queryOptions.put(QueryOptions.COUNT, true);
-        return geneDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(fields.split(",")), queryOptions);
     }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String genes) {
-        List<Query> queries = createQueries(query, genes, GeneDBAdaptor.QueryParams.XREFS.key());
-        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+    public List<CellBaseDataResult> info(GeneQuery geneQuery, String genes) {
+        List<GeneQuery> queries = createQueries(geneQuery, genes, GeneDBAdaptor.QueryParams.XREFS.key());
+        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, geneQuery.getQueryOptions());
         for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
+            geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
         }
-        return queryResults;
+        return geneQueryResults;
     }
 
-    public CellBaseDataResult<Gene> distinct(Query query, String field) {
-        return geneDBAdaptor.distinct(query, field);
+    public CellBaseDataResult<Gene> distinct(GeneQuery geneQuery, String field) {
+        return geneDBAdaptor.distinct(geneQuery, field);
     }
 
-    public List<CellBaseDataResult> getRegulatoryElements(Query query, QueryOptions queryOptions, String genes) {
+    public List<CellBaseDataResult> getRegulatoryElements(GeneQuery geneQuery, String genes) {
         String[] geneArray = genes.split(",");
-        List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
+        List<CellBaseDataResult> geneQueryResults = new ArrayList<>(geneArray.length);
         for (String gene : geneArray) {
-            query.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
-            CellBaseDataResult queryResult = geneDBAdaptor.getRegulatoryElements(query, queryOptions);
-            queryResults.add(queryResult);
+            geneQuery.put(GeneDBAdaptor.QueryParams.ID.key(), gene);
+            CellBaseDataResult geneQueryResult = geneDBAdaptor.getRegulatoryElements(geneQuery, geneQuery.getQueryOptions());
+            geneQueryResults.add(geneQueryResult);
         }
-        return queryResults;
+        return geneQueryResults;
     }
 
-    public List<CellBaseDataResult> getTfbs(Query query, QueryOptions queryOptions, String genes) {
+    public List<CellBaseDataResult> getTfbs(GeneQuery geneQuery, QueryOptions geneQueryOptions, String genes) {
         String[] geneArray = genes.split(",");
-        List<CellBaseDataResult> queryResults = new ArrayList<>(geneArray.length);
+        List<CellBaseDataResult> geneQueryResults = new ArrayList<>(geneArray.length);
         for (String gene : geneArray) {
-            query.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
-            CellBaseDataResult queryResult = geneDBAdaptor.getTfbs(query, queryOptions);
-            queryResult.setId(gene);
-            queryResults.add(queryResult);
+            geneQuery.put(GeneDBAdaptor.QueryParams.XREFS.key(), gene);
+            CellBaseDataResult geneQueryResult = geneDBAdaptor.getTfbs(geneQuery, geneQuery.getQueryOptions());
+            geneQueryResult.setId(gene);
+            geneQueryResults.add(geneQueryResult);
         }
-        return queryResults;
+        return geneQueryResults;
     }
 
-    public List<CellBaseDataResult> getByTranscript(Query query, QueryOptions queryOptions, String transcriptId) {
-        List<Query> queries = createQueries(query, transcriptId, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
-        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+    public List<CellBaseDataResult> getByTranscript(GeneQuery geneQuery, String transcriptId) {
+        List<GeneQuery> queries = createQueries(geneQuery, transcriptId, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
+        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, geneQuery.getQueryOptions());
         for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key()));
+            geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key()));
         }
-        return queryResults;
+        return geneQueryResults;
     }
 
-    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
-        if (hasHistogramQueryParam(queryOptions)) {
-            List<Query> queries = createQueries(query, region, GeneDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = geneDBAdaptor.getIntervalFrequencies(queries, getHistogramIntervalSize(queryOptions),
-                    queryOptions);
+    public List<CellBaseDataResult> getByRegion(GeneQuery geneQuery, QueryOptions geneQueryOptions, String region) {
+        if (hasHistogramQueryParam(geneQueryOptions)) {
+            List<GeneQuery> queries = createQueries(geneQuery, region, GeneDBAdaptor.QueryParams.REGION.key());
+            List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.getIntervalFrequencies(queries, getHistogramIntervalSize(geneQueryOptions),
+                    geneQueryOptions);
             for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) query.get(GeneDBAdaptor.QueryParams.REGION.key()));
+                geneQueryResults.get(i).setId((String) geneQuery.get(GeneDBAdaptor.QueryParams.REGION.key()));
             }
-            return queryResults;
+            return geneQueryResults;
         } else {
-            List<Query> queries = createQueries(query, region, GeneDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+            List<GeneQuery> queries = createQueries(geneQuery, region, GeneDBAdaptor.QueryParams.REGION.key());
+            List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, geneQueryOptions);
             for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.REGION.key()));
+                geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.REGION.key()));
             }
-            return queryResults;
+            return geneQueryResults;
         }
     }
 
-    public List<CellBaseDataResult> getByTf(Query query, QueryOptions queryOptions, String tf) {
-        List<Query> queries = createQueries(query, tf, GeneDBAdaptor.QueryParams.NAME.key());
-        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+    public List<CellBaseDataResult> getByTf(GeneQuery geneQuery, String tf) {
+        List<GeneQuery> queries = createQueries(geneQuery, tf, GeneDBAdaptor.QueryParams.NAME.key());
+        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, geneQuery.getQueryOptions());
         for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));
+            geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));
         }
-        return queryResults;
+        return geneQueryResults;
     }
 
-    public List<CellBaseDataResult> getGeneByEnsemblId(QueryOptions queryOptions, String id) {
+    public List<CellBaseDataResult> getGeneByEnsemblId(QueryOptions geneQueryOptions, String id) {
         String[] ids = id.split(",");
-        List<Query> queries = new ArrayList<>(ids.length);
+        List<GeneQuery> queries = new ArrayList<>(ids.length);
         for (String s : ids) {
-            queries.add(new Query(GeneDBAdaptor.QueryParams.XREFS.key(), s));
+            queries.add(new GeneQuery(GeneDBAdaptor.QueryParams.XREFS.key(), s));
         }
-        List<CellBaseDataResult> queryResults = geneDBAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, geneQueryOptions);
         for (int i = 0; i < ids.length; i++) {
-            queryResults.get(i).setId(ids[i]);
+            geneQueryResults.get(i).setId(ids[i]);
         }
-        return queryResults;
+        return geneQueryResults;
     }
 
 
