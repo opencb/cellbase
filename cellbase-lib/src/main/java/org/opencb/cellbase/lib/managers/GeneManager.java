@@ -21,7 +21,7 @@ import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class GeneManager extends AbstractManager {
         validateQueryOptions(queryOptions);
         queryOptions.putIfAbsent(QueryOptions.LIMIT, 10);
         queryOptions.putIfAbsent(QueryOptions.SKIP, 0);
-        return geneDBAdaptor.nativeGet(geneQuery, queryOptions);
+        return geneDBAdaptor.nativeGet(geneQuery);
     }
 
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery, String fields) {

@@ -19,7 +19,7 @@ package org.opencb.cellbase.core.api.core;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.queries.*;
+import org.opencb.cellbase.core.api.queries.*;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 

@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.queries;
+package org.opencb.cellbase.core.api.queries;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -27,11 +30,10 @@ import java.util.Map;
 
 public class GeneQuery extends AbstractQuery {
 
-    private QueryOptions queryOptions;
     private List<String> ids;
     private List<String> names;
     private List<String> biotypes;
-    private List<String> regions;
+    private List<Region> regions;
     private List<String> transcriptBiotypes;
     private List<String> transcriptXrefs;
     private List<String> transcriptIds;
@@ -46,7 +48,8 @@ public class GeneQuery extends AbstractQuery {
     private List<String> annotationDrugNames;
     private List<String> annotationDrugGenes;
 
-    public GeneQuery() {}
+    public GeneQuery() {
+    }
 
     public GeneQuery(MultivaluedMap<String, String> multivaluedMap) throws CellbaseException {
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
@@ -116,6 +119,12 @@ public class GeneQuery extends AbstractQuery {
                 }
             }
         }
+    }
+
+    public static GeneQuery of(Map<String, Object> map) throws JsonProcessingException {
+        ObjectMapper objectMapper= new ObjectMapper();
+        String value = objectMapper.writeValueAsString(map);
+        return objectMapper.readValue(value, GeneQuery.class);
     }
 
     public List<String> getIds() {
@@ -271,19 +280,7 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public QueryOptions getQueryOptions() {
-        return queryOptions;
-    }
 
-    public GeneQuery addQueryOption(String key, Object value) {
-        queryOptions.put(key, value);
-        return this;
-    }
-
-    public GeneQuery setQueryOptions(QueryOptions queryOptions) {
-        this.queryOptions = queryOptions;
-        return this;
-    }
 
     public static class Builder {
         private QueryOptions queryOptions;

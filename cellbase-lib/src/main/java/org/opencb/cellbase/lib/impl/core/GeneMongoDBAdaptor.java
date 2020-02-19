@@ -33,7 +33,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
-import org.opencb.cellbase.core.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;

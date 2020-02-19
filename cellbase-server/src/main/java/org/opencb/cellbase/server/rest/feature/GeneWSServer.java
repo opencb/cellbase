@@ -31,7 +31,7 @@ import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.lib.managers.TranscriptManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
-import org.opencb.cellbase.core.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
@@ -304,7 +304,9 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getAll() throws CellbaseException {
-        GeneQuery geneQuery = new GeneQuery(uriInfo.getQueryParameters());
+//        GeneQuery geneQuery = new GeneQuery(uriInfo.getQueryParameters());
+        // gene/search?limit=1 & biotype=bt1,bt2,bt3 ...
+        GeneQuery of = GeneQuery.of(query);
         CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
         return createOkResponse(queryResults);
     }
