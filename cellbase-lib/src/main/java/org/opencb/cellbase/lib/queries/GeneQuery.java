@@ -17,10 +17,15 @@
 package org.opencb.cellbase.lib.queries;
 
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-final public class GeneQuery {
+import javax.ws.rs.core.MultivaluedMap;
+import java.util.List;
+import java.util.Map;
+
+public class GeneQuery {
 
     private QueryOptions queryOptions;
     private String id;
@@ -40,6 +45,78 @@ final public class GeneQuery {
     private String annotationexpressionValue;
     private String annotationDrugsName;
     private String annotationDrugsGene;
+
+    public GeneQuery() {}
+
+    public GeneQuery(MultivaluedMap<String, String> multivaluedMap) throws CellbaseException {
+        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+
+            String key = entry.getKey();
+            String value = entry.getValue().get(0);
+
+            if (QueryOptions.COUNT.equals(key)) {
+                addQueryOption(QueryOptions.COUNT, Boolean.parseBoolean(value));
+            } else if (QueryOptions.SKIP.equals(key)) {
+                int skip;
+                try {
+                    skip = Integer.parseInt(value);
+                } catch (NumberFormatException nfe) {
+                    throw new CellbaseException("Invalid skip value, not a valid number: " + value);
+                }
+                addQueryOption(QueryOptions.SKIP, skip);
+            } else if (QueryOptions.LIMIT.equals(key)) {
+                int limit;
+                try {
+                    limit = Integer.parseInt(value);
+                } catch (NumberFormatException nfe) {
+                    throw new CellbaseException("Invalid limit value, not a valid number: " + value);
+                }
+                addQueryOption(QueryOptions.LIMIT, limit);
+            } else if (QueryOptions.EXCLUDE.equals(key)) {
+                addQueryOption(QueryOptions.EXCLUDE, value);
+            } else if (QueryOptions.INCLUDE.equals(key)) {
+                addQueryOption(QueryOptions.INCLUDE, value);
+            } else {
+                if ("id".equals(key)) {
+                    setId(value);
+                } else if ("name".equals(key)) {
+                    setName(value);
+                } else if ("biotype".equals(key)) {
+                    setBiotype(value);
+                } else if ("region".equals(key)) {
+                    setRegion(value);
+                } else if ("transcriptsBiotype".equals(key)) {
+                    setTranscriptsBiotype(value);
+                } else if ("transcriptsXrefs".equals(key)) {
+                    setTranscriptsXrefs(value);
+                } else if ("transcriptsId".equals(key)) {
+                    setTranscriptsId(value);
+                } else if ("transcriptsName".equals(key)) {
+                    setTranscriptsName(value);
+                } else if ("transcriptsAnnotationFlags".equals(key)) {
+                    setTranscriptsAnnotationFlags(value);
+                } else if ("transcriptsTfbsName".equals(key)) {
+                    setTranscriptsTfbsName(value);
+                } else if ("annotationDiseasesId".equals(key)) {
+                    setAnnotationDiseasesId(value);
+                } else if ("annotationDiseasesName".equals(key)) {
+                    setAnnotationDiseasesName(value);
+                } else if ("annotationExpressionGene".equals(key)) {
+                    setAnnotationExpressionGene(value);
+                } else if ("annotationExpressionTissue".equals(key)) {
+                    setAnnotationExpressionTissue(value);
+                } else if ("annotationexpressionValue".equals(key)) {
+                    setAnnotationexpressionValue(value);
+                } else if ("annotationDrugsName".equals(key)) {
+                    setAnnotationDrugsName(value);
+                } else if ("annotationDrugsGene".equals(key)) {
+                    setAnnotationDrugsGene(value);
+                } else {
+                    throw new CellbaseException("invalid parameter " + key);
+                }
+            }
+        }
+    }
 
     public String getId() {
         return id;

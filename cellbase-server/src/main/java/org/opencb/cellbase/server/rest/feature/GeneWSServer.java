@@ -304,7 +304,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getAll() throws CellbaseException {
-        GeneQuery geneQuery = geneManager.parseQueryParams(uriInfo.getQueryParameters());
+        GeneQuery geneQuery = new GeneQuery(uriInfo.getQueryParameters());
         CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
         return createOkResponse(queryResults);
     }
