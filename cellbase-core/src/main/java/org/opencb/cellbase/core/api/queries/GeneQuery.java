@@ -16,13 +16,10 @@
 
 package org.opencb.cellbase.core.api.queries;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.core.Region;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class GeneQuery extends FeatureQuery {
 
@@ -45,15 +42,7 @@ public class GeneQuery extends FeatureQuery {
     private List<String> annotationDrugsGene;
 
     public GeneQuery() {
-
     }
-
-
-    public GeneQuery(Builder builder) {
-
-    }
-
-
 
 //    public GeneQuery(MultivaluedMap<String, String> multivaluedMap) throws CellbaseException {
 //        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
@@ -125,11 +114,11 @@ public class GeneQuery extends FeatureQuery {
 //        }
 //    }
 
-    public static GeneQuery of(Map<String, Object> map) throws JsonProcessingException {
-        ObjectMapper objectMapper= new ObjectMapper();
-        String value = objectMapper.writeValueAsString(map);
-        return objectMapper.readValue(value, GeneQuery.class);
-    }
+//    public static GeneQuery of(Map<String, Object> map) throws JsonProcessingException {
+//        ObjectMapper objectMapper= new ObjectMapper();
+//        String value = objectMapper.writeValueAsString(map);
+//        return objectMapper.readValue(value, GeneQuery.class);
+//    }
 
     public List<String> getIds() {
         return ids;

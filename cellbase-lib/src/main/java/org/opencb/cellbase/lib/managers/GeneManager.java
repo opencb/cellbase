@@ -70,7 +70,7 @@ public class GeneManager extends AbstractManager {
         List<GeneQuery> queries = new ArrayList<>(ids.length);
         for (String id : ids) {
             // TODO need to clone query properly
-            GeneQuery geneXrefQuery = new GeneQuery(geneQuery);
+            GeneQuery geneXrefQuery = new GeneQuery();
             geneXrefQuery.setTranscriptsXrefs(id);
             queries.add(geneXrefQuery);
         }
@@ -97,7 +97,7 @@ public class GeneManager extends AbstractManager {
         List<CellBaseDataResult> geneQueryResults = new ArrayList<>(geneArray.length);
         for (String gene : geneArray) {
             geneQuery.setTranscriptsXrefs(gene);
-            CellBaseDataResult geneQueryResult = getTfbs(geneQuery, gene);
+            CellBaseDataResult geneQueryResult = geneDBAdaptor.getTfbs(geneQuery, gene);
             geneQueryResult.setId(gene);
             geneQueryResults.add(geneQueryResult);
         }
@@ -108,7 +108,7 @@ public class GeneManager extends AbstractManager {
         List<GeneQuery> queries = createQueries(geneQuery, transcriptId, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key());
         List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries);
         for (int i = 0; i < queries.size(); i++) {
-            geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key()));
+            geneQueryResults.get(i).setId(queries.get(i).getTranscriptsId().get(0)));
         }
         return geneQueryResults;
     }
@@ -118,14 +118,14 @@ public class GeneManager extends AbstractManager {
             List<GeneQuery> queries = createQueries(geneQuery, region, GeneDBAdaptor.QueryParams.REGION.key());
             List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.getIntervalFrequencies(queries, geneQuery.getInterval());
             for (int i = 0; i < queries.size(); i++) {
-                geneQueryResults.get(i).setId((String) geneQuery.get(GeneDBAdaptor.QueryParams.REGION.key()));
+                geneQueryResults.get(i).setId(geneQuery.getRegions().get(0).toString());
             }
             return geneQueryResults;
         } else {
             List<GeneQuery> queries = createQueries(geneQuery, region, GeneDBAdaptor.QueryParams.REGION.key());
             List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries);
             for (int i = 0; i < queries.size(); i++) {
-                geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.REGION.key()));
+                geneQueryResults.get(i).setId(queries.get(i).getRegions().get(0).toString());
             }
             return geneQueryResults;
         }
@@ -135,7 +135,7 @@ public class GeneManager extends AbstractManager {
         List<GeneQuery> queries = createQueries(geneQuery, tf, GeneDBAdaptor.QueryParams.NAME.key());
         List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries);
         for (int i = 0; i < queries.size(); i++) {
-            geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.NAME.key()));
+            geneQueryResults.get(i).setId(queries.get(i).getNames().get(0));
         }
         return geneQueryResults;
     }
@@ -152,8 +152,4 @@ public class GeneManager extends AbstractManager {
         }
         return geneQueryResults;
     }
-
-
-
-
 }

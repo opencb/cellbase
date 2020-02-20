@@ -45,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -307,11 +308,12 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll() throws CellbaseException, JsonProcessingException {
+    public Response getAll() throws CellbaseException, InvocationTargetException, InstantiationException, IllegalAccessException,
+            NoSuchFieldException {
 //        GeneQuery geneQuery = new GeneQuery(uriInfo.getQueryParameters());
         // gene/search?limit=1 & biotype=bt1,bt2,bt3 ...
-        ObjectMap params = parseQueryParams();
-        GeneQuery geneQuery = GeneQuery.of(params);
+//        ObjectMap params = parseQueryParams();
+        GeneQuery geneQuery = (GeneQuery) GeneQuery.of(uriInfo.getQueryParameters(), GeneQuery.class);
         CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
         return createOkResponse(queryResults);
     }
