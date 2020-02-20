@@ -59,22 +59,22 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         logger.debug("GeneMongoDBAdaptor: in 'constructor'");
     }
 
-    @Override
-    public CellBaseDataResult<Gene> next(GeneQuery geneQuery, QueryOptions options) {
-        return null;
-    }
+//    @Override
+//    public CellBaseDataResult<Gene> next(GeneQuery geneQuery) {
+//        return null;
+//    }
+//
+//    @Override
+//    public CellBaseDataResult nativeNext(GeneQuery geneQuery) {
+//        return null;
+//    }
 
     @Override
-    public CellBaseDataResult nativeNext(GeneQuery geneQuery, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult getIntervalFrequencies(GeneQuery geneQuery, int intervalSize, QueryOptions options) {
+    public CellBaseDataResult getIntervalFrequencies(GeneQuery geneQuery, int intervalSize) {
         if (geneQuery.getString(QueryParams.REGION.key()) != null) {
             Region region = Region.parseRegion(geneQuery.getString(QueryParams.REGION.key()));
             Bson bsonDocument = parseQuery(geneQuery);
-            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize);
         }
         return null;
     }
@@ -102,10 +102,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 //    }
 
     @Override
-    public CellBaseDataResult<Gene> get(GeneQuery geneQuery, QueryOptions inputOptions) {
+    public CellBaseDataResult<Gene> get(GeneQuery geneQuery) {
         Bson bson = parseQuery(geneQuery);
-        QueryOptions options = new QueryOptions(inputOptions);
-        options = addPrivateExcludeOptions(options);
+        geneQuery = (GeneQuery) addPrivateExcludeOptions(geneQuery);
 
         if (postDBFilteringParametersEnabled(geneQuery)) {
             CellBaseDataResult<Document> dataResult = postDBFiltering(geneQuery,
@@ -137,7 +136,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
-    public CellBaseDataResult nativeGet(GeneQuery geneQuery, QueryOptions options) {
+    public CellBaseDataResult nativeGet(GeneQuery geneQuery) {
         Bson bson = parseQuery(geneQuery);
         logger.info("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         logger.info("options: {}", options.toJson());
@@ -245,10 +244,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                 Arrays.asList(match, includeAndExclude, unwind, unwind2, project), queryOptions));
     }
 
-    @Override
-    public CellBaseDataResult<String> getBiotypes(GeneQuery geneQuery) {
-        return distinct(geneQuery, "biotypes");
-    }
+//    @Override
+//    public CellBaseDataResult<String> getBiotypes(GeneQuery geneQuery) {
+//        return distinct(geneQuery, "biotypes");
+//    }
 
     private Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();

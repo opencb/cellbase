@@ -16,48 +16,157 @@
 
 package org.opencb.cellbase.core.api.queries;
 
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 
-public class AbstractQuery {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-    protected QueryOptions queryOptions;
+public class AbstractQuery<T>  {
 
+    protected List<String> includes;
+    protected List<String> excludes;
+    protected Integer skip;
+    protected Integer limit;
+    protected String sort;
+    protected String facet;
+    protected String timeout;
+    protected Boolean count;
     protected Logger logger;
+
+    final static int DEFAULT_LIMIT = 10;
+    final static int DEFAULT_SKIP = 0;
 
     public AbstractQuery() {
     }
 
-
 //    public T of(Map<String, Object> map) throws JsonProcessingException {
 //        ObjectMapper objectMapper= new ObjectMapper();
 //        String value = objectMapper.writeValueAsString(map);
-//        return objectMapper.readValue(value, (Class)T);
+//        return objectMapper.readValue(value, (Class) T);
 //    }
 
-    public QueryOptions addQueryOption(String key, Object value) {
-        if (queryOptions == null) {
-            queryOptions = new QueryOptions();
-        }
-        queryOptions.put(key, value);
-        return queryOptions;
+//    public QueryOptions addQueryOption(String key, Object value) {
+//        if (queryOptions == null) {
+//            queryOptions = new QueryOptions();
+//        }
+//        queryOptions.put(key, value);
+//        return queryOptions;
+//    }
+//
+//    public QueryOptions getQueryOptions() {
+//        return queryOptions;
+//    }
+//
+//    public AbstractQuery setQueryOptions(QueryOptions queryOptions) {
+//        this.queryOptions = queryOptions;
+//        return this;
+//    }
+
+    public List<String> getIncludes() {
+        return includes;
     }
 
+    public AbstractQuery<T> setIncludes(List<String> includes) {
+        this.includes = includes;
+        return this;
+    }
+
+    public List<String> getExcludes() {
+        return excludes;
+    }
+
+    public AbstractQuery<T> setExcludes(List<String> excludes) {
+        this.excludes = excludes;
+        return this;
+    }
+
+    public AbstractQuery<T> addExcludes(String excludes) {
+        if (this.excludes == null) {
+            this.excludes = new ArrayList<>();
+        }
+        this.excludes.addAll(Arrays.asList(excludes.split(",")));
+        return this;
+    }
+
+    public Integer getSkip() {
+        return skip;
+    }
+
+    public AbstractQuery<T> setSkip(Integer skip) {
+        this.skip = skip;
+        return this;
+    }
+
+    public AbstractQuery<T> addSkipIfAbsent() {
+        if (skip == null) {
+            skip = DEFAULT_SKIP;
+        }
+        return this;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public AbstractQuery<T> setLimit(Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    public AbstractQuery<T> addLimitIfAbsent() {
+        if (limit == null) {
+            limit = DEFAULT_LIMIT;
+        }
+        return this;
+    }
+
+    public String getSort() {
+        return sort;
+    }
+
+    public AbstractQuery<T> setSort(String sort) {
+        this.sort = sort;
+        return this;
+    }
+
+    public String getFacet() {
+        return facet;
+    }
+
+    public AbstractQuery<T> setFacet(String facet) {
+        this.facet = facet;
+        return this;
+    }
+
+    public String getTimeout() {
+        return timeout;
+    }
+
+    public AbstractQuery<T> setTimeout(String timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
+    public Boolean getCount() {
+        return count;
+    }
+
+    public AbstractQuery<T> setCount(Boolean count) {
+        this.count = count;
+        return this;
+    }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AbstractQuery{");
-        sb.append("queryOptions=").append(queryOptions);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    public QueryOptions getQueryOptions() {
-        return queryOptions;
-    }
-
-    public AbstractQuery setQueryOptions(QueryOptions queryOptions) {
-        this.queryOptions = queryOptions;
-        return this;
+        return "AbstractQuery{" +
+                "includes=" + includes +
+                ", excludes=" + excludes +
+                ", skip=" + skip +
+                ", limit=" + limit +
+                ", sort='" + sort + '\'' +
+                ", facet='" + facet + '\'' +
+                ", timeout='" + timeout + '\'' +
+                '}';
     }
 }

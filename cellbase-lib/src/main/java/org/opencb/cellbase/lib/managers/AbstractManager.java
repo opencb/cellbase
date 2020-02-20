@@ -18,16 +18,12 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AbstractManager {
 
@@ -41,9 +37,9 @@ public class AbstractManager {
 
     protected Logger logger;
 
-    protected int histogramIntervalSize = 200000;
-    private static final int SKIP_DEFAULT = 0;
-    private static final int LIMIT_DEFAULT = 10;
+//    protected int histogramIntervalSize = 200000;
+//    private static final int SKIP_DEFAULT = 0;
+//    private static final int LIMIT_DEFAULT = 10;
     private static final int MAX_RECORDS = 5000;
 
     public AbstractManager(CellBaseConfiguration configuration) {
@@ -71,68 +67,38 @@ public class AbstractManager {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    protected List<Query> createQueries(Query query, String csvField, String queryKey, String... args) {
-        String[] ids = csvField.split(",");
-        List<Query> queries = new ArrayList<>(ids.length);
-        for (String id : ids) {
-            Query q = new Query(query);
-            q.put(queryKey, id);
-            if (args != null && args.length > 0 && args.length % 2 == 0) {
-                for (int i = 0; i < args.length; i += 2) {
-                    q.put(args[i], args[i + 1]);
-                }
-            }
-            queries.add(q);
-        }
-        return queries;
-    }
+//    protected List<AbstractQuery> createQueries(AbstractQuery query, String csvField, String queryKey, String... args) {
+//        String[] ids = csvField.split(",");
+//        List<AbstractQuery> queries = new ArrayList<>(ids.length);
+//        for (String id : ids) {
+//            Query q = new Query(query);
+//            q.put(queryKey, id);
+//            if (args != null && args.length > 0 && args.length % 2 == 0) {
+//                for (int i = 0; i < args.length; i += 2) {
+//                    q.put(args[i], args[i + 1]);
+//                }
+//            }
+//            queries.add(q);
+//        }
+//        return queries;
+//    }
 
-    private String getHistogramParameter(QueryOptions queryOptions) {
-        return (queryOptions.get("histogram") != null) ? queryOptions.getString("histogram") : "false";
-    }
-
-    protected int getHistogramIntervalSize(QueryOptions queryOptions) {
-        if (queryOptions.containsKey("interval")) {
-            int value = histogramIntervalSize;
-            try {
-                value = queryOptions.getInt("interval");
-                return value;
-            } catch (Exception exp) {
-                exp.printStackTrace();
-                /** malformed string y no se puede castear a int **/
-                return value;
-            }
-        } else {
-            return histogramIntervalSize;
-        }
-    }
-
-    protected boolean hasHistogramQueryParam(QueryOptions queryOptions) {
-        return Boolean.parseBoolean(getHistogramParameter(queryOptions));
-    }
 
     // make sure what is there is legal
-    public void validateQueryOptions(QueryOptions queryOptions) throws CellbaseException {
-        validateQueryOptions(queryOptions, null);
-    }
-
-    public void validateQueryOptions(QueryOptions queryOptions, List<String> illegalParameters) throws CellbaseException {
-        if (queryOptions.containsKey(QueryOptions.LIMIT)) {
-            int limit = queryOptions.getInt("limit");
+    public void validateQueryOptions(AbstractQuery query) throws CellbaseException {
+        Integer limit = query.getLimit();
+        if (limit != null) {
             if (limit < 0 || limit > MAX_RECORDS) {
                 throw new CellbaseException("Invalid limit: " + limit + ". Must be between 0 and " + MAX_RECORDS);
             }
         }
-        if (queryOptions.containsKey(QueryOptions.SKIP)) {
-            int skip = queryOptions.getInt("skip");
+        Integer skip = query.getSkip();
+        if (skip != null) {
             if (skip < 0 || skip > MAX_RECORDS) {
                 throw new CellbaseException("Invalid skip: " + skip + ". Must be between 0 and " + MAX_RECORDS);
             }
         }
-        for (String illegalParameter : illegalParameters) {
-            if (queryOptions.get(illegalParameter) != null) {
-                throw new CellbaseException("Invalid parameter found: " + illegalParameter);
-            }
-        }
     }
+
+
 }

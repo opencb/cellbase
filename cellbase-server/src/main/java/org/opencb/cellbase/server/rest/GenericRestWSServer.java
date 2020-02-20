@@ -28,6 +28,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -178,27 +179,52 @@ public class GenericRestWSServer implements IWSServer {
 //        }
     }
 
-    @Deprecated
-    public void parseQueryParams() {
+    public ObjectMap parseQueryParams() {
+        ObjectMap paramMap = new ObjectMap();
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
 
-        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
-
-        // Add all the others QueryParams from the URL
+        // Add the QueryParams from the URL
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
 
             String key = entry.getKey();
             String value = entry.getValue().get(0);
 
-            if (!queryOptions.containsKey(key)) {
-                if ("count".equalsIgnoreCase(key)) {
-                    queryOptions.put("count", Boolean.parseBoolean(value));
-                } else {
-                    query.put(key, value);
-                }
+            if (QueryOptions.COUNT.equals(key)) {
+                paramMap.put(QueryOptions.COUNT, Boolean.parseBoolean(value));
+            } else if ("region".equals(key)) {
+                paramMap.put(key, Region.parseRegions(value));
+            } else if (QueryOptions.LIMIT.equals(key) || QueryOptions.SKIP.equals(key)) {
+                paramMap.put(key, value);
+            } else {
+                // GeneQuery expects a list for the rest of the parameters
+                paramMap.put(key, Arrays.asList(value.split(",")));
             }
+
         }
+        return paramMap;
     }
+
+//    @Deprecated
+//    public void parseQueryParams() {
+//        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+//
+//        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
+//
+//        // Add all the others QueryParams from the URL
+//        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+//
+//            String key = entry.getKey();
+//            String value = entry.getValue().get(0);
+//
+//            if (!queryOptions.containsKey(key)) {
+//                if ("count".equalsIgnoreCase(key)) {
+//                    queryOptions.put("count", Boolean.parseBoolean(value));
+//                } else {
+//                    query.put(key, value);
+//                }
+//            }
+//        }
+//    }
 
     @Deprecated
     public void parseIncludesAndExcludes(String exclude, String include, String sort) {

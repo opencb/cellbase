@@ -16,8 +16,7 @@
 
 package org.opencb.cellbase.core.api.core;
 
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.util.ArrayList;
@@ -40,17 +39,17 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
 
     default CellBaseDataResult<Long> count() {
-        return count(new Query());
+        return count(new AbstractQuery());
     }
 
-    CellBaseDataResult<Long> count(Query query);
+    CellBaseDataResult<Long> count(AbstractQuery query);
 
 
     default CellBaseDataResult<String> distinct(String field) {
-        return distinct(new Query(), field);
+        return distinct(new AbstractQuery(), field);
     }
 
-    CellBaseDataResult<String> distinct(Query query, String field);
+    CellBaseDataResult<String> distinct(AbstractQuery query, String field);
 
 
 //    default CellBaseDataResult stats() {
@@ -62,54 +61,50 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     /*
      Main methods to query.
      */
-    CellBaseDataResult<T> get(Query query, QueryOptions options);
+    CellBaseDataResult<T> get(AbstractQuery query);
 
-    default List<CellBaseDataResult<T>> get(List<Query> queries, QueryOptions options) {
+    default List<CellBaseDataResult<T>> get(List<AbstractQuery> queries) {
         Objects.requireNonNull(queries);
         List<CellBaseDataResult<T>> cellBaseDataResults = new ArrayList<>(queries.size());
-        for (Query query : queries) {
-            cellBaseDataResults.add(get(query, options));
+        for (AbstractQuery query : queries) {
+            cellBaseDataResults.add(get(query));
         }
         return cellBaseDataResults;
     }
 
-    CellBaseDataResult nativeGet(Query query, QueryOptions options);
+    CellBaseDataResult nativeGet(AbstractQuery query);
 
-    default List<CellBaseDataResult> nativeGet(List<Query> queries, QueryOptions options) {
+    default List<CellBaseDataResult> nativeGet(List<AbstractQuery> queries) {
         Objects.requireNonNull(queries);
         List<CellBaseDataResult> cellBaseDataResults = new ArrayList<>(queries.size());
-        for (Query query : queries) {
-            cellBaseDataResults.add(nativeGet(query, options));
+        for (AbstractQuery query : queries) {
+            cellBaseDataResults.add(nativeGet(query));
         }
         return cellBaseDataResults;
     }
 
     @Override
     default Iterator<T> iterator() {
-        return iterator(new Query(), new QueryOptions());
+        return iterator(new AbstractQuery());
     }
 
     default Iterator nativeIterator() {
-        return nativeIterator(new Query(), new QueryOptions());
+        return nativeIterator(new AbstractQuery());
     }
 
-    Iterator<T> iterator(Query query, QueryOptions options);
+    Iterator<T> iterator(AbstractQuery query);
 
-    Iterator nativeIterator(Query query, QueryOptions options);
+    Iterator nativeIterator(AbstractQuery query);
 
-//    CellBaseDataResult rank(Query query, String field, int numResults, boolean asc);
+    CellBaseDataResult groupBy(AbstractQuery query, String field);
 
-    CellBaseDataResult groupBy(Query query, String field, QueryOptions options);
-
-    CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options);
-
-
+    CellBaseDataResult groupBy(AbstractQuery query, List<String> fields);
 
     @Override
     default void forEach(Consumer action) {
-        forEach(new Query(), action, new QueryOptions());
+        forEach(new AbstractQuery(), action);
     }
 
-    void forEach(Query query, Consumer<? super Object> action, QueryOptions options);
+    void forEach(AbstractQuery query, Consumer<? super Object> action);
 
 }

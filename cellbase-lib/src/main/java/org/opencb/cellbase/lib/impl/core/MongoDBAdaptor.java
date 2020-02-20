@@ -17,12 +17,12 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -74,26 +74,8 @@ public class MongoDBAdaptor {
         }
     }
 
-    protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
-        return addPrivateExcludeOptions(options, "_id,_chunkIds");
-    }
-
-    protected QueryOptions addPrivateExcludeOptions(QueryOptions options, String csvFields) {
-        if (options != null) {
-            if (options.get("exclude") == null) {
-                options.put("exclude", csvFields);
-            } else {
-                String exclude = options.getString("exclude");
-                if (exclude.contains(csvFields)) {
-                    return options;
-                } else {
-                    options.put("exclude", exclude + "," + csvFields);
-                }
-            }
-        } else {
-            options = new QueryOptions("exclude", csvFields);
-        }
-        return options;
+    protected AbstractQuery addPrivateExcludeOptions(AbstractQuery query) {
+        return query.addExcludes("_id,_chunkIds");
     }
 
     protected void createRegionQuery(String regionStrings, List<Bson> andBsonList) {
@@ -382,20 +364,21 @@ public class MongoDBAdaptor {
         return (id * chunkSize) + chunkSize - 1;
     }
 
-    public CellBaseDataResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
-        QueryBuilder builder;
-        if (options.getString("strand") == null || options.getString("strand").equals("")
-                || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
-            builder = QueryBuilder.start("chromosome").is(chromosome).and("start").greaterThanEquals(position);
-            options.put("sort", new HashMap<String, String>().put("start", "asc"));
-            options.put("limit", 1);
-        } else {
-            builder = QueryBuilder.start("chromosome").is(chromosome).and("end").lessThanEquals(position);
-            options.put("sort", new HashMap<String, String>().put("end", "desc"));
-            options.put("limit", 1);
-        }
-        return executeQuery("result", new Document(builder.get().toMap()), options, mongoDBCollection);
-    }
+//
+//    public CellBaseDataResult next(String chromosome, int position, QueryOptions options, MongoDBCollection mongoDBCollection) {
+//        QueryBuilder builder;
+//        if (options.getString("strand") == null || options.getString("strand").equals("")
+//                || (options.getString("strand").equals("1") || options.getString("strand").equals("+"))) {
+//            builder = QueryBuilder.start("chromosome").is(chromosome).and("start").greaterThanEquals(position);
+//            options.put("sort", new HashMap<String, String>().put("start", "asc"));
+//            options.put("limit", 1);
+//        } else {
+//            builder = QueryBuilder.start("chromosome").is(chromosome).and("end").lessThanEquals(position);
+//            options.put("sort", new HashMap<String, String>().put("end", "desc"));
+//            options.put("limit", 1);
+//        }
+//        return executeQuery("result", new Document(builder.get().toMap()), options, mongoDBCollection);
+//    }
 
     @Deprecated
     protected QueryOptions addIncludeReturnFields(String returnField, QueryOptions options) {

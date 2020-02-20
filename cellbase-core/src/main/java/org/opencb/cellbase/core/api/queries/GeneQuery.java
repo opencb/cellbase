@@ -18,108 +18,112 @@ package org.opencb.cellbase.core.api.queries;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.commons.datastore.core.QueryOptions;
 
-import javax.ws.rs.core.MultivaluedMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class GeneQuery extends AbstractQuery {
+public class GeneQuery extends FeatureQuery {
 
     private List<String> ids;
     private List<String> names;
     private List<String> biotypes;
     private List<Region> regions;
-    private List<String> transcriptBiotypes;
-    private List<String> transcriptXrefs;
-    private List<String> transcriptIds;
-    private List<String> transcriptNames;
-    private List<String> transcriptAnnotationFlags;
-    private List<String> transcriptTfbsNames;
-    private List<String> annotationDiseaseIds;
-    private List<String> annotationDiseaseNames;
-    private List<String> annotationExpressionGenes;
-    private List<String> annotationExpressionTissues;
-    private List<String> annotationExpressionValues;
-    private List<String> annotationDrugNames;
-    private List<String> annotationDrugGenes;
+    private List<String> transcriptsBiotype;
+    private List<String> transcriptsXrefs;
+    private List<String> transcriptsId;
+    private List<String> transcriptsName;
+    private List<String> transcriptsAnnotationFlags;
+    private List<String> transcriptsTfbsName;
+    private List<String> annotationDiseasesId;
+    private List<String> annotationDiseasesName;
+    private List<String> annotationExpressionGene;
+    private List<String> annotationExpressionTissue;
+    private List<String> annotationExpressionValue;
+    private List<String> annotationDrugsName;
+    private List<String> annotationDrugsGene;
 
     public GeneQuery() {
+
     }
 
-    public GeneQuery(MultivaluedMap<String, String> multivaluedMap) throws CellbaseException {
-        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
 
-            String key = entry.getKey();
-            String value = entry.getValue().get(0);
+    public GeneQuery(Builder builder) {
 
-            if (QueryOptions.COUNT.equals(key)) {
-                addQueryOption(QueryOptions.COUNT, Boolean.parseBoolean(value));
-            } else if (QueryOptions.SKIP.equals(key)) {
-                int skip;
-                try {
-                    skip = Integer.parseInt(value);
-                } catch (NumberFormatException nfe) {
-                    throw new CellbaseException("Invalid skip value, not a valid number: " + value);
-                }
-                addQueryOption(QueryOptions.SKIP, skip);
-            } else if (QueryOptions.LIMIT.equals(key)) {
-                int limit;
-                try {
-                    limit = Integer.parseInt(value);
-                } catch (NumberFormatException nfe) {
-                    throw new CellbaseException("Invalid limit value, not a valid number: " + value);
-                }
-                addQueryOption(QueryOptions.LIMIT, limit);
-            } else if (QueryOptions.EXCLUDE.equals(key)) {
-                queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(value));
-            } else if (QueryOptions.INCLUDE.equals(key)) {
-                queryOptions.getAsStringList(QueryOptions.INCLUDE).addAll(Splitter.on(",").splitToList(value));
-            } else {
-                if ("id".equals(key)) {
-                    setId(value);
-                } else if ("name".equals(key)) {
-                    setNames(value);
-                } else if ("biotype".equals(key)) {
-                    setBiotypes(value);
-                } else if ("region".equals(key)) {
-                    setRegions(value);
-                } else if ("transcriptsBiotype".equals(key)) {
-                    setTranscriptBiotypes(value);
-                } else if ("transcriptsXrefs".equals(key)) {
-                    setTranscriptXrefs(value);
-                } else if ("transcriptsId".equals(key)) {
-                    setTranscriptIds(value);
-                } else if ("transcriptsName".equals(key)) {
-                    setTranscriptNames(value);
-                } else if ("transcriptsAnnotationFlags".equals(key)) {
-                    setTranscriptAnnotationFlags(value);
-                } else if ("transcriptsTfbsName".equals(key)) {
-                    setTranscriptTfbsNames(value);
-                } else if ("annotationDiseasesId".equals(key)) {
-                    setAnnotationDiseaseIds(value);
-                } else if ("annotationDiseasesName".equals(key)) {
-                    setAnnotationDiseaseNames(value);
-                } else if ("annotationExpressionGene".equals(key)) {
-                    setAnnotationExpressionGenes(value);
-                } else if ("annotationExpressionTissue".equals(key)) {
-                    setAnnotationExpressionTissues(value);
-                } else if ("annotationexpressionValue".equals(key)) {
-                    setAnnotationExpressionValues(value);
-                } else if ("annotationDrugsName".equals(key)) {
-                    setAnnotationDrugNames(value);
-                } else if ("annotationDrugsGene".equals(key)) {
-                    setAnnotationDrugGenes(value);
-                } else {
-                    throw new CellbaseException("invalid parameter " + key);
-                }
-            }
-        }
     }
+
+
+
+//    public GeneQuery(MultivaluedMap<String, String> multivaluedMap) throws CellbaseException {
+//        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+//
+//            String key = entry.getKey();
+//            String value = entry.getValue().get(0);
+//
+//            if (QueryOptions.COUNT.equals(key)) {
+//                addQueryOption(QueryOptions.COUNT, Boolean.parseBoolean(value));
+//            } else if (QueryOptions.SKIP.equals(key)) {
+//                int skip;
+//                try {
+//                    skip = Integer.parseInt(value);
+//                } catch (NumberFormatException nfe) {
+//                    throw new CellbaseException("Invalid skip value, not a valid number: " + value);
+//                }
+//                addQueryOption(QueryOptions.SKIP, skip);
+//            } else if (QueryOptions.LIMIT.equals(key)) {
+//                int limit;
+//                try {
+//                    limit = Integer.parseInt(value);
+//                } catch (NumberFormatException nfe) {
+//                    throw new CellbaseException("Invalid limit value, not a valid number: " + value);
+//                }
+//                addQueryOption(QueryOptions.LIMIT, limit);
+//            } else if (QueryOptions.EXCLUDE.equals(key)) {
+//                queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(value));
+//            } else if (QueryOptions.INCLUDE.equals(key)) {
+//                queryOptions.getAsStringList(QueryOptions.INCLUDE).addAll(Splitter.on(",").splitToList(value));
+//            } else {
+//                if ("id".equals(key)) {
+//                    setId(value);
+//                } else if ("name".equals(key)) {
+//                    setNames(value);
+//                } else if ("biotype".equals(key)) {
+//                    setBiotypes(value);
+//                } else if ("region".equals(key)) {
+//                    setRegions(value);
+//                } else if ("transcriptsBiotype".equals(key)) {
+//                    setTranscriptsBiotype(value);
+//                } else if ("transcriptsXrefs".equals(key)) {
+//                    setTranscriptsXrefs(value);
+//                } else if ("transcriptsId".equals(key)) {
+//                    setTranscriptsId(value);
+//                } else if ("transcriptsName".equals(key)) {
+//                    setTranscriptsName(value);
+//                } else if ("transcriptsAnnotationFlags".equals(key)) {
+//                    setTranscriptsAnnotationFlags(value);
+//                } else if ("transcriptsTfbsName".equals(key)) {
+//                    setTranscriptsTfbsName(value);
+//                } else if ("annotationDiseasesId".equals(key)) {
+//                    setAnnotationDiseasesId(value);
+//                } else if ("annotationDiseasesName".equals(key)) {
+//                    setAnnotationDiseasesName(value);
+//                } else if ("annotationExpressionGene".equals(key)) {
+//                    setAnnotationExpressionGene(value);
+//                } else if ("annotationExpressionTissue".equals(key)) {
+//                    setAnnotationExpressionTissue(value);
+//                } else if ("annotationexpressionValue".equals(key)) {
+//                    setAnnotationExpressionValue(value);
+//                } else if ("annotationDrugsName".equals(key)) {
+//                    setAnnotationDrugsName(value);
+//                } else if ("annotationDrugsGene".equals(key)) {
+//                    setAnnotationDrugsGene(value);
+//                } else {
+//                    throw new CellbaseException("invalid parameter " + key);
+//                }
+//            }
+//        }
+//    }
 
     public static GeneQuery of(Map<String, Object> map) throws JsonProcessingException {
         ObjectMapper objectMapper= new ObjectMapper();
@@ -154,239 +158,236 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public List<String> getRegions() {
+    public List<Region> getRegions() {
         return regions;
     }
 
-    public GeneQuery setRegions(String regions) {
-        this.regions.addAll(Arrays.asList(regions.split(",")));
+    public GeneQuery setRegions(List<Region> regions) {
+        this.regions = regions;
         return this;
     }
 
-    public List<String> getTranscriptBiotypes() {
-        return transcriptBiotypes;
+    public List<String> getTranscriptsBiotype() {
+        return transcriptsBiotype;
     }
 
-    public GeneQuery setTranscriptBiotypes(String transcriptBiotypes) {
-        this.transcriptBiotypes.addAll(Arrays.asList(transcriptBiotypes.split(",")));
+    public GeneQuery setTranscriptsBiotype(String transcriptsBiotype) {
+        this.transcriptsBiotype.addAll(Arrays.asList(transcriptsBiotype.split(",")));
         return this;
     }
 
-    public List<String> getTranscriptXrefs() {
-        return transcriptXrefs;
+    public List<String> getTranscriptsXrefs() {
+        return transcriptsXrefs;
     }
 
-    public GeneQuery setTranscriptXrefs(String transcriptXrefs) {
-        this.transcriptXrefs.addAll(Arrays.asList(transcriptXrefs.split(",")));
+    public GeneQuery setTranscriptsXrefs(String transcriptsXrefs) {
+        this.transcriptsXrefs.addAll(Arrays.asList(transcriptsXrefs.split(",")));
         return this;
     }
 
-    public List<String> getTranscriptIds() {
-        return transcriptIds;
+    public List<String> getTranscriptsId() {
+        return transcriptsId;
     }
 
-    public GeneQuery setTranscriptIds(String transcriptIds) {
-        this.transcriptIds.addAll(Arrays.asList(transcriptIds.split(",")));
+    public GeneQuery setTranscriptsId(String transcriptsId) {
+        this.transcriptsId.addAll(Arrays.asList(transcriptsId.split(",")));
         return this;
     }
 
-    public List<String> getTranscriptNames() {
-        return transcriptNames;
+    public List<String> getTranscriptsName() {
+        return transcriptsName;
     }
 
-    public GeneQuery setTranscriptNames(String transcriptNames) {
-        this.transcriptNames.addAll(Arrays.asList(transcriptNames.split(",")));
+    public GeneQuery setTranscriptsName(String transcriptsName) {
+        this.transcriptsName.addAll(Arrays.asList(transcriptsName.split(",")));
         return this;
     }
 
-    public List<String> getTranscriptAnnotationFlags() {
-        return transcriptAnnotationFlags;
+    public List<String> getTranscriptsAnnotationFlags() {
+        return transcriptsAnnotationFlags;
     }
 
-    public GeneQuery setTranscriptAnnotationFlags(String transcriptAnnotationFlags) {
-        this.transcriptAnnotationFlags.addAll(Arrays.asList(transcriptAnnotationFlags.split(",")));
+    public GeneQuery setTranscriptsAnnotationFlags(String transcriptsAnnotationFlags) {
+        this.transcriptsAnnotationFlags.addAll(Arrays.asList(transcriptsAnnotationFlags.split(",")));
         return this;
     }
 
-    public List<String> getTranscriptTfbsNames() {
-        return transcriptTfbsNames;
+    public List<String> getTranscriptsTfbsName() {
+        return transcriptsTfbsName;
     }
 
-    public GeneQuery setTranscriptTfbsNames(String transcriptTfbsNames) {
-        this.transcriptTfbsNames.addAll(Arrays.asList(transcriptTfbsNames.split(",")));
+    public GeneQuery setTranscriptsTfbsName(String transcriptsTfbsName) {
+        this.transcriptsTfbsName.addAll(Arrays.asList(transcriptsTfbsName.split(",")));
         return this;
     }
 
-    public List<String> getAnnotationDiseaseIds() {
-        return annotationDiseaseIds;
+    public List<String> getAnnotationDiseasesId() {
+        return annotationDiseasesId;
     }
 
-    public GeneQuery setAnnotationDiseaseIds(String annotationDiseaseIds) {
-        this.annotationDiseaseIds.addAll(Arrays.asList(annotationDiseaseIds.split(",")));
+    public GeneQuery setAnnotationDiseasesId(String annotationDiseasesId) {
+        this.annotationDiseasesId.addAll(Arrays.asList(annotationDiseasesId.split(",")));
         return this;
     }
 
-    public List<String> getAnnotationDiseaseNames() {
-        return annotationDiseaseNames;
+    public List<String> getAnnotationDiseasesName() {
+        return annotationDiseasesName;
     }
 
-    public GeneQuery setAnnotationDiseaseNames(String annotationDiseaseNames) {
-        this.annotationDiseaseNames.addAll(Arrays.asList(annotationDiseaseNames.split(",")));
+    public GeneQuery setAnnotationDiseasesName(String annotationDiseasesName) {
+        this.annotationDiseasesName.addAll(Arrays.asList(annotationDiseasesName.split(",")));
         return this;
     }
 
-    public List<String> getAnnotationExpressionGenes() {
-        return annotationExpressionGenes;
+    public List<String> getAnnotationExpressionGene() {
+        return annotationExpressionGene;
     }
 
-    public GeneQuery setAnnotationExpressionGenes(String annotationExpressionGenes) {
-        this.annotationExpressionGenes.addAll(Arrays.asList(annotationExpressionGenes.split(",")));
+    public GeneQuery setAnnotationExpressionGene(String annotationExpressionGene) {
+        this.annotationExpressionGene.addAll(Arrays.asList(annotationExpressionGene.split(",")));
         return this;
     }
 
-    public List<String> getAnnotationExpressionTissues() {
-        return annotationExpressionTissues;
+    public List<String> getAnnotationExpressionTissue() {
+        return annotationExpressionTissue;
     }
 
-    public GeneQuery setAnnotationExpressionTissues(String annotationExpressionTissues) {
-        this.annotationExpressionTissues.addAll(Arrays.asList(annotationExpressionTissues.split(",")));
+    public GeneQuery setAnnotationExpressionTissue(String annotationExpressionTissue) {
+        this.annotationExpressionTissue.addAll(Arrays.asList(annotationExpressionTissue.split(",")));
         return this;
     }
 
-    public List<String> getAnnotationExpressionValues() {
-        return annotationExpressionValues;
+    public List<String> getAnnotationExpressionValue() {
+        return annotationExpressionValue;
     }
 
-    public GeneQuery setAnnotationExpressionValues(String annotationExpressionValues) {
-        this.annotationExpressionValues.addAll(Arrays.asList(annotationExpressionValues.split(",")));
+    public GeneQuery setAnnotationExpressionValue(String annotationExpressionValue) {
+        this.annotationExpressionValue.addAll(Arrays.asList(annotationExpressionValue.split(",")));
         return this;
     }
 
-    public List<String> getAnnotationDrugNames() {
-        return annotationDrugNames;
+    public List<String> getAnnotationDrugsName() {
+        return annotationDrugsName;
     }
 
-    public GeneQuery setAnnotationDrugNames(String annotationDrugNames) {
-        this.annotationDrugNames.addAll(Arrays.asList(annotationDrugNames.split(",")));
+    public GeneQuery setAnnotationDrugsName(String annotationDrugsName) {
+        this.annotationDrugsName.addAll(Arrays.asList(annotationDrugsName.split(",")));
         return this;
     }
 
-    public List<String> getAnnotationDrugGenes() {
-        return annotationDrugGenes;
+    public List<String> getAnnotationDrugsGene() {
+        return annotationDrugsGene;
     }
 
-    public GeneQuery setAnnotationDrugGenes(String annotationDrugGenes) {
-        this.annotationDrugGenes.addAll(Arrays.asList(annotationDrugGenes.split(",")));
+    public GeneQuery setAnnotationDrugsGene(String annotationDrugsGene) {
+        this.annotationDrugsGene.addAll(Arrays.asList(annotationDrugsGene.split(",")));
         return this;
     }
-
-
 
     public static class Builder {
-        private QueryOptions queryOptions;
         private List<String> ids;
         private List<String> names;
         private List<String> biotypes;
-        private List<String> regions;
-        private List<String> transcriptBiotypes;
-        private List<String> transcriptXrefs;
-        private List<String> transcriptIds;
-        private List<String> transcriptNames;
-        private List<String> transcriptAnnotationFlags;
-        private List<String> transcriptTfbsNames;
-        private List<String> annotationDiseaseIds;
-        private List<String> annotationDiseaseNames;
-        private List<String> annotationExpressionGenes;
-        private List<String> annotationExpressionTissues;
-        private List<String> annotationExpressionValues;
-        private List<String> annotationDrugNames;
-        private List<String> annotationDrugGenes;
+        private List<Region> regions;
+        private List<String> transcriptsBiotype;
+        private List<String> transcriptsXrefs;
+        private List<String> transcriptsId;
+        private List<String> transcriptsName;
+        private List<String> transcriptsAnnotationFlags;
+        private List<String> transcriptsTfbsName;
+        private List<String> annotationDiseasesId;
+        private List<String> annotationDiseasesName;
+        private List<String> annotationExpressionGene;
+        private List<String> annotationExpressionTissue;
+        private List<String> annotationExpressionValue;
+        private List<String> annotationDrugsName;
+        private List<String> annotationDrugsGene;
 
         public Builder() {
         }
 
-        public Builder withIds(String ids) {
-            this.ids.addAll(Arrays.asList(ids.split(",")));
+        public Builder withIds(List<String> ids) {
+            this.ids = ids;
             return this;
         }
 
-        public Builder withNames(String names) {
-            this.names.addAll(Arrays.asList(names.split(",")));
+        public Builder withNames(List<String> names) {
+            this.names = names;
             return this;
         }
 
-        public Builder withBiotypes(String biotypes) {
-            this.biotypes.addAll(Arrays.asList(biotypes.split(",")));
+        public Builder withBiotypes(List<String> biotypes) {
+            this.biotypes = biotypes;
             return this;
         }
 
-        public Builder inRegions(String regions) {
-            this.regions.addAll(Arrays.asList(regions.split(",")));
+        public Builder withRegions(List<Region> regions) {
+            this.regions = regions;
             return this;
         }
 
-        public Builder withTranscriptBiotype(String transcriptBiotypes) {
-            this.transcriptBiotypes.addAll(Arrays.asList(transcriptBiotypes.split(",")));
+        public Builder withTranscriptsBiotype(List<String> transcriptsBiotype) {
+            this.transcriptsBiotype = transcriptsBiotype;
             return this;
         }
 
-        public Builder withTranscriptXrefs(String transcriptXrefs) {
-            this.transcriptXrefs.addAll(Arrays.asList(transcriptXrefs.split(",")));
+        public Builder withTranscriptsXrefs(List<String> transcriptsXrefs) {
+            this.transcriptsXrefs = transcriptsXrefs;
             return this;
         }
 
-        public Builder withTranscriptIds(String transcriptIds) {
-            this.transcriptIds.addAll(Arrays.asList(transcriptIds.split(",")));
+        public Builder withTranscriptsId(List<String> transcriptsId) {
+            this.transcriptsId = transcriptsId;
             return this;
         }
 
-        public Builder withTranscriptNames(String transcriptNames) {
-            this.transcriptNames.addAll(Arrays.asList(transcriptNames.split(",")));
+        public Builder withTranscriptsName(List<String> transcriptsName) {
+            this.transcriptsName = transcriptsName;
             return this;
         }
 
-        public Builder withTranscriptAnnotationFlags(String transcriptAnnotationFlags) {
-            this.transcriptAnnotationFlags.addAll(Arrays.asList(transcriptAnnotationFlags.split(",")));
+        public Builder withTranscriptsAnnotationFlags(List<String> transcriptsAnnotationFlags) {
+            this.transcriptsAnnotationFlags = transcriptsAnnotationFlags;
             return this;
         }
 
-        public Builder withTranscriptTfbsNames(String transcriptTfbsNames) {
-            this.transcriptTfbsNames.addAll(Arrays.asList(transcriptTfbsNames.split(",")));
+        public Builder withTranscriptsTfbsName(List<String> transcriptsTfbsName) {
+            this.transcriptsTfbsName = transcriptsTfbsName;
             return this;
         }
 
-        public Builder withAnnotationDiseaseIds(String annotationDiseaseIds) {
-            this.annotationDiseaseIds.addAll(Arrays.asList(annotationDiseaseIds.split(",")));
+        public Builder withAnnotationDiseasesId(List<String> annotationDiseasesId) {
+            this.annotationDiseasesId = annotationDiseasesId;
             return this;
         }
 
-        public Builder withAnnotationDiseaseNames(String annotationDiseaseNames) {
-            this.annotationDiseaseNames.addAll(Arrays.asList(annotationDiseaseNames.split(",")));
+        public Builder withAnnotationDiseasesName(List<String> annotationDiseasesName) {
+            this.annotationDiseasesName = annotationDiseasesName;
             return this;
         }
 
-        public Builder withAnnotationExpressionGenes(String annotationExpressionGenes) {
-            this.annotationExpressionGenes.addAll(Arrays.asList(annotationExpressionGenes.split(",")));
+        public Builder withAnnotationExpressionGene(List<String> annotationExpressionGene) {
+            this.annotationExpressionGene = annotationExpressionGene;
             return this;
         }
 
-        public Builder withAnnotationExpressionTissues(String annotationExpressionTissues) {
-            this.annotationExpressionTissues.addAll(Arrays.asList(annotationExpressionTissues.split(",")));
+        public Builder withAnnotationExpressionTissue(List<String> annotationExpressionTissue) {
+            this.annotationExpressionTissue = annotationExpressionTissue;
             return this;
         }
 
-        public Builder withAnnotationExpressionValues(String annotationExpressionValues) {
-            this.annotationExpressionValues.addAll(Arrays.asList(annotationExpressionValues.split(",")));
+        public Builder withAnnotationExpressionValue(List<String> annotationExpressionValue) {
+            this.annotationExpressionValue = annotationExpressionValue;
             return this;
         }
 
-        public Builder withAnnotationDrugNames(String annotationDrugNames) {
-            this.annotationDrugNames.addAll(Arrays.asList(annotationDrugNames.split(",")));
+        public Builder withAnnotationDrugsName(List<String> annotationDrugsName) {
+            this.annotationDrugsName = annotationDrugsName;
             return this;
         }
 
-        public Builder withAnnotationDrugGenes(String annotationDrugGenes) {
-            this.annotationDrugGenes.addAll(Arrays.asList(annotationDrugGenes.split(",")));
+        public Builder withAnnotationDrugsGene(List<String> annotationDrugsGene) {
+            this.annotationDrugsGene = annotationDrugsGene;
             return this;
         }
 
@@ -396,19 +397,19 @@ public class GeneQuery extends AbstractQuery {
             geneQuery.names = this.names;
             geneQuery.biotypes = this.biotypes;
             geneQuery.regions = this.regions;
-            geneQuery.transcriptBiotypes = this.transcriptBiotypes;
-            geneQuery.transcriptXrefs = this.transcriptXrefs;
-            geneQuery.transcriptIds = this.transcriptIds;
-            geneQuery.transcriptNames = this.transcriptNames;
-            geneQuery.transcriptAnnotationFlags = this.transcriptAnnotationFlags;
-            geneQuery.transcriptTfbsNames = this.transcriptTfbsNames;
-            geneQuery.annotationDiseaseIds = this.annotationDiseaseIds;
-            geneQuery.annotationDiseaseNames = this.annotationDiseaseNames;
-            geneQuery.annotationExpressionGenes = this.annotationExpressionGenes;
-            geneQuery.annotationExpressionTissues = this.annotationExpressionTissues;
-            geneQuery.annotationExpressionValues = this.annotationExpressionValues;
-            geneQuery.annotationDrugNames = this.annotationDrugNames;
-            geneQuery.annotationDrugGenes = this.annotationDrugGenes;
+            geneQuery.transcriptsBiotype = this.transcriptsBiotype;
+            geneQuery.transcriptsXrefs = this.transcriptsXrefs;
+            geneQuery.transcriptsId = this.transcriptsId;
+            geneQuery.transcriptsName = this.transcriptsName;
+            geneQuery.transcriptsAnnotationFlags = this.transcriptsAnnotationFlags;
+            geneQuery.transcriptsTfbsName = this.transcriptsTfbsName;
+            geneQuery.annotationDiseasesId = this.annotationDiseasesId;
+            geneQuery.annotationDiseasesName = this.annotationDiseasesName;
+            geneQuery.annotationExpressionGene = this.annotationExpressionGene;
+            geneQuery.annotationExpressionTissue = this.annotationExpressionTissue;
+            geneQuery.annotationExpressionValue = this.annotationExpressionValue;
+            geneQuery.annotationDrugsName = this.annotationDrugsName;
+            geneQuery.annotationDrugsGene = this.annotationDrugsGene;
             return geneQuery;
         }
     }
