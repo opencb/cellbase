@@ -173,10 +173,10 @@ public class GenericRestWSServer implements IWSServer {
             throw new VersionException("Version not valid: '" + version + "'");
         }
 
-//        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
-//            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
-//            throw new VersionException("Version not valid: '" + version + "'");
-//        }
+        if (!cellBaseConfiguration.getVersion().equalsIgnoreCase(version)) {
+            logger.error("Version '{}' does not match configuration '{}'", this.version, cellBaseConfiguration.getVersion());
+            throw new VersionException("Version not valid: '" + version + "'");
+        }
     }
 
     public ObjectMap parseQueryParams() {

@@ -1,4 +1,4 @@
-﻿version: v5
+﻿version: v4
 apiVersion: "${cellbase.version}"
 wiki: https://github.com/opencb/cellbase/wiki
 maintenanceFlagFile: "/tmp/maintenance"
