@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.api.queries;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.slf4j.Logger;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -32,6 +33,7 @@ public class AbstractQuery extends QueryOptions {
 
     final static int DEFAULT_LIMIT = 10;
     final static int DEFAULT_SKIP = 0;
+    final static int MAX_RECORDS = 1000;
 
     public AbstractQuery() {
     }
@@ -62,6 +64,41 @@ public class AbstractQuery extends QueryOptions {
             }
         }
         return query;
+    }
+
+    /**
+     * Checks if values for query are legal, e.g. >= 0 and <= MAX Checks the following parameters:
+     *
+     *  - SKIP
+     *  - LIMIT
+     *
+     * NULL values are considered valid.
+     *
+     * @return TRUE if all values are legal
+     */
+    public void validate() throws CellbaseException {
+
+        Integer skip = getSkip();
+        Integer limit = getLimit();
+
+        if (skip != null) {
+            if (skip < 0) {
+                throw new CellbaseException("Invalid value for skip field " + skip + ". Must be greater than zero");
+            }
+            if (skip > MAX_RECORDS) {
+                throw new CellbaseException("Invalid value for skip field " + skip + ". Must be less than " + MAX_RECORDS);
+            }
+        }
+
+        if (limit != null) {
+            if (limit < 0) {
+                throw new CellbaseException("Invalid value for limit field " + limit + ". Must be greater than zero");
+            }
+            if (limit > MAX_RECORDS) {
+                throw new CellbaseException("Invalid value for limit field " + limit + ". Must be less than " + MAX_RECORDS);
+            }
+        }
+        return;
     }
 
 }

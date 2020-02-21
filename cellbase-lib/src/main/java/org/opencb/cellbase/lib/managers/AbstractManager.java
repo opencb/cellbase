@@ -18,9 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,23 +80,5 @@ public class AbstractManager {
 //        }
 //        return queries;
 //    }
-
-
-    // make sure what is there is legal
-    public void validateQueryOptions(AbstractQuery query) throws CellbaseException {
-        Integer limit = query.getLimit();
-        if (limit != null) {
-            if (limit < 0 || limit > MAX_RECORDS) {
-                throw new CellbaseException("Invalid limit: " + limit + ". Must be between 0 and " + MAX_RECORDS);
-            }
-        }
-        Integer skip = query.getSkip();
-        if (skip != null) {
-            if (skip < 0 || skip > MAX_RECORDS) {
-                throw new CellbaseException("Invalid skip: " + skip + ". Must be between 0 and " + MAX_RECORDS);
-            }
-        }
-    }
-
 
 }

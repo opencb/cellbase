@@ -41,9 +41,7 @@ public class GeneManager extends AbstractManager {
     }
 
     public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws CellbaseException {
-        validateQueryOptions(geneQuery);
-        geneQuery.addLimitIfAbsent();
-        geneQuery.addSkipIfAbsent();
+        geneQuery.validate();
         return geneDBAdaptor.nativeGet(geneQuery);
     }
 
