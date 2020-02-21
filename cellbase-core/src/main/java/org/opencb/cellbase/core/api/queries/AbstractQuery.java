@@ -17,13 +17,12 @@
 package org.opencb.cellbase.core.api.queries;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.slf4j.Logger;
 
-import javax.ws.rs.core.MultivaluedMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,33 +38,35 @@ public class AbstractQuery extends QueryOptions {
     public AbstractQuery() {
     }
 
-    public static <T> T of(MultivaluedMap<String, String> map, Class<T> clazz)
+    public static <T> T of(Map<String, String> map, Class<T> clazz)
             throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException {
         T query = clazz.newInstance();
-        for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             String fieldName = entry.getKey();
-            List<String> values = entry.getValue();
+            String value = entry.getValue();
             Field field = clazz.getField(fieldName);
 //            Method method = clazz.getMethod("set" + fieldName);
             if (fieldName.equals("region")) {
 //                method.invoke(Region.parseRegions()); ....
+                List<Region> regions = Region.parseRegions(value);
+                BeanUtils.setProperty(query, fieldName, regions);
             } else {
                 switch (field.getType().toString()) {
                     case "Boolean":
-                        Boolean bool = Boolean.parseBoolean(values.get(0));
+                        Boolean bool = Boolean.parseBoolean(value);
 //                    method.invoke(bool);
                         BeanUtils.setProperty(query, fieldName, bool);
                         break;
                     case "Integer":
-                        Integer intValue = Integer.parseInt(values.get(0));
+                        Integer intValue = Integer.parseInt(value);
                         BeanUtils.setProperty(query, fieldName, intValue);
                         break;
                     case "List":
-                        List<String> valuesArray = Arrays.asList(values.get(0).split(","));
+                        List<String> valuesArray = Arrays.asList(value);
                         BeanUtils.setProperty(query, fieldName, valuesArray);
                         break;
                     default:
-                        BeanUtils.setProperty(query, fieldName, values.get(0));
+                        BeanUtils.setProperty(query, fieldName, value);
                         break;
                 }
             }

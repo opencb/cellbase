@@ -28,7 +28,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -71,6 +70,7 @@ public class GenericRestWSServer implements IWSServer {
     protected Query query;
     protected QueryOptions queryOptions;
     protected ObjectMap params;
+    protected Map<String, String> uriParams;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
     protected ObjectMapper jsonObjectMapper;
@@ -86,15 +86,9 @@ public class GenericRestWSServer implements IWSServer {
      * will check parameters so to avoid extra operations this config can load
      * versions and species
      */
-    protected CellBaseConfiguration cellBaseConfiguration; //= new CellBaseConfiguration()
-
-
+    protected CellBaseConfiguration cellBaseConfiguration;
     protected CellBaseManagerFactory cellBaseManagerFactory;
     protected Monitor monitor;
-
-    private static final int SKIP_DEFAULT = 0;
-    private static final int LIMIT_DEFAULT = 10;
-    private static final int MAX_RECORDS = 5000;
     private static final String ERROR = "error";
     private static final String OK = "ok";
     // this webservice has no species, do not validate
@@ -164,7 +158,7 @@ public class GenericRestWSServer implements IWSServer {
         // TODO move to manager
 //        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
 //        params = new ObjectMap();
-
+        uriParams = convertMultiToMap(uriInfo.getQueryParameters());
         checkVersion();
     }
 
@@ -179,29 +173,15 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    public ObjectMap parseQueryParams() {
-        ObjectMap paramMap = new ObjectMap();
-        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-
-        // Add the QueryParams from the URL
-        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-
-            String key = entry.getKey();
-            String value = entry.getValue().get(0);
-
-            if (QueryOptions.COUNT.equals(key)) {
-                paramMap.put(QueryOptions.COUNT, Boolean.parseBoolean(value));
-            } else if ("region".equals(key)) {
-                paramMap.put(key, Region.parseRegions(value));
-            } else if (QueryOptions.LIMIT.equals(key) || QueryOptions.SKIP.equals(key)) {
-                paramMap.put(key, value);
-            } else {
-                // GeneQuery expects a list for the rest of the parameters
-                paramMap.put(key, Arrays.asList(value.split(",")));
-            }
-
+    public Map<String, String> convertMultiToMap(MultivaluedMap<String, String> m) {
+        Map<String, String> map = new HashMap<String, String>();
+        if (m == null) {
+            return map;
         }
-        return paramMap;
+        for (Map.Entry<String, List<String>> entry : m.entrySet()) {
+            map.put(entry.getKey(), String.join(",", entry.getValue()));
+        }
+        return map;
     }
 
 //    @Deprecated
@@ -244,32 +224,6 @@ public class GenericRestWSServer implements IWSServer {
         }
         if (sort != null && !sort.isEmpty()) {
             queryOptions.put(QueryOptions.SORT, sort);
-        }
-    }
-
-    @Deprecated
-    public void parseLimitAndSkip(Integer limit, Integer skip) throws CellbaseException {
-        if (limit != null) {
-            if (limit > MAX_RECORDS) {
-                throw new CellbaseException("Limit cannot exceed " + MAX_RECORDS + " but was " + limit);
-            }
-            if (limit < 0) {
-                throw new CellbaseException("Limit must be >= 0, but was " + limit);
-            }
-            queryOptions.put(QueryOptions.LIMIT, limit);
-        } else {
-            queryOptions.put(QueryOptions.LIMIT, LIMIT_DEFAULT);
-        }
-        if (skip != null) {
-            if (skip > MAX_RECORDS) {
-                throw new CellbaseException("Skip cannot exceed " + MAX_RECORDS + " but was " + skip);
-            }
-            if (skip < 0) {
-                throw new CellbaseException("Skip must be >= 0, but was " + skip);
-            }
-            queryOptions.put(QueryOptions.SKIP, skip);
-        } else {
-            queryOptions.put(QueryOptions.SKIP, SKIP_DEFAULT);
         }
     }
 
