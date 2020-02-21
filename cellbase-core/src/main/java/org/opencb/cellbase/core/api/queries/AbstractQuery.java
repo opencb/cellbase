@@ -43,17 +43,22 @@ public class AbstractQuery extends QueryOptions {
             String fieldName = entry.getKey();
             List<String> values = entry.getValue();
             Field field = clazz.getField(fieldName);
-            if (field.getType().equals("Boolean")) {
-                Boolean bool = Boolean.parseBoolean(values.get(0));
-                BeanUtils.setProperty(query, fieldName, bool);
-            } else if (field.getType().equals("Integer")) {
-                Integer intValue = Integer.parseInt(values.get(0));
-                BeanUtils.setProperty(query, fieldName, intValue);
-            } else if (field.getType().equals("List")) {
-                List<String> valuesArray = Arrays.asList(values.get(0).split(","));
-                BeanUtils.setProperty(query, fieldName, valuesArray);
-            } else {
-                BeanUtils.setProperty(query, fieldName, values.get(0));
+            switch (field.getType().toString()) {
+                case "Boolean":
+                    Boolean bool = Boolean.parseBoolean(values.get(0));
+                    BeanUtils.setProperty(query, fieldName, bool);
+                    break;
+                case "Integer":
+                    Integer intValue = Integer.parseInt(values.get(0));
+                    BeanUtils.setProperty(query, fieldName, intValue);
+                    break;
+                case "List":
+                    List<String> valuesArray = Arrays.asList(values.get(0).split(","));
+                    BeanUtils.setProperty(query, fieldName, valuesArray);
+                    break;
+                default:
+                    BeanUtils.setProperty(query, fieldName, values.get(0));
+                    break;
             }
         }
         return query;
