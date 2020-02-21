@@ -18,7 +18,7 @@ package org.opencb.cellbase.core.api.queries;
 
 import org.opencb.biodata.models.core.Region;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GeneQuery extends FeatureQuery {
@@ -124,8 +124,8 @@ public class GeneQuery extends FeatureQuery {
         return ids;
     }
 
-    public GeneQuery setId(String ids) {
-        this.ids.addAll(Arrays.asList(ids.split(",")));
+    public GeneQuery setIds(List<String> ids) {
+        this.ids = ids;
         return this;
     }
 
@@ -133,8 +133,8 @@ public class GeneQuery extends FeatureQuery {
         return names;
     }
 
-    public GeneQuery setNames(String names) {
-        this.names.addAll(Arrays.asList(names.split(",")));
+    public GeneQuery setNames(List<String> names) {
+        this.names = names;
         return this;
     }
 
@@ -142,8 +142,8 @@ public class GeneQuery extends FeatureQuery {
         return biotypes;
     }
 
-    public GeneQuery setBiotypes(String biotypes) {
-        this.biotypes.addAll(Arrays.asList(biotypes.split(",")));
+    public GeneQuery setBiotypes(List<String> biotypes) {
+        this.biotypes = biotypes;
         return this;
     }
 
@@ -152,6 +152,7 @@ public class GeneQuery extends FeatureQuery {
     }
 
     public GeneQuery setRegions(List<Region> regions) {
+        this.regions = new ArrayList();
         this.regions = regions;
         return this;
     }
@@ -160,8 +161,8 @@ public class GeneQuery extends FeatureQuery {
         return transcriptsBiotype;
     }
 
-    public GeneQuery setTranscriptsBiotype(String transcriptsBiotype) {
-        this.transcriptsBiotype.addAll(Arrays.asList(transcriptsBiotype.split(",")));
+    public GeneQuery setTranscriptsBiotype(List<String> transcriptsBiotype) {
+        this.transcriptsBiotype = transcriptsBiotype;
         return this;
     }
 
@@ -169,8 +170,8 @@ public class GeneQuery extends FeatureQuery {
         return transcriptsXrefs;
     }
 
-    public GeneQuery setTranscriptsXrefs(String transcriptsXrefs) {
-        this.transcriptsXrefs.addAll(Arrays.asList(transcriptsXrefs.split(",")));
+    public GeneQuery setTranscriptsXrefs(List<String> transcriptsXrefs) {
+        this.transcriptsXrefs = transcriptsXrefs;
         return this;
     }
 
@@ -178,8 +179,8 @@ public class GeneQuery extends FeatureQuery {
         return transcriptsId;
     }
 
-    public GeneQuery setTranscriptsId(String transcriptsId) {
-        this.transcriptsId.addAll(Arrays.asList(transcriptsId.split(",")));
+    public GeneQuery setTranscriptsId(List<String> transcriptsId) {
+        this.transcriptsId = transcriptsId;
         return this;
     }
 
@@ -187,8 +188,8 @@ public class GeneQuery extends FeatureQuery {
         return transcriptsName;
     }
 
-    public GeneQuery setTranscriptsName(String transcriptsName) {
-        this.transcriptsName.addAll(Arrays.asList(transcriptsName.split(",")));
+    public GeneQuery setTranscriptsName(List<String> transcriptsName) {
+        this.transcriptsName = transcriptsName;
         return this;
     }
 
@@ -196,8 +197,8 @@ public class GeneQuery extends FeatureQuery {
         return transcriptsAnnotationFlags;
     }
 
-    public GeneQuery setTranscriptsAnnotationFlags(String transcriptsAnnotationFlags) {
-        this.transcriptsAnnotationFlags.addAll(Arrays.asList(transcriptsAnnotationFlags.split(",")));
+    public GeneQuery setTranscriptsAnnotationFlags(List<String> transcriptsAnnotationFlags) {
+        this.transcriptsAnnotationFlags = transcriptsAnnotationFlags;
         return this;
     }
 
@@ -205,8 +206,8 @@ public class GeneQuery extends FeatureQuery {
         return transcriptsTfbsName;
     }
 
-    public GeneQuery setTranscriptsTfbsName(String transcriptsTfbsName) {
-        this.transcriptsTfbsName.addAll(Arrays.asList(transcriptsTfbsName.split(",")));
+    public GeneQuery setTranscriptsTfbsName(List<String> transcriptsTfbsName) {
+        this.transcriptsTfbsName = transcriptsTfbsName;
         return this;
     }
 
@@ -214,8 +215,8 @@ public class GeneQuery extends FeatureQuery {
         return annotationDiseasesId;
     }
 
-    public GeneQuery setAnnotationDiseasesId(String annotationDiseasesId) {
-        this.annotationDiseasesId.addAll(Arrays.asList(annotationDiseasesId.split(",")));
+    public GeneQuery setAnnotationDiseasesId(List<String> annotationDiseasesId) {
+        this.annotationDiseasesId = annotationDiseasesId;
         return this;
     }
 
@@ -223,8 +224,8 @@ public class GeneQuery extends FeatureQuery {
         return annotationDiseasesName;
     }
 
-    public GeneQuery setAnnotationDiseasesName(String annotationDiseasesName) {
-        this.annotationDiseasesName.addAll(Arrays.asList(annotationDiseasesName.split(",")));
+    public GeneQuery setAnnotationDiseasesName(List<String> annotationDiseasesName) {
+        this.annotationDiseasesName = annotationDiseasesName;
         return this;
     }
 
@@ -232,8 +233,8 @@ public class GeneQuery extends FeatureQuery {
         return annotationExpressionGene;
     }
 
-    public GeneQuery setAnnotationExpressionGene(String annotationExpressionGene) {
-        this.annotationExpressionGene.addAll(Arrays.asList(annotationExpressionGene.split(",")));
+    public GeneQuery setAnnotationExpressionGene(List<String> annotationExpressionGene) {
+        this.annotationExpressionGene = annotationExpressionGene;
         return this;
     }
 
@@ -241,8 +242,8 @@ public class GeneQuery extends FeatureQuery {
         return annotationExpressionTissue;
     }
 
-    public GeneQuery setAnnotationExpressionTissue(String annotationExpressionTissue) {
-        this.annotationExpressionTissue.addAll(Arrays.asList(annotationExpressionTissue.split(",")));
+    public GeneQuery setAnnotationExpressionTissue(List<String> annotationExpressionTissue) {
+        this.annotationExpressionTissue = annotationExpressionTissue;
         return this;
     }
 
@@ -250,8 +251,8 @@ public class GeneQuery extends FeatureQuery {
         return annotationExpressionValue;
     }
 
-    public GeneQuery setAnnotationExpressionValue(String annotationExpressionValue) {
-        this.annotationExpressionValue.addAll(Arrays.asList(annotationExpressionValue.split(",")));
+    public GeneQuery setAnnotationExpressionValue(List<String> annotationExpressionValue) {
+        this.annotationExpressionValue = annotationExpressionValue;
         return this;
     }
 
@@ -259,8 +260,8 @@ public class GeneQuery extends FeatureQuery {
         return annotationDrugsName;
     }
 
-    public GeneQuery setAnnotationDrugsName(String annotationDrugsName) {
-        this.annotationDrugsName.addAll(Arrays.asList(annotationDrugsName.split(",")));
+    public GeneQuery setAnnotationDrugsName(List<String> annotationDrugsName) {
+        this.annotationDrugsName = annotationDrugsName;
         return this;
     }
 
@@ -268,9 +269,32 @@ public class GeneQuery extends FeatureQuery {
         return annotationDrugsGene;
     }
 
-    public GeneQuery setAnnotationDrugsGene(String annotationDrugsGene) {
-        this.annotationDrugsGene.addAll(Arrays.asList(annotationDrugsGene.split(",")));
+    public GeneQuery setAnnotationDrugsGene(List<String> annotationDrugsGene) {
+        this.annotationDrugsGene = annotationDrugsGene;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "GeneQuery{"
+                + "ids=" + ids
+                + ", names=" + names
+                + ", biotypes=" + biotypes
+                + ", regions=" + regions
+                + ", transcriptsBiotype=" + transcriptsBiotype
+                + ", transcriptsXrefs=" + transcriptsXrefs
+                + ", transcriptsId=" + transcriptsId
+                + ", transcriptsName=" + transcriptsName
+                + ", transcriptsAnnotationFlags=" + transcriptsAnnotationFlags
+                + ", transcriptsTfbsName=" + transcriptsTfbsName
+                + ", annotationDiseasesId=" + annotationDiseasesId
+                + ", annotationDiseasesName=" + annotationDiseasesName
+                + ", annotationExpressionGene=" + annotationExpressionGene
+                + ", annotationExpressionTissue=" + annotationExpressionTissue
+                + ", annotationExpressionValue=" + annotationExpressionValue
+                + ", annotationDrugsName=" + annotationDrugsName
+                + ", annotationDrugsGene=" + annotationDrugsGene
+                + '}';
     }
 
     public static class Builder {
