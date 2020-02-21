@@ -20,8 +20,13 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AbstractManager {
 
@@ -65,20 +70,29 @@ public class AbstractManager {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-//    protected List<AbstractQuery> createQueries(AbstractQuery query, String csvField, String queryKey, String... args) {
-//        String[] ids = csvField.split(",");
-//        List<AbstractQuery> queries = new ArrayList<>(ids.length);
-//        for (String id : ids) {
-//            Query q = new Query(query);
-//            q.put(queryKey, id);
-//            if (args != null && args.length > 0 && args.length % 2 == 0) {
-//                for (int i = 0; i < args.length; i += 2) {
-//                    q.put(args[i], args[i + 1]);
-//                }
-//            }
-//            queries.add(q);
-//        }
-//        return queries;
-//    }
+    protected List<Query> createQueries(Query query, String csvField, String queryKey, String... args) {
+        String[] ids = csvField.split(",");
+        List<Query> queries = new ArrayList<>(ids.length);
+        for (String id : ids) {
+            Query q = new Query(query);
+            q.put(queryKey, id);
+            if (args != null && args.length > 0 && args.length % 2 == 0) {
+                for (int i = 0; i < args.length; i += 2) {
+                    q.put(args[i], args[i + 1]);
+                }
+            }
+            queries.add(q);
+        }
+        return queries;
+    }
 
+    public boolean hasHistogramQueryParam(QueryOptions queryOptions) {
+        // FIXME
+        return true;
+    }
+
+    public int getHistogramIntervalSize(QueryOptions queryOptions) {
+        // FIXME
+        return 0;
+    }
 }

@@ -175,7 +175,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByTranscript(query, queryOptions, id);
+            List<CellBaseDataResult> queryResults = geneManager.getByTranscript(query, id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

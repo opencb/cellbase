@@ -125,7 +125,7 @@ public class TfWSServer extends RegulatoryWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByTf(query, queryOptions, tf);
+            List<CellBaseDataResult> queryResults = geneManager.getByTf(query, tf);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

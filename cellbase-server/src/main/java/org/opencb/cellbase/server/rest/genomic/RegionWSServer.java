@@ -176,7 +176,7 @@ public class RegionWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByRegion(query, queryOptions, region);
+            List<CellBaseDataResult> queryResults = geneManager.getByRegion(query, region);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

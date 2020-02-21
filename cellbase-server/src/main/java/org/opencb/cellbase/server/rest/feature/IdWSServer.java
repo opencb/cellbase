@@ -175,7 +175,7 @@ public class IdWSServer extends GenericRestWSServer {
             parseIncludesAndExcludes(exclude, include, sort);
             parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getGeneByEnsemblId(queryOptions, id);
+            List<CellBaseDataResult> queryResults = geneManager.getGeneByEnsemblId(id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -35,6 +35,7 @@ import org.opencb.cellbase.lib.managers.VariantManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
+import org.opencb.commons.datastore.core.Query;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -43,7 +44,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -196,8 +196,9 @@ public class GeneWSServer extends GenericRestWSServer {
                                     value = "Comma separated list of field(s) to group by, e.g.: biotype.",
                                     required = true) String fields) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
-            CellBaseDataResult<Gene> queryResults = geneManager.groupBy(geneQuery, fields);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
+            CellBaseDataResult<Gene> queryResults = geneManager.groupBy(new Query(), fields);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -243,8 +244,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAggregationStats(@DefaultValue("") @QueryParam("fields")
             @ApiParam(name = "fields", value = ParamConstants.GROUP_BY_FIELDS, required = true) String fields) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
-            CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(geneQuery, fields);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
+            CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(new Query(), fields);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -304,10 +306,9 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll() throws CellbaseException, InvocationTargetException, InstantiationException, IllegalAccessException,
-            NoSuchFieldException {
-        Map<String, String> map = convertMultiToMap(uriInfo.getQueryParameters());
-        GeneQuery geneQuery = GeneQuery.of(map, GeneQuery.class);
+    public Response getAll() throws CellbaseException {
+        GeneQuery geneQuery = new GeneQuery();
+        geneQuery.updateParams(uriParams);
         CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
         return createOkResponse(queryResults);
     }
@@ -397,8 +398,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("genes")
                                        @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
-            List<CellBaseDataResult> queryResults = geneManager.info(geneQuery, genes);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
+            List<CellBaseDataResult> queryResults = geneManager.info(new Query(), genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -433,17 +435,23 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
-            value = ParamConstants.GENE_XREF_IDS, required = true) String genes,
-            @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-            @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-            @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-            @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-            @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION) Integer skip) {
+            value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
             List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -490,8 +498,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
             value = "Name of column to return, e.g. biotype") String field) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
-            CellBaseDataResult<Gene> queryResults = geneManager.distinct(geneQuery, field);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
+            CellBaseDataResult<Gene> queryResults = geneManager.distinct(new Query(), field);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -515,17 +524,23 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getSNPByGenes(@PathParam("genes")
-                @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes,
-            @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-            @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-            @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-            @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-            @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION) Integer skip) {
+                @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
             List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -540,8 +555,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAllRegulatoryElements(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS,
             required = true) String genes) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
-            List<CellBaseDataResult> queryResults = geneManager.getRegulatoryElements(geneQuery, genes);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
+            List<CellBaseDataResult> queryResults = geneManager.getRegulatoryElements(new Query(), genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -573,18 +589,24 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getAllTfbs(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_ENSEMBL_IDS,
-                                       required = true) String genes,
-            @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-            @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-            @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-            @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-            @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION) Integer skip) {
+                                       required = true) String genes) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
-            List<CellBaseDataResult> queryResults = geneManager.getTfbs(geneQuery, genes);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
+            List<CellBaseDataResult> queryResults = geneManager.getTfbs(new Query(), genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -600,17 +622,23 @@ public class GeneWSServer extends GenericRestWSServer {
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
-                    allowableValues = "false,true")
+                    allowableValues = "false,true"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
-                                           required = true) String genes,
-            @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-            @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-            @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-            @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-            @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION) Integer skip) {
+                                           required = true) String genes) {
         try {
-            GeneQuery geneQuery = GeneQuery.of(uriParams, GeneQuery.class);
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.updateParams(uriParams);
             List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {

@@ -25,6 +25,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class MongoDBAdaptor {
 
@@ -74,53 +76,80 @@ public class MongoDBAdaptor {
         }
     }
 
-    protected AbstractQuery addPrivateExcludeOptions(AbstractQuery query) {
-        return query.addExcludes("_id,_chunkIds");
+    protected QueryOptions addPrivateExcludeOptions(QueryOptions options) {
+        return addPrivateExcludeOptions(options, "_id,_chunkIds");
     }
 
-    protected void createRegionQuery(String regionStrings, List<Bson> andBsonList) {
-        List<Region> regions = Region.parseRegions(regionStrings);
-        if (regions != null && regions.size() > 0) {
-            // if there is only one region we add the AND filter directly to the andBsonList passed
-            if (regions.size() == 1) {
-                Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
-                Bson start = Filters.lte("start", regions.get(0).getEnd());
-                Bson end = Filters.gte("end", regions.get(0).getStart());
-                andBsonList.add(Filters.and(chromosome, start, end));
+    protected QueryOptions addPrivateExcludeOptions(QueryOptions options, String csvFields) {
+        if (options != null) {
+            if (options.get("exclude") == null) {
+                options.put("exclude", csvFields);
             } else {
-                // when multiple regions then we create and OR list before add it to andBsonList
-                List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                for (Region region : regions) {
-                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
-                    Bson start = Filters.lte("start", region.getEnd());
-                    Bson end = Filters.gte("end", region.getStart());
-                    orRegionBsonList.add(Filters.and(chromosome, start, end));
+                String exclude = options.getString("exclude");
+                if (exclude.contains(csvFields)) {
+                    return options;
+                } else {
+                    options.put("exclude", exclude + "," + csvFields);
                 }
-                andBsonList.add(Filters.or(orRegionBsonList));
             }
         } else {
-            logger.warn("Region query no created, region object is null or empty.");
+            options = new QueryOptions("exclude", csvFields);
+        }
+        return options;
+    }
+
+    protected AbstractQuery addPrivateExcludeOptions(AbstractQuery query) {
+        query.addExcludes("_id,_chunkIds");
+        return query;
+    }
+
+    protected void createRegionQuery(Query query, String queryParam, List<Bson> andBsonList) {
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            List<Region> regions = Region.parseRegions(query.getString(queryParam));
+            if (regions != null && regions.size() > 0) {
+                // if there is only one region we add the AND filter directly to the andBsonList passed
+                if (regions.size() == 1) {
+                    Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
+                    Bson start = Filters.lte("start", regions.get(0).getEnd());
+                    Bson end = Filters.gte("end", regions.get(0).getStart());
+                    andBsonList.add(Filters.and(chromosome, start, end));
+                } else {
+                    // when multiple regions then we create and OR list before add it to andBsonList
+                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                    for (Region region : regions) {
+                        Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                        Bson start = Filters.lte("start", region.getEnd());
+                        Bson end = Filters.gte("end", region.getStart());
+                        orRegionBsonList.add(Filters.and(chromosome, start, end));
+                    }
+                    andBsonList.add(Filters.or(orRegionBsonList));
+                }
+            } else {
+                logger.warn("Region query no created, region object is null or empty.");
+            }
         }
     }
 
-    protected void createRegionQuery(String regionsString, int chunkSize, List<Bson> andBsonList) {
+    protected void createRegionQuery(Query query, String queryParam, int chunkSize, List<Bson> andBsonList) {
         if (chunkSize <= 0) {
             // if chunkSize is not valid we call to the default method
-            createRegionQuery(regionsString, andBsonList);
+            createRegionQuery(query, queryParam, andBsonList);
         } else {
-            List<Region> regions = Region.parseRegions(regionsString);
-            if (regions != null && regions.size() > 0) {
-                if (regions.size() == 1) {
-                    Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
-                    andBsonList.add(chunkQuery);
-                } else {
-                    // if multiple regions we add them first to a OR list
-                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
-                    for (Region region : regions) {
-                        Bson chunkQuery = createChunkQuery(region, chunkSize);
-                        orRegionBsonList.add(chunkQuery);
+            if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+                List<Region> regions = Region.parseRegions(query.getString(queryParam));
+                if (regions != null && regions.size() > 0) {
+                    if (regions.size() == 1) {
+                        Bson chunkQuery = createChunkQuery(regions.get(0), chunkSize);
+                        andBsonList.add(chunkQuery);
+                    } else {
+                        // if multiple regions we add them first to a OR list
+                        List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                        for (Region region : regions) {
+                            Bson chunkQuery = createChunkQuery(region, chunkSize);
+                            orRegionBsonList.add(chunkQuery);
+                        }
+                        andBsonList.add(Filters.or(orRegionBsonList));
                     }
-                    andBsonList.add(Filters.or(orRegionBsonList));
                 }
             }
         }
@@ -142,22 +171,22 @@ public class MongoDBAdaptor {
         return Filters.and(chunk, start, end);
     }
 
-//    protected void createOrQuery(AbstractQuery query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
-//        createOrQuery(query, queryParam, mongoDbField, andBsonList, QueryValueType.STRING);
-//    }
-//
-//    protected void createOrQuery(AbstractQuery query, String queryParam, String mongoDbField, List<Bson> andBsonList,
-//                                 QueryValueType queryValueType) {
-//        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
-//            switch (queryValueType) {
-//                case INTEGER:
-//                    createOrQuery(query.getAsIntegerList(queryParam), mongoDbField, andBsonList);
-//                    break;
-//                default:
-//                    createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
-//            }
-//        }
-//    }
+    protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList) {
+        createOrQuery(query, queryParam, mongoDbField, andBsonList, QueryValueType.STRING);
+    }
+
+    protected void createOrQuery(Query query, String queryParam, String mongoDbField, List<Bson> andBsonList,
+                                 QueryValueType queryValueType) {
+        if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
+            switch (queryValueType) {
+                case INTEGER:
+                    createOrQuery(query.getAsIntegerList(queryParam), mongoDbField, andBsonList);
+                    break;
+                default:
+                    createOrQuery(query.getAsStringList(queryParam), mongoDbField, andBsonList);
+            }
+        }
+    }
 
     protected <T> void createOrQuery(List<T> queryValues, String mongoDbField, List<Bson> andBsonList) {
         if (queryValues.size() == 1) {
@@ -521,5 +550,48 @@ public class MongoDBAdaptor {
     public void setAssembly(String assembly) {
         this.assembly = assembly;
     }
+
+
+    //--- DELETE ME ---//
+    public CellBaseDataResult<Long> count(Query query) {
+        return null;
+    }
+
+    public CellBaseDataResult distinct(Query query, String field) {
+        return null;
+    }
+
+    public CellBaseDataResult next(Query query, QueryOptions options) {
+        return null;
+    }
+
+    public CellBaseDataResult get(Query query, QueryOptions inputOptions) {
+        return null;
+    }
+
+    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
+        return null;
+    }
+
+    public Iterator iterator(Query query, QueryOptions inputOptions) {
+        return null;
+    }
+
+    public Iterator nativeIterator(Query query, QueryOptions options) {
+        return null;
+    }
+
+    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
+        return;
+    }
+
+    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
+        return null;
+    }
+
+    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
+        return null;
+    }
+
 
 }

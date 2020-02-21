@@ -16,8 +16,9 @@
 
 package org.opencb.cellbase.core.api.core;
 
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,81 +31,75 @@ import java.util.function.Consumer;
  */
 public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
-
-//    int insert(List objectList);
-
     CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields);
 
-//    CellBaseDataResult<Long> update(Query query, ObjectMap parameters);
-
-
     default CellBaseDataResult<Long> count() {
-        return count(new AbstractQuery());
+        return count(new Query());
     }
 
-    CellBaseDataResult<Long> count(AbstractQuery query);
-
+    CellBaseDataResult<Long> count(Query query);
 
     default CellBaseDataResult<String> distinct(String field) {
-        return distinct(new AbstractQuery(), field);
+        return distinct(new Query(), field);
     }
 
-    CellBaseDataResult<String> distinct(AbstractQuery query, String field);
-
+    CellBaseDataResult<String> distinct(Query query, String field);
 
 //    default CellBaseDataResult stats() {
 //        return stats(new Query());
 //    }
-//
+
 //    CellBaseDataResult stats(Query query);
 
     /*
      Main methods to query.
      */
-    CellBaseDataResult<T> get(AbstractQuery query);
+    CellBaseDataResult<T> get(Query query, QueryOptions options);
 
-    default List<CellBaseDataResult<T>> get(List<AbstractQuery> queries) {
+    default List<CellBaseDataResult<T>> get(List<Query> queries, QueryOptions options) {
         Objects.requireNonNull(queries);
-        List<CellBaseDataResult<T>> cellBaseDataResults = new ArrayList<>(queries.size());
-        for (AbstractQuery query : queries) {
-            cellBaseDataResults.add(get(query));
+        List<CellBaseDataResult<T>> queryResults = new ArrayList<>(queries.size());
+        for (Query query : queries) {
+            queryResults.add(get(query, options));
         }
-        return cellBaseDataResults;
+        return queryResults;
     }
 
-    CellBaseDataResult nativeGet(AbstractQuery query);
+    CellBaseDataResult nativeGet(Query query, QueryOptions options);
 
-    default List<CellBaseDataResult> nativeGet(List<AbstractQuery> queries) {
+    default List<CellBaseDataResult> nativeGet(List<Query> queries, QueryOptions options) {
         Objects.requireNonNull(queries);
-        List<CellBaseDataResult> cellBaseDataResults = new ArrayList<>(queries.size());
-        for (AbstractQuery query : queries) {
-            cellBaseDataResults.add(nativeGet(query));
+        List<CellBaseDataResult> queryResults = new ArrayList<>(queries.size());
+        for (Query query : queries) {
+            queryResults.add(nativeGet(query, options));
         }
-        return cellBaseDataResults;
+        return queryResults;
     }
 
     @Override
     default Iterator<T> iterator() {
-        return iterator(new AbstractQuery());
+        return iterator(new Query(), new QueryOptions());
     }
 
     default Iterator nativeIterator() {
-        return nativeIterator(new AbstractQuery());
+        return nativeIterator(new Query(), new QueryOptions());
     }
 
-    Iterator<T> iterator(AbstractQuery query);
+    Iterator<T> iterator(Query query, QueryOptions options);
 
-    Iterator nativeIterator(AbstractQuery query);
+    Iterator nativeIterator(Query query, QueryOptions options);
 
-    CellBaseDataResult groupBy(AbstractQuery query, String field);
+//    CellBaseDataResult rank(Query query, String field, int numResults, boolean asc);
 
-    CellBaseDataResult groupBy(AbstractQuery query, List<String> fields);
+    CellBaseDataResult groupBy(Query query, String field, QueryOptions options);
+
+    CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options);
 
     @Override
     default void forEach(Consumer action) {
-        forEach(new AbstractQuery(), action);
+        forEach(new Query(), action, new QueryOptions());
     }
 
-    void forEach(AbstractQuery query, Consumer<? super Object> action);
+    void forEach(Query query, Consumer<? super Object> action, QueryOptions options);
 
 }

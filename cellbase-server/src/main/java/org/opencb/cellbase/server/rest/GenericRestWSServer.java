@@ -70,7 +70,7 @@ public class GenericRestWSServer implements IWSServer {
     protected Query query;
     protected QueryOptions queryOptions;
     protected ObjectMap params;
-    protected Map<String, String> uriParams;
+    protected Map<String, Object> uriParams;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
     protected ObjectMapper jsonObjectMapper;
@@ -173,8 +173,8 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    public Map<String, String> convertMultiToMap(MultivaluedMap<String, String> m) {
-        Map<String, String> map = new HashMap<String, String>();
+    public Map<String, Object> convertMultiToMap(MultivaluedMap<String, String> m) {
+        Map<String, Object> map = new HashMap<String, Object>();
         if (m == null) {
             return map;
         }
@@ -184,29 +184,27 @@ public class GenericRestWSServer implements IWSServer {
         return map;
     }
 
-//    @Deprecated
-//    public void parseQueryParams() {
-//        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-//
-//        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
-//
-//        // Add all the others QueryParams from the URL
-//        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-//
-//            String key = entry.getKey();
-//            String value = entry.getValue().get(0);
-//
-//            if (!queryOptions.containsKey(key)) {
-//                if ("count".equalsIgnoreCase(key)) {
-//                    queryOptions.put("count", Boolean.parseBoolean(value));
-//                } else {
-//                    query.put(key, value);
-//                }
-//            }
-//        }
-//    }
+    public void parseQueryParams() {
+        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
 
-    @Deprecated
+        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
+
+        // Add all the others QueryParams from the URL
+        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+
+            String key = entry.getKey();
+            String value = entry.getValue().get(0);
+
+            if (!queryOptions.containsKey(key)) {
+                if ("count".equalsIgnoreCase(key)) {
+                    queryOptions.put("count", Boolean.parseBoolean(value));
+                } else {
+                    query.put(key, value);
+                }
+            }
+        }
+    }
+
     public void parseIncludesAndExcludes(String exclude, String include, String sort) {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         if (exclude != null && !exclude.isEmpty()) {
@@ -225,6 +223,10 @@ public class GenericRestWSServer implements IWSServer {
         if (sort != null && !sort.isEmpty()) {
             queryOptions.put(QueryOptions.SORT, sort);
         }
+    }
+
+    public void parseLimitAndSkip(int limit, int skip) {
+        return;
     }
 
     protected void logQuery(String status) {

@@ -79,12 +79,12 @@ public class QueryOptions extends ProjectionQueryOptions {
 
     @Override
     public String toString() {
-        return "QueryOptions{" +
-                "skip=" + skip +
-                ", limit=" + limit +
-                ", sort='" + sort + '\'' +
-                ", count=" + count +
-                ", order=" + order +
-                '}';
+        return "QueryOptions{"
+                + "skip=" + skip
+                + ", limit=" + limit
+                + ", sort='" + sort + '\''
+                + ", count=" + count
+                + ", order=" + order
+                + '}';
     }
 }

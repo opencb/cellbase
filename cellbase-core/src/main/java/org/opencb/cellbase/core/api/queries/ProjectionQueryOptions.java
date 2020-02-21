@@ -22,8 +22,8 @@ import java.util.List;
 
 public class ProjectionQueryOptions {
 
-    List<String> excludes;
-    List<String> includes;
+    private List<String> excludes;
+    private List<String> includes;
 
     public ProjectionQueryOptions() {
     }
@@ -56,9 +56,9 @@ public class ProjectionQueryOptions {
 
     @Override
     public String toString() {
-        return "ProjectionQueryOptions{" +
-                "excludes=" + excludes +
-                ", includes=" + includes +
-                '}';
+        return "ProjectionQueryOptions{"
+                + "excludes=" + excludes
+                + ", includes=" + includes
+                + '}';
     }
 }

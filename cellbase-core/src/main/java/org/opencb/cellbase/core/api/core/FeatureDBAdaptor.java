@@ -19,10 +19,9 @@ package org.opencb.cellbase.core.api.core;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +32,7 @@ import java.util.stream.Collectors;
 /**
  * Created by imedina on 25/11/15.
  */
-public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
+public interface FeatureDBAdaptor<T> extends org.opencb.cellbase.core.api.core.CellBaseDBAdaptor<T> {
 
     String MERGE = "merge";
     String REGION = "region";
@@ -50,7 +49,7 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         return nativeGet(new Query(), options);
     }
 
-    CellBaseDataResult<T> next(AbstractQuery query, QueryOptions options);
+    CellBaseDataResult<T> next(Query query, QueryOptions options);
 
     CellBaseDataResult nativeNext(Query query, QueryOptions options);
 
@@ -63,8 +62,8 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
         if (options.containsKey(MERGE) && (Boolean) options.get(MERGE)) {
             Query query = new Query(REGION, String.join(",",
                     regions.stream().map((region) -> region.toString()).collect(Collectors.toList())));
-            CellBaseDataResult<T> cellBaseDataResult = get(query, options);
-            return Collections.singletonList(cellBaseDataResult);
+            CellBaseDataResult<T> queryResult = get(query, options);
+            return Collections.singletonList(queryResult);
         } else {
             List<CellBaseDataResult<T>> results = new ArrayList<>(regions.size());
             for (Region region : regions) {
@@ -79,11 +78,11 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
 
     default List<CellBaseDataResult> getIntervalFrequencies(List<Query> queries, int intervalSize, QueryOptions options) {
         Objects.requireNonNull(queries);
-        List<CellBaseDataResult> cellBaseDataResults = new ArrayList<>(queries.size());
+        List<CellBaseDataResult> queryResults = new ArrayList<>(queries.size());
         for (Query query : queries) {
-            cellBaseDataResults.add(getIntervalFrequencies(query, intervalSize, options));
+            queryResults.add(getIntervalFrequencies(query, intervalSize, options));
         }
-        return cellBaseDataResults;
+        return queryResults;
     }
 
     default CellBaseDataResult<T> getByVariant(Variant variant, QueryOptions options) {
@@ -102,10 +101,10 @@ public interface FeatureDBAdaptor<T> extends CellBaseDBAdaptor<T> {
                     .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
                     .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
         }
-        CellBaseDataResult<T> cellBaseDataResult = get(query, options);
-        cellBaseDataResult.setId(variant.toString());
+        CellBaseDataResult<T> queryResult = get(query, options);
+        queryResult.setId(variant.toString());
 
-        return cellBaseDataResult;
+        return queryResult;
     }
 
     default List<CellBaseDataResult<T>> getByVariant(List<Variant> variants, QueryOptions options) {
