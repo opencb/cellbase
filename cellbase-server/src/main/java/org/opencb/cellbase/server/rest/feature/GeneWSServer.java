@@ -306,7 +306,7 @@ public class GeneWSServer extends GenericRestWSServer {
     })
     public Response getAll() throws CellbaseException, InvocationTargetException, InstantiationException, IllegalAccessException,
             NoSuchFieldException {
-        GeneQuery geneQuery = (GeneQuery) GeneQuery.of(uriInfo.getQueryParameters(), GeneQuery.class);
+        GeneQuery geneQuery = GeneQuery.of(uriInfo.getQueryParameters(), GeneQuery.class);
         CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
         return createOkResponse(queryResults);
     }

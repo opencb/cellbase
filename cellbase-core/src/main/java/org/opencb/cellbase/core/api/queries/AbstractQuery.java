@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import javax.ws.rs.core.MultivaluedMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -38,29 +39,35 @@ public class AbstractQuery extends QueryOptions {
     public AbstractQuery() {
     }
 
-    public static Object of(MultivaluedMap<String, String> map, Class clazz)
+    public static <T> T of(MultivaluedMap<String, String> map, Class<T> clazz)
             throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException {
-        Object query = clazz.newInstance();
+        T query = clazz.newInstance();
         for (Map.Entry<String, List<String>> entry : map.entrySet()) {
             String fieldName = entry.getKey();
             List<String> values = entry.getValue();
             Field field = clazz.getField(fieldName);
-            switch (field.getType().toString()) {
-                case "Boolean":
-                    Boolean bool = Boolean.parseBoolean(values.get(0));
-                    BeanUtils.setProperty(query, fieldName, bool);
-                    break;
-                case "Integer":
-                    Integer intValue = Integer.parseInt(values.get(0));
-                    BeanUtils.setProperty(query, fieldName, intValue);
-                    break;
-                case "List":
-                    List<String> valuesArray = Arrays.asList(values.get(0).split(","));
-                    BeanUtils.setProperty(query, fieldName, valuesArray);
-                    break;
-                default:
-                    BeanUtils.setProperty(query, fieldName, values.get(0));
-                    break;
+//            Method method = clazz.getMethod("set" + fieldName);
+            if (fieldName.equals("region")) {
+//                method.invoke(Region.parseRegions()); ....
+            } else {
+                switch (field.getType().toString()) {
+                    case "Boolean":
+                        Boolean bool = Boolean.parseBoolean(values.get(0));
+//                    method.invoke(bool);
+                        BeanUtils.setProperty(query, fieldName, bool);
+                        break;
+                    case "Integer":
+                        Integer intValue = Integer.parseInt(values.get(0));
+                        BeanUtils.setProperty(query, fieldName, intValue);
+                        break;
+                    case "List":
+                        List<String> valuesArray = Arrays.asList(values.get(0).split(","));
+                        BeanUtils.setProperty(query, fieldName, valuesArray);
+                        break;
+                    default:
+                        BeanUtils.setProperty(query, fieldName, values.get(0));
+                        break;
+                }
             }
         }
         return query;
