@@ -20,6 +20,7 @@ import org.opencb.biodata.models.core.Region;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class GeneQuery extends FeatureQuery {
 
@@ -43,6 +44,11 @@ public class GeneQuery extends FeatureQuery {
 
     public GeneQuery() {
     }
+
+    public GeneQuery(Map<String, String> params) {
+        super(params);
+    }
+
 
 //    public GeneQuery(MultivaluedMap<String, String> multivaluedMap) throws CellbaseException {
 //        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {

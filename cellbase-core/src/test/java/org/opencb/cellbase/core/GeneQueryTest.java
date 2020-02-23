@@ -42,8 +42,10 @@ public class GeneQueryTest {
         paramMap.put("ids", "1");
         paramMap.put("biotypes", "a,b,c");
         paramMap.put("annotationDrugsGene", "x,y");
+        paramMap.put("xxx", "");
 
-        geneQuery.updateParams(paramMap);
+//        geneQuery.updateParams(paramMap);
+        geneQuery = new GeneQuery(paramMap);
         assertEquals("1", geneQuery.getIds().get(0));
 
         assertEquals("a", geneQuery.getBiotypes().get(0));

@@ -16,106 +16,130 @@
 
 package org.opencb.cellbase.core.api.queries;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import org.apache.commons.beanutils.BeanUtils;
-import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.UncheckedIOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AbstractQuery extends QueryOptions {
 
+    protected ObjectMapper objectMapper;
     protected Logger logger;
 
-    static final int DEFAULT_LIMIT = 10;
-    static final int DEFAULT_SKIP = 0;
-    static final int MAX_RECORDS = 1000;
+    public static final int DEFAULT_LIMIT = 10;
+    public static final int DEFAULT_SKIP = 0;
+    public static final int MAX_RECORDS = 1000;
 
     public AbstractQuery() {
+        init();
+    }
+
+    public AbstractQuery(Map<String, String> params) {
+        this();
+
+        updateParams(params);
+    }
+
+    private void init() {
+        objectMapper = new ObjectMapper();
+        logger = LoggerFactory.getLogger(this.getClass());
+    }
+
+    public void updateParams(ObjectMap objectMap) {
+        try {
+            objectMapper.updateValue(this, objectMap);
+        } catch (JsonMappingException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public void updateParams(Map<String, String> params) {
-        ObjectMapper objectMapper = getObjectMapper();
         try {
-            // Split string lists
-            ObjectMap copy = new ObjectMap(params);
+            Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : loadPropertiesMap().entrySet()) {
-                if (Collection.class.isAssignableFrom(entry.getValue())) {
-                    copy.put(entry.getKey(), copy.getAsStringList(entry.getKey()));
+                String value = params.get(entry.getKey());
+                if (value != null) {
+                    if (Collection.class.isAssignableFrom(entry.getValue())) {
+                        objectHashMap.put(entry.getKey(), Arrays.asList(value.split(",")));
+                    } else {
+                        objectHashMap.put(entry.getKey(), params.get(entry.getKey()));
+                    }
                 }
             }
-            objectMapper.updateValue(this, copy);
+            objectMapper.updateValue(this, objectHashMap);
         } catch (JsonProcessingException e) {
-            throw new UncheckedIOException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 
-    private static ObjectMapper getObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper;
-    }
+//    private static ObjectMapper getObjectMapper() {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+//        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//        return objectMapper;
+//    }
 
-    private Map<String, Class<?>> internalPropertiesMap = null;
+    //    private Map<String, Class<?>> internalPropertiesMap = null;
     private Map<String, Class<?>> loadPropertiesMap() {
-        if (internalPropertiesMap == null) {
-            ObjectMapper objectMapper = getObjectMapper();
-            BeanDescription beanDescription = objectMapper.getSerializationConfig().introspect(objectMapper.constructType(this.getClass()));
-            internalPropertiesMap = new HashMap<>(beanDescription.findProperties().size());
-            for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-                internalPropertiesMap.put(property.getName(), property.getRawPrimaryType());
-            }
+//        if (internalPropertiesMap == null) {
+//        ObjectMapper objectMapper = getObjectMapper();
+//        ObjectMapper objectMapper = new ObjectMapper();
+        BeanDescription beanDescription = objectMapper.getSerializationConfig().introspect(objectMapper.constructType(this.getClass()));
+        Map<String, Class<?>> internalPropertiesMap = new HashMap<>(beanDescription.findProperties().size() * 2);
+        for (BeanPropertyDefinition property : beanDescription.findProperties()) {
+            internalPropertiesMap.put(property.getName(), property.getRawPrimaryType());
         }
+//        }
         return internalPropertiesMap;
     }
 
-    public static <T> T of(Map<String, String> map, Class<T> clazz)
-            throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException {
-        T query = clazz.newInstance();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            String fieldName = entry.getKey();
-            String value = entry.getValue();
-            Field field = clazz.getField(fieldName);
-//            Method method = clazz.getMethod("set" + fieldName);
-            if (fieldName.equals("region")) {
-//                method.invoke(Region.parseRegions()); ....
-                List<Region> regions = Region.parseRegions(value);
-                BeanUtils.setProperty(query, fieldName, regions);
-            } else {
-                switch (field.getType().toString()) {
-                    case "Boolean":
-                        Boolean bool = Boolean.parseBoolean(value);
-//                    method.invoke(bool);
-                        BeanUtils.setProperty(query, fieldName, bool);
-                        break;
-                    case "Integer":
-                        Integer intValue = Integer.parseInt(value);
-                        BeanUtils.setProperty(query, fieldName, intValue);
-                        break;
-                    case "List":
-                        List<String> valuesArray = Arrays.asList(value);
-                        BeanUtils.setProperty(query, fieldName, valuesArray);
-                        break;
-                    default:
-                        BeanUtils.setProperty(query, fieldName, value);
-                        break;
-                }
-            }
-        }
-        return query;
-    }
+//    @Deprecated
+//    public static <T> T of(Map<String, String> map, Class<T> clazz)
+//            throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException {
+//        T query = clazz.newInstance();
+//        for (Map.Entry<String, String> entry : map.entrySet()) {
+//            String fieldName = entry.getKey();
+//            String value = entry.getValue();
+//            Field field = clazz.getField(fieldName);
+////            Method method = clazz.getMethod("set" + fieldName);
+//            if (fieldName.equals("region")) {
+////                method.invoke(Region.parseRegions()); ....
+//                List<Region> regions = Region.parseRegions(value);
+//                BeanUtils.setProperty(query, fieldName, regions);
+//            } else {
+//                switch (field.getType().toString()) {
+//                    case "Boolean":
+//                        Boolean bool = Boolean.parseBoolean(value);
+////                    method.invoke(bool);
+//                        BeanUtils.setProperty(query, fieldName, bool);
+//                        break;
+//                    case "Integer":
+//                        Integer intValue = Integer.parseInt(value);
+//                        BeanUtils.setProperty(query, fieldName, intValue);
+//                        break;
+//                    case "List":
+//                        List<String> valuesArray = Arrays.asList(value);
+//                        BeanUtils.setProperty(query, fieldName, valuesArray);
+//                        break;
+//                    default:
+//                        BeanUtils.setProperty(query, fieldName, value);
+//                        break;
+//                }
+//            }
+//        }
+//        return query;
+//    }
 
     /**
      * Checks if values for query are legal, e.g. >= 0 and <= MAX Checks the following parameters:
@@ -127,7 +151,6 @@ public class AbstractQuery extends QueryOptions {
      * @throws CellbaseException if the skip or limit values are invalid
      */
     public void validate() throws CellbaseException {
-
         Integer skip = getSkip();
         Integer limit = getLimit();
 

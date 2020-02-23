@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.core.api.queries;
 
+import java.util.Map;
+
 public class FeatureQuery extends AbstractQuery {
 
     private Boolean histogram;
@@ -23,6 +25,10 @@ public class FeatureQuery extends AbstractQuery {
     private Integer interval;
 
     public FeatureQuery() {
+    }
+
+    public FeatureQuery(Map<String, String> params) {
+        super(params);
     }
 
     public Boolean getHistogram() {
