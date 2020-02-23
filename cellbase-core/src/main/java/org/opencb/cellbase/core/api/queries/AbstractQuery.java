@@ -44,7 +44,7 @@ public class AbstractQuery extends QueryOptions {
     public AbstractQuery() {
     }
 
-    public void updateParams(Map<String, Object> params) {
+    public void updateParams(Map<String, String> params) {
         ObjectMapper objectMapper = getObjectMapper();
         try {
             // Split string lists
