@@ -41,6 +41,7 @@ public class GeneQueryTest {
         paramMap.put("ids", "1");
         paramMap.put("biotypes", "a,b,c");
         paramMap.put("annotationDrugsGene", "x,y");
+//        paramMap.put("annotation.drugs.gene", "x,y");
         paramMap.put("xxx", "");
 
         geneQuery = new GeneQuery(paramMap);

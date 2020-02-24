@@ -23,6 +23,8 @@ public class QueryOptions extends ProjectionQueryOptions {
     protected String sort;
     protected Boolean count;
     protected Order order;
+    protected String timeout;
+    protected String facet;
 
     enum Order {
         ASCENDING,
@@ -77,6 +79,24 @@ public class QueryOptions extends ProjectionQueryOptions {
         return this;
     }
 
+    public String getTimeout() {
+        return timeout;
+    }
+
+    public QueryOptions setTimeout(String timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
+    public String getFacet() {
+        return facet;
+    }
+
+    public QueryOptions setFacet(String facet) {
+        this.facet = facet;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "QueryOptions{"
@@ -85,6 +105,8 @@ public class QueryOptions extends ProjectionQueryOptions {
                 + ", sort='" + sort + '\''
                 + ", count=" + count
                 + ", order=" + order
+                + ", timeout='" + timeout + '\''
+                + ", facet='" + facet + '\''
                 + '}';
     }
 }

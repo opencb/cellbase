@@ -227,7 +227,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @Path("/api")
     @ApiOperation(value = "API", response = Map.class)
     public Response api(@ApiParam(value = "List of categories to get API from, e.g. Xref,Gene") @QueryParam("category") String categoryStr)
-            throws CellbaseException {
+    {
         List<LinkedHashMap<String, Object>> api = new ArrayList<>(20);
         Map<String, Class> classes = new LinkedHashMap<>();
         classes.put("clinical", ClinicalWSServer.class);

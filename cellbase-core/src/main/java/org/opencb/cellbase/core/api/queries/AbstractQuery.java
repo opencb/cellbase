@@ -21,8 +21,10 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AbstractQuery extends QueryOptions {
+public class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOptions {
 
     protected ObjectMapper objectMapper;
     protected Logger logger;
@@ -133,4 +135,18 @@ public class AbstractQuery extends QueryOptions {
         }
     }
 
+    // temporary method because java commons still uses query options
+    public QueryOptions toQueryOptions() {
+        QueryOptions queryOptions = new org.opencb.commons.datastore.core.QueryOptions();
+        queryOptions.put(QueryOptions.SKIP, skip);
+        queryOptions.put(QueryOptions.LIMIT, limit);
+        queryOptions.put(QueryOptions.COUNT, count);
+        queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(includes));
+        queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes));
+        queryOptions.put(QueryOptions.SORT, sort);
+        queryOptions.put(QueryOptions.ORDER, order);
+        queryOptions.put(QueryOptions.TIMEOUT, timeout);
+        queryOptions.put(QueryOptions.FACET, facet);
+        return queryOptions;
+    }
 }

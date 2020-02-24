@@ -22,8 +22,8 @@ import java.util.List;
 
 public class ProjectionQueryOptions {
 
-    private List<String> excludes;
-    private List<String> includes;
+    protected List<String> excludes;
+    protected List<String> includes;
 
     public ProjectionQueryOptions() {
     }
