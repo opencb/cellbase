@@ -179,9 +179,29 @@ public class GenericRestWSServer implements IWSServer {
             return map;
         }
         for (Map.Entry<String, List<String>> entry : m.entrySet()) {
-            map.put(entry.getKey(), String.join(",", entry.getValue()));
+            String camelCased = convertDotToCamelCase(entry.getKey());
+            map.put(camelCased, String.join(",", entry.getValue()));
         }
         return map;
+    }
+
+    /**
+     * Converts to canelcase, e.g. transcripts.biotype --> transcriptsBiotype. It's translated back to the full path right before the
+     * mongo query is run.
+     *
+     * @param dotPath e.g. transcripts.biotype
+     * @return the string camelcased
+     */
+    private String convertDotToCamelCase(String dotPath) {
+        String[] paths = dotPath.split("\\.");
+        StringBuilder sb = new StringBuilder();
+        for (String path  : paths) {
+            if (sb.length() > 0) {
+                path = StringUtils.capitalize(path);
+            }
+            sb.append(path);
+        }
+        return sb.toString();
     }
 
     public void parseQueryParams() {
