@@ -17,9 +17,7 @@
 package org.opencb.cellbase.server.rest;
 
 import com.mongodb.MongoException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -62,11 +60,16 @@ public class SpeciesWSServer extends GenericRestWSServer {
     @Path("/info")
     @ApiOperation(httpMethod = "GET", value = "Retrieves info about current species chromosomes.", response = Chromosome.class,
             responseContainer = "QueryResponse")
-    public Response getSpeciesInfo(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                   @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                   @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getSpeciesInfo() {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             CellBaseDataResult queryResult = genomeManager.info(queryOptions);
             return createOkResponse(queryResult);

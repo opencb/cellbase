@@ -24,7 +24,6 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.VariantManager;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
@@ -51,7 +50,7 @@ public class VariantWSServer extends GenericRestWSServer {
                            @PathParam("species")
                            @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException, CellbaseException {
+            throws VersionException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -146,7 +145,7 @@ public class VariantWSServer extends GenericRestWSServer {
                 phased,
                 imprecise,
                 svExtraPadding,
-                cnvExtraPadding, null, null, null, null, null);
+                cnvExtraPadding);
     }
 
     @GET
@@ -156,6 +155,18 @@ public class VariantWSServer extends GenericRestWSServer {
             + " values from the following set: {variation, clinical, conservation, functionalScore, consequenceType,"
             + " expression, geneDisease, drugInteraction, populationFrequencies, repeats}.",
             response = VariantAnnotation.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+    })
     public Response getAnnotationByVariantsGET(@PathParam("variants")
                                                @ApiParam(name = "variants", value = ParamConstants.VARIANTS,
                                                        required = true) String variants,
@@ -186,25 +197,8 @@ public class VariantWSServer extends GenericRestWSServer {
                                                @QueryParam("cnvExtraPadding")
                                                @ApiParam(name = "cnvExtraPadding",
                                                        value = ParamConstants.CNV_EXTRA_PADDING,
-                                                       defaultValue = "0", required = false) Integer cnvExtraPadding,
-                                               @QueryParam("exclude")
-                                                   @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                               @QueryParam("include")
-                                                   @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                               @QueryParam("sort")
-                                                   @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                               @QueryParam("limit") @DefaultValue("10")
-                                                   @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                               @QueryParam("skip") @DefaultValue("0")
-                                                   @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
-        return getAnnotationByVariant(variants,
-                normalize,
-                skipDecompose,
-                ignorePhase,
-                phased,
-                imprecise,
-                svExtraPadding,
-                cnvExtraPadding, exclude, include, sort, limit, skip);
+                                                       defaultValue = "0", required = false) Integer cnvExtraPadding) {
+        return getAnnotationByVariant(variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding);
     }
     private Response getAnnotationByVariant(String variants,
                                             Boolean normalize,
@@ -213,13 +207,9 @@ public class VariantWSServer extends GenericRestWSServer {
                                             @Deprecated Boolean phased,
                                             Boolean imprecise,
                                             Integer svExtraPadding,
-                                            Integer cnvExtraPadding,
-                                            String exclude, String include, String sort, Integer limit, Integer skip) {
+                                            Integer cnvExtraPadding) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
-
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(queryOptions, variants,
                     normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding);
             return createOkResponse(queryResults);
@@ -278,19 +268,21 @@ public class VariantWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getByEnsemblId(@PathParam("variants")
-                                   @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
-                                        required = true) String id,
-                                   @QueryParam("exclude")
-                                        @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                   @QueryParam("include")
-                                        @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                   @QueryParam("sort")
-                                        @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
+    public Response getByEnsemblId(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
+            required = true) String id) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, id);
             return createOkResponse(queryResults);
@@ -320,21 +312,20 @@ public class VariantWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
-                    dataType = "java.util.List", paramType = "query")
+                    dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response search(@QueryParam("exclude")
-                               @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                           @QueryParam("include")
-                               @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                           @QueryParam("sort")
-                               @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                           @QueryParam("limit") @DefaultValue("10")
-                               @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                           @QueryParam("skip") @DefaultValue("0")
-                               @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response search() {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             CellBaseDataResult queryResults = variantManager.search(query, queryOptions);
             return createOkResponse(queryResults);

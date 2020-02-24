@@ -73,15 +73,17 @@ public class ProteinWSServer extends GenericRestWSServer {
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getInfoByEnsemblId(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
-                                               required = true) String id,
-                                       @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                       @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                       @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort) {
+                                               required = true) String id) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, id);
             return createOkResponse(queryResults);
@@ -107,21 +109,20 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "xrefs", value = ParamConstants.PROTEIN_XREF_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll(@QueryParam("exclude")
-                           @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                           @QueryParam("include")
-                           @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                           @QueryParam("sort")
-                           @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                           @QueryParam("limit") @DefaultValue("10")
-                           @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                           @QueryParam("skip") @DefaultValue("0")
-                           @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getAll() {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             CellBaseDataResult<Protein> queryResults = proteinManager.search(query, queryOptions);
             return createOkResponse(queryResults);
@@ -148,20 +149,21 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "aa",
                     value = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding"
                             + " of aminoacid names, e.g.: CYS",
-                    required = false, dataType = "String", paramType = "query")
+                    required = false, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getSubstitutionScores(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_ID,
-                                                  required = true) String id,
-                                          @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                          @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                          @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                          @QueryParam("limit") @DefaultValue("10")
-                                              @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                          @QueryParam("skip") @DefaultValue("0")
-                                              @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                                  required = true) String id) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             CellBaseDataResult queryResult = proteinManager.getSubstitutionScores(query, queryOptions, id);
             return createOkResponse(queryResult);

@@ -70,18 +70,21 @@ public class TfWSServer extends RegulatoryWSServer {
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getAllByTfbs(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf,
-                                 @DefaultValue("") @QueryParam("celltype") String celltype,
-                                 @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                 @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                 @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                 @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                 @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                 @DefaultValue("") @QueryParam("celltype") String celltype) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = regulatoryManager.getAllByTfbs(query, queryOptions, tf);
             return createOkResponse(queryResults);
@@ -111,19 +114,20 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf,
-                                    @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                    @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                    @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                    @QueryParam("limit") @DefaultValue("10")
-                                        @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                    @QueryParam("skip") @DefaultValue("0")
-                                        @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = geneManager.getByTf(query, tf);
             return createOkResponse(queryResults);

@@ -90,16 +90,20 @@ public class ClinicalWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "modeInheritance", value = ParamConstants.MODE_INHERITANCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "alleleOrigin", value = ParamConstants.ALLELE_ORIGIN,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll(@QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                           @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                           @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                           @QueryParam("limit") @DefaultValue("10") @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                           @QueryParam("skip") @DefaultValue("0") @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+    public Response getAll() {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             CellBaseDataResult<Variant> queryResults = clinicalManager.search(query, queryOptions);
             return createOkResponse(queryResults);

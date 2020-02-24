@@ -16,9 +16,7 @@
 
 package org.opencb.cellbase.server.rest.feature;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.ParamConstants;
@@ -27,7 +25,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.XrefManager;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
@@ -58,7 +55,7 @@ public class IdWSServer extends GenericRestWSServer {
                         @PathParam("species")
                       @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
-            SpeciesException, IOException, CellbaseException {
+            IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -158,22 +155,22 @@ public class IdWSServer extends GenericRestWSServer {
             + " database query will be issued for each id, meaning that results for each id will be"
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.",
             responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+    })
     public Response getGeneByEnsemblId(@PathParam("id")
                                        @ApiParam(name = "id", value = "Comma separated list of ids to look"
-                                               + " for within gene xrefs, e.g.: BRCA2", required = true) String id,
-                                       @QueryParam("exclude")
-                                       @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                       @QueryParam("include")
-                                           @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                       @QueryParam("sort")
-                                           @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                       @QueryParam("limit") @DefaultValue("10")
-                                           @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                       @QueryParam("skip") @DefaultValue("0")
-                                           @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                               + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = geneManager.getGeneByEnsemblId(id);
             return createOkResponse(queryResults);

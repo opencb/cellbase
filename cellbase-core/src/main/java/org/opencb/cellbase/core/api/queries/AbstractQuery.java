@@ -82,25 +82,12 @@ public class AbstractQuery extends QueryOptions {
         }
     }
 
-//    private static ObjectMapper getObjectMapper() {
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-//        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-//        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-//        return objectMapper;
-//    }
-
-    //    private Map<String, Class<?>> internalPropertiesMap = null;
     private Map<String, Class<?>> loadPropertiesMap() {
-//        if (internalPropertiesMap == null) {
-//        ObjectMapper objectMapper = getObjectMapper();
-//        ObjectMapper objectMapper = new ObjectMapper();
         BeanDescription beanDescription = objectMapper.getSerializationConfig().introspect(objectMapper.constructType(this.getClass()));
         Map<String, Class<?>> internalPropertiesMap = new HashMap<>(beanDescription.findProperties().size() * 2);
         for (BeanPropertyDefinition property : beanDescription.findProperties()) {
             internalPropertiesMap.put(property.getName(), property.getRawPrimaryType());
         }
-//        }
         return internalPropertiesMap;
     }
 

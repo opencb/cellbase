@@ -113,4 +113,19 @@ public class GeneQueryTest {
         assertFalse(geneQuery.getCount());
     }
 
+
+    @Test
+    public void testBuild() {
+        geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))
+                .withAnnotationDrugsGene(Arrays.asList("My gene", "another-gene")).build();
+
+        assertEquals("1", geneQuery.getIds().get(0));
+
+        assertEquals("a", geneQuery.getBiotypes().get(0));
+        assertEquals("b", geneQuery.getBiotypes().get(1));
+        assertEquals("c", geneQuery.getBiotypes().get(2));
+
+        assertEquals("My gene", geneQuery.getAnnotationDrugsGene().get(0));
+        assertEquals("another-gene", geneQuery.getAnnotationDrugsGene().get(1));
+    }
 }

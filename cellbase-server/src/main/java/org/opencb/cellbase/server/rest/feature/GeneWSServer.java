@@ -32,7 +32,6 @@ import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.ProteinManager;
 import org.opencb.cellbase.lib.managers.TranscriptManager;
 import org.opencb.cellbase.lib.managers.VariantManager;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
@@ -64,8 +63,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @PathParam("species") @ApiParam(name = "species",
                                 value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
-            SpeciesException, IOException, CellbaseException {
+                        @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -196,8 +194,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                     value = "Comma separated list of field(s) to group by, e.g.: biotype.",
                                     required = true) String fields) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.groupBy(new Query(), fields);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -244,8 +241,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAggregationStats(@DefaultValue("") @QueryParam("fields")
             @ApiParam(name = "fields", value = ParamConstants.GROUP_BY_FIELDS, required = true) String fields) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(new Query(), fields);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -397,8 +393,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getByEnsemblId(@PathParam("genes")
                                        @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             List<CellBaseDataResult> queryResults = geneManager.info(new Query(), genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -449,8 +444,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
             value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -497,8 +491,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
             value = "Name of column to return, e.g. biotype") String field) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.distinct(new Query(), field);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -538,8 +531,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getSNPByGenes(@PathParam("genes")
                 @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -554,8 +546,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAllRegulatoryElements(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS,
             required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             List<CellBaseDataResult> queryResults = geneManager.getRegulatoryElements(new Query(), genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -603,8 +594,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAllTfbs(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_ENSEMBL_IDS,
                                        required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             List<CellBaseDataResult> queryResults = geneManager.getTfbs(new Query(), genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -636,8 +626,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
                                            required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.updateParams(uriParams);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
             List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, genes);
             return createOkResponse(queryResults);
         } catch (Exception e) {

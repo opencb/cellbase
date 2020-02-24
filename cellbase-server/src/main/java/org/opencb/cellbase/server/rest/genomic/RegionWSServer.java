@@ -112,21 +112,22 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+
     })
     public Response getGenesByRegionPost(@FormParam("region") @ApiParam(name = "region",
-            value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
-                                         @QueryParam("exclude")
-                                         @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                         @QueryParam("include")
-                                             @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                         @QueryParam("sort")
-                                             @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                         @QueryParam("limit") @DefaultValue("10")
-                                             @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                         @QueryParam("skip") @DefaultValue("0")
-                                             @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
-        return getGenesByRegion(region, exclude, include, sort, limit, skip);
+            value = ParamConstants.REGION_DESCRIPTION, required = true) String region) {
+        return getGenesByRegion(region);
     }
 
     @GET
@@ -161,22 +162,23 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
-                                             required = true) String region,
-                                     @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                     @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                     @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                     @QueryParam("limit") @DefaultValue("10")
-                                         @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                     @QueryParam("skip") @DefaultValue("0")
-                                         @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                             required = true) String regions) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByRegion(query, region);
+            List<CellBaseDataResult> queryResults = geneManager.getByRegion(query, regions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -197,25 +199,23 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getTranscriptByRegion(@PathParam("regions") @ApiParam(name = "regions",
-            value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
-                                          @QueryParam("exclude")
-                                          @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                          @QueryParam("include")
-                                              @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                          @QueryParam("sort")
-                                              @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                          @QueryParam("limit") @DefaultValue("10")
-                                              @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                          @QueryParam("skip") @DefaultValue("0")
-                                              @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+            value = ParamConstants.REGION_DESCRIPTION, required = true) String regions) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = transcriptManager.getByRegion(query, queryOptions, region);
+            List<CellBaseDataResult> queryResults = transcriptManager.getByRegion(query, queryOptions, regions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -226,18 +226,21 @@ public class RegionWSServer extends GenericRestWSServer {
     @Path("/{regions}/repeat")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all repeats for the regions", response = Transcript.class,
             responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+    })
     public Response getRepeatByRegion(@PathParam("regions") @ApiParam(name = "regions",
-                                                  value = ParamConstants.REGION_DESCRIPTION, required = true) String region,
-                                      @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                      @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                      @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                      @QueryParam("limit") @DefaultValue("10")
-                                          @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                      @QueryParam("skip") @DefaultValue("0")
-                                          @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                                  value = ParamConstants.REGION_DESCRIPTION, required = true) String region) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = repeatsManager.getByRegion(query, queryOptions, region);
             return createOkResponse(queryResults);
@@ -271,20 +274,21 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
-                    required = false, dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getVariationByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
-                                                 required = true) String regions,
-                                         @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                         @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                         @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                         @QueryParam("limit") @DefaultValue("10")
-                                             @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                         @QueryParam("skip") @DefaultValue("0")
-                                             @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                                 required = true) String regions) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             if (!variantManager.validateRegionInput(regions)) {
                 return createErrorResponse("getVariationByRegion", "Regions must be smaller than 10Mb");
@@ -374,19 +378,20 @@ public class RegionWSServer extends GenericRestWSServer {
                     value = "Comma separated list of clinical significance labels as stored in ClinVar (only enabled "
                             + "for ClinVar variants), e.g.: Benign",
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getClinicalByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
-            required = true) String regions,
-                                        @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                        @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                        @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                        @QueryParam("limit") @DefaultValue("10")
-                                            @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                        @QueryParam("skip") @DefaultValue("0")
-                                            @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+            required = true) String regions) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             CellBaseDataResult queryResult = clinicalManager.getByRegion(query, queryOptions, regions);
             return createOkResponse(queryResult);
@@ -408,23 +413,21 @@ public class RegionWSServer extends GenericRestWSServer {
                             + "list of available regulatory types: "
                             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureMap(@PathParam("regions")
                                       @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
-                                              required = true) String regions,
-                                  @QueryParam("exclude")
-                                  @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                  @QueryParam("include")
-                                      @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                  @QueryParam("sort")
-                                      @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                  @QueryParam("limit") @DefaultValue("10")
-                                      @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                  @QueryParam("skip") @DefaultValue("0")
-                                      @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                              required = true) String regions) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = regulatoryManager.getByRegions(query, queryOptions, regions);
             return createOkResponse(queryResults);
@@ -444,18 +447,21 @@ public class RegionWSServer extends GenericRestWSServer {
             + "region will be returned in independent QueryResult objects within the QueryResponse object."
             + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
             responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+    })
     public Response getTfByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
-                                          required = false) String regions,
-                                  @QueryParam("exclude") @ApiParam(value = ParamConstants.EXCLUDE_DESCRIPTION) String exclude,
-                                  @QueryParam("include") @ApiParam(value = ParamConstants.INCLUDE_DESCRIPTION) String include,
-                                  @QueryParam("sort") @ApiParam(value = ParamConstants.SORT_DESCRIPTION) String sort,
-                                  @QueryParam("limit") @DefaultValue("10")
-                                      @ApiParam(value = ParamConstants.LIMIT_DESCRIPTION) Integer limit,
-                                  @QueryParam("skip") @DefaultValue("0")
-                                      @ApiParam(value = ParamConstants.SKIP_DESCRIPTION)  Integer skip) {
+                                          required = false) String regions) {
         try {
-            parseIncludesAndExcludes(exclude, include, sort);
-            parseLimitAndSkip(limit, skip);
             parseQueryParams();
             List<CellBaseDataResult> queryResults = regulatoryManager.getTfByRegions(query, queryOptions, regions);
             return createOkResponse(queryResults);
