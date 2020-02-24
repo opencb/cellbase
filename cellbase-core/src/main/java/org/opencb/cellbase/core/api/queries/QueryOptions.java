@@ -16,14 +16,16 @@
 
 package org.opencb.cellbase.core.api.queries;
 
+import java.util.List;
+
 public class QueryOptions extends ProjectionQueryOptions {
 
-    protected Integer skip;
     protected Integer limit;
-    protected String sort;
+    protected Integer skip;
     protected Boolean count;
+    protected String sort;
     protected Order order;
-    protected String timeout;
+//    protected String timeout;
     protected String facet;
 
     enum Order {
@@ -34,13 +36,40 @@ public class QueryOptions extends ProjectionQueryOptions {
     public QueryOptions() {
     }
 
-    public Integer getSkip() {
-        return skip;
+    public QueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet) {
+        this.limit = limit;
+        this.skip = skip;
+        this.count = count;
+        this.sort = sort;
+        this.order = order;
+        this.facet = facet;
     }
 
-    public QueryOptions setSkip(Integer skip) {
+    public QueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet,
+                        List<String> includes, List<String> excludes) {
+        super(includes, excludes);
+
+        this.limit = limit;
         this.skip = skip;
-        return this;
+        this.count = count;
+        this.sort = sort;
+        this.order = order;
+        this.facet = facet;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("QueryOptions{");
+        sb.append("limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
     }
 
     public Integer getLimit() {
@@ -52,12 +81,12 @@ public class QueryOptions extends ProjectionQueryOptions {
         return this;
     }
 
-    public String getSort() {
-        return sort;
+    public Integer getSkip() {
+        return skip;
     }
 
-    public QueryOptions setSort(String sort) {
-        this.sort = sort;
+    public QueryOptions setSkip(Integer skip) {
+        this.skip = skip;
         return this;
     }
 
@@ -70,21 +99,21 @@ public class QueryOptions extends ProjectionQueryOptions {
         return this;
     }
 
+    public String getSort() {
+        return sort;
+    }
+
+    public QueryOptions setSort(String sort) {
+        this.sort = sort;
+        return this;
+    }
+
     public Order getOrder() {
         return order;
     }
 
     public QueryOptions setOrder(Order order) {
         this.order = order;
-        return this;
-    }
-
-    public String getTimeout() {
-        return timeout;
-    }
-
-    public QueryOptions setTimeout(String timeout) {
-        this.timeout = timeout;
         return this;
     }
 
@@ -95,18 +124,5 @@ public class QueryOptions extends ProjectionQueryOptions {
     public QueryOptions setFacet(String facet) {
         this.facet = facet;
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return "QueryOptions{"
-                + "skip=" + skip
-                + ", limit=" + limit
-                + ", sort='" + sort + '\''
-                + ", count=" + count
-                + ", order=" + order
-                + ", timeout='" + timeout + '\''
-                + ", facet='" + facet + '\''
-                + '}';
     }
 }

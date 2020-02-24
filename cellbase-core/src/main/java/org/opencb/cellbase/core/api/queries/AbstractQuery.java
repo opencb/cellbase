@@ -145,7 +145,6 @@ public class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOpt
         queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes));
         queryOptions.put(QueryOptions.SORT, sort);
         queryOptions.put(QueryOptions.ORDER, order);
-        queryOptions.put(QueryOptions.TIMEOUT, timeout);
         queryOptions.put(QueryOptions.FACET, facet);
         return queryOptions;
     }
