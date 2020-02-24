@@ -70,7 +70,7 @@ public class GenericRestWSServer implements IWSServer {
     protected Query query;
     protected QueryOptions queryOptions;
     protected ObjectMap params;
-    protected Map<String, Object> uriParams;
+    protected Map<String, String> uriParams;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
     protected ObjectMapper jsonObjectMapper;
@@ -173,8 +173,8 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    public Map<String, Object> convertMultiToMap(MultivaluedMap<String, String> m) {
-        Map<String, Object> map = new HashMap<String, Object>();
+    public Map<String, String> convertMultiToMap(MultivaluedMap<String, String> m) {
+        Map<String, String> map = new HashMap<String, String>();
         if (m == null) {
             return map;
         }

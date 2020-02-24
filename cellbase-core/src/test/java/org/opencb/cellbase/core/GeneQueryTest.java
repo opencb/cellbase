@@ -21,8 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -44,7 +43,6 @@ public class GeneQueryTest {
         paramMap.put("annotationDrugsGene", "x,y");
         paramMap.put("xxx", "");
 
-//        geneQuery.updateParams(paramMap);
         geneQuery = new GeneQuery(paramMap);
         assertEquals("1", geneQuery.getIds().get(0));
 
@@ -114,4 +112,5 @@ public class GeneQueryTest {
         geneQuery.updateParams(paramMap);
         assertFalse(geneQuery.getCount());
     }
+
 }
