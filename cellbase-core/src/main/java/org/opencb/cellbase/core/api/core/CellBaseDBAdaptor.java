@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.api.core;
 
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -75,6 +76,8 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
         }
         return queryResults;
     }
+
+    CellBaseDataResult nativeGet(AbstractQuery query);
 
     @Override
     default Iterator<T> iterator() {

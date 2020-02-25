@@ -21,20 +21,17 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOptions {
+public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOptions {
 
     protected ObjectMapper objectMapper;
     protected Logger logger;
@@ -94,6 +91,9 @@ public class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOpt
         return internalPropertiesMap;
     }
 
+
+    protected abstract void validateQuery() throws QueryException;
+
     /**
      * Checks if values for query are legal, e.g. >= 0 and <= MAX Checks the following parameters:
      *
@@ -101,30 +101,52 @@ public class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOpt
      *  - LIMIT
      *
      * NULL values are considered valid.
-     * @throws CellbaseException if the skip or limit values are invalid
+     * @throws QueryException if the skip or limit values are invalid.
      */
-    public void validate() throws CellbaseException {
-        Integer skip = getSkip();
-        Integer limit = getLimit();
+    public void validate() throws QueryException {
+        this.checkIncludeAndExclude();
+        this.checkLimitAndSkip();
+        this.checkSortAndOrder();
 
-        if (skip != null) {
-            if (skip < 0) {
-                throw new CellbaseException("Invalid value for skip field " + skip + ". Must be greater than zero");
-            }
-            if (skip > MAX_RECORDS) {
-                throw new CellbaseException("Invalid value for skip field " + skip + ". Must be less than " + MAX_RECORDS);
+        // Execute private checks
+        this.validateQuery();
+    }
+
+    private void checkIncludeAndExclude() throws QueryException {
+        if (CollectionUtils.isNotEmpty(includes) && CollectionUtils.isNotEmpty(excludes)) {
+            Collection intersection = CollectionUtils.intersection(includes, excludes);
+            if (intersection.size() > 0) {
+                throw new QueryException("");
             }
         }
+    }
 
+    private void checkLimitAndSkip() throws QueryException {
+        Integer limit = getLimit();
         if (limit != null) {
             if (limit < 0) {
-                throw new CellbaseException("Invalid value for limit field " + limit + ". Must be greater than zero");
+                throw new QueryException("Invalid value for limit field " + limit + ". Must be greater than zero");
             }
-            if (limit > MAX_RECORDS) {
-                throw new CellbaseException("Invalid value for limit field " + limit + ". Must be less than " + MAX_RECORDS);
-            }
+//            if (limit > MAX_RECORDS) {
+//                throw new QueryException("Invalid value for limit field " + limit + ". Must be less than " + MAX_RECORDS);
+//            }
         }
-        return;
+
+        Integer skip = getSkip();
+        if (skip != null) {
+            if (skip < 0) {
+                throw new QueryException("Invalid value for skip field " + skip + ". Must be greater than zero");
+            }
+//            if (skip > MAX_RECORDS) {
+//                throw new QueryException("Invalid value for skip field " + skip + ". Must be less than " + MAX_RECORDS);
+//            }
+        }
+    }
+
+    private void checkSortAndOrder() throws QueryException {
+        if (order != null && StringUtils.isEmpty(sort)) {
+            throw new QueryException("");
+        }
     }
 
     public void setDefaults() {
@@ -146,7 +168,6 @@ public class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOpt
         queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes));
         queryOptions.put(QueryOptions.SORT, sort);
         queryOptions.put(QueryOptions.ORDER, order);
-        queryOptions.put(QueryOptions.TIMEOUT, timeout);
         queryOptions.put(QueryOptions.FACET, facet);
         return queryOptions;
     }

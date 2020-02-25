@@ -226,8 +226,7 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/api")
     @ApiOperation(value = "API", response = Map.class)
-    public Response api(@ApiParam(value = "List of categories to get API from, e.g. Xref,Gene") @QueryParam("category") String categoryStr)
-    {
+    public Response api(@ApiParam(value = "List of categories to get API from, e.g. Xref,Gene") @QueryParam("category") String category) {
         List<LinkedHashMap<String, Object>> api = new ArrayList<>(20);
         Map<String, Class> classes = new LinkedHashMap<>();
         classes.put("clinical", ClinicalWSServer.class);
@@ -243,28 +242,26 @@ public class MetaWSServer extends GenericRestWSServer {
         classes.put("variant", VariantWSServer.class);
         classes.put("xref", IdWSServer.class);
 
-        if (StringUtils.isNotEmpty(categoryStr)) {
-            for (String category : categoryStr.split(",")) {
-                Class clazz = classes.get(category.toLowerCase());
+        if (StringUtils.isNotEmpty(category)) {
+            for (String cat : category.split(",")) {
+                Class clazz = classes.get(cat.toLowerCase());
                 if (clazz == null) {
-                    return createErrorResponse(new CellbaseException("Category not found: " + category));
+                    return createErrorResponse(new CellbaseException("Category not found: " + cat));
                 }
                 LinkedHashMap<String, Object> help = getHelp(clazz);
                 api.add(help);
             }
         } else {
             // Get API for all categories
-            for (String category : classes.keySet()) {
-                api.add(getHelp(classes.get(category)));
+            for (String cat : classes.keySet()) {
+                api.add(getHelp(classes.get(cat)));
             }
         }
-        return createOkResponse(new CellBaseDataResult<>(null, 0, Collections.emptyList(), 1,
-                Collections.singletonList(api), 1));
+        return createOkResponse(new CellBaseDataResult<>(null, 0, Collections.emptyList(), 1, Collections.singletonList(api), 1));
     }
 
     private LinkedHashMap<String, Object> getHelp(Class clazz) {
         LinkedHashMap<String, Object> map = new LinkedHashMap<>();
-
         map.put("name", ((Api) clazz.getAnnotation(Api.class)).value());
         map.put("path", ((Path) clazz.getAnnotation(Path.class)).value());
 
@@ -274,18 +271,15 @@ public class MetaWSServer extends GenericRestWSServer {
             String httpMethod = "GET";
             if (method.getAnnotation(POST.class) != null) {
                 httpMethod = "POST";
-            } else {
-                if (method.getAnnotation(DELETE.class) != null) {
-                    httpMethod = "DELETE";
-                }
             }
+
             ApiOperation apiOperationAnnotation = method.getAnnotation(ApiOperation.class);
             if (pathAnnotation != null && apiOperationAnnotation != null && !apiOperationAnnotation.hidden()) {
                 LinkedHashMap<String, Object> endpoint = new LinkedHashMap<>();
                 endpoint.put("path", map.get("path") + pathAnnotation.value());
                 endpoint.put("method", httpMethod);
-                endpoint.put("response", StringUtils.substringAfterLast(apiOperationAnnotation.response().getName()
-                        .replace("Void", ""), "."));
+                endpoint.put("response", StringUtils
+                        .substringAfterLast(apiOperationAnnotation.response().getName().replace("Void", ""), "."));
 
                 String responseClass = apiOperationAnnotation.response().getName().replace("Void", "");
                 endpoint.put("responseClass", responseClass.endsWith(";") ? responseClass : responseClass + ";");

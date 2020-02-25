@@ -22,19 +22,15 @@ import java.util.List;
 
 public class ProjectionQueryOptions {
 
-    protected List<String> excludes;
     protected List<String> includes;
+    protected List<String> excludes;
 
     public ProjectionQueryOptions() {
     }
 
-    public List<String> getExcludes() {
-        return excludes;
-    }
-
-    public ProjectionQueryOptions setExcludes(List<String> excludes) {
+    public ProjectionQueryOptions(List<String> includes, List<String> excludes) {
+        this.includes = includes;
         this.excludes = excludes;
-        return this;
     }
 
     public ProjectionQueryOptions addExcludes(String excludes) {
@@ -43,6 +39,23 @@ public class ProjectionQueryOptions {
         }
         this.excludes.addAll(Arrays.asList(excludes.split(",")));
         return this;
+    }
+
+    public ProjectionQueryOptions addExcludes(List<String> excludes) {
+        if (this.excludes == null) {
+            this.excludes = new ArrayList<>();
+        }
+        this.excludes.addAll(excludes);
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProjectionQueryOptions{");
+        sb.append("includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
     }
 
     public List<String> getIncludes() {
@@ -54,11 +67,12 @@ public class ProjectionQueryOptions {
         return this;
     }
 
-    @Override
-    public String toString() {
-        return "ProjectionQueryOptions{"
-                + "excludes=" + excludes
-                + ", includes=" + includes
-                + '}';
+    public List<String> getExcludes() {
+        return excludes;
+    }
+
+    public ProjectionQueryOptions setExcludes(List<String> excludes) {
+        this.excludes = excludes;
+        return this;
     }
 }

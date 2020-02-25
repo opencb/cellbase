@@ -289,27 +289,69 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         }
     }
 
+
+
     private Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
 
-        createOrQuery(geneQuery, QueryParams.ID.key(), "id", andBsonList);
-        createOrQuery(geneQuery, QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(geneQuery, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
-        createOrQuery(geneQuery, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+        if (CollectionUtils.isNotEmpty(geneQuery.getId())) {
+            createOrQuery(geneQuery.getId(), "id", andBsonList);
+        }
 
-        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
-        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
-        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
-        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
+        if (CollectionUtils.isNotEmpty(geneQuery.getNames())) {
+            createOrQuery(geneQuery.getNames(), "name", andBsonList);
+        }
 
-        createOrQuery(geneQuery, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
-        createOrQuery(geneQuery, QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
-        createOrQuery(geneQuery, QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
-        createOrQuery(geneQuery, QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
+        if (CollectionUtils.isNotEmpty(geneQuery.getBiotypes())) {
+            createOrQuery(geneQuery.getBiotypes(), "biotype", andBsonList);
+        }
 
-        createOrQuery(geneQuery, QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
-        createOrQuery(geneQuery, QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
+        if (CollectionUtils.isNotEmpty(geneQuery.getBiotypes())) {
+            createOrQuery(geneQuery.getTranscriptsXrefs(), "transcripts.xrefs", andBsonList);
+        }
+,
+
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsId())) {
+            createOrQuery(geneQuery.getTranscriptsId(), "transcripts.id", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsName())) {
+            createOrQuery(geneQuery.getTranscriptsName(), "transcripts.name", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsBiotype())) {
+            createOrQuery(geneQuery.getTranscriptsBiotype(), "transcripts.biotype", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsAnnotationFlags())) {
+            createOrQuery(geneQuery.getTranscriptsAnnotationFlags(), "transcripts.annotationFlags", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsTfbsName())) {
+            createOrQuery(geneQuery.getTranscriptsTfbsName(), "transcripts.tfbs.name", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDiseasesId())) {
+            createOrQuery(geneQuery.getAnnotationDiseasesId(), "annotation.diseases.id", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDiseasesName())) {
+            createOrQuery(geneQuery.getAnnotationDiseasesName(), "annotation.diseases.name", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationExpressionGene())) {
+            createOrQuery(geneQuery.getAnnotationExpressionGene(), "annotation.expression.gene", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDrugsName())) {
+            createOrQuery(geneQuery.getAnnotationDrugsName(), "annotation.drugs.name", andBsonList);
+        }
+
+        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDrugsGene())) {
+            createOrQuery(geneQuery.getAnnotationDrugsGene(), "annotation.drugs.gene", andBsonList);
+        }
 
         createExpressionQuery(geneQuery, andBsonList);
 
@@ -337,7 +379,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return StringUtils.isNotEmpty(geneQuery.getString(QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key()));
     }
 
-    @Deprecated
     private CellBaseDataResult<Document> postDBFiltering(Query geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
         String annotationFlagsString = geneQuery.getString(QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key());
         if (StringUtils.isNotEmpty(annotationFlagsString)) {

@@ -19,8 +19,8 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 
@@ -41,7 +41,7 @@ public class GeneManager extends AbstractManager {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws CellbaseException {
+    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws QueryException {
         geneQuery.setDefaults();
         geneQuery.validate();
         // TODO throw execption if facets populated

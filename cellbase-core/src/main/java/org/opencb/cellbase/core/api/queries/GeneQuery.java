@@ -17,15 +17,14 @@
 package org.opencb.cellbase.core.api.queries;
 
 import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.exception.CellbaseException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GeneQuery extends FeatureQuery {
+public class GeneQuery extends AbstractQuery {
 
-    private List<String> ids;
+    private List<String> id;
     private List<String> names;
     private List<String> biotypes;
     private List<Region> regions;
@@ -50,12 +49,50 @@ public class GeneQuery extends FeatureQuery {
         super(params);
     }
 
-    public List<String> getIds() {
-        return ids;
+    @Override
+    protected void validateQuery() throws QueryException {
+
     }
 
-    public GeneQuery setIds(List<String> ids) {
-        this.ids = ids;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GeneQuery{");
+        sb.append("id=").append(id);
+        sb.append(", names=").append(names);
+        sb.append(", biotypes=").append(biotypes);
+        sb.append(", regions=").append(regions);
+        sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
+        sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
+        sb.append(", transcriptsId=").append(transcriptsId);
+        sb.append(", transcriptsName=").append(transcriptsName);
+        sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
+        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsName);
+        sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
+        sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
+        sb.append(", annotationExpressionGene=").append(annotationExpressionGene);
+        sb.append(", annotationExpressionTissue=").append(annotationExpressionTissue);
+        sb.append(", annotationExpressionValue=").append(annotationExpressionValue);
+        sb.append(", annotationDrugsName=").append(annotationDrugsName);
+        sb.append(", annotationDrugsGene=").append(annotationDrugsGene);
+        sb.append(", objectMapper=").append(objectMapper);
+        sb.append(", limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    public List<String> getId() {
+        return id;
+    }
+
+    public GeneQuery setId(List<String> id) {
+        this.id = id;
         return this;
     }
 
@@ -204,37 +241,8 @@ public class GeneQuery extends FeatureQuery {
         return this;
     }
 
-    public void validate() throws CellbaseException {
-        super.validate();
-
-        // excludes and includes contain valid values
-    }
-
-    @Override
-    public String toString() {
-        return "GeneQuery{"
-                + "ids=" + ids
-                + ", names=" + names
-                + ", biotypes=" + biotypes
-                + ", regions=" + regions
-                + ", transcriptsBiotype=" + transcriptsBiotype
-                + ", transcriptsXrefs=" + transcriptsXrefs
-                + ", transcriptsId=" + transcriptsId
-                + ", transcriptsName=" + transcriptsName
-                + ", transcriptsAnnotationFlags=" + transcriptsAnnotationFlags
-                + ", transcriptsTfbsName=" + transcriptsTfbsName
-                + ", annotationDiseasesId=" + annotationDiseasesId
-                + ", annotationDiseasesName=" + annotationDiseasesName
-                + ", annotationExpressionGene=" + annotationExpressionGene
-                + ", annotationExpressionTissue=" + annotationExpressionTissue
-                + ", annotationExpressionValue=" + annotationExpressionValue
-                + ", annotationDrugsName=" + annotationDrugsName
-                + ", annotationDrugsGene=" + annotationDrugsGene
-                + '}';
-    }
-
     public static class Builder {
-        private List<String> ids;
+        private List<String> id;
         private List<String> names;
         private List<String> biotypes;
         private List<Region> regions;
@@ -256,7 +264,7 @@ public class GeneQuery extends FeatureQuery {
         }
 
         public Builder withIds(List<String> ids) {
-            this.ids = ids;
+            this.id = ids;
             return this;
         }
 
@@ -342,7 +350,7 @@ public class GeneQuery extends FeatureQuery {
 
         public GeneQuery build() {
             GeneQuery geneQuery = new GeneQuery();
-            geneQuery.ids = this.ids;
+            geneQuery.id = this.id;
             geneQuery.names = this.names;
             geneQuery.biotypes = this.biotypes;
             geneQuery.regions = this.regions;
