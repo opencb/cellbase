@@ -24,12 +24,14 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOptions {
 
@@ -170,10 +172,5 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         queryOptions.put(QueryOptions.ORDER, order);
         queryOptions.put(QueryOptions.FACET, facet);
         return queryOptions;
-    }
-
-    // temporary method because java commons still uses query
-    public Query toQuery() {
-        return new Query();
     }
 }
