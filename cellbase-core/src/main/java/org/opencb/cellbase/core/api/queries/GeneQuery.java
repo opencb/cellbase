@@ -45,7 +45,7 @@ public class GeneQuery extends AbstractQuery {
     public GeneQuery() {
     }
 
-    public GeneQuery(Map<String, String> params) {
+    public GeneQuery(Map<String, String> params) throws QueryException {
         super(params);
     }
 

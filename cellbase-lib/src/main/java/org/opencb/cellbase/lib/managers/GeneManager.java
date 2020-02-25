@@ -54,17 +54,30 @@ public class GeneManager extends AbstractManager {
         return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(fields.split(",")), null);
     }
 
+    public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
+        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(geneQuery.getFacet().split(",")), geneQuery.toQueryOptions());
+    }
+
     public CellBaseDataResult<Gene> aggregationStats(Query geneQuery, String fields) {
-//        geneQuery.setCount(Boolean.TRUE);
         return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(fields.split(",")), null);
+    }
+
+    public CellBaseDataResult<Gene> aggregationStats(GeneQuery geneQuery) {
+        geneQuery.setCount(Boolean.TRUE);
+        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(geneQuery.getFacet().split(",")), geneQuery.toQueryOptions());
     }
 
     public List<CellBaseDataResult> info(Query geneQuery, String genes) {
         List<Query> queries = createXrefQueries(geneQuery, genes);
         List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, null);
-//        for (int i = 0; i < queries.size(); i++) {
-//            geneQueryResults.get(i).setId((queries.get(i).getTranscriptsXrefs().get(0)));
-//        }
+        for (int i = 0; i < queries.size(); i++) {
+            geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
+        }
+        return geneQueryResults;
+    }
+
+    public List<CellBaseDataResult> info(List<GeneQuery> geneQueries) {
+        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(geneQueries, null);
         return geneQueryResults;
     }
 
@@ -84,7 +97,7 @@ public class GeneManager extends AbstractManager {
         return geneDBAdaptor.distinct(geneQuery, field);
     }
 
-    public Iterator<CellBaseDataResult<Gene> > iterator(Query geneQuery, String field) {
+    public Iterator<CellBaseDataResult<Gene>> iterator(Query geneQuery, String field) {
         return geneDBAdaptor.iterator(geneQuery, null);
     }
 
@@ -97,6 +110,11 @@ public class GeneManager extends AbstractManager {
 //            geneQueryResults.add(geneQueryResult);
 //        }
         return geneQueryResults;
+    }
+
+    public CellBaseDataResult getRegulatoryElements(GeneQuery geneQuery) {
+        //return geneDBAdaptor.getRegulatoryElements(geneQuery);
+        return null;
     }
 
     public List<CellBaseDataResult> getTfbs(Query geneQuery, String genes) {

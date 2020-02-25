@@ -190,6 +190,19 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     @Override
+    public CellBaseDataResult groupBy(GeneQuery geneQuery, String field, QueryOptions options) {
+        Bson bsonQuery = parseQuery(geneQuery);
+        return groupBy(bsonQuery, field, "name", options);
+    }
+
+    @Override
+    public CellBaseDataResult groupBy(GeneQuery geneQuery, List<String> fields, QueryOptions options) {
+        Bson bsonQuery = parseQuery(geneQuery);
+        return groupBy(bsonQuery, fields, "name", options);
+    }
+
+
+    @Override
     public CellBaseDataResult startsWith(String id, QueryOptions options) {
         Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
         Bson include = Projections.include("id", "name", "chromosome", "start", "end");
@@ -252,6 +265,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return new CellBaseDataResult<>(mongoDBCollection.aggregate(
                 Arrays.asList(match, includeAndExclude, unwind, unwind2, project), queryOptions));
     }
+
 
 //    @Override
 //    public CellBaseDataResult<String> getBiotypes(GeneQuery geneQuery) {

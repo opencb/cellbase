@@ -20,8 +20,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -37,12 +40,10 @@ public class GeneQueryTest {
     }
 
     @Test
-    public void testQuery() {
-        paramMap.put("ids", "1");
+    public void testQuery() throws QueryException {
+        paramMap.put("id", "1");
         paramMap.put("biotypes", "a,b,c");
         paramMap.put("annotationDrugsGene", "x,y");
-//        paramMap.put("annotation.drugs.gene", "x,y");
-        paramMap.put("xxx", "");
 
         geneQuery = new GeneQuery(paramMap);
         assertEquals("1", geneQuery.getId().get(0));
@@ -53,10 +54,19 @@ public class GeneQueryTest {
 
         assertEquals("x", geneQuery.getAnnotationDrugsGene().get(0));
         assertEquals("y", geneQuery.getAnnotationDrugsGene().get(1));
-    }
+       }
+
+//    @Test
+//    public void testBadParam() throws QueryException {
+//        paramMap.put("xyz", "this should throw an exception!");
+//
+//        Assertions.assertThrows(QueryException.class, () -> {
+//            geneQuery = new GeneQuery(paramMap);
+//        });
+//    }
 
     @Test
-    public void testRegions() {
+    public void testRegions() throws QueryException {
         paramMap.put("regions", "1:6635137-6635325,1:7777777-8888888");
         geneQuery.updateParams(paramMap);
         Region region = new Region("1:6635137-6635325");
@@ -66,7 +76,7 @@ public class GeneQueryTest {
     }
 
     @Test
-    public void testLimit() {
+    public void testLimit() throws QueryException {
         paramMap.put("limit", "1");
         geneQuery.updateParams(paramMap);
         assertEquals(Integer.valueOf(1), geneQuery.getLimit());
@@ -81,7 +91,7 @@ public class GeneQueryTest {
     }
 
     @Test
-    public void testSkip() {
+    public void testSkip() throws QueryException {
         paramMap.put("skip", "1");
         geneQuery.updateParams(paramMap);
         assertEquals(Integer.valueOf(1), geneQuery.getSkip());
@@ -96,7 +106,7 @@ public class GeneQueryTest {
     }
 
     @Test
-    public void testExcludes() {
+    public void testExcludes() throws QueryException {
         paramMap.put("excludes", "_id,_chunkId");
         geneQuery.updateParams(paramMap);
         assertEquals("_id", geneQuery.getExcludes().get(0));
@@ -104,7 +114,7 @@ public class GeneQueryTest {
     }
 
     @Test
-    public void testCount() {
+    public void testCount() throws QueryException {
         paramMap.put("count", "true");
         geneQuery.updateParams(paramMap);
         assertTrue(geneQuery.getCount());

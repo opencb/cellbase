@@ -44,6 +44,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -192,7 +194,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response groupBy(@DefaultValue("") @QueryParam("fields") @ApiParam(name = "fields", value = "Comma separated list of "
             + "field(s) to group by, e.g.: biotype.", required = true) String fields) {
         try {
-            renameFieldsToFacet(fields);
+            copyToFacet("fields", fields);
             GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.groupBy(new Query(), fields);
             return createOkResponse(queryResults);
@@ -201,9 +203,9 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-    // fields is not part of genequery, will throw an exception, rename to be "facet"
-    private void renameFieldsToFacet(String fields) {
-        uriParams.remove(uriParams.get("fields"));
+    // "fields" is not part of genequery, will throw an exception, rename to be "facet"
+    private void copyToFacet(String columnName, String fields) {
+        uriParams.remove(uriParams.get(columnName));
         uriParams.put("facet", fields);
     }
 
@@ -246,8 +248,9 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAggregationStats(@DefaultValue("") @QueryParam("fields")
             @ApiParam(name = "fields", value = ParamConstants.GROUP_BY_FIELDS, required = true) String fields) {
         try {
+            copyToFacet("fields", fields);
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(new Query(), fields);
+            CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -364,40 +367,47 @@ public class GeneWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified gene(s)", response = Gene.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-//            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS,
-//                    required = false, dataType = "string", paramType = "query"),
-//            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
-//            @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
-//                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS,
+                    required = false, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("genes")
-                                       @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
+                                       @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes)
+            throws QueryException {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult> queryResults = geneManager.info(new Query(), genes);
+            List<GeneQuery> geneQueries = new ArrayList<>();
+            String[] identifiers = genes.split(",");
+            for (String identifier : identifiers) {
+                GeneQuery geneQuery = new GeneQuery(uriParams);
+                geneQuery.setTranscriptsXrefs(Arrays.asList(identifier));
+                geneQueries.add(geneQuery);
+            }
+            List<CellBaseDataResult> queryResults = geneManager.info(geneQueries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -494,6 +504,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
             value = "Name of column to return, e.g. biotype") String field) {
         try {
+            copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.distinct(new Query(), field);
             return createOkResponse(queryResults);
@@ -549,8 +560,14 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAllRegulatoryElements(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS,
             required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult> queryResults = geneManager.getRegulatoryElements(new Query(), genes);
+            List<CellBaseDataResult> queryResults = new ArrayList<>();
+                    String[] identifiers = genes.split(",");
+            for (String identifier : identifiers) {
+                GeneQuery geneQuery = new GeneQuery(uriParams);
+                geneQuery.setId(Arrays.asList(identifier));
+                CellBaseDataResult cellBaseDataResult = geneManager.getRegulatoryElements(geneQuery);
+                queryResults.add(cellBaseDataResult);
+            }
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

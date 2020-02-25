@@ -28,10 +28,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOptions {
 
@@ -46,7 +43,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         init();
     }
 
-    public AbstractQuery(Map<String, String> params) {
+    public AbstractQuery(Map<String, String> params) throws QueryException {
         this();
 
         updateParams(params);
@@ -65,7 +62,8 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         }
     }
 
-    public void updateParams(Map<String, String> params) {
+    public void updateParams(Map<String, String> uriParams) throws QueryException {
+        Map<String, String> params = new HashMap<>(uriParams);
         try {
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : loadPropertiesMap().entrySet()) {
@@ -74,10 +72,15 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                     if (Collection.class.isAssignableFrom(entry.getValue())) {
                         objectHashMap.put(entry.getKey(), Arrays.asList(value.split(",")));
                     } else {
-                        objectHashMap.put(entry.getKey(), params.get(entry.getKey()));
+                        objectHashMap.put(entry.getKey(), value);
                     }
                 }
+                params.remove(value);
             }
+//            if (!params.isEmpty()) {
+//                Set<String> keys = params.keySet();
+//                throw new QueryException("Invalid query parameter found: " + keys.toString());
+//            }
             objectMapper.updateValue(this, objectHashMap);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
