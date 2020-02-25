@@ -289,11 +289,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         }
     }
 
-
-
     private Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
+//        createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
 
         if (CollectionUtils.isNotEmpty(geneQuery.getId())) {
             createOrQuery(geneQuery.getId(), "id", andBsonList);
@@ -310,8 +308,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         if (CollectionUtils.isNotEmpty(geneQuery.getBiotypes())) {
             createOrQuery(geneQuery.getTranscriptsXrefs(), "transcripts.xrefs", andBsonList);
         }
-,
-
 
         if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsId())) {
             createOrQuery(geneQuery.getTranscriptsId(), "transcripts.id", andBsonList);
@@ -353,7 +349,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             createOrQuery(geneQuery.getAnnotationDrugsGene(), "annotation.drugs.gene", andBsonList);
         }
 
-        createExpressionQuery(geneQuery, andBsonList);
+//        createExpressionQuery(geneQuery, andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);

@@ -45,7 +45,8 @@ public class GeneManager extends AbstractManager {
         geneQuery.setDefaults();
         geneQuery.validate();
         // TODO throw execption if facets populated
-        return geneDBAdaptor.nativeGet(geneQuery);
+//        return geneDBAdaptor.nativeGet(geneQuery);
+        return null;
     }
 
     public CellBaseDataResult<Gene> groupBy(Query geneQuery, String fields) {
