@@ -26,6 +26,7 @@ import org.opencb.commons.datastore.core.Query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class GeneManager extends AbstractManager {
@@ -81,6 +82,10 @@ public class GeneManager extends AbstractManager {
 
     public CellBaseDataResult<Gene> distinct(Query geneQuery, String field) {
         return geneDBAdaptor.distinct(geneQuery, field);
+    }
+
+    public Iterator<CellBaseDataResult<Gene> > iterator(Query geneQuery, String field) {
+        return geneDBAdaptor.iterator(geneQuery, null);
     }
 
     public List<CellBaseDataResult> getRegulatoryElements(Query geneQuery, String genes) {
