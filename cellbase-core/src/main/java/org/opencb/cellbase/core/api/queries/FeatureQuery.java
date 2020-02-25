@@ -18,7 +18,8 @@ package org.opencb.cellbase.core.api.queries;
 
 import java.util.Map;
 
-public class FeatureQuery extends AbstractQuery {
+@Deprecated
+public class FeatureQuery {
 
     private Boolean histogram;
     private static final int HISTOGRAM_INTERVAL_SIZE = 200000;
@@ -28,7 +29,7 @@ public class FeatureQuery extends AbstractQuery {
     }
 
     public FeatureQuery(Map<String, String> params) {
-        super(params);
+//        super(params);
     }
 
     public Boolean getHistogram() {
