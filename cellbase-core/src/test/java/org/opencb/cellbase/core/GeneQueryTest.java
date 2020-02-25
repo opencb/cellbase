@@ -114,7 +114,6 @@ public class GeneQueryTest {
         assertFalse(geneQuery.getCount());
     }
 
-
     @Test
     public void testBuild() {
         geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))

@@ -31,6 +31,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
@@ -144,6 +145,13 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return postDBFiltering(geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, null)));
     }
 
+    public CellBaseDataResult nativeGet(GeneQuery geneQuery) {
+        Bson bson = parseQuery(geneQuery);
+        logger.info("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+//        logger.info("options: {}", options.toJson());
+        return postDBFiltering(geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions())));
+    }
+
     @Override
     public Iterator<Gene> iterator(Query geneQuery, QueryOptions options) {
         return null;
@@ -252,8 +260,37 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     private Bson parseQuery(Query geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
+        createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
 
+        createOrQuery(geneQuery, QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(geneQuery, QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(geneQuery, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
+        createOrQuery(geneQuery, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
 
+        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
+        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
+        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
+        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
+
+        createOrQuery(geneQuery, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+        createOrQuery(geneQuery, QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
+        createOrQuery(geneQuery, QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
+        createOrQuery(geneQuery, QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
+
+        createOrQuery(geneQuery, QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
+        createOrQuery(geneQuery, QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
+
+        createExpressionQuery(geneQuery, andBsonList);
+
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
+    }
+
+    private Bson parseQuery(GeneQuery geneQuery) {
+        List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
 
         createOrQuery(geneQuery, QueryParams.ID.key(), "id", andBsonList);
@@ -300,6 +337,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return StringUtils.isNotEmpty(geneQuery.getString(QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key()));
     }
 
+    @Deprecated
     private CellBaseDataResult<Document> postDBFiltering(Query geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
         String annotationFlagsString = geneQuery.getString(QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key());
         if (StringUtils.isNotEmpty(annotationFlagsString)) {
@@ -323,4 +361,25 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return documentCellBaseDataResult;
     }
 
+    private CellBaseDataResult<Document> postDBFiltering(GeneQuery geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
+        List<String> flags = geneQuery.getTranscriptsAnnotationFlags();
+        if (flags != null && !flags.isEmpty()) {
+            List<Document> documents = documentCellBaseDataResult.getResults();
+            for (Document document : documents) {
+                ArrayList<Document> transcripts = document.get(TRANSCRIPTS, ArrayList.class);
+                ArrayList<Document> matchedTranscripts = new ArrayList<>();
+                for (Document transcript : transcripts) {
+                    ArrayList annotationFlags = transcript.get(ANNOTATION_FLAGS, ArrayList.class);
+                    if (annotationFlags != null && annotationFlags.size() > 0) {
+                        if (CollectionUtils.containsAny(annotationFlags, flags)) {
+                            matchedTranscripts.add(transcript);
+                        }
+                    }
+                }
+                document.put(TRANSCRIPTS, matchedTranscripts);
+            }
+            documentCellBaseDataResult.setResults(documents);
+        }
+        return documentCellBaseDataResult;
+    }
 }

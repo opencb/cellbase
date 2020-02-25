@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,5 +149,10 @@ public class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOpt
         queryOptions.put(QueryOptions.TIMEOUT, timeout);
         queryOptions.put(QueryOptions.FACET, facet);
         return queryOptions;
+    }
+
+    // temporary method because java commons still uses query
+    public Query toQuery() {
+        return new Query();
     }
 }

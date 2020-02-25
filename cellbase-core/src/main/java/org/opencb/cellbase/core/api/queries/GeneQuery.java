@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.api.queries;
 
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.exception.CellbaseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -201,6 +202,12 @@ public class GeneQuery extends FeatureQuery {
     public GeneQuery setAnnotationDrugsGene(List<String> annotationDrugsGene) {
         this.annotationDrugsGene = annotationDrugsGene;
         return this;
+    }
+
+    public void validate() throws CellbaseException {
+        super.validate();
+
+        // excludes and includes contain valid values
     }
 
     @Override
