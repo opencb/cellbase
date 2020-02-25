@@ -189,18 +189,22 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response groupBy(@DefaultValue("")
-                            @QueryParam("fields")
-                            @ApiParam(name = "fields",
-                                    value = "Comma separated list of field(s) to group by, e.g.: biotype.",
-                                    required = true) String fields) {
+    public Response groupBy(@DefaultValue("") @QueryParam("fields") @ApiParam(name = "fields", value = "Comma separated list of "
+            + "field(s) to group by, e.g.: biotype.", required = true) String fields) {
         try {
+            renameFieldsToFacet(fields);
             GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.groupBy(new Query(), fields);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    // fields is not part of genequery, will throw an exception, rename to be "facet"
+    private void renameFieldsToFacet(String fields) {
+        uriParams.remove(uriParams.get("fields"));
+        uriParams.put("facet", fields);
     }
 
     @GET
