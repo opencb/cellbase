@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class GeneQuery extends AbstractQuery {
 
-    private List<String> ids;
+    private List<String> id;
     private List<String> names;
     private List<String> biotypes;
     private List<Region> regions;
@@ -57,7 +57,7 @@ public class GeneQuery extends AbstractQuery {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("GeneQuery{");
-        sb.append("ids=").append(ids);
+        sb.append("id=").append(id);
         sb.append(", names=").append(names);
         sb.append(", biotypes=").append(biotypes);
         sb.append(", regions=").append(regions);
@@ -87,12 +87,12 @@ public class GeneQuery extends AbstractQuery {
         return sb.toString();
     }
 
-    public List<String> getIds() {
-        return ids;
+    public List<String> getId() {
+        return id;
     }
 
-    public GeneQuery setIds(List<String> ids) {
-        this.ids = ids;
+    public GeneQuery setId(List<String> id) {
+        this.id = id;
         return this;
     }
 
@@ -243,7 +243,7 @@ public class GeneQuery extends AbstractQuery {
 
 
     public static class Builder {
-        private List<String> ids;
+        private List<String> id;
         private List<String> names;
         private List<String> biotypes;
         private List<Region> regions;
@@ -265,7 +265,7 @@ public class GeneQuery extends AbstractQuery {
         }
 
         public Builder withIds(List<String> ids) {
-            this.ids = ids;
+            this.id = ids;
             return this;
         }
 
@@ -351,7 +351,7 @@ public class GeneQuery extends AbstractQuery {
 
         public GeneQuery build() {
             GeneQuery geneQuery = new GeneQuery();
-            geneQuery.ids = this.ids;
+            geneQuery.id = this.id;
             geneQuery.names = this.names;
             geneQuery.biotypes = this.biotypes;
             geneQuery.regions = this.regions;
