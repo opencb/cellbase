@@ -125,6 +125,20 @@ public class GeneQueryTest {
         assertFalse(geneQuery.getCount());
     }
 
+    @Test
+    public void testValidate() throws QueryException, NoSuchFieldException, IllegalAccessException {
+        paramMap.put("id", "1");
+        paramMap.put("name", "42");
+        paramMap.put("biotype", "a,b,c");
+        paramMap.put("annotation.drugs.gene", "x,y");
+
+//        paramMap.put("limit", "11");
+//        paramMap.put("skip", "-1");
+
+        geneQuery = new GeneQuery(paramMap);
+        geneQuery.validate();
+    }
+
 //    @Test
 //    public void testBuild() {
 //        geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))

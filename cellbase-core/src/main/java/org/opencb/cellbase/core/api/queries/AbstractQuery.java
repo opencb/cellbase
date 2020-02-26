@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -65,10 +64,8 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     }
 
     public void updateParams(Map<String, String> uriParams) throws QueryException {
-        // list of fields in this class
         Map<String, Class<?>> stringClassMap = loadPropertiesMap();
         Map<String, QueryParameter> annotations = this.loadAnnotationMap();
-
         Map<String, String> params = new HashMap<>(uriParams);
         try {
             Map<String, Object> objectHashMap = new HashMap<>();
@@ -76,12 +73,9 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                 String fieldNameDotNotation = entry.getKey();
                 String fieldNameCamelCase = entry.getKey();
                 Class<?> fieldType = entry.getValue();
-                // if this field has an annotation, use that field name instead
-                for (Map.Entry<String, QueryParameter> stringQueryParameterEntry : annotations.entrySet()) {
-                    if (stringQueryParameterEntry.getKey().equals(entry.getKey())) {
-                        fieldNameDotNotation = stringQueryParameterEntry.getValue().id();
-//                        fieldNameCamelCase = stringQueryParameterEntry.getKey();
-                    }
+                QueryParameter queryParameter = annotations.get(fieldNameCamelCase);
+                if (queryParameter != null) {
+                    fieldNameDotNotation = queryParameter.id();
                 }
                 String value = params.get(fieldNameDotNotation.replace("\\.", "\\\\."));
                 if (value != null) {
@@ -129,20 +123,10 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
             QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
             if (declaredAnnotation != null) {
                 annotations.put(declaredField.getName(), declaredAnnotation);
-//                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
             }
         }
-//        for (Field declaredField : org.opencb.cellbase.core.api.queries.QueryOptions.class.getDeclaredFields()) {
-//            QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
-//            if (declaredAnnotation != null) {
-//                annotations.put(declaredField.getName(), declaredAnnotation);
-//                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
-//            }
-//        }
         return annotations;
     }
-
-
 
     protected abstract void validateQuery() throws QueryException;
 
@@ -155,49 +139,90 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
      * NULL values are considered valid.
      * @throws QueryException if the skip or limit values are invalid.
      */
-    public void validate() throws QueryException {
-        this.checkIncludeAndExclude();
-        this.checkLimitAndSkip();
-        this.checkSortAndOrder();
+    public void validate() throws QueryException, NoSuchFieldException, IllegalAccessException {
+        validateParams();
 
         // Execute private checks
         this.validateQuery();
     }
 
-    private void checkIncludeAndExclude() throws QueryException {
-        if (CollectionUtils.isNotEmpty(includes) && CollectionUtils.isNotEmpty(excludes)) {
-            Collection intersection = CollectionUtils.intersection(includes, excludes);
-            if (intersection.size() > 0) {
-                throw new QueryException("");
+    private void validateParams() throws QueryException, NoSuchFieldException, IllegalAccessException {
+        Map<String, Field> fields = new HashMap<>();
+        for (Field declaredField : FieldUtils.getAllFields(this.getClass())) {
+            fields.put(declaredField.getName(), declaredField);
+        }
+        Map<String, Class<?>> classAttributes = loadPropertiesMap();
+        Map<String, QueryParameter> annotations = loadAnnotationMap();
+        for (Map.Entry<String, Class<?>> classEntry : classAttributes.entrySet()) {
+            String fieldNameCamelCase = classEntry.getKey();
+            QueryParameter queryParameter = annotations.get(fieldNameCamelCase);
+            if (queryParameter == null) {
+                // no annotation for this field, carry on
+                continue;
+            }
+            String fieldNameDotNotation = queryParameter.id();
+            checkRequired(fieldNameCamelCase, queryParameter);
+
+            if (StringUtils.isNotEmpty(queryParameter.dependsOn())) {
+                String requiredFieldDotNotation = queryParameter.dependsOn();
+
+            }
+
+            if (queryParameter.allowedValues().length > 0) {
+
+            }
+
+            validateMin(fields, fieldNameCamelCase, queryParameter);
+
+            validateMax(fields, fieldNameCamelCase, queryParameter);
+        }
+
+    }
+
+    private void checkRequired(String fieldNameCamelCase, QueryParameter queryParameter)
+            throws NoSuchFieldException, IllegalAccessException, QueryException {
+        if (queryParameter.required()) {
+            Field field = this.getClass().getDeclaredField(fieldNameCamelCase);
+            field.setAccessible(true);
+            Object value = field.get(this);
+            if (value == null) {
+                throw new QueryException(fieldNameCamelCase + " is required");
             }
         }
     }
 
-    private void checkLimitAndSkip() throws QueryException {
-        Integer limit = getLimit();
-        if (limit != null) {
-            if (limit < 0) {
-                throw new QueryException("Invalid value for limit field " + limit + ". Must be greater than zero");
+    private void validateMax(Map<String, Field> fields, String fieldNameCamelCase, QueryParameter queryParameter)
+            throws IllegalAccessException, QueryException {
+        if (StringUtils.isNotEmpty(queryParameter.max())) {
+            String max = queryParameter.max();
+            // Field field = this.getClass().getDeclaredField(fieldNameCamelCase);
+            Field field = fields.get(fieldNameCamelCase);
+            Object value = field.get(this);
+            if (value != null) {
+                double doubleValue = new Double((Integer) value);
+                if (doubleValue > Double.parseDouble(max)) {
+                    throw new QueryException(fieldNameCamelCase + " must be less than " + max + " but was " + doubleValue);
+                }
             }
-//            if (limit > MAX_RECORDS) {
-//                throw new QueryException("Invalid value for limit field " + limit + ". Must be less than " + MAX_RECORDS);
-//            }
-        }
-
-        Integer skip = getSkip();
-        if (skip != null) {
-            if (skip < 0) {
-                throw new QueryException("Invalid value for skip field " + skip + ". Must be greater than zero");
-            }
-//            if (skip > MAX_RECORDS) {
-//                throw new QueryException("Invalid value for skip field " + skip + ". Must be less than " + MAX_RECORDS);
-//            }
         }
     }
 
-    private void checkSortAndOrder() throws QueryException {
-        if (order != null && StringUtils.isEmpty(sort)) {
-            throw new QueryException("");
+    private void validateMin(Map<String, Field> fields, String fieldNameCamelCase, QueryParameter queryParameter)
+            throws IllegalAccessException, QueryException {
+        if (StringUtils.isNotEmpty(queryParameter.min())) {
+            String min = queryParameter.min();
+            // Field field = this.getClass().getDeclaredField(fieldNameCamelCase);
+            Field field = fields.get(fieldNameCamelCase);
+            Object value = field.get(this);
+            if (value != null) {
+
+                double doubleValue = new Double((Integer) value);
+//                doubleValue = Double.parseDouble(min);
+
+                if (doubleValue < Double.parseDouble(min)) {
+                    throw new QueryException(fieldNameCamelCase + " must be at least " + min + " but was " + doubleValue);
+                }
+            }
         }
     }
 
