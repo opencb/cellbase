@@ -25,7 +25,6 @@ import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -310,10 +309,14 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getAll() throws QueryException {
-        GeneQuery geneQuery = new GeneQuery(uriParams);
-        CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
-        return createOkResponse(queryResults);
+    public Response getAll() {
+        try {
+            GeneQuery geneQuery = new GeneQuery(uriParams);
+            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
     }
 
 //    @GET
@@ -397,8 +400,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("genes")
-                                       @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes)
-            throws QueryException {
+                                       @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
             List<GeneQuery> geneQueries = new ArrayList<>();
             String[] identifiers = genes.split(",");
