@@ -566,7 +566,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     String[] identifiers = genes.split(",");
             for (String identifier : identifiers) {
                 GeneQuery geneQuery = new GeneQuery(uriParams);
-                geneQuery.setId(Arrays.asList(identifier));
+                geneQuery.setIds(Arrays.asList(identifier));
                 CellBaseDataResult cellBaseDataResult = geneManager.getRegulatoryElements(geneQuery);
                 queryResults.add(cellBaseDataResult);
             }

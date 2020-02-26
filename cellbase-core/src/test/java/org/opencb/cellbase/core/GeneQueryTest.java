@@ -46,7 +46,7 @@ public class GeneQueryTest {
         paramMap.put("annotationDrugsGene", "x,y");
 
         geneQuery = new GeneQuery(paramMap);
-        assertEquals("1", geneQuery.getId().get(0));
+        assertEquals("1", geneQuery.getIds().get(0));
 
         assertEquals("a", geneQuery.getBiotypes().get(0));
         assertEquals("b", geneQuery.getBiotypes().get(1));
@@ -129,7 +129,7 @@ public class GeneQueryTest {
         geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))
                 .withAnnotationDrugsGene(Arrays.asList("My gene", "another-gene")).build();
 
-        assertEquals("1", geneQuery.getId().get(0));
+        assertEquals("1", geneQuery.getIds().get(0));
 
         assertEquals("a", geneQuery.getBiotypes().get(0));
         assertEquals("b", geneQuery.getBiotypes().get(1));

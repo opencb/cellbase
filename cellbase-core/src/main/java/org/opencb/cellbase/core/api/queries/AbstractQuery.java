@@ -28,6 +28,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOptions {
@@ -63,16 +64,30 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     }
 
     public void updateParams(Map<String, String> uriParams) throws QueryException {
+        Map<String, Class<?>> stringClassMap = loadPropertiesMap();
+        Map<String, QueryParameter> annotations = this.loadAnnoationMap();
+
         Map<String, String> params = new HashMap<>(uriParams);
         try {
             Map<String, Object> objectHashMap = new HashMap<>();
-            for (Map.Entry<String, Class<?>> entry : loadPropertiesMap().entrySet()) {
-                String value = params.get(entry.getKey());
+            for (Map.Entry<String, Class<?>> entry : stringClassMap.entrySet()) {
+                String fieldId = entry.getKey();
+                String fieldName = entry.getKey();
+                for (Map.Entry<String, QueryParameter> stringQueryParameterEntry : annotations.entrySet()) {
+                    if (stringQueryParameterEntry.getKey().equals(entry.getKey())) {
+                        fieldId = stringQueryParameterEntry.getValue().id();
+                        fieldName = stringQueryParameterEntry.getKey();
+                    }
+                }
+
+                String value = params.get(fieldId);
                 if (value != null) {
                     if (Collection.class.isAssignableFrom(entry.getValue())) {
-                        objectHashMap.put(entry.getKey(), Arrays.asList(value.split(",")));
+//                        objectHashMap.put(entry.getKey(), Arrays.asList(value.split(",")));
+                        objectHashMap.put(fieldName, Arrays.asList(value.split(",")));
                     } else {
-                        objectHashMap.put(entry.getKey(), value);
+//                        objectHashMap.put(entry.getKey(), value);
+                        objectHashMap.put(fieldName, value);
                     }
                 }
                 params.remove(value);
@@ -81,6 +96,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
 //                Set<String> keys = params.keySet();
 //                throw new QueryException("Invalid query parameter found: " + keys.toString());
 //            }
+
             objectMapper.updateValue(this, objectHashMap);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
@@ -95,6 +111,26 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         }
         return internalPropertiesMap;
     }
+
+    private Map<String, QueryParameter> loadAnnoationMap() {
+        Map<String, QueryParameter> annotations = new HashMap<>();
+        for (Field declaredField : this.getClass().getDeclaredFields()) {
+            QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
+            if (declaredAnnotation != null) {
+                annotations.put(declaredField.getName(), declaredAnnotation);
+                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
+            }
+        }
+        for (Field declaredField : org.opencb.cellbase.core.api.queries.QueryOptions.class.getDeclaredFields()) {
+            QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
+            if (declaredAnnotation != null) {
+                annotations.put(declaredField.getName(), declaredAnnotation);
+                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
+            }
+        }
+        return annotations;
+    }
+
 
 
     protected abstract void validateQuery() throws QueryException;

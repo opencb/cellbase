@@ -307,8 +307,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         List<Bson> andBsonList = new ArrayList<>();
 //        createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
 
-        if (CollectionUtils.isNotEmpty(geneQuery.getId())) {
-            createOrQuery(geneQuery.getId(), "id", andBsonList);
+        if (CollectionUtils.isNotEmpty(geneQuery.getIds())) {
+            createOrQuery(geneQuery.getIds(), "id", andBsonList);
         }
 
         if (CollectionUtils.isNotEmpty(geneQuery.getNames())) {

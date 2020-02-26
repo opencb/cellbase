@@ -20,12 +20,22 @@ import java.util.List;
 
 public class QueryOptions extends ProjectionQueryOptions {
 
+    @QueryParameter(id = "limit", min = "0")
     protected Integer limit;
+
+    @QueryParameter(id = "skip", min = "0")
     protected Integer skip;
+
+    @QueryParameter(id = "count")
     protected Boolean count;
+
+    @QueryParameter(id = "sort")
     protected String sort;
+
+    @QueryParameter(id = "order", dependsOn = "sort", allowedValues = {"ASCENDING", "DESCENDING"})
     protected Order order;
-//    protected String timeout;
+
+    @QueryParameter(id = "facet")
     protected String facet;
 
     enum Order {
