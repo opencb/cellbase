@@ -65,6 +65,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     }
 
     public void updateParams(Map<String, String> uriParams) throws QueryException {
+        // list of fields in this class
         Map<String, Class<?>> stringClassMap = loadPropertiesMap();
         Map<String, QueryParameter> annotations = this.loadAnnotationMap();
 
@@ -72,30 +73,41 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         try {
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : stringClassMap.entrySet()) {
-                String fieldId = entry.getKey();
-                String fieldName = entry.getKey();
+                String fieldNameDotNotation = entry.getKey();
+                String fieldNameCamelCase = entry.getKey();
+                Class<?> fieldType = entry.getValue();
+                // if this field has an annotation, use that field name instead
                 for (Map.Entry<String, QueryParameter> stringQueryParameterEntry : annotations.entrySet()) {
                     if (stringQueryParameterEntry.getKey().equals(entry.getKey())) {
-                        fieldId = stringQueryParameterEntry.getValue().id();
-                        fieldName = stringQueryParameterEntry.getKey();
+                        fieldNameDotNotation = stringQueryParameterEntry.getValue().id();
+//                        fieldNameCamelCase = stringQueryParameterEntry.getKey();
                     }
                 }
-
-                String value = params.get(fieldId);
+                String value = params.get(fieldNameDotNotation.replace("\\.", "\\\\."));
                 if (value != null) {
-                    if (Collection.class.isAssignableFrom(entry.getValue())) {
-                        objectHashMap.put(fieldName, Arrays.asList(value.split(",")));
+                    if (Collection.class.isAssignableFrom(fieldType)) {
+                        if (LogicalList.class.isAssignableFrom(fieldType)) {
+                            // AND
+                            if (value.contains(";")) {
+                                List valuesList = Arrays.asList(value.split(";"));
+                                objectHashMap.put(fieldNameCamelCase, new LogicalList(valuesList, true));
+                            // OR
+                            } else {
+                                List valuesList = Arrays.asList(value.split(","));
+                                objectHashMap.put(fieldNameCamelCase, new LogicalList(valuesList, false));
+                            }
+                        } else {
+                            objectHashMap.put(fieldNameCamelCase, Arrays.asList(value.split(",")));
+                        }
                     } else {
-                        objectHashMap.put(fieldName, value);
+                        objectHashMap.put(fieldNameCamelCase, value);
                     }
                 }
-                params.remove(fieldId);
+                params.remove(fieldNameDotNotation);
             }
             if (!params.isEmpty()) {
-                Set<String> keys = params.keySet();
-                throw new QueryException("Invalid query parameter found: " + keys.toString());
+                throw new QueryException("Invalid query parameter found: " + params.keySet().toString());
             }
-
             objectMapper.updateValue(this, objectHashMap);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
@@ -117,7 +129,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
             QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
             if (declaredAnnotation != null) {
                 annotations.put(declaredField.getName(), declaredAnnotation);
-                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
+//                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
             }
         }
 //        for (Field declaredField : org.opencb.cellbase.core.api.queries.QueryOptions.class.getDeclaredFields()) {

@@ -173,16 +173,16 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
-    public Map<String, String> convertMultiToMap(MultivaluedMap<String, String> m) {
-        Map<String, String> map = new HashMap<String, String>();
-        if (m == null) {
-            return map;
+    public Map<String, String> convertMultiToMap(MultivaluedMap<String, String> multivaluedMap) {
+        Map<String, String> convertedMap = new HashMap<String, String>();
+        if (multivaluedMap == null) {
+            return convertedMap;
         }
-        for (Map.Entry<String, List<String>> entry : m.entrySet()) {
-            String camelCased = convertDotToCamelCase(entry.getKey());
-            map.put(camelCased, String.join(",", entry.getValue()));
+        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+            //String camelCased = convertDotToCamelCase(entry.getKey());
+            convertedMap.put(entry.getKey(), String.join(",", entry.getValue()));
         }
-        return map;
+        return convertedMap;
     }
 
     /**
@@ -192,6 +192,7 @@ public class GenericRestWSServer implements IWSServer {
      * @param dotPath e.g. transcripts.biotype
      * @return the string camelcased
      */
+    @Deprecated
     private String convertDotToCamelCase(String dotPath) {
         String[] paths = dotPath.split("\\.");
         StringBuilder sb = new StringBuilder();
