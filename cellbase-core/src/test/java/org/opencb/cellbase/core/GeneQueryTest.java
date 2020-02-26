@@ -42,8 +42,8 @@ public class GeneQueryTest {
     @Test
     public void testQuery() throws QueryException {
         paramMap.put("id", "1");
-        paramMap.put("biotypes", "a,b,c");
-        paramMap.put("annotationDrugsGene", "x,y");
+        paramMap.put("biotype", "a,b,c");
+        paramMap.put("annotation.drugs.gene", "x,y");
 
         geneQuery = new GeneQuery(paramMap);
         assertEquals("1", geneQuery.getIds().get(0));

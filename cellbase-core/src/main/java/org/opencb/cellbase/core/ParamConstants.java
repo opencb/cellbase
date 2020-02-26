@@ -28,6 +28,7 @@ public class ParamConstants {
     public static final String LIMIT_DESCRIPTION = "Number of results to be returned";
     public static final String SKIP_DESCRIPTION = "Number of results to skip";
     public static final String SORT_DESCRIPTION = "Sort returned results by a certain data model attribute";
+    public static final String ORDER_DESCRIPTION = "Results are in ascending order by default";
 
     public static final String SPECIES_DESCRIPTION = "Name of the species, e.g. hsapiens. For a full list "
             + "of potentially available species ids, please refer to: "

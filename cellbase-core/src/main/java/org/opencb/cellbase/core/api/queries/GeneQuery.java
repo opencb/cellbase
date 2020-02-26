@@ -26,23 +26,38 @@ public class GeneQuery extends AbstractQuery {
 
     @QueryParameter(id = "id")
     private List<String> ids;
+    @QueryParameter(id = "name")
     private List<String> names;
+    @QueryParameter(id = "biotype")
     private List<String> biotypes;
+    @QueryParameter(id = "region")
     private List<Region> regions;
+    @QueryParameter(id = "transcripts.biotype")
     private List<String> transcriptsBiotype;
+    @QueryParameter(id = "transcripts.xrefs")
     private List<String> transcriptsXrefs;
+    @QueryParameter(id = "transcripts.id")
     private List<String> transcriptsId;
+    @QueryParameter(id = "transcripts.name")
     private List<String> transcriptsName;
 
     @QueryParameter(id = "transcripts.annotationFlags")
     private List<String> transcriptsAnnotationFlags;
+    @QueryParameter(id = "transcripts.tfbs.name")
     private List<String> transcriptsTfbsName;
+    @QueryParameter(id = "annotation.diseases.id")
     private List<String> annotationDiseasesId;
+    @QueryParameter(id = "annotation.diseases.name")
     private List<String> annotationDiseasesName;
+    @QueryParameter(id = "annotation.expression.gene")
     private List<String> annotationExpressionGene;
+    @QueryParameter(id = "annotation.expression.tissue")
     private List<String> annotationExpressionTissue;
+    @QueryParameter(id = "annotation.expression.value")
     private List<String> annotationExpressionValue;
+    @QueryParameter(id = "annotation.drugs.name")
     private List<String> annotationDrugsName;
+    @QueryParameter(id = "annotation.drugs.gene")
     private List<String> annotationDrugsGene;
 
     public GeneQuery() {
