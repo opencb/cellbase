@@ -67,30 +67,9 @@ public class GeneManager extends AbstractManager {
         return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(geneQuery.getFacet().split(",")), geneQuery.toQueryOptions());
     }
 
-    public List<CellBaseDataResult> info(Query geneQuery, String genes) {
-        List<Query> queries = createXrefQueries(geneQuery, genes);
-        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, null);
-        for (int i = 0; i < queries.size(); i++) {
-            geneQueryResults.get(i).setId((String) queries.get(i).get(GeneDBAdaptor.QueryParams.XREFS.key()));
-        }
-        return geneQueryResults;
-    }
-
     public List<CellBaseDataResult> info(List<GeneQuery> geneQueries) {
         List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(geneQueries, null);
         return geneQueryResults;
-    }
-
-    private List<Query> createXrefQueries(Query geneQuery, String xrefs) {
-        String[] ids = xrefs.split(",");
-        List<Query> queries = new ArrayList<>(ids.length);
-        for (String id : ids) {
-            // TODO need to clone query properly
-            Query geneXrefQuery = new Query();
-//            geneXrefQuery.setTranscriptsXrefs(id);
-            queries.add(geneXrefQuery);
-        }
-        return queries;
     }
 
     public CellBaseDataResult<Gene> distinct(Query geneQuery, String field) {

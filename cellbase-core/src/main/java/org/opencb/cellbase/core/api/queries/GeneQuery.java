@@ -42,23 +42,23 @@ public class GeneQuery extends AbstractQuery {
     private List<String> transcriptsName;
 
     @QueryParameter(id = "transcripts.annotationFlags")
-    private List<LogicalList> transcriptsAnnotationFlags;
+    private LogicalList<String> transcriptsAnnotationFlags;
     @QueryParameter(id = "transcripts.tfbs.name")
-    private List<LogicalList> transcriptsTfbsName;
+    private LogicalList<String> transcriptsTfbsName;
     @QueryParameter(id = "annotation.diseases.id")
-    private List<LogicalList> annotationDiseasesId;
+    private LogicalList<String> annotationDiseasesId;
     @QueryParameter(id = "annotation.diseases.name")
-    private List<LogicalList> annotationDiseasesName;
+    private LogicalList<String> annotationDiseasesName;
     @QueryParameter(id = "annotation.expression.gene")
-    private List<LogicalList> annotationExpressionGene;
+    private LogicalList<String> annotationExpressionGene;
     @QueryParameter(id = "annotation.expression.tissue")
-    private List<LogicalList> annotationExpressionTissue;
+    private LogicalList<String> annotationExpressionTissue;
     @QueryParameter(id = "annotation.expression.value")
-    private List<LogicalList> annotationExpressionValue;
+    private LogicalList<String> annotationExpressionValue;
     @QueryParameter(id = "annotation.drugs.name")
-    private List<LogicalList> annotationDrugsName;
+    private LogicalList<String> annotationDrugsName;
     @QueryParameter(id = "annotation.drugs.gene")
-    private List<LogicalList> annotationDrugsGene;
+    private LogicalList<String> annotationDrugsGene;
 
     public GeneQuery() {
     }
@@ -178,83 +178,83 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public List<LogicalList> getTranscriptsAnnotationFlags() {
+    public LogicalList<String> getTranscriptsAnnotationFlags() {
         return transcriptsAnnotationFlags;
     }
 
-    public GeneQuery setTranscriptsAnnotationFlags(LogicalList transcriptsAnnotationFlags) {
+    public GeneQuery setTranscriptsAnnotationFlags(LogicalList<String> transcriptsAnnotationFlags) {
         this.transcriptsAnnotationFlags = transcriptsAnnotationFlags;
         return this;
     }
 
-    public List<LogicalList> getTranscriptsTfbsName() {
+    public LogicalList<String> getTranscriptsTfbsName() {
         return transcriptsTfbsName;
     }
 
-    public GeneQuery setTranscriptsTfbsName(LogicalList transcriptsTfbsName) {
+    public GeneQuery setTranscriptsTfbsName(LogicalList<String> transcriptsTfbsName) {
         this.transcriptsTfbsName = transcriptsTfbsName;
         return this;
     }
 
-    public List<LogicalList> getAnnotationDiseasesId() {
+    public LogicalList getAnnotationDiseasesId() {
         return annotationDiseasesId;
     }
 
-    public GeneQuery setAnnotationDiseasesId(LogicalList annotationDiseasesId) {
+    public GeneQuery setAnnotationDiseasesId(LogicalList<String> annotationDiseasesId) {
         this.annotationDiseasesId = annotationDiseasesId;
         return this;
     }
 
-    public List<LogicalList> getAnnotationDiseasesName() {
+    public LogicalList<String> getAnnotationDiseasesName() {
         return annotationDiseasesName;
     }
 
-    public GeneQuery setAnnotationDiseasesName(LogicalList annotationDiseasesName) {
+    public GeneQuery setAnnotationDiseasesName(LogicalList<String> annotationDiseasesName) {
         this.annotationDiseasesName = annotationDiseasesName;
         return this;
     }
 
-    public List<LogicalList> getAnnotationExpressionGene() {
+    public LogicalList<String> getAnnotationExpressionGene() {
         return annotationExpressionGene;
     }
 
-    public GeneQuery setAnnotationExpressionGene(LogicalList annotationExpressionGene) {
+    public GeneQuery setAnnotationExpressionGene(LogicalList<String> annotationExpressionGene) {
         this.annotationExpressionGene = annotationExpressionGene;
         return this;
     }
 
-    public List<LogicalList> getAnnotationExpressionTissue() {
+    public LogicalList<String> getAnnotationExpressionTissue() {
         return annotationExpressionTissue;
     }
 
-    public GeneQuery setAnnotationExpressionTissue(LogicalList annotationExpressionTissue) {
+    public GeneQuery setAnnotationExpressionTissue(LogicalList<String> annotationExpressionTissue) {
         this.annotationExpressionTissue = annotationExpressionTissue;
         return this;
     }
 
-    public List<LogicalList> getAnnotationExpressionValue() {
+    public LogicalList<String> getAnnotationExpressionValue() {
         return annotationExpressionValue;
     }
 
-    public GeneQuery setAnnotationExpressionValue(LogicalList annotationExpressionValue) {
+    public GeneQuery setAnnotationExpressionValue(LogicalList<String> annotationExpressionValue) {
         this.annotationExpressionValue = annotationExpressionValue;
         return this;
     }
 
-    public List<LogicalList> getAnnotationDrugsName() {
+    public LogicalList<String> getAnnotationDrugsName() {
         return annotationDrugsName;
     }
 
-    public GeneQuery setAnnotationDrugsName(LogicalList annotationDrugsName) {
+    public GeneQuery setAnnotationDrugsName(LogicalList<String> annotationDrugsName) {
         this.annotationDrugsName = annotationDrugsName;
         return this;
     }
 
-    public List<LogicalList> getAnnotationDrugsGene() {
+    public LogicalList<String> getAnnotationDrugsGene() {
         return annotationDrugsGene;
     }
 
-    public GeneQuery setAnnotationDrugsGene(LogicalList annotationDrugsGene) {
+    public GeneQuery setAnnotationDrugsGene(LogicalList<String> annotationDrugsGene) {
         this.annotationDrugsGene = annotationDrugsGene;
         return this;
     }

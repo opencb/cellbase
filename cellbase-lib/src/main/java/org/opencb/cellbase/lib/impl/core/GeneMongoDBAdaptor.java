@@ -32,6 +32,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
@@ -413,7 +414,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     private CellBaseDataResult<Document> postDBFiltering(GeneQuery geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
-        List<String> flags = geneQuery.getTranscriptsAnnotationFlags();
+        LogicalList<String> flags = geneQuery.getTranscriptsAnnotationFlags();
         if (flags != null && !flags.isEmpty()) {
             List<Document> documents = documentCellBaseDataResult.getResults();
             for (Document document : documents) {

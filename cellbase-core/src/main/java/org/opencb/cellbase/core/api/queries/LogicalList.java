@@ -3,7 +3,7 @@ package org.opencb.cellbase.core.api.queries;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogicalList extends ArrayList {
+public class LogicalList<T> extends ArrayList {
     private boolean and;
 
     public LogicalList() {}
