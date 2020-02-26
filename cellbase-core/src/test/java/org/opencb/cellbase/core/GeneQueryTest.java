@@ -67,7 +67,7 @@ public class GeneQueryTest {
 
     @Test
     public void testRegions() throws QueryException {
-        paramMap.put("regions", "1:6635137-6635325,1:7777777-8888888");
+        paramMap.put("region", "1:6635137-6635325,1:7777777-8888888");
         geneQuery.updateParams(paramMap);
         Region region = new Region("1:6635137-6635325");
         Region region1 = new Region("1:7777777-8888888");

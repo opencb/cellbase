@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
 
     public void updateParams(Map<String, String> uriParams) throws QueryException {
         Map<String, Class<?>> stringClassMap = loadPropertiesMap();
-        Map<String, QueryParameter> annotations = this.loadAnnoationMap();
+        Map<String, QueryParameter> annotations = this.loadAnnotationMap();
 
         Map<String, String> params = new HashMap<>(uriParams);
         try {
@@ -112,22 +113,22 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         return internalPropertiesMap;
     }
 
-    private Map<String, QueryParameter> loadAnnoationMap() {
+    private Map<String, QueryParameter> loadAnnotationMap() {
         Map<String, QueryParameter> annotations = new HashMap<>();
-        for (Field declaredField : this.getClass().getDeclaredFields()) {
+        for (Field declaredField : FieldUtils.getAllFields(this.getClass())) {
             QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
             if (declaredAnnotation != null) {
                 annotations.put(declaredField.getName(), declaredAnnotation);
                 System.out.println(declaredField.getName() + " = " + declaredAnnotation);
             }
         }
-        for (Field declaredField : org.opencb.cellbase.core.api.queries.QueryOptions.class.getDeclaredFields()) {
-            QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
-            if (declaredAnnotation != null) {
-                annotations.put(declaredField.getName(), declaredAnnotation);
-                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
-            }
-        }
+//        for (Field declaredField : org.opencb.cellbase.core.api.queries.QueryOptions.class.getDeclaredFields()) {
+//            QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
+//            if (declaredAnnotation != null) {
+//                annotations.put(declaredField.getName(), declaredAnnotation);
+//                System.out.println(declaredField.getName() + " = " + declaredAnnotation);
+//            }
+//        }
         return annotations;
     }
 
