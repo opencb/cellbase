@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
@@ -56,14 +57,14 @@ public class GeneQueryTest {
         assertEquals("y", geneQuery.getAnnotationDrugsGene().get(1));
        }
 
-//    @Test
-//    public void testBadParam() throws QueryException {
-//        paramMap.put("xyz", "this should throw an exception!");
-//
-//        Assertions.assertThrows(QueryException.class, () -> {
-//            geneQuery = new GeneQuery(paramMap);
-//        });
-//    }
+    @Test
+    public void testBadParam() throws QueryException {
+        paramMap.put("xyz", "this should throw an exception!");
+
+        Assertions.assertThrows(QueryException.class, () -> {
+            geneQuery = new GeneQuery(paramMap);
+        });
+    }
 
     @Test
     public void testRegions() throws QueryException {

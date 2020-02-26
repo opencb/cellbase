@@ -84,19 +84,17 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                 String value = params.get(fieldId);
                 if (value != null) {
                     if (Collection.class.isAssignableFrom(entry.getValue())) {
-//                        objectHashMap.put(entry.getKey(), Arrays.asList(value.split(",")));
                         objectHashMap.put(fieldName, Arrays.asList(value.split(",")));
                     } else {
-//                        objectHashMap.put(entry.getKey(), value);
                         objectHashMap.put(fieldName, value);
                     }
                 }
-                params.remove(value);
+                params.remove(fieldId);
             }
-//            if (!params.isEmpty()) {
-//                Set<String> keys = params.keySet();
-//                throw new QueryException("Invalid query parameter found: " + keys.toString());
-//            }
+            if (!params.isEmpty()) {
+                Set<String> keys = params.keySet();
+                throw new QueryException("Invalid query parameter found: " + keys.toString());
+            }
 
             objectMapper.updateValue(this, objectHashMap);
         } catch (JsonProcessingException e) {
