@@ -22,7 +22,10 @@ import java.util.List;
 
 public class ProjectionQueryOptions {
 
+    @QueryParameter(id = "include")
     protected List<String> includes;
+
+    @QueryParameter(id = "exclude")
     protected List<String> excludes;
 
     public ProjectionQueryOptions() {

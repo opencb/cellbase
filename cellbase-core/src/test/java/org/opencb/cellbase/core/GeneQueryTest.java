@@ -108,7 +108,7 @@ public class GeneQueryTest {
 
     @Test
     public void testExcludes() throws QueryException {
-        paramMap.put("excludes", "_id,_chunkId");
+        paramMap.put("exclude", "_id,_chunkId");
         geneQuery.updateParams(paramMap);
         assertEquals("_id", geneQuery.getExcludes().get(0));
         assertEquals("_chunkId", geneQuery.getExcludes().get(1));
