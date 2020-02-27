@@ -38,7 +38,10 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
 
     public static final int DEFAULT_LIMIT = 10;
     public static final int DEFAULT_SKIP = 0;
-    public static final int MAX_RECORDS = 1000;
+//    public static final int MAX_RECORDS = 1000;
+
+    private Map<String, Field> fields;
+    private Map<String, String> dotNotationToCamelCase;
 
     public AbstractQuery() {
         init();
@@ -53,6 +56,21 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     private void init() {
         objectMapper = new ObjectMapper();
         logger = LoggerFactory.getLogger(this.getClass());
+        fields = new HashMap<>();
+        for (Field declaredField : FieldUtils.getAllFields(this.getClass())) {
+            fields.put(declaredField.getName(), declaredField);
+        }
+        dotNotationToCamelCase = new HashMap<>();
+        Map<String, Class<?>> stringClassMap = loadPropertiesMap();
+        Map<String, QueryParameter> annotations = this.loadAnnotationMap();
+        for (Map.Entry<String, Class<?>> entry : stringClassMap.entrySet()) {
+            String fieldNameCamelCase = entry.getKey();
+            QueryParameter queryParameter = annotations.get(fieldNameCamelCase);
+            if (queryParameter != null) {
+                String fieldNameDotNotation = queryParameter.id();
+                dotNotationToCamelCase.put(fieldNameDotNotation, fieldNameCamelCase);
+            }
+        }
     }
 
     public void updateParams(ObjectMap objectMap) {
@@ -147,10 +165,6 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     }
 
     private void validateParams() throws QueryException, NoSuchFieldException, IllegalAccessException {
-        Map<String, Field> fields = new HashMap<>();
-        for (Field declaredField : FieldUtils.getAllFields(this.getClass())) {
-            fields.put(declaredField.getName(), declaredField);
-        }
         Map<String, Class<?>> classAttributes = loadPropertiesMap();
         Map<String, QueryParameter> annotations = loadAnnotationMap();
         for (Map.Entry<String, Class<?>> classEntry : classAttributes.entrySet()) {
@@ -160,68 +174,73 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                 // no annotation for this field, carry on
                 continue;
             }
-            String fieldNameDotNotation = queryParameter.id();
-            checkRequired(fieldNameCamelCase, queryParameter);
 
-            if (StringUtils.isNotEmpty(queryParameter.dependsOn())) {
-                String requiredFieldDotNotation = queryParameter.dependsOn();
-
-            }
-
-            if (queryParameter.allowedValues().length > 0) {
-
-            }
-
-            validateMin(fields, fieldNameCamelCase, queryParameter);
-
-            validateMax(fields, fieldNameCamelCase, queryParameter);
-        }
-
-    }
-
-    private void checkRequired(String fieldNameCamelCase, QueryParameter queryParameter)
-            throws NoSuchFieldException, IllegalAccessException, QueryException {
-        if (queryParameter.required()) {
-            Field field = this.getClass().getDeclaredField(fieldNameCamelCase);
+            Field field = fields.get(fieldNameCamelCase);
             field.setAccessible(true);
             Object value = field.get(this);
+
             if (value == null) {
-                throw new QueryException(fieldNameCamelCase + " is required");
+                if (queryParameter.required()) {
+                    throw new QueryException(fieldNameCamelCase + " is required");
+                } else {
+                    // field is not required, and is empty. nothing to do.
+                    continue;
+                }
+            }
+
+            checkDependsOn(fieldNameCamelCase, queryParameter.dependsOn());
+
+            checkAllowedValues(fieldNameCamelCase, queryParameter.allowedValues(), value);
+
+            validateMin(fieldNameCamelCase, queryParameter.min(), value);
+
+            validateMax(fieldNameCamelCase, queryParameter.max(), value);
+        }
+
+    }
+
+    private void checkDependsOn(String fieldNameCamelCase, String requiredFieldDotNotation) throws IllegalAccessException, QueryException {
+        if (StringUtils.isNotEmpty(requiredFieldDotNotation)) {
+            String requiredFieldCamelCase = dotNotationToCamelCase.get(requiredFieldDotNotation);
+            Field requiredField = fields.get(requiredFieldCamelCase);
+            if (requiredField.get(this) == null) {
+                throw new QueryException(requiredFieldCamelCase + " is required because " + fieldNameCamelCase + " has a value");
             }
         }
     }
 
-    private void validateMax(Map<String, Field> fields, String fieldNameCamelCase, QueryParameter queryParameter)
-            throws IllegalAccessException, QueryException {
-        if (StringUtils.isNotEmpty(queryParameter.max())) {
-            String max = queryParameter.max();
-            // Field field = this.getClass().getDeclaredField(fieldNameCamelCase);
-            Field field = fields.get(fieldNameCamelCase);
-            Object value = field.get(this);
-            if (value != null) {
-                double doubleValue = new Double((Integer) value);
-                if (doubleValue > Double.parseDouble(max)) {
-                    throw new QueryException(fieldNameCamelCase + " must be less than " + max + " but was " + doubleValue);
+    private void checkAllowedValues(String fieldNameCamelCase, String[] allowedValuesArray, Object value) throws QueryException {
+        List<String> allowedValues = Arrays.asList(allowedValuesArray);
+        if (allowedValues.size() > 0 && StringUtils.isNotEmpty(allowedValues.get(0))) {
+            if (value instanceof List) {
+                List<String> values = (List<String>) value;
+                for (String s : values) {
+                    if (!allowedValues.contains(s)) {
+                        throw new QueryException(s + " is not a legal value for " + fieldNameCamelCase);
+                    }
+                }
+            } else {
+                if (!allowedValues.contains(value)) {
+                    throw new QueryException(value + " is not a legal value for " + fieldNameCamelCase);
                 }
             }
         }
     }
 
-    private void validateMin(Map<String, Field> fields, String fieldNameCamelCase, QueryParameter queryParameter)
-            throws IllegalAccessException, QueryException {
-        if (StringUtils.isNotEmpty(queryParameter.min())) {
-            String min = queryParameter.min();
-            // Field field = this.getClass().getDeclaredField(fieldNameCamelCase);
-            Field field = fields.get(fieldNameCamelCase);
-            Object value = field.get(this);
-            if (value != null) {
+    private void validateMax(String fieldNameCamelCase, String max, Object value) throws QueryException {
+        if (StringUtils.isNotEmpty(max)) {
+            double doubleValue = new Double((Integer) value);
+            if (doubleValue > Double.parseDouble(max)) {
+                throw new QueryException(fieldNameCamelCase + " must be less than " + max + " but was " + doubleValue);
+            }
+        }
+    }
 
-                double doubleValue = new Double((Integer) value);
-//                doubleValue = Double.parseDouble(min);
-
-                if (doubleValue < Double.parseDouble(min)) {
-                    throw new QueryException(fieldNameCamelCase + " must be at least " + min + " but was " + doubleValue);
-                }
+    private void validateMin(String fieldNameCamelCase, String min, Object value) throws QueryException {
+        if (StringUtils.isNotEmpty(min)) {
+            double doubleValue = new Double((Integer) value);
+            if (doubleValue < Double.parseDouble(min)) {
+                throw new QueryException(fieldNameCamelCase + " must be at least " + min + " but was " + doubleValue);
             }
         }
     }

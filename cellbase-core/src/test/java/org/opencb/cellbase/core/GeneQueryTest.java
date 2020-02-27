@@ -132,11 +132,31 @@ public class GeneQueryTest {
         paramMap.put("biotype", "a,b,c");
         paramMap.put("annotation.drugs.gene", "x,y");
 
-//        paramMap.put("limit", "11");
-//        paramMap.put("skip", "-1");
-
+        paramMap.put("limit", "11");
+        paramMap.put("skip", "-1");
         geneQuery = new GeneQuery(paramMap);
-        geneQuery.validate();
+        Assertions.assertThrows(QueryException.class, () -> {
+            geneQuery.validate();
+        });
+
+        paramMap.put("limit", "-123456789");
+        paramMap.put("skip", "0");
+        geneQuery = new GeneQuery(paramMap);
+        Assertions.assertThrows(QueryException.class, () -> {
+            geneQuery.validate();
+        });
+
+        // legal
+        paramMap.put("sort", "-123456789");
+        paramMap.put("order", "DESCENDING");
+        geneQuery = new GeneQuery(paramMap);
+
+        // illegal
+        paramMap.put("order", "DESCENDING");
+        geneQuery = new GeneQuery(paramMap);
+        Assertions.assertThrows(QueryException.class, () -> {
+            geneQuery.validate();
+        });
     }
 
 //    @Test

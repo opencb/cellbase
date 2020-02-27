@@ -38,7 +38,7 @@ public class QueryOptions extends ProjectionQueryOptions {
     @QueryParameter(id = "facet")
     protected String facet;
 
-    enum Order {
+    public enum Order {
         ASCENDING,
         DESCENDING
     }
