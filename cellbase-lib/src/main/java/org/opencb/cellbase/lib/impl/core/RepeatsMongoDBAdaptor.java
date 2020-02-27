@@ -18,14 +18,16 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.core.RepeatsDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -74,6 +76,11 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
 
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return new CellBaseDataResult(mongoDBCollection.find(bson, null, Repeat.class, options));
+    }
+
+    @Override
+    public CellBaseDataResult nativeGet(AbstractQuery query) {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override

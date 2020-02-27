@@ -18,15 +18,17 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -112,6 +114,11 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, RegulatoryFeature.class, options));
+    }
+
+    @Override
+    public CellBaseDataResult nativeGet(AbstractQuery query) {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override

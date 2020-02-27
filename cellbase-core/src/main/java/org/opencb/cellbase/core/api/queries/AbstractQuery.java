@@ -17,8 +17,10 @@
 package org.opencb.cellbase.core.api.queries;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -44,7 +46,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     private Map<String, String> dotNotationToCamelCase;
     // list of fields in this class, and associated type
     private Map<String, Class<?>> classAttributesToType;
-
+    // key = camelCase name (transcriptsBiotype) to annotations
     private Map<String, QueryParameter> annotations;
 
     public AbstractQuery() {
@@ -68,6 +70,26 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         } catch (JsonMappingException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    /**
+     * @return map of fieldName (dot notation) to field value
+     * @throws IllegalAccessException if field is not accessible
+     */
+    public Map<String, Object> toMap() throws IllegalAccessException {
+        classAttributesToType = getClassAttributesToType();
+        annotations = getAnnotations();
+        classFields = getClassFields();
+        Map<String, Object> queryMap = new HashMap<>();
+        for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
+            String fieldNameCamelCase = entry.getKey();
+            String dotNotationName = annotations.get(fieldNameCamelCase).id();
+            Field field = getClassFields().get(fieldNameCamelCase);
+            field.setAccessible(true);
+            Object value = field.get(this);
+            queryMap.put(dotNotationName, value);
+        }
+        return queryMap;
     }
 
     public void updateParams(Map<String, String> uriParams) throws QueryException {
@@ -119,6 +141,28 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         }
     }
 
+    public Map<String, Class<?>> loadPropertiesMap() {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        BeanDescription beanDescription = objectMapper.getSerializationConfig().introspect(objectMapper.constructType(this.getClass()));
+        Map<String, Class<?>> internalPropertiesMap = new HashMap<>(beanDescription.findProperties().size() * 2);
+        for (BeanPropertyDefinition property : beanDescription.findProperties()) {
+            internalPropertiesMap.put(property.getName(), property.getRawPrimaryType());
+        }
+        return internalPropertiesMap;
+    }
+
+    public Map<String, QueryParameter> loadAnnotationMap() {
+        Map<String, QueryParameter> annotations = new HashMap<>();
+        for (Field declaredField : FieldUtils.getAllFields(this.getClass())) {
+            QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
+            if (declaredAnnotation != null) {
+                annotations.put(declaredField.getName(), declaredAnnotation);
+            }
+        }
+        return annotations;
+    }
+
+
     protected abstract void validateQuery() throws QueryException;
 
     public void validate() throws QueryException, IllegalAccessException {
@@ -130,14 +174,14 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
 
     private Map<String, Class<?>> getClassAttributesToType() {
         if (classAttributesToType == null) {
-            classAttributesToType = MongoQueryUtils.loadPropertiesMap(this.getClass());
+            classAttributesToType = loadPropertiesMap();
         }
         return classAttributesToType;
     }
 
     private Map<String, QueryParameter> getAnnotations() {
         if (annotations == null) {
-            annotations = MongoQueryUtils.loadAnnotationMap(this.getClass());
+            annotations = loadAnnotationMap();
         }
         return annotations;
     }
@@ -202,8 +246,8 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
 
     private void checkDependsOn(String fieldNameCamelCase, String requiredFieldDotNotation) throws IllegalAccessException, QueryException {
         if (StringUtils.isNotEmpty(requiredFieldDotNotation)) {
-            String requiredFieldCamelCase = dotNotationToCamelCase.get(requiredFieldDotNotation);
-            Field requiredField = classFields.get(requiredFieldCamelCase);
+            String requiredFieldCamelCase = getDotNotationToCamelCase().get(requiredFieldDotNotation);
+            Field requiredField = getClassFields().get(requiredFieldCamelCase);
             if (requiredField.get(this) == null) {
                 throw new QueryException(requiredFieldCamelCase + " is required because " + fieldNameCamelCase + " has a value");
             }

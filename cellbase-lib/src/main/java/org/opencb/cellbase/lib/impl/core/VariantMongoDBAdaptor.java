@@ -21,8 +21,8 @@ import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
@@ -31,6 +31,7 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -42,7 +43,6 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 /**
  * Created by imedina on 26/11/15.
@@ -68,12 +68,12 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         logger.debug("VariationMongoDBAdaptor: in 'constructor'");
     }
 
-    @Override
-    public CellBaseDataResult startsWith(String id, QueryOptions options) {
-        Bson regex = Filters.regex("ids", Pattern.compile("^" + id));
-        Bson include = Projections.include("ids", "chromosome", "start", "end");
-        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
-    }
+//    @Override
+//    public CellBaseDataResult startsWith(String id, QueryOptions options) {
+//        Bson regex = Filters.regex("ids", Pattern.compile("^" + id));
+//        Bson include = Projections.include("ids", "chromosome", "start", "end");
+//        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
+//    }
 
 //    @Override
 //    public CellBaseDataResult<String> getConsequenceTypes(Query query) {
@@ -170,6 +170,11 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             options = new QueryOptions("exclude", "_id,_chunkIds,annotation.additionalAttributes");
         }
         return options;
+    }
+
+    @Override
+    public CellBaseDataResult nativeGet(AbstractQuery query) {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override

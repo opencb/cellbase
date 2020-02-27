@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Filters;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
@@ -26,6 +27,7 @@ import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -294,6 +296,11 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements GenomeDBAdap
     @Override
     public CellBaseDataResult get(Query query, QueryOptions options) {
         return null;
+    }
+
+    @Override
+    public CellBaseDataResult nativeGet(AbstractQuery query) {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override

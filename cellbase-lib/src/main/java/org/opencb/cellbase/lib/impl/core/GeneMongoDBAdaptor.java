@@ -31,6 +31,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -43,7 +44,6 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -146,11 +146,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return postDBFiltering(geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, null)));
     }
 
-    public CellBaseDataResult nativeGet(GeneQuery geneQuery) {
-        Bson bson = parseQuery(geneQuery);
+    @Override
+    public CellBaseDataResult nativeGet(AbstractQuery geneQuery) {
+        Bson bson = parseQuery((GeneQuery) geneQuery);
         logger.info("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-//        logger.info("options: {}", options.toJson());
-        return postDBFiltering(geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions())));
+        return postDBFiltering((GeneQuery) geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions())));
     }
 
     @Override
@@ -203,12 +203,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
 
-    @Override
-    public CellBaseDataResult startsWith(String id, QueryOptions options) {
-        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
-        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
-        return new CellBaseDataResult<>(mongoDBCollection.find(regex, include, options));
-    }
+//    @Override
+//    public CellBaseDataResult startsWith(String id, QueryOptions options) {
+//        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
+//        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+//        return new CellBaseDataResult<>(mongoDBCollection.find(regex, include, options));
+//    }
 
     @Override
     public CellBaseDataResult getRegulatoryElements(Query geneQuery, QueryOptions queryOptions) {
@@ -308,61 +308,17 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         List<Bson> andBsonList = new ArrayList<>();
 //        createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
 
-        if (CollectionUtils.isNotEmpty(geneQuery.getIds())) {
-            createOrQuery(geneQuery.getIds(), "id", andBsonList);
+        try {
+            for (Map.Entry<String, Object> entry : geneQuery.toMap().entrySet()) {
+                String dotNotationName = entry.getKey();
+                Object value = entry.getValue();
+                createAndOrQuery(value, dotNotationName, andBsonList);
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
 
-        if (CollectionUtils.isNotEmpty(geneQuery.getNames())) {
-            createOrQuery(geneQuery.getNames(), "name", andBsonList);
-        }
 
-        if (CollectionUtils.isNotEmpty(geneQuery.getBiotypes())) {
-            createOrQuery(geneQuery.getBiotypes(), "biotype", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getBiotypes())) {
-            createOrQuery(geneQuery.getTranscriptsXrefs(), "transcripts.xrefs", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsId())) {
-            createOrQuery(geneQuery.getTranscriptsId(), "transcripts.id", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsName())) {
-            createOrQuery(geneQuery.getTranscriptsName(), "transcripts.name", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsBiotype())) {
-            createOrQuery(geneQuery.getTranscriptsBiotype(), "transcripts.biotype", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsAnnotationFlags())) {
-            createOrQuery(geneQuery.getTranscriptsAnnotationFlags(), "transcripts.annotationFlags", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getTranscriptsTfbsName())) {
-            createOrQuery(geneQuery.getTranscriptsTfbsName(), "transcripts.tfbs.name", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDiseasesId())) {
-            createOrQuery(geneQuery.getAnnotationDiseasesId(), "annotation.diseases.id", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDiseasesName())) {
-            createOrQuery(geneQuery.getAnnotationDiseasesName(), "annotation.diseases.name", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationExpressionGene())) {
-            createOrQuery(geneQuery.getAnnotationExpressionGene(), "annotation.expression.gene", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDrugsName())) {
-            createOrQuery(geneQuery.getAnnotationDrugsName(), "annotation.drugs.name", andBsonList);
-        }
-
-        if (CollectionUtils.isNotEmpty(geneQuery.getAnnotationDrugsGene())) {
-            createOrQuery(geneQuery.getAnnotationDrugsGene(), "annotation.drugs.gene", andBsonList);
-        }
 
 //        createExpressionQuery(geneQuery, andBsonList);
 
@@ -370,6 +326,21 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             return Filters.and(andBsonList);
         } else {
             return new Document();
+        }
+    }
+
+    protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, List<Bson> andBsonList) {
+        if (queryValues instanceof LogicalList) {
+
+        } else if (queryValues instanceof List) {
+            List<Bson> orBsonList = new ArrayList<>();
+            for (T queryItem : queryValues) {
+                orBsonList.add(Filters.eq(mongoDbField, queryItem));
+            }
+            andBsonList.add(Filters.or(orBsonList));
+        } else {
+            // string integer or boolean
+            andBsonList.add(Filters.eq(mongoDbField, queryValues));
         }
     }
 

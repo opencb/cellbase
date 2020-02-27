@@ -78,8 +78,8 @@ public interface GeneDBAdaptor<T> extends FeatureDBAdaptor<T> {
             return type;
         }
     }
-
-    CellBaseDataResult startsWith(String id, QueryOptions options);
+//
+//    CellBaseDataResult startsWith(String id, QueryOptions options);
 
     CellBaseDataResult getRegulatoryElements(Query query, QueryOptions queryOptions);
 

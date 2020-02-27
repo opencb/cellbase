@@ -82,7 +82,7 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
         }
     }
 
-    CellBaseDataResult startsWith(String id, QueryOptions options);
+//    CellBaseDataResult startsWith(String id, QueryOptions options);
 
     default CellBaseDataResult<T> getByVariant(Variant variant, QueryOptions options) {
         Query query;

@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.BasicDBList;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
@@ -26,10 +27,11 @@ import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -251,6 +253,11 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     public CellBaseDataResult<Entry> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Entry.class, options));
+    }
+
+    @Override
+    public CellBaseDataResult nativeGet(AbstractQuery query) {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override

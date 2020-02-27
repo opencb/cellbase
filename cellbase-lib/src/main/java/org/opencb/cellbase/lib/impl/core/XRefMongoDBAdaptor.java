@@ -19,13 +19,15 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
@@ -33,7 +35,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 /**
  * Created by imedina on 07/12/15.
@@ -48,19 +49,19 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     }
 
 
-    @Override
-    public CellBaseDataResult startsWith(String id, QueryOptions options) {
-        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
-        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
-        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
-    }
+//    @Override
+//    public CellBaseDataResult startsWith(String id, QueryOptions options) {
+//        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("^" + id));
+//        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+//        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
+//    }
 
-    @Override
-    public CellBaseDataResult contains(String id, QueryOptions options) {
-        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("\\w*" + id + "\\w*"));
-        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
-        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
-    }
+//    @Override
+//    public CellBaseDataResult contains(String id, QueryOptions options) {
+//        Bson regex = Filters.regex("transcripts.xrefs.id", Pattern.compile("\\w*" + id + "\\w*"));
+//        Bson include = Projections.include("id", "name", "chromosome", "start", "end");
+//        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
+//    }
 
     @Override
     public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
@@ -87,6 +88,11 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
     @Override
     public CellBaseDataResult<Xref> get(Query query, QueryOptions options) {
         return null;
+    }
+
+    @Override
+    public CellBaseDataResult nativeGet(AbstractQuery query) {
+        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override
