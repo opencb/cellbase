@@ -42,7 +42,7 @@ public class GeneManager extends AbstractManager {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws QueryException {
+    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws QueryException, NoSuchFieldException, IllegalAccessException {
         geneQuery.setDefaults();
         geneQuery.validate();
         // TODO throw execption if facets populated

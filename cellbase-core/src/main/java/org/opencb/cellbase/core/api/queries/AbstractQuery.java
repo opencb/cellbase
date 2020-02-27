@@ -156,6 +156,8 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
      *
      * NULL values are considered valid.
      * @throws QueryException if the skip or limit values are invalid.
+     * @throws NoSuchFieldException Trying to validate a field that doesn't exist in our query class
+     * @throws IllegalAccessException Trying to validate a field we don't have access to
      */
     public void validate() throws QueryException, NoSuchFieldException, IllegalAccessException {
         validateParams();
