@@ -88,7 +88,9 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
             Field field = getClassFields().get(fieldNameCamelCase);
             field.setAccessible(true);
             Object value = field.get(this);
-            queryMap.put(dotNotationName, value);
+            if (value != null) {
+                queryMap.put(dotNotationName, value);
+            }
         }
         return queryMap;
     }
@@ -301,7 +303,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     }
 
     // temporary method because java commons still uses query options
-    public QueryOptions toQueryOptions() {
+    public org.opencb.commons.datastore.core.QueryOptions toQueryOptions() {
         QueryOptions queryOptions = new org.opencb.commons.datastore.core.QueryOptions();
         queryOptions.put(QueryOptions.SKIP, skip);
         queryOptions.put(QueryOptions.LIMIT, limit);
@@ -309,7 +311,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         if (CollectionUtils.isNotEmpty(includes)) {
             queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(includes));
         }
-        if (CollectionUtils.isNotEmpty(includes)) {
+        if (CollectionUtils.isNotEmpty(excludes)) {
             queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes));
         }
         if (StringUtils.isNotEmpty(sort)) {

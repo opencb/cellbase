@@ -314,16 +314,19 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         List<Bson> andBsonList = new ArrayList<>();
 
         try {
+            boolean visited = false;
             for (Map.Entry<String, Object> entry : geneQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
 
                 switch (dotNotationName) {
                     case "id":
-                        createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
-                        break;
                     case "region":
                         // don't do anything! region is already processed as part along with "id"
+                        if (!visited) {
+                            createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
+                            visited = true;
+                        }
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -344,15 +347,12 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
-        if (queryValues == null || queryValues.equals("")) {
-            return;
-        }
         if (queryValues instanceof LogicalList) {
             MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
                     ? MongoDBQueryUtils.LogicalOperator.AND
                     : MongoDBQueryUtils.LogicalOperator.OR;
-            Query query = new Query(mongoDbField, queryValues);
-            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, operator);
+//            Query query = new Query(mongoDbField, queryValues);
+            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, (List<String>)queryValues, type, operator);
             andBsonList.add(filter);
         } else if (queryValues instanceof List) {
             Query query = new Query(mongoDbField, queryValues);
