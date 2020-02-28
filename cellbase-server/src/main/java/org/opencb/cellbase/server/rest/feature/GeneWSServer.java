@@ -202,7 +202,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     // "fields" is not part of genequery, will throw an exception, rename to be "facet"
     private void copyToFacet(String columnName, String fields) {
-        uriParams.remove(uriParams.get(columnName));
+        uriParams.keySet().removeIf(columnName::equals);
         uriParams.put("facet", fields);
     }
 

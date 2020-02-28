@@ -192,6 +192,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     @Override
     public CellBaseDataResult groupBy(AbstractQuery geneQuery) {
+        geneQuery.setCount(false);
         Bson bsonQuery = parseQuery((GeneQuery) geneQuery);
         return groupBy(bsonQuery, geneQuery, "name");
     }

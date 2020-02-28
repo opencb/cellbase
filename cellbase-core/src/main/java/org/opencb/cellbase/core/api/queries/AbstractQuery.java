@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.opencb.commons.datastore.core.ObjectMap;
@@ -305,11 +306,19 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         queryOptions.put(QueryOptions.SKIP, skip);
         queryOptions.put(QueryOptions.LIMIT, limit);
         queryOptions.put(QueryOptions.COUNT, count);
-        queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(includes));
-        queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes));
-        queryOptions.put(QueryOptions.SORT, sort);
-        queryOptions.put(QueryOptions.ORDER, order);
-        queryOptions.put(QueryOptions.FACET, facet);
+        if (CollectionUtils.isNotEmpty(includes)) {
+            queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(includes));
+        }
+        if (CollectionUtils.isNotEmpty(includes)) {
+            queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes));
+        }
+        if (StringUtils.isNotEmpty(sort)) {
+            queryOptions.put(QueryOptions.SORT, sort);
+            queryOptions.put(QueryOptions.ORDER, order);
+        }
+        if (StringUtils.isNotEmpty(facet)) {
+            queryOptions.put(QueryOptions.FACET, facet);
+        }
         return queryOptions;
     }
 }

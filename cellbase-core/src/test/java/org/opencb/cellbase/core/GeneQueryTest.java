@@ -58,6 +58,13 @@ public class GeneQueryTest {
     }
 
     @Test
+    public void testFacets() throws QueryException {
+        paramMap.put("facet", "biotype");
+        geneQuery = new GeneQuery(paramMap);
+        assertEquals("biotype", geneQuery.getFacet());
+    }
+
+    @Test
     public void testBadParam() throws QueryException {
         paramMap.put("xyz", "this should throw an exception!");
 
