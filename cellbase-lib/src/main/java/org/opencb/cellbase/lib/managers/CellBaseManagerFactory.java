@@ -58,6 +58,7 @@ public class CellBaseManagerFactory {
         regulatoryManagers = new HashMap<>();
         xrefManagers = new HashMap<>();
         repeatsManagers = new HashMap<>();
+        tfManagers = new HashMap<>();
     }
 
     private String getMultiKey(String species, String assembly) {

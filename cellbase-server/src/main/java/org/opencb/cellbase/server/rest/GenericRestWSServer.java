@@ -291,7 +291,7 @@ public class GenericRestWSServer implements IWSServer {
         CellBaseDataResponse queryResponse = new CellBaseDataResponse();
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
-        queryResponse.setParams(new ObjectMap(queryOptions));
+//        queryResponse.setParams(new ObjectMap(queryOptions));
         queryResponse.addEvent(new Event(Event.Type.ERROR, e.toString()));
 
         CellBaseDataResult<ObjectMap> result = new CellBaseDataResult();
@@ -323,9 +323,12 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
 
-        params.put("species", species);
-        params.putAll(query);
-        params.putAll(queryOptions);
+        // FIXME
+//        params.put("species", species);
+//        params.putAll(query);
+//        params.putAll(queryOptions);
+        params = new ObjectMap();
+        params.putAll(uriParams);
         queryResponse.setParams(params);
 
         // Guarantee that the QueryResponse object contains a list of data results
