@@ -40,11 +40,21 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     CellBaseDataResult<Long> count(Query query);
 
+//    CellBaseDataResult<Long> count(GeneQuery query);
+
     default CellBaseDataResult<String> distinct(String field) {
         return distinct(new Query(), field);
     }
 
+//    default CellBaseDataResult<String> distinct(String field) {
+//        GeneQuery query = new GeneQuery();
+//        query.setFacet(field);
+//        return distinct(query);
+//    }
+
     CellBaseDataResult<String> distinct(Query query, String field);
+
+//    CellBaseDataResult<String> distinct(AbstractQuery query);
 
 //    default CellBaseDataResult stats() {
 //        return stats(new Query());

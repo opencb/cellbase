@@ -91,10 +91,22 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
     }
 
+//    @Override
+    public CellBaseDataResult<Long> count(GeneQuery geneQuery) {
+        Bson bsonDocument = parseQuery(geneQuery);
+        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
+    }
+
     @Override
     public CellBaseDataResult<String> distinct(Query geneQuery, String field) {
         Bson bsonDocument = parseQuery(geneQuery);
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
+    }
+
+//    @Override
+    public CellBaseDataResult<String> distinct(AbstractQuery geneQuery) {
+        Bson bsonDocument = parseQuery((GeneQuery) geneQuery);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument));
     }
 
 //    @Override
@@ -149,8 +161,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public CellBaseDataResult nativeGet(AbstractQuery geneQuery) {
         Bson bson = parseQuery((GeneQuery) geneQuery);
         logger.info("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        //return postDBFiltering((GeneQuery) geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions())));
-        return new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions()));
+        return postDBFiltering((GeneQuery) geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions())));
     }
 
     @Override

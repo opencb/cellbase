@@ -76,6 +76,10 @@ public class GeneManager extends AbstractManager {
         return geneDBAdaptor.distinct(geneQuery, field);
     }
 
+//    public CellBaseDataResult<Gene> distinct(GeneQuery geneQuery) {
+//        return geneDBAdaptor.distinct(geneQuery);
+//    }
+
     public Iterator<CellBaseDataResult<Gene>> iterator(Query geneQuery, String field) {
         return geneDBAdaptor.iterator(geneQuery, null);
     }

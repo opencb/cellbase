@@ -590,8 +590,6 @@ public class MongoDBAdaptor {
         this.assembly = assembly;
     }
 
-
-    //--- DELETE ME ---//
     public CellBaseDataResult<Long> count(Query query) {
         return null;
     }
@@ -599,6 +597,10 @@ public class MongoDBAdaptor {
     public CellBaseDataResult distinct(Query query, String field) {
         return null;
     }
+
+//    public CellBaseDataResult distinct(GeneQuery query) {
+//        return null;
+//    }
 
     public CellBaseDataResult next(Query query, QueryOptions options) {
         return null;
