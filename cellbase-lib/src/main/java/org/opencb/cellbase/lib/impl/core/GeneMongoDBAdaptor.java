@@ -21,9 +21,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.MongoClient;
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -39,7 +37,6 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
@@ -212,62 +209,62 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 //        return new CellBaseDataResult<>(mongoDBCollection.find(regex, include, options));
 //    }
 
-    @Override
-    public CellBaseDataResult getRegulatoryElements(Query geneQuery, QueryOptions queryOptions) {
-        Bson bson = parseQuery(geneQuery);
-        CellBaseDataResult<Document> cellBaseDataResult = null;
-        CellBaseDataResult<Document> gene = new CellBaseDataResult<>(
-                mongoDBCollection.find(bson, new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,end")));
-        if (gene != null) {
-            MongoDBCollection regulatoryRegionCollection = mongoDataStore.getCollection("regulatory_region");
-            for (Document document : gene.getResults()) {
-                Bson eq = Filters.eq("chromosome", document.getString("chromosome"));
-                Bson lte = Filters.lte("start", document.getInteger("end", Integer.MAX_VALUE));
-                Bson gte = Filters.gte("end", document.getInteger("start", 1));
-                cellBaseDataResult = new CellBaseDataResult<>(regulatoryRegionCollection.find(Filters.and(eq, lte, gte), queryOptions));
-            }
-        }
-        return cellBaseDataResult;
-    }
+//    @Override
+//    public CellBaseDataResult getRegulatoryElements(Query geneQuery, QueryOptions queryOptions) {
+//        Bson bson = parseQuery(geneQuery);
+//        CellBaseDataResult<Document> cellBaseDataResult = null;
+//        CellBaseDataResult<Document> gene = new CellBaseDataResult<>(
+//                mongoDBCollection.find(bson, new QueryOptions(QueryOptions.INCLUDE, "chromosome,start,end")));
+//        if (gene != null) {
+//            MongoDBCollection regulatoryRegionCollection = mongoDataStore.getCollection("regulatory_region");
+//            for (Document document : gene.getResults()) {
+//                Bson eq = Filters.eq("chromosome", document.getString("chromosome"));
+//                Bson lte = Filters.lte("start", document.getInteger("end", Integer.MAX_VALUE));
+//                Bson gte = Filters.gte("end", document.getInteger("start", 1));
+//                cellBaseDataResult = new CellBaseDataResult<>(regulatoryRegionCollection.find(Filters.and(eq, lte, gte), queryOptions));
+//            }
+//        }
+//        return cellBaseDataResult;
+//    }
 
-    @Override
-    public CellBaseDataResult getTfbs(Query geneQuery, QueryOptions queryOptions) {
-        Bson bsonQuery = parseQuery(geneQuery);
-        Bson match = Aggregates.match(bsonQuery);
-
-        // We parse user's exclude options, ONLY _id can be added if exists
-        Bson includeAndExclude;
-        Bson exclude = null;
-        if (queryOptions != null && queryOptions.containsKey("exclude")) {
-            List<String> stringList = queryOptions.getAsStringList("exclude");
-            if (stringList.contains("_id")) {
-                exclude = Aggregates.project(Projections.exclude("_id"));
-            }
-        }
-        if (exclude != null) {
-            includeAndExclude = Aggregates.project(Projections.fields(Projections.excludeId(), Projections.include("transcripts.tfbs")));
-        } else {
-            includeAndExclude = Aggregates.project(Projections.include("transcripts.tfbs"));
-        }
-
-        Bson unwind = Aggregates.unwind("$transcripts");
-        Bson unwind2 = Aggregates.unwind("$transcripts.tfbs");
-
-        // This project the three fields of Xref to the top of the object
-        Document document = new Document("tfName", "$transcripts.tfbs.tfName");
-        document.put("pwm", "$transcripts.tfbs.pwm");
-        document.put("chromosome", "$transcripts.tfbs.chromosome");
-        document.put("start", "$transcripts.tfbs.start");
-        document.put("end", "$transcripts.tfbs.end");
-        document.put("strand", "$transcripts.tfbs.strand");
-        document.put("relativeStart", "$transcripts.tfbs.relativeStart");
-        document.put("relativeEnd", "$transcripts.tfbs.relativeEnd");
-        document.put("score", "$transcripts.tfbs.score");
-        Bson project = Aggregates.project(document);
-
-        return new CellBaseDataResult<>(mongoDBCollection.aggregate(
-                Arrays.asList(match, includeAndExclude, unwind, unwind2, project), queryOptions));
-    }
+//    @Override
+//    public CellBaseDataResult getTfbs(Query geneQuery, QueryOptions queryOptions) {
+//        Bson bsonQuery = parseQuery(geneQuery);
+//        Bson match = Aggregates.match(bsonQuery);
+//
+//        // We parse user's exclude options, ONLY _id can be added if exists
+//        Bson includeAndExclude;
+//        Bson exclude = null;
+//        if (queryOptions != null && queryOptions.containsKey("exclude")) {
+//            List<String> stringList = queryOptions.getAsStringList("exclude");
+//            if (stringList.contains("_id")) {
+//                exclude = Aggregates.project(Projections.exclude("_id"));
+//            }
+//        }
+//        if (exclude != null) {
+//            includeAndExclude = Aggregates.project(Projections.fields(Projections.excludeId(), Projections.include("transcripts.tfbs")));
+//        } else {
+//            includeAndExclude = Aggregates.project(Projections.include("transcripts.tfbs"));
+//        }
+//
+//        Bson unwind = Aggregates.unwind("$transcripts");
+//        Bson unwind2 = Aggregates.unwind("$transcripts.tfbs");
+//
+//        // This project the three fields of Xref to the top of the object
+//        Document document = new Document("tfName", "$transcripts.tfbs.tfName");
+//        document.put("pwm", "$transcripts.tfbs.pwm");
+//        document.put("chromosome", "$transcripts.tfbs.chromosome");
+//        document.put("start", "$transcripts.tfbs.start");
+//        document.put("end", "$transcripts.tfbs.end");
+//        document.put("strand", "$transcripts.tfbs.strand");
+//        document.put("relativeStart", "$transcripts.tfbs.relativeStart");
+//        document.put("relativeEnd", "$transcripts.tfbs.relativeEnd");
+//        document.put("score", "$transcripts.tfbs.score");
+//        Bson project = Aggregates.project(document);
+//
+//        return new CellBaseDataResult<>(mongoDBCollection.aggregate(
+//                Arrays.asList(match, includeAndExclude, unwind, unwind2, project), queryOptions));
+//    }
 
 
 //    @Override
@@ -344,12 +341,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                     : MongoDBQueryUtils.LogicalOperator.OR;
             Query query = new Query(mongoDbField, queryValues);
             Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, operator);
+            andBsonList.add(filter);
         } else if (queryValues instanceof List) {
-            List<Bson> orBsonList = new ArrayList<>();
-//            for (T queryItem : queryValues) {
-//                orBsonList.add(Filters.eq(mongoDbField, queryItem));
-//            }
-//            andBsonList.add(Filters.or(orBsonList));
+            Query query = new Query(mongoDbField, queryValues);
+            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, MongoDBQueryUtils.LogicalOperator.OR);
+            andBsonList.add(filter);
         } else {
             // string integer or boolean
             andBsonList.add(Filters.eq(mongoDbField, queryValues));

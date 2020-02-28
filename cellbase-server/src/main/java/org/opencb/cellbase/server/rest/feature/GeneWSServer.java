@@ -19,7 +19,6 @@ package org.opencb.cellbase.server.rest.feature;
 import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
@@ -28,10 +27,7 @@ import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
-import org.opencb.cellbase.lib.managers.GeneManager;
-import org.opencb.cellbase.lib.managers.ProteinManager;
-import org.opencb.cellbase.lib.managers.TranscriptManager;
-import org.opencb.cellbase.lib.managers.VariantManager;
+import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 import org.opencb.commons.datastore.core.Query;
@@ -60,6 +56,7 @@ public class GeneWSServer extends GenericRestWSServer {
     private TranscriptManager transcriptManager;
     private VariantManager variantManager;
     private ProteinManager proteinManager;
+    private TFManager tfManager;
 
     public GeneWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
@@ -74,6 +71,7 @@ public class GeneWSServer extends GenericRestWSServer {
         transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);
         variantManager = cellBaseManagerFactory.getVariantManager(species, assembly);
         proteinManager = cellBaseManagerFactory.getProteinManager(species, assembly);
+        tfManager = cellBaseManagerFactory.getTFManager(species, assembly);
     }
 
     @GET
@@ -564,26 +562,26 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/{genes}/regulation")
-    @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s) - Not yet implemented",
-            response = RegulatoryFeature.class, responseContainer = "QueryResponse", hidden = true)
-    public Response getAllRegulatoryElements(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS,
-            required = true) String genes) {
-        try {
-            List<CellBaseDataResult> queryResults = new ArrayList<>();
-                    String[] identifiers = genes.split(",");
-            for (String identifier : identifiers) {
-                GeneQuery geneQuery = new GeneQuery(uriParams);
-                geneQuery.setIds(Arrays.asList(identifier));
-                CellBaseDataResult cellBaseDataResult = geneManager.getRegulatoryElements(geneQuery);
-                queryResults.add(cellBaseDataResult);
-            }
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/{genes}/regulation")
+//    @ApiOperation(httpMethod = "GET", value = "Get all transcription factor binding sites for this gene(s) - Not yet implemented",
+//            response = RegulatoryFeature.class, responseContainer = "QueryResponse", hidden = true)
+//    public Response getAllRegulatoryElements(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS,
+//            required = true) String genes) {
+//        try {
+//            List<CellBaseDataResult> queryResults = new ArrayList<>();
+//                    String[] identifiers = genes.split(",");
+//            for (String identifier : identifiers) {
+//                GeneQuery geneQuery = new GeneQuery(uriParams);
+//                geneQuery.setIds(Arrays.asList(identifier));
+//                CellBaseDataResult cellBaseDataResult = geneManager.getRegulatoryElements(geneQuery);
+//                queryResults.add(cellBaseDataResult);
+//            }
+//            return createOkResponse(queryResults);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/{genes}/tfbs")
@@ -629,7 +627,8 @@ public class GeneWSServer extends GenericRestWSServer {
                                        required = true) String genes) {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult> queryResults = geneManager.getTfbs(new Query(), genes);
+            geneQuery.setIds(Arrays.asList(genes.split(",")));
+            CellBaseDataResult queryResults = tfManager.getByGene(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

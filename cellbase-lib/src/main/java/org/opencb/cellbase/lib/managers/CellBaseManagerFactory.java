@@ -39,6 +39,7 @@ public class CellBaseManagerFactory {
     private Map<String, RegulatoryManager> regulatoryManagers;
     private Map<String, XrefManager> xrefManagers;
     private Map<String, RepeatsManager> repeatsManagers;
+    private Map<String, TFManager> tfManagers;
     private MetaManager metaManager;
     private Logger logger;
     // this webservice has no species, do not validate
@@ -254,6 +255,25 @@ public class CellBaseManagerFactory {
             repeatsManagers.put(multiKey, new RepeatsManager(species, assembly, configuration));
         }
         return repeatsManagers.get(multiKey);
+    }
+
+    public TFManager getTFManager(String species) throws CellbaseException {
+        if (species == null) {
+            throw new CellbaseException("Species is required.");
+        }
+        SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
+        return getTFManager(species, assembly.getName());
+    }
+
+    public TFManager getTFManager(String species, String assembly) throws CellbaseException {
+        String multiKey = getMultiKey(species, assembly);
+        if (!tfManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+            }
+            tfManagers.put(multiKey, new TFManager(species, assembly, configuration));
+        }
+        return tfManagers.get(multiKey);
     }
 
     public MetaManager getMetaManager() {

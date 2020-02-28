@@ -21,6 +21,7 @@ import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -31,12 +32,16 @@ import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -176,8 +181,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
                                     value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String id) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByTranscript(query, id);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setTranscriptsId(Arrays.asList(id.split(",")));
+            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

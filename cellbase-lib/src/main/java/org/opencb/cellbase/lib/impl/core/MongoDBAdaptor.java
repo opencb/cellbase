@@ -146,15 +146,19 @@ public class MongoDBAdaptor {
             andBsonList.add(idFilter);
         } else {
             List<Bson> orBsonList = new ArrayList<>();
-            for (Region region : regions) {
-                Bson chromosome = Filters.eq("chromosome", region.getChromosome());
-                Bson start = Filters.lte("start", region.getEnd());
-                Bson end = Filters.gte("end", region.getStart());
-                orBsonList.add(Filters.and(chromosome, start, end));
+            if (CollectionUtils.isNotEmpty(regions)) {
+                for (Region region : regions) {
+                    Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                    Bson start = Filters.lte("start", region.getEnd());
+                    Bson end = Filters.gte("end", region.getStart());
+                    orBsonList.add(Filters.and(chromosome, start, end));
+                }
             }
-            for (String id : ids) {
-                Bson idFilter = Filters.eq("id", id);
-                orBsonList.add(idFilter);
+            if (CollectionUtils.isNotEmpty(ids)) {
+                for (String id : ids) {
+                    Bson idFilter = Filters.eq("id", id);
+                    orBsonList.add(idFilter);
+                }
             }
             andBsonList.add(Filters.or(orBsonList));
         }

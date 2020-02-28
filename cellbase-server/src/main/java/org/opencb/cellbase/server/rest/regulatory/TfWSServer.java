@@ -20,11 +20,13 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
-import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
+import org.opencb.cellbase.lib.managers.TFManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -35,6 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -44,7 +47,7 @@ import java.util.List;
 public class TfWSServer extends RegulatoryWSServer {
 
     private RegulatoryManager regulatoryManager;
-    private GeneManager geneManager;
+    private TFManager tfManager;
 
     public TfWSServer(@PathParam("apiVersion")
                       @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
@@ -58,7 +61,7 @@ public class TfWSServer extends RegulatoryWSServer {
             this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
         regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
+        tfManager = cellBaseManagerFactory.getTFManager(species, assembly);
     }
 
     @GET
@@ -128,8 +131,10 @@ public class TfWSServer extends RegulatoryWSServer {
     })
     public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByTf(query, tf);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
+            LogicalList<String> logicalList = new LogicalList(Arrays.asList(tf.split(",")));
+            geneQuery.setTranscriptsTfbsName(logicalList);
+            CellBaseDataResult queryResults = tfManager.getByGene(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

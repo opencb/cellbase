@@ -20,6 +20,7 @@ import io.swagger.annotations.*;
 import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -132,19 +133,17 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{regions}/gene")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects for the regions. If query param "
-            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
-            + "histogram=false Gene objects will be returned "
-            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
-            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
-            responseContainer = "QueryResponse")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all the gene objects for the regions.", responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "histogram",
-                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
-                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
-            @ApiImplicitParam(name = "interval",
-                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
-                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
+//            @ApiImplicitParam(name = "histogram",
+//                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
+//                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
+//            @ApiImplicitParam(name = "interval",
+//                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
+//                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
             @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
@@ -177,8 +176,9 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                              required = true) String regions) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getByRegion(query, regions);
+            GeneQuery geneQuery = new GeneQuery(uriParams);
+            geneQuery.setRegions(Region.parseRegions(regions));
+            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
