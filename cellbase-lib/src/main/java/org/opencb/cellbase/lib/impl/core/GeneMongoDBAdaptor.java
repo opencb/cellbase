@@ -149,7 +149,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public CellBaseDataResult nativeGet(AbstractQuery geneQuery) {
         Bson bson = parseQuery((GeneQuery) geneQuery);
         logger.info("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return postDBFiltering((GeneQuery) geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions())));
+        //return postDBFiltering((GeneQuery) geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions())));
+        return new CellBaseDataResult<>(mongoDBCollection.find(bson, geneQuery.toQueryOptions()));
     }
 
     @Override
@@ -306,9 +307,11 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                 Object value = entry.getValue();
 
                 switch (dotNotationName) {
-                    case "region":
                     case "id":
                         createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
+                        break;
+                    case "region":
+                        // don't do anything! region is already processed as part along with "id"
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -329,6 +332,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     }
 
     protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
+        if (queryValues == null || queryValues.equals("")) {
+            return;
+        }
         if (queryValues instanceof LogicalList) {
             MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
                     ? MongoDBQueryUtils.LogicalOperator.AND
