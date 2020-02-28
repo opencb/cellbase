@@ -38,7 +38,9 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.io.IOException;
@@ -306,19 +308,29 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     private Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
-//        createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
-
         try {
             for (Map.Entry<String, Object> entry : geneQuery.toMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
-                createAndOrQuery(value, dotNotationName, andBsonList);
+
+                switch (dotNotationName) {
+                    case "region":
+                    case "id":
+                        // code
+                        // createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE,
+                        //      andBsonList);
+                        // Nacho proposal:
+                        // createRegionQuery(geneQuery.getRegions(). geneQuery.getIds(),
+                        //      MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
+                        break;
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-
-
 
 //        createExpressionQuery(geneQuery, andBsonList);
 
@@ -329,15 +341,19 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         }
     }
 
-    protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, List<Bson> andBsonList) {
+    protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
         if (queryValues instanceof LogicalList) {
-
+            MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
+                    ? MongoDBQueryUtils.LogicalOperator.AND
+                    : MongoDBQueryUtils.LogicalOperator.OR;
+            Query query = new Query(mongoDbField, queryValues);
+            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, operator);
         } else if (queryValues instanceof List) {
             List<Bson> orBsonList = new ArrayList<>();
-            for (T queryItem : queryValues) {
-                orBsonList.add(Filters.eq(mongoDbField, queryItem));
-            }
-            andBsonList.add(Filters.or(orBsonList));
+//            for (T queryItem : queryValues) {
+//                orBsonList.add(Filters.eq(mongoDbField, queryItem));
+//            }
+//            andBsonList.add(Filters.or(orBsonList));
         } else {
             // string integer or boolean
             andBsonList.add(Filters.eq(mongoDbField, queryValues));
