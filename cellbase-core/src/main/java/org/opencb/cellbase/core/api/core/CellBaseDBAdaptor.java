@@ -68,6 +68,15 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     CellBaseDataResult nativeGet(AbstractQuery query);
 
+    default List<CellBaseDataResult> nativeGet(List<AbstractQuery> queries) {
+        Objects.requireNonNull(queries);
+        List<CellBaseDataResult> queryResults = new ArrayList<>(queries.size());
+        for (AbstractQuery query : queries) {
+            queryResults.add(nativeGet(query));
+        }
+        return queryResults;
+    }
+
     CellBaseDataResult nativeGet(Query query, QueryOptions options);
 
     default List<CellBaseDataResult> nativeGet(List<Query> queries, QueryOptions options) {
@@ -78,8 +87,6 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
         }
         return queryResults;
     }
-
-//    CellBaseDataResult nativeGet(AbstractQuery query);
 
     @Override
     default Iterator<T> iterator() {
@@ -99,6 +106,8 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     CellBaseDataResult groupBy(Query query, String field, QueryOptions options);
 
     CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options);
+
+    CellBaseDataResult groupBy(AbstractQuery query);
 
     @Override
     default void forEach(Consumer action) {

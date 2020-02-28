@@ -193,7 +193,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             copyToFacet("fields", fields);
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            CellBaseDataResult<Gene> queryResults = geneManager.groupBy(new Query(), fields);
+            CellBaseDataResult<Gene> queryResults = geneManager.groupBy(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -50,12 +50,12 @@ public class GeneManager extends AbstractManager {
         return geneDBAdaptor.nativeGet(geneQuery);
     }
 
-    public CellBaseDataResult<Gene> groupBy(Query geneQuery, String fields) {
-        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(fields.split(",")), null);
+    public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery, String fields) {
+        return geneDBAdaptor.groupBy(geneQuery);
     }
 
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
-        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(geneQuery.getFacet().split(",")), geneQuery.toQueryOptions());
+        return geneDBAdaptor.groupBy(geneQuery);
     }
 
     public CellBaseDataResult<Gene> aggregationStats(Query geneQuery, String fields) {
@@ -64,11 +64,11 @@ public class GeneManager extends AbstractManager {
 
     public CellBaseDataResult<Gene> aggregationStats(GeneQuery geneQuery) {
         geneQuery.setCount(Boolean.TRUE);
-        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(geneQuery.getFacet().split(",")), geneQuery.toQueryOptions());
+        return geneDBAdaptor.groupBy(geneQuery);
     }
 
     public List<CellBaseDataResult> info(List<GeneQuery> geneQueries) {
-        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(geneQueries, null);
+        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(geneQueries);
         return geneQueryResults;
     }
 

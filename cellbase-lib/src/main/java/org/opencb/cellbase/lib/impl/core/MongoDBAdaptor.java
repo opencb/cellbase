@@ -246,6 +246,11 @@ public class MongoDBAdaptor {
         return new CellBaseDataResult<>(mongoDBCollection.aggregate(groupBy, options));
     }
 
+    protected CellBaseDataResult groupBy(Bson bsonQuery, AbstractQuery abstractQuery, String featureIdField) {
+        List<Bson> groupBy = MongoDBQueryUtils.createGroupBy(bsonQuery, abstractQuery.getFacet(), featureIdField, abstractQuery.getCount());
+        return new CellBaseDataResult<>(mongoDBCollection.aggregate(groupBy, abstractQuery.toQueryOptions()));
+    }
+
     public CellBaseDataResult getIntervalFrequencies(Bson query, Region region, int intervalSize, QueryOptions options) {
         int interval = 50000;
         if (intervalSize > 0) {
@@ -627,5 +632,8 @@ public class MongoDBAdaptor {
         return null;
     }
 
+    public CellBaseDataResult groupBy(AbstractQuery query) {
+        return null;
+    }
 
 }

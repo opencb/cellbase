@@ -16,12 +16,7 @@
 
 package org.opencb.cellbase.core.api.core;
 
-import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-
-import java.util.List;
 
 import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 
@@ -83,11 +78,6 @@ public interface GeneDBAdaptor<T> extends FeatureDBAdaptor<T> {
 //    CellBaseDataResult getRegulatoryElements(Query query, QueryOptions queryOptions);
 //
 //    CellBaseDataResult getTfbs(Query query, QueryOptions queryOptions);
-
-    // moving to CellBaseDBAdaptor
-    CellBaseDataResult groupBy(GeneQuery query, String field, QueryOptions options);
-
-    CellBaseDataResult groupBy(GeneQuery query, List<String> fields, QueryOptions options);
 
 //    CellBaseDataResult<String> getBiotypes(Query query);
 
