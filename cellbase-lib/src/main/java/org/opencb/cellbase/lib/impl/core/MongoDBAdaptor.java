@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import org.apache.commons.collections.CollectionUtils;
 import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
@@ -127,6 +128,35 @@ public class MongoDBAdaptor {
             } else {
                 logger.warn("Region query no created, region object is null or empty.");
             }
+        }
+    }
+
+    // add regions and IDs to the query, joined with OR
+    protected void createIdRegionQuery(List<Region> regions, List<String> ids, List<Bson> andBsonList) {
+        if (CollectionUtils.isEmpty(regions) && CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+        if (CollectionUtils.isEmpty(ids) && regions.size() == 1) {
+            Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
+            Bson start = Filters.lte("start", regions.get(0).getEnd());
+            Bson end = Filters.gte("end", regions.get(0).getStart());
+            andBsonList.add(Filters.and(chromosome, start, end));
+        } else if (CollectionUtils.isEmpty(regions) && ids.size() == 1) {
+            Bson idFilter = Filters.eq("id", ids.get(0));
+            andBsonList.add(idFilter);
+        } else {
+            List<Bson> orBsonList = new ArrayList<>();
+            for (Region region : regions) {
+                Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                Bson start = Filters.lte("start", region.getEnd());
+                Bson end = Filters.gte("end", region.getStart());
+                orBsonList.add(Filters.and(chromosome, start, end));
+            }
+            for (String id : ids) {
+                Bson idFilter = Filters.eq("id", id);
+                orBsonList.add(idFilter);
+            }
+            andBsonList.add(Filters.or(orBsonList));
         }
     }
 

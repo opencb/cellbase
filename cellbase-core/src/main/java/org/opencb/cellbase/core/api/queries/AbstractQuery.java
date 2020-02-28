@@ -76,11 +76,11 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
      * @return map of fieldName (dot notation) to field value
      * @throws IllegalAccessException if field is not accessible
      */
-    public Map<String, Object> toMap() throws IllegalAccessException {
+    public ObjectMap toObjectMap() throws IllegalAccessException {
         classAttributesToType = getClassAttributesToType();
         annotations = getAnnotations();
         classFields = getClassFields();
-        Map<String, Object> queryMap = new HashMap<>();
+        ObjectMap queryMap = new ObjectMap();
         for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
             String fieldNameCamelCase = entry.getKey();
             String dotNotationName = annotations.get(fieldNameCamelCase).id();

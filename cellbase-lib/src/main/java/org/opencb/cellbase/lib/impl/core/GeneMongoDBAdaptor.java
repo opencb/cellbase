@@ -78,7 +78,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         if (geneQuery.getString(QueryParams.REGION.key()) != null) {
             Region region = Region.parseRegion(geneQuery.getString(QueryParams.REGION.key()));
             Bson bsonDocument = parseQuery(geneQuery);
-            return getIntervalFrequencies(bsonDocument, region, intervalSize, null);
+            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
         }
         return null;
     }
@@ -113,7 +113,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         if (postDBFilteringParametersEnabled(geneQuery)) {
             // FIXME
             CellBaseDataResult<Document> dataResult = postDBFiltering(geneQuery,
-                    new CellBaseDataResult<>(mongoDBCollection.find(bson, null)));
+                    new CellBaseDataResult<>(mongoDBCollection.find(bson, options)));
             CellBaseDataResult<Gene> cellBaseDataResult = new CellBaseDataResult<>(dataResult.getId(),
                     dataResult.getTime(), dataResult.getEvents(), dataResult.getNumResults(), null,
                     dataResult.getNumMatches());
@@ -136,7 +136,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             return cellBaseDataResult;
         } else {
             logger.debug("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-            return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Gene.class, null));
+            return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Gene.class, options));
         }
     }
 
@@ -145,7 +145,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
         Bson bson = parseQuery(geneQuery);
         logger.info("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
 //        logger.info("options: {}", options.toJson());
-        return postDBFiltering(geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, null)));
+        return postDBFiltering(geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, queryOption)));
     }
 
     @Override
@@ -308,20 +308,16 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
 
     private Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
+
         try {
-            for (Map.Entry<String, Object> entry : geneQuery.toMap().entrySet()) {
+            for (Map.Entry<String, Object> entry : geneQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
 
                 switch (dotNotationName) {
                     case "region":
                     case "id":
-                        // code
-                        // createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE,
-                        //      andBsonList);
-                        // Nacho proposal:
-                        // createRegionQuery(geneQuery.getRegions(). geneQuery.getIds(),
-                        //      MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
+                        createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
