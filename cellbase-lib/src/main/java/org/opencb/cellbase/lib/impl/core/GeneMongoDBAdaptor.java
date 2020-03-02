@@ -192,12 +192,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     @Override
     public CellBaseDataResult groupBy(Query geneQuery, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(geneQuery);
+        logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return groupBy(bsonQuery, field, "name", options);
     }
 
     @Override
     public CellBaseDataResult groupBy(Query geneQuery, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(geneQuery);
+        logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return groupBy(bsonQuery, fields, "name", options);
     }
 
@@ -205,6 +207,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
     public CellBaseDataResult groupBy(AbstractQuery geneQuery) {
         geneQuery.setCount(false);
         Bson bsonQuery = parseQuery((GeneQuery) geneQuery);
+        logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return groupBy(bsonQuery, geneQuery, "name");
     }
 
@@ -351,8 +354,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
             MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
                     ? MongoDBQueryUtils.LogicalOperator.AND
                     : MongoDBQueryUtils.LogicalOperator.OR;
-//            Query query = new Query(mongoDbField, queryValues);
-            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, (List<String>)queryValues, type, operator);
+            Query query = new Query(mongoDbField, queryValues);
+            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, operator);
             andBsonList.add(filter);
         } else if (queryValues instanceof List) {
             Query query = new Query(mongoDbField, queryValues);
