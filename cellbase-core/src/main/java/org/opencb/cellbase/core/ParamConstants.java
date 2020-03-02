@@ -19,7 +19,7 @@ package org.opencb.cellbase.core;
 public class ParamConstants {
 
     public static final String VERSION_DESCRIPTION = "Possible values: v4, v5";
-    public static final String DEFAULT_VERSION = "v5";
+    public static final String DEFAULT_VERSION = "v4";
 
     public static final String COUNT_DESCRIPTION = "Get the total number of results matching the query. ";
 

@@ -81,6 +81,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         classAttributesToType = getClassAttributesToType();
         annotations = getAnnotations();
         classFields = getClassFields();
+        QueryOptions queryOptions = toQueryOptions();
         ObjectMap queryMap = new ObjectMap();
         for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
             String fieldNameCamelCase = entry.getKey();
@@ -88,7 +89,8 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
             Field field = getClassFields().get(fieldNameCamelCase);
             field.setAccessible(true);
             Object value = field.get(this);
-            if (value != null) {
+            // don't add query options to the actual query
+            if (value != null && !queryOptions.containsKey(dotNotationName)) {
                 queryMap.put(dotNotationName, value);
             }
         }

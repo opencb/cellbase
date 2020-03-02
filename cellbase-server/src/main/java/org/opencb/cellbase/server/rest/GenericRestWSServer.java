@@ -69,7 +69,7 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Query query;
     protected QueryOptions queryOptions;
-    protected ObjectMap params;
+
     protected Map<String, String> uriParams;
     protected UriInfo uriInfo;
     protected HttpServletRequest httpServletRequest;
@@ -153,12 +153,13 @@ public class GenericRestWSServer implements IWSServer {
 
     private void initQuery() throws VersionException {
         startTime = System.currentTimeMillis();
-//        query = new Query();
-//        // This needs to be an ArrayList since it may be added some extra fields later
-        // TODO move to manager
+        query = new Query();
+        // TODO move to dbadaptor
 //        queryOptions = new QueryOptions("exclude", new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
 //        params = new ObjectMap();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
+
+        // check version. species is validated later
         checkVersion();
     }
 
@@ -179,8 +180,10 @@ public class GenericRestWSServer implements IWSServer {
             return convertedMap;
         }
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-            //String camelCased = convertDotToCamelCase(entry.getKey());
-            convertedMap.put(entry.getKey(), String.join(",", entry.getValue()));
+            // FIXME assembly check shouldn't go here
+            if (!entry.getKey().equals("assembly")) {
+                convertedMap.put(entry.getKey(), String.join(",", entry.getValue()));
+            }
         }
         return convertedMap;
     }
@@ -205,6 +208,7 @@ public class GenericRestWSServer implements IWSServer {
         return sb.toString();
     }
 
+    @Deprecated
     public void parseQueryParams() {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
 
@@ -226,6 +230,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
+    @Deprecated
     public void parseIncludesAndExcludes(String exclude, String include, String sort) {
         MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
         if (exclude != null && !exclude.isEmpty()) {
@@ -246,6 +251,7 @@ public class GenericRestWSServer implements IWSServer {
         }
     }
 
+    @Deprecated
     public void parseLimitAndSkip(int limit, int skip) {
         return;
     }
@@ -324,10 +330,10 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setApiVersion(version);
 
         // FIXME
-//        params.put("species", species);
+        ObjectMap params = new ObjectMap();
+        params.put("species", species);
 //        params.putAll(query);
 //        params.putAll(queryOptions);
-        params = new ObjectMap();
         params.putAll(uriParams);
         queryResponse.setParams(params);
 

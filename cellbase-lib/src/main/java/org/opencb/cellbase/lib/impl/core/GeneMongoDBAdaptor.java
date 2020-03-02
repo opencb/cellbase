@@ -325,8 +325,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements GeneDBAdaptor<
                 switch (dotNotationName) {
                     case "id":
                     case "region":
-                        // don't do anything! region is already processed as part along with "id"
                         if (!visited) {
+                            // parse region and ID at the same time
                             createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
                             visited = true;
                         }
