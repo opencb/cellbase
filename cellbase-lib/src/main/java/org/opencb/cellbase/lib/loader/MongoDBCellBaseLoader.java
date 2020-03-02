@@ -30,6 +30,7 @@ import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
@@ -368,7 +369,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         dbObjectsBatch.add(dbObject);
                     }
 
-                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
+                    VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens");
+//                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
+                    Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     numLoadedObjects += numUpdates;
                 }
             } catch (InterruptedException e) {

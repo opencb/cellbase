@@ -43,11 +43,6 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseDBAdap
     }
 
     @Override
-    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
-        return null;
-    }
-
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         return new CellBaseDataResult<>(mongoDBCollection.count());
     }

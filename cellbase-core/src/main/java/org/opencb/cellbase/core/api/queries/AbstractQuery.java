@@ -86,7 +86,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
             String fieldNameCamelCase = entry.getKey();
             String dotNotationName = annotations.get(fieldNameCamelCase).id();
-            Field field = getClassFields().get(fieldNameCamelCase);
+            Field field = classFields.get(fieldNameCamelCase);
             field.setAccessible(true);
             Object value = field.get(this);
             // don't add query options to the actual query

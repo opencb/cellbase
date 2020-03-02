@@ -23,7 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by imedina on 25/11/15.
  */
-public interface GeneDBAdaptor<T> extends FeatureDBAdaptor<T> {
+public interface GeneDBAdaptor<T, Q> extends FeatureDBAdaptor<T, Q> {
 
     enum QueryParams implements QueryParam {
         ID("id", TEXT_ARRAY, ""),

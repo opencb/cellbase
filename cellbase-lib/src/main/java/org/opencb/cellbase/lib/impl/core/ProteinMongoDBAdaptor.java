@@ -228,11 +228,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     }
 
     @Override
-    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
-        return null;
-    }
-
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         Bson document = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.count(document));

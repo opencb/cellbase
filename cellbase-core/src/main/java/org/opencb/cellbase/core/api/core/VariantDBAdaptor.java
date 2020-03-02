@@ -84,6 +84,8 @@ public interface VariantDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
 //    CellBaseDataResult startsWith(String id, QueryOptions options);
 
+    CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields);
+
     default CellBaseDataResult<T> getByVariant(Variant variant, QueryOptions options) {
         Query query;
 //        if (VariantType.CNV.equals(variant.getType())) {

@@ -20,6 +20,10 @@
             <artifactId>commons-datastore-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.opencb.commons</groupId>
+            <artifactId>commons-datastore-mongodb</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-tools</artifactId>
         </dependency>

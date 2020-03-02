@@ -87,11 +87,6 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
     @Override
-    public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
-        return null;
-    }
-
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         Bson bsonDocument = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));

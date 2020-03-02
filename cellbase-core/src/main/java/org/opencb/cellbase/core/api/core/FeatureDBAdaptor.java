@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 /**
  * Created by imedina on 25/11/15.
  */
-public interface FeatureDBAdaptor<T> extends org.opencb.cellbase.core.api.core.CellBaseDBAdaptor<T> {
+public interface FeatureDBAdaptor<T, Q> extends CellBaseDBAdaptor<T, Q> {
 
     String MERGE = "merge";
     String REGION = "region";

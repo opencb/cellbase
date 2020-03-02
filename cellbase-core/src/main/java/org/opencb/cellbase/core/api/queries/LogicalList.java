@@ -19,16 +19,16 @@ package org.opencb.cellbase.core.api.queries;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogicalList<T> extends ArrayList {
+public class LogicalList<T> extends ArrayList<T> {
     private boolean and;
 
     public LogicalList() {}
 
-    public LogicalList(List defaultList) {
+    public LogicalList(List<T> defaultList) {
         this(defaultList, false);
     }
 
-    public LogicalList(List defaultList, boolean isAnd) {
+    public LogicalList(List<T> defaultList, boolean isAnd) {
         this.and = isAnd;
         this.addAll(defaultList);
     }
@@ -37,7 +37,7 @@ public class LogicalList<T> extends ArrayList {
         return and;
     }
 
-    public LogicalList setAnd(boolean and) {
+    public LogicalList<T> setAnd(boolean and) {
         this.and = and;
         return this;
     }

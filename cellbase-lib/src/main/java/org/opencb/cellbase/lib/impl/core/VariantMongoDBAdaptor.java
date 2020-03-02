@@ -107,7 +107,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         return null;
     }
 
-    @Override
+//    @Override
     public CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields) {
         CellBaseDataResult<Long> nLoadedObjects = null;
         switch (field) {
