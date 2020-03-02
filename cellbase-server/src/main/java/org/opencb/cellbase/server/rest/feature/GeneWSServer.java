@@ -30,7 +30,6 @@ import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
-import org.opencb.commons.datastore.core.Query;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -512,7 +511,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            CellBaseDataResult<Gene> queryResults = geneManager.distinct(new Query(), field);
+            CellBaseDataResult<Gene> queryResults = geneManager.distinct(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -42,24 +42,15 @@ public class GeneManager extends AbstractManager {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
     }
 
-
-    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws QueryException, NoSuchFieldException, IllegalAccessException {
+    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws QueryException, IllegalAccessException {
         geneQuery.setDefaults();
         geneQuery.validate();
         // TODO throw execption if facets populated
         return geneDBAdaptor.nativeGet(geneQuery);
     }
 
-    public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery, String fields) {
-        return geneDBAdaptor.groupBy(geneQuery);
-    }
-
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
         return geneDBAdaptor.groupBy(geneQuery);
-    }
-
-    public CellBaseDataResult<Gene> aggregationStats(Query geneQuery, String fields) {
-        return geneDBAdaptor.groupBy(geneQuery, Arrays.asList(fields.split(",")), null);
     }
 
     public CellBaseDataResult<Gene> aggregationStats(GeneQuery geneQuery) {
@@ -72,8 +63,8 @@ public class GeneManager extends AbstractManager {
         return geneQueryResults;
     }
 
-    public CellBaseDataResult<Gene> distinct(Query geneQuery, String field) {
-        return geneDBAdaptor.distinct(geneQuery, field);
+    public CellBaseDataResult<Gene> distinct(GeneQuery geneQuery) {
+        return geneDBAdaptor.distinct(new Query(), geneQuery.getFacet());
     }
 
 //    public CellBaseDataResult<Gene> distinct(GeneQuery geneQuery) {
@@ -148,6 +139,7 @@ public class GeneManager extends AbstractManager {
 //        return geneQueryResults;
 //    }
 
+    @Deprecated
     public List<CellBaseDataResult> getGeneByEnsemblId(String id) {
         String[] ids = id.split(",");
         List<GeneQuery> queries = new ArrayList<>(ids.length);

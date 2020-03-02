@@ -598,10 +598,6 @@ public class MongoDBAdaptor {
         return null;
     }
 
-//    public CellBaseDataResult distinct(GeneQuery query) {
-//        return null;
-//    }
-
     public CellBaseDataResult next(Query query, QueryOptions options) {
         return null;
     }
