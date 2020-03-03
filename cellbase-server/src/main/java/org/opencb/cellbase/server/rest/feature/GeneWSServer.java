@@ -17,6 +17,8 @@
 package org.opencb.cellbase.server.rest.feature;
 
 import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -61,10 +63,19 @@ public class GeneWSServer extends GenericRestWSServer {
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @PathParam("species") @ApiParam(name = "species",
                                 value = ParamConstants.SPECIES_DESCRIPTION) String species,
+                        @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of "
+                                + "potentially available assemblies, please refer to: "
+                                + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
+                        @DefaultValue("")
+                        @QueryParam("assembly") String assembly,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
-        if (assembly == null) {
-            this.assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+        List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
+        if (CollectionUtils.isNotEmpty(assemblies)) {
+            assembly = assemblies.get(0);
+        }
+        if (StringUtils.isEmpty(assembly)) {
+            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
         geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
         transcriptManager = cellBaseManagerFactory.getTranscriptManager(species, assembly);

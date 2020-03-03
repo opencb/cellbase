@@ -25,7 +25,6 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.CellBaseDataResponse;
@@ -44,7 +43,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.IOException;
@@ -59,13 +61,6 @@ public class GenericRestWSServer implements IWSServer {
 
     protected String version;
     protected String species;
-
-    @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of"
-            + "potentially available assemblies, please refer to: "
-            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
-    @DefaultValue("")
-    @QueryParam("assembly")
-    protected String assembly;
 
     protected Query query;
     protected QueryOptions queryOptions;
@@ -180,10 +175,7 @@ public class GenericRestWSServer implements IWSServer {
             return convertedMap;
         }
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-            // FIXME assembly check shouldn't go here
-            if (!entry.getKey().equals("assembly")) {
-                convertedMap.put(entry.getKey(), String.join(",", entry.getValue()));
-            }
+            convertedMap.put(entry.getKey(), String.join(",", entry.getValue()));
         }
         return convertedMap;
     }

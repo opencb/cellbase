@@ -137,7 +137,8 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                 }
                 params.remove(fieldNameDotNotation);
             }
-            if (!params.isEmpty()) {
+            // TODO handle assembly better. we're just ignoring it now.
+            if (!params.isEmpty() && (params.containsKey("assembly") && params.size() > 1)) {
                 throw new QueryException("Invalid query parameter found: " + params.keySet().toString());
             }
             objectMapper.updateValue(this, objectHashMap);

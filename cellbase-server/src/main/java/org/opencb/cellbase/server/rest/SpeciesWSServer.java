@@ -23,7 +23,6 @@ import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GenomeManager;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,8 +48,13 @@ public class SpeciesWSServer extends GenericRestWSServer {
                                    defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                            @PathParam("species")
                            @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
+                           @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of "
+                                   + "potentially available assemblies, please refer to: "
+                                   + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
+                           @DefaultValue("")
+                           @QueryParam("assembly") String assembly,
                            @Context UriInfo uriInfo,
-                           @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException,
+                           @Context HttpServletRequest hsr) throws VersionException, IOException,
             CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);

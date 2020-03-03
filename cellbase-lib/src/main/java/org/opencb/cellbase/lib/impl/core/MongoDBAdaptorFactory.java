@@ -32,6 +32,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
 public class MongoDBAdaptorFactory {
 
     protected CellBaseConfiguration cellBaseConfiguration;
-    protected Logger logger;
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
     private static final String SERVER_ADDRESS = "serverAddress";
     private static final String MEMBERS = "members";
