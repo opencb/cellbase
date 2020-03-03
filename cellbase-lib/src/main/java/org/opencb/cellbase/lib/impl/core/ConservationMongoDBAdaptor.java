@@ -25,10 +25,12 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.ConservationDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -40,7 +42,7 @@ import java.util.function.Consumer;
  * Created by swaathi on 26/11/15.
  */
 @Deprecated
-public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements ConservationDBAdaptor {
+public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -49,13 +51,11 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         logger.debug("ConservationMongoDBAdaptor: in 'constructor'");
     }
 
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
-    @Override
     public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
@@ -66,28 +66,23 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult get(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult nativeGet(AbstractQuery query) {
         return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
-    @Override
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
 
-    @Override
     public Iterator iterator(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options);
@@ -98,17 +93,14 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
         return null;
     }
 
-    @Override
     public void forEach(Query query, Consumer action, QueryOptions options) {
 
     }
@@ -212,7 +204,6 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         return cellBaseDataResults;
     }
 
-    @Override
     @Deprecated
     public List<CellBaseDataResult> getAllScoresByRegionList(List regionList, QueryOptions options) {
         //TODO not finished yet
@@ -309,4 +300,33 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements Conser
         return cellBaseDataResults;
     }
 
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    @Override
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
+    }
 }

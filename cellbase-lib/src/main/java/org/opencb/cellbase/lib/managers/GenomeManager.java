@@ -20,9 +20,11 @@ import com.google.common.base.Splitter;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -31,7 +33,7 @@ import java.util.List;
 
 public class GenomeManager extends AbstractManager {
 
-    private GenomeDBAdaptor genomeDBAdaptor;
+    private GenomeMongoDBAdaptor genomeDBAdaptor;
 
     public GenomeManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -61,13 +63,15 @@ public class GenomeManager extends AbstractManager {
 
     public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String regions) {
         List<Region> regionList = Region.parseRegions(regions);
-        List<CellBaseDataResult<GenomeSequenceFeature>> queryResults =
-                genomeDBAdaptor.getSequence(Region.parseRegions(regions), queryOptions);
+        List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = new ArrayList<>();
+        for (Region region : regionList) {
+            queryResults.add(genomeDBAdaptor.getSequence(region, queryOptions));
+        }
+
         for (int i = 0; i < regionList.size(); i++) {
             queryResults.get(i).setId(regionList.get(i).toString());
         }
         return queryResults;
-
     }
 
     public CellBaseDataResult<GenomeSequenceFeature> getByRegion(Query query, QueryOptions queryOptions, String regions, String strand) {
@@ -85,5 +89,29 @@ public class GenomeManager extends AbstractManager {
             queryResultList.get(i).setId(regions);
         }
         return queryResultList;
+    }
+
+    public CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions) {
+        return genomeDBAdaptor.getSequence(region, queryOptions);
+    }
+
+    public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions) {
+        return genomeDBAdaptor.getGenomicSequence(query, queryOptions);
+    }
+
+    public CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions) {
+        return genomeDBAdaptor.getCytobands(region, queryOptions);
+    }
+
+    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList, QueryOptions queryOptions) {
+        List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = new ArrayList<>(regionList.size());
+        for (Region region : regionList) {
+            cellBaseDataResultList.add(getCytobands(region, queryOptions));
+        }
+        return cellBaseDataResultList;
+    }
+
+    public List<CellBaseDataResult<Cytoband>> getCytobands(List<Region> regionList) {
+        return getCytobands(regionList, null);
     }
 }

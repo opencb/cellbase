@@ -23,7 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by imedina on 30/11/15.
  */
-public interface XRefDBAdaptor<XRef> extends CellBaseDBAdaptor<XRef> {
+public interface XRefDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
 
     enum QueryParams implements QueryParam {
         ID("transcripts.xrefs.id", TEXT_ARRAY, ""),

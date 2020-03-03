@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 /**
  * Created by imedina on 25/11/15.
  */
+@Deprecated
 public interface FeatureDBAdaptor<T, Q> extends CellBaseDBAdaptor<T, Q> {
 
     String MERGE = "merge";

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -37,8 +37,8 @@ public class ConsequenceTypeMNVCalculator extends ConsequenceTypeGenericRegionCa
 //    private static final int BIG_VARIANT_SIZE_THRESHOLD = 50;
 
 
-    public ConsequenceTypeMNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
-        this.genomeDBAdaptor = genomeDBAdaptor;
+    public ConsequenceTypeMNVCalculator(GenomeManager genomeManager) {
+        this.genomeManager = genomeManager;
     }
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,

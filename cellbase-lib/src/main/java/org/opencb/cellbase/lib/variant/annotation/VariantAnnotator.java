@@ -14,11 +14,25 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.api.core;
+package org.opencb.cellbase.lib.variant.annotation;
+
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.cellbase.core.api.queries.QueryException;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
- * Created by imedina on 09/02/16.
+ * Created by fjlopez on 28/04/15.
  */
-public interface PathwayDBAdaptor<T> extends CellBaseDBAdaptor<T> {
+public interface VariantAnnotator {
+
+    String IGNORE_PHASE = "ignorePhase";
+
+    boolean open();
+
+    void run(List<Variant> variantList) throws InterruptedException, ExecutionException, QueryException, IllegalAccessException;
+
+    boolean close();
 
 }

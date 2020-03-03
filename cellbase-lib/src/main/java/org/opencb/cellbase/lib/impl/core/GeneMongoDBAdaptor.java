@@ -16,10 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.apache.commons.collections.CollectionUtils;
@@ -27,11 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -41,10 +34,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Created by imedina on 25/11/15.
@@ -87,14 +77,15 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 //        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
 //    }
 
-
-
-
-
     @Override
     public CellBaseDataResult<Long> count(GeneQuery query) {
         Bson bsonDocument = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List<String> fields, GeneQuery query) {
+        return null;
     }
 
     @Override
@@ -104,6 +95,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
         Bson projection = MongoDBQueryUtils.getProjection(queryOptions);
         CellBaseDataResult<Gene> result = new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, Gene.class, queryOptions));
         return result;
+    }
+
+    public List<CellBaseDataResult<Gene>> query(List<GeneQuery> queries) {
+        List<CellBaseDataResult<Gene>> results = new ArrayList<>();
+        for (GeneQuery query : queries) {
+            results.add(query(query));
+        }
+        return results;
     }
 
     @Override
@@ -122,53 +121,49 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
     }
 
-//    @Override
-    public CellBaseDataResult<String> distinct(AbstractQuery geneQuery) {
-        Bson bsonDocument = parseQuery((GeneQuery) geneQuery);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument));
-    }
+
 
 //    @Override
 //    public CellBaseDataResult stats(GeneQuery geneQuery) {
 //        return null;
 //    }
 
-    @Override
-    public CellBaseDataResult<Gene> get(Query geneQuery, QueryOptions options) {
-        Bson bson = parseQuery(geneQuery);
+
+/*    public CellBaseDataResult<Gene> get(Query geneQuery, QueryOptions options) {
+        Bson bson = parseQuery(geneQuery);*/
 //        QueryOptions queryOptions = geneQuery.toQueryOptions();
 //        Bson projection = MongoDBQueryUtils.getProjection(queryOptions);
-
-
-        if (postDBFilteringParametersEnabled(geneQuery)) {
-            // FIXME
-            CellBaseDataResult<Document> dataResult = postDBFiltering(geneQuery,
-                    new CellBaseDataResult<>(mongoDBCollection.find(bson, options)));
-            CellBaseDataResult<Gene> cellBaseDataResult = new CellBaseDataResult<>(dataResult.getId(),
-                    dataResult.getTime(), dataResult.getEvents(), dataResult.getNumResults(), null,
-                    dataResult.getNumMatches());
-
-            // Now we need to convert MongoDB Documents to Gene objects
-            // TODO: maybe we could geneQuery Genes in the first stage
-            ObjectMapper jsonObjectMapper = new ObjectMapper();
-            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
-            ObjectWriter objectWriter = jsonObjectMapper.writer();
-            cellBaseDataResult.setResults(dataResult.getResults().stream()
-                    .map(document -> {
-                        try {
-                            return this.objectMapper.readValue(objectWriter.writeValueAsString(document), Gene.class);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return null;
-                        }
-                    }).collect(Collectors.toList()));
-            return cellBaseDataResult;
-        } else {
-            logger.debug("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-            return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Gene.class, options));
-        }
-    }
+//
+//
+//        if (postDBFilteringParametersEnabled(geneQuery)) {
+//            // FIXME
+//            CellBaseDataResult<Document> dataResult = postDBFiltering(geneQuery,
+//                    new CellBaseDataResult<>(mongoDBCollection.find(bson, options)));
+//            CellBaseDataResult<Gene> cellBaseDataResult = new CellBaseDataResult<>(dataResult.getId(),
+//                    dataResult.getTime(), dataResult.getEvents(), dataResult.getNumResults(), null,
+//                    dataResult.getNumMatches());
+//
+//            // Now we need to convert MongoDB Documents to Gene objects
+//            // TODO: maybe we could geneQuery Genes in the first stage
+//            ObjectMapper jsonObjectMapper = new ObjectMapper();
+//            jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+//            jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
+//            ObjectWriter objectWriter = jsonObjectMapper.writer();
+//            cellBaseDataResult.setResults(dataResult.getResults().stream()
+//                    .map(document -> {
+//                        try {
+//                            return this.objectMapper.readValue(objectWriter.writeValueAsString(document), Gene.class);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                            return null;
+//                        }
+//                    }).collect(Collectors.toList()));
+//            return cellBaseDataResult;
+//        } else {
+//            logger.debug("geneQuery: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+//            return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Gene.class, options));
+//        }
+//    }
 
 //    @Override
 //    public CellBaseDataResult nativeGet(GeneQuery geneQuery) {
@@ -179,13 +174,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 //        return postDBFiltering((GeneQuery) geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, queryOptions)));
 //    }
 
-
-
-//    @Override
-//    public Iterator nativeIterator(Query geneQuery, QueryOptions options) {
-//        Bson bson = parseQuery(geneQuery);
-//        return mongoDBCollection.nativeQuery().find(bson, options);
-//    }
+    public Iterator nativeIterator(Query geneQuery, QueryOptions options) {
+        Bson bson = parseQuery(geneQuery);
+        return mongoDBCollection.nativeQuery().find(bson, options);
+    }
 
 //    @Override
 //    public void forEach(Query geneQuery, Consumer<? super Object> action, QueryOptions options) {
@@ -215,13 +207,13 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 //        return groupBy(bsonQuery, fields, "name", options);
 //    }
 //
-//    @Override
-//    public CellBaseDataResult groupBy(AbstractQuery geneQuery) {
-//        geneQuery.setCount(false);
-//        Bson bsonQuery = parseQuery((GeneQuery) geneQuery);
-//        logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-//        return groupBy(bsonQuery, geneQuery, "name");
-//    }
+
+    public CellBaseDataResult groupBy(GeneQuery geneQuery) {
+        geneQuery.setCount(false);
+        Bson bsonQuery = parseQuery((GeneQuery) geneQuery);
+        logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        return groupBy(bsonQuery, geneQuery, "name");
+    }
 
 
 //    @Override
@@ -294,36 +286,36 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 //        return distinct(geneQuery, "biotypes");
 //    }
 
-//    private Bson parseQuery(Query geneQuery) {
-//        List<Bson> andBsonList = new ArrayList<>();
-//        createRegionQuery(geneQuery, QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
-//
-//        createOrQuery(geneQuery, QueryParams.ID.key(), "id", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.NAME.key(), "name", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.BIOTYPE.key(), "biotype", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
-//
-//        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
-//
-//        createOrQuery(geneQuery, QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
-//
-//        createOrQuery(geneQuery, QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
-//        createOrQuery(geneQuery, QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
-//
-//        createExpressionQuery(geneQuery, andBsonList);
-//
-//        if (andBsonList.size() > 0) {
-//            return Filters.and(andBsonList);
-//        } else {
-//            return new Document();
-//        }
-//    }
+    private Bson parseQuery(Query geneQuery) {
+        List<Bson> andBsonList = new ArrayList<>();
+        createRegionQuery(geneQuery, GeneDBAdaptor.QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
+
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.BIOTYPE.key(), "biotype", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
+
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
+
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
+        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
+
+        createExpressionQuery(geneQuery, andBsonList);
+
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
+    }
 
     private Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();

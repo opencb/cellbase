@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class MongoDBAdaptor {
 
@@ -570,7 +569,6 @@ public class MongoDBAdaptor {
         return intervalFeatureFrequenciesList;
     }
 
-
     public String getSpecies() {
         return species;
     }
@@ -589,49 +587,4 @@ public class MongoDBAdaptor {
     public void setAssembly(String assembly) {
         this.assembly = assembly;
     }
-
-//    public CellBaseDataResult<Long> count(Query query) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult distinct(Query query, String field) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult next(Query query, QueryOptions options) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult get(Query query, QueryOptions inputOptions) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
-//        return null;
-//    }
-//
-//    public Iterator iterator(Query query, QueryOptions inputOptions) {
-//        return null;
-//    }
-//
-//    public Iterator nativeIterator(Query query, QueryOptions options) {
-//        return null;
-//    }
-//
-//    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
-//        return;
-//    }
-//
-//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
-//        return null;
-//    }
-//
-//    public CellBaseDataResult groupBy(AbstractQuery query) {
-//        return null;
-//    }
-
 }

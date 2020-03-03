@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation.hgvs;
+package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
@@ -22,9 +22,9 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
-import org.opencb.cellbase.core.variant.annotation.UnsupportedURLVariantFormat;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.managers.GenomeManager;
+import org.opencb.cellbase.lib.variant.annotation.UnsupportedURLVariantFormat;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +40,10 @@ public class HgvsCalculator {
 
     private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
-    protected GenomeDBAdaptor genomeDBAdaptor;
+    protected GenomeManager genomeManager;
 
-    public HgvsCalculator(GenomeDBAdaptor genomeDBAdaptor) {
-        this.genomeDBAdaptor = genomeDBAdaptor;
+    public HgvsCalculator(GenomeManager genomeManager) {
+        this.genomeManager = genomeManager;
     }
 
     // If allele is greater than this use allele length.
@@ -98,12 +98,12 @@ public class HgvsCalculator {
 //        switch (VariantAnnotationUtils.getVariantType(normalizedVariant)) {
         switch (normalizedVariant.getType()) {
             case SNV:
-                return new HgvsSNVCalculator(genomeDBAdaptor);
+                return new HgvsSNVCalculator(genomeManager);
             case INDEL:
                 if (StringUtils.isBlank(normalizedVariant.getReference())) {
-                    return new HgvsInsertionCalculator(genomeDBAdaptor);
+                    return new HgvsInsertionCalculator(genomeManager);
                 } else if (StringUtils.isBlank(normalizedVariant.getAlternate())) {
-                    return new HgvsDeletionCalculator(genomeDBAdaptor);
+                    return new HgvsDeletionCalculator(genomeManager);
                 } else {
                     logger.debug("No HGVS implementation available for variant MNV. Returning empty list of HGVS "
                             + "identifiers.");

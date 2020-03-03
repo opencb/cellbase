@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.MiRNAGene;
@@ -25,6 +25,7 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public abstract class ConsequenceTypeCalculator {
     protected Gene gene;
     protected Transcript transcript;
     protected Variant variant;
-    protected GenomeDBAdaptor genomeDBAdaptor;
+    protected GenomeManager genomeManager;
     protected Boolean imprecise = true;
     protected int svExtraPadding = 0;
     protected int cnvExtraPadding = 0;
@@ -336,7 +337,7 @@ public abstract class ConsequenceTypeCalculator {
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT
-                        .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
+                        .get(genomeManager.getGenomicSequence(query, new QueryOptions())
                                 .getResults().get(0).getSequence().charAt(0));
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(
@@ -366,7 +367,7 @@ public abstract class ConsequenceTypeCalculator {
                 Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                         + ":" + genomicCoordinate
                         + "-" + (genomicCoordinate + 1));
-                modifiedCodonArray[modifiedCodonPosition] = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions())
+                modifiedCodonArray[modifiedCodonPosition] = genomeManager.getGenomicSequence(query, new QueryOptions())
                         .getResults().get(0).getSequence().charAt(0);
             } else {
                 modifiedCodonArray[modifiedCodonPosition] = transcriptSequence.charAt(transcriptSequencePosition);

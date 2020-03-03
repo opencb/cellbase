@@ -29,7 +29,7 @@ import java.util.List;
  * Created by imedina on 30/11/15.
  */
 @Deprecated
-public interface VariantAnnotationDBAdaptor<T> extends CellBaseDBAdaptor<T> {
+public interface VariantAnnotationDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
 
     CellBaseDataResult<T> getAnnotationByVariant(Variant variant, QueryOptions options);
 

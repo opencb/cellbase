@@ -23,7 +23,7 @@ import org.mortbay.util.ajax.JSON;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

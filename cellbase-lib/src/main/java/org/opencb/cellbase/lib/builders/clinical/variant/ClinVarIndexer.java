@@ -22,7 +22,7 @@ import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v54jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.utils.FileUtils;
 import org.rocksdb.RocksDB;

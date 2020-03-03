@@ -17,25 +17,27 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.hamcrest.CoreMatchers;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.LogicalList;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by fjlopez on 08/10/15.
@@ -54,11 +56,15 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void get() throws Exception {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+        GeneMongoDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
         Query query = new Query(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "synovial");
         query.put(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_VALUE.key(), "DOWN");
         QueryOptions queryOptions = new QueryOptions("include", "id,name");
-        CellBaseDataResult<Gene> CellBaseDataResult = geneDBAdaptor.get(query, queryOptions);
+        GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setAnnotationExpressionTissue(new LogicalList(Arrays.asList("synovial")));
+        geneQuery.setAnnotationExpressionValue(new LogicalList(Arrays.asList("DOWN")));
+
+        CellBaseDataResult<Gene> CellBaseDataResult = geneDBAdaptor.query(geneQuery);
         // WARNING: these values below may slightly change from one data version to another
         assertEquals(22, CellBaseDataResult.getNumMatches());
         assertThat(CellBaseDataResult.getResults().stream().map(gene -> gene.getName()).collect(Collectors.toList()),
@@ -79,7 +85,13 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.put(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_VALUE.key(), "DOWN");
         queryOptions = new QueryOptions("include", "id,name,annotation.expression");
         queryOptions.put("limit", "10");
-        CellBaseDataResult = geneDBAdaptor.get(query, queryOptions);
+
+        geneQuery = new GeneQuery();
+        geneQuery.setAnnotationExpressionTissue(new LogicalList(Arrays.asList("synovial")));
+        geneQuery.setAnnotationExpressionValue(new LogicalList(Arrays.asList("DOWN")));
+        geneQuery.setIncludes(Arrays.asList("id,name,annotation.expression"));
+        geneQuery.setLimit(10);
+        CellBaseDataResult = geneDBAdaptor.query(geneQuery);
         boolean found = false;
         for (Gene gene : CellBaseDataResult.getResults()) {
             if (gene.getId().equals("ENSG00000237094")) {

@@ -59,7 +59,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/clinicalMongoDBAdaptor/phasedQueries/clinical_variants.full.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
 
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens",
+        ClinicalMongoDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens",
                 "GRCh37");
 
         // Two variants being queried with PS and genotype. The PS is different in each of them. In the database, these
@@ -496,7 +496,7 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/clinicalMongoDBAdaptor/nativeGet/clinical_variants.full.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
 
-        ClinicalDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
+        ClinicalMongoDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions1 = new QueryOptions();
 
         Query query1 = new Query();

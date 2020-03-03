@@ -17,26 +17,25 @@
 package org.opencb.cellbase.lib.variant.hgvs;
 
 import org.hamcrest.CoreMatchers;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
-import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.commons.datastore.core.QueryOptions;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import org.opencb.cellbase.lib.managers.GeneManager;
+import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -44,7 +43,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     private HgvsCalculator hgvsCalculator;
-    private GeneDBAdaptor geneDBAdaptor;
+    private GeneManager geneManager;
 
     public HgvsCalculatorTest() throws IOException {
     }
@@ -58,8 +57,9 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
         path = Paths.get(getClass()
                 .getResource("/hgvs/genome_sequence.test.json.gz").toURI());
         loadRunner.load(path, "genome_sequence");
-        hgvsCalculator = new HgvsCalculator(dbAdaptorFactory.getGenomeDBAdaptor("hsapiens", "GRCh37"));
-        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+
+        hgvsCalculator = new HgvsCalculator(cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"));
+        geneManager = cellBaseManagerFactory.getGeneManager("hsapiens", "GRCh37");
     }
 
     @Test
@@ -224,17 +224,18 @@ public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-    private List<String> getVariantHgvs(Variant variant) {
-
-        List<Gene> geneList = geneDBAdaptor
-                .getByRegion(new Region(variant.getChromosome(), variant.getStart(),
-                        variant.getEnd()), new QueryOptions("include", "name,id,transcripts.id,"
-                        + "transcripts.strand,transcripts.name,transcripts.start,transcripts.end,"
-                        + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
-                        + "transcripts.cdnaCodingEnd,transcripts.exons.start,"
-                        + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
-                        + "transcripts.exons.cdsStart,transcripts.exons.cdsEnd,"
-                        + "transcripts.exons.end")).getResults();
+    private List<String> getVariantHgvs(Variant variant) throws QueryException, IllegalAccessException {
+        GeneQuery geneQuery = new GeneQuery();
+        Region region = new Region(variant.getChromosome(), variant.getStart(), variant.getEnd());
+        geneQuery.setRegions(Arrays.asList(region));
+        geneQuery.setIncludes(Arrays.asList("name,id,transcripts.id,"
+                + "transcripts.strand,transcripts.name,transcripts.start,transcripts.end,"
+                + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
+                + "transcripts.cdnaCodingEnd,transcripts.exons.start,"
+                + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
+                + "transcripts.exons.cdsStart,transcripts.exons.cdsEnd,"
+                + "transcripts.exons.end"));
+        List<Gene> geneList = geneManager.search(geneQuery).getResults();
 
         return hgvsCalculator.run(variant, geneList);
     }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
@@ -22,7 +22,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -42,8 +42,8 @@ public class ConsequenceTypeInsertionCalculator extends ConsequenceTypeCalculato
     private int variantEnd;
 //    private GenomeDBAdaptor genomeDBAdaptor;
 
-    public ConsequenceTypeInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
-        this.genomeDBAdaptor = genomeDBAdaptor;
+    public ConsequenceTypeInsertionCalculator(GenomeManager genomeManager) {
+        this.genomeManager = genomeManager;
     }
 
     public List<ConsequenceType> run(Variant inputVariant, List<Gene> geneList, boolean[] overlapsRegulatoryRegion,

@@ -18,11 +18,11 @@ package org.opencb.cellbase.lib;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
 import org.opencb.cellbase.core.loader.LoadRunner;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.slf4j.Logger;
@@ -41,9 +41,10 @@ public class GenericMongoDBAdaptorTest {
     protected static final String GRCH37_DBNAME = "cellbase_hsapiens_grch37_v4";
     private static final String MONGODB_CELLBASE_LOADER = "org.opencb.cellbase.lib.loader.MongoDBCellBaseLoader";
     protected CellBaseConfiguration cellBaseConfiguration;
+    protected CellBaseManagerFactory cellBaseManagerFactory;
 
     protected final LoadRunner loadRunner;
-    protected DBAdaptorFactory dbAdaptorFactory;
+    protected MongoDBAdaptorFactory dbAdaptorFactory;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -53,6 +54,7 @@ public class GenericMongoDBAdaptorTest {
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
         dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
+        cellBaseManagerFactory = new CellBaseManagerFactory(cellBaseConfiguration);
     }
 
     protected void clearDB(String dbName) throws Exception {

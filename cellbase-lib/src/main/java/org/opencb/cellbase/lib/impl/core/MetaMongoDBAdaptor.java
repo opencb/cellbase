@@ -17,87 +17,52 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.bson.BsonDocument;
-import org.bson.Document;
-import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Created by fjlopez on 07/06/16.
  */
-public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseDBAdaptor<Document> {
+public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     public MetaMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-
         mongoDBCollection = mongoDataStore.getCollection("metadata");
-
         logger.debug("MetaMongoDBAdaptor: in 'constructor'");
     }
 
     @Override
-    public CellBaseDataResult<Long> count(Query query) {
-        return new CellBaseDataResult<>(mongoDBCollection.count());
-    }
-
-    @Override
-    public CellBaseDataResult distinct(Query query, String field) {
-        return null;
-    }
-
-//    @Override
-//    public CellBaseDataResult stats(Query query) {
-//        return null;
-//    }
-
-    @Override
-    public CellBaseDataResult get(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult nativeGet(AbstractQuery query) {
+    public CellBaseDataResult query(Object query) {
         return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     @Override
-    public CellBaseDataResult nativeGet(Query query, QueryOptions inputOptions) {
-        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), options));
-    }
-
-    @Override
-    public Iterator iterator(Query query, QueryOptions options) {
+    public List<CellBaseDataResult> query(List queries) {
         return null;
     }
 
     @Override
-    public Iterator nativeIterator(Query query, QueryOptions options) {
-        return null;
-    }
-
-//    @Override
-//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-//        return null;
-//    }
-
-    @Override
-    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
+    public Iterator iterator(Object query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
+    public CellBaseDataResult<Long> count(Object query) {
+        return new CellBaseDataResult<>(mongoDBCollection.count());
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
         return null;
     }
 
     @Override
-    public void forEach(Query query, Consumer action, QueryOptions options) { }
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
+    }
 }

@@ -18,14 +18,14 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.RepeatsDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 10/05/17.
  */
-public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAdaptor {
+public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
     private static final String REPEAT_COLLECTION = "repeats";
 
     public RepeatsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDatastore) {
@@ -49,12 +49,10 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
 
     }
 
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult distinct(Query query, String field) {
         return null;
     }
@@ -64,7 +62,6 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
@@ -73,12 +70,12 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
         return new CellBaseDataResult(mongoDBCollection.find(bson, null, Repeat.class, options));
     }
 
-    @Override
-    public CellBaseDataResult nativeGet(AbstractQuery query) {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
+    public List<CellBaseDataResult> nativeGet(List<Query> queries, QueryOptions options) {
+//        return new CellBaseDataResult(mongoDBCollection.find(new BsonDocument(), null));
+        return null;
     }
 
-    @Override
+
     public CellBaseDataResult nativeGet(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
         QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
@@ -87,12 +84,10 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
         return new CellBaseDataResult(mongoDBCollection.find(bson, options));
     }
 
-    @Override
     public Iterator iterator(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         return null;
     }
@@ -102,32 +97,26 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return null;
     }
 
-    @Override
     public void forEach(Query query, Consumer action, QueryOptions options) {
 
     }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult next(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         return null;
     }
@@ -145,4 +134,33 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements RepeatsDBAd
 
     }
 
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    @Override
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
+    }
 }

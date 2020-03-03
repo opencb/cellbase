@@ -23,9 +23,13 @@ import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -36,12 +40,11 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 06/12/16.
  */
-public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDBAdaptor<Variant> {
+public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
     private static final String SEPARATOR = ",";
-
 
     public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -50,12 +53,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
     }
 
-    @Override
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
         return null;
     }
@@ -65,28 +66,23 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         return null;
     }
 
-       @Override
     public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.count(bson));
     }
 
-    @Override
     public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bson));
@@ -97,7 +93,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult<Variant> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
@@ -107,12 +102,10 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
     }
 
-    @Override
     public CellBaseDataResult nativeGet(AbstractQuery query) {
         return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
-    @Override
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         QueryOptions parsedOptions = parseQueryOptions(options, query);
@@ -122,18 +115,15 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, parsedOptions));
     }
 
-    @Override
     public Iterator<Variant> iterator(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
-    @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
         Objects.requireNonNull(action);
         Iterator iterator = nativeIterator(query, options);
@@ -156,14 +146,14 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
             // TODO: Improve
             // numTotalResults cannot be enabled when including multiple clinsig values
             // search is too slow and would otherwise raise timeouts
-            List<String> clinsigList = query.getAsStringList(QueryParams.CLINICALSIGNIFICANCE.key());
+            List<String> clinsigList = query.getAsStringList(ClinicalDBAdaptor.QueryParams.CLINICALSIGNIFICANCE.key());
             if (clinsigList != null && clinsigList.size() > 1) {
                 parsedQueryOptions.put(QueryOptions.SKIP_COUNT, true);
             }
             // TODO: Improve
             // numTotalResults cannot be enabled when including multiple trait values
             // search is too slow and would otherwise raise timeouts
-            List<String> traitList = query.getAsStringList(QueryParams.TRAIT.key());
+            List<String> traitList = query.getAsStringList(ClinicalDBAdaptor.QueryParams.TRAIT.key());
             if (traitList != null && traitList.size() > 1) {
                 parsedQueryOptions.put(QueryOptions.SKIP_COUNT, true);
             }
@@ -174,38 +164,38 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(), andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "annotation.id", andBsonList);
-        createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
-        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
-                "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
-        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
-                "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
-        createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
-        if (query.containsKey(QueryParams.REFERENCE.key())) {
-            createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
+        createRegionQuery(query, ClinicalDBAdaptor.QueryParams.REGION.key(), andBsonList);
+        createOrQuery(query, VariantDBAdaptor.QueryParams.ID.key(), "annotation.id", andBsonList);
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
+        createImprecisePositionQuery(query, ClinicalDBAdaptor.QueryParams.CI_START_LEFT.key(),
+                ClinicalDBAdaptor.QueryParams.CI_START_RIGHT.key(), "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
+        createImprecisePositionQuery(query, ClinicalDBAdaptor.QueryParams.CI_END_LEFT.key(),
+                ClinicalDBAdaptor.QueryParams.CI_END_RIGHT.key(), "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
+        if (query.containsKey(ClinicalDBAdaptor.QueryParams.REFERENCE.key())) {
+            createOrQuery(query.getAsStringList(ClinicalDBAdaptor.QueryParams.REFERENCE.key()), "reference", andBsonList);
         }
-        if (query.containsKey(QueryParams.ALTERNATE.key())) {
-            createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+        if (query.containsKey(ClinicalDBAdaptor.QueryParams.ALTERNATE.key())) {
+            createOrQuery(query.getAsStringList(ClinicalDBAdaptor.QueryParams.ALTERNATE.key()), "alternate", andBsonList);
         }
 
-        createOrQuery(query, QueryParams.FEATURE.key(), "_featureXrefs", andBsonList);
-        createOrQuery(query, QueryParams.SO.key(),
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.FEATURE.key(), "_featureXrefs", andBsonList);
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.SO.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-        createOrQuery(query, QueryParams.SOURCE.key(),
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.SOURCE.key(),
                 "annotation.traitAssociation.source.name", andBsonList);
-        createOrQuery(query, QueryParams.ACCESSION.key(), "annotation.traitAssociation.id", andBsonList);
-        createOrQuery(query, QueryParams.TYPE.key(), "type", andBsonList);
-        createOrQuery(query, QueryParams.CONSISTENCY_STATUS.key(),
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.ACCESSION.key(), "annotation.traitAssociation.id", andBsonList);
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.TYPE.key(), "type", andBsonList);
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.CONSISTENCY_STATUS.key(),
                 "annotation.traitAssociation.consistencyStatus", andBsonList);
-        createOrQuery(query, QueryParams.CLINICALSIGNIFICANCE.key(),
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.CLINICALSIGNIFICANCE.key(),
                 "annotation.traitAssociation.variantClassification.clinicalSignificance", andBsonList);
-        createOrQuery(query, QueryParams.MODE_INHERITANCE.key(),
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.MODE_INHERITANCE.key(),
                 "annotation.traitAssociation.heritableTraits.inheritanceMode", andBsonList);
-        createOrQuery(query, QueryParams.ALLELE_ORIGIN.key(),
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.ALLELE_ORIGIN.key(),
                 "annotation.traitAssociation.alleleOrigin", andBsonList);
 
-        createTraitQuery(query.getString(QueryParams.TRAIT.key()), andBsonList);
+        createTraitQuery(query.getString(ClinicalDBAdaptor.QueryParams.TRAIT.key()), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -234,4 +224,63 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements ClinicalDB
         }
     }
 
+    public CellBaseDataResult<Variant> getByVariant(Variant variant, QueryOptions options) {
+        Query query;
+        if (VariantType.CNV.equals(variant.getType())) {
+            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(VariantDBAdaptor.QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
+                    .append(VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())
+                    .append(VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), variant.getSv().getCiEndLeft())
+                    .append(VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(), variant.getSv().getCiEndRight())
+                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+        } else {
+            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
+                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+        }
+        CellBaseDataResult<Variant> queryResult = get(query, options);
+        queryResult.setId(variant.toString());
+
+        return queryResult;
+    }
+
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions options) {
+        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            results.add(getByVariant(variant, options));
+        }
+        return results;
+    }
+
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    @Override
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
+    }
 }

@@ -16,17 +16,17 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TFManager extends AbstractManager {
 
-    private GeneDBAdaptor geneDBAdaptor;
+    private GeneMongoDBAdaptor geneDBAdaptor;
 
     public TFManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -50,7 +50,7 @@ public class TFManager extends AbstractManager {
         includes.add("transcripts.tfbs.relativeStart");
         includes.add("transcripts.tfbs.relativeEnd");
         includes.add("transcripts.tfbs.score");
-        CellBaseDataResult queryResults = geneDBAdaptor.nativeGet(geneQuery);
+        CellBaseDataResult queryResults = geneDBAdaptor.query(geneQuery);
         return queryResults;
     }
 }

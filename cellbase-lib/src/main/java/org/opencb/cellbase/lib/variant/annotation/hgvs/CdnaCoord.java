@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation.hgvs;
+package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 /**
  * Created by fjlopez on 27/01/17.

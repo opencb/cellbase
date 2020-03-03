@@ -17,7 +17,7 @@
 package org.opencb.cellbase.app.cli.main.annotation;
 
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 
 /**
  * Created by fjlopez on 08/04/16.

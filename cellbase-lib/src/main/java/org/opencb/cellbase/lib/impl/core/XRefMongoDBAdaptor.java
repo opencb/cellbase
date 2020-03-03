@@ -19,13 +19,13 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -39,7 +39,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 07/12/15.
  */
-public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<Xref> {
+public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -63,13 +63,11 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 //        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
 //    }
 
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult(mongoDBCollection.count(bson));
     }
 
-    @Override
     public CellBaseDataResult distinct(Query query, String field) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult(mongoDBCollection.distinct(field, bson));
@@ -80,17 +78,15 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult<Xref> get(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
-    public CellBaseDataResult nativeGet(AbstractQuery query) {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
+    public List<CellBaseDataResult<Document>> nativeGet(List<Query> queries, QueryOptions options) {
+//        return new CellBaseDataResult(mongoDBCollection.find(new BsonDocument(), null));
+        return null;
     }
 
-    @Override
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         Bson match = Aggregates.match(bson);
@@ -105,8 +101,8 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         document.put("dbDisplayName", "$transcripts.xrefs.dbDisplayName");
         Bson project1 = Aggregates.project(document);
 
-        if (query.containsKey(QueryParams.DBNAME.key())) {
-            Bson bson2 = parseQuery(new Query(QueryParams.DBNAME.key(), query.get(QueryParams.DBNAME.key())));
+        if (query.containsKey(XRefDBAdaptor.QueryParams.DBNAME.key())) {
+            Bson bson2 = parseQuery(new Query(XRefDBAdaptor.QueryParams.DBNAME.key(), query.get(XRefDBAdaptor.QueryParams.DBNAME.key())));
             Bson match2 = Aggregates.match(bson2);
             return new CellBaseDataResult(mongoDBCollection.aggregate(
                     Arrays.asList(match, project, unwind, unwind2, match2, project1), options));
@@ -114,12 +110,10 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         return new CellBaseDataResult(mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), options));
     }
 
-    @Override
     public Iterator<Xref> iterator(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options);
@@ -130,17 +124,14 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         return groupBy(parseQuery(query), field, "name", options);
     }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         return groupBy(parseQuery(query), fields, "name", options);
     }
 
-    @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
 
     }
@@ -157,4 +148,34 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements XRefDBAdaptor<
         }
     }
 
+
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    @Override
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
+    }
 }

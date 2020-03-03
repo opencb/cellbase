@@ -22,7 +22,7 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.core.api.core.*;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.impl.core.*;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -41,7 +41,7 @@ import java.util.Iterator;
  */
 public class QueryCommandExecutor extends CommandExecutor {
 
-    private DBAdaptorFactory dbAdaptorFactory;
+    private MongoDBAdaptorFactory dbAdaptorFactory;
 
     private CellBaseCliOptionsParser.QueryCommandOptions queryCommandOptions;
 
@@ -114,7 +114,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeGenomeQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(queryCommandOptions.species);
+        GenomeMongoDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
@@ -133,7 +133,7 @@ public class QueryCommandExecutor extends CommandExecutor {
 
 
     private void executeGeneQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        GeneDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
+        GeneMongoDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
 
         executeFeatureAggregation(geneDBAdaptor, query, queryOptions, output);
 
@@ -148,7 +148,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     }
                     break;
                 case "variation":
-                    VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+                    VariantMongoDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
                     query.append(VariantDBAdaptor.QueryParams.GENE.key(), queryCommandOptions.id);
                     variantDBAdaptor.forEach(query, entry -> {
                         try {
@@ -165,7 +165,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeVariationQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        VariantDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+        VariantMongoDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
 
         executeFeatureAggregation(variantDBAdaptor, query, queryOptions, output);
 
@@ -186,7 +186,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeProteinQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
+        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
             CellBaseDataResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
@@ -224,7 +224,7 @@ public class QueryCommandExecutor extends CommandExecutor {
 
 
     private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        RegulationDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
+        RegulationMongoDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
@@ -243,7 +243,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        TranscriptDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
+        TranscriptMongoDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
@@ -261,20 +261,21 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void executeFeatureAggregation(FeatureDBAdaptor featureDBAdaptor, Query query, QueryOptions queryOptions, PrintStream output)
+    private void executeFeatureAggregation(CellBaseMongoDBAdaptor featureDBAdaptor, Query query, QueryOptions queryOptions,
+                                           PrintStream output)
             throws JsonProcessingException {
 
-        if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
-            CellBaseDataResult distinct = featureDBAdaptor.distinct(query, queryCommandOptions.distinct);
-            output.println(objectMapper.writeValueAsString(distinct));
-            return;
-        }
+//        if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
+//            CellBaseDataResult distinct = featureDBAdaptor.distinct(query, queryCommandOptions.distinct);
+//            output.println(objectMapper.writeValueAsString(distinct));
+//            return;
+//        }
 
-        if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
-            CellBaseDataResult groupBy = featureDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
-            output.println(objectMapper.writeValueAsString(groupBy));
-            return;
-        }
+//        if (queryCommandOptions.groupBy != null && !queryCommandOptions.groupBy.isEmpty()) {
+//            CellBaseDataResult groupBy = featureDBAdaptor.groupBy(query, queryCommandOptions.groupBy, queryOptions);
+//            output.println(objectMapper.writeValueAsString(groupBy));
+//            return;
+//        }
 
         if (queryCommandOptions.count) {
             CellBaseDataResult count = featureDBAdaptor.count(query);
@@ -282,11 +283,11 @@ public class QueryCommandExecutor extends CommandExecutor {
             return;
         }
 
-        if (queryCommandOptions.histogram) {
-            CellBaseDataResult histogram = featureDBAdaptor.getIntervalFrequencies(query, queryCommandOptions.interval, queryOptions);
-            output.println(objectMapper.writeValueAsString(histogram));
-            return;
-        }
+//        if (queryCommandOptions.histogram) {
+//            CellBaseDataResult histogram = featureDBAdaptor.getIntervalFrequencies(query, queryCommandOptions.interval, queryOptions);
+//            output.println(objectMapper.writeValueAsString(histogram));
+//            return;
+//        }
 
     }
 

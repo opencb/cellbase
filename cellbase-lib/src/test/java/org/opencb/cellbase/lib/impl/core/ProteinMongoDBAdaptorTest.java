@@ -54,7 +54,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void get() throws Exception {
-        ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
+        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions(QueryOptions.EXCLUDE, new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         queryOptions.put(QueryOptions.LIMIT, 3);
         queryOptions.put(QueryOptions.INCLUDE, "accession,name");
@@ -72,7 +72,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void nativeGet() throws Exception {
-        ProteinDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
+        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions(QueryOptions.LIMIT, 3);
         CellBaseDataResult<Document> CellBaseDataResult = proteinDBAdaptor.nativeGet(new Query(), queryOptions);
         assertEquals(CellBaseDataResult.getResults().size(), 3);

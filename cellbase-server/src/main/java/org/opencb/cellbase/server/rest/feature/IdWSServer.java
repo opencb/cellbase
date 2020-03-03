@@ -18,6 +18,7 @@ package org.opencb.cellbase.server.rest.feature;
 
 import io.swagger.annotations.*;
 import org.bson.Document;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -172,7 +173,7 @@ public class IdWSServer extends GenericRestWSServer {
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
             parseQueryParams();
-            List<CellBaseDataResult> queryResults = geneManager.getGeneByEnsemblId(id);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.getGeneByEnsemblId(id);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -21,16 +21,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.cellbase.core.api.core.*;
+import org.opencb.cellbase.core.DatastoreStatus;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.DatastoreStatus;
-import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -43,8 +44,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class MongoDBAdaptorFactory extends DBAdaptorFactory {
+public class MongoDBAdaptorFactory {
 
+    protected CellBaseConfiguration cellBaseConfiguration;
+    protected Logger logger;
     private static final String CELLBASE_DB_MONGODB_REPLICASET = "CELLBASE.DB.MONGODB.REPLICASET";
     private static final String SERVER_ADDRESS = "serverAddress";
     private static final String MEMBERS = "members";
@@ -62,7 +65,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     private static Map<String, MongoDataStoreManager> memberDataStoreManagerMap = new HashMap<>();
 
     public MongoDBAdaptorFactory(CellBaseConfiguration cellBaseConfiguration) {
-        super(cellBaseConfiguration);
+        this.cellBaseConfiguration = cellBaseConfiguration;
         init();
     }
 
@@ -116,6 +119,34 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         }
         return mongoDataStore;
     }
+
+    // TODO replace with method from SpeciesUtils. We shouldn't have this logic in multiple places
+    protected SpeciesConfiguration getSpecies(String speciesName) {
+        SpeciesConfiguration species = null;
+        for (SpeciesConfiguration sp : cellBaseConfiguration.getAllSpecies()) {
+            if (speciesName.equalsIgnoreCase(sp.getId()) || speciesName.equalsIgnoreCase(sp.getScientificName())) {
+                species = sp;
+                break;
+            }
+        }
+        return species;
+    }
+
+    // TODO replace with method from SpeciesUtils. We shouldn't have this logic in multiple places
+    protected String getAssembly(SpeciesConfiguration speciesConfiguration, String assemblyName) {
+        String assembly = null;
+        if (assemblyName == null || assemblyName.isEmpty()) {
+            assembly = speciesConfiguration.getAssemblies().get(0).getName();
+        } else {
+            for (SpeciesConfiguration.Assembly assembly1 : speciesConfiguration.getAssemblies()) {
+                if (assemblyName.equalsIgnoreCase(assembly1.getName())) {
+                    assembly = assembly1.getName();
+                }
+            }
+        }
+        return assembly;
+    }
+
 
     private MongoDataStore createMongoDBDatastore(String species, String assembly) {
         /**
@@ -217,18 +248,14 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return mongoDatastore;
     }
 
-
-    @Override
     public void open(String species, String assembly) {
 
     }
 
-    @Override
     public void close() {
         mongoDataStoreManager.close();
     }
 
-    @Override
     public Map<String, DatastoreStatus> getDatabaseStatus(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         try {
@@ -285,9 +312,11 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     }
 
     private String getDataResponseTime(String species, String assembly) {
-        GeneDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
+        GeneMongoDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
         try {
-            CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.first();
+            GeneQuery geneQuery = new GeneQuery();
+            geneQuery.setLimit(1);
+            CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
             // Query must return one gene. Otherwise there's a problem
             if (cellBaseDataResult.getNumResults() == 1) {
                 return cellBaseDataResult.getTime() + "ms";
@@ -318,135 +347,109 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return null;
     }
 
-    @Override
-    public GenomeDBAdaptor getGenomeDBAdaptor(String species) {
+    public GenomeMongoDBAdaptor getGenomeDBAdaptor(String species) {
         return getGenomeDBAdaptor(species, null);
     }
 
-    @Override
-    public GenomeDBAdaptor getGenomeDBAdaptor(String species, String assembly) {
+    public GenomeMongoDBAdaptor getGenomeDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new GenomeMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    @Override
-    public CellBaseDBAdaptor<Document> getMetaDBAdaptor(String species) {
+    public MetaMongoDBAdaptor getMetaDBAdaptor(String species) {
         return getMetaDBAdaptor(species, null);
     }
 
-    @Override
-    public CellBaseDBAdaptor<Document> getMetaDBAdaptor(String species, String assembly) {
+    public MetaMongoDBAdaptor getMetaDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new MetaMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    @Override
-    public GeneDBAdaptor getGeneDBAdaptor(String species) {
+    public GeneMongoDBAdaptor getGeneDBAdaptor(String species) {
         return getGeneDBAdaptor(species, null);
     }
 
-    @Override
-    public GeneDBAdaptor getGeneDBAdaptor(String species, String assembly) {
+    public GeneMongoDBAdaptor getGeneDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
         return geneMongoDBAdaptor;
     }
 
-
-    @Override
-    public TranscriptDBAdaptor getTranscriptDBAdaptor(String species) {
+    public TranscriptMongoDBAdaptor getTranscriptDBAdaptor(String species) {
         return getTranscriptDBAdaptor(species, null);
     }
 
-    @Override
-    public TranscriptDBAdaptor getTranscriptDBAdaptor(String species, String assembly) {
+    public TranscriptMongoDBAdaptor getTranscriptDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new TranscriptMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
-    @Override
-    public ConservationDBAdaptor getConservationDBAdaptor(String species) {
+    public ConservationMongoDBAdaptor getConservationDBAdaptor(String species) {
         return getConservationDBAdaptor(species, null);
     }
 
-    @Override
-    public ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly) {
+    public ConservationMongoDBAdaptor getConservationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
-    @Override
-    public XRefDBAdaptor getXRefDBAdaptor(String species) {
+    public XRefMongoDBAdaptor getXRefDBAdaptor(String species) {
         return getXRefDBAdaptor(species, null);
     }
 
-    @Override
-    public XRefDBAdaptor getXRefDBAdaptor(String species, String assembly) {
+    public XRefMongoDBAdaptor getXRefDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new XRefMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
-    @Override
-    public VariantDBAdaptor getVariationDBAdaptor(String species) {
+    public VariantMongoDBAdaptor getVariationDBAdaptor(String species) {
         return getVariationDBAdaptor(species, null);
     }
 
-    @Override
-    public VariantDBAdaptor getVariationDBAdaptor(String species, String assembly) {
+    public VariantMongoDBAdaptor getVariationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    @Override
-    public ClinicalDBAdaptor getClinicalDBAdaptor(String species) {
+    public ClinicalMongoDBAdaptor getClinicalDBAdaptor(String species) {
         return getClinicalDBAdaptor(species, null);
     }
 
-    @Override
-    public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
+    public ClinicalMongoDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    @Override
-    public RepeatsDBAdaptor getRepeatsDBAdaptor(String species, String assembly) {
+    public RepeatsMongoDBAdaptor getRepeatsDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new RepeatsMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    @Override
-    public ProteinDBAdaptor getProteinDBAdaptor(String species) {
+    public ProteinMongoDBAdaptor getProteinDBAdaptor(String species) {
         return getProteinDBAdaptor(species, null);
     }
 
-    @Override
-    public ProteinDBAdaptor getProteinDBAdaptor(String species, String assembly) {
+    public ProteinMongoDBAdaptor getProteinDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
+//    @Override
+//    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {
+//        return getProteinProteinInteractionDBAdaptor(species, null);
+//    }
+//
+//    @Override
+//    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly) {
+//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+//        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
+//    }
 
-    @Override
-    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {
-        return getProteinProteinInteractionDBAdaptor(species, null);
-    }
-
-    @Override
-    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
-    }
-
-    @Override
-    public RegulationDBAdaptor getRegulationDBAdaptor(String species) {
+    public RegulationMongoDBAdaptor getRegulationDBAdaptor(String species) {
         return getRegulationDBAdaptor(species, null);
     }
 
-    @Override
-    public RegulationDBAdaptor getRegulationDBAdaptor(String species, String assembly) {
+    public RegulationMongoDBAdaptor getRegulationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new RegulationMongoDBAdaptor(species, assembly, mongoDatastore);
     }

@@ -409,7 +409,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 geneQuery.setTranscriptsXrefs(Arrays.asList(identifier));
                 geneQueries.add(geneQuery);
             }
-            List<CellBaseDataResult> queryResults = geneManager.info(geneQueries);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -511,7 +511,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            CellBaseDataResult<Gene> queryResults = geneManager.distinct(geneQuery);
+            CellBaseDataResult<String> queryResults = geneManager.distinct(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

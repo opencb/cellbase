@@ -17,11 +17,9 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +30,7 @@ public class AbstractManager {
 
     protected CellBaseConfiguration configuration;
     protected CellBaseManagerFactory managers;
-    protected DBAdaptorFactory dbAdaptorFactory;
+    protected MongoDBAdaptorFactory dbAdaptorFactory;
     protected static ObjectWriter jsonObjectWriter;
 
     protected String species;
@@ -70,8 +68,6 @@ public class AbstractManager {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-//    public abstract CellBaseDataResult<M> search (Q query);
-
     protected List<Query> createQueries(Query query, String csvField, String queryKey, String... args) {
         String[] ids = csvField.split(",");
         List<Query> queries = new ArrayList<>(ids.length);
@@ -86,15 +82,5 @@ public class AbstractManager {
             queries.add(q);
         }
         return queries;
-    }
-
-    public boolean hasHistogramQueryParam(QueryOptions queryOptions) {
-        // FIXME
-        return true;
-    }
-
-    public int getHistogramIntervalSize(QueryOptions queryOptions) {
-        // FIXME
-        return 0;
     }
 }

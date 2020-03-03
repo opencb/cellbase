@@ -17,12 +17,10 @@
 package org.opencb.cellbase.lib;
 
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.loader.LoadRunner;
-import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +39,6 @@ public class SpeciesUtilsTest {
     protected CellBaseConfiguration cellBaseConfiguration;
 
     protected final LoadRunner loadRunner;
-    protected DBAdaptorFactory dbAdaptorFactory;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -49,7 +46,6 @@ public class SpeciesUtilsTest {
         cellBaseConfiguration = CellBaseConfiguration.load(
                 SpeciesUtilsTest.class.getClassLoader().getResourceAsStream("configuration.test.yaml"),
                 CellBaseConfiguration.ConfigurationFileFormat.YAML);
-        dbAdaptorFactory = new MongoDBAdaptorFactory(cellBaseConfiguration);
         loadRunner = new LoadRunner(MONGODB_CELLBASE_LOADER, GRCH37_DBNAME, 2, cellBaseConfiguration);
     }
 

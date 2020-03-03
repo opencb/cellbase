@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.Variant;
@@ -23,8 +23,6 @@ import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailabl
 import org.opencb.biodata.models.variant.avro.*;
 
 import java.util.*;
-
-import static org.apache.tools.ant.taskdefs.Antlib.TAG;
 
 /**
  * Created by fjlopez on 22/06/15.

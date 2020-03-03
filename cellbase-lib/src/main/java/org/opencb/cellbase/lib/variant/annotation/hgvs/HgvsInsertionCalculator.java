@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation.hgvs;
+package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -33,8 +34,8 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
     private static final String INS = "ins";
     private static final String DUP = "dup";
 
-    public HgvsInsertionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
-        super(genomeDBAdaptor);
+    public HgvsInsertionCalculator(GenomeManager genomeManager) {
+        super(genomeManager);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class HgvsInsertionCalculator extends HgvsCalculator {
         int end = variant.getStart() + NEIGHBOURING_SEQUENCE_SIZE;                 // TODO: might need to adjust +-1 nt
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
-        String genomicSequence = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
+        String genomicSequence = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());

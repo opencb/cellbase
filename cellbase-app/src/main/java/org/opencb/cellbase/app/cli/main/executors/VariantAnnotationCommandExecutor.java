@@ -36,23 +36,24 @@ import org.opencb.biodata.tools.variant.VariantJsonReader;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.cellbase.app.cli.CommandExecutor;
+import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.app.cli.main.annotation.*;
 import org.opencb.cellbase.app.cli.main.annotation.indexers.CustomAnnotationVariantIndexer;
 import org.opencb.cellbase.app.cli.main.annotation.indexers.PopulationFrequencyVariantIndexer;
 import org.opencb.cellbase.app.cli.main.annotation.indexers.VariantIndexer;
-import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.client.rest.CellBaseClient;
-import org.opencb.cellbase.core.api.core.DBAdaptorFactory;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
-import org.opencb.cellbase.core.variant.annotation.CellBaseNormalizerSequenceAdaptor;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
+import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
+import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.ProgressLogger;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.ParallelTaskRunner;
@@ -112,7 +113,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     // Only options meant to be sent to the server should be included in this serverQueryOptions
     private QueryOptions serverQueryOptions;
 
-    private DBAdaptorFactory dbAdaptorFactory = null;
+    private MongoDBAdaptorFactory dbAdaptorFactory = null;
 
     private final int QUEUE_CAPACITY = 10;
     private final String TMP_DIR = "/tmp/";
@@ -191,7 +192,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     }
 
     private List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
-    getBenchmarkTaskList(FastaIndexManager fastaIndexManager) throws IOException {
+    getBenchmarkTaskList(FastaIndexManager fastaIndexManager) throws IOException, CellbaseException {
         List<ParallelTaskRunner.TaskWithException<VariantAnnotation, Pair<VariantAnnotationDiff, VariantAnnotationDiff>, Exception>>
                 benchmarkTaskList = new ArrayList<>(numThreads);
         for (int i = 0; i < numThreads; i++) {
@@ -209,9 +210,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             if (variantAnnotationCommandOptions.variant != null && !variantAnnotationCommandOptions.variant.isEmpty()) {
                 List<Variant> variants = Variant.parseVariants(variantAnnotationCommandOptions.variant);
                 if (local) {
-                    DBAdaptorFactory dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+                    CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                     VariantAnnotationCalculator variantAnnotationCalculator =
-                            new VariantAnnotationCalculator(this.species, this.assembly, dbAdaptorFactory);
+                            new VariantAnnotationCalculator(this.species, this.assembly, cellBaseManagerFactory);
                     List<CellBaseDataResult<VariantAnnotation>> annotationByVariantList =
                             variantAnnotationCalculator.getAnnotationByVariantList(variants, serverQueryOptions);
 
@@ -285,11 +286,11 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return false;
     }
 
-    private VariantReader getVariantReader(Path input) throws IOException {
+    private VariantReader getVariantReader(Path input) throws IOException, CellbaseException {
         return getVariantReader(input, serverQueryOptions.getBoolean("ignorePhase"));
     }
 
-    private VariantReader getVariantReader(Path input, boolean ignorePhase) throws IOException {
+    private VariantReader getVariantReader(Path input, boolean ignorePhase) throws IOException, CellbaseException {
         // Leaving variantNormalizer = null if CLI indicates to skip normalisation. If no normalizer is provided to
         // the readers they will NOT perform normalisation
         VariantNormalizer variantNormalizer = normalize ? new VariantNormalizer(getNormalizerConfig()) : null;
@@ -362,7 +363,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         } else {
             logger.info("Getting full list of chromosome names in the database");
             dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
-            GenomeDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
+            GenomeMongoDBAdaptor genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
             CellBaseDataResult cellBaseDataResult = genomeDBAdaptor.getGenomeInfo(new QueryOptions("include", "chromosomes.name"));
 
             List<Document> chromosomeDocumentList = (List<Document>) ((List<Document>) cellBaseDataResult
@@ -390,7 +391,8 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return dataWriter;
     }
 
-    private List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> getVariantAnnotatorTaskList() throws IOException {
+    private List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> getVariantAnnotatorTaskList()
+            throws IOException, CellbaseException {
         List<ParallelTaskRunner.TaskWithException<Variant, Variant, Exception>> variantAnnotatorTaskList = new ArrayList<>(numThreads);
 
         for (int i = 0; i < numThreads; i++) {
@@ -400,7 +402,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorTaskList;
     }
 
-    private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() throws IOException {
+    private VariantNormalizer.VariantNormalizerConfig getNormalizerConfig() throws IOException, CellbaseException {
         VariantNormalizer.VariantNormalizerConfig variantNormalizerConfig = (new VariantNormalizer.VariantNormalizerConfig())
                 .setReuseVariants(true)
                 .setNormalizeAlleles(false)
@@ -417,9 +419,9 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
                 if (dbAdaptorFactory == null) {
                     dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
                 }
+                CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
                 return variantNormalizerConfig
-                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(dbAdaptorFactory
-                                .getGenomeDBAdaptor(species, assembly)));
+                        .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(cellBaseManagerFactory.getGenomeManager(species, assembly)));
             }
         }
         return variantNormalizerConfig;
@@ -437,7 +439,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         }
     }
 
-    private List<VariantAnnotator> createAnnotators() {
+    private List<VariantAnnotator> createAnnotators() throws CellbaseException {
         List<VariantAnnotator> variantAnnotatorList;
         variantAnnotatorList = new ArrayList<>();
 
@@ -468,7 +470,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
         return variantAnnotatorList;
     }
 
-    private VariantAnnotator createCellBaseAnnotator() {
+    private VariantAnnotator createCellBaseAnnotator() throws CellbaseException {
         // Assume annotation of CellBase variation collection will always be carried out from a local installation
         if (local || cellBaseAnnotation) {
             // dbAdaptorFactory may have been already initialized at execute if annotating CellBase variation collection
@@ -479,7 +481,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
             // corresponding *AnnotatorTask since the AnnotatorTasks need that the number of sent variants coincides
             // equals the number of returned annotations
             return new CellBaseLocalVariantAnnotator(new VariantAnnotationCalculator(species, assembly,
-                    dbAdaptorFactory), serverQueryOptions);
+                    new CellBaseManagerFactory(configuration)), serverQueryOptions);
         } else {
             try {
                 ClientConfiguration clientConfiguration = ClientConfiguration.load(getClass()
@@ -504,7 +506,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
 
     }
 
-    private void getIndexes() throws IOException, RocksDBException {
+    private void getIndexes() throws IOException, RocksDBException, CellbaseException {
         variantIndexerList = new ArrayList<>();
 
         // Index custom files if provided

@@ -16,17 +16,21 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.core.RepeatsDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.RepeatsMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RepeatsManager extends AbstractManager {
 
-    private RepeatsDBAdaptor repeatsDBAdaptor;
+    private RepeatsMongoDBAdaptor repeatsDBAdaptor;
 
     public RepeatsManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -37,6 +41,11 @@ public class RepeatsManager extends AbstractManager {
         repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
     }
 
+    public CellBaseDataResult getByRegion(Region region, QueryOptions options) {
+        Query query = new Query("region", region.toString());
+        return repeatsDBAdaptor.get(query, options);
+    }
+
     public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
         List<Query> queries = createQueries(query, region, RepeatsDBAdaptor.QueryParams.REGION.key());
         List<CellBaseDataResult> queryResults = repeatsDBAdaptor.nativeGet(queries, queryOptions);
@@ -44,5 +53,14 @@ public class RepeatsManager extends AbstractManager {
             queryResults.get(i).setId((String) queries.get(i).get(RepeatsDBAdaptor.QueryParams.REGION.key()));
         }
         return queryResults;
+    }
+
+    public List<CellBaseDataResult<Repeat>> getByRegion(List<Region> regions, QueryOptions options) {
+        List<CellBaseDataResult<Repeat>> results = new ArrayList<>(regions.size());
+        for (Region region : regions) {
+            Query query = new Query("region", region.toString());
+            results.add(repeatsDBAdaptor.get(query, options));
+        }
+        return results;
     }
 }

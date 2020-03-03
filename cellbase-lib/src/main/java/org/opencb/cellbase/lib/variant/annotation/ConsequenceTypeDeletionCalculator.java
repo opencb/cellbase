@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -23,13 +23,13 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.opencb.cellbase.core.db.api.core.GenomeDBAdaptor;
 
 /**
  * Created by fjlopez on 05/08/15.
@@ -38,9 +38,9 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
     private boolean isBigDeletion;
 //    private GenomeDBAdaptor genomeDBAdaptor;
 
-    public ConsequenceTypeDeletionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
+    public ConsequenceTypeDeletionCalculator(GenomeManager genomeManager) {
         super();
-        this.genomeDBAdaptor = genomeDBAdaptor;
+        this.genomeManager = genomeManager;
     }
 
     @Override
@@ -210,7 +210,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     substitutingNt = VariantAnnotationUtils.COMPLEMENTARY_NT
-                            .get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResults().get(0)
+                            .get(genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0)
                                     .getSequence().charAt(0));
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
@@ -319,7 +319,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                     Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
-                    substitutingNt = genomeDBAdaptor
+                    substitutingNt = genomeManager
                             .getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0);
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
@@ -428,7 +428,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.
-                            get(genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0));
+                            get(genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0));
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position
                     modifiedCodonArray[codonPosition] = VariantAnnotationUtils.COMPLEMENTARY_NT.get(reverseTranscriptSequence.charAt(i));
@@ -530,7 +530,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
                     Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                             + ":" + genomicCoordinate
                             + "-" + (genomicCoordinate + 1));
-                    modifiedCodonArray[codonPosition] = genomeDBAdaptor
+                    modifiedCodonArray[codonPosition] = genomeManager
                             .getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0);
                 } else {
                     // Paste reference nts after deletion in the corresponding codon position

@@ -22,7 +22,6 @@ import com.mongodb.QueryBuilder;
 import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.model.Filters;
 import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
@@ -30,12 +29,13 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -47,7 +47,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 26/11/15.
  */
-public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAdaptor<Variant> {
+public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final String ANNOTATION_FIELD = "annotation";
@@ -87,20 +87,17 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //        return cellBaseDataResult;
 //    }
 
-    @Override
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
-        if (query.getString(QueryParams.REGION.key()) != null) {
-            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
+        if (query.getString(VariantDBAdaptor.QueryParams.REGION.key()) != null) {
+            Region region = Region.parseRegion(query.getString(VariantDBAdaptor.QueryParams.REGION.key()));
             Bson bsonDocument = parseQuery(query);
             return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
         }
@@ -124,13 +121,11 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         return nLoadedObjects;
     }
 
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         Bson document = parseQuery(query);
         return new CellBaseDataResult(mongoDBCollection.count(document));
     }
 
-    @Override
     public CellBaseDataResult distinct(Query query, String field) {
         Bson document = parseQuery(query);
         return new CellBaseDataResult(mongoDBCollection.distinct(field, document));
@@ -141,7 +136,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult<Variant> get(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
@@ -172,12 +166,10 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         return options;
     }
 
-    @Override
-    public CellBaseDataResult nativeGet(AbstractQuery query) {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
+    public List<CellBaseDataResult> nativeGet(List<Query> queries, QueryOptions options) {
+        return null;
     }
 
-    @Override
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
 //        options.put(MongoDBCollection.SKIP_COUNT, true);
@@ -185,7 +177,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         return new CellBaseDataResult(mongoDBCollection.find(bson, options));
     }
 
-    @Override
     public Iterator<Variant> iterator(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
         // FIXME
@@ -193,13 +184,11 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, inputOptions));
     }
 
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
-    @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
         Objects.requireNonNull(action);
         Iterator iterator = nativeIterator(query, options);
@@ -213,13 +202,11 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
     }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
@@ -228,30 +215,31 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createOrQuery(query, QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
-        createOrQuery(query, QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
-        createOrQuery(query, QueryParams.END.key(), "end", andBsonList, QueryValueType.INTEGER);
-        if (query.containsKey(QueryParams.REFERENCE.key())) {
-            createOrQuery(query.getAsStringList(QueryParams.REFERENCE.key()), "reference", andBsonList);
+        createOrQuery(query, VariantDBAdaptor.QueryParams.CHROMOSOME.key(), "chromosome", andBsonList);
+        createOrQuery(query, VariantDBAdaptor.QueryParams.START.key(), "start", andBsonList, QueryValueType.INTEGER);
+        createOrQuery(query, VariantDBAdaptor.QueryParams.END.key(), "end", andBsonList, QueryValueType.INTEGER);
+        if (query.containsKey(VariantDBAdaptor.QueryParams.REFERENCE.key())) {
+            createOrQuery(query.getAsStringList(VariantDBAdaptor.QueryParams.REFERENCE.key()), "reference", andBsonList);
         }
-        if (query.containsKey(QueryParams.ALTERNATE.key())) {
-            createOrQuery(query.getAsStringList(QueryParams.ALTERNATE.key()), "alternate", andBsonList);
+        if (query.containsKey(VariantDBAdaptor.QueryParams.ALTERNATE.key())) {
+            createOrQuery(query.getAsStringList(VariantDBAdaptor.QueryParams.ALTERNATE.key()), "alternate", andBsonList);
         }
-        createRegionQuery(query, VariantMongoDBAdaptor.QueryParams.REGION.key(),
+        createRegionQuery(query, VariantDBAdaptor.QueryParams.REGION.key(),
                 MongoDBCollectionConfiguration.VARIATION_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+        createOrQuery(query, VariantDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
 
-        createImprecisePositionQuery(query, QueryParams.CI_START_LEFT.key(), QueryParams.CI_START_RIGHT.key(),
+        createImprecisePositionQuery(query, VariantDBAdaptor.QueryParams.CI_START_LEFT.key(),
+                VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(),
                 "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
-        createImprecisePositionQuery(query, QueryParams.CI_END_LEFT.key(), QueryParams.CI_END_RIGHT.key(),
+        createImprecisePositionQuery(query, VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(),
                 "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
 
-        createTypeQuery(query, QueryParams.TYPE.key(), QueryParams.SV_TYPE.key(), "type",
+        createTypeQuery(query, VariantDBAdaptor.QueryParams.TYPE.key(), VariantDBAdaptor.QueryParams.SV_TYPE.key(), "type",
                 "sv.type", andBsonList);
 
-        createOrQuery(query, VariantMongoDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
+        createOrQuery(query, VariantDBAdaptor.QueryParams.CONSEQUENCE_TYPE.key(),
                 "annotation.consequenceTypes.sequenceOntologyTerms.name", andBsonList);
-        createGeneOrQuery(query, VariantMongoDBAdaptor.QueryParams.GENE.key(), andBsonList);
+        createGeneOrQuery(query, VariantDBAdaptor.QueryParams.GENE.key(), andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -450,7 +438,6 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
         dbObject.put("_chunkIds", chunkIds);
     }
 
-    @Override
     public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions) {
         String chromosome = variant.getChromosome();
         int position = variant.getStart();
@@ -562,11 +549,92 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements VariantDBAd
             results.add(getByVariant(variant, queryOptions));
         }
 
-        if (queryOptions.get(QueryParams.PHASE.key()) != null && queryOptions.getBoolean(QueryParams.PHASE.key())) {
+        if (queryOptions.get(VariantDBAdaptor.QueryParams.PHASE.key()) != null && queryOptions.getBoolean(
+                VariantDBAdaptor.QueryParams.PHASE.key())) {
             results = populationFrequencyPhasedQueryManager.run(variants, results);
 
         }
         return results;
     }
 
+    CellBaseDataResult getByVariant(Variant variant, QueryOptions options) {
+        Query query;
+//        if (VariantType.CNV.equals(variant.getType())) {
+
+        // Queries for CNVs,SVs are different from simple short variants queries
+        if (variant.getSv() != null
+                && variant.getSv().getCiStartLeft() != null
+                && variant.getSv().getCiStartRight() != null
+                && variant.getSv().getCiEndLeft() != null
+                && variant.getSv().getCiEndRight() != null) {
+            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome());
+            // Imprecise queries can just be enabled for structural variants providing CIPOS positions. Imprecise queries
+            // can be disabled by using the imprecise=false query option
+            if (options.get(VariantDBAdaptor.QueryParams.IMPRECISE.key()) == null || (Boolean) options.get(
+                    VariantDBAdaptor.QueryParams.IMPRECISE.key())) {
+                int ciStartLeft = variant.getSv().getCiStartLeft();
+                int ciStartRight = variant.getSv().getCiStartRight();
+                int ciEndLeft = variant.getSv().getCiEndLeft();
+                int ciEndRight = variant.getSv().getCiEndRight();
+                query.append(VariantDBAdaptor.QueryParams.CI_START_LEFT.key(), ciStartLeft)
+                        .append(VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(), ciStartRight)
+                        .append(VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), ciEndLeft)
+                        .append(VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(), ciEndRight);
+                // Exact query for start/end
+            } else {
+                query.append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart());
+                query.append(VariantDBAdaptor.QueryParams.END.key(), variant.getStart());
+            }
+            // CNVs must always be matched against COPY_NUMBER_GAIN/COPY_NUMBER_LOSS when searching - if provided
+            if (VariantType.CNV.equals(variant.getType()) && variant.getSv().getType() != null) {
+                query.append(VariantDBAdaptor.QueryParams.SV_TYPE.key(), variant.getSv().getType().toString());
+            }
+            query.append(VariantDBAdaptor.QueryParams.TYPE.key(), variant.getType().toString());
+            // simple short variant query; This will be the query run in more than 99% of the cases
+        } else {
+            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
+                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+        }
+        return get(query, options);
+    }
+
+    private List<CellBaseDataResult> getByVariant(List<Variant> variants, QueryOptions options) {
+        List<CellBaseDataResult> results = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            results.add(getByVariant(variant, options));
+        }
+        return results;
+    }
+
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    @Override
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
+    }
 }

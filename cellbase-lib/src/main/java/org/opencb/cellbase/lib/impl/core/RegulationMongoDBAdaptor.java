@@ -16,17 +16,14 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.Region;
-import org.opencb.biodata.models.core.RegulatoryFeature;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -34,12 +31,11 @@ import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements RegulationDBAdaptor<RegulatoryFeature> {
+public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -49,110 +45,135 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements Regulati
     }
 
 
-    @Override
-    public CellBaseDataResult<RegulatoryFeature> next(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
-        return null;
-    }
-
 //    @Override
-//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
+//    public CellBaseDataResult<RegulatoryFeature> next(Query query, QueryOptions options) {
 //        return null;
 //    }
-
-    @Override
-    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-        Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, field, "name", options);
-    }
-
-    @Override
-    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, fields, "name", options);
-    }
-
-    @Override
-    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
-        if (query.getString(QueryParams.REGION.key()) != null) {
-            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
-            Bson bsonDocument = parseQuery(query);
-            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
-        }
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<Long> count(Query query) {
-        Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
-    }
-
-    @Override
-    public CellBaseDataResult distinct(Query query, String field) {
-        Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
-    }
+//
+//    @Override
+//    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
+//        return null;
+//    }
+//
+//    @Override
+//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
+//        Bson bsonQuery = parseQuery(query);
+//        return groupBy(bsonQuery, field, "name", options);
+//    }
+//
+//    @Override
+//    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
+//        Bson bsonQuery = parseQuery(query);
+//        return groupBy(bsonQuery, fields, "name", options);
+//    }
+//
+//    @Override
+//    public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
+//        if (query.getString(QueryParams.REGION.key()) != null) {
+//            Region region = Region.parseRegion(query.getString(QueryParams.REGION.key()));
+//            Bson bsonDocument = parseQuery(query);
+//            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+//        }
+//        return null;
+//    }
+//
+//    @Override
+//    public CellBaseDataResult<Long> count(Query query) {
+//        Bson bsonDocument = parseQuery(query);
+//        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
+//    }
+//
+//    @Override
+//    public CellBaseDataResult distinct(Query query, String field) {
+//        Bson bsonDocument = parseQuery(query);
+//        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
+//    }
 
 //    @Override
 //    public CellBaseDataResult stats(Query query) {
 //        return null;
 //    }
 
-    @Override
-    public CellBaseDataResult<RegulatoryFeature> get(Query query, QueryOptions inputOptions) {
-        Bson bson = parseQuery(query);
-        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
-        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, RegulatoryFeature.class, options));
-    }
+//    @Override
+//    public CellBaseDataResult<RegulatoryFeature> get(Query query, QueryOptions inputOptions) {
+//        Bson bson = parseQuery(query);
+//        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
+//        logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+//        return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, RegulatoryFeature.class, options));
+//    }
+//
+//    @Override
+//    public CellBaseDataResult nativeGet(AbstractQuery query) {
+//        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
+//    }
+//
+//    @Override
+//    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
+//        Bson bson = parseQuery(query);
+//        return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
+//    }
+//
+//    @Override
+//    public Iterator<RegulatoryFeature> iterator(Query query, QueryOptions options) {
+//        return null;
+//    }
 
-    @Override
-    public CellBaseDataResult nativeGet(AbstractQuery query) {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
-    }
 
-    @Override
-    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
-    }
-
-    @Override
-    public Iterator<RegulatoryFeature> iterator(Query query, QueryOptions options) {
-        return null;
-    }
-
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
-
-    @Override
-    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
-
-    }
+//
+//    @Override
+//    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
+//
+//    }
 
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(query, QueryParams.REGION.key(), MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
+        createRegionQuery(query, RegulationDBAdaptor.QueryParams.REGION.key(),
+                MongoDBCollectionConfiguration.REGULATORY_REGION_CHUNK_SIZE, andBsonList);
 
-        createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "featureType", andBsonList);
-        createOrQuery(query, QueryParams.FEATURE_CLASS.key(), "featureClass", andBsonList);
-        createOrQuery(query, QueryParams.CELL_TYPES.key(), "cellTypes", andBsonList);
-        createOrQuery(query, QueryParams.SCORE.key(), "score", andBsonList);
+        createOrQuery(query, RegulationDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(query, RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), "featureType", andBsonList);
+        createOrQuery(query, RegulationDBAdaptor.QueryParams.FEATURE_CLASS.key(), "featureClass", andBsonList);
+        createOrQuery(query, RegulationDBAdaptor.QueryParams.CELL_TYPES.key(), "cellTypes", andBsonList);
+        createOrQuery(query, RegulationDBAdaptor.QueryParams.SCORE.key(), "score", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
         }
+    }
+
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
     }
 }
 

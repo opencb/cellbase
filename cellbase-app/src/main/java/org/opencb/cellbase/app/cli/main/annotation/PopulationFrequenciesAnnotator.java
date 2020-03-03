@@ -24,7 +24,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.rocksdb.RocksDB;

@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 25/11/15.
  */
+@Deprecated
 public interface CellBaseDBAdaptor<T, Q> extends Iterable<T> {
 
 //    CellBaseDataResult<Long> update(List objectList, String field, String[] innerFields);
@@ -40,14 +41,9 @@ public interface CellBaseDBAdaptor<T, Q> extends Iterable<T> {
 
     CellBaseDataResult<Long> count(Query query);
 
-
-
-
     CellBaseDataResult<Long> count(Q query);
 
     CellBaseDataResult<T> query(Q query);
-
-
 
 
 //    CellBaseDataResult<Long> count(GeneQuery query);

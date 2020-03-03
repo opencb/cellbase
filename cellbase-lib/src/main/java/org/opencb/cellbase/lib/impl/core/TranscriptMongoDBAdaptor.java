@@ -20,27 +20,26 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
-import org.apache.commons.lang3.StringUtils;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Created by swaathi on 27/11/15.
  */
-public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements TranscriptDBAdaptor<Transcript> {
+public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -48,6 +47,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }
+
+
 
 //    @Override
 //    public CellBaseDataResult<String> getCdna(String id) {
@@ -67,17 +68,11 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 //                Collections.singletonList(sequence), 1);
 //    }
 
-    @Override
-    public CellBaseDataResult<Long> count(Query query) {
+    public CellBaseDataResult<Long> count(AbstractQuery query) {
         Bson document = parseQuery(query);
         Bson match = Aggregates.match(document);
 
-        List<String> includeFields = new ArrayList<>();
-        for (String s : query.keySet()) {
-            if (StringUtils.isNotEmpty(query.getString(s))) {
-                includeFields.add(s);
-            }
-        }
+        List<String> includeFields = query.getIncludes();
 
         Bson include;
         if (includeFields.size() > 0) {
@@ -99,78 +94,67 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
                 cellBaseDataResult.getNumResults(), Collections.singletonList(count), cellBaseDataResult.getNumMatches());
     }
 
-    @Override
-    public CellBaseDataResult distinct(Query query, String field) {
-        Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult(mongoDBCollection.distinct(field, bsonDocument));
-    }
+//    @Override
+//    public CellBaseDataResult distinct(Query query, String field) {
+//        Bson bsonDocument = parseQuery(query);
+//        return new CellBaseDataResult(mongoDBCollection.distinct(field, bsonDocument));
+//    }
 
 //    @Override
 //    public CellBaseDataResult stats(Query query) {
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult<Transcript> get(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
-    public CellBaseDataResult nativeGet(AbstractQuery query) {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
+    public List<CellBaseDataResult> nativeGet(List<Query> query, QueryOptions options) {
+        //return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), options));
+        return null;
     }
 
-    @Override
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
         return new CellBaseDataResult(mongoDBCollection.aggregate(aggregateList, options));
     }
 
-    @Override
     public Iterator<Transcript> iterator(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
         return mongoDBCollection.nativeQuery().aggregate(aggregateList, options).iterator();
 //        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 
-    @Override
-    public void forEach(Query query, Consumer action, QueryOptions options) {
-
-    }
-
-//    @Override
-//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-//        return null;
+//    public void forEach(Query query, Consumer action, QueryOptions options) {
+//
 //    }
 
-    @Override
+    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
+        return null;
+    }
+
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
     }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
     }
 
-    @Override
     public CellBaseDataResult next(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         if (query.getString("region") != null) {
             Region region = Region.parseRegion(query.getString("region"));
@@ -178,6 +162,10 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
             return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
         }
         return null;
+    }
+
+    private Bson parseQuery(AbstractQuery query) {
+        return new Document();
     }
 
     private Bson parseQuery(Query query) {
@@ -273,6 +261,36 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
         aggregateList.add(project);
 
         return aggregateList;
+    }
+
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    @Override
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
     }
 
 //

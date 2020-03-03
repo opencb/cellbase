@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.XRefMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -29,7 +30,7 @@ import java.util.List;
 
 public class XrefManager extends AbstractManager {
 
-    private XRefDBAdaptor xRefDBAdaptor;
+    private XRefMongoDBAdaptor xRefDBAdaptor;
 
     public XrefManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -65,12 +66,12 @@ public class XrefManager extends AbstractManager {
         if (dbname != null && !dbname.isEmpty()) {
             query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
         }
-        CellBaseDataResult queryResult = xRefDBAdaptor.nativeGet(query, queryOptions);
+        CellBaseDataResult queryResult = xRefDBAdaptor.query(query);
         queryResult.setId(ids);
         return queryResult;
     }
 
     public CellBaseDataResult getDBNames(Query query) {
-        return xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
+        return xRefDBAdaptor.distinct("transcripts.xrefs.dbName", query);
     }
 }

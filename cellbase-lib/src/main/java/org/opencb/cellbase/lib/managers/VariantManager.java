@@ -19,14 +19,18 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
+import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -43,7 +47,8 @@ public class VariantManager extends AbstractManager {
             + ":[(cipos_left)<](start)[<(cipos_right)]" + "[-[(ciend_left)<](end)[<(ciend_right)]]"
             + "[:(ref)]"
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
-    private VariantDBAdaptor variantDBAdaptor;
+    private VariantMongoDBAdaptor variantDBAdaptor;
+    private CellBaseManagerFactory cellbaseManagerFactory;
 
     public VariantManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -52,6 +57,7 @@ public class VariantManager extends AbstractManager {
 
     private void init() {
         variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
+        cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
     }
 
     public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
@@ -77,7 +83,7 @@ public class VariantManager extends AbstractManager {
                                                                               Boolean imprecise,
                                                                               Integer svExtraPadding,
                                                                               Integer cnvExtraPadding)
-            throws ExecutionException, InterruptedException {
+            throws ExecutionException, InterruptedException, CellbaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         logger.debug("queryOptions: " + queryOptions);
 
@@ -108,7 +114,8 @@ public class VariantManager extends AbstractManager {
         if (cnvExtraPadding != null) {
             queryOptions.put("cnvExtraPadding", cnvExtraPadding);
         }
-        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly, dbAdaptorFactory);
+        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
+                cellbaseManagerFactory);
         List<CellBaseDataResult<VariantAnnotation>> queryResults =
                 variantAnnotationCalculator.getAnnotationByVariantList(variantList, queryOptions);
         return queryResults;
@@ -187,24 +194,34 @@ public class VariantManager extends AbstractManager {
     }
 
     public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String regions) {
-        if (hasHistogramQueryParam(queryOptions)) {
-            List<Query> queries = createQueries(query, regions, GeneDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = variantDBAdaptor.getIntervalFrequencies(queries,
-                    getHistogramIntervalSize(queryOptions), queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId(queries.get(i).getString(GeneDBAdaptor.QueryParams.REGION.key()));
-            }
-            return queryResults;
-        } else {
-            query.put(VariantDBAdaptor.QueryParams.REGION.key(), regions);
-            logger.debug("query = " + query.toJson());
-            logger.debug("queryOptions = " + queryOptions.toJson());
-            List<Query> queries = createQueries(query, regions, VariantDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
-            }
-            return queryResults;
+        query.put(VariantDBAdaptor.QueryParams.REGION.key(), regions);
+        logger.debug("query = " + query.toJson());
+        logger.debug("queryOptions = " + queryOptions.toJson());
+        List<Query> queries = createQueries(query, regions, VariantDBAdaptor.QueryParams.REGION.key());
+        List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
+        for (int i = 0; i < queries.size(); i++) {
+            queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.REGION.key()));
         }
+        return queryResults;
+    }
+
+    public CellBaseDataResult<Score> getFunctionalScoreVariant(Variant variant, QueryOptions queryOptions) {
+        return variantDBAdaptor.getFunctionalScoreVariant(variant, queryOptions);
+    }
+
+    public List<CellBaseDataResult<Score>> getFunctionalScoreVariant(List<Variant> variants, QueryOptions options) {
+        List<CellBaseDataResult<Score>> cellBaseDataResults = new ArrayList<>(variants.size());
+        for (Variant variant: variants) {
+            if (variant.getType() == VariantType.SNV) {
+                cellBaseDataResults.add(getFunctionalScoreVariant(variant, options));
+            } else {
+                cellBaseDataResults.add(new CellBaseDataResult<>(variant.toString(), 0, Collections.emptyList(), 0));
+            }
+        }
+        return cellBaseDataResults;
+    }
+
+    public List<CellBaseDataResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions) {
+        return variantDBAdaptor.getPopulationFrequencyByVariant(variants, queryOptions);
     }
 }

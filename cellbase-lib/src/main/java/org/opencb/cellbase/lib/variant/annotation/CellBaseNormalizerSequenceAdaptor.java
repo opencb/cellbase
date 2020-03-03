@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.tools.sequence.SequenceAdaptor;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GenomeManager;
+import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
-    private final GenomeDBAdaptor genomeDBAdaptor;
+    private final GenomeManager genomeManager;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CellBaseNormalizerSequenceAdaptor(GenomeDBAdaptor genomeDBAdaptor) {
-        this.genomeDBAdaptor = genomeDBAdaptor;
+    public CellBaseNormalizerSequenceAdaptor(GenomeManager genomeManager) {
+        this.genomeManager = genomeManager;
     }
 
     /**
@@ -55,8 +55,7 @@ public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
     @Override
     public String query(String contig, int start, int end) throws Exception {
         Region region = new Region(contig, start, end);
-        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult
-                 = genomeDBAdaptor.getSequence(region, QueryOptions.empty());
+        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = genomeManager.getSequence(region, QueryOptions.empty());
 
         // This behaviour mimics the behaviour of the org.opencb.biodata.tools.sequence.SamtoolsFastaIndex with one
         // difference. If contig does not exist, start is under the left bound, start AND end are out of the right

@@ -18,10 +18,6 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.bson.Document;
 import org.hamcrest.CoreMatchers;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
@@ -29,10 +25,10 @@ import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,6 +39,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
@@ -74,7 +72,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Disabled
     @Test
     public void testGetFunctionalScoreVariant() throws Exception {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult functionalScoreVariant = variationDBAdaptor.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
                 new QueryOptions());
     }
@@ -99,7 +97,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("62165739", "0|1")));
         Variant variant1 = variantBuilder.build();
 
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens",
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens",
                 "GRCh37");
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList
                 = variationDBAdaptor.getPopulationFrequencyByVariant(Arrays.asList(variant, variant1),
@@ -233,7 +231,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testGet() {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions("include", "id");
 //        queryOptions.put("limit", 3);
         CellBaseDataResult<Variant> result = variationDBAdaptor
@@ -268,7 +266,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testNativeGet() {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult variantCellBaseDataResult = variationDBAdaptor.nativeGet(new Query(VariantDBAdaptor.QueryParams.ID.key(), "rs666"),
                 new QueryOptions());
         assertEquals(variantCellBaseDataResult.getNumResults(), 1);
@@ -280,7 +278,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testGetByVariant() {
-        VariantDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult<Variant> variantCellBaseDataResult
                 = variationDBAdaptor.getByVariant(Variant.parseVariant("10:118187036:T:C"), new QueryOptions());
         assertEquals(variantCellBaseDataResult.getNumResults(), 1);

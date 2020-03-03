@@ -17,12 +17,11 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.Query;
+import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +30,7 @@ import java.util.List;
 
 public class GeneManager extends AbstractManager {
 
-    private GeneDBAdaptor geneDBAdaptor;
+    private GeneMongoDBAdaptor geneDBAdaptor;
 
     public GeneManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -46,7 +45,7 @@ public class GeneManager extends AbstractManager {
         geneQuery.setDefaults();
         geneQuery.validate();
         // TODO throw execption if facets populated
-        return geneDBAdaptor.nativeGet(geneQuery);
+        return geneDBAdaptor.query(geneQuery);
     }
 
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
@@ -58,21 +57,21 @@ public class GeneManager extends AbstractManager {
         return geneDBAdaptor.groupBy(geneQuery);
     }
 
-    public List<CellBaseDataResult> info(List<GeneQuery> geneQueries) {
-        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(geneQueries);
+    public List<CellBaseDataResult<Gene>> info(List<GeneQuery> geneQueries) {
+        List<CellBaseDataResult<Gene>> geneQueryResults = geneDBAdaptor.query(geneQueries);
         return geneQueryResults;
     }
 
-    public CellBaseDataResult<Gene> distinct(GeneQuery geneQuery) {
-        return geneDBAdaptor.distinct(new Query(), geneQuery.getFacet());
+    public CellBaseDataResult<String> distinct(GeneQuery geneQuery) {
+        return geneDBAdaptor.distinct(geneQuery.getFacet(), geneQuery);
     }
 
 //    public CellBaseDataResult<Gene> distinct(GeneQuery geneQuery) {
 //        return geneDBAdaptor.distinct(geneQuery);
 //    }
 
-    public Iterator<CellBaseDataResult<Gene>> iterator(Query geneQuery, String field) {
-        return geneDBAdaptor.iterator(geneQuery, null);
+    public Iterator<Gene> iterator(GeneQuery geneQuery) {
+        return geneDBAdaptor.iterator(geneQuery);
     }
 
 //    public List<CellBaseDataResult> getRegulatoryElements(Query geneQuery, String genes) {
@@ -140,13 +139,13 @@ public class GeneManager extends AbstractManager {
 //    }
 
     @Deprecated
-    public List<CellBaseDataResult> getGeneByEnsemblId(String id) {
+    public List<CellBaseDataResult<Gene>> getGeneByEnsemblId(String id) {
         String[] ids = id.split(",");
         List<GeneQuery> queries = new ArrayList<>(ids.length);
         for (String s : ids) {
             queries.add(new GeneQuery().setTranscriptsXrefs(Arrays.asList(s)));
         }
-        List<CellBaseDataResult> geneQueryResults = geneDBAdaptor.nativeGet(queries, null);
+        List<CellBaseDataResult<Gene>> geneQueryResults = geneDBAdaptor.query(queries);
         for (int i = 0; i < ids.length; i++) {
             geneQueryResults.get(i).setId(ids[i]);
         }

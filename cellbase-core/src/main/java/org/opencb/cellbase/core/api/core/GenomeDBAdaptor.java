@@ -35,7 +35,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.STRING;
 /**
  * Created by imedina on 30/11/15.
  */
-public interface GenomeDBAdaptor extends CellBaseDBAdaptor {
+public interface GenomeDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
 
     enum QueryParams implements QueryParam {
         REGION("region", STRING, "");

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation.hgvs;
+package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -32,8 +33,8 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
 
     private static final String DEL = "del";
 
-    public HgvsDeletionCalculator(GenomeDBAdaptor genomeDBAdaptor) {
-        super(genomeDBAdaptor);
+    public HgvsDeletionCalculator(GenomeManager genomeManager) {
+        super(genomeManager);
     }
 
     @Override
@@ -73,7 +74,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), variant.getChromosome()
                 + ":" + start + "-" + end);
         String genomicSequence
-                = genomeDBAdaptor.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
+                = genomeManager.getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence();
 
         // Create normalizedVariant and justify sequence to the right/left as appropriate
         normalizedVariant.setChromosome(variant.getChromosome());

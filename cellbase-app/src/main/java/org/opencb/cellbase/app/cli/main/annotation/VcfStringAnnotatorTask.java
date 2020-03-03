@@ -27,7 +27,8 @@ import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.converters.avro.VariantContextToVariantConverter;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotator;
+import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotator;
 import org.opencb.commons.run.ParallelTaskRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +98,8 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
         return normalizeAndAnnotate(variantList);
     }
 
-    private List<Variant> normalizeAndAnnotate(List<Variant> variantList) throws InterruptedException, ExecutionException {
+    private List<Variant> normalizeAndAnnotate(List<Variant> variantList)
+            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
         List<Variant> normalizedVariantList;
         if (normalize) {
             normalizedVariantList = new ArrayList<>(variantList.size());

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation.hgvs;
+package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.managers.GenomeManager;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,8 +28,8 @@ import java.util.List;
  * Created by fjlopez on 15/06/17.
  */
 public class HgvsSNVCalculator extends HgvsCalculator {
-    public HgvsSNVCalculator(GenomeDBAdaptor genomeDBAdaptor) {
-        super(genomeDBAdaptor);
+    public HgvsSNVCalculator(GenomeManager genomeManager) {
+        super(genomeManager);
     }
 
     @Override

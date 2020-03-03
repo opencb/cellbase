@@ -16,18 +16,14 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.rules.ExpectedException;
-import org.opencb.cellbase.core.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.variant.annotation.CellBaseNormalizerSequenceAdaptor;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdaptorTest {
@@ -46,8 +42,8 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
         path = Paths.get(getClass()
                 .getResource("/genome/genome_sequence.test.json.gz").toURI());
         loadRunner.load(path, "genome_sequence");
-        cellBaseNormalizerSequenceAdaptor = new CellBaseNormalizerSequenceAdaptor(dbAdaptorFactory
-                .getGenomeDBAdaptor("hsapiens", "GRCh37"));
+        cellBaseNormalizerSequenceAdaptor = new CellBaseNormalizerSequenceAdaptor(
+                cellBaseManagerFactory.getGenomeManager("hsapiens", "GRCh37"));
     }
 
     @Test

@@ -19,11 +19,15 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
+import org.opencb.cellbase.lib.impl.core.ClinicalMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class ClinicalManager extends AbstractManager {
 
-    private ClinicalDBAdaptor clinicalDBAdaptor;
+    private ClinicalMongoDBAdaptor clinicalDBAdaptor;
 
     public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -139,28 +143,49 @@ public class ClinicalManager extends AbstractManager {
 //        return executeAggregation2("", pipeline, queryOptions);
 //    }
 //
-//    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
-//        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
-//        for (Variant variant : variants) {
-//            results.add(getByVariant(variant, queryOptions));
-//        }
-//        ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
-//        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(ClinicalDBAdaptor
-//        .QueryParams.PHASE.key())) {
-//            results = phasedQueryManager.run(variants, results);
-//
-//        }
-//        return results;
-//    }
+
+    public CellBaseDataResult getByVariant(Variant variant, QueryOptions options) {
+        Query query;
+        if (VariantType.CNV.equals(variant.getType())) {
+            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(VariantDBAdaptor.QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
+                    .append(VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())
+                    .append(VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), variant.getSv().getCiEndLeft())
+                    .append(VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(), variant.getSv().getCiEndRight())
+                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+        } else {
+            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                    .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
+                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+        }
+        CellBaseDataResult queryResult = search(query, options);
+        queryResult.setId(variant.toString());
+
+        return queryResult;
+    }
+
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
+        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
+        for (Variant variant : variants) {
+            results.add(getByVariant(variant, queryOptions));
+        }
+        ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
+        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(ClinicalDBAdaptor
+        .QueryParams.PHASE.key())) {
+            results = phasedQueryManager.run(variants, results);
+
+        }
+        return results;
+    }
 
     public CellBaseDataResult getByRegion(Query query, QueryOptions queryOptions, String regions) {
         query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), regions);
-        if (hasHistogramQueryParam(queryOptions)) {
-            return null;
-        } else {
-            CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
-            queryResult.setId(regions);
-            return queryResult;
-        }
+
+        CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
+        queryResult.setId(regions);
+        return queryResult;
+
     }
 }

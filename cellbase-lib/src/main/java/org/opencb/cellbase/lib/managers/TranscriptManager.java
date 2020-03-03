@@ -18,10 +18,12 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -32,7 +34,7 @@ import java.util.List;
 
 public class TranscriptManager extends AbstractManager {
 
-    private TranscriptDBAdaptor transcriptDBAdaptor;
+    private TranscriptMongoDBAdaptor transcriptDBAdaptor;
 //    private GeneDBAdaptor geneDBAdaptor;
 
     public TranscriptManager(String species, String assembly, CellBaseConfiguration configuration) {
@@ -46,9 +48,12 @@ public class TranscriptManager extends AbstractManager {
     }
 
     public CellBaseDataResult<String> getCdna(String id) {
-        GeneDBAdaptor<Gene> geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-        CellBaseDataResult<Gene> gene = geneDBAdaptor
-                .get(new Query("xrefs", id), new QueryOptions(QueryOptions.INCLUDE, "transcripts.id,transcripts.cDnaSequence"));
+        GeneMongoDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+        GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setTranscriptsXrefs(Arrays.asList(id));
+        geneQuery.setIncludes(Arrays.asList("transcripts.id,transcripts.cDnaSequence"));
+
+        CellBaseDataResult<Gene> gene = geneDBAdaptor.query(geneQuery);
 
 //        if (gene.getResults().get(0).getTranscripts().size() != 1) {
 //            // check id exists

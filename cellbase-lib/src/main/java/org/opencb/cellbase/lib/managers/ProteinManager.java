@@ -19,10 +19,13 @@ package org.opencb.cellbase.lib.managers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.forester.protein.Protein;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.ProteinMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -33,8 +36,8 @@ import java.util.Map;
 
 public class ProteinManager extends AbstractManager {
 
-    private ProteinDBAdaptor proteinDBAdaptor;
-    private TranscriptDBAdaptor transcriptDBAdaptor;
+    private ProteinMongoDBAdaptor proteinDBAdaptor;
+    private TranscriptMongoDBAdaptor transcriptDBAdaptor;
 
     public ProteinManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -56,7 +59,7 @@ public class ProteinManager extends AbstractManager {
 
     public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
         List<Query> queries = createQueries(query, id, ProteinDBAdaptor.QueryParams.XREFS.key());
-        List<CellBaseDataResult> queryResults = proteinDBAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> queryResults = proteinDBAdaptor.query(queries);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(ProteinDBAdaptor.QueryParams.XREFS.key()));
         }
@@ -69,7 +72,7 @@ public class ProteinManager extends AbstractManager {
         logger.info("Searching transcripts for protein {}", id);
         Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
         QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-        CellBaseDataResult queryResult = transcriptDBAdaptor.nativeGet(transcriptQuery, transcriptQueryOptions);
+        CellBaseDataResult queryResult = transcriptDBAdaptor.query(transcriptQuery);
         logger.info("{} transcripts found", queryResult.getNumResults());
         logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
 
@@ -95,6 +98,11 @@ public class ProteinManager extends AbstractManager {
         queryResult1.setResults(Collections.singletonList(queryResult.first().getSequence().getValue()));
         queryResult1.setId(proteins);
         return queryResult1;
+    }
+
+    public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
+                                                                             String aaAlternate, QueryOptions options) {
+        return proteinDBAdaptor.getVariantAnnotation(ensemblTranscriptId, position, aaReference, aaAlternate, options);
     }
 }
 

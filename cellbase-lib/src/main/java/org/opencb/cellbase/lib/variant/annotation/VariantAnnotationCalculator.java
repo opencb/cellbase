@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.core.variant.annotation;
+package org.opencb.cellbase.lib.variant.annotation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Gene;
@@ -26,11 +26,17 @@ import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
 import org.opencb.biodata.tools.variant.exceptions.VariantNormalizerException;
-import org.opencb.cellbase.core.api.core.*;
-import org.opencb.cellbase.core.variant.annotation.hgvs.HgvsCalculator;
+import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.api.core.ConservationDBAdaptor;
+import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.*;
+import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,16 +59,16 @@ import static org.opencb.cellbase.core.variant.PhasedQueryManager.*;
 public class VariantAnnotationCalculator {
     private static final String EMPTY_STRING = "";
     private static final String ALTERNATE = "1";
-    private GenomeDBAdaptor genomeDBAdaptor;
-    private GeneDBAdaptor geneDBAdaptor;
-    private RegulationDBAdaptor regulationDBAdaptor;
-    private VariantDBAdaptor variantDBAdaptor;
-    private ClinicalDBAdaptor clinicalDBAdaptor;
-    private RepeatsDBAdaptor repeatsDBAdaptor;
-    private ProteinDBAdaptor proteinDBAdaptor;
-    private ConservationDBAdaptor conservationDBAdaptor;
+    private GenomeManager genomeManager;
+    private GeneManager geneManager;
+    private RegulatoryManager regulationManager;
+    private VariantManager variantManager;
+    private ClinicalManager clinicalManager;
+    private RepeatsManager repeatsManager;
+    private ProteinManager proteinManager;
+    private ConservationDBAdaptor conservationManager;
     private Set<String> annotatorSet;
-    private String includeGeneFields;
+    private List<String> includeGeneFields;
 
     private final VariantNormalizer normalizer;
     private boolean normalize = false;
@@ -81,21 +87,22 @@ public class VariantAnnotationCalculator {
     private static final String REGION = "region";
     private static final String MERGE = "merge";
 
-    public VariantAnnotationCalculator(String species, String assembly, DBAdaptorFactory dbAdaptorFactory) {
-        this.genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-        this.variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
-        this.geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
-        this.regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
-        this.proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(species, assembly);
-        this.conservationDBAdaptor = dbAdaptorFactory.getConservationDBAdaptor(species, assembly);
-        this.clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
-        this.repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
+    public VariantAnnotationCalculator(String species, String assembly, CellBaseManagerFactory cellbaseManagerFactory)
+            throws CellbaseException {
+        this.genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
+        this.variantManager = cellbaseManagerFactory.getVariantManager(species, assembly);
+        this.geneManager = cellbaseManagerFactory.getGeneManager(species, assembly);
+        this.regulationManager = cellbaseManagerFactory.getRegulatoryManager(species, assembly);
+        this.proteinManager = cellbaseManagerFactory.getProteinManager(species, assembly);
+//        this.conservationManager = cellbaseManagerFactory.getConservationManager(species, assembly);
+        this.clinicalManager = cellbaseManagerFactory.getClinicalManager(species, assembly);
+        this.repeatsManager = cellbaseManagerFactory.getRepeatsManager(species, assembly);
 
         // Initialises normaliser configuration with default values. HEADS UP: configuration might be updated
         // at parseQueryParam
         this.normalizer = new VariantNormalizer(getNormalizerConfig());
 
-         hgvsCalculator = new HgvsCalculator(genomeDBAdaptor);
+         hgvsCalculator = new HgvsCalculator(genomeManager);
 
         logger.debug("VariantAnnotationMongoDBAdaptor: in 'constructor'");
     }
@@ -105,11 +112,12 @@ public class VariantAnnotationCalculator {
                 .setReuseVariants(false)
                 .setNormalizeAlleles(false)
                 .setDecomposeMNVs(decompose)
-                .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeDBAdaptor));
+                .enableLeftAlign(new CellBaseNormalizerSequenceAdaptor(genomeManager));
     }
 
     @Deprecated
-    public CellBaseDataResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions) {
+    public CellBaseDataResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions)
+            throws QueryException, IllegalAccessException {
         long dbTimeStart = System.currentTimeMillis();
         parseQueryParam(queryOptions);
         List<Gene> batchGeneList = getBatchGeneList(Collections.singletonList(variant));
@@ -129,13 +137,13 @@ public class VariantAnnotationCalculator {
     }
 
     public CellBaseDataResult getAnnotationByVariant(Variant variant, QueryOptions queryOptions)
-            throws InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
         return getAnnotationByVariantList(Collections.singletonList(variant), queryOptions).get(0);
     }
 
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList,
                                                                            QueryOptions queryOptions)
-            throws InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
 
         logger.debug("Annotating  batch");
         parseQueryParam(queryOptions);
@@ -305,7 +313,7 @@ public class VariantAnnotationCalculator {
     }
 
     private List<VariantAnnotation> runAnnotationProcess(List<Variant> normalizedVariantList)
-            throws InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
         long globalStartTime = System.currentTimeMillis();
         long startTime;
 
@@ -489,7 +497,7 @@ public class VariantAnnotationCalculator {
         return variantAnnotationList;
     }
 
-    private List<Gene> getBatchGeneList(List<Variant> variantList) {
+    private List<Gene> getBatchGeneList(List<Variant> variantList) throws QueryException, IllegalAccessException {
         List<Region> regionList = variantListToRegionList(variantList);
         // Add +-5Kb for gene search
         for (Region region : regionList) {
@@ -499,10 +507,12 @@ public class VariantAnnotationCalculator {
 
         // Just return required fields
         // MERGE = true essential so that just one query will be raised with all regions
-        QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, includeGeneFields);
-        queryOptions.put(MERGE, true);
-
-        return ((CellBaseDataResult) geneDBAdaptor.getByRegion(regionList, queryOptions).get(0)).getResults();
+//        QueryOptions queryOptions = new QueryOptions(QueryOptions.INCLUDE, includeGeneFields);
+//        queryOptions.put(MERGE, true);
+        GeneQuery geneQuery = new GeneQuery();
+        geneQuery.setIncludes(includeGeneFields);
+        geneQuery.setRegions(regionList);
+        return new CellBaseDataResult(geneManager.search(geneQuery)).getResults();
     }
 
     private void parseQueryParam(QueryOptions queryOptions) {
@@ -968,24 +978,24 @@ public class VariantAnnotationCalculator {
         return annotatorSet;
     }
 
-    private String getIncludedGeneFields(Set<String> annotatorSet) {
-        String includeGeneFields = "name,id,chromosome,start,end,transcripts.id,transcripts.start,transcripts.end,"
+    private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
+        List<String> includeGeneFields = Arrays.asList("name,id,chromosome,start,end,transcripts.id,transcripts.start,transcripts.end,"
                 + "transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,"
                 + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
                 + "transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.cdsStart,transcripts.exons.end,"
                 + "transcripts.exons.cdsEnd,transcripts.exons.sequence,transcripts.exons.phase,"
                 + "transcripts.exons.exonNumber,mirna.matures,mirna.sequence,mirna.matures.cdnaStart,"
                 + "transcripts.exons.genomicCodingStart,transcripts.exons.genomicCodingEnd,"
-                + "mirna.matures.cdnaEnd";
+                + "mirna.matures.cdnaEnd");
 
         if (annotatorSet.contains("expression")) {
-            includeGeneFields += ",annotation.expression";
+            includeGeneFields.add("annotation.expression");
         }
         if (annotatorSet.contains("geneDisease")) {
-            includeGeneFields += ",annotation.diseases";
+            includeGeneFields.add("annotation.diseases");
         }
         if (annotatorSet.contains("drugInteraction")) {
-            includeGeneFields += ",annotation.drugs";
+            includeGeneFields.add("annotation.drugs");
         }
         return includeGeneFields;
     }
@@ -1003,13 +1013,12 @@ public class VariantAnnotationCalculator {
         return geneList;
     }
 
-    private List<Gene> getGenesInRange(String chromosome, int start, int end, String includeFields) {
-        QueryOptions queryOptions = new QueryOptions("include", includeFields);
-
-        return geneDBAdaptor
-                .getByRegion(new Region(chromosome, Math.max(1, start - 5000),
-                        end + 5000), queryOptions).getResults();
-    }
+//    private List<Gene> getGenesInRange(String chromosome, int start, int end, String includeFields) {
+//        QueryOptions queryOptions = new QueryOptions("include", includeFields);
+//
+//        return geneManager.getByRegion(new Region(chromosome, Math.max(1, start - 5000),
+//                        end + 5000), queryOptions).getResults();
+//    }
 
     private boolean nonSynonymous(ConsequenceType consequenceType, boolean useMitochondrialCode) {
         if (consequenceType.getCodon() == null) {
@@ -1025,7 +1034,7 @@ public class VariantAnnotationCalculator {
 
     private ProteinVariantAnnotation getProteinAnnotation(ConsequenceType consequenceType) {
         if (consequenceType.getProteinVariantAnnotation() != null) {
-            CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinDBAdaptor.getVariantAnnotation(
+            CellBaseDataResult<ProteinVariantAnnotation> proteinVariantAnnotation = proteinManager.getVariantAnnotation(
                     consequenceType.getEnsemblTranscriptId(),
                     consequenceType.getProteinVariantAnnotation().getPosition(),
                     consequenceType.getProteinVariantAnnotation().getReference(),
@@ -1043,18 +1052,18 @@ public class VariantAnnotationCalculator {
             case SNV:
                 return new ConsequenceTypeSNVCalculator();
             case INSERTION:
-                return new ConsequenceTypeInsertionCalculator(genomeDBAdaptor);
+                return new ConsequenceTypeInsertionCalculator(genomeManager);
             case DELETION:
-                return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+                return new ConsequenceTypeDeletionCalculator(genomeManager);
             case MNV:
-                return new ConsequenceTypeMNVCalculator(genomeDBAdaptor);
+                return new ConsequenceTypeMNVCalculator(genomeManager);
             case CNV:
                 if (variant.getSv().getCopyNumber() == null) {
                     return new ConsequenceTypeGenericRegionCalculator();
                 } else if (variant.getSv().getCopyNumber() > 2) {
                     return new ConsequenceTypeCNVGainCalculator();
                 } else {
-                    return new ConsequenceTypeDeletionCalculator(genomeDBAdaptor);
+                    return new ConsequenceTypeDeletionCalculator(genomeManager);
                 }
             case DUPLICATION:
                 return new ConsequenceTypeCNVGainCalculator();
@@ -1107,8 +1116,8 @@ public class VariantAnnotationCalculator {
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
 
-        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationDBAdaptor
-                .get(new Query(REGION, toRegionString(chromosome, position)), queryOptions);
+        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager
+                .search(new Query(REGION, toRegionString(chromosome, position)), queryOptions);
 
         if (cellBaseDataResult.getNumMatches() > 0) {
             overlapsRegulatoryRegion[0] = true;
@@ -1137,8 +1146,8 @@ public class VariantAnnotationCalculator {
         String regionString = toRegionString(chromosome, start, end);
         Query query = new Query(REGION, regionString);
 
-        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationDBAdaptor
-                .get(query.append(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE, TF_BINDING_SITE), queryOptions);
+        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager
+                .search(query.append(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE, TF_BINDING_SITE), queryOptions);
 
         // Overlaps transcription factor binding site - it's therefore a regulatory variant
         if (cellBaseDataResult.getNumResults() == 1) {
@@ -1147,7 +1156,7 @@ public class VariantAnnotationCalculator {
         // Does not overlap transcription factor binding site - check any other regulatory region type
         } else {
             query.remove(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
-            cellBaseDataResult = regulationDBAdaptor.get(query, queryOptions);
+            cellBaseDataResult = regulationManager.search(query, queryOptions);
             // Does overlap other types of regulatory regions
             if (cellBaseDataResult.getNumResults() == 1) {
                 overlapsRegulatoryRegion[0] = true;
@@ -1320,7 +1329,7 @@ public class VariantAnnotationCalculator {
             long startTime = System.currentTimeMillis();
             logger.debug("Query variation");
             List<CellBaseDataResult<Variant>> variationCellBaseDataResultList
-                    = variantDBAdaptor.getPopulationFrequencyByVariant(variantList, queryOptions);
+                    = variantManager.getPopulationFrequencyByVariant(variantList, queryOptions);
             logger.debug("Variation query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return variationCellBaseDataResultList;
         }
@@ -1386,7 +1395,7 @@ public class VariantAnnotationCalculator {
                                 ? (new Region(region.getChromosome(), region.getStart(), region.getStart() + 49))
                                 : region).collect(Collectors.toList());
 
-                List<CellBaseDataResult> tmpCellBaseDataResultList = conservationDBAdaptor
+                List<CellBaseDataResult> tmpCellBaseDataResultList = conservationManager
                     .getAllScoresByRegionList(regionList, queryOptions);
 
                 // There may be more than one CellBaseDataResult per variant for breakends
@@ -1442,7 +1451,7 @@ public class VariantAnnotationCalculator {
 //                    variantFunctionalScoreDBAdaptor.getAllByVariantList(variantList, queryOptions);
             logger.debug("Query variant functional score");
             List<CellBaseDataResult<Score>> variantFunctionalScoreCellBaseDataResultList =
-                    variantDBAdaptor.getFunctionalScoreVariant(variantList, queryOptions);
+                    variantManager.getFunctionalScoreVariant(variantList, queryOptions);
             logger.debug("VariantFunctionalScore query performance is {}ms for {} variants",
                     System.currentTimeMillis() - startTime, variantList.size());
             return variantFunctionalScoreCellBaseDataResultList;
@@ -1486,7 +1495,7 @@ public class VariantAnnotationCalculator {
         @Override
         public List<CellBaseDataResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalDBAdaptor.getByVariant(variantList, queryOptions);
+            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList, queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
             return clinicalCellBaseDataResultList;
         }
@@ -1620,7 +1629,7 @@ public class VariantAnnotationCalculator {
             logger.debug("Query repeats");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsDBAdaptor
+                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsManager
                         .getByRegion(breakpointsToRegionList(variant), queryOptions);
 
                 // There may be more than one CellBaseDataResult per variant for non SNV variants since there will be
@@ -1684,8 +1693,7 @@ public class VariantAnnotationCalculator {
             logger.debug("Query cytoband");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                List<CellBaseDataResult<Cytoband>> tmpCellBaseDataResultList = genomeDBAdaptor
-                        .getCytobands(breakpointsToRegionList(variant));
+                List<CellBaseDataResult<Cytoband>> tmpCellBaseDataResultList = genomeManager.getCytobands(breakpointsToRegionList(variant));
 
                 // There may be more than one CellBaseDataResult per variant for non SNV variants since there will be
                 // two breakpoints

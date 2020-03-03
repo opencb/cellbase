@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.core.api.core;
 
-import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
 
@@ -28,6 +27,8 @@ public interface CellBaseMongoDBAdaptor<Q, T> {
 
     CellBaseDataResult<T> query(Q query);
 
+    List<CellBaseDataResult<T>> query(List<Q> queries);
+
     Iterator<T> iterator(Q query);
 
 //    CellBaseDataResult<Document> nativeQuery(Q query);
@@ -38,6 +39,6 @@ public interface CellBaseMongoDBAdaptor<Q, T> {
 
     CellBaseDataResult<FacetField> aggregationStats(List<String> fields, Q query);
 
-    CellBaseDataResult<String> distinct(String field, Q geneQuery);
+    CellBaseDataResult<String> distinct(String field, Q query);
 
 }

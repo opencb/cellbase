@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+@Deprecated
 public abstract class DBAdaptorFactory {
 
     protected CellBaseConfiguration cellBaseConfiguration;
@@ -99,10 +100,10 @@ public abstract class DBAdaptorFactory {
 //    public abstract PathwayDBAdaptor getPathwayDBAdaptor(String species, String assembly);
 //
 
-    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
-
-    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
-
+//    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species);
+//
+//    public abstract ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly);
+//
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species);
 
     public abstract ConservationDBAdaptor getConservationDBAdaptor(String species, String assembly);

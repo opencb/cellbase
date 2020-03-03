@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Created by fjlopez on 18/04/16.
  */
 public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
-    private GenomeDBAdaptor dbAdaptor;
+    private GenomeMongoDBAdaptor dbAdaptor;
 
     public GenomeMongoDBAdaptorTest() throws Exception {
         super();

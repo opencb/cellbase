@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.hamcrest.CoreMatchers;
 
 ;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
@@ -31,7 +30,8 @@ import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -115,7 +115,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                 .getResource("/variant-annotation/clinical_variants.test.json.gz").toURI());
         loadRunner.load(path, "clinical_variants");
         variantAnnotationCalculator = new VariantAnnotationCalculator("hsapiens", "GRCh37",
-                dbAdaptorFactory);
+                cellBaseManagerFactory);
 
     }
 
@@ -696,8 +696,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // Creating here a local VariantAnnotationCalculator since this test requires setting normalizer decompose
         // option to true which probably breaks some other tests.
         VariantAnnotationCalculator localScopeCalculator = new VariantAnnotationCalculator("hsapiens",
-                "GRCh37",
-                dbAdaptorFactory);
+                "GRCh37", cellBaseManagerFactory);
 
         // One MNV and one singleton SNV. Two CellBaseDataResults must be returned: first with two VariantAnnotation objects
         // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
@@ -1187,7 +1186,7 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void testGetAllConsequenceTypesByVariant() throws IOException {
+    public void testGetAllConsequenceTypesByVariant() throws IOException, QueryException, IllegalAccessException {
 
 
 //        try {

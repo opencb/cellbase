@@ -26,10 +26,12 @@ import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
+import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
+import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -41,7 +43,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 01/12/15.
  */
-public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAdaptor<Entry> {
+public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
 
     private MongoDBCollection proteinSubstitutionMongoDBCollection;
 
@@ -81,8 +83,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
     }
 
-
-    @Override
     public CellBaseDataResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
         CellBaseDataResult result = null;
 
@@ -144,7 +144,6 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 
     }
 
-    @Override
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
                                                                       String aaAlternate, QueryOptions options) {
         CellBaseDataResult<ProteinVariantAnnotation> cellBaseDataResult = new CellBaseDataResult<>();
@@ -215,25 +214,21 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, field, "name", options);
     }
 
-    @Override
     public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
         Bson bsonQuery = parseQuery(query);
         return groupBy(bsonQuery, fields, "name", options);
     }
 
-    @Override
     public CellBaseDataResult<Long> count(Query query) {
         Bson document = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.count(document));
     }
 
-    @Override
     public CellBaseDataResult distinct(Query query, String field) {
         Bson document = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, document));
@@ -244,35 +239,29 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
 //        return null;
 //    }
 
-    @Override
     public CellBaseDataResult<Entry> get(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Entry.class, options));
     }
 
-    @Override
     public CellBaseDataResult nativeGet(AbstractQuery query) {
         return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
-    @Override
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, options));
     }
 
-    @Override
     public Iterator<Entry> iterator(Query query, QueryOptions options) {
         return null;
     }
 
-    @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
-    @Override
     public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
 
     }
@@ -280,13 +269,13 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
-        createOrQuery(query, QueryParams.ACCESSION.key(), "accession", andBsonList);
-        createOrQuery(query, QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(query, QueryParams.GENE.key(), "gene.name.value", andBsonList);
-        createOrQuery(query, QueryParams.XREFS.key(), "dbReference.id", andBsonList);
-        createOrQuery(query, QueryParams.KEYWORD.key(), "keyword.value", andBsonList);
-        createOrQuery(query, QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
-        createOrQuery(query, QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
+        createOrQuery(query, ProteinDBAdaptor.QueryParams.ACCESSION.key(), "accession", andBsonList);
+        createOrQuery(query, ProteinDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
+        createOrQuery(query, ProteinDBAdaptor.QueryParams.GENE.key(), "gene.name.value", andBsonList);
+        createOrQuery(query, ProteinDBAdaptor.QueryParams.XREFS.key(), "dbReference.id", andBsonList);
+        createOrQuery(query, ProteinDBAdaptor.QueryParams.KEYWORD.key(), "keyword.value", andBsonList);
+        createOrQuery(query, ProteinDBAdaptor.QueryParams.FEATURE_ID.key(), "feature.id", andBsonList);
+        createOrQuery(query, ProteinDBAdaptor.QueryParams.FEATURE_TYPE.key(), "feature.type", andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -349,5 +338,35 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
             }
         }
         return proteinVariantAnnotation;
+    }
+
+    @Override
+    public CellBaseDataResult query(Object query) {
+        return null;
+    }
+
+    @Override
+    public List<CellBaseDataResult> query(List queries) {
+        return null;
+    }
+
+    @Override
+    public Iterator iterator(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<Long> count(Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, Object query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+        return null;
     }
 }

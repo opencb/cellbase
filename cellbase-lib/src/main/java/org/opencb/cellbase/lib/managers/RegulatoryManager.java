@@ -16,10 +16,10 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.impl.core.RegulationMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -27,7 +27,7 @@ import java.util.List;
 
 public class RegulatoryManager extends AbstractManager {
 
-    private RegulationDBAdaptor regulationDBAdaptor;
+    private RegulationMongoDBAdaptor regulationDBAdaptor;
 
     public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -38,22 +38,21 @@ public class RegulatoryManager extends AbstractManager {
         regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
     }
 
-
     public CellBaseDataResult getFeatureTypes(Query query) {
-        return regulationDBAdaptor.distinct(query, "featureType");
+        return regulationDBAdaptor.distinct("featureType", query);
     }
 
     public CellBaseDataResult getFeatureClasses(Query query) {
-        return regulationDBAdaptor.distinct(query, "featureClass");
+        return regulationDBAdaptor.distinct("featureClass", query);
     }
 
     public CellBaseDataResult search(Query query, QueryOptions queryOptions) {
-        return regulationDBAdaptor.nativeGet(query, queryOptions);
+        return regulationDBAdaptor.query(query);
     }
 
     public List<CellBaseDataResult> getByRegions(Query query, QueryOptions queryOptions, String regions) {
         List<Query> queries = createQueries(query, regions, RegulationDBAdaptor.QueryParams.REGION.key());
-        List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> queryResults = regulationDBAdaptor.query(queries);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
         }
@@ -64,7 +63,7 @@ public class RegulatoryManager extends AbstractManager {
         List<Query> queries = createQueries(query, tf, RegulationDBAdaptor.QueryParams.NAME.key(),
                 RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                         + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-        List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
+        List<CellBaseDataResult> queryResults = regulationDBAdaptor.query(queries);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.NAME.key()));
         }
@@ -72,24 +71,15 @@ public class RegulatoryManager extends AbstractManager {
     }
 
     public List<CellBaseDataResult> getTfByRegions(Query query, QueryOptions queryOptions, String regions) {
-        if (hasHistogramQueryParam(queryOptions)) {
-            List<Query> queries = createQueries(query, regions, GeneDBAdaptor.QueryParams.REGION.key());
-            List<CellBaseDataResult> queryResults = regulationDBAdaptor.getIntervalFrequencies(queries,
-                    getHistogramIntervalSize(queryOptions), queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) query.get(GeneDBAdaptor.QueryParams.REGION.key()));
-            }
-            return queryResults;
-        } else {
-            List<Query> queries = createQueries(query, regions, RegulationDBAdaptor.QueryParams.REGION.key(),
-                    RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
-                    RegulationDBAdaptor.FeatureType.TF_binding_site + ","
-                            + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-            List<CellBaseDataResult> queryResults = regulationDBAdaptor.nativeGet(queries, queryOptions);
-            for (int i = 0; i < queries.size(); i++) {
-                queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
-            }
-            return queryResults;
+        List<Query> queries = createQueries(query, regions, RegulationDBAdaptor.QueryParams.REGION.key(),
+                RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
+                RegulationDBAdaptor.FeatureType.TF_binding_site + ","
+                        + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
+        List<CellBaseDataResult> queryResults = regulationDBAdaptor.query(queries);
+        for (int i = 0; i < queries.size(); i++) {
+            queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
         }
+        return queryResults;
+
     }
 }
