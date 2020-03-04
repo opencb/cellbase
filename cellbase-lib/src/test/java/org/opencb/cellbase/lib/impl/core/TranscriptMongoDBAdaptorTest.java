@@ -55,7 +55,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void nativeGet() throws Exception {
 
-        TranscriptMongoDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor("hsapiens", "GRCh37");
+        TranscriptCoreDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor("hsapiens", "GRCh37");
         Query query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:816481-825251");
         CellBaseDataResult CellBaseDataResult = transcriptDBAdaptor.nativeGet(query, new QueryOptions());
         assertEquals(CellBaseDataResult.getNumResults(), 1);

@@ -71,7 +71,11 @@ public class GeneQuery extends AbstractQuery {
 
     @Override
     protected void validateQuery() throws QueryException {
-
+//        if (CollectionUtils.isNotEmpty(biotypes)) {
+//            for (String biotype : biotypes) {
+//
+//            }
+//        }
     }
 
     @Override

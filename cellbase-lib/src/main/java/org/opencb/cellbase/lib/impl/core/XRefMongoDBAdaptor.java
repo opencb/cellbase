@@ -22,9 +22,10 @@ import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
@@ -40,7 +41,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 07/12/15.
  */
-public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -149,7 +150,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
         }
     }
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

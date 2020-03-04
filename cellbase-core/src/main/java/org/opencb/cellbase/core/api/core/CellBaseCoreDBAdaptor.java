@@ -17,24 +17,40 @@
 package org.opencb.cellbase.core.api.core;
 
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.FacetField;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-public interface CellBaseMongoDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
+public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
 
     default CellBaseDataResult<T> query(Q query) {
-        CellBaseDataResult<T> result = new CellBaseDataResult<>();
         List<T> results = new ArrayList<>();
-        Iterator<T> iterator = iterator(query);
+        long time = System.currentTimeMillis();
+        query.setCount(true);
+        CellBaseIterator<T> iterator = iterator(query);
         while (iterator.hasNext() && results.size() < 100000) {
             T next = iterator.next();
             results.add(next);
         }
+        time = System.currentTimeMillis() - time;
+
+
+        CellBaseDataResult<T> result = new CellBaseDataResult<>();
+        result.setTime((int) time);
         result.setResults(results);
+        result.setNumMatches(iterator.getNumMatches());
+//        result.setResultType(T);
+        if (results.size() > 1) {
+            Event event = new Event(Event.Type.WARNING, "", "Max number of elements reached");
+            if (result.getEvents() == null) {
+                result.setEvents(new ArrayList<>());
+            }
+            result.getEvents().add(event);
+        }
         return result;
     }
 
@@ -47,11 +63,11 @@ public interface CellBaseMongoDBAdaptor<Q extends AbstractQuery, T> extends Iter
     }
 
     @Override
-    default Iterator<T> iterator() {
+    default CellBaseIterator<T> iterator() {
         return iterator(null);
     }
 
-    Iterator<T> iterator(Q query);
+    CellBaseIterator<T> iterator(Q query);
 
 //    CellBaseDataResult<Document> nativeQuery(Q query);
 

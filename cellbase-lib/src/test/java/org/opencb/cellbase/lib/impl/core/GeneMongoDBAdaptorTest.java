@@ -56,7 +56,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void get() throws Exception {
-        GeneMongoDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+        GeneCoreDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
         Query query = new Query(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "synovial");
         query.put(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_VALUE.key(), "DOWN");
         QueryOptions queryOptions = new QueryOptions("include", "id,name");

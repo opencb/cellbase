@@ -26,9 +26,10 @@ import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.FacetField;
@@ -43,7 +44,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 01/12/15.
  */
-public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private MongoDBCollection proteinSubstitutionMongoDBCollection;
 
@@ -75,7 +76,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMon
     }
 
 
-    public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public ProteinCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");
@@ -341,7 +342,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMon
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

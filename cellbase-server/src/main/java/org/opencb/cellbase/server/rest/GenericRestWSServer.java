@@ -343,9 +343,9 @@ public class GenericRestWSServer implements IWSServer {
             list.add(obj);
         }
 
-        CellBaseDataResult dataResults = new CellBaseDataResult("id", 0, Collections.emptyList(), list.size(), list,
-                list.size());
-        queryResponse.setResponses(Collections.singletonList(dataResults));
+//        CellBaseDataResult dataResults = new CellBaseDataResult("id", 0, Collections.emptyList(), list.size(), list,
+//                list.size());
+        queryResponse.setResponses(Collections.singletonList(obj));
         logQuery(OK);
 
         return createJsonResponse(queryResponse);

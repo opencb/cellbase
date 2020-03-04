@@ -19,9 +19,10 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.FacetField;
@@ -36,9 +37,9 @@ import java.util.List;
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class RegulationCoreAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
-    public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public RegulationCoreAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 
@@ -149,7 +150,7 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

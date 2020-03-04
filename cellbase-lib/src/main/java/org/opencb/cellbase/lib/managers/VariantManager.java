@@ -28,7 +28,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
-import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.VariantCoreDBAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.Query;
@@ -47,7 +47,7 @@ public class VariantManager extends AbstractManager {
             + ":[(cipos_left)<](start)[<(cipos_right)]" + "[-[(ciend_left)<](end)[<(ciend_right)]]"
             + "[:(ref)]"
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
-    private VariantMongoDBAdaptor variantDBAdaptor;
+    private VariantCoreDBAdaptor variantDBAdaptor;
     private CellBaseManagerFactory cellbaseManagerFactory;
 
     public VariantManager(String species, String assembly, CellBaseConfiguration configuration) {

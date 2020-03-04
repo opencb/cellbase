@@ -17,19 +17,19 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.bson.BsonDocument;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * Created by fjlopez on 07/06/16.
  */
-public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     public MetaMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -48,7 +48,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

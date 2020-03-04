@@ -29,9 +29,10 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -48,7 +49,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 26/11/15.
  */
-public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class VariantCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final String ANNOTATION_FIELD = "annotation";
@@ -61,7 +62,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMon
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public VariantCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");
@@ -610,7 +611,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMon
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

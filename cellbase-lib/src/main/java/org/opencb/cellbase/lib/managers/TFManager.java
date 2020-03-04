@@ -19,14 +19,14 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TFManager extends AbstractManager {
 
-    private GeneMongoDBAdaptor geneDBAdaptor;
+    private GeneCoreDBAdaptor geneDBAdaptor;
 
     public TFManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);

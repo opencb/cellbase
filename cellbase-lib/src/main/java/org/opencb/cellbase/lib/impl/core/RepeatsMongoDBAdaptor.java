@@ -21,9 +21,10 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.RepeatsDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.FacetField;
@@ -39,7 +40,7 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 10/05/17.
  */
-public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
     private static final String REPEAT_COLLECTION = "repeats";
 
     public RepeatsMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDatastore) {
@@ -136,7 +137,7 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMon
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

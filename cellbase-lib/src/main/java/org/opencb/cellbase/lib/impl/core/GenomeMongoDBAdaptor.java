@@ -25,9 +25,10 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
@@ -42,7 +43,7 @@ import java.util.*;
 /**
  * Created by imedina on 07/12/15.
  */
-public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private MongoDBCollection genomeInfoMongoDBCollection;
     private MongoDBCollection conservationMongoDBCollection;
@@ -345,7 +346,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMong
 
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

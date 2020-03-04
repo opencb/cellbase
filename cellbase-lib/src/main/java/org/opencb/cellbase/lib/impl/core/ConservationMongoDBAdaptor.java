@@ -25,9 +25,10 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Score;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.ConservationDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.FacetField;
@@ -42,7 +43,7 @@ import java.util.function.Consumer;
  * Created by swaathi on 26/11/15.
  */
 @Deprecated
-public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     public ConservationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -301,7 +302,7 @@ public class ConservationMongoDBAdaptor extends MongoDBAdaptor implements CellBa
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

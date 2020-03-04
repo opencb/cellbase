@@ -29,7 +29,7 @@ import org.bson.BsonSerializationException;
 import org.bson.Document;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
@@ -37,7 +37,7 @@ import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.VariantCoreDBAdaptor;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -166,11 +166,11 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     @Deprecated
-    private CellBaseMongoDBAdaptor getDBAdaptor(String data) throws LoaderException {
+    private CellBaseCoreDBAdaptor getDBAdaptor(String data) throws LoaderException {
         String[] databaseParts = database.split("_");
         String species = databaseParts[1];
 //        String assembly = databaseParts[2];
-        CellBaseMongoDBAdaptor dbAdaptor;
+        CellBaseCoreDBAdaptor dbAdaptor;
         switch (data) {
             case "genome_info":
 //                dbAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
@@ -369,7 +369,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         dbObjectsBatch.add(dbObject);
                     }
 
-                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens");
+                    VariantCoreDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens");
 //                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     numLoadedObjects += numUpdates;

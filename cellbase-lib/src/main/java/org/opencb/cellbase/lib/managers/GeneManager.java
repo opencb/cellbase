@@ -21,14 +21,14 @@ import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
 
 import java.util.Iterator;
 import java.util.List;
 
 public class GeneManager extends AbstractManager {
 
-    private GeneMongoDBAdaptor geneDBAdaptor;
+    private GeneCoreDBAdaptor geneDBAdaptor;
 
     public GeneManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);

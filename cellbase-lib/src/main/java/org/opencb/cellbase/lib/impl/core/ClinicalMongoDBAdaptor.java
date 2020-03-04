@@ -24,10 +24,11 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
@@ -40,7 +41,7 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 06/12/16.
  */
-public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
@@ -255,7 +256,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMo
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 

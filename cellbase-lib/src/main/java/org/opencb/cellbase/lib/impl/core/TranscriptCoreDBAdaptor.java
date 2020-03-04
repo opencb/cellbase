@@ -24,9 +24,10 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.FacetField;
@@ -39,9 +40,9 @@ import java.util.*;
 /**
  * Created by swaathi on 27/11/15.
  */
-public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoDBAdaptor {
+public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
-    public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public TranscriptCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
@@ -264,7 +265,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public Iterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(AbstractQuery query) {
         return null;
     }
 
