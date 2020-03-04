@@ -101,6 +101,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
         List<CellBaseDataResult<Gene>> results = new ArrayList<>();
         for (GeneQuery query : queries) {
             results.add(query(query));
+            logger.info("Mongo geneQuery: " + query.toString());
         }
         return results;
     }
@@ -120,8 +121,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
         Bson bsonDocument = parseQuery(geneQuery);
         return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
     }
-
-
 
 //    @Override
 //    public CellBaseDataResult stats(GeneQuery geneQuery) {
@@ -209,12 +208,10 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 //
 
     public CellBaseDataResult groupBy(GeneQuery geneQuery) {
-        geneQuery.setCount(false);
-        Bson bsonQuery = parseQuery((GeneQuery) geneQuery);
+        Bson bsonQuery = parseQuery(geneQuery);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         return groupBy(bsonQuery, geneQuery, "name");
     }
-
 
 //    @Override
 //    public CellBaseDataResult startsWith(String id, QueryOptions options) {

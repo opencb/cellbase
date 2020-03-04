@@ -154,6 +154,11 @@ public class GenericRestWSServer implements IWSServer {
 //        params = new ObjectMap();
         uriParams = convertMultiToMap(uriInfo.getQueryParameters());
 
+        // assembly isn't needed in the query, only in the database connection which we already have.
+        if (uriParams.get("assembly") != null) {
+            uriParams.remove("assembly");
+        }
+
         // check version. species is validated later
         checkVersion();
     }

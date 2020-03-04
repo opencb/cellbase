@@ -40,10 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author imedina
@@ -323,6 +320,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
+            logger.info("/search GeneQuery: " + geneQuery.toString());
             CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -419,6 +417,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 GeneQuery geneQuery = new GeneQuery(uriParams);
                 geneQuery.setTranscriptsXrefs(Arrays.asList(identifier));
                 geneQueries.add(geneQuery);
+                logger.info("REST geneQuery: " + geneQuery.toString());
             }
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
             return createOkResponse(queryResults);

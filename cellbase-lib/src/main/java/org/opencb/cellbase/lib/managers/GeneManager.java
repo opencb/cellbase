@@ -44,11 +44,11 @@ public class GeneManager extends AbstractManager {
     public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws QueryException, IllegalAccessException {
         geneQuery.setDefaults();
         geneQuery.validate();
-        // TODO throw execption if facets populated
         return geneDBAdaptor.query(geneQuery);
     }
 
     public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
+        geneQuery.setCount(Boolean.FALSE);
         return geneDBAdaptor.groupBy(geneQuery);
     }
 
@@ -63,6 +63,7 @@ public class GeneManager extends AbstractManager {
     }
 
     public CellBaseDataResult<String> distinct(GeneQuery geneQuery) {
+        geneQuery.setCount(Boolean.FALSE);
         return geneDBAdaptor.distinct(geneQuery.getFacet(), geneQuery);
     }
 

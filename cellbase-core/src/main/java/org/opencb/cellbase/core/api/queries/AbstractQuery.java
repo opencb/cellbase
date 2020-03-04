@@ -138,7 +138,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                 params.remove(fieldNameDotNotation);
             }
             // TODO handle assembly better. we're just ignoring it now.
-            if (!params.isEmpty() && (params.containsKey("assembly") && params.size() > 1)) {
+            if (!params.isEmpty()) {
                 throw new QueryException("Invalid query parameter found: " + params.keySet().toString());
             }
             objectMapper.updateValue(this, objectHashMap);
@@ -167,7 +167,6 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         }
         return annotations;
     }
-
 
     protected abstract void validateQuery() throws QueryException;
 
@@ -305,7 +304,6 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         }
     }
 
-    // temporary method because java commons still uses query options
     public org.opencb.commons.datastore.core.QueryOptions toQueryOptions() {
         QueryOptions queryOptions = new org.opencb.commons.datastore.core.QueryOptions();
         queryOptions.put(QueryOptions.SKIP, skip);
