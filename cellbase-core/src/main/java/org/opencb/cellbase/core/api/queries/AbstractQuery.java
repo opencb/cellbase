@@ -38,7 +38,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
     protected ObjectMapper objectMapper;
     protected Logger logger;
 
-    public static final int DEFAULT_LIMIT = 10;
+    public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
 //    public static final int MAX_RECORDS = 1000;
 

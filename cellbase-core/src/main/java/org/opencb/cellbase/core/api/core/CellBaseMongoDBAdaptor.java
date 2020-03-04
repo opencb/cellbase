@@ -16,18 +16,35 @@
 
 package org.opencb.cellbase.core.api.core;
 
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public interface CellBaseMongoDBAdaptor<Q, T> {
+public interface CellBaseMongoDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
 
 
-    CellBaseDataResult<T> query(Q query);
+    default CellBaseDataResult<T> query(Q query) {
+        CellBaseDataResult<T> result = new CellBaseDataResult<>();
+        List<T> results = new ArrayList<>();
+        Iterator<T> iterator = iterator(query);
+        while (iterator.hasNext() && results.size() < 100000) {
+            T next = iterator.next();
+            results.add(next);
+        }
+        result.setResults(results);
+        return result;
+    }
 
     List<CellBaseDataResult<T>> query(List<Q> queries);
+
+    @Override
+    default Iterator<T> iterator() {
+        return iterator(null);
+    }
 
     Iterator<T> iterator(Q query);
 

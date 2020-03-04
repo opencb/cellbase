@@ -24,6 +24,8 @@ import java.util.Map;
 
 public class GeneQuery extends AbstractQuery {
 
+    public static final int DEFAULT_LIMIT = 20;
+
     @QueryParameter(id = "id")
     private List<String> ids;
     @QueryParameter(id = "name")
