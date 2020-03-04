@@ -23,8 +23,6 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -139,17 +137,17 @@ public class GeneManager extends AbstractManager {
 //        return geneQueryResults;
 //    }
 
-    @Deprecated
-    public List<CellBaseDataResult<Gene>> getGeneByEnsemblId(String id) {
-        String[] ids = id.split(",");
-        List<GeneQuery> queries = new ArrayList<>(ids.length);
-        for (String s : ids) {
-            queries.add(new GeneQuery().setTranscriptsXrefs(Arrays.asList(s)));
-        }
-        List<CellBaseDataResult<Gene>> geneQueryResults = geneDBAdaptor.query(queries);
-        for (int i = 0; i < ids.length; i++) {
-            geneQueryResults.get(i).setId(ids[i]);
-        }
-        return geneQueryResults;
-    }
+//    @Deprecated
+//    public List<CellBaseDataResult<Gene>> getGeneByEnsemblId(String id) {
+//        String[] ids = id.split(",");
+//        List<GeneQuery> queries = new ArrayList<>(ids.length);
+//        for (String s : ids) {
+//            queries.add(new GeneQuery().setTranscriptsXrefs(Arrays.asList(s)));
+//        }
+//        List<CellBaseDataResult<Gene>> geneQueryResults = geneDBAdaptor.query(queries);
+//        for (int i = 0; i < ids.length; i++) {
+//            geneQueryResults.get(i).setId(ids[i]);
+//        }
+//        return geneQueryResults;
+//    }
 }

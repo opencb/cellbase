@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -36,6 +37,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -177,8 +180,15 @@ public class IdWSServer extends GenericRestWSServer {
                                        @ApiParam(name = "id", value = "Comma separated list of ids to look"
                                                + " for within gene xrefs, e.g.: BRCA2", required = true) String id) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.getGeneByEnsemblId(id);
+            List<GeneQuery> geneQueries = new ArrayList<>();
+            String[] identifiers = id.split(",");
+            for (String identifier : identifiers) {
+                GeneQuery geneQuery = new GeneQuery(uriParams);
+                geneQuery.setTranscriptsXrefs(Arrays.asList(identifier));
+                geneQueries.add(geneQuery);
+                logger.info("REST geneQuery: " + geneQuery.toString());
+            }
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
