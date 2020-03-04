@@ -90,6 +90,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 
     @Override
     public CellBaseDataResult<Gene> query(GeneQuery query) {
+        logger.info(query.toString());
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = MongoDBQueryUtils.getProjection(queryOptions);
@@ -101,7 +102,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
         List<CellBaseDataResult<Gene>> results = new ArrayList<>();
         for (GeneQuery query : queries) {
             results.add(query(query));
-            logger.info("Mongo geneQuery: " + query.toString());
         }
         return results;
     }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.google.common.base.Splitter;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -94,6 +95,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                 queryMap.put(dotNotationName, value);
             }
         }
+        logger.info("toObjectMap(): " + queryMap.safeToString());
         return queryMap;
     }
 
@@ -310,10 +312,10 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         queryOptions.put(QueryOptions.LIMIT, limit);
         queryOptions.put(QueryOptions.COUNT, count);
         if (CollectionUtils.isNotEmpty(includes)) {
-            queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(includes));
+            queryOptions.getAsStringList(QueryOptions.INCLUDE).addAll(Splitter.on(",").splitToList(includes.get(0)));
         }
         if (CollectionUtils.isNotEmpty(excludes)) {
-            queryOptions.put(QueryOptions.EXCLUDE, StringUtils.join(excludes));
+            queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(excludes.get(0)));
         }
         if (StringUtils.isNotEmpty(sort)) {
             queryOptions.put(QueryOptions.SORT, sort);
