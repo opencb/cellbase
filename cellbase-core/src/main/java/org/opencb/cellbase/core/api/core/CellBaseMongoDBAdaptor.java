@@ -26,7 +26,6 @@ import java.util.List;
 
 public interface CellBaseMongoDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
 
-
     default CellBaseDataResult<T> query(Q query) {
         CellBaseDataResult<T> result = new CellBaseDataResult<>();
         List<T> results = new ArrayList<>();
@@ -39,7 +38,13 @@ public interface CellBaseMongoDBAdaptor<Q extends AbstractQuery, T> extends Iter
         return result;
     }
 
-    List<CellBaseDataResult<T>> query(List<Q> queries);
+    default List<CellBaseDataResult<T>> query(List<Q> queries) {
+        List<CellBaseDataResult<T>> results = new ArrayList<>();
+        for (Q query : queries) {
+            results.add(query(query));
+        }
+        return results;
+    }
 
     @Override
     default Iterator<T> iterator() {

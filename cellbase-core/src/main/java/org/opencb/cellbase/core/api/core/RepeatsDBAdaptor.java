@@ -23,7 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by fjlopez on 10/05/17.
  */
-public interface RepeatsDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
+public interface RepeatsDBAdaptor {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, "");

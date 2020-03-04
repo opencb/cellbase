@@ -264,32 +264,17 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public CellBaseDataResult query(Object query) {
+    public Iterator iterator(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public List<CellBaseDataResult> query(List queries) {
+    public CellBaseDataResult<String> distinct(String field, AbstractQuery query) {
         return null;
     }
 
     @Override
-    public Iterator iterator(Object query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<Long> count(Object query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<String> distinct(String field, Object query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, AbstractQuery query) {
         return null;
     }
 

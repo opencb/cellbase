@@ -98,13 +98,13 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 //        return result;
 //    }
 
-    public List<CellBaseDataResult<Gene>> query(List<GeneQuery> queries) {
-        List<CellBaseDataResult<Gene>> results = new ArrayList<>();
-        for (GeneQuery query : queries) {
-            results.add(query(query));
-        }
-        return results;
-    }
+//    public List<CellBaseDataResult<Gene>> query(List<GeneQuery> queries) {
+//        List<CellBaseDataResult<Gene>> results = new ArrayList<>();
+//        for (GeneQuery query : queries) {
+//            results.add(query(query));
+//        }
+//        return results;
+//    }
 
     @Override
     public Iterator<Gene> iterator(GeneQuery query) {

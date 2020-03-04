@@ -18,6 +18,7 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.bson.BsonDocument;
 import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -37,7 +38,7 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
     }
 
     @Override
-    public CellBaseDataResult query(Object query) {
+    public CellBaseDataResult query(AbstractQuery query) {
         return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
@@ -47,22 +48,22 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
     }
 
     @Override
-    public Iterator iterator(Object query) {
+    public Iterator iterator(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<Long> count(Object query) {
-        return new CellBaseDataResult<>(mongoDBCollection.count());
-    }
-
-    @Override
-    public CellBaseDataResult<String> distinct(String field, Object query) {
+    public CellBaseDataResult<Long> count(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+    public CellBaseDataResult<String> distinct(String field, AbstractQuery query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, AbstractQuery query) {
         return null;
     }
 }

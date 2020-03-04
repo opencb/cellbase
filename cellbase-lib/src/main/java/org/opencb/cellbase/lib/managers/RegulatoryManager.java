@@ -39,11 +39,11 @@ public class RegulatoryManager extends AbstractManager {
     }
 
     public CellBaseDataResult getFeatureTypes(Query query) {
-        return regulationDBAdaptor.distinct("featureType", query);
+        return regulationDBAdaptor.distinct(query, "featureType");
     }
 
     public CellBaseDataResult getFeatureClasses(Query query) {
-        return regulationDBAdaptor.distinct("featureClass", query);
+        return regulationDBAdaptor.distinct(query, "featureClass");
     }
 
     public CellBaseDataResult search(Query query, QueryOptions queryOptions) {

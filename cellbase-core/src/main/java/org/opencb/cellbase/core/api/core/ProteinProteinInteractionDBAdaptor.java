@@ -23,7 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by imedina on 13/12/15.
  */
-public interface ProteinProteinInteractionDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
+public interface ProteinProteinInteractionDBAdaptor {
 
     enum QueryParams implements QueryParam {
         INTERACTOR_A_ID("interactorA.id", TEXT_ARRAY, ""),

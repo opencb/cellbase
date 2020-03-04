@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.FacetField;
@@ -84,10 +85,10 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
 //    }
 //
 //    @Override
-//    public CellBaseDataResult distinct(Query query, String field) {
-//        Bson bsonDocument = parseQuery(query);
-//        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
-//    }
+    public CellBaseDataResult distinct(Query query, String field) {
+        Bson bsonDocument = parseQuery(query);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
+    }
 
 //    @Override
 //    public CellBaseDataResult stats(Query query) {
@@ -148,31 +149,22 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     }
 
     @Override
-    public CellBaseDataResult query(Object query) {
-        return null;
-    }
-
-    public List<CellBaseDataResult> query(List queries) {
+    public Iterator iterator(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public Iterator iterator(Object query) {
+    public CellBaseDataResult<Long> count(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<Long> count(Object query) {
+    public CellBaseDataResult<String> distinct(String field, AbstractQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(String field, Object query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, AbstractQuery query) {
         return null;
     }
 }

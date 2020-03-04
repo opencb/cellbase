@@ -23,7 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.*;
 /**
  * Created by imedina on 30/11/15.
  */
-public interface ClinicalDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
+public interface ClinicalDBAdaptor {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, ""),

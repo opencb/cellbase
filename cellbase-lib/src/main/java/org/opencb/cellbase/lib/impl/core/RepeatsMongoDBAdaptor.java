@@ -23,6 +23,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.api.core.CellBaseMongoDBAdaptor;
 import org.opencb.cellbase.core.api.core.RepeatsDBAdaptor;
+import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.FacetField;
@@ -135,32 +136,22 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMon
     }
 
     @Override
-    public CellBaseDataResult query(Object query) {
+    public Iterator iterator(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public List<CellBaseDataResult> query(List queries) {
+    public CellBaseDataResult<Long> count(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public Iterator iterator(Object query) {
+    public CellBaseDataResult<String> distinct(String field, AbstractQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<Long> count(Object query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<String> distinct(String field, Object query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List fields, Object query) {
+    public CellBaseDataResult<FacetField> aggregationStats(List fields, AbstractQuery query) {
         return null;
     }
 }

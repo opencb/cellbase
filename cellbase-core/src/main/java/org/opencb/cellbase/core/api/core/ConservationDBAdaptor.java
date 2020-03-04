@@ -29,7 +29,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
  * Created by swaathi on 26/11/15.
  */
 @Deprecated
-public interface ConservationDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
+public interface ConservationDBAdaptor {
 
     enum QueryParams implements QueryParam {
         REGION("region", TEXT_ARRAY, "");

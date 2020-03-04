@@ -32,7 +32,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.*;
 /**
  * Created by imedina on 26/11/15.
  */
-public interface VariantDBAdaptor<Q, T> extends CellBaseMongoDBAdaptor<Q, T> {
+public interface VariantDBAdaptor {
 
     enum QueryParams implements QueryParam {
         ID("id", TEXT_ARRAY, ""),
