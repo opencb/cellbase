@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.managers;
 import com.google.common.base.Splitter;
 import org.bson.Document;
 import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.XRefMongoDBAdaptor;
@@ -66,12 +67,13 @@ public class XrefManager extends AbstractManager {
         if (dbname != null && !dbname.isEmpty()) {
             query.put(XRefDBAdaptor.QueryParams.DBNAME.key(), dbname);
         }
-        CellBaseDataResult queryResult = xRefDBAdaptor.query(query);
+        // FIXME
+        CellBaseDataResult queryResult = xRefDBAdaptor.query(new GeneQuery());
         queryResult.setId(ids);
         return queryResult;
     }
 
     public CellBaseDataResult getDBNames(Query query) {
-        return xRefDBAdaptor.distinct("transcripts.xrefs.dbName", query);
+        return xRefDBAdaptor.distinct(query, "transcripts.xrefs.dbName");
     }
 }

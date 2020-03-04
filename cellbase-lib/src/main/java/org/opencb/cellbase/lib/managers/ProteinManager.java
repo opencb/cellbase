@@ -22,6 +22,7 @@ import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.core.ProteinDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.ProteinMongoDBAdaptor;
@@ -72,7 +73,8 @@ public class ProteinManager extends AbstractManager {
         logger.info("Searching transcripts for protein {}", id);
         Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
         QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-        CellBaseDataResult queryResult = transcriptDBAdaptor.query(transcriptQuery);
+        // FIXME
+        CellBaseDataResult queryResult = transcriptDBAdaptor.query(new GeneQuery());
         logger.info("{} transcripts found", queryResult.getNumResults());
         logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
 

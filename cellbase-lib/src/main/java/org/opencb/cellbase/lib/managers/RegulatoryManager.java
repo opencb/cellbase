@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.RegulationMongoDBAdaptor;
@@ -47,7 +48,8 @@ public class RegulatoryManager extends AbstractManager {
     }
 
     public CellBaseDataResult search(Query query, QueryOptions queryOptions) {
-        return regulationDBAdaptor.query(query);
+        // FIXME
+        return regulationDBAdaptor.query(new GeneQuery());
     }
 
     public List<CellBaseDataResult> getByRegions(Query query, QueryOptions queryOptions, String regions) {

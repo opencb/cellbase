@@ -63,4 +63,6 @@ public interface CellBaseMongoDBAdaptor<Q extends AbstractQuery, T> extends Iter
 
     CellBaseDataResult<String> distinct(String field, Q query);
 
+//    Bson parseQuery(Q query);
+
 }

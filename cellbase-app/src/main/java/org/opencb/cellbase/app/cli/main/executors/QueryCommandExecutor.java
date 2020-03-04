@@ -277,18 +277,18 @@ public class QueryCommandExecutor extends CommandExecutor {
 //            return;
 //        }
 
-        if (queryCommandOptions.count) {
-            CellBaseDataResult count = featureDBAdaptor.count(query);
-            output.println(objectMapper.writeValueAsString(count));
-            return;
-        }
+//        if (queryCommandOptions.count) {
+//            CellBaseDataResult count = featureDBAdaptor.count(query);
+//            output.println(objectMapper.writeValueAsString(count));
+//            return;
+//        }
 
 //        if (queryCommandOptions.histogram) {
 //            CellBaseDataResult histogram = featureDBAdaptor.getIntervalFrequencies(query, queryCommandOptions.interval, queryOptions);
 //            output.println(objectMapper.writeValueAsString(histogram));
 //            return;
 //        }
-
+        return;
     }
 
     private Query createQuery() {

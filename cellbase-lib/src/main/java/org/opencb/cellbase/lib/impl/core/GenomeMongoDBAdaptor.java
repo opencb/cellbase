@@ -38,7 +38,6 @@ import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Created by imedina on 07/12/15.
@@ -329,11 +328,6 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMong
 
     public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
         return null;
-    }
-
-
-    public void forEach(Query query, Consumer action, QueryOptions options) {
-
     }
 
     private Bson parseQuery(Query query) {

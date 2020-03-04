@@ -283,6 +283,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
 //        return distinct(geneQuery, "biotypes");
 //    }
 
+
     private Bson parseQuery(Query geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
         createRegionQuery(geneQuery, GeneDBAdaptor.QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
@@ -314,7 +315,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseMongoD
         }
     }
 
-    private Bson parseQuery(GeneQuery geneQuery) {
+    public Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
 
         try {
