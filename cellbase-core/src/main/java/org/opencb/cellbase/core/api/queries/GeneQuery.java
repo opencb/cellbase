@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.core.api.queries;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.BioUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,11 +73,13 @@ public class GeneQuery extends AbstractQuery {
 
     @Override
     protected void validateQuery() throws QueryException {
-//        if (CollectionUtils.isNotEmpty(biotypes)) {
-//            for (String biotype : biotypes) {
-//
-//            }
-//        }
+        if (CollectionUtils.isNotEmpty(biotypes)) {
+            for (String biotype : biotypes) {
+                if (!BioUtils.isValidBiotype(biotype)) {
+                    throw new QueryException("Invalid biotype: '" + biotype + "'");
+                }
+            }
+        }
     }
 
     @Override
