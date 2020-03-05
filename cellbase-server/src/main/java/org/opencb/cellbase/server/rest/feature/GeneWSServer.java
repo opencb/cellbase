@@ -408,7 +408,7 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getByEnsemblId(@PathParam("genes")
+    public Response getInfo(@PathParam("genes")
                                        @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
             List<GeneQuery> geneQueries = new ArrayList<>();

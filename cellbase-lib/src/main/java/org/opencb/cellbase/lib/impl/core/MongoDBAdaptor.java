@@ -130,6 +130,7 @@ public class MongoDBAdaptor {
         }
     }
 
+
     // add regions and IDs to the query, joined with OR
     protected void createIdRegionQuery(List<Region> regions, List<String> ids, List<Bson> andBsonList) {
         if (CollectionUtils.isEmpty(regions) && CollectionUtils.isEmpty(ids)) {

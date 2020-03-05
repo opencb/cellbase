@@ -326,7 +326,6 @@ public class GenericRestWSServer implements IWSServer {
         queryResponse.setTime(new Long(System.currentTimeMillis() - startTime).intValue());
         queryResponse.setApiVersion(version);
 
-        // FIXME
         ObjectMap params = new ObjectMap();
         params.put("species", species);
 //        params.putAll(query);
@@ -345,7 +344,7 @@ public class GenericRestWSServer implements IWSServer {
 
 //        CellBaseDataResult dataResults = new CellBaseDataResult("id", 0, Collections.emptyList(), list.size(), list,
 //                list.size());
-        queryResponse.setResponses(Collections.singletonList(obj));
+        queryResponse.setResponses(list);
         logQuery(OK);
 
         return createJsonResponse(queryResponse);

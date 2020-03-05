@@ -80,11 +80,11 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
 //        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
 //    }
 
-    @Override
-    public CellBaseDataResult<Long> count(GeneQuery query) {
-        Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
-    }
+//    @Override
+//    public CellBaseDataResult<Long> count(GeneQuery query) {
+//        Bson bsonDocument = parseQuery(query);
+//        return new CellBaseDataResult<>(mongoDBCollection.count(bsonDocument));
+//    }
 
     @Override
     public CellBaseDataResult<FacetField> aggregationStats(List<String> fields, GeneQuery query) {
@@ -338,8 +338,8 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
                             visited = true;
                         }
                         break;
-                    case "transcripts.id":
-                        createAndOrQuery(value, "transcripts.xref", QueryParam.Type.STRING, andBsonList);
+                    case "transcripts.xrefs":
+                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

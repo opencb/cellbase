@@ -23,28 +23,30 @@ import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.FacetField;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
+
+    int MAX_ROWS = 100000;
 
     default CellBaseDataResult<T> query(Q query) {
         List<T> results = new ArrayList<>();
         long time = System.currentTimeMillis();
         query.setCount(true);
         CellBaseIterator<T> iterator = iterator(query);
-        while (iterator.hasNext() && results.size() < 100000) {
+        while (iterator.hasNext() && results.size() < MAX_ROWS) {
             T next = iterator.next();
             results.add(next);
         }
         time = System.currentTimeMillis() - time;
-
 
         CellBaseDataResult<T> result = new CellBaseDataResult<>();
         result.setTime((int) time);
         result.setResults(results);
         result.setNumMatches(iterator.getNumMatches());
 //        result.setResultType(T);
-        if (results.size() > 1) {
+        if (results.size() > MAX_ROWS) {
             Event event = new Event(Event.Type.WARNING, "", "Max number of elements reached");
             if (result.getEvents() == null) {
                 result.setEvents(new ArrayList<>());
@@ -71,7 +73,14 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
 //    CellBaseDataResult<Document> nativeQuery(Q query);
 
-    CellBaseDataResult<Long> count(Q query);
+    default CellBaseDataResult<Long> count(Q query) {
+        query.setCount(true);
+        query.setLimit(0);
+        CellBaseDataResult<T> queryResults = query(query);
+        CellBaseDataResult<Long> countResults = new CellBaseDataResult<Long>();
+        countResults.setResults(Arrays.asList((long) queryResults.getNumResults()));
+        return countResults;
+    }
 
 //    Iterator<Document> nativeIterator(Q query);
 
