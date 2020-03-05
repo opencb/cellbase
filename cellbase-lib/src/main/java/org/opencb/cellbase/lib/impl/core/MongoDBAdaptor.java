@@ -165,32 +165,46 @@ public class MongoDBAdaptor {
         }
     }
 
-    protected Bson getProjection(org.opencb.cellbase.core.api.queries.QueryOptions options) {
-        List<Bson> projections = new ArrayList<>();
-        Bson include = null;
-        List<String> includeStringList = options.getIncludes();
-        if (includeStringList != null && includeStringList.size() > 0) {
-            include = Projections.include(includeStringList);
-        }
-        Bson exclude = null;
-        List<String> excludeStringList = options.getIncludes();
-        if (excludeStringList != null && excludeStringList.size() > 0) {
-            exclude = Projections.exclude(excludeStringList);
-        }
+    // TODO remove this and use method in MongoDBQueryUtils
+    protected static Bson getProjection(org.opencb.cellbase.core.api.queries.QueryOptions options) {
         Bson projectionResult = null;
+        List<Bson> projections = new ArrayList<>();
+
+        if (options != null) {
+            Bson include = null;
+            List<String> includeStringList = options.getIncludes();
+            if (CollectionUtils.isNotEmpty(includeStringList)) {
+                if (includeStringList != null && includeStringList.size() > 0) {
+                    include = Projections.include(includeStringList);
+                }
+            }
+
+            Bson exclude = null;
+            boolean excludeId = false;
+            List<String> excludeStringList = options.getExcludes();
+            if (CollectionUtils.isNotEmpty(excludeStringList)) {
+                exclude = Projections.exclude(excludeStringList);
+                excludeId = excludeStringList.contains("_id");
+            }
+
+            // If both include and exclude exist we only add include
+            if (include != null) {
+                projections.add(include);
+                // MongoDB allows to exclude _id when include is present
+                if (excludeId) {
+                    projections.add(Projections.excludeId());
+                }
+            } else {
+                if (exclude != null) {
+                    projections.add(exclude);
+                }
+            }
+        }
+
         if (projections.size() > 0) {
             projectionResult = Projections.fields(projections);
         }
-        // If both include and exclude exist we only add include
-        if (include != null) {
-            projections.add(include);
-            // MongoDB allows to exclude _id when include is present
-            projections.add(Projections.excludeId());
-        } else {
-            if (exclude != null) {
-                projections.add(exclude);
-            }
-        }
+
         return projectionResult;
     }
 

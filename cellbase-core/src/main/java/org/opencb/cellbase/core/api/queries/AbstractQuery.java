@@ -91,7 +91,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
             field.setAccessible(true);
             Object value = field.get(this);
             // don't add query options to the actual query
-            if (value != null && !queryOptions.containsKey(dotNotationName)) {
+            if (value != null && !queryOptions.containsKey(dotNotationName) && !"exclude".equals(dotNotationName)) {
                 queryMap.put(dotNotationName, value);
             }
         }
