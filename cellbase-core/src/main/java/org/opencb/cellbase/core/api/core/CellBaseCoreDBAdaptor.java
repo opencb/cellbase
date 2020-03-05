@@ -87,7 +87,4 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
     CellBaseDataResult<FacetField> aggregationStats(List<String> fields, Q query);
 
     CellBaseDataResult<String> distinct(String field, Q query);
-
-//    Bson parseQuery(Q query);
-
 }
