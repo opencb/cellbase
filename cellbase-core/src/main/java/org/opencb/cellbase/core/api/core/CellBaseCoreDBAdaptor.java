@@ -45,6 +45,7 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
         result.setTime((int) time);
         result.setResults(results);
         result.setNumMatches(iterator.getNumMatches());
+        result.setNumResults(results.size());
 //        result.setResultType(T);
         if (results.size() > MAX_ROWS) {
             Event event = new Event(Event.Type.WARNING, "", "Max number of elements reached");
