@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.apache.commons.collections.CollectionUtils;
 import org.bson.*;
 import org.bson.conversions.Bson;
@@ -162,6 +163,35 @@ public class MongoDBAdaptor {
             }
             andBsonList.add(Filters.or(orBsonList));
         }
+    }
+
+    protected Bson getProjection(org.opencb.cellbase.core.api.queries.QueryOptions options) {
+        List<Bson> projections = new ArrayList<>();
+        Bson include = null;
+        List<String> includeStringList = options.getIncludes();
+        if (includeStringList != null && includeStringList.size() > 0) {
+            include = Projections.include(includeStringList);
+        }
+        Bson exclude = null;
+        List<String> excludeStringList = options.getIncludes();
+        if (excludeStringList != null && excludeStringList.size() > 0) {
+            exclude = Projections.exclude(excludeStringList);
+        }
+        Bson projectionResult = null;
+        if (projections.size() > 0) {
+            projectionResult = Projections.fields(projections);
+        }
+        // If both include and exclude exist we only add include
+        if (include != null) {
+            projections.add(include);
+            // MongoDB allows to exclude _id when include is present
+            projections.add(Projections.excludeId());
+        } else {
+            if (exclude != null) {
+                projections.add(exclude);
+            }
+        }
+        return projectionResult;
     }
 
     protected void createRegionQuery(Query query, String queryParam, int chunkSize, List<Bson> andBsonList) {

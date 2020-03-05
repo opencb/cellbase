@@ -16,37 +16,38 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.GeneDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
-import org.opencb.commons.datastore.core.*;
+import org.opencb.commons.datastore.core.FacetField;
+import org.opencb.commons.datastore.core.Query;
+import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 25/11/15.
  */
 public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<GeneQuery, Gene> {
 
-    private static final String TRANSCRIPTS = "transcripts";
+//    private static final String TRANSCRIPTS = "transcripts";
     private static final String GENE = "gene";
-    private static final String ANNOTATION_FLAGS = "annotationFlags";
+//    private static final String ANNOTATION_FLAGS = "annotationFlags";
 
     public GeneCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -113,8 +114,7 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
     public CellBaseIterator<Gene> iterator(GeneQuery query) {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
-        Bson projection = MongoDBQueryUtils.getProjection(queryOptions);
-//        Converter converter = new Converter();
+        Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Gene> converter = new GenericDocumentComplexConverter<>(Gene.class);
         MongoDBIterator<Gene> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
@@ -177,10 +177,10 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
 //        return postDBFiltering((GeneQuery) geneQuery, new CellBaseDataResult<>(mongoDBCollection.find(bson, projection, queryOptions)));
 //    }
 
-    public Iterator nativeIterator(Query geneQuery, QueryOptions options) {
-        Bson bson = parseQuery(geneQuery);
-        return mongoDBCollection.nativeQuery().find(bson, options);
-    }
+//    public Iterator nativeIterator(Query geneQuery, QueryOptions options) {
+//        Bson bson = parseQuery(geneQuery);
+//        return mongoDBCollection.nativeQuery().find(bson, options);
+//    }
 
 //    @Override
 //    public void forEach(Query geneQuery, Consumer<? super Object> action, QueryOptions options) {
@@ -288,36 +288,37 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
 //    }
 
 
-    private Bson parseQuery(Query geneQuery) {
-        List<Bson> andBsonList = new ArrayList<>();
-        createRegionQuery(geneQuery, GeneDBAdaptor.QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
-
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.BIOTYPE.key(), "biotype", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
-
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
-
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName", andBsonList);
-
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
-        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
-
-        createExpressionQuery(geneQuery, andBsonList);
-
-        if (andBsonList.size() > 0) {
-            return Filters.and(andBsonList);
-        } else {
-            return new Document();
-        }
-    }
+//    private Bson parseQuery(Query geneQuery) {
+//        List<Bson> andBsonList = new ArrayList<>();
+//        createRegionQuery(geneQuery, GeneDBAdaptor.QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
+//
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ID.key(), "id", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.NAME.key(), "name", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.BIOTYPE.key(), "biotype", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+//
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_ID.key(), "transcripts.id", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_NAME.key(), "transcripts.name", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_BIOTYPE.key(), "transcripts.biotype", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
+//
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DISEASE_ID.key(), "annotation.diseases.id", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DISEASE_NAME.key(), "annotation.diseases.name", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_GENE.key(), "annotation.expression.geneName",
+//        andBsonList);
+//
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DRUGS_NAME.key(), "annotation.drugs.drugName", andBsonList);
+//        createOrQuery(geneQuery, GeneDBAdaptor.QueryParams.ANNOTATION_DRUGS_GENE.key(), "annotation.drugs.geneName", andBsonList);
+//
+//        createExpressionQuery(geneQuery, andBsonList);
+//
+//        if (andBsonList.size() > 0) {
+//            return Filters.and(andBsonList);
+//        } else {
+//            return new Document();
+//        }
+//    }
 
     public Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
@@ -327,8 +328,6 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
             for (Map.Entry<String, Object> entry : geneQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
-//                createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
-
                 switch (dotNotationName) {
                     case "id":
                     case "region":
@@ -341,6 +340,28 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
                     case "transcripts.xrefs":
                         createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
                         break;
+                    case "transcripts.annotationFlags":
+                        // TODO use unwind to filter out unwanted transcripts
+                        createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "transcripts.tfbs.name":
+                        createAndOrQuery(value, "transcripts.tfbs.tfName", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "annotation.expression.gene":
+                        createAndOrQuery(value, "annotation.expression.geneName", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "annotation.expression.tissue":
+                        createExpressionQuery(geneQuery, andBsonList);
+                        break;
+                    case "annotation.expression.value":
+                        // don't do anything, this value is parsed with the expression tissue
+                        break;
+                    case "annotation.drugs.name":
+                        createAndOrQuery(value, "annotation.drugs.drugName", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "annotation.drugs.gene":
+                        createAndOrQuery(value, "annotation.drugs.geneName", QueryParam.Type.STRING, andBsonList);
+                        break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;
@@ -349,8 +370,6 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-
-//        createExpressionQuery(geneQuery, andBsonList);
 
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
@@ -377,85 +396,117 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
         }
     }
 
-    private void createExpressionQuery(Query geneQuery, List<Bson> andBsonList) {
+    private void createExpressionQuery(GeneQuery geneQuery, List<Bson> andBsonList) {
         if (geneQuery != null) {
-            String tissue = geneQuery.getString(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_TISSUE.key());
-            if (tissue != null && !tissue.isEmpty()) {
-                String value = geneQuery.getString(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_VALUE.key());
-                if (value != null && !value.isEmpty()) {
-                    andBsonList.add(Filters.elemMatch("annotation.expression",
-                            Filters.and(Filters.regex("factorValue", "(.)*" + tissue + "(.)*", "i"), Filters.eq("expression", value))));
-                }
-            }
-        }
-    }
-
-    private Boolean postDBFilteringParametersEnabled(Query geneQuery) {
-        return StringUtils.isNotEmpty(geneQuery.getString(GeneDBAdaptor.QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key()));
-    }
-
-    private CellBaseDataResult<Document> postDBFiltering(Query geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
-        String annotationFlagsString = geneQuery.getString(GeneDBAdaptor.QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key());
-        if (StringUtils.isNotEmpty(annotationFlagsString)) {
-            Set<String> flags = new HashSet<>(Arrays.asList(annotationFlagsString.split(",")));
-            List<Document> documents = documentCellBaseDataResult.getResults();
-            for (Document document : documents) {
-                ArrayList<Document> transcripts = document.get(TRANSCRIPTS, ArrayList.class);
-                ArrayList<Document> matchedTranscripts = new ArrayList<>();
-                for (Document transcript : transcripts) {
-                    ArrayList annotationFlags = transcript.get(ANNOTATION_FLAGS, ArrayList.class);
-                    if (annotationFlags != null && annotationFlags.size() > 0) {
-                        if (CollectionUtils.containsAny(annotationFlags, flags)) {
-                            matchedTranscripts.add(transcript);
+            List<String> tissues = geneQuery.getAnnotationExpressionTissue();
+            if (CollectionUtils.isNotEmpty(tissues)) {
+                List<String> expressionValues = geneQuery.getAnnotationExpressionValue();
+                if (CollectionUtils.isNotEmpty(expressionValues)) {
+                    MongoDBQueryUtils.LogicalOperator tissuesOperator = ((LogicalList) tissues).isAnd()
+                            ? MongoDBQueryUtils.LogicalOperator.AND
+                            : MongoDBQueryUtils.LogicalOperator.OR;
+                    List<Bson> orBsonList = new ArrayList<>();
+                    for (String tissue : tissues) {
+                        for (String expressionValue : expressionValues) {
+                            if (tissuesOperator.equals(MongoDBQueryUtils.LogicalOperator.AND)) {
+                                andBsonList.add(Filters.elemMatch("annotation.expression",
+                                        Filters.and(Filters.regex("factorValue", "(.)*" + tissue
+                                                        + "(.)*", "i"), Filters.eq("expression", expressionValue))));
+                            } else {
+                                orBsonList.add(Filters.elemMatch("annotation.expression",
+                                        Filters.and(Filters.regex("factorValue", "(.)*" + tissue
+                                                + "(.)*", "i"), Filters.eq("expression", expressionValue))));
+                            }
+                        }
+                        if (!orBsonList.isEmpty()) {
+                            andBsonList.add(Filters.or(orBsonList));
                         }
                     }
                 }
-                document.put(TRANSCRIPTS, matchedTranscripts);
             }
-            documentCellBaseDataResult.setResults(documents);
         }
-        return documentCellBaseDataResult;
     }
 
-    private CellBaseDataResult<Document> postDBFiltering(GeneQuery geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
-        LogicalList<String> flags = geneQuery.getTranscriptsAnnotationFlags();
-        if (flags != null && !flags.isEmpty()) {
-            List<Document> documents = documentCellBaseDataResult.getResults();
-            for (Document document : documents) {
-                ArrayList<Document> transcripts = document.get(TRANSCRIPTS, ArrayList.class);
-                ArrayList<Document> matchedTranscripts = new ArrayList<>();
-                for (Document transcript : transcripts) {
-                    ArrayList annotationFlags = transcript.get(ANNOTATION_FLAGS, ArrayList.class);
-                    if (annotationFlags != null && annotationFlags.size() > 0) {
-                        if (CollectionUtils.containsAny(annotationFlags, flags)) {
-                            matchedTranscripts.add(transcript);
-                        }
-                    }
-                }
-                document.put(TRANSCRIPTS, matchedTranscripts);
-            }
-            documentCellBaseDataResult.setResults(documents);
-        }
-        return documentCellBaseDataResult;
-    }
+//    private void createExpressionQuery(Query geneQuery, List<Bson> andBsonList) {
+//        if (geneQuery != null) {
+//            String tissue = geneQuery.getString(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_TISSUE.key());
+//            if (tissue != null && !tissue.isEmpty()) {
+//                String value = geneQuery.getString(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_VALUE.key());
+//                if (value != null && !value.isEmpty()) {
+//                    andBsonList.add(Filters.elemMatch("annotation.expression",
+//                            Filters.and(Filters.regex("factorValue", "(.)*" + tissue + "(.)*", "i"),
+//                                    Filters.eq("expression", value))));
+//                }
+//            }
+//        }
+//    }
 
-    class Converter implements ComplexTypeConverter<Gene, Document> {
-//        private Object
-        @Override
-        public Gene convertToDataModelType(Document document) {
-            try {
-                document.remove("_id");
-                document.remove("_chunkIds");
-                return objectMapper.readerFor(Gene.class).readValue(objectMapper.writeValueAsString(document));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
+//    private Boolean postDBFilteringParametersEnabled(Query geneQuery) {
+//        return StringUtils.isNotEmpty(geneQuery.getString(GeneDBAdaptor.QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key()));
+//    }
+//
+//    private CellBaseDataResult<Document> postDBFiltering(Query geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
+//        String annotationFlagsString = geneQuery.getString(GeneDBAdaptor.QueryParams.TRANSCRIPT_ANNOTATION_FLAGS.key());
+//        if (StringUtils.isNotEmpty(annotationFlagsString)) {
+//            Set<String> flags = new HashSet<>(Arrays.asList(annotationFlagsString.split(",")));
+//            List<Document> documents = documentCellBaseDataResult.getResults();
+//            for (Document document : documents) {
+//                ArrayList<Document> transcripts = document.get(TRANSCRIPTS, ArrayList.class);
+//                ArrayList<Document> matchedTranscripts = new ArrayList<>();
+//                for (Document transcript : transcripts) {
+//                    ArrayList annotationFlags = transcript.get(ANNOTATION_FLAGS, ArrayList.class);
+//                    if (annotationFlags != null && annotationFlags.size() > 0) {
+//                        if (CollectionUtils.containsAny(annotationFlags, flags)) {
+//                            matchedTranscripts.add(transcript);
+//                        }
+//                    }
+//                }
+//                document.put(TRANSCRIPTS, matchedTranscripts);
+//            }
+//            documentCellBaseDataResult.setResults(documents);
+//        }
+//        return documentCellBaseDataResult;
+//    }
+//
+//    private CellBaseDataResult<Document> postDBFiltering(GeneQuery geneQuery, CellBaseDataResult<Document> documentCellBaseDataResult) {
+//        LogicalList<String> flags = geneQuery.getTranscriptsAnnotationFlags();
+//        if (flags != null && !flags.isEmpty()) {
+//            List<Document> documents = documentCellBaseDataResult.getResults();
+//            for (Document document : documents) {
+//                ArrayList<Document> transcripts = document.get(TRANSCRIPTS, ArrayList.class);
+//                ArrayList<Document> matchedTranscripts = new ArrayList<>();
+//                for (Document transcript : transcripts) {
+//                    ArrayList annotationFlags = transcript.get(ANNOTATION_FLAGS, ArrayList.class);
+//                    if (annotationFlags != null && annotationFlags.size() > 0) {
+//                        if (CollectionUtils.containsAny(annotationFlags, flags)) {
+//                            matchedTranscripts.add(transcript);
+//                        }
+//                    }
+//                }
+//                document.put(TRANSCRIPTS, matchedTranscripts);
+//            }
+//            documentCellBaseDataResult.setResults(documents);
+//        }
+//        return documentCellBaseDataResult;
+//    }
 
-        @Override
-        public Document convertToStorageType(Gene gene) {
-            return null;
-        }
-    }
+//    class Converter implements ComplexTypeConverter<Gene, Document> {
+////        private Object
+//        @Override
+//        public Gene convertToDataModelType(Document document) {
+//            try {
+//                document.remove("_id");
+//                document.remove("_chunkIds");
+//                return objectMapper.readerFor(Gene.class).readValue(objectMapper.writeValueAsString(document));
+//            } catch (JsonProcessingException e) {
+//                e.printStackTrace();
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        public Document convertToStorageType(Gene gene) {
+//            return null;
+//        }
+//    }
 }

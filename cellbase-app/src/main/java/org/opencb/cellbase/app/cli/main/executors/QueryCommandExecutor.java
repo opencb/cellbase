@@ -22,10 +22,14 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.core.api.core.*;
+import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.*;
+import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -42,6 +46,7 @@ import java.util.Iterator;
 public class QueryCommandExecutor extends CommandExecutor {
 
     private MongoDBAdaptorFactory dbAdaptorFactory;
+    private CellBaseManagerFactory cellBaseManagerFactory;
 
     private CellBaseCliOptionsParser.QueryCommandOptions queryCommandOptions;
 
@@ -58,8 +63,10 @@ public class QueryCommandExecutor extends CommandExecutor {
 
 
     @Override
-    public void execute() {
+    public void execute() throws CellbaseException {
         dbAdaptorFactory = new MongoDBAdaptorFactory(configuration);
+        cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
+
 
         if (queryCommandOptions.limit == 0) {
             queryCommandOptions.limit = 10;
@@ -131,9 +138,10 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
-
-    private void executeGeneQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
+    private void executeGeneQuery(Query query, QueryOptions queryOptions, PrintStream output)
+            throws JsonProcessingException, CellbaseException {
         GeneCoreDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
+        GeneManager geneManager = cellBaseManagerFactory.getGeneManager(queryCommandOptions.species, queryCommandOptions.assembly);
 
         executeFeatureAggregation(geneDBAdaptor, query, queryOptions, output);
 
@@ -141,7 +149,8 @@ public class QueryCommandExecutor extends CommandExecutor {
             switch (queryCommandOptions.resource) {
                 case "info":
                     query.append(GeneDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                    Iterator iterator = geneDBAdaptor.nativeIterator(query, queryOptions);
+                    //fix me
+                    Iterator iterator = geneManager.iterator(new GeneQuery());
                     while (iterator.hasNext()) {
                         Object next = iterator.next();
                         output.println(objectMapper.writeValueAsString(next));
@@ -220,9 +229,6 @@ public class QueryCommandExecutor extends CommandExecutor {
         }
     }
 
-
-
-
     private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         RegulationCoreAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
 
@@ -264,7 +270,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     private void executeFeatureAggregation(CellBaseCoreDBAdaptor featureDBAdaptor, Query query, QueryOptions queryOptions,
                                            PrintStream output)
             throws JsonProcessingException {
-
+// FIXME
 //        if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
 //            CellBaseDataResult distinct = featureDBAdaptor.distinct(query, queryCommandOptions.distinct);
 //            output.println(objectMapper.writeValueAsString(distinct));
