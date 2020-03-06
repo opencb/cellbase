@@ -81,7 +81,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfoByEnsemblId(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
+    public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
                                                required = true) String id) {
         try {
             List<ProteinQuery> proteinQueries = new ArrayList<>();
@@ -217,7 +217,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     @Path("/{proteins}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
         responseContainer = "QueryResponse")
-    public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = "UniProt accession id, e.g: Q9UL59",
+    public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = ParamConstants.PROTEIN_ACCESSION,
                                         required = true) String proteins) {
         ProteinQuery query = new ProteinQuery();
         query.setAccessions(Arrays.asList(proteins.split(",")));

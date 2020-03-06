@@ -188,19 +188,14 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
 
     public Bson parseQuery(TranscriptQuery query) {
         List<Bson> andBsonList = new ArrayList<>();
-
         try {
-            boolean visited = false;
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "region":
-                        if (!visited) {
-                            // parse region and ID at the same time
-                            createIdRegionQuery(query.getRegions(), null, andBsonList);
-                            visited = true;
-                        }
+                        // parse region and ID at the same time
+                        createIdRegionQuery(query.getRegions(), null, andBsonList);
                         break;
                     case "transcripts.xrefs":
                         createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);

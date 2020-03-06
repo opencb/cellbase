@@ -20,10 +20,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
-import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.ProteinCoreDBAdaptor;
@@ -31,10 +30,7 @@ import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //import org.forester.protein.Protein;
 
@@ -89,10 +85,11 @@ public class ProteinManager extends AbstractManager {
             throws JsonProcessingException {
         // Fetch Ensembl transcriptId to query substiturion scores
         logger.info("Searching transcripts for protein {}", id);
-        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
-        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-        // FIXME
-        CellBaseDataResult queryResult = transcriptDBAdaptor.query(new GeneQuery());
+//        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
+//        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
+        TranscriptQuery transcriptQuery = new TranscriptQuery();
+        transcriptQuery.setTranscriptsXrefs(new ArrayList<>(Arrays.asList(id)));
+        CellBaseDataResult queryResult = transcriptDBAdaptor.query(transcriptQuery);
         logger.info("{} transcripts found", queryResult.getNumResults());
         logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
 

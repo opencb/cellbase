@@ -84,6 +84,67 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
     }
 
+//    public CellBaseDataResult<Score> getSubstitutionScores(ProteinQuery query) {
+//        CellBaseDataResult result = null;
+//
+//        // Ensembl transcript id is needed for this collection
+//        if (query.get) {
+//            Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
+//
+//            int position = -1;
+//            String aaShortName = null;
+//            // If position and aa change are provided we create a 'projection' to return only the required data from the database
+//            if (query.get("position") != null && !query.getString("position").isEmpty() && query.getInt("position", 0) != 0) {
+//                position = query.getInt("position");
+//                String projectionString = "aaPositions." + position;
+//
+//                // If aa change is provided we only return that information
+//                if (query.getString("aa") != null && !query.getString("aa").isEmpty()) {
+//                    aaShortName = aaShortNameMap.get(query.getString("aa").toUpperCase());
+//                    projectionString += "." + aaShortName;
+//                }
+//
+//                // Projection is used to minimize the returned data
+//                Bson positionProjection = Projections.include(projectionString);
+//                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, positionProjection, options));
+//            } else {
+//                // Return the whole transcript data
+//                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, options));
+//            }
+//
+//            if (result != null && !result.getResults().isEmpty()) {
+//                Document document = (Document) result.getResults().get(0);
+//                Document aaPositionsDocument = (Document) document.get("aaPositions");
+//
+//                // Position or aa change were not provided, returning whole transcript data
+//                if (position == -1 || aaShortName == null) {
+//                    // Return only the inner Document, not the whole document projected
+//                    result.setResults(Collections.singletonList(aaPositionsDocument));
+//                    // Position and aa were provided, return only corresponding Score objects
+//                } else {
+//                    List<Score> scoreList = null;
+//                    if (result.getNumResults() == 1 && aaPositionsDocument != null) {
+//                        scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
+//                        Document positionDocument = (Document) aaPositionsDocument.get(Integer.toString(position));
+//                        Document aaDocument = (Document) positionDocument.get(aaShortName);
+//                        if (aaDocument.get("ss") != null) {
+//                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ss")),
+//                                    "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(aaDocument.get("se"))));
+//                        }
+//                        if (aaDocument.get("ps") != null) {
+//                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ps")),
+//                                    "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(aaDocument.get("pe"))));
+//                        }
+//                    }
+//                    result.setResults(scoreList);
+//                }
+//            }
+//        }
+//        // Return null if no transcript id is provided
+//        return result;
+//
+//    }
+
     public CellBaseDataResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
         CellBaseDataResult result = null;
 
