@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -36,6 +37,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -217,9 +220,11 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getTranscriptByRegion(@PathParam("regions") @ApiParam(name = "regions",
             value = ParamConstants.REGION_DESCRIPTION, required = true) String regions) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = transcriptManager.getByRegion(query, queryOptions, regions);
-            return createOkResponse(queryResults);
+            TranscriptQuery query = new TranscriptQuery(uriParams);
+            query.setRegions(new ArrayList(Arrays.asList(Region.parseRegions(regions))));
+            logger.info("/search TranscriptQuery: " + query.toString());
+            CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query);
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -236,6 +241,9 @@ public class RegionWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,

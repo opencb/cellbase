@@ -255,11 +255,11 @@ public class QueryCommandExecutor extends CommandExecutor {
             switch (queryCommandOptions.resource) {
                 case "info":
                     query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                    Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
-                    while (iterator.hasNext()) {
-                        Object next = iterator.next();
-                        output.println(objectMapper.writeValueAsString(next));
-                    }
+//                    Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
+//                    while (iterator.hasNext()) {
+//                        Object next = iterator.next();
+//                        output.println(objectMapper.writeValueAsString(next));
+//                    }
                     break;
                 default:
                     break;
