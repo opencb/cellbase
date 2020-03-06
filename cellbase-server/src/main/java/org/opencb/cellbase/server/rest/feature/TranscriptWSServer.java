@@ -22,6 +22,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -290,8 +291,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String transcripts) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, transcripts);
+            ProteinQuery query = new ProteinQuery(uriParams);
+            query.setXrefs(Arrays.asList(transcripts.split(",")));
+            logger.info("REST proteinQuery: " + query.toString());
+            CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

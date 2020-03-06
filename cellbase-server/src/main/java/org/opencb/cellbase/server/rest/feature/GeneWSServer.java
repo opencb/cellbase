@@ -26,6 +26,7 @@ import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -40,7 +41,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author imedina
@@ -669,8 +673,10 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
                                            required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, genes);
+            ProteinQuery query = new ProteinQuery(uriParams);
+            query.setGenes(Arrays.asList(genes.split(",")));
+            logger.info("REST proteinQuery: " + query.toString());
+            CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
