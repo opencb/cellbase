@@ -107,18 +107,6 @@ public class ProteinQuery extends AbstractQuery {
         return this;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ProteinQuery{");
-        sb.append("accessions=").append(accessions);
-        sb.append(", names=").append(names);
-        sb.append(", genes=").append(genes);
-        sb.append(", xrefs=").append(xrefs);
-        sb.append(", keywords=").append(keywords);
-        sb.append('}');
-        return sb.toString();
-    }
-
 
     public static final class Builder {
         private List<String> includes;
@@ -206,5 +194,25 @@ public class ProteinQuery extends AbstractQuery {
         public ProteinQuery build() {
             return new ProteinQuery(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProteinQuery{");
+        sb.append("accessions=").append(accessions);
+        sb.append(", names=").append(names);
+        sb.append(", genes=").append(genes);
+        sb.append(", xrefs=").append(xrefs);
+        sb.append(", keywords=").append(keywords);
+        sb.append(", limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
     }
 }

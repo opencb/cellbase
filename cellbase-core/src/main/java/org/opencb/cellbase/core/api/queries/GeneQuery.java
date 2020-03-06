@@ -366,6 +366,14 @@ public class GeneQuery extends TranscriptQuery {
         sb.append(", annotationExpressionValue=").append(annotationExpressionValue);
         sb.append(", annotationDrugsName=").append(annotationDrugsName);
         sb.append(", annotationDrugsGene=").append(annotationDrugsGene);
+        sb.append(", limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
         sb.append('}');
         return sb.toString();
     }
