@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.core.api.queries;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.BioUtils;
@@ -78,6 +79,7 @@ public class GeneQuery extends AbstractQuery {
         setSort(builder.sort);
         setOrder(builder.order);
         setFacet(builder.facet);
+        objectMapper = builder.objectMapper;
         setIds(builder.ids);
         setNames(builder.names);
         setBiotypes(builder.biotypes);
@@ -295,6 +297,7 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
+
     public static final class Builder {
         private List<String> includes;
         private List<String> excludes;
@@ -304,6 +307,7 @@ public class GeneQuery extends AbstractQuery {
         private String sort;
         private Order order;
         private String facet;
+        private ObjectMapper objectMapper;
         private List<String> ids;
         private List<String> names;
         private List<String> biotypes;
@@ -325,127 +329,132 @@ public class GeneQuery extends AbstractQuery {
         public Builder() {
         }
 
-        public Builder includes(List<String> val) {
+        public Builder withIncludes(List<String> val) {
             includes = val;
             return this;
         }
 
-        public Builder excludes(List<String> val) {
+        public Builder withExcludes(List<String> val) {
             excludes = val;
             return this;
         }
 
-        public Builder limit(Integer val) {
+        public Builder withLimit(Integer val) {
             limit = val;
             return this;
         }
 
-        public Builder skip(Integer val) {
+        public Builder withSkip(Integer val) {
             skip = val;
             return this;
         }
 
-        public Builder count(Boolean val) {
+        public Builder withCount(Boolean val) {
             count = val;
             return this;
         }
 
-        public Builder sort(String val) {
+        public Builder withSort(String val) {
             sort = val;
             return this;
         }
 
-        public Builder order(Order val) {
+        public Builder withOrder(Order val) {
             order = val;
             return this;
         }
 
-        public Builder facet(String val) {
+        public Builder withFacet(String val) {
             facet = val;
             return this;
         }
 
-        public Builder ids(List<String> val) {
+        public Builder withObjectMapper(ObjectMapper val) {
+            objectMapper = val;
+            return this;
+        }
+
+        public Builder withIds(List<String> val) {
             ids = val;
             return this;
         }
 
-        public Builder names(List<String> val) {
+        public Builder withNames(List<String> val) {
             names = val;
             return this;
         }
 
-        public Builder biotypes(List<String> val) {
+        public Builder withBiotypes(List<String> val) {
             biotypes = val;
             return this;
         }
 
-        public Builder regions(List<Region> val) {
+        public Builder withRegions(List<Region> val) {
             regions = val;
             return this;
         }
 
-        public Builder transcriptsBiotype(List<String> val) {
+        public Builder withTranscriptsBiotype(List<String> val) {
             transcriptsBiotype = val;
             return this;
         }
 
-        public Builder transcriptsXrefs(List<String> val) {
+        public Builder withTranscriptsXrefs(List<String> val) {
             transcriptsXrefs = val;
             return this;
         }
 
-        public Builder transcriptsId(List<String> val) {
+        public Builder withTranscriptsId(List<String> val) {
             transcriptsId = val;
             return this;
         }
 
-        public Builder transcriptsName(List<String> val) {
+        public Builder withTranscriptsName(List<String> val) {
             transcriptsName = val;
             return this;
         }
 
-        public Builder transcriptsAnnotationFlags(LogicalList<String> val) {
+        public Builder withTranscriptsAnnotationFlags(LogicalList<String> val) {
             transcriptsAnnotationFlags = val;
             return this;
         }
 
-        public Builder transcriptsTfbsName(LogicalList<String> val) {
+        public Builder withTranscriptsTfbsName(LogicalList<String> val) {
             transcriptsTfbsName = val;
             return this;
         }
 
-        public Builder annotationDiseasesId(LogicalList<String> val) {
+        public Builder withAnnotationDiseasesId(LogicalList<String> val) {
             annotationDiseasesId = val;
             return this;
         }
 
-        public Builder annotationDiseasesName(LogicalList<String> val) {
+        public Builder withAnnotationDiseasesName(LogicalList<String> val) {
             annotationDiseasesName = val;
             return this;
         }
 
-        public Builder annotationExpressionGene(LogicalList<String> val) {
+        public Builder withAnnotationExpressionGene(LogicalList<String> val) {
             annotationExpressionGene = val;
             return this;
         }
 
-        public Builder annotationExpressionTissue(LogicalList<String> val) {
+        public Builder withAnnotationExpressionTissue(LogicalList<String> val) {
             annotationExpressionTissue = val;
             return this;
         }
 
-        public Builder annotationExpressionValue(LogicalList<String> val) {
+        public Builder withAnnotationExpressionValue(LogicalList<String> val) {
             annotationExpressionValue = val;
             return this;
         }
 
-        public Builder annotationDrugsName(LogicalList<String> val) {
+        public Builder withAnnotationDrugsName(LogicalList<String> val) {
             annotationDrugsName = val;
             return this;
         }
 
-        public Builder annotationDrugsGene(LogicalList<String> val) {
+        public Builder withAnnotationDrugsGene(LogicalList<String> val) {
             annotationDrugsGene = val;
             return this;
         }

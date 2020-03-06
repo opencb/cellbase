@@ -171,8 +171,8 @@ public class GeneQueryTest {
     @Test
     public void testBuild() {
         LogicalList geneList = new LogicalList(Arrays.asList("My gene", "another-gene"));
-        geneQuery = new GeneQuery.Builder().ids(Arrays.asList("1")).biotypes(Arrays.asList("a", "b", "c"))
-                .annotationDrugsGene(geneList).build();
+        geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))
+                .withAnnotationDrugsGene(geneList).build();
 
         assertEquals("1", geneQuery.getIds().get(0));
 
