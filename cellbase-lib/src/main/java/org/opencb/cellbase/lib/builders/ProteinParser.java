@@ -73,7 +73,7 @@ public class ProteinParser extends CellBaseParser {
             });
 
             for (File file : files) {
-                Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT_v201504);
+                Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT_v202003);
 
                 for (Entry entry : uniprot.getEntry()) {
                     String entryOrganism = null;

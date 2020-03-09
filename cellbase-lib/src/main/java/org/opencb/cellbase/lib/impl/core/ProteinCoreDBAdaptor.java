@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import com.mongodb.BasicDBList;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
@@ -28,10 +29,10 @@ import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
 import org.opencb.commons.datastore.core.FacetField;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
@@ -84,11 +85,73 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         logger.debug("ProteinMongoDBAdaptor: in 'constructor'");
     }
 
-//    public CellBaseDataResult<Score> getSubstitutionScores(ProteinQuery query) {
+
+
+    public CellBaseDataResult<Score> getSubstitutionScores(TranscriptQuery query, Integer position, String aa) {
+        CellBaseDataResult result = null;
+
+        // Ensembl transcript id is needed for this collection
+        if (query.getTranscriptsId() != null && query.getTranscriptsId().get(0) != null) {
+            Bson transcript = Filters.eq("transcriptId", query.getTranscriptsId().get(0));
+
+            String aaShortName = null;
+            // If position and aa change are provided we create a 'projection' to return only the required data from the database
+            if (position != null) {
+                String projectionString = "aaPositions." + position;
+
+                // If aa change is provided we only return that information
+                if (StringUtils.isNotEmpty(aa)) {
+                    aaShortName = aaShortNameMap.get(aa.toUpperCase());
+                    projectionString += "." + aaShortName;
+                }
+
+                // Projection is used to minimize the returned data
+                Bson positionProjection = Projections.include(projectionString);
+                result = new CellBaseDataResult<>(
+                        proteinSubstitutionMongoDBCollection.find(transcript, positionProjection, query.toQueryOptions()));
+            } else {
+                // Return the whole transcript data
+                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, query.toQueryOptions()));
+            }
+
+            if (result != null && !result.getResults().isEmpty()) {
+                Document document = (Document) result.getResults().get(0);
+                Document aaPositionsDocument = (Document) document.get("aaPositions");
+
+                // Position or aa change were not provided, returning whole transcript data
+                if (position == null || position == -1 || aaShortName == null) {
+                    // Return only the inner Document, not the whole document projected
+                    result.setResults(Collections.singletonList(aaPositionsDocument));
+                    // Position and aa were provided, return only corresponding Score objects
+                } else {
+                    List<Score> scoreList = null;
+                    if (result.getNumResults() == 1 && aaPositionsDocument != null) {
+                        scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
+                        Document positionDocument = (Document) aaPositionsDocument.get(Integer.toString(position));
+                        Document aaDocument = (Document) positionDocument.get(aaShortName);
+                        if (aaDocument.get("ss") != null) {
+                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ss")),
+                                    "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(aaDocument.get("se"))));
+                        }
+                        if (aaDocument.get("ps") != null) {
+                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ps")),
+                                    "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(aaDocument.get("pe"))));
+                        }
+                    }
+                    result.setResults(scoreList);
+                }
+            }
+        }
+        // Return null if no transcript id is provided
+        return result;
+
+    }
+
+//    public CellBaseDataResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
 //        CellBaseDataResult result = null;
 //
 //        // Ensembl transcript id is needed for this collection
-//        if (query.get) {
+//        if (query.getString("transcript") != null) {
 //            Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
 //
 //            int position = -1;
@@ -120,7 +183,7 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 //                if (position == -1 || aaShortName == null) {
 //                    // Return only the inner Document, not the whole document projected
 //                    result.setResults(Collections.singletonList(aaPositionsDocument));
-//                    // Position and aa were provided, return only corresponding Score objects
+//                // Position and aa were provided, return only corresponding Score objects
 //                } else {
 //                    List<Score> scoreList = null;
 //                    if (result.getNumResults() == 1 && aaPositionsDocument != null) {
@@ -145,67 +208,6 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 //
 //    }
 
-    public CellBaseDataResult<Score> getSubstitutionScores(Query query, QueryOptions options) {
-        CellBaseDataResult result = null;
-
-        // Ensembl transcript id is needed for this collection
-        if (query.getString("transcript") != null) {
-            Bson transcript = Filters.eq("transcriptId", query.getString("transcript"));
-
-            int position = -1;
-            String aaShortName = null;
-            // If position and aa change are provided we create a 'projection' to return only the required data from the database
-            if (query.get("position") != null && !query.getString("position").isEmpty() && query.getInt("position", 0) != 0) {
-                position = query.getInt("position");
-                String projectionString = "aaPositions." + position;
-
-                // If aa change is provided we only return that information
-                if (query.getString("aa") != null && !query.getString("aa").isEmpty()) {
-                    aaShortName = aaShortNameMap.get(query.getString("aa").toUpperCase());
-                    projectionString += "." + aaShortName;
-                }
-
-                // Projection is used to minimize the returned data
-                Bson positionProjection = Projections.include(projectionString);
-                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, positionProjection, options));
-            } else {
-                // Return the whole transcript data
-                result = new CellBaseDataResult<>(proteinSubstitutionMongoDBCollection.find(transcript, options));
-            }
-
-            if (result != null && !result.getResults().isEmpty()) {
-                Document document = (Document) result.getResults().get(0);
-                Document aaPositionsDocument = (Document) document.get("aaPositions");
-
-                // Position or aa change were not provided, returning whole transcript data
-                if (position == -1 || aaShortName == null) {
-                    // Return only the inner Document, not the whole document projected
-                    result.setResults(Collections.singletonList(aaPositionsDocument));
-                // Position and aa were provided, return only corresponding Score objects
-                } else {
-                    List<Score> scoreList = null;
-                    if (result.getNumResults() == 1 && aaPositionsDocument != null) {
-                        scoreList = new ArrayList<>(NUM_PROTEIN_SUBSTITUTION_SCORE_METHODS);
-                        Document positionDocument = (Document) aaPositionsDocument.get(Integer.toString(position));
-                        Document aaDocument = (Document) positionDocument.get(aaShortName);
-                        if (aaDocument.get("ss") != null) {
-                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ss")),
-                                    "sift", VariantAnnotationUtils.SIFT_DESCRIPTIONS.get(aaDocument.get("se"))));
-                        }
-                        if (aaDocument.get("ps") != null) {
-                            scoreList.add(new Score(Double.parseDouble("" + aaDocument.get("ps")),
-                                    "polyphen", VariantAnnotationUtils.POLYPHEN_DESCRIPTIONS.get(aaDocument.get("pe"))));
-                        }
-                    }
-                    result.setResults(scoreList);
-                }
-            }
-        }
-        // Return null if no transcript id is provided
-        return result;
-
-    }
-
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
                                                                       String aaAlternate, QueryOptions options) {
         CellBaseDataResult<ProteinVariantAnnotation> cellBaseDataResult = new CellBaseDataResult<>();
@@ -216,10 +218,12 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         proteinVariantAnnotation.setPosition(position);
         proteinVariantAnnotation.setReference(aaReference);
         proteinVariantAnnotation.setAlternate(aaAlternate);
-        Query query = new Query("transcript", ensemblTranscriptId).append("position", position).append("aa", aaAlternate);
+//        Query query = new Query("transcript", ensemblTranscriptId).append("position", position).append("aa", aaAlternate);
         // Stop_gain/lost variants do not have SIFT/POLYPHEN scores
         if (!aaAlternate.equals("STOP") && !aaReference.equals("STOP")) {
-            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, null).getResults());
+            TranscriptQuery query = new TranscriptQuery();
+            query.setTranscriptsId(Collections.singletonList(ensemblTranscriptId));
+            proteinVariantAnnotation.setSubstitutionScores(getSubstitutionScores(query, position, aaAlternate).getResults());
         }
 
         CellBaseDataResult proteinVariantData = null;

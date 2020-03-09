@@ -20,6 +20,7 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -146,10 +147,7 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
         notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "position", value = ParamConstants.POSITION_DESCRIPTION,
-                    required = false, dataType = "Integer", paramType = "query"),
-            @ApiImplicitParam(name = "aa", value = ParamConstants.AA_DESCRIPTION,
-                    required = false, dataType = "String", paramType = "query"),
+
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
@@ -165,10 +163,15 @@ public class ProteinWSServer extends GenericRestWSServer {
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getSubstitutionScores(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_ID,
-                                                  required = true) String id) {
+                                                  required = true) String id,
+                                          @QueryParam("position") @ApiParam(name = "position", value = ParamConstants.POSITION_DESCRIPTION,
+                                                  required = false) Integer position,
+                                          @QueryParam("aa") @ApiParam(name = "aa", value = ParamConstants.AA_DESCRIPTION,
+                                                  required = false) String aa) {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResult = proteinManager.getSubstitutionScores(query, queryOptions, id);
+            TranscriptQuery query = new TranscriptQuery(uriParams);
+            query.setTranscriptsXrefs(Arrays.asList(id.split(",")));
+            CellBaseDataResult queryResult = proteinManager.getSubstitutionScores(query, position, aa);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);

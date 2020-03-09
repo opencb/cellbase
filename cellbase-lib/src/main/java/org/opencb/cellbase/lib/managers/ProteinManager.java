@@ -27,12 +27,12 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.ProteinCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.*;
-
-//import org.forester.protein.Protein;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class ProteinManager extends AbstractManager {
 
@@ -81,30 +81,56 @@ public class ProteinManager extends AbstractManager {
         return proteinDBAdaptor.iterator(query);
     }
 
-    public CellBaseDataResult getSubstitutionScores(Query query, QueryOptions queryOptions, String id)
+    public CellBaseDataResult getSubstitutionScores(TranscriptQuery query, Integer position, String aa)
             throws JsonProcessingException {
         // Fetch Ensembl transcriptId to query substiturion scores
-        logger.info("Searching transcripts for protein {}", id);
+        logger.info("Searching transcripts for {}", query.getTranscriptsXrefs());
 //        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
 //        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-        TranscriptQuery transcriptQuery = new TranscriptQuery();
-        transcriptQuery.setTranscriptsXrefs(new ArrayList<>(Arrays.asList(id)));
-        CellBaseDataResult queryResult = transcriptDBAdaptor.query(transcriptQuery);
+        query.setIncludes(Collections.singletonList("transcripts.id"));
+        CellBaseDataResult queryResult = transcriptDBAdaptor.query(query);
         logger.info("{} transcripts found", queryResult.getNumResults());
         logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
 
         // Get substitution scores for fetched transcript
         if (queryResult.getNumResults() > 0) {
-            query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
+            String transcriptId = (String) ((Map) queryResult.getResults().get(0)).get("id");
+            query.setTranscriptsId(Collections.singletonList(transcriptId));
+//            query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
             logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
-            logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
-            CellBaseDataResult scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
-            scoresCellBaseDataResult.setId(id);
+            logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(query.toQueryOptions()));
+            CellBaseDataResult scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, position, aa);
+            scoresCellBaseDataResult.setId(query.getTranscriptsXrefs().get(0));
             return scoresCellBaseDataResult;
         } else {
             return queryResult;
         }
     }
+
+//    public CellBaseDataResult getSubstitutionScores(Query query, QueryOptions queryOptions, String id)
+//            throws JsonProcessingException {
+//        // Fetch Ensembl transcriptId to query substiturion scores
+//        logger.info("Searching transcripts for protein {}", id);
+////        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
+////        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
+//        TranscriptQuery transcriptQuery = new TranscriptQuery();
+//        transcriptQuery.setTranscriptsXrefs(new ArrayList<>(Arrays.asList(id)));
+//        CellBaseDataResult queryResult = transcriptDBAdaptor.query(transcriptQuery);
+//        logger.info("{} transcripts found", queryResult.getNumResults());
+//        logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
+//
+//        // Get substitution scores for fetched transcript
+//        if (queryResult.getNumResults() > 0) {
+//            query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
+//            logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
+//            logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(queryOptions));
+//            CellBaseDataResult scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
+//            scoresCellBaseDataResult.setId(id);
+//            return scoresCellBaseDataResult;
+//        } else {
+//            return queryResult;
+//        }
+//    }
 
 //    public CellBaseDataResult<String> getSequence(Query query, QueryOptions queryOptions, String proteins) {
 //        query.put(ProteinDBAdaptor.QueryParams.ACCESSION.key(), proteins);

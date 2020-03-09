@@ -327,17 +327,18 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcripts}/functionPrediction")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the protein of a certain transcript",
             notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "position", value = ParamConstants.POSITION_DESCRIPTION, required = false, dataType = "Integer",
-                    paramType = "query"),
-            @ApiImplicitParam(name = "aa", value = ParamConstants.AA_DESCRIPTION, required = false, dataType = "String",
-                    paramType = "query")
-    })
     public Response getProteinFunctionPredictionBytranscripts(@PathParam("transcript") @ApiParam(name = "transcript",
-            value = ParamConstants.TRANSCRIPT_XREF, required = true) String id) {
+            value = ParamConstants.TRANSCRIPT_XREF, required = true) String id,
+                                                              @QueryParam("position") @ApiParam(name = "position",
+                                                                      value = ParamConstants.POSITION_DESCRIPTION,
+                                                                      required = false) Integer position,
+                                                              @QueryParam("aa") @ApiParam(name = "aa",
+                                                                      value = ParamConstants.AA_DESCRIPTION,
+                                                                      required = false) String aa) {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, queryOptions, id);
+            TranscriptQuery query = new TranscriptQuery(uriParams);
+            query.setTranscriptsXrefs(Arrays.asList(id.split(",")));
+            CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, position, aa);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
