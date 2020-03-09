@@ -67,6 +67,8 @@ public class ParamConstants {
             + "e.g. protein_coding,miRNA,lincRNA. Exact text matches will be returned";
     public static final String TRANSCRIPT_XREFS = "Comma separated list transcript xrefs ids, "
             + "e.g. ENSG00000145113,35912_at,GO:0002020. Exact text matches will be returned";
+    public static final String TRANSCRIPT_XREF = "String indicating one ENSEMBL transcript id e.g.: ENST00000536068. "
+            + "Exact text matches will be returned";
     public static final String TRANSCRIPT_ENSEMBL_IDS = "Comma separated list of ENSEMBL transcript ids, "
             + "e.g. ENST00000342992,ENST00000380152,ENST00000544455. Exact text matches will be returned";
     public static final String TRANSCRIPT_NAMES = "Comma separated list of transcript names, e.g. BRCA2-201,TTN-003."
@@ -182,4 +184,16 @@ public class ParamConstants {
     // ---------------------------------------------
 
     public static final String STRAND = "Strand to query, either 1 or -1";
+
+    // ---------------------------------------------
+
+    public static final String SUBSTITUTION_SCORE_NOTE = "Schema of returned objects will vary depending on provided query parameters. "
+            + "If the amino acid position is provided, all scores will be returned for every possible amino acid change occurring at that "
+            + "position. If the alternate aminoacid is provided as well, Score objects as specified at "
+            + "https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl shall be "
+            + "returned. If none of these parameters are provided, the whole list of scores for every possible amino acid change in "
+            + "the protein shall be returned.";
+    public static final String AA_DESCRIPTION = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding "
+            + "of aminoacid names, e.g.: CYS";
+    public static final String POSITION_DESCRIPTION = "Integer indicating the aminoacid position to check";
 }

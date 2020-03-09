@@ -325,31 +325,16 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcripts}/functionPrediction")
-    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the protein of a"
-            + " certain transcript",
-            notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
-                    + " position is provided, all scores will be returned for every possible amino acid"
-                    + " change occurring at that position. If the alternate aminoacid is provided as well, Score objects as"
-                    + " specified at "
-                    + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl"
-                    + " shall be returned. If none of these parameters are provided, the whole list of scores for every"
-                    + " possible amino acid change in the protein shall be returned.",
-            response = List.class, responseContainer = "QueryResponse")
+    @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the protein of a certain transcript",
+            notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "position",
-                    value = "Integer indicating the aminoacid position to check",
-                    required = false, dataType = "Integer", paramType = "query"),
-            @ApiImplicitParam(name = "aa",
-                    value = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding"
-                            + " of aminoacid names, e.g.: CYS",
-                    required = false, dataType = "String", paramType = "query")
+            @ApiImplicitParam(name = "position", value = ParamConstants.POSITION_DESCRIPTION, required = false, dataType = "Integer",
+                    paramType = "query"),
+            @ApiImplicitParam(name = "aa", value = ParamConstants.AA_DESCRIPTION, required = false, dataType = "String",
+                    paramType = "query")
     })
-    public Response getProteinFunctionPredictionBytranscripts(@PathParam("transcript")
-                                                               @ApiParam(name = "transcript",
-                                                                value = "String indicating one ENSEMBL transcript id"
-                                                                        + " e.g.: ENST00000536068. Exact text matches "
-                                                                        + "will be returned",
-                                                                required = true) String id) {
+    public Response getProteinFunctionPredictionBytranscripts(@PathParam("transcript") @ApiParam(name = "transcript",
+            value = ParamConstants.TRANSCRIPT_XREF, required = true) String id) {
         try {
             parseQueryParams();
             CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, queryOptions, id);

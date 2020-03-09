@@ -330,15 +330,20 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
                 switch (dotNotationName) {
                     case "id":
                     case "region":
+                    case "name":
+                    case "transcripts.xrefs":
                         if (!visited) {
-                            // parse region and ID at the same time
-                            createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
+                            List<String> identifers = new ArrayList<>();
+                            identifers.addAll(geneQuery.getIds());
+                            identifers.addAll(geneQuery.getNames());
+                            identifers.addAll(geneQuery.getTranscriptsXrefs());
+                            createIdRegionQuery(geneQuery.getRegions(), identifers, andBsonList);
                             visited = true;
                         }
                         break;
-                    case "transcripts.xrefs":
-                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
-                        break;
+//                    case "transcripts.xrefs":
+//                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
+//                        break;
                     case "transcripts.annotationFlags":
                         // TODO use unwind to filter out unwanted transcripts
                         createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);

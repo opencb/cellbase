@@ -144,21 +144,11 @@ public class ProteinWSServer extends GenericRestWSServer {
     @GET
     @Path("/{proteins}/substitutionScores")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the input protein",
-        notes = "Schema of returned objects will vary depending on provided query parameters. If the amino acid "
-                + " position is provided, all scores will be returned for every possible amino acid"
-                + " change occurring at that position. If the alternate aminoacid is provided as well, Score objects as"
-                + " specified at "
-                + " https://github.com/opencb/biodata/blob/develop/biodata-models/src/main/resources/avro/variantAnnotation.avdl"
-                + " shall be returned. If none of these parameters are provided, the whole list of scores for every"
-                + " possible amino acid change in the protein shall be returned.",
-            response = List.class, responseContainer = "QueryResponse")
+        notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "position",
-                    value = "Integer indicating the aminoacid position to check",
+            @ApiImplicitParam(name = "position", value = ParamConstants.POSITION_DESCRIPTION,
                     required = false, dataType = "Integer", paramType = "query"),
-            @ApiImplicitParam(name = "aa",
-                    value = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding"
-                            + " of aminoacid names, e.g.: CYS",
+            @ApiImplicitParam(name = "aa", value = ParamConstants.AA_DESCRIPTION,
                     required = false, dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
