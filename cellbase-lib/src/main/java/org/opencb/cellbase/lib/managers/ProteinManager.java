@@ -18,7 +18,7 @@ package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
@@ -77,7 +77,7 @@ public class ProteinManager extends AbstractManager {
         return queryResults;
     }
 
-    public Iterator<org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry> iterator(ProteinQuery query) {
+    public Iterator<Entry> iterator(ProteinQuery query) {
         return proteinDBAdaptor.iterator(query);
     }
 

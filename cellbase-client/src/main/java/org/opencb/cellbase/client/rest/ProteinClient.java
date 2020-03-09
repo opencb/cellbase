@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.client.rest;
 
-import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.client.config.ClientConfiguration;
 import org.opencb.cellbase.core.CellBaseDataResponse;
 import org.opencb.commons.datastore.core.QueryOptions;
