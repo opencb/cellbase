@@ -26,13 +26,15 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
@@ -40,7 +42,7 @@ import java.util.*;
 /**
  * Created by swaathi on 27/11/15.
  */
-public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
+public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
 
     public TranscriptCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -69,7 +71,17 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
 //                Collections.singletonList(sequence), 1);
 //    }
 
-    public CellBaseDataResult<Long> count(AbstractQuery query) {
+    @Override
+    public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
+        Bson bson = parseQuery(query);
+        QueryOptions queryOptions = query.toQueryOptions();
+        Bson projection = getProjection(query);
+        GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
+        MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        return new CellBaseIterator<>(iterator);
+    }
+
+    public CellBaseDataResult<Long> count(TranscriptQuery query) {
         Bson document = parseQuery(query);
         Bson match = Aggregates.match(document);
 
@@ -95,6 +107,16 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
                 cellBaseDataResult.getNumResults(), Collections.singletonList(count), cellBaseDataResult.getNumMatches());
     }
 
+    @Override
+    public CellBaseDataResult<FacetField> aggregationStats(List<String> fields, TranscriptQuery query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(String field, TranscriptQuery query) {
+        return null;
+    }
+
 //    @Override
 //    public CellBaseDataResult distinct(Query query, String field) {
 //        Bson bsonDocument = parseQuery(query);
@@ -106,85 +128,118 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
 //        return null;
 //    }
 
-    public CellBaseDataResult<Transcript> get(Query query, QueryOptions options) {
-        return null;
-    }
+//    public CellBaseDataResult<Transcript> get(Query query, QueryOptions options) {
+//        return null;
+//    }
 
-    public List<CellBaseDataResult> nativeGet(List<Query> query, QueryOptions options) {
-        //return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), options));
-        return null;
-    }
+//    public List<CellBaseDataResult> nativeGet(List<Query> query, QueryOptions options) {
+//        //return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), options));
+//    }
 
-    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
-        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
-        return new CellBaseDataResult(mongoDBCollection.aggregate(aggregateList, options));
-    }
+//    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
+//        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
+//        return new CellBaseDataResult(mongoDBCollection.aggregate(aggregateList, options));
+//    }
 
-    public Iterator<Transcript> iterator(Query query, QueryOptions options) {
-        return null;
-    }
+//    public Iterator<Transcript> iterator(Query query, QueryOptions options) {
+//        return null;
+//    }
 
-    public Iterator nativeIterator(Query query, QueryOptions options) {
-        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
-        return mongoDBCollection.nativeQuery().aggregate(aggregateList, options).iterator();
-//        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
-    }
+//    public Iterator nativeIterator(Query query, QueryOptions options) {
+//        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
+//        return mongoDBCollection.nativeQuery().aggregate(aggregateList, options).iterator();
+////        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
+//    }
 
 //    public void forEach(Query query, Consumer action, QueryOptions options) {
 //
 //    }
 
-    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
-        return null;
-    }
-
-    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-        Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, field, "name", options);
-    }
-
-    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
-        Bson bsonQuery = parseQuery(query);
-        return groupBy(bsonQuery, fields, "name", options);
-    }
-
-    public CellBaseDataResult next(Query query, QueryOptions options) {
-        return null;
-    }
-
-    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
-        return null;
-    }
+//    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
+//        return null;
+//    }
+//
+//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
+//        Bson bsonQuery = parseQuery(query);
+//        return groupBy(bsonQuery, field, "name", options);
+//    }
+//
+//    public CellBaseDataResult groupBy(Query query, List fields, QueryOptions options) {
+//        Bson bsonQuery = parseQuery(query);
+//        return groupBy(bsonQuery, fields, "name", options);
+//    }
+//
+//    public CellBaseDataResult next(Query query, QueryOptions options) {
+//        return null;
+//    }
+//
+//    public CellBaseDataResult nativeNext(Query query, QueryOptions options) {
+//        return null;
+//    }
 
     public CellBaseDataResult getIntervalFrequencies(Query query, int intervalSize, QueryOptions options) {
         if (query.getString("region") != null) {
             Region region = Region.parseRegion(query.getString("region"));
-            Bson bsonDocument = parseQuery(query);
-            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
+//            Bson bsonDocument = parseQuery(query);
+//            return getIntervalFrequencies(bsonDocument, region, intervalSize, options);
         }
         return null;
     }
 
-    private Bson parseQuery(AbstractQuery query) {
-        return new Document();
-    }
-
-    private Bson parseQuery(Query query) {
+    public Bson parseQuery(TranscriptQuery query) {
         List<Bson> andBsonList = new ArrayList<>();
+        try {
+            for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
+                String dotNotationName = entry.getKey();
+                Object value = entry.getValue();
+                switch (dotNotationName) {
+                    case "region":
+                        // parse region and ID at the same time
+                        createIdRegionQuery(query.getRegions(), null, andBsonList);
+                        break;
+                    case "transcripts.xrefs":
+                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "transcripts.annotationFlags":
+                        // TODO use unwind to filter out unwanted transcripts
+                        createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "transcripts.tfbs.name":
+                        createAndOrQuery(value, "transcripts.tfbs.tfName", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
-        createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE, andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "transcripts.id", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "transcripts.name", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
-        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
         }
     }
+
+//    private Bson parseQuery(Query query) {
+//        List<Bson> andBsonList = new ArrayList<>();
+//
+//        createRegionQuery(query, TranscriptDBAdaptor.QueryParams.REGION.key(), MongoDBCollectionConfiguration.GENE_CHUNK_SIZE,
+//        andBsonList);
+//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ID.key(), "transcripts.id", andBsonList);
+//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.NAME.key(), "transcripts.name", andBsonList);
+//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "transcripts.biotype", andBsonList);
+//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.XREFS.key(), "transcripts.xrefs.id", andBsonList);
+//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.TFBS_NAME.key(), "transcripts.tfbs.name", andBsonList);
+//        createOrQuery(query, TranscriptDBAdaptor.QueryParams.ANNOTATION_FLAGS.key(), "transcripts.annotationFlags", andBsonList);
+//        if (andBsonList.size() > 0) {
+//            return Filters.and(andBsonList);
+//        } else {
+//            return new Document();
+//        }
+//    }
 
     private Bson parseQueryUnwindTranscripts(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
@@ -204,7 +259,7 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
         }
     }
 
-    private List<Bson> unwindAndMatchTranscripts(Query query, QueryOptions options) {
+    private List<Bson> unwindAndMatchTranscripts(TranscriptQuery query, QueryOptions options) {
         List<Bson> aggregateList = new ArrayList<>();
 
         Bson bson = parseQuery(query);
@@ -262,21 +317,6 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
         aggregateList.add(project);
 
         return aggregateList;
-    }
-
-    @Override
-    public CellBaseIterator iterator(AbstractQuery query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<String> distinct(String field, AbstractQuery query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List fields, AbstractQuery query) {
-        return null;
     }
 
 //

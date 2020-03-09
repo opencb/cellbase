@@ -16,17 +16,15 @@
 
 package org.opencb.cellbase.core.api.queries;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.BioUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GeneQuery extends AbstractQuery {
-
-    public static final int DEFAULT_LIMIT = 20;
+public class GeneQuery extends TranscriptQuery {
 
     @QueryParameter(id = "id")
     private List<String> ids;
@@ -34,21 +32,7 @@ public class GeneQuery extends AbstractQuery {
     private List<String> names;
     @QueryParameter(id = "biotype")
     private List<String> biotypes;
-    @QueryParameter(id = "region")
-    private List<Region> regions;
-    @QueryParameter(id = "transcripts.biotype")
-    private List<String> transcriptsBiotype;
-    @QueryParameter(id = "transcripts.xrefs")
-    private List<String> transcriptsXrefs;
-    @QueryParameter(id = "transcripts.id")
-    private List<String> transcriptsId;
-    @QueryParameter(id = "transcripts.name")
-    private List<String> transcriptsName;
 
-    @QueryParameter(id = "transcripts.annotationFlags")
-    private LogicalList<String> transcriptsAnnotationFlags;
-    @QueryParameter(id = "transcripts.tfbs.name")
-    private LogicalList<String> transcriptsTfbsName;
     @QueryParameter(id = "annotation.diseases.id")
     private LogicalList<String> annotationDiseasesId;
     @QueryParameter(id = "annotation.diseases.name")
@@ -71,6 +55,35 @@ public class GeneQuery extends AbstractQuery {
         super(params);
     }
 
+    private GeneQuery(Builder builder) {
+        setIncludes(builder.includes);
+        setExcludes(builder.excludes);
+        setLimit(builder.limit);
+        setSkip(builder.skip);
+        setCount(builder.count);
+        setSort(builder.sort);
+        setOrder(builder.order);
+        setFacet(builder.facet);
+        setTranscriptsBiotype(builder.transcriptsBiotype);
+        setTranscriptsXrefs(builder.transcriptsXrefs);
+        setTranscriptsId(builder.transcriptsId);
+        setTranscriptsName(builder.transcriptsName);
+        setTranscriptsAnnotationFlags(builder.transcriptsAnnotationFlags);
+        setTranscriptsTfbsName(builder.transcriptsTfbsName);
+        setIds(builder.ids);
+        setNames(builder.names);
+        setBiotypes(builder.biotypes);
+        setRegions(builder.regions);
+        setAnnotationDiseasesId(builder.annotationDiseasesId);
+        setAnnotationDiseasesName(builder.annotationDiseasesName);
+        setAnnotationExpressionGene(builder.annotationExpressionGene);
+        setAnnotationExpressionTissue(builder.annotationExpressionTissue);
+        setAnnotationExpressionValue(builder.annotationExpressionValue);
+        setAnnotationDrugsName(builder.annotationDrugsName);
+        setAnnotationDrugsGene(builder.annotationDrugsGene);
+    }
+
+
     @Override
     protected void validateQuery() throws QueryException {
         if (CollectionUtils.isNotEmpty(biotypes)) {
@@ -82,38 +95,6 @@ public class GeneQuery extends AbstractQuery {
         }
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("GeneQuery{");
-        sb.append("id=").append(ids);
-        sb.append(", names=").append(names);
-        sb.append(", biotypes=").append(biotypes);
-        sb.append(", regions=").append(regions);
-        sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
-        sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
-        sb.append(", transcriptsId=").append(transcriptsId);
-        sb.append(", transcriptsName=").append(transcriptsName);
-        sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
-        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsName);
-        sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
-        sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
-        sb.append(", annotationExpressionGene=").append(annotationExpressionGene);
-        sb.append(", annotationExpressionTissue=").append(annotationExpressionTissue);
-        sb.append(", annotationExpressionValue=").append(annotationExpressionValue);
-        sb.append(", annotationDrugsName=").append(annotationDrugsName);
-        sb.append(", annotationDrugsGene=").append(annotationDrugsGene);
-        sb.append(", objectMapper=").append(objectMapper);
-        sb.append(", limit=").append(limit);
-        sb.append(", skip=").append(skip);
-        sb.append(", count=").append(count);
-        sb.append(", sort='").append(sort).append('\'');
-        sb.append(", order=").append(order);
-        sb.append(", facet='").append(facet).append('\'');
-        sb.append(", includes=").append(includes);
-        sb.append(", excludes=").append(excludes);
-        sb.append('}');
-        return sb.toString();
-    }
 
     public List<String> getIds() {
         return ids;
@@ -139,70 +120,6 @@ public class GeneQuery extends AbstractQuery {
 
     public GeneQuery setBiotypes(List<String> biotypes) {
         this.biotypes = biotypes;
-        return this;
-    }
-
-    public List<Region> getRegions() {
-        return regions;
-    }
-
-    public GeneQuery setRegions(List<Region> regions) {
-        this.regions = new ArrayList();
-        this.regions = regions;
-        return this;
-    }
-
-    public List<String> getTranscriptsBiotype() {
-        return transcriptsBiotype;
-    }
-
-    public GeneQuery setTranscriptsBiotype(List<String> transcriptsBiotype) {
-        this.transcriptsBiotype = transcriptsBiotype;
-        return this;
-    }
-
-    public List<String> getTranscriptsXrefs() {
-        return transcriptsXrefs;
-    }
-
-    public GeneQuery setTranscriptsXrefs(List<String> transcriptsXrefs) {
-        this.transcriptsXrefs = transcriptsXrefs;
-        return this;
-    }
-
-    public List<String> getTranscriptsId() {
-        return transcriptsId;
-    }
-
-    public GeneQuery setTranscriptsId(List<String> transcriptsId) {
-        this.transcriptsId = transcriptsId;
-        return this;
-    }
-
-    public List<String> getTranscriptsName() {
-        return transcriptsName;
-    }
-
-    public GeneQuery setTranscriptsName(List<String> transcriptsName) {
-        this.transcriptsName = transcriptsName;
-        return this;
-    }
-
-    public LogicalList<String> getTranscriptsAnnotationFlags() {
-        return transcriptsAnnotationFlags;
-    }
-
-    public GeneQuery setTranscriptsAnnotationFlags(LogicalList<String> transcriptsAnnotationFlags) {
-        this.transcriptsAnnotationFlags = transcriptsAnnotationFlags;
-        return this;
-    }
-
-    public LogicalList<String> getTranscriptsTfbsName() {
-        return transcriptsTfbsName;
-    }
-
-    public GeneQuery setTranscriptsTfbsName(LogicalList<String> transcriptsTfbsName) {
-        this.transcriptsTfbsName = transcriptsTfbsName;
         return this;
     }
 
@@ -269,133 +186,195 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public static class Builder {
-        private List<String> id;
-        private List<String> names;
-        private List<String> biotypes;
-        private List<Region> regions;
+
+    public static final class Builder {
+        private List<String> includes;
+        private List<String> excludes;
+        private Integer limit;
+        private Integer skip;
+        private Boolean count;
+        private String sort;
+        private Order order;
+        private String facet;
+        private ObjectMapper objectMapper;
         private List<String> transcriptsBiotype;
         private List<String> transcriptsXrefs;
         private List<String> transcriptsId;
         private List<String> transcriptsName;
-        private List<String> transcriptsAnnotationFlags;
-        private List<String> transcriptsTfbsName;
-        private List<String> annotationDiseasesId;
-        private List<String> annotationDiseasesName;
-        private List<String> annotationExpressionGene;
-        private List<String> annotationExpressionTissue;
-        private List<String> annotationExpressionValue;
-        private List<String> annotationDrugsName;
-        private List<String> annotationDrugsGene;
+        private LogicalList<String> transcriptsAnnotationFlags;
+        private LogicalList<String> transcriptsTfbsName;
+        private List<String> ids;
+        private List<String> names;
+        private List<String> biotypes;
+        private List<Region> regions;
+        private LogicalList<String> annotationDiseasesId;
+        private LogicalList<String> annotationDiseasesName;
+        private LogicalList<String> annotationExpressionGene;
+        private LogicalList<String> annotationExpressionTissue;
+        private LogicalList<String> annotationExpressionValue;
+        private LogicalList<String> annotationDrugsName;
+        private LogicalList<String> annotationDrugsGene;
 
         public Builder() {
         }
 
-        public Builder withIds(List<String> ids) {
-            this.id = ids;
+        public Builder withIncludes(List<String> val) {
+            includes = val;
             return this;
         }
 
-        public Builder withNames(List<String> names) {
-            this.names = names;
+        public Builder withExcludes(List<String> val) {
+            excludes = val;
             return this;
         }
 
-        public Builder withBiotypes(List<String> biotypes) {
-            this.biotypes = biotypes;
+        public Builder withLimit(Integer val) {
+            limit = val;
             return this;
         }
 
-        public Builder withRegions(List<Region> regions) {
-            this.regions = regions;
+        public Builder withSkip(Integer val) {
+            skip = val;
             return this;
         }
 
-        public Builder withTranscriptsBiotype(List<String> transcriptsBiotype) {
-            this.transcriptsBiotype = transcriptsBiotype;
+        public Builder withCount(Boolean val) {
+            count = val;
             return this;
         }
 
-        public Builder withTranscriptsXrefs(List<String> transcriptsXrefs) {
-            this.transcriptsXrefs = transcriptsXrefs;
+        public Builder withSort(String val) {
+            sort = val;
             return this;
         }
 
-        public Builder withTranscriptsId(List<String> transcriptsId) {
-            this.transcriptsId = transcriptsId;
+        public Builder withOrder(Order val) {
+            order = val;
             return this;
         }
 
-        public Builder withTranscriptsName(List<String> transcriptsName) {
-            this.transcriptsName = transcriptsName;
+        public Builder withFacet(String val) {
+            facet = val;
             return this;
         }
 
-        public Builder withTranscriptsAnnotationFlags(List<String> transcriptsAnnotationFlags) {
-            this.transcriptsAnnotationFlags = transcriptsAnnotationFlags;
+        public Builder withObjectMapper(ObjectMapper val) {
+            objectMapper = val;
             return this;
         }
 
-        public Builder withTranscriptsTfbsName(List<String> transcriptsTfbsName) {
-            this.transcriptsTfbsName = transcriptsTfbsName;
+        public Builder withTranscriptsBiotype(List<String> val) {
+            transcriptsBiotype = val;
             return this;
         }
 
-        public Builder withAnnotationDiseasesId(List<String> annotationDiseasesId) {
-            this.annotationDiseasesId = annotationDiseasesId;
+        public Builder withTranscriptsXrefs(List<String> val) {
+            transcriptsXrefs = val;
             return this;
         }
 
-        public Builder withAnnotationDiseasesName(List<String> annotationDiseasesName) {
-            this.annotationDiseasesName = annotationDiseasesName;
+        public Builder withTranscriptsId(List<String> val) {
+            transcriptsId = val;
             return this;
         }
 
-        public Builder withAnnotationExpressionGene(List<String> annotationExpressionGene) {
-            this.annotationExpressionGene = annotationExpressionGene;
+        public Builder withTranscriptsName(List<String> val) {
+            transcriptsName = val;
             return this;
         }
 
-        public Builder withAnnotationExpressionTissue(List<String> annotationExpressionTissue) {
-            this.annotationExpressionTissue = annotationExpressionTissue;
+        public Builder withTranscriptsAnnotationFlags(LogicalList<String> val) {
+            transcriptsAnnotationFlags = val;
             return this;
         }
 
-        public Builder withAnnotationExpressionValue(List<String> annotationExpressionValue) {
-            this.annotationExpressionValue = annotationExpressionValue;
+        public Builder withTranscriptsTfbsName(LogicalList<String> val) {
+            transcriptsTfbsName = val;
             return this;
         }
 
-        public Builder withAnnotationDrugsName(List<String> annotationDrugsName) {
-            this.annotationDrugsName = annotationDrugsName;
+        public Builder withIds(List<String> val) {
+            ids = val;
             return this;
         }
 
-        public Builder withAnnotationDrugsGene(List<String> annotationDrugsGene) {
-            this.annotationDrugsGene = annotationDrugsGene;
+        public Builder withNames(List<String> val) {
+            names = val;
+            return this;
+        }
+
+        public Builder withBiotypes(List<String> val) {
+            biotypes = val;
+            return this;
+        }
+
+        public Builder withRegions(List<Region> val) {
+            regions = val;
+            return this;
+        }
+
+        public Builder withAnnotationDiseasesId(LogicalList<String> val) {
+            annotationDiseasesId = val;
+            return this;
+        }
+
+        public Builder withAnnotationDiseasesName(LogicalList<String> val) {
+            annotationDiseasesName = val;
+            return this;
+        }
+
+        public Builder withAnnotationExpressionGene(LogicalList<String> val) {
+            annotationExpressionGene = val;
+            return this;
+        }
+
+        public Builder withAnnotationExpressionTissue(LogicalList<String> val) {
+            annotationExpressionTissue = val;
+            return this;
+        }
+
+        public Builder withAnnotationExpressionValue(LogicalList<String> val) {
+            annotationExpressionValue = val;
+            return this;
+        }
+
+        public Builder withAnnotationDrugsName(LogicalList<String> val) {
+            annotationDrugsName = val;
+            return this;
+        }
+
+        public Builder withAnnotationDrugsGene(LogicalList<String> val) {
+            annotationDrugsGene = val;
             return this;
         }
 
         public GeneQuery build() {
-            GeneQuery geneQuery = new GeneQuery();
-            geneQuery.ids = this.id;
-            geneQuery.names = this.names;
-            geneQuery.biotypes = this.biotypes;
-            geneQuery.regions = this.regions;
-            geneQuery.transcriptsBiotype = this.transcriptsBiotype;
-            geneQuery.transcriptsXrefs = this.transcriptsXrefs;
-            geneQuery.transcriptsId = this.transcriptsId;
-            geneQuery.transcriptsName = this.transcriptsName;
-//            geneQuery.transcriptsAnnotationFlags = this.transcriptsAnnotationFlags;
-//            geneQuery.transcriptsTfbsName = this.transcriptsTfbsName;
-//            geneQuery.annotationDiseasesId = this.annotationDiseasesId;
-//            geneQuery.annotationDiseasesName = this.annotationDiseasesName;
-//            geneQuery.annotationExpressionGene = this.annotationExpressionGene;
-//            geneQuery.annotationExpressionTissue = this.annotationExpressionTissue;
-//            geneQuery.annotationExpressionValue = this.annotationExpressionValue;
-//            geneQuery.annotationDrugsName = this.annotationDrugsName;
-//            geneQuery.annotationDrugsGene = this.annotationDrugsGene;
-            return geneQuery;
+            return new GeneQuery(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GeneQuery{");
+        sb.append("ids=").append(ids);
+        sb.append(", names=").append(names);
+        sb.append(", biotypes=").append(biotypes);
+        sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
+        sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
+        sb.append(", annotationExpressionGene=").append(annotationExpressionGene);
+        sb.append(", annotationExpressionTissue=").append(annotationExpressionTissue);
+        sb.append(", annotationExpressionValue=").append(annotationExpressionValue);
+        sb.append(", annotationDrugsName=").append(annotationDrugsName);
+        sb.append(", annotationDrugsGene=").append(annotationDrugsGene);
+        sb.append(", limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
     }
 }

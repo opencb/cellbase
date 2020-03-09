@@ -28,7 +28,6 @@ import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.FacetField;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
@@ -375,24 +374,6 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
             return Filters.and(andBsonList);
         } else {
             return new Document();
-        }
-    }
-
-    protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
-        if (queryValues instanceof LogicalList) {
-            MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
-                    ? MongoDBQueryUtils.LogicalOperator.AND
-                    : MongoDBQueryUtils.LogicalOperator.OR;
-            Query query = new Query(mongoDbField, queryValues);
-            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, operator);
-            andBsonList.add(filter);
-        } else if (queryValues instanceof List) {
-            Query query = new Query(mongoDbField, queryValues);
-            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, MongoDBQueryUtils.LogicalOperator.OR);
-            andBsonList.add(filter);
-        } else {
-            // string integer or boolean
-            andBsonList.add(Filters.eq(mongoDbField, queryValues));
         }
     }
 

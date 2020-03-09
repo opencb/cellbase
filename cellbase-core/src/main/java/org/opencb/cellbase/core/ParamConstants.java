@@ -20,6 +20,9 @@ public class ParamConstants {
 
     public static final String VERSION_DESCRIPTION = "Possible values: v4, v5";
     public static final String DEFAULT_VERSION = "v4";
+    public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "
+            + "potentially available assemblies, please refer to: "
+            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species";
 
     public static final String COUNT_DESCRIPTION = "Get the total number of results matching the query. ";
 
@@ -113,6 +116,7 @@ public class ParamConstants {
     public static final String PROTEIN_XREF_ID = "String indicating one xref id, e.g.: Q9UL59, Exact text matches will be returned";
     public static final String PROTEIN_ACCESSIONS = "Comma separated list of UniProt accession ids, "
             + "e.g. Q9UL59,B2R8Q1,Q9UKT9. Exact text matches will be returned";
+    public static final String PROTEIN_ACCESSION = "A UniProt accession id, e.g. Q9UL59.";
     public static final String PROTEIN_NAMES = "Comma separated list of protein names, e.g.: ZN214_HUMAN,MKS1_HUMAN"
             + "Exact text matches will be returned";
 

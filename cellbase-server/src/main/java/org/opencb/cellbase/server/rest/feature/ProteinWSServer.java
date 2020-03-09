@@ -17,14 +17,13 @@
 package org.opencb.cellbase.server.rest.feature;
 
 import io.swagger.annotations.*;
-import org.forester.protein.Protein;
 import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ProteinManager;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
@@ -35,6 +34,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -50,13 +51,11 @@ public class ProteinWSServer extends GenericRestWSServer {
                                         defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                            @PathParam("species")
                                 @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                           @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of "
-                                   + "potentially available assemblies, please refer to: "
-                                   + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
+                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                            @DefaultValue("")
                            @QueryParam("assembly") String assembly,
                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException, CellbaseException {
+            throws VersionException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
@@ -77,20 +76,23 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the protein info", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD,
-                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfoByEnsemblId(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
+    public Response getInfo(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_IDS,
                                                required = true) String id) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, id);
+            List<ProteinQuery> proteinQueries = new ArrayList<>();
+            String[] identifiers = id.split(",");
+            for (String identifier : identifiers) {
+                ProteinQuery query = new ProteinQuery(uriParams);
+                query.setAccessions(Arrays.asList(identifier));
+                proteinQueries.add(query);
+                logger.info("REST proteinQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(proteinQueries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -121,6 +123,9 @@ public class ProteinWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
@@ -128,8 +133,8 @@ public class ProteinWSServer extends GenericRestWSServer {
     })
     public Response getAll() {
         try {
-            parseQueryParams();
-            CellBaseDataResult<Protein> queryResults = proteinManager.search(query, queryOptions);
+            ProteinQuery query = new ProteinQuery(uriParams);
+            CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -161,6 +166,9 @@ public class ProteinWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
@@ -209,9 +217,11 @@ public class ProteinWSServer extends GenericRestWSServer {
     @Path("/{proteins}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
         responseContainer = "QueryResponse")
-    public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = "UniProt accession id, e.g: Q9UL59",
+    public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = ParamConstants.PROTEIN_ACCESSION,
                                         required = true) String proteins) {
-        CellBaseDataResult<String> queryResult = proteinManager.getSequence(query, queryOptions, proteins);
+        ProteinQuery query = new ProteinQuery();
+        query.setAccessions(Arrays.asList(proteins.split(",")));
+        CellBaseDataResult<String> queryResult = proteinManager.getSequence(query);
         return createOkResponse(queryResult);
     }
 

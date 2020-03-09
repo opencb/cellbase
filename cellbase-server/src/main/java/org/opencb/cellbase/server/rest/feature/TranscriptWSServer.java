@@ -22,6 +22,8 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.ProteinQuery;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -38,6 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +62,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                       defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                               @PathParam("species")
                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                              @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of "
-                                      + "potentially available assemblies, please refer to: "
-                                      + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
+                              @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                               @DefaultValue("")
                               @QueryParam("assembly") String assembly,
                               @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
@@ -132,11 +133,21 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{transcripts}/info")
-    @ApiOperation(httpMethod = "GET", value = "Not implemented yet", hidden = true)
-    public Response getByEnsemblId(@PathParam("transcriptId") String id) {
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified transcripts(s)", response = Transcript.class,
+            responseContainer = "QueryResponse")
+    public Response getInfo(@PathParam("transcriptId") String id) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, id);
+//            parseQueryParams();
+//            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, id);
+            List<TranscriptQuery> queries = new ArrayList<>();
+            String[] identifiers =  id.split(",");
+            for (String identifier : identifiers) {
+                TranscriptQuery query = new TranscriptQuery(uriParams);
+                query.setTranscriptsXrefs(Arrays.asList(identifier));
+                queries.add(query);
+                logger.info("REST TranscriptQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -175,6 +186,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
@@ -221,6 +235,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
@@ -228,8 +245,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
     })
     public Response getAll() {
         try {
-            parseQueryParams();
-            CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query, queryOptions);
+            TranscriptQuery query = new TranscriptQuery(uriParams);
+            logger.info("/search TranscriptQuery: " + query.toString());
+            CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query);
             return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -284,6 +302,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
@@ -292,8 +313,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String transcripts) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, transcripts);
+            ProteinQuery query = new ProteinQuery(uriParams);
+            query.setXrefs(Arrays.asList(transcripts.split(",")));
+            logger.info("REST proteinQuery: " + query.toString());
+            CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

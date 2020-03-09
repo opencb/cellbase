@@ -21,8 +21,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.api.queries.QueryException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -166,18 +168,19 @@ public class GeneQueryTest {
         });
     }
 
-//    @Test
-//    public void testBuild() {
-//        geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))
-//                .withAnnotationDrugsGene(Arrays.asList("My gene", "another-gene")).build();
-//
-//        assertEquals("1", geneQuery.getIds().get(0));
-//
-//        assertEquals("a", geneQuery.getBiotypes().get(0));
-//        assertEquals("b", geneQuery.getBiotypes().get(1));
-//        assertEquals("c", geneQuery.getBiotypes().get(2));
-//
-//        assertEquals("My gene", geneQuery.getAnnotationDrugsGene().get(0));
-//        assertEquals("another-gene", geneQuery.getAnnotationDrugsGene().get(1));
-//    }
+    @Test
+    public void testBuild() {
+        LogicalList geneList = new LogicalList(Arrays.asList("My gene", "another-gene"));
+        geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))
+                .withAnnotationDrugsGene(geneList).build();
+
+        assertEquals("1", geneQuery.getIds().get(0));
+
+        assertEquals("a", geneQuery.getBiotypes().get(0));
+        assertEquals("b", geneQuery.getBiotypes().get(1));
+        assertEquals("c", geneQuery.getBiotypes().get(2));
+
+        assertEquals("My gene", geneQuery.getAnnotationDrugsGene().get(0));
+        assertEquals("another-gene", geneQuery.getAnnotationDrugsGene().get(1));
+    }
 }

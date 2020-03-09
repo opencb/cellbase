@@ -17,20 +17,16 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.bson.Document;
-
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
-import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -56,29 +52,41 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public void nativeGet() throws Exception {
 
         TranscriptCoreDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor("hsapiens", "GRCh37");
-        Query query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:816481-825251");
-        CellBaseDataResult CellBaseDataResult = transcriptDBAdaptor.nativeGet(query, new QueryOptions());
+//        Query query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:816481-825251");
+        TranscriptQuery query = new TranscriptQuery();
+        Region region = Region.parseRegion("1:816481-825251");
+        query.setRegions(new ArrayList<>(Arrays.asList(region)));
+        CellBaseDataResult CellBaseDataResult = transcriptDBAdaptor.query(query);
         assertEquals(CellBaseDataResult.getNumResults(), 1);
         assertEquals(((Document) CellBaseDataResult.getResults().get(0)).size(), 18);
         assertEquals(((Document) CellBaseDataResult.getResults().get(0)).get("id"), "ENST00000594233");
 
-        query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:31851-44817");
-        CellBaseDataResult = transcriptDBAdaptor.nativeGet(query, new QueryOptions());
+//        query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:31851-44817");
+        region = Region.parseRegion("1:31851-44817");
+        query = new TranscriptQuery();
+        query.setRegions(new ArrayList<>(Arrays.asList(region)));
+        CellBaseDataResult = transcriptDBAdaptor.query(query);
         assertEquals(CellBaseDataResult.getNumResults(), 2);
         assertTrue(transcriptIdEquals(CellBaseDataResult, Arrays.asList("ENST00000417324", "ENST00000461467")));
 
-        query = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), "Q9UL59");
+//        query = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), "Q9UL59");
+        query = new TranscriptQuery();
+        query.setTranscriptsXrefs(new ArrayList<>(Arrays.asList("Q9UL59")));
         QueryOptions queryOptions = new QueryOptions("include", "id");
-        CellBaseDataResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
+        CellBaseDataResult = transcriptDBAdaptor.query(query);
         assertEquals(CellBaseDataResult.getNumResults(), 2);
         assertEquals(1, ((Document) CellBaseDataResult.getResults().get(0)).size());
         assertEquals(1, ((Document) CellBaseDataResult.getResults().get(1)).size());
         assertTrue(transcriptIdEquals(CellBaseDataResult, Arrays.asList("ENST00000278314", "ENST00000536068")));
 
-        query = new Query(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "protein_coding");
-        query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), "BRCA2");
-        queryOptions = new QueryOptions("include", "transcripts.id");
-        CellBaseDataResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
+//        query = new Query(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "protein_coding");
+        query = new TranscriptQuery();
+        query.setTranscriptsBiotype(new ArrayList<>(Arrays.asList("protein_coding")));
+        query.setTranscriptsXrefs(new ArrayList<>(Arrays.asList("BRCA2")));
+//        query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), "BRCA2");
+//        queryOptions = new QueryOptions("include", "transcripts.id");
+        query.setIncludes(new ArrayList<>(Arrays.asList("transcripts.id")));
+        CellBaseDataResult = transcriptDBAdaptor.query(query);
         assertEquals(3, CellBaseDataResult.getNumMatches());
 
     }

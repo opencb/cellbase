@@ -58,9 +58,7 @@ public class IdWSServer extends GenericRestWSServer {
                               defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @PathParam("species")
                       @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                      @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of "
-                              + "potentially available assemblies, please refer to: "
-                              + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
+                      @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                       @DefaultValue("")
                       @QueryParam("assembly") String assembly,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException,
@@ -171,6 +169,9 @@ public class IdWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
                     required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,

@@ -25,10 +25,12 @@ import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
+import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
@@ -275,6 +277,24 @@ public class MongoDBAdaptor {
                 orBsonList.add(Filters.eq(mongoDbField, queryItem));
             }
             andBsonList.add(Filters.or(orBsonList));
+        }
+    }
+
+    protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
+        if (queryValues instanceof LogicalList) {
+            MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
+                    ? MongoDBQueryUtils.LogicalOperator.AND
+                    : MongoDBQueryUtils.LogicalOperator.OR;
+            Query query = new Query(mongoDbField, queryValues);
+            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, operator);
+            andBsonList.add(filter);
+        } else if (queryValues instanceof List) {
+            Query query = new Query(mongoDbField, queryValues);
+            Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, type, MongoDBQueryUtils.LogicalOperator.OR);
+            andBsonList.add(filter);
+        } else {
+            // string integer or boolean
+            andBsonList.add(Filters.eq(mongoDbField, queryValues));
         }
     }
 

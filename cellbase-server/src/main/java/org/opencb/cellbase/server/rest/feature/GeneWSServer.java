@@ -26,6 +26,8 @@ import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.ProteinQuery;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -40,7 +42,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author imedina
@@ -60,9 +65,7 @@ public class GeneWSServer extends GenericRestWSServer {
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @PathParam("species") @ApiParam(name = "species",
                                 value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                        @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of "
-                                + "potentially available assemblies, please refer to: "
-                                + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
+                        @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                         @DefaultValue("")
                         @QueryParam("assembly") String assembly,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr) throws VersionException, IOException, CellbaseException {
@@ -472,8 +475,15 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
             value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, genes);
+            List<TranscriptQuery> queries = new ArrayList<>();
+            String[] identifiers =  genes.split(",");
+            for (String identifier : identifiers) {
+                TranscriptQuery query = new TranscriptQuery(uriParams);
+                query.setTranscriptsXrefs(Arrays.asList(identifier));
+                queries.add(query);
+                logger.info("REST TranscriptQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -671,8 +681,10 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
                                            required = true) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult> queryResults = proteinManager.info(query, queryOptions, genes);
+            ProteinQuery query = new ProteinQuery(uriParams);
+            query.setGenes(Arrays.asList(genes.split(",")));
+            logger.info("REST proteinQuery: " + query.toString());
+            CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

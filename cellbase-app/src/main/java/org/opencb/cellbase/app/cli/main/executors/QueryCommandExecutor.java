@@ -198,26 +198,26 @@ public class QueryCommandExecutor extends CommandExecutor {
         ProteinCoreDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
-            CellBaseDataResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
-            output.println(objectMapper.writeValueAsString(distinct));
+//            CellBaseDataResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
+//            output.println(objectMapper.writeValueAsString(distinct));
             return;
         }
 
-        if (queryCommandOptions.count) {
-            CellBaseDataResult count = proteinDBAdaptor.count(query);
-            output.println(objectMapper.writeValueAsString(count));
-            return;
-        }
+//        if (queryCommandOptions.count) {
+//            CellBaseDataResult count = proteinDBAdaptor.count(query);
+//            output.println(objectMapper.writeValueAsString(count));
+//            return;
+//        }
 
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
                 case "info":
                     query.append(ProteinDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-                    Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
-                    while (iterator.hasNext()) {
-                        Object next = iterator.next();
-                        output.println(objectMapper.writeValueAsString(next));
-                    }
+//                    Iterator iterator = proteinDBAdaptor.nativeIterator(query, queryOptions);
+//                    while (iterator.hasNext()) {
+//                        Object next = iterator.next();
+//                        output.println(objectMapper.writeValueAsString(next));
+//                    }
                     break;
                 case "substitution-scores":
                     CellBaseDataResult substitutionScores = proteinDBAdaptor.getSubstitutionScores(query, queryOptions);
@@ -255,11 +255,11 @@ public class QueryCommandExecutor extends CommandExecutor {
             switch (queryCommandOptions.resource) {
                 case "info":
                     query.append(TranscriptDBAdaptor.QueryParams.ID.key(), queryCommandOptions.id);
-                    Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
-                    while (iterator.hasNext()) {
-                        Object next = iterator.next();
-                        output.println(objectMapper.writeValueAsString(next));
-                    }
+//                    Iterator iterator = transcriptDBAdaptor.nativeIterator(query, queryOptions);
+//                    while (iterator.hasNext()) {
+//                        Object next = iterator.next();
+//                        output.println(objectMapper.writeValueAsString(next));
+//                    }
                     break;
                 default:
                     break;

@@ -18,14 +18,13 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,25 +95,37 @@ public class TranscriptManager extends AbstractManager {
         return cellBaseDataResults;
     }
 
-    public CellBaseDataResult<Transcript> search(Query query, QueryOptions queryOptions) {
-        CellBaseDataResult<Transcript> queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
-        // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
-        // properly fixed
-        queryResult.setNumTotalResults(-1);
-        queryResult.setNumMatches(-1);
-        return queryResult;
+    public CellBaseDataResult<Transcript> search(TranscriptQuery query) throws QueryException, IllegalAccessException {
+        query.setDefaults();
+        query.validate();
+        return transcriptDBAdaptor.query(query);
     }
 
-    public CellBaseDataResult<Transcript> groupBy(Query query, QueryOptions queryOptions, String fields) {
-        return transcriptDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
-    }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
-        List<Query> queries = createQueries(query, id, TranscriptDBAdaptor.QueryParams.XREFS.key());
-        List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
-        for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
-        }
+//    public CellBaseDataResult<Transcript> search(Query query, QueryOptions queryOptions) {
+//        CellBaseDataResult<Transcript> queryResult = transcriptDBAdaptor.nativeGet(query, queryOptions);
+//        // Total number of results is always same as the number of results. As this is misleading, we set it as -1 until
+//        // properly fixed
+//        queryResult.setNumTotalResults(-1);
+//        queryResult.setNumMatches(-1);
+//        return queryResult;
+//    }
+
+//    public CellBaseDataResult<Transcript> groupBy(Query query, QueryOptions queryOptions, String fields) {
+//        return transcriptDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
+//    }
+
+//    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
+//        List<Query> queries = createQueries(query, id, TranscriptDBAdaptor.QueryParams.XREFS.key());
+//        List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+//        for (int i = 0; i < queries.size(); i++) {
+//            queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.XREFS.key()));
+//        }
+//        return queryResults;
+//    }
+
+    public List<CellBaseDataResult<Transcript>> info(List<TranscriptQuery> queries) {
+        List<CellBaseDataResult<Transcript>> queryResults = transcriptDBAdaptor.query(queries);
         return queryResults;
     }
 
@@ -127,14 +138,14 @@ public class TranscriptManager extends AbstractManager {
         return queryResult;
     }
 
-    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
-        List<Query> queries = createQueries(query, region, TranscriptDBAdaptor.QueryParams.REGION.key());
-        List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
-        for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.REGION.key()));
-        }
-        return queryResults;
-    }
+//    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
+//        List<Query> queries = createQueries(query, region, TranscriptDBAdaptor.QueryParams.REGION.key());
+//        List<CellBaseDataResult> queryResults = transcriptDBAdaptor.nativeGet(queries, queryOptions);
+//        for (int i = 0; i < queries.size(); i++) {
+//            queryResults.get(i).setId((String) queries.get(i).get(TranscriptDBAdaptor.QueryParams.REGION.key()));
+//        }
+//        return queryResults;
+//    }
 
 }
 
