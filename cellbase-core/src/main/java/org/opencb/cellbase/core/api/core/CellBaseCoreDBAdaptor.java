@@ -24,6 +24,7 @@ import org.opencb.commons.datastore.core.FacetField;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Iterable<T> {
@@ -78,8 +79,8 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
         query.setCount(true);
         query.setLimit(0);
         CellBaseDataResult<T> queryResults = query(query);
-        CellBaseDataResult<Long> countResults = new CellBaseDataResult<Long>();
-        countResults.setResults(Arrays.asList((long) queryResults.getNumResults()));
+        CellBaseDataResult<Long> countResults = new CellBaseDataResult<>();
+        countResults.setResults(Collections.singletonList((long) queryResults.getNumResults()));
         return countResults;
     }
 
