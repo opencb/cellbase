@@ -21,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
@@ -685,6 +686,34 @@ public class GeneWSServer extends GenericRestWSServer {
             query.setGenes(Arrays.asList(genes.split(",")));
             logger.info("REST proteinQuery: " + query.toString());
             CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{genes}/sequence")
+    @ApiOperation(httpMethod = "GET", value = "Return sequences for specified genes", response = GenomeSequenceFeature.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getSequence(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
+            required = true) String genes) {
+        try {
+            List<GeneQuery> queries = new ArrayList<>();
+            String[] identifiers =  genes.split(",");
+            for (String identifier : identifiers) {
+                GeneQuery query = new GeneQuery(uriParams);
+                query.setTranscriptsXrefs(Arrays.asList(identifier));
+                queries.add(query);
+                logger.info("REST GeneQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = geneManager.getSequence(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

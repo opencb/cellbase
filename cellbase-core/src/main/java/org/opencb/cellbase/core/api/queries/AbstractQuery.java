@@ -139,10 +139,11 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                 }
                 params.remove(fieldNameDotNotation);
             }
-            // TODO handle assembly better. we're just ignoring it now.
-            if (!params.isEmpty()) {
-                throw new QueryException("Invalid query parameter found: " + params.keySet().toString());
-            }
+            // TODO there are params in the query string that are not in the query, e.g. aa and position for substitution scores
+            // do we remove this check? or handle expected parameteters? I think we delete this.
+//            if (!params.isEmpty()) {
+//                throw new QueryException("Invalid query parameter found: " + params.keySet().toString());
+//            }
             objectMapper.updateValue(this, objectHashMap);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);

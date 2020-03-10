@@ -25,6 +25,7 @@ import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.opencb.cellbase.core.CellBaseDataResponse;
@@ -180,7 +181,10 @@ public class GenericRestWSServer implements IWSServer {
             return convertedMap;
         }
         for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-            convertedMap.put(entry.getKey(), String.join(",", entry.getValue()));
+            List<String> values = entry.getValue();
+            if (CollectionUtils.isNotEmpty(values)) {
+                convertedMap.put(entry.getKey(), String.join(",", entry.getValue()));
+            }
         }
         return convertedMap;
     }
@@ -364,7 +368,9 @@ public class GenericRestWSServer implements IWSServer {
 
     protected Response createJsonResponse(CellBaseDataResponse queryResponse) {
         try {
-            System.out.println("queryResponse.getResponses().get(0).toString() = " + queryResponse.getResponses().get(0).toString());
+            if (CollectionUtils.isNotEmpty(queryResponse.getResponses()) && queryResponse.getResponses().get(0) != null) {
+                System.out.println("queryResponse.getResponses().get(0).toString() = " + queryResponse.getResponses().get(0).toString());
+            }
             String value = jsonObjectWriter.writeValueAsString(queryResponse);
             ResponseBuilder ok = Response.ok(value, MediaType.APPLICATION_JSON_TYPE.withCharset("utf-8"));
             return buildResponse(ok);

@@ -16,17 +16,25 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.core.GenomeSequenceFeature;
+import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class GeneManager extends AbstractManager implements AggregationApi  {
 
     private GeneCoreDBAdaptor geneDBAdaptor;
+    private GenomeMongoDBAdaptor genomeDBAdaptor;
 
     public GeneManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -35,6 +43,7 @@ public class GeneManager extends AbstractManager implements AggregationApi  {
 
     private void init() {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+        genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
     }
 
     public Iterator<Gene> iterator(GeneQuery geneQuery) {
@@ -44,6 +53,26 @@ public class GeneManager extends AbstractManager implements AggregationApi  {
     @Override
     public CellBaseCoreDBAdaptor getDBAdaptor() {
         return geneDBAdaptor;
+    }
+
+    public List<CellBaseDataResult<GenomeSequenceFeature>> getSequence(List<GeneQuery> queries) {
+        List<CellBaseDataResult<GenomeSequenceFeature>> sequences = new ArrayList<>();
+        for (GeneQuery query : queries) {
+            // get the coordinates for the gene
+            CellBaseDataResult<Gene> geneCellBaseDataResult = geneDBAdaptor.query(query);
+
+            // get the sequences for those coordinates
+            List<Gene> results = geneCellBaseDataResult.getResults();
+            if (CollectionUtils.isNotEmpty(results)) {
+                Gene gene = results.get(0);
+                Region region = Region.parseRegion(gene.getChromosome() + ":" + gene.getStart() + "-" + gene.getEnd());
+                CellBaseDataResult<GenomeSequenceFeature> sequence = genomeDBAdaptor.getSequence(region, query.toQueryOptions());
+                sequences.add(sequence);
+            } else {
+                sequences.add(null);
+            }
+        }
+        return sequences;
     }
 
 //    public List<CellBaseDataResult> getRegulatoryElements(Query geneQuery, String genes) {

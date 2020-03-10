@@ -334,9 +334,15 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
                     case "transcripts.xrefs":
                         if (!visited) {
                             List<String> identifers = new ArrayList<>();
-                            identifers.addAll(geneQuery.getIds());
-                            identifers.addAll(geneQuery.getNames());
-                            identifers.addAll(geneQuery.getTranscriptsXrefs());
+                            if (geneQuery.getIds() != null) {
+                                identifers.addAll(geneQuery.getIds());
+                            }
+                            if (geneQuery.getNames() != null) {
+                                identifers.addAll(geneQuery.getNames());
+                            }
+                            if (geneQuery.getTranscriptsXrefs() != null) {
+                                identifers.addAll(geneQuery.getTranscriptsXrefs());
+                            }
                             createIdRegionQuery(geneQuery.getRegions(), identifers, andBsonList);
                             visited = true;
                         }

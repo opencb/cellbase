@@ -50,8 +50,6 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
         logger.debug("TranscriptMongoDBAdaptor: in 'constructor'");
     }
 
-
-
 //    @Override
 //    public CellBaseDataResult<String> getCdna(String id) {
 //        Bson bson = Filters.eq("transcripts.xrefs.id", id);
