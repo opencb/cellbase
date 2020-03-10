@@ -32,7 +32,6 @@ import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
-import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
@@ -330,12 +329,17 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     }
 
     @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List<String> fields, ProteinQuery query) {
+    public CellBaseDataResult<Entry> aggregationStats(ProteinQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(String field, ProteinQuery query) {
+    public CellBaseDataResult<Entry> groupBy(ProteinQuery query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(ProteinQuery query) {
         return null;
     }
 

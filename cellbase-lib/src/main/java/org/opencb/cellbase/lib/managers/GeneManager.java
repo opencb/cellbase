@@ -17,16 +17,14 @@
 package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.core.Gene;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
 
 import java.util.Iterator;
-import java.util.List;
 
-public class GeneManager extends AbstractManager {
+public class GeneManager extends AbstractManager implements AggregationApi  {
 
     private GeneCoreDBAdaptor geneDBAdaptor;
 
@@ -39,38 +37,13 @@ public class GeneManager extends AbstractManager {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult<Gene> search(GeneQuery geneQuery) throws QueryException, IllegalAccessException {
-        geneQuery.setDefaults();
-        geneQuery.validate();
-        return geneDBAdaptor.query(geneQuery);
-    }
-
-    public CellBaseDataResult<Gene> groupBy(GeneQuery geneQuery) {
-        geneQuery.setCount(Boolean.FALSE);
-        return geneDBAdaptor.groupBy(geneQuery);
-    }
-
-    public CellBaseDataResult<Gene> aggregationStats(GeneQuery geneQuery) {
-        geneQuery.setCount(Boolean.TRUE);
-        return geneDBAdaptor.groupBy(geneQuery);
-    }
-
-    public List<CellBaseDataResult<Gene>> info(List<GeneQuery> geneQueries) {
-        List<CellBaseDataResult<Gene>> geneQueryResults = geneDBAdaptor.query(geneQueries);
-        return geneQueryResults;
-    }
-
-    public CellBaseDataResult<String> distinct(GeneQuery geneQuery) {
-        geneQuery.setCount(Boolean.FALSE);
-        return geneDBAdaptor.distinct(geneQuery.getFacet(), geneQuery);
-    }
-
-//    public CellBaseDataResult<Gene> distinct(GeneQuery geneQuery) {
-//        return geneDBAdaptor.distinct(geneQuery);
-//    }
-
     public Iterator<Gene> iterator(GeneQuery geneQuery) {
         return geneDBAdaptor.iterator(geneQuery);
+    }
+
+    @Override
+    public CellBaseCoreDBAdaptor getDBAdaptor() {
+        return geneDBAdaptor;
     }
 
 //    public List<CellBaseDataResult> getRegulatoryElements(Query geneQuery, String genes) {

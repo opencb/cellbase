@@ -32,7 +32,6 @@ import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
-import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -356,12 +355,19 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(String field, AbstractQuery query) {
+    public CellBaseDataResult aggregationStats(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List fields, AbstractQuery query) {
+    public CellBaseDataResult groupBy(AbstractQuery query) {
         return null;
     }
+
+    @Override
+    public CellBaseDataResult<String> distinct(AbstractQuery query) {
+        return null;
+    }
+
+
 }

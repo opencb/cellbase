@@ -58,12 +58,17 @@ public class MetaMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(String field, AbstractQuery query) {
+    public CellBaseDataResult<String> distinct(AbstractQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List fields, AbstractQuery query) {
+    public CellBaseDataResult<FacetField> aggregationStats(AbstractQuery query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult groupBy(AbstractQuery query) {
         return null;
     }
 }

@@ -27,7 +27,6 @@ import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
@@ -87,7 +86,7 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
 //    }
 
     @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List<String> fields, GeneQuery query) {
+    public CellBaseDataResult<Gene> aggregationStats(GeneQuery query) {
         return null;
     }
 
@@ -120,9 +119,9 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(String field, GeneQuery geneQuery) {
+    public CellBaseDataResult<String> distinct(GeneQuery geneQuery) {
         Bson bsonDocument = parseQuery(geneQuery);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(field, bsonDocument));
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(geneQuery.getFacet(), bsonDocument));
     }
 
 //    @Override
@@ -210,6 +209,7 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
 //    }
 //
 
+    @Override
     public CellBaseDataResult groupBy(GeneQuery geneQuery) {
         Bson bsonQuery = parseQuery(geneQuery);
         logger.info("geneQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());

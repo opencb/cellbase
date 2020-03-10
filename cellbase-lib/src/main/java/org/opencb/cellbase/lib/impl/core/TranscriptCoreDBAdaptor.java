@@ -29,7 +29,6 @@ import org.opencb.cellbase.core.api.core.TranscriptDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.FacetField;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -108,14 +107,20 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
     }
 
     @Override
-    public CellBaseDataResult<FacetField> aggregationStats(List<String> fields, TranscriptQuery query) {
+    public CellBaseDataResult<Transcript> aggregationStats(TranscriptQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(String field, TranscriptQuery query) {
+    public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) {
         return null;
     }
+
+    @Override
+    public CellBaseDataResult<String> distinct(TranscriptQuery query) {
+        return null;
+    }
+
 
 //    @Override
 //    public CellBaseDataResult distinct(Query query, String field) {

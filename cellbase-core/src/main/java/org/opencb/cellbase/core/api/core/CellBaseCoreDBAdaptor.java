@@ -20,7 +20,6 @@ import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Event;
-import org.opencb.commons.datastore.core.FacetField;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,8 +71,6 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
 
     CellBaseIterator<T> iterator(Q query);
 
-//    CellBaseDataResult<Document> nativeQuery(Q query);
-
     default CellBaseDataResult<Long> count(Q query) {
         query.setCount(true);
         query.setLimit(0);
@@ -83,9 +80,9 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
         return countResults;
     }
 
-//    Iterator<Document> nativeIterator(Q query);
+    CellBaseDataResult<T> aggregationStats(Q query);
 
-    CellBaseDataResult<FacetField> aggregationStats(List<String> fields, Q query);
+    CellBaseDataResult<T> groupBy(Q query);
 
-    CellBaseDataResult<String> distinct(String field, Q query);
+    CellBaseDataResult<String> distinct(Q query);
 }

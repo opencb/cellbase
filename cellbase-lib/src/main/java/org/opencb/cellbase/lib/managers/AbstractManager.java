@@ -68,6 +68,7 @@ public class AbstractManager {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
+    @Deprecated
     protected List<Query> createQueries(Query query, String csvField, String queryKey, String... args) {
         String[] ids = csvField.split(",");
         List<Query> queries = new ArrayList<>(ids.length);
