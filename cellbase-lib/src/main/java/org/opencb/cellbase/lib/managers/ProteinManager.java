@@ -20,8 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -31,10 +31,9 @@ import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-public class ProteinManager extends AbstractManager {
+public class ProteinManager extends AbstractManager implements AggregationApi {
 
     private ProteinCoreDBAdaptor proteinDBAdaptor;
     private TranscriptCoreDBAdaptor transcriptDBAdaptor;
@@ -49,15 +48,20 @@ public class ProteinManager extends AbstractManager {
         transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
     }
 
+    @Override
+    public CellBaseCoreDBAdaptor getDBAdaptor() {
+        return proteinDBAdaptor;
+    }
+
 //    public CellBaseDataResult<Protein> search(Query query, QueryOptions queryOptions) {
 //        return proteinDBAdaptor.nativeGet(query, queryOptions);
 //    }
 
-    public CellBaseDataResult<Entry> search(ProteinQuery query) throws QueryException, IllegalAccessException {
-        query.setDefaults();
-        query.validate();
-        return proteinDBAdaptor.query(query);
-    }
+//    public CellBaseDataResult<Entry> search(ProteinQuery query) throws QueryException, IllegalAccessException {
+//        query.setDefaults();
+//        query.validate();
+//        return proteinDBAdaptor.query(query);
+//    }
 
 //    public CellBaseDataResult<Protein> groupBy(Query query, QueryOptions queryOptions, String fields) {
 //        return proteinDBAdaptor.groupBy(query, Arrays.asList(fields.split(",")), queryOptions);
@@ -72,10 +76,10 @@ public class ProteinManager extends AbstractManager {
 //        return queryResults;
 //    }
 
-    public List<CellBaseDataResult<Entry>> info(List<ProteinQuery> queries) {
-        List<CellBaseDataResult<Entry>> queryResults = proteinDBAdaptor.query(queries);
-        return queryResults;
-    }
+//    public List<CellBaseDataResult<Entry>> info(List<ProteinQuery> queries) {
+//        List<CellBaseDataResult<Entry>> queryResults = proteinDBAdaptor.query(queries);
+//        return queryResults;
+//    }
 
     public Iterator<Entry> iterator(ProteinQuery query) {
         return proteinDBAdaptor.iterator(query);
