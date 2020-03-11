@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.BasicDBList;
+import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.apache.commons.lang3.StringUtils;
@@ -335,12 +336,15 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 
     @Override
     public CellBaseDataResult<Entry> groupBy(ProteinQuery query) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        logger.info("proteinQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        return groupBy(bsonQuery, query, "name");
     }
 
     @Override
     public CellBaseDataResult<String> distinct(ProteinQuery query) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
 //    public Iterator nativeIterator(Query query, QueryOptions options) {
