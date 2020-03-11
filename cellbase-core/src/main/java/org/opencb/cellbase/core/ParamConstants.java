@@ -119,7 +119,7 @@ public class ParamConstants {
     public static final String PROTEIN_ACCESSIONS = "Comma separated list of UniProt accession ids, "
             + "e.g. Q9UL59,B2R8Q1,Q9UKT9. Exact text matches will be returned";
     public static final String PROTEIN_ACCESSION = "A UniProt accession id, e.g. Q9UL59.";
-    public static final String PROTEIN_NAMES = "Comma separated list of protein names, e.g.: ZN214_HUMAN,MKS1_HUMAN"
+    public static final String PROTEIN_NAMES = "Comma separated list of protein names, e.g.: ZN214_HUMAN,MKS1_HUMAN. "
             + "Exact text matches will be returned";
 
     // ---------------------------------------------

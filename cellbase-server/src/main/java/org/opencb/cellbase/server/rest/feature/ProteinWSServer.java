@@ -20,6 +20,7 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
+import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -211,11 +212,15 @@ public class ProteinWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the aa sequence for the given protein", response = String.class,
         responseContainer = "QueryResponse")
     public Response getSequence(@PathParam("proteins") @ApiParam (name = "proteins", value = ParamConstants.PROTEIN_ACCESSION,
-                                        required = true) String proteins) {
-        ProteinQuery query = new ProteinQuery();
-        query.setAccessions(Arrays.asList(proteins.split(",")));
-        CellBaseDataResult<String> queryResult = proteinManager.getSequence(query);
-        return createOkResponse(queryResult);
+                                        required = true) String proteins) throws QueryException {
+        try {
+            ProteinQuery query = new ProteinQuery(uriParams);
+            query.setAccessions(Arrays.asList(proteins.split(",")));
+            CellBaseDataResult<String> queryResult = proteinManager.getSequence(query);
+            return createOkResponse(queryResult);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
     }
 
     @GET

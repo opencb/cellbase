@@ -17,7 +17,6 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
@@ -29,7 +28,9 @@ import org.opencb.cellbase.lib.impl.core.ProteinCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class ProteinManager extends AbstractManager implements AggregationApi {
@@ -143,13 +144,18 @@ public class ProteinManager extends AbstractManager implements AggregationApi {
 //    }
 
     public CellBaseDataResult<String> getSequence(ProteinQuery query) {
-        query.getIncludes().add("sequence.value");
-        CellBaseDataResult<Entry> queryResult = proteinDBAdaptor.query(query);
-        CellBaseDataResult<String> queryResult1 = new CellBaseDataResult<>(queryResult.getId(), queryResult.getTime(),
-                queryResult.getEvents(), queryResult.getNumResults(), Collections.emptyList(), 1);
-        queryResult1.setResults(Collections.singletonList(queryResult.getResults().get(0).getSequence().getValue()));
-        queryResult1.setId(StringUtils.join(query.getAccessions()));
-        return queryResult1;
+        List<String> includes = new ArrayList<>();
+        includes.add("sequence.value");
+        query.setIncludes(includes);
+        CellBaseDataResult<Entry> proteinDataResult = proteinDBAdaptor.query(query);
+        if (proteinDataResult == null) {
+            return null;
+        }
+        CellBaseDataResult<String> result = new CellBaseDataResult<>(proteinDataResult.getId(), proteinDataResult.getTime(),
+                proteinDataResult.getEvents(), proteinDataResult.getNumResults(), Collections.emptyList(), 1);
+        result.setResults(Collections.singletonList(proteinDataResult.getResults().get(0).getSequence().getValue()));
+//        result.setId(StringUtils.join(query.getAccessions()));
+        return result;
     }
 
     public CellBaseDataResult<ProteinVariantAnnotation> getVariantAnnotation(String ensemblTranscriptId, int position, String aaReference,
