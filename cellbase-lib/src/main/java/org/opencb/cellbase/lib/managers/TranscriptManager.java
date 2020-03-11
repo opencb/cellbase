@@ -16,25 +16,18 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-public class TranscriptManager extends AbstractManager {
+public class TranscriptManager extends AbstractManager implements AggregationApi  {
 
     private TranscriptCoreDBAdaptor transcriptDBAdaptor;
-//    private GeneDBAdaptor geneDBAdaptor;
 
     public TranscriptManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);
@@ -43,33 +36,38 @@ public class TranscriptManager extends AbstractManager {
 
     private void init() {
         transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
-//        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
+    }
+
+    public Iterator<Transcript> iterator(TranscriptQuery query) {
+        return transcriptDBAdaptor.iterator(query);
+    }
+
+    @Override
+    public CellBaseCoreDBAdaptor getDBAdaptor() {
+        return transcriptDBAdaptor;
     }
 
     public CellBaseDataResult<String> getCdna(String id) {
-        GeneCoreDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(this.species, this.assembly);
-        GeneQuery geneQuery = new GeneQuery();
-        geneQuery.setTranscriptsXrefs(Arrays.asList(id));
-        geneQuery.setIncludes(Arrays.asList("transcripts.id,transcripts.cDnaSequence"));
+        TranscriptQuery query = new TranscriptQuery();
+        query.setTranscriptsXrefs(Arrays.asList(id));
+        query.setIncludes(Arrays.asList("transcripts.id,transcripts.cDnaSequence"));
 
-        CellBaseDataResult<Gene> gene = geneDBAdaptor.query(geneQuery);
+        CellBaseDataResult<Transcript> transcriptCellBaseDataResult = transcriptDBAdaptor.query(query);
 
 //        if (gene.getResults().get(0).getTranscripts().size() != 1) {
 //            // check id exists
 //        }
 
         String cdnaSequence = null;
-        for (Transcript transcript: gene.getResults().get(0).getTranscripts()) {
+        for (Transcript transcript: transcriptCellBaseDataResult.getResults()) {
             if (transcript.getId().equals(id)) {
                 cdnaSequence = transcript.getcDnaSequence();
                 break;
             }
         }
 
-        return new CellBaseDataResult<>(id, gene.getTime(), gene.getEvents(), gene.getNumResults(),
-                Collections.singletonList(cdnaSequence), 1);
-
-
+        return new CellBaseDataResult<>(id, transcriptCellBaseDataResult.getTime(), transcriptCellBaseDataResult.getEvents(),
+                transcriptCellBaseDataResult.getNumResults(), Collections.singletonList(cdnaSequence), 1);
 
 //        Bson bson = Filters.eq("transcripts.xrefs.id", id);
 //        Bson elemMatch = Projections.elemMatch("transcripts", Filters.eq("xrefs.id", id));
@@ -95,11 +93,11 @@ public class TranscriptManager extends AbstractManager {
         return cellBaseDataResults;
     }
 
-    public CellBaseDataResult<Transcript> search(TranscriptQuery query) throws QueryException, IllegalAccessException {
-        query.setDefaults();
-        query.validate();
-        return transcriptDBAdaptor.query(query);
-    }
+//    public CellBaseDataResult<Transcript> search(TranscriptQuery query) throws QueryException, IllegalAccessException {
+//        query.setDefaults();
+//        query.validate();
+//        return transcriptDBAdaptor.query(query);
+//    }
 
 
 //    public CellBaseDataResult<Transcript> search(Query query, QueryOptions queryOptions) {
@@ -124,10 +122,10 @@ public class TranscriptManager extends AbstractManager {
 //        return queryResults;
 //    }
 
-    public List<CellBaseDataResult<Transcript>> info(List<TranscriptQuery> queries) {
-        List<CellBaseDataResult<Transcript>> queryResults = transcriptDBAdaptor.query(queries);
-        return queryResults;
-    }
+//    public List<CellBaseDataResult<Transcript>> info(List<TranscriptQuery> queries) {
+//        List<CellBaseDataResult<Transcript>> queryResults = transcriptDBAdaptor.query(queries);
+//        return queryResults;
+//    }
 
     public List<CellBaseDataResult<String>> getSequence(String id) {
         List<String> transcriptsList = Arrays.asList(id.split(","));

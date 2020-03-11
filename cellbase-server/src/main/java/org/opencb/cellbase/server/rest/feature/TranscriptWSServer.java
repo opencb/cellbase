@@ -135,12 +135,20 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcripts}/info")
     @ApiOperation(httpMethod = "GET", value = "Get information about the specified transcripts(s)", response = Transcript.class,
             responseContainer = "QueryResponse")
-    public Response getInfo(@PathParam("transcriptId") String id) {
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getInfo(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_XREFS,
+            required = true) String transcripts) {
+
         try {
 //            parseQueryParams();
 //            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, id);
             List<TranscriptQuery> queries = new ArrayList<>();
-            String[] identifiers =  id.split(",");
+            String[] identifiers =  transcripts.split(",");
             for (String identifier : identifiers) {
                 TranscriptQuery query = new TranscriptQuery(uriParams);
                 query.setTranscriptsXrefs(Arrays.asList(identifier));
