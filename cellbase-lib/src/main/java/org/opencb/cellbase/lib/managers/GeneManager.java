@@ -28,7 +28,6 @@ import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class GeneManager extends AbstractManager implements AggregationApi  {
@@ -44,10 +43,6 @@ public class GeneManager extends AbstractManager implements AggregationApi  {
     private void init() {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
         genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
-    }
-
-    public Iterator<Gene> iterator(GeneQuery geneQuery) {
-        return geneDBAdaptor.iterator(geneQuery);
     }
 
     @Override

@@ -33,12 +33,10 @@ import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
-import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
-import org.opencb.commons.datastore.mongodb.MongoDBCollection;
-import org.opencb.commons.datastore.mongodb.MongoDBIterator;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
+import org.opencb.commons.datastore.mongodb.*;
 
 import java.util.*;
 
@@ -358,20 +356,18 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 
     public Bson parseQuery(ProteinQuery proteinQuery) {
         List<Bson> andBsonList = new ArrayList<>();
-
+        boolean visited = false;
         try {
             for (Map.Entry<String, Object> entry : proteinQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
-                boolean visited = false;
                 switch (dotNotationName) {
+                    case "accession":
+                    case "name":
                     case "gene":
-//                        createAndOrQuery(value, "gene.name.value", QueryParam.Type.STRING, andBsonList);
-//                        break;
                     case "xrefs":
                         if (!visited) {
-//                            createAndOrQuery(value, "dbReference.id", QueryParam.Type.STRING, andBsonList);
-                            createAndOrQuery(value, "dbReference.property.value", QueryParam.Type.STRING, andBsonList);
+                            createProteinOrQuery(value, andBsonList);
                             visited = true;
                         }
                         break;
@@ -392,6 +388,37 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         } else {
             return new Document();
         }
+    }
+
+    private void createProteinOrQuery(Object queryValues, List<Bson> andBsonList) {
+
+        List<Bson> orBsonList = new ArrayList<>();
+
+        String mongoDbField = "dbReference.id";
+        Query query = new Query(mongoDbField, queryValues);
+        Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query,
+                QueryParam.Type.STRING, MongoDBQueryUtils.LogicalOperator.OR);
+        orBsonList.add(filter);
+
+        mongoDbField = "gene.name.value";
+        query = new Query(mongoDbField, queryValues);
+        filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query,
+                QueryParam.Type.STRING, MongoDBQueryUtils.LogicalOperator.OR);
+        orBsonList.add(filter);
+
+        mongoDbField = "accession";
+        query = new Query(mongoDbField, queryValues);
+        filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query,
+                QueryParam.Type.STRING, MongoDBQueryUtils.LogicalOperator.OR);
+        orBsonList.add(filter);
+
+        mongoDbField = "name";
+        query = new Query(mongoDbField, queryValues);
+        filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query,
+                QueryParam.Type.STRING, MongoDBQueryUtils.LogicalOperator.OR);
+        orBsonList.add(filter);
+
+        andBsonList.add(Filters.or(orBsonList));
     }
 
 //    private Bson parseQuery(Query query) {

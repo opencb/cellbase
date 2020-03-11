@@ -34,9 +34,9 @@ public interface FeatureApi<Q extends AbstractQuery, T> {
         return getDBAdaptor().query(query);
     }
 
-    default List<CellBaseDataResult<T>> info(List<Q> geneQueries) {
-        List<CellBaseDataResult<T>> geneQueryResults = getDBAdaptor().query(geneQueries);
-        return geneQueryResults;
+    default List<CellBaseDataResult<T>> info(List<Q> queries) {
+        List<CellBaseDataResult<T>> results = getDBAdaptor().query(queries);
+        return results;
     }
 
     default CellBaseDataResult<String> distinct(Q query) {

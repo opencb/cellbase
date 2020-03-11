@@ -30,7 +30,6 @@ import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 
 public class ProteinManager extends AbstractManager implements AggregationApi {
@@ -80,10 +79,6 @@ public class ProteinManager extends AbstractManager implements AggregationApi {
 //        List<CellBaseDataResult<Entry>> queryResults = proteinDBAdaptor.query(queries);
 //        return queryResults;
 //    }
-
-    public Iterator<Entry> iterator(ProteinQuery query) {
-        return proteinDBAdaptor.iterator(query);
-    }
 
     public CellBaseDataResult getSubstitutionScores(TranscriptQuery query, Integer position, String aa)
             throws JsonProcessingException {

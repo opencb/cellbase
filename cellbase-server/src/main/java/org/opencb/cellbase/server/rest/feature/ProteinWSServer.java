@@ -89,7 +89,7 @@ public class ProteinWSServer extends GenericRestWSServer {
             String[] identifiers = id.split(",");
             for (String identifier : identifiers) {
                 ProteinQuery query = new ProteinQuery(uriParams);
-                query.setAccessions(Arrays.asList(identifier));
+                query.setXrefs(Arrays.asList(identifier));
                 proteinQueries.add(query);
                 logger.info("REST proteinQuery: " + query.toString());
             }
