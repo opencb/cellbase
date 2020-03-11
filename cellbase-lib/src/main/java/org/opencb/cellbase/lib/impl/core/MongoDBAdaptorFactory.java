@@ -385,15 +385,6 @@ public class MongoDBAdaptorFactory {
         return new TranscriptCoreDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    public ConservationMongoDBAdaptor getConservationDBAdaptor(String species) {
-        return getConservationDBAdaptor(species, null);
-    }
-
-    public ConservationMongoDBAdaptor getConservationDBAdaptor(String species, String assembly) {
-        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
-    }
-
     public XRefMongoDBAdaptor getXRefDBAdaptor(String species) {
         return getXRefDBAdaptor(species, null);
     }
