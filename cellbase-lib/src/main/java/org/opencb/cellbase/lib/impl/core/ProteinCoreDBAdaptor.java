@@ -359,12 +359,17 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             for (Map.Entry<String, Object> entry : proteinQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
+                boolean visited = false;
                 switch (dotNotationName) {
                     case "gene":
-                        createAndOrQuery(value, "gene.name.value", QueryParam.Type.STRING, andBsonList);
-                        break;
+//                        createAndOrQuery(value, "gene.name.value", QueryParam.Type.STRING, andBsonList);
+//                        break;
                     case "xrefs":
-                        createAndOrQuery(value, "dbReference.id", QueryParam.Type.STRING, andBsonList);
+                        if (!visited) {
+//                            createAndOrQuery(value, "dbReference.id", QueryParam.Type.STRING, andBsonList);
+                            createAndOrQuery(value, "dbReference.property.value", QueryParam.Type.STRING, andBsonList);
+                            visited = true;
+                        }
                         break;
                     case "keyword":
                         createAndOrQuery(value, "keyword.value", QueryParam.Type.STRING, andBsonList);

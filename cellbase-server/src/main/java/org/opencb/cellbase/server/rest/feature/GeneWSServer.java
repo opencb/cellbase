@@ -657,7 +657,7 @@ public class GeneWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{genes}/protein")
-    @ApiOperation(httpMethod = "GET", value = "Return info of the corresponding proteins", response = Entry.class,
+    @ApiOperation(httpMethod = "GET", value = "Return info for the corresponding proteins", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD, required = false,
