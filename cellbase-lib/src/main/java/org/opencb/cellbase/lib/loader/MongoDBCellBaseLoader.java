@@ -37,7 +37,7 @@ import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
-import org.opencb.cellbase.lib.impl.core.VariantCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.commons.datastore.core.DataResult;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -369,7 +369,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                         dbObjectsBatch.add(dbObject);
                     }
 
-                    VariantCoreDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens");
+                    VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens");
 //                    Long numUpdates = (Long) dbAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     Long numUpdates = (Long) variationDBAdaptor.update(dbObjectsBatch, field, innerFields).first();
                     numLoadedObjects += numUpdates;

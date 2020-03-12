@@ -43,7 +43,7 @@ import java.util.*;
 /**
  * Created by imedina on 01/12/15.
  */
-public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<ProteinQuery, Entry> {
+public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<ProteinQuery, Entry> {
 
     private MongoDBCollection proteinSubstitutionMongoDBCollection;
 
@@ -75,7 +75,7 @@ public class ProteinCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     }
 
 
-    public ProteinCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public ProteinMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("protein");
         proteinSubstitutionMongoDBCollection = mongoDataStore.getCollection("protein_functional_prediction");

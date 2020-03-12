@@ -49,7 +49,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testQuery() throws Exception {
-        ProteinCoreDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
+        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor("hsapiens", "GRCh37");
         ProteinQuery query = new ProteinQuery();
         query.setExcludes(new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         query.setLimit(3);

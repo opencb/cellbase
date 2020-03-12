@@ -20,7 +20,7 @@ import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.RegulationCoreAdaptor;
+import org.opencb.cellbase.lib.impl.core.RegulationMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -28,7 +28,7 @@ import java.util.List;
 
 public class RegulatoryManager extends AbstractManager {
 
-    private RegulationCoreAdaptor regulationDBAdaptor;
+    private RegulationMongoDBAdaptor regulationDBAdaptor;
 
     public RegulatoryManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);

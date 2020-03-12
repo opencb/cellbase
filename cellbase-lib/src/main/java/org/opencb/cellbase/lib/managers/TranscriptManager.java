@@ -21,13 +21,13 @@ import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
 
 import java.util.*;
 
 public class TranscriptManager extends AbstractManager implements AggregationApi  {
 
-    private TranscriptCoreDBAdaptor transcriptDBAdaptor;
+    private TranscriptMongoDBAdaptor transcriptDBAdaptor;
 
     public TranscriptManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);

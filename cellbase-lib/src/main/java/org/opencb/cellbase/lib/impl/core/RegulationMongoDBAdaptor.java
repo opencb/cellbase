@@ -36,9 +36,9 @@ import java.util.List;
 /**
  * Created by imedina on 07/12/15.
  */
-public class RegulationCoreAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
+public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
-    public RegulationCoreAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public RegulationMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("regulatory_region");
 

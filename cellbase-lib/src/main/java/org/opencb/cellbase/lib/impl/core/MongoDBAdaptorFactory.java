@@ -313,7 +313,7 @@ public class MongoDBAdaptorFactory {
     }
 
     private String getDataResponseTime(String species, String assembly) {
-        GeneCoreDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
+        GeneMongoDBAdaptor geneDBAdaptor = getGeneDBAdaptor(species, assembly);
         try {
             GeneQuery geneQuery = new GeneQuery();
             geneQuery.setLimit(1);
@@ -366,23 +366,23 @@ public class MongoDBAdaptorFactory {
         return new MetaMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    public GeneCoreDBAdaptor getGeneDBAdaptor(String species) {
+    public GeneMongoDBAdaptor getGeneDBAdaptor(String species) {
         return getGeneDBAdaptor(species, null);
     }
 
-    public GeneCoreDBAdaptor getGeneDBAdaptor(String species, String assembly) {
+    public GeneMongoDBAdaptor getGeneDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        GeneCoreDBAdaptor geneMongoDBAdaptor = new GeneCoreDBAdaptor(species, assembly, mongoDatastore);
+        GeneMongoDBAdaptor geneMongoDBAdaptor = new GeneMongoDBAdaptor(species, assembly, mongoDatastore);
         return geneMongoDBAdaptor;
     }
 
-    public TranscriptCoreDBAdaptor getTranscriptDBAdaptor(String species) {
+    public TranscriptMongoDBAdaptor getTranscriptDBAdaptor(String species) {
         return getTranscriptDBAdaptor(species, null);
     }
 
-    public TranscriptCoreDBAdaptor getTranscriptDBAdaptor(String species, String assembly) {
+    public TranscriptMongoDBAdaptor getTranscriptDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new TranscriptCoreDBAdaptor(species, assembly, mongoDatastore);
+        return new TranscriptMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
     public XRefMongoDBAdaptor getXRefDBAdaptor(String species) {
@@ -394,13 +394,13 @@ public class MongoDBAdaptorFactory {
         return new XRefMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    public VariantCoreDBAdaptor getVariationDBAdaptor(String species) {
+    public VariantMongoDBAdaptor getVariationDBAdaptor(String species) {
         return getVariationDBAdaptor(species, null);
     }
 
-    public VariantCoreDBAdaptor getVariationDBAdaptor(String species, String assembly) {
+    public VariantMongoDBAdaptor getVariationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new VariantCoreDBAdaptor(species, assembly, mongoDatastore);
+        return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
     public ClinicalMongoDBAdaptor getClinicalDBAdaptor(String species) {
@@ -417,13 +417,13 @@ public class MongoDBAdaptorFactory {
         return new RepeatsMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    public ProteinCoreDBAdaptor getProteinDBAdaptor(String species) {
+    public ProteinMongoDBAdaptor getProteinDBAdaptor(String species) {
         return getProteinDBAdaptor(species, null);
     }
 
-    public ProteinCoreDBAdaptor getProteinDBAdaptor(String species, String assembly) {
+    public ProteinMongoDBAdaptor getProteinDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ProteinCoreDBAdaptor(species, assembly, mongoDatastore);
+        return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
 //    @Override
@@ -437,12 +437,12 @@ public class MongoDBAdaptorFactory {
 //        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
 //    }
 
-    public RegulationCoreAdaptor getRegulationDBAdaptor(String species) {
+    public RegulationMongoDBAdaptor getRegulationDBAdaptor(String species) {
         return getRegulationDBAdaptor(species, null);
     }
 
-    public RegulationCoreAdaptor getRegulationDBAdaptor(String species, String assembly) {
+    public RegulationMongoDBAdaptor getRegulationDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new RegulationCoreAdaptor(species, assembly, mongoDatastore);
+        return new RegulationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 }

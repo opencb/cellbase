@@ -48,7 +48,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 26/11/15.
  */
-public class VariantCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
+public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final String ANNOTATION_FIELD = "annotation";
@@ -61,7 +61,7 @@ public class VariantCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 
     private MongoDBCollection caddDBCollection;
 
-    public VariantCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public VariantMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("variation");
         caddDBCollection = mongoDataStore.getCollection("variation_functional_score");

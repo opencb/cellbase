@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.mongodb.MongoClient;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
@@ -41,9 +42,9 @@ import java.util.*;
 /**
  * Created by swaathi on 27/11/15.
  */
-public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
+public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> {
 
-    public TranscriptCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public TranscriptMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("gene");
 
@@ -70,12 +71,10 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
 
     @Override
     public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
-        Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
-        List<Bson> projection = unwind(query);
+        List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
-        MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(null, bson, Projections.fields(projection),
-                converter, queryOptions);
+        MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
@@ -116,12 +115,16 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
 
     @Override
     public CellBaseDataResult<Transcript> groupBy(TranscriptQuery query) {
-        return null;
+        Bson bsonQuery = parseQuery(query);
+        logger.info("transcriptQuery: {}", bsonQuery.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        return groupBy(bsonQuery, query, "name");
     }
 
     @Override
     public CellBaseDataResult<String> distinct(TranscriptQuery query) {
-        return null;
+        Bson bsonDocument = parseQuery(query);
+        logger.info("transcriptQuery: {}", bsonDocument.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
 

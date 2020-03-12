@@ -72,7 +72,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Disabled
     @Test
     public void testGetFunctionalScoreVariant() throws Exception {
-        VariantCoreDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult functionalScoreVariant = variationDBAdaptor.getFunctionalScoreVariant(Variant.parseVariant("10:130862563:A:G"),
                 new QueryOptions());
     }
@@ -97,7 +97,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("62165739", "0|1")));
         Variant variant1 = variantBuilder.build();
 
-        VariantCoreDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens",
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens",
                 "GRCh37");
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList
                 = variationDBAdaptor.getPopulationFrequencyByVariant(Arrays.asList(variant, variant1),
@@ -231,7 +231,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testGet() {
-        VariantCoreDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         QueryOptions queryOptions = new QueryOptions("include", "id");
 //        queryOptions.put("limit", 3);
         CellBaseDataResult<Variant> result = variationDBAdaptor
@@ -266,7 +266,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testNativeGet() {
-        VariantCoreDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult variantCellBaseDataResult = variationDBAdaptor.nativeGet(new Query(VariantDBAdaptor.QueryParams.ID.key(), "rs666"),
                 new QueryOptions());
         assertEquals(variantCellBaseDataResult.getNumResults(), 1);
@@ -278,7 +278,7 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testGetByVariant() {
-        VariantCoreDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
+        VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens", "GRCh37");
         CellBaseDataResult<Variant> variantCellBaseDataResult
                 = variationDBAdaptor.getByVariant(Variant.parseVariant("10:118187036:T:C"), new QueryOptions());
         assertEquals(variantCellBaseDataResult.getNumResults(), 1);

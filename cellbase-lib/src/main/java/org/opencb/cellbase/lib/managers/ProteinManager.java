@@ -24,8 +24,8 @@ import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.ProteinCoreDBAdaptor;
-import org.opencb.cellbase.lib.impl.core.TranscriptCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.ProteinMongoDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
 import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.util.ArrayList;
@@ -35,8 +35,8 @@ import java.util.Map;
 
 public class ProteinManager extends AbstractManager implements AggregationApi {
 
-    private ProteinCoreDBAdaptor proteinDBAdaptor;
-    private TranscriptCoreDBAdaptor transcriptDBAdaptor;
+    private ProteinMongoDBAdaptor proteinDBAdaptor;
+    private TranscriptMongoDBAdaptor transcriptDBAdaptor;
 
     public ProteinManager(String species, String assembly, CellBaseConfiguration configuration) {
         super(species, assembly, configuration);

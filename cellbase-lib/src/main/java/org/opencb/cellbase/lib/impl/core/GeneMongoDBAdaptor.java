@@ -41,16 +41,16 @@ import java.util.Map;
 /**
  * Created by imedina on 25/11/15.
  */
-public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<GeneQuery, Gene> {
+public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<GeneQuery, Gene> {
 
 //    private static final String TRANSCRIPTS = "transcripts";
-    private static final String GENE = "gene";
+//    private static final String GENE = "gene";
 //    private static final String ANNOTATION_FLAGS = "annotationFlags";
 
-    public GeneCoreDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+    public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
-        mongoDBCollection = mongoDataStore.getCollection(GENE);
-        logger.debug("GeneMongoDBAdaptor: in 'constructor'");
+        mongoDBCollection = mongoDataStore.getCollection("gene");
+        logger.debug("GeneMongoDBAdaptor: in 'constructor'" + mongoDBCollection.count());
     }
 
 //    @Override

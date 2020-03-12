@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
@@ -24,7 +23,7 @@ import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.lib.impl.core.GeneCoreDBAdaptor;
+import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ import java.util.List;
 
 public class GeneManager extends AbstractManager implements AggregationApi  {
 
-    private GeneCoreDBAdaptor geneDBAdaptor;
+    private GeneMongoDBAdaptor geneDBAdaptor;
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
     public GeneManager(String species, String assembly, CellBaseConfiguration configuration) {
@@ -50,22 +49,23 @@ public class GeneManager extends AbstractManager implements AggregationApi  {
         return geneDBAdaptor;
     }
 
+    public CellBaseDataResult<GenomeSequenceFeature> getSequence(GeneQuery query) {
+        // get the coordinates for the gene
+        CellBaseDataResult<Gene> geneCellBaseDataResult = geneDBAdaptor.query(query);
+        // get the sequences for those coordinates
+        if (geneCellBaseDataResult.getNumResults() > 0) {
+            List<Gene> results = geneCellBaseDataResult.getResults();
+            Gene gene = results.get(0);
+            Region region = new Region(gene.getChromosome(), gene.getStart(), gene.getEnd());
+            return genomeDBAdaptor.getSequence(region, query.toQueryOptions());
+        }
+        return null;
+    }
+
     public List<CellBaseDataResult<GenomeSequenceFeature>> getSequence(List<GeneQuery> queries) {
         List<CellBaseDataResult<GenomeSequenceFeature>> sequences = new ArrayList<>();
         for (GeneQuery query : queries) {
-            // get the coordinates for the gene
-            CellBaseDataResult<Gene> geneCellBaseDataResult = geneDBAdaptor.query(query);
-
-            // get the sequences for those coordinates
-            List<Gene> results = geneCellBaseDataResult.getResults();
-            if (CollectionUtils.isNotEmpty(results)) {
-                Gene gene = results.get(0);
-                Region region = Region.parseRegion(gene.getChromosome() + ":" + gene.getStart() + "-" + gene.getEnd());
-                CellBaseDataResult<GenomeSequenceFeature> sequence = genomeDBAdaptor.getSequence(region, query.toQueryOptions());
-                sequences.add(sequence);
-            } else {
-                sequences.add(null);
-            }
+            sequences.add(getSequence(query));
         }
         return sequences;
     }

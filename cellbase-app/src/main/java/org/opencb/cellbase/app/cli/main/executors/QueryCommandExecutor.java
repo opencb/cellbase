@@ -140,7 +140,7 @@ public class QueryCommandExecutor extends CommandExecutor {
 
     private void executeGeneQuery(Query query, QueryOptions queryOptions, PrintStream output)
             throws JsonProcessingException, CellbaseException {
-        GeneCoreDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
+        GeneMongoDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(queryCommandOptions.species);
         GeneManager geneManager = cellBaseManagerFactory.getGeneManager(queryCommandOptions.species, queryCommandOptions.assembly);
 
         executeFeatureAggregation(geneDBAdaptor, query, queryOptions, output);
@@ -157,7 +157,7 @@ public class QueryCommandExecutor extends CommandExecutor {
                     }
                     break;
                 case "variation":
-                    VariantCoreDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+                    VariantMongoDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
                     query.append(VariantDBAdaptor.QueryParams.GENE.key(), queryCommandOptions.id);
                     variantDBAdaptor.forEach(query, entry -> {
                         try {
@@ -174,7 +174,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeVariationQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        VariantCoreDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
+        VariantMongoDBAdaptor variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(queryCommandOptions.species);
 
         executeFeatureAggregation(variantDBAdaptor, query, queryOptions, output);
 
@@ -195,7 +195,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeProteinQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        ProteinCoreDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
+        ProteinMongoDBAdaptor proteinDBAdaptor = dbAdaptorFactory.getProteinDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.distinct != null && !queryCommandOptions.distinct.isEmpty()) {
 //            CellBaseDataResult distinct = proteinDBAdaptor.distinct(query, queryCommandOptions.distinct);
@@ -230,7 +230,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        RegulationCoreAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
+        RegulationMongoDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
@@ -249,7 +249,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     }
 
     private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
-        TranscriptCoreDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
+        TranscriptMongoDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(queryCommandOptions.species);
 
         if (queryCommandOptions.resource != null) {
             switch (queryCommandOptions.resource) {
