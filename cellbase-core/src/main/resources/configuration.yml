@@ -121,8 +121,8 @@ species:
   - id: hsapiens
     scientificName: Homo sapiens
     assemblies:
-     - ensemblVersion: '82_37'
-       name: GRCh37
+#     - ensemblVersion: '82_37'
+#       name: GRCh37
      - ensemblVersion: '89_38'
        name: GRCh38
     data:
