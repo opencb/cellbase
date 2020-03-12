@@ -321,35 +321,22 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
 
     public Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
-
+        boolean visited = false;
         try {
-            boolean visited = false;
             for (Map.Entry<String, Object> entry : geneQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "id":
                     case "region":
-                    case "name":
-                    case "transcripts.xrefs":
                         if (!visited) {
-                            List<String> identifers = new ArrayList<>();
-                            if (geneQuery.getIds() != null) {
-                                identifers.addAll(geneQuery.getIds());
-                            }
-                            if (geneQuery.getNames() != null) {
-                                identifers.addAll(geneQuery.getNames());
-                            }
-                            if (geneQuery.getTranscriptsXrefs() != null) {
-                                identifers.addAll(geneQuery.getTranscriptsXrefs());
-                            }
-                            createIdRegionQuery(geneQuery.getRegions(), identifers, andBsonList);
+                            createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
                             visited = true;
                         }
                         break;
-//                    case "transcripts.xrefs":
-//                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
-//                        break;
+                    case "transcripts.xrefs":
+                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
+                        break;
                     case "transcripts.annotationFlags":
                         // TODO use unwind to filter out unwanted transcripts
                         createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
@@ -381,6 +368,7 @@ public class GeneCoreDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBA
             e.printStackTrace();
         }
 
+        logger.info("gene parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

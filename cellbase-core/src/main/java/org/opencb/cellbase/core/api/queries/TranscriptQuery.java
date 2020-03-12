@@ -24,21 +24,21 @@ import java.util.Map;
 public class TranscriptQuery extends AbstractQuery {
 
     @QueryParameter(id = "region")
-    private List<Region> regions;
+    protected List<Region> regions;
 
     @QueryParameter(id = "transcripts.biotype")
-    private List<String> transcriptsBiotype;
+    protected List<String> transcriptsBiotype;
     @QueryParameter(id = "transcripts.xrefs")
-    private List<String> transcriptsXrefs;
+    protected List<String> transcriptsXrefs;
     @QueryParameter(id = "transcripts.id")
-    private List<String> transcriptsId;
+    protected List<String> transcriptsId;
     @QueryParameter(id = "transcripts.name")
-    private List<String> transcriptsName;
+    protected List<String> transcriptsName;
 
     @QueryParameter(id = "transcripts.annotationFlags")
-    private LogicalList<String> transcriptsAnnotationFlags;
+    protected LogicalList<String> transcriptsAnnotationFlags;
     @QueryParameter(id = "transcripts.tfbs.name")
-    private LogicalList<String> transcriptsTfbsName;
+    protected LogicalList<String> transcriptsTfbsName;
 
     public TranscriptQuery() {
     }

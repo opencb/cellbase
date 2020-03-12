@@ -95,6 +95,37 @@ public class GeneQuery extends TranscriptQuery {
         }
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GeneQuery{");
+        sb.append("ids=").append(ids);
+        sb.append(", names=").append(names);
+        sb.append(", biotypes=").append(biotypes);
+        sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
+        sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
+        sb.append(", annotationExpressionGene=").append(annotationExpressionGene);
+        sb.append(", annotationExpressionTissue=").append(annotationExpressionTissue);
+        sb.append(", annotationExpressionValue=").append(annotationExpressionValue);
+        sb.append(", annotationDrugsName=").append(annotationDrugsName);
+        sb.append(", annotationDrugsGene=").append(annotationDrugsGene);
+        sb.append(", regions=").append(regions);
+        sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
+        sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
+        sb.append(", transcriptsId=").append(transcriptsId);
+        sb.append(", transcriptsName=").append(transcriptsName);
+        sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
+        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsName);
+        sb.append(", limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
+    }
 
     public List<String> getIds() {
         return ids;
@@ -353,28 +384,5 @@ public class GeneQuery extends TranscriptQuery {
         }
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("GeneQuery{");
-        sb.append("ids=").append(ids);
-        sb.append(", names=").append(names);
-        sb.append(", biotypes=").append(biotypes);
-        sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
-        sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
-        sb.append(", annotationExpressionGene=").append(annotationExpressionGene);
-        sb.append(", annotationExpressionTissue=").append(annotationExpressionTissue);
-        sb.append(", annotationExpressionValue=").append(annotationExpressionValue);
-        sb.append(", annotationDrugsName=").append(annotationDrugsName);
-        sb.append(", annotationDrugsGene=").append(annotationDrugsGene);
-        sb.append(", limit=").append(limit);
-        sb.append(", skip=").append(skip);
-        sb.append(", count=").append(count);
-        sb.append(", sort='").append(sort).append('\'');
-        sb.append(", order=").append(order);
-        sb.append(", facet='").append(facet).append('\'');
-        sb.append(", includes=").append(includes);
-        sb.append(", excludes=").append(excludes);
-        sb.append('}');
-        return sb.toString();
-    }
+
 }

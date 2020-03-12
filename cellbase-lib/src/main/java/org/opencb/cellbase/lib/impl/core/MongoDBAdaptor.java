@@ -146,7 +146,7 @@ public class MongoDBAdaptor {
             Bson end = Filters.gte("end", regions.get(0).getStart());
             andBsonList.add(Filters.and(chromosome, start, end));
         } else if (CollectionUtils.isEmpty(regions) && ids.size() == 1) {
-            Bson idFilter = Filters.eq("transcripts.xrefs.id", ids.get(0));
+            Bson idFilter = Filters.eq("id", ids.get(0));
             andBsonList.add(idFilter);
         } else {
             List<Bson> orBsonList = new ArrayList<>();
@@ -160,7 +160,7 @@ public class MongoDBAdaptor {
             }
             if (CollectionUtils.isNotEmpty(ids)) {
                 for (String id : ids) {
-                    Bson idFilter = Filters.eq("transcripts.xrefs.id", id);
+                    Bson idFilter = Filters.eq("id", id);
                     orBsonList.add(idFilter);
                 }
             }
