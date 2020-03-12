@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -32,7 +32,6 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.slf4j.Logger;
-import java.nio.file.Files;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
@@ -41,6 +40,7 @@ import javax.ws.rs.client.WebTarget;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -247,7 +247,7 @@ public class DownloadManager {
         downloadGeneExpressionAtlas(geneFolder);
         downloadGeneDiseaseAnnotation(geneFolder);
         downloadGnomad(geneFolder);
-        runGeneExtraInfo(geneFolder);
+//        runGeneExtraInfo(geneFolder);
     }
 
     private void downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
@@ -999,7 +999,7 @@ public class DownloadManager {
         LocalDateTime now = LocalDateTime.now();
         DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(now).toString());
         final String outputLog = outputFileName + ".log";
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("-N --tries=10", url, "-O", outputFileName, "-o", outputLog));
+        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
         if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
             wgetArgs.addAll(wgetAdditionalArgs);
         }
@@ -1025,7 +1025,7 @@ public class DownloadManager {
             downloadFile.setMessage("See full error message in " + outputLog);
             downloadFile.setStatus(DownloadFile.Status.ERROR);
             // because we use the -O flag, a file will be written, even on error. See #467
-            Files.deleteIfExists((new File(outputFileName)).toPath());
+//            Files.deleteIfExists((new File(outputFileName)).toPath());
         }
     }
 

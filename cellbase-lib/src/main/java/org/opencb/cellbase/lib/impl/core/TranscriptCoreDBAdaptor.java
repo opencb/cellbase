@@ -72,20 +72,21 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
     public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
-        Bson projection = getProjection(query);
+        List<Bson> projection = unwind(query);
         GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
-        MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(null, bson, Projections.fields(projection),
+                converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
-    public CellBaseDataResult<Long> count(TranscriptQuery query) {
+    public List<Bson> unwind(TranscriptQuery query) {
         Bson document = parseQuery(query);
         Bson match = Aggregates.match(document);
 
         List<String> includeFields = query.getIncludes();
 
         Bson include;
-        if (includeFields.size() > 0) {
+        if (includeFields != null && includeFields.size() > 0) {
             include = Aggregates.project(Projections.include(includeFields));
         } else {
             include = Aggregates.project(Projections.include("transcripts.id"));
@@ -94,10 +95,14 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
         Bson unwind = Aggregates.unwind("$transcripts");
         Bson match2 = Aggregates.match(document);
         Bson project = Aggregates.project(new Document("transcripts", "$transcripts.id"));
-        Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
+        return Arrays.asList(match, include, unwind, match2, project);
+    }
 
-        CellBaseDataResult<Document> cellBaseDataResult =
-                new CellBaseDataResult<>(mongoDBCollection.aggregate(Arrays.asList(match, include, unwind, match2, project, group), null));
+    public CellBaseDataResult<Long> count(TranscriptQuery query) {
+        List<Bson> projections = unwind(query);
+        Bson group = Aggregates.group("transcripts", Accumulators.sum("count", 1));
+        projections.add(group);
+        CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult(mongoDBCollection.aggregate(projections, null));
         Number number = (Number) cellBaseDataResult.first().get("count");
         Long count = number.longValue();
         return new CellBaseDataResult<>(null, cellBaseDataResult.getTime(), cellBaseDataResult.getEvents(),
@@ -191,24 +196,27 @@ public class TranscriptCoreDBAdaptor extends MongoDBAdaptor implements CellBaseC
 
     public Bson parseQuery(TranscriptQuery query) {
         List<Bson> andBsonList = new ArrayList<>();
+        boolean visited = false;
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
                     case "region":
-                        // parse region and ID at the same time
-                        createIdRegionQuery(query.getRegions(), null, andBsonList);
+                    case "id":
+                    case "xrefs":
+                        if (!visited) {
+                           // parse region and ID at the same time
+                            createIdRegionQuery(query.getRegions(), query.getTranscriptsId(), andBsonList);
+                            visited = true;
+                        }
                         break;
-                    case "transcripts.xrefs":
-                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "transcripts.annotationFlags":
+                    case "annotationFlags":
                         // TODO use unwind to filter out unwanted transcripts
-                        createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
+                        createAndOrQuery(value, "annotationFlags", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "transcripts.tfbs.name":
-                        createAndOrQuery(value, "transcripts.tfbs.tfName", QueryParam.Type.STRING, andBsonList);
+                    case "tfbs.name":
+                        createAndOrQuery(value, "tfbs.tfName", QueryParam.Type.STRING, andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

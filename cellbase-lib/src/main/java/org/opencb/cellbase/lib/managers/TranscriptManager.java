@@ -38,10 +38,6 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
         transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor(species, assembly);
     }
 
-    public Iterator<Transcript> iterator(TranscriptQuery query) {
-        return transcriptDBAdaptor.iterator(query);
-    }
-
     @Override
     public CellBaseCoreDBAdaptor getDBAdaptor() {
         return transcriptDBAdaptor;

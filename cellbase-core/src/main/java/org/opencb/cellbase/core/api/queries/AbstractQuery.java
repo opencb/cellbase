@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.util.*;
 
-public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries.QueryOptions {
+public abstract class AbstractQuery extends CellBaseQueryOptions {
 
     protected ObjectMapper objectMapper;
     protected Logger logger;
@@ -99,10 +99,9 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         return queryMap;
     }
 
-    public void updateParams(Map<String, String> uriParams) throws QueryException {
+    public void updateParams(Map<String, String> uriParams) {
         classAttributesToType = getClassAttributesToType();
         annotations = getAnnotations();
-        Map<String, String> params = new HashMap<>(uriParams);
         try {
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
@@ -117,7 +116,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                     // field has no annotation
                     continue;
                 }
-                String value = params.get(fieldNameDotNotation.replace("\\.", "\\\\."));
+                String value = uriParams.get(fieldNameDotNotation.replace("\\.", "\\\\."));
                 if (value != null) {
                     if (Collection.class.isAssignableFrom(fieldType)) {
                         if (LogicalList.class.isAssignableFrom(fieldType)) {
@@ -137,7 +136,7 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
                         objectHashMap.put(fieldNameCamelCase, value);
                     }
                 }
-                params.remove(fieldNameDotNotation);
+//                params.remove(fieldNameDotNotation);
             }
             // TODO there are params in the query string that are not in the query, e.g. aa and position for substitution scores
             // do we remove this check? or handle expected parameteters? I think we delete this.
@@ -307,8 +306,8 @@ public abstract class AbstractQuery extends org.opencb.cellbase.core.api.queries
         }
     }
 
-    public org.opencb.commons.datastore.core.QueryOptions toQueryOptions() {
-        QueryOptions queryOptions = new org.opencb.commons.datastore.core.QueryOptions();
+    public QueryOptions toQueryOptions() {
+        QueryOptions queryOptions = new QueryOptions();
         queryOptions.put(QueryOptions.SKIP, skip);
         queryOptions.put(QueryOptions.LIMIT, limit);
         queryOptions.put(QueryOptions.COUNT, count);

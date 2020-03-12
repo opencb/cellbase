@@ -18,7 +18,7 @@ package org.opencb.cellbase.core.api.queries;
 
 import java.util.List;
 
-public class QueryOptions extends ProjectionQueryOptions {
+public class CellBaseQueryOptions extends ProjectionQueryOptions {
 
     @QueryParameter(id = "limit", min = "0")
     protected Integer limit;
@@ -27,7 +27,7 @@ public class QueryOptions extends ProjectionQueryOptions {
     protected Integer skip;
 
     @QueryParameter(id = "count")
-    protected Boolean count;
+    protected Boolean count = false;
 
     @QueryParameter(id = "sort")
     protected String sort;
@@ -43,10 +43,10 @@ public class QueryOptions extends ProjectionQueryOptions {
         DESCENDING
     }
 
-    public QueryOptions() {
+    public CellBaseQueryOptions() {
     }
 
-    public QueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet) {
         this.limit = limit;
         this.skip = skip;
         this.count = count;
@@ -55,8 +55,8 @@ public class QueryOptions extends ProjectionQueryOptions {
         this.facet = facet;
     }
 
-    public QueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet,
-                        List<String> includes, List<String> excludes) {
+    public CellBaseQueryOptions(Integer limit, Integer skip, Boolean count, String sort, Order order, String facet,
+                                List<String> includes, List<String> excludes) {
         super(includes, excludes);
 
         this.limit = limit;
@@ -73,9 +73,9 @@ public class QueryOptions extends ProjectionQueryOptions {
         sb.append("limit=").append(limit);
         sb.append(", skip=").append(skip);
         sb.append(", count=").append(count);
-        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", sort=").append(sort);
         sb.append(", order=").append(order);
-        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", facet=").append(facet);
         sb.append(", includes=").append(includes);
         sb.append(", excludes=").append(excludes);
         sb.append('}');
@@ -86,7 +86,7 @@ public class QueryOptions extends ProjectionQueryOptions {
         return limit;
     }
 
-    public QueryOptions setLimit(Integer limit) {
+    public CellBaseQueryOptions setLimit(Integer limit) {
         this.limit = limit;
         return this;
     }
@@ -95,7 +95,7 @@ public class QueryOptions extends ProjectionQueryOptions {
         return skip;
     }
 
-    public QueryOptions setSkip(Integer skip) {
+    public CellBaseQueryOptions setSkip(Integer skip) {
         this.skip = skip;
         return this;
     }
@@ -104,7 +104,7 @@ public class QueryOptions extends ProjectionQueryOptions {
         return count;
     }
 
-    public QueryOptions setCount(Boolean count) {
+    public CellBaseQueryOptions setCount(Boolean count) {
         this.count = count;
         return this;
     }
@@ -113,7 +113,7 @@ public class QueryOptions extends ProjectionQueryOptions {
         return sort;
     }
 
-    public QueryOptions setSort(String sort) {
+    public CellBaseQueryOptions setSort(String sort) {
         this.sort = sort;
         return this;
     }
@@ -122,7 +122,7 @@ public class QueryOptions extends ProjectionQueryOptions {
         return order;
     }
 
-    public QueryOptions setOrder(Order order) {
+    public CellBaseQueryOptions setOrder(Order order) {
         this.order = order;
         return this;
     }
@@ -131,7 +131,7 @@ public class QueryOptions extends ProjectionQueryOptions {
         return facet;
     }
 
-    public QueryOptions setFacet(String facet) {
+    public CellBaseQueryOptions setFacet(String facet) {
         this.facet = facet;
         return this;
     }
