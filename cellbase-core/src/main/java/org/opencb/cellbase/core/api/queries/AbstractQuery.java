@@ -304,6 +304,9 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         if (skip == null) {
             setSkip(DEFAULT_SKIP);
         }
+        if (count == null) {
+            count = Boolean.FALSE;
+        }
     }
 
     public QueryOptions toQueryOptions() {

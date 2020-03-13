@@ -32,7 +32,6 @@ public interface CellBaseCoreDBAdaptor<Q extends AbstractQuery, T> extends Itera
     default CellBaseDataResult<T> query(Q query) {
         List<T> results = new ArrayList<>();
         long time = System.currentTimeMillis();
-        query.setCount(true);
         CellBaseIterator<T> iterator = iterator(query);
         while (iterator.hasNext() && results.size() < MAX_ROWS) {
             T next = iterator.next();
