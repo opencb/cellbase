@@ -72,7 +72,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
     @Override
     public CellBaseIterator<Transcript> iterator(TranscriptQuery query) {
         QueryOptions queryOptions = query.toQueryOptions();
-        List<Bson> pipeline = unwind(query);
+        List<Bson> pipeline = unwindAndMatchTranscripts(query, queryOptions);
         GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
         MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
