@@ -214,9 +214,13 @@ public class GeneParserUtils {
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
                 fields = line.split("\t");
+                String omimId = fields[6];
+                String geneSymbol = fields[3];
+                String hpoId = fields[0];
+                String diseaseName = fields[1];
                 GeneTraitAssociation disease =
-                        new GeneTraitAssociation(fields[0], fields[4], fields[3], 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
-                addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
+                        new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
+                addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
             }
             bufferedReader.close();
         }

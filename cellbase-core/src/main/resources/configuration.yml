@@ -101,7 +101,7 @@ download:
  gwasCatalog:
   host: ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/09/28/gwas-catalog-associations.tsv
  hpo:
-  host: http://compbio.charite.de/hudson/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt
+  host: http://compbio.charite.de/hudson/job/hpo.annotations.monthly/lastStableBuild/artifact/annotation/phenotype_to_genes.txt
  disgenet:
   host: https://www.disgenet.org/static/disgenet_ap1/files/downloads
   files:
