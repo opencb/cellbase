@@ -294,8 +294,9 @@ public class DownloadManager {
         downloadFile(url, fileName);
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/regulation/" + speciesShortName + "/MotifFeatures.gff.gz";
-        Path outputFile = geneFolder.resolve("MotifFeatures.gff.gz");
+        //ftp://ftp.ensembl.org/pub/release-99/regulation/homo_sapiens/MotifFeatures/Homo_sapiens.GRCh38.motif_features.gff.gz
+        url = ensemblHost + "/regulation/" + speciesShortName + "/MotifFeatures/*.motif_features.gff.gz";
+        Path outputFile = geneFolder.resolve("motif_features.gff.gz");
         downloadFile(url, outputFile.toString());
         downloadedUrls.add(url);
 

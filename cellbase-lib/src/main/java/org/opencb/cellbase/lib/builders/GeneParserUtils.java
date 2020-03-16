@@ -46,13 +46,17 @@ public class GeneParserUtils {
 
     private static Logger logger = LoggerFactory.getLogger(GeneParserUtils.class);
 
+
     public static Map<String, SortedSet<Gff2>> getTfbsMap(Path tfbsFile) throws IOException, NoSuchMethodException, FileFormatException {
         Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
-
         if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile) && Files.size(tfbsFile) > 0) {
             Gff2Reader motifsFeatureReader = new Gff2Reader(tfbsFile);
             Gff2 tfbsMotifFeature;
             while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
+                // we only want high quality data. See issue 466
+                if (!tfbsMotifFeature.getAttribute().contains("experimental_evidence")) {
+                    continue;
+                }
                 String chromosome = tfbsMotifFeature.getSequenceName().replaceFirst("chr", "");
                 SortedSet<Gff2> chromosomeTfbsSet = tfbsMap.get(chromosome);
                 if (chromosomeTfbsSet == null) {
