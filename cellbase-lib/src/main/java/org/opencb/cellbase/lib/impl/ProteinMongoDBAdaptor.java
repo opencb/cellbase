@@ -21,7 +21,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinFeature;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.biodata.models.variant.avro.Score;
@@ -267,7 +267,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements ProteinDBAd
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
-        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
+        return mongoDBCollection.nativeQuery().find(bson, options);
     }
 
     @Override

@@ -20,7 +20,7 @@ import org.bson.Document;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.Entry;
+import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.cellbase.core.api.ProteinDBAdaptor;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;

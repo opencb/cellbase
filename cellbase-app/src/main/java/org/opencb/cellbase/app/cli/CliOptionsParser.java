@@ -85,6 +85,7 @@ public abstract class CliOptionsParser {
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used",
                 required = false, arity = 1)
+
         public String assembly;
 
     }

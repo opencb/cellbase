@@ -45,13 +45,11 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
 
     CellBaseDataResult<Long> count(Query query);
 
-
     default CellBaseDataResult<String> distinct(String field) {
         return distinct(new Query(), field);
     }
 
     CellBaseDataResult<String> distinct(Query query, String field);
-
 
     default CellBaseDataResult stats() {
         return stats(new Query());
@@ -102,8 +100,6 @@ public interface CellBaseDBAdaptor<T> extends Iterable<T> {
     CellBaseDataResult groupBy(Query query, String field, QueryOptions options);
 
     CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options);
-
-
 
     @Override
     default void forEach(Consumer action) {

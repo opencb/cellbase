@@ -24,9 +24,14 @@ import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
 import org.opencb.biodata.models.variant.avro.VariantAvro;
+import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
+import org.opencb.cellbase.app.cli.admin.executors.LoadCommandExecutor;
 import org.opencb.cellbase.app.cli.main.CellBaseCliOptionsParser;
 import org.opencb.cellbase.app.cli.main.executors.VariantAnnotationCommandExecutor;
 import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
+import org.opencb.commons.datastore.core.DataStoreServerAddress;
+import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
+import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -36,6 +41,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class VariantAnnotationCommandExecutorTest {
 
     private static final String OUTPUT_FILENAME = "/tmp/test.json.gz";
+    private static final String GRCH37_DBNAME = "cellbase_hsapiens_grch37_v4";
     private Path resourcesFolder = Paths.get(getClass().getResource("/variant/annotation/").toURI());
 
     private ObjectMapper jsonObjectMapper;
@@ -55,6 +62,70 @@ public class VariantAnnotationCommandExecutorTest {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    @Test
+    public void proteinChangeMatchTest() throws IOException, URISyntaxException {
+        // Remove database content
+        cleanUp();
+        // Load test data
+        AdminCliOptionsParser.LoadCommandOptions loadCommandOptions = new AdminCliOptionsParser().getLoadCommandOptions();
+        loadCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor/configuration.json").toString();
+        loadCommandOptions.data = "clinical_variants,gene";
+        loadCommandOptions.database = GRCH37_DBNAME;
+        loadCommandOptions.input = resourcesFolder.resolve("commandExecutor/proteinChangeMatch").toString();
+        LoadCommandExecutor loadCommandExecutor = new LoadCommandExecutor(loadCommandOptions);
+        loadCommandExecutor.loadCellBaseConfiguration();
+        loadCommandExecutor.execute();
+        // Set up annotation CLI options: NOTE checkAminoAcidChange is NOT enabled
+        CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions
+                = new CellBaseCliOptionsParser().getVariantAnnotationCommandOptions();
+        variantAnnotationCommandOptions.assembly = "GRCh37";
+        variantAnnotationCommandOptions.commonOptions.conf = resourcesFolder.resolve("commandExecutor/configuration.json").toString();
+        variantAnnotationCommandOptions.input
+                = resourcesFolder.resolve("commandExecutor/proteinChangeMatch/proband.duprem.atomic.left.split.vcf.gz").toString();
+        variantAnnotationCommandOptions.output = OUTPUT_FILENAME;
+        variantAnnotationCommandOptions.local = true;
+        variantAnnotationCommandOptions.species = "hsapiens";
+        // Annotate
+        VariantAnnotationCommandExecutor variantAnnotationCommandExecutor
+                = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+        variantAnnotationCommandExecutor.execute();
+        // Load annotated variants
+        List<Variant> variantList = loadResult();
+
+        // Check results
+        // Only one variant present in input VCF (2:170361068:G:C)
+        assertEquals(1, variantList.size());
+        // 2:170361068:G:C in the VCF file must NOT match 2:170361068:G:T variant in clinvar since checkAminoAcidChange
+        // is disabled in this run
+        Variant variant = getByVariant(variantList, new Variant("2:170361068:G:C"));
+        // No trait association expected
+        assertNotNull(variant);
+        assertNotNull(variant.getAnnotation());
+        assertNull(variant.getAnnotation().getTraitAssociation());
+
+        // Enable checkAminoAcidChange
+        variantAnnotationCommandOptions.checkAminoAcidChange = true;
+        // Annotate
+        variantAnnotationCommandExecutor
+                = new VariantAnnotationCommandExecutor(variantAnnotationCommandOptions);
+        variantAnnotationCommandExecutor.loadCellBaseConfiguration();
+        variantAnnotationCommandExecutor.execute();
+        // Load annotated variants
+        variantList = loadResult();
+        // Check results
+        // Only one variant present in input VCF (2:170361068:G:C)
+        assertEquals(1, variantList.size());
+        // 2:170361068:G:C in the VCF file must match xxx variant in clinvar at the protein change level
+        variant = getByVariant(variantList, new Variant("2:170361068:G:C"));
+        // Only one COSMIC trait association expected
+        assertNotNull(variant);
+        assertNotNull(variant.getAnnotation());
+        assertNotNull(variant.getAnnotation().getTraitAssociation());
+        assertEquals(1, variant.getAnnotation().getTraitAssociation().size());
+        assertEquals("COSM4624460", variant.getAnnotation().getTraitAssociation().get(0).getId());
     }
 
     @Test
@@ -728,6 +799,16 @@ public class VariantAnnotationCommandExecutorTest {
                 .resolve("commandExecutor/additionalPopulationFrequency/chr1.2017-12-27_01_12.hgva.freq.cellbase.test.json.gz.idx").toFile());
         org.apache.commons.io.FileUtils.deleteDirectory(resourcesFolder
                 .resolve("commandExecutor/customAnnotation/GEL_GL_6628.duprem.sites.annot.subset.atomic.left.split.test.vcf.gz.idx").toFile());
+
+        try (MongoDataStoreManager mongoManager
+                     = new MongoDataStoreManager(Collections.singletonList(new DataStoreServerAddress("localhost",
+                27017)))) {
+            MongoDBConfiguration.Builder builder = MongoDBConfiguration.builder();
+            MongoDBConfiguration  mongoDBConfiguration = builder.build();
+            mongoManager.get(GRCH37_DBNAME, mongoDBConfiguration);
+            mongoManager.drop(GRCH37_DBNAME);
+        }
+
     }
 
     private CellBaseCliOptionsParser.VariantAnnotationCommandOptions

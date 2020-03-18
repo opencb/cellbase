@@ -132,8 +132,9 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements Transcri
 
     @Override
     public Iterator nativeIterator(Query query, QueryOptions options) {
-        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
-        return mongoDBCollection.nativeQuery().aggregate(aggregateList, options).iterator();
+        return null;
+//        List<Bson> aggregateList = unwindAndMatchTranscripts(query, options);
+//        return mongoDBCollection.nativeQuery().aggregate(aggregateList, options);
 //        return mongoDBCollection.nativeQuery().find(bson, options).iterator();
     }
 

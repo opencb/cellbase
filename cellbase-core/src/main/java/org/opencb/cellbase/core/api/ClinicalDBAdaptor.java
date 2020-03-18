@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.core.api;
 
+import org.opencb.biodata.models.core.Gene;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
@@ -53,6 +55,9 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         ALLELE_ORIGIN("alleleOrigin", TEXT_ARRAY, ""),
         ACCESSION("accession", TEXT_ARRAY, ""),
         PHASE("phased", TEXT_ARRAY, ""),
+        CHECK_AMINO_ACID_CHANGE("checkAminoAcidChange", BOOLEAN, ""),
+        BATCH_GENE_LIST("batchGeneList", TEXT_ARRAY, ""),
+        HGVS("hgvs", TEXT_ARRAY, ""),
 
         @Deprecated
         GENE("gene", TEXT_ARRAY, ""),
@@ -68,8 +73,6 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
         CLINVARRS("rs", TEXT_ARRAY, ""),
         @Deprecated
         COSMICID("cosmicId", TEXT_ARRAY, "");
-
-
 
         QueryParams(String key, Type type, String description) {
             this.key = key;
@@ -109,6 +112,6 @@ public interface ClinicalDBAdaptor<T> extends FeatureDBAdaptor<T> {
 
     CellBaseDataResult<String> getVariantTypes();
 
-//    List<CellBaseDataResult> getAllByGenomicVariantList(List<Variant> variantList, QueryOptions options);
+    List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList, QueryOptions queryOptions);
 
-}
+    }

@@ -355,7 +355,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
             if (!splicing && cdnaVariantStart != -1) {
                 codingAnnotationAdded = true;
                 if (variant.getLength() % 3 == 0) {
-//                if (variant.getReference().length() % 3 == 0) {
+//                if (variant.getReferenceStart().length() % 3 == 0) {
                     SoNames.add(VariantAnnotationUtils.INFRAME_DELETION);
                 } else {
                     SoNames.add(VariantAnnotationUtils.FRAMESHIFT_VARIANT);
@@ -479,7 +479,7 @@ public class ConsequenceTypeDeletionCalculator extends ConsequenceTypeGenericReg
             if (!splicing && cdnaVariantStart != -1) {
                 codingAnnotationAdded = true;
                 if (variant.getLength() % 3 == 0) {
-//                if (variant.getReference().length() % 3 == 0) {
+//                if (variant.getReferenceStart().length() % 3 == 0) {
                     SoNames.add(VariantAnnotationUtils.INFRAME_DELETION);
                 } else {
                     SoNames.add(VariantAnnotationUtils.FRAMESHIFT_VARIANT);

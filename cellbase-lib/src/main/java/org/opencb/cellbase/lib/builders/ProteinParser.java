@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.formats.protein.uniprot.UniProtParser;
-import org.opencb.biodata.formats.protein.uniprot.v201504jaxb.*;
+import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.*;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
@@ -73,7 +73,7 @@ public class ProteinParser extends CellBaseParser {
             });
 
             for (File file : files) {
-                Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT_v201504);
+                Uniprot uniprot = (Uniprot) up.loadXMLInfo(file.toString(), UniProtParser.UNIPROT_CONTEXT);
 
                 for (Entry entry : uniprot.getEntry()) {
                     String entryOrganism = null;

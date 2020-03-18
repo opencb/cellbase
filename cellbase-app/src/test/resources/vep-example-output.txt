@@ -27,7 +27,7 @@
 ## INTRON : Intron number(s) / total
 ## MOTIF_NAME : The source and identifier of a transcription factor binding profile (TFBP) aligned at this position
 ## MOTIF_POS : The relative position of the variation in the aligned TFBP
-## MOTIF_SCORE_CHANGE : The difference in motif score of the reference and variant sequences for the TFBP
+## MOTIF_SCORE_CHANGE : The difference in motif score of the referenceStart and variant sequences for the TFBP
 ## PUBMED : Pubmed ID(s) of publications that cite existing variant
 ## PolyPhen : PolyPhen prediction and/or score
 ## SIFT : SIFT prediction and/or score

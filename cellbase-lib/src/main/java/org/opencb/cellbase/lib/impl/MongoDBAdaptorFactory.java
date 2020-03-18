@@ -359,7 +359,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return geneMongoDBAdaptor;
     }
 
-
     @Override
     public TranscriptDBAdaptor getTranscriptDBAdaptor(String species) {
         return getTranscriptDBAdaptor(species, null);
@@ -370,7 +369,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new TranscriptMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 
     @Override
     public ConservationDBAdaptor getConservationDBAdaptor(String species) {
@@ -383,7 +381,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         return new ConservationMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-
     @Override
     public XRefDBAdaptor getXRefDBAdaptor(String species) {
         return getXRefDBAdaptor(species, null);
@@ -394,7 +391,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new XRefMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 
     @Override
     public VariantDBAdaptor getVariationDBAdaptor(String species) {
@@ -426,7 +422,7 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
     @Override
     public ClinicalDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
+        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore, getGenomeDBAdaptor(species, assembly));
     }
 
     @Override
@@ -445,7 +441,6 @@ public class MongoDBAdaptorFactory extends DBAdaptorFactory {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
         return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
     }
-
 
     @Override
     public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {

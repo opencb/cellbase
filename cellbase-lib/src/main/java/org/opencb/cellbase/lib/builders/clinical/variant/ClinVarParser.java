@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.v54jaxb.*;
+import org.opencb.biodata.formats.variant.clinvar.v59jaxb.*;
 //import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 import org.opencb.cellbase.lib.builders.CellBaseParser;
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;

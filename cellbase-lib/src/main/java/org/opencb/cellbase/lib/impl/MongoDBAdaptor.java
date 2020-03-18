@@ -18,16 +18,19 @@ package org.opencb.cellbase.lib.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.QueryBuilder;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.*;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.*;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.common.IntervalFeatureFrequency;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -359,10 +362,10 @@ public class MongoDBAdaptor {
             if (options.containsKey("count") && options.getBoolean("count")) {
                 cellBaseDataResult = new CellBaseDataResult(mongoDBCollection2.count(query));
             } else {
-                MongoCursor<Document> cursor = mongoDBCollection2.nativeQuery().find(query, options).iterator();
+                MongoDBIterator<Document> iterator = mongoDBCollection2.nativeQuery().find(query, options);
                 List<Document> dbObjectList = new LinkedList<>();
-                while (cursor.hasNext()) {
-                    dbObjectList.add(cursor.next());
+                while (iterator.hasNext()) {
+                    dbObjectList.add(iterator.next());
                 }
                 cellBaseDataResult.setNumResults(dbObjectList.size());
                 cellBaseDataResult.setResults(dbObjectList);
