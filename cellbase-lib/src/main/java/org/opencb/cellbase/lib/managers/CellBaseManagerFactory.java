@@ -41,7 +41,7 @@ public class CellBaseManagerFactory {
     private Map<String, RepeatsManager> repeatsManagers;
     private Map<String, TFManager> tfManagers;
     private MetaManager metaManager;
-    private OntologyManager ontologyManager;
+    private Map<String, OntologyManager> ontologyManagers;
     private Logger logger;
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
@@ -60,6 +60,7 @@ public class CellBaseManagerFactory {
         xrefManagers = new HashMap<>();
         repeatsManagers = new HashMap<>();
         tfManagers = new HashMap<>();
+        ontologyManagers = new HashMap<>();
     }
 
     private String getMultiKey(String species, String assembly) {
@@ -285,10 +286,24 @@ public class CellBaseManagerFactory {
         return metaManager;
     }
 
-    public OntologyManager getOntologyManager() {
-        if (ontologyManager == null) {
-            ontologyManager = new OntologyManager(configuration);
+
+    public OntologyManager getOntologyManager(String species) throws CellbaseException {
+        if (species == null) {
+            throw new CellbaseException("Species is required.");
         }
-        return ontologyManager;
+        SpeciesConfiguration.Assembly assembly = SpeciesUtils.getDefaultAssembly(configuration, species);
+        return getOntologyManager(species, assembly.getName());
     }
+
+    public OntologyManager getOntologyManager(String species, String assembly) throws CellbaseException {
+        String multiKey = getMultiKey(species, assembly);
+        if (!ontologyManagers.containsKey(multiKey)) {
+            if (!validateSpeciesAssembly(species, assembly)) {
+                throw new CellbaseException("Invalid species " + species + " or assembly " + assembly);
+            }
+            ontologyManagers.put(multiKey, new OntologyManager(species, assembly, configuration));
+        }
+        return ontologyManagers.get(multiKey);
+    }
+
 }

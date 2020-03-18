@@ -1,0 +1,112 @@
+/*
+ * Copyright 2015-2020 OpenCB
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.opencb.cellbase.server.rest;
+
+import io.swagger.annotations.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.models.core.OboTerm;
+import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.OntologyQuery;
+import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.SpeciesUtils;
+import org.opencb.cellbase.lib.managers.OntologyManager;
+import org.opencb.cellbase.server.exception.VersionException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.util.List;
+
+@Path("/{apiVersion}/{species}/feature/ontology")
+@Produces("application/json")
+@Api(value = "Ontology", description = "Ontology RESTful Web Services API")
+public class OntologyWSServer extends GenericRestWSServer {
+
+    private OntologyManager ontologyManager;
+
+    public OntologyWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = "Possible values: v4, v5",
+                                defaultValue = "v4") String apiVersion,
+                            @PathParam("species") @ApiParam(name = "species",
+                                    value = ParamConstants.SPECIES_DESCRIPTION) String species,
+                            @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
+                            @QueryParam("assembly") String assembly,
+                            @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws VersionException, IOException, CellbaseException {
+        super(apiVersion, species, uriInfo, hsr);
+        List<String> assemblies = uriInfo.getQueryParameters().get("assembly");
+        if (CollectionUtils.isNotEmpty(assemblies)) {
+            assembly = assemblies.get(0);
+        }
+        if (StringUtils.isEmpty(assembly)) {
+            assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+        }
+        ontologyManager = cellBaseManagerFactory.getOntologyManager(species, assembly);
+    }
+
+    @GET
+    @Path("/search")
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
+            value = "Retrieves all ontology objects", response = OboTerm.class, responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
+                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
+                    allowableValues = "false,true"),
+            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "name", value = ParamConstants.ONTOLOGY_NAMES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "namespace",  value = ParamConstants.ONTOLOGY_NAMESPACES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "synonym", value = ParamConstants.ONTOLOGY_SYNONYMS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "xref", value = ParamConstants.ONTOLOGY_XREFS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "parent", value = ParamConstants.ONTOLOGY_PARENTS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "chldren", value = ParamConstants.ONTOLOGY_CHILDREN,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query",
+                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
+            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
+                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
+                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+    })
+    public Response getAll() {
+        try {
+            OntologyQuery query = new OntologyQuery(uriParams);
+            logger.info("/search OntologyQuery: " + query.toString());
+            CellBaseDataResult<OboTerm> queryResults = ontologyManager.search(query);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+}
