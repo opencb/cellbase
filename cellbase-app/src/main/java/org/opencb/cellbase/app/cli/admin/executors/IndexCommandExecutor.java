@@ -38,8 +38,7 @@ public class IndexCommandExecutor extends CommandExecutor {
     public void execute() {
         try {
             IndexManager indexManager = new IndexManager(configuration);
-            indexManager.createMongoDBIndexes(indexCommandOptions.data, indexCommandOptions.species,
-                    indexCommandOptions.assembly, indexCommandOptions.dropIndexesFirst);
+            indexManager.createMongoDBIndexes(indexCommandOptions.data, indexCommandOptions.database, indexCommandOptions.dropIndexesFirst);
         } catch (CellbaseException | IOException e) {
             logger.error("Error creating indexes:" + e.toString());
         }

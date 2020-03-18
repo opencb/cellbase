@@ -240,6 +240,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
 //                collectionName = "protein_functional_prediction";
                 break;
             case "obo":
+            case "ontology":
                 dbAdaptor = null;
                 break;
             default:
@@ -311,7 +312,8 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 collection = "repeats";
                 break;
             case "obo":
-                collection = "obo";
+            case "ontology":
+                collection = "ontology";
                 break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");

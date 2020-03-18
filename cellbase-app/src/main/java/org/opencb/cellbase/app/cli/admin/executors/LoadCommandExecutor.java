@@ -171,8 +171,8 @@ public class LoadCommandExecutor extends CommandExecutor {
                             loadStructuralVariants();
                             break;
                         case EtlCommons.OBO_DATA:
-                            loadIfExists(input.resolve("obo.json.gz"), "obo");
-                            createIndex("obo");
+                            loadIfExists(input.resolve("obo.json.gz"), "ontology");
+                            createIndex("ontology");
                             break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");

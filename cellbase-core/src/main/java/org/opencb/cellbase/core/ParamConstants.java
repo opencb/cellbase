@@ -58,6 +58,18 @@ public class ParamConstants {
     public static final String GENE_BIOTYPES = "Comma separated list of gene gencode biotypes,"
             + " e.g. protein_coding,miRNA,lincRNA. Exact text matches will be returned";
 
+
+    // ---------------------------------------------
+
+    public static final String ONTOLOGY_IDS = "Comma separated list of ontology ids, e.g. GO:0008343,HP:0001251";
+    public static final String ONTOLOGY_NAMES = "Comma separated list of ontology term names, "
+            + "e.g. Diabetes mellitus,histone kinase activity";
+    public static final String ONTOLOGY_NAMESPACES = "Comma separated list of namespaces, e.g. human_phenotype,biological_process";
+    public static final String ONTOLOGY_SYNONYMS = "Comma separated list of synonyms, e.g. GO:0008343,HP:0001251";
+    public static final String ONTOLOGY_XREFS = "Comma separated list of cross references, e.g. GO:0008343,HP:0001251";
+    public static final String ONTOLOGY_PARENTS = "Comma separated list of ontology terms, e.g. GO:0008343,HP:0001251";
+    public static final String ONTOLOGY_CHILDREN = "Comma separated list of ontology terms, e.g. GO:0008343,HP:0001251";
+
     // ---------------------------------------------
 
 

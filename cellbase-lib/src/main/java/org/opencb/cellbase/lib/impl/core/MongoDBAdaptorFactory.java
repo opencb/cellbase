@@ -437,6 +437,15 @@ public class MongoDBAdaptorFactory {
 //        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
 //    }
 
+    public OntologyMongoDBAdaptor getOntologyMongoDBAdaptor(String species) {
+        return getOntologyMongoDBAdaptor(species, null);
+    }
+
+    public OntologyMongoDBAdaptor getOntologyMongoDBAdaptor(String species, String assembly) {
+        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
+        return new OntologyMongoDBAdaptor(species, assembly, mongoDatastore);
+    }
+
     public RegulationMongoDBAdaptor getRegulationDBAdaptor(String species) {
         return getRegulationDBAdaptor(species, null);
     }

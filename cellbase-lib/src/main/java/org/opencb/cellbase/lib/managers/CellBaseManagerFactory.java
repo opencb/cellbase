@@ -41,6 +41,7 @@ public class CellBaseManagerFactory {
     private Map<String, RepeatsManager> repeatsManagers;
     private Map<String, TFManager> tfManagers;
     private MetaManager metaManager;
+    private OntologyManager ontologyManager;
     private Logger logger;
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
@@ -282,5 +283,12 @@ public class CellBaseManagerFactory {
             metaManager = new MetaManager(configuration);
         }
         return metaManager;
+    }
+
+    public OntologyManager getOntologyManager() {
+        if (ontologyManager == null) {
+            ontologyManager = new OntologyManager(configuration);
+        }
+        return ontologyManager;
     }
 }

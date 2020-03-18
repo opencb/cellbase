@@ -140,7 +140,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + " parameter).", required = true, arity = 1)
         public String input;
 
-        @Parameter(names = {"--database"}, description = "Data model type to be loaded, i.e. genome, gene, ...", required = true, arity = 1)
+        @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
         public String database;
 
         @Parameter(names = {"--fields"}, description = "Use this parameter when an custom update of the database documents is required. "
@@ -177,15 +177,11 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be indexed: genome, gene, variation, "
-                + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
-                + "clinical_variants, repeats, svs. 'all' indexes everything", required = true, arity = 1)
+                + "regulation, protein, ontology, clinical_variants, repeats. 'all' indexes everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
-        public String species = "Homo sapiens";
-
-        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", arity = 1)
-        public String assembly = "GRCh38";
+        @Parameter(names = {"--database"}, description = "Database name.", required = true, arity = 1)
+        public String database;
 
         @Parameter(names = {"--drop-indexes-first"}, description = "Use this flag to drop the indexes before creating new ones.", arity = 0)
         public boolean dropIndexesFirst;
