@@ -20,8 +20,8 @@ package org.opencb.cellbase.lib.builders;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -51,11 +51,6 @@ public class GeneParserTest {
 
     @BeforeEach
     public void init() throws URISyntaxException {
-//        Path genomeSequenceFastaFile = Paths.get(getClass().getResource("/gene/Homo_sapiens.GRCh38.fa.gz").toURI());
-//        Path geneDirectoryPath = Paths.get(getClass().getResource("/gene").toURI());
-//        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "regulatory_region", true);
-//        geneParser = new GeneParser(geneDirectoryPath, genomeSequenceFastaFile, SPECIES, serializer);
-
         Path genomeSequenceFastaFile
                 = Paths.get(getClass().getResource("/gene/Homo_sapiens.GRCh38.fa.gz").toURI());
         Path geneDirectoryPath = Paths.get(getClass().getResource("/gene").toURI());

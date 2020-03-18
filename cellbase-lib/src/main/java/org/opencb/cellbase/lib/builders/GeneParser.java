@@ -63,6 +63,7 @@ public class GeneParser extends CellBaseParser {
     private Path hpoFile;
     private Path disgenetFile;
     private Path genomeSequenceFilePath;
+    private Path gnomadFile;
     private boolean flexibleGTFParsing;
 
     private SpeciesConfiguration species;
@@ -106,6 +107,7 @@ public class GeneParser extends CellBaseParser {
                 geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
+                geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 genomeSequenceFastaFile, species, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -114,8 +116,7 @@ public class GeneParser extends CellBaseParser {
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path mirnaFile,
                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path genomeSequenceFilePath,
-                      SpeciesConfiguration species, boolean flexibleGTFParsing,
-                      CellBaseSerializer serializer) {
+                      Path gnomadFile, SpeciesConfiguration species, boolean flexibleGTFParsing, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -128,6 +129,7 @@ public class GeneParser extends CellBaseParser {
         this.hpoFile = hpoFile;
         this.disgenetFile = disgenetFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
+        this.gnomadFile = gnomadFile;
         this.species = species;
         this.flexibleGTFParsing = flexibleGTFParsing;
 
@@ -155,6 +157,9 @@ public class GeneParser extends CellBaseParser {
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
+
+        // Transcript and Gene constraint scores annotation
+        Map<String, List<Constraint>> constraints = GeneParserUtils.getConstraints(gnomadFile);
 
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
@@ -188,7 +193,7 @@ public class GeneParser extends CellBaseParser {
                 // FIXME
                 GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
                         diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), null);
+                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraints.get(geneId));
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getAttributes().get("gene_biotype"),
                         "KNOWN", gtf.getSequenceName().replaceFirst("chr", ""), gtf.getStart(),
@@ -336,10 +341,10 @@ public class GeneParser extends CellBaseParser {
                     // no strand dependent
                     transcript.setProteinID(gtf.getAttributes().get("protein_id"));
                 }
-                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
-                    // nothing to do
-                    System.out.println("Empty block, this should be redesigned");
-                }
+//                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
+//                    // nothing to do
+//                    System.out.println("Empty block, this should be redesigned");
+//                }
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
                     //                      no need to set it at the beginning of next feature
