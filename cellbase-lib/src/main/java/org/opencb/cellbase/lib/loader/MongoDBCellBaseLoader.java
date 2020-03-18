@@ -239,6 +239,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
                 break;
+            case "obo":
+                dbAdaptor = null;
+                break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");
         }
@@ -306,6 +309,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 break;
             case "repeats":
                 collection = "repeats";
+                break;
+            case "obo":
+                collection = "obo";
                 break;
             default:
                 throw new LoaderException("Unknown data to load: '" + data + "'");

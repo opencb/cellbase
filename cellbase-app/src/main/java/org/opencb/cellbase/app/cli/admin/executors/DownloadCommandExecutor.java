@@ -108,6 +108,9 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     case EtlCommons.REPEATS_DATA:
                         downloadManager.downloadRepeats();
                         break;
+                    case EtlCommons.OBO_DATA:
+                        downloadManager.downloadObo();
+                        break;
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
                                 + " are: {genome, gene, gene_disease_association, variation, variation_functional_score,"

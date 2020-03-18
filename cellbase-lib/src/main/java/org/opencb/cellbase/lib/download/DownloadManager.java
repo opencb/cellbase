@@ -934,6 +934,19 @@ public class DownloadManager {
         }
     }
 
+    public void downloadObo() throws IOException, InterruptedException {
+        logger.info("Downloading obo files ...");
+
+        Path oboFolder = downloadFolder.resolve("obo");
+        Files.createDirectories(oboFolder);
+
+        String url = configuration.getDownload().getHpoObo().getHost();
+        downloadFile(url, oboFolder.resolve("hp.obo").toString());
+
+        url = configuration.getDownload().getGoObo().getHost();
+        downloadFile(url, oboFolder.resolve("go-basic.obo").toString());
+    }
+
     public void downloadRepeats() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
             return;

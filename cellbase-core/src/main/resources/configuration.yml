@@ -116,6 +116,10 @@ download:
  gnomad:
   host: https://storage.googleapis.com/gnomad-public/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
   version: 2.1.1
+ hpoObo:
+   host: http://purl.obolibrary.org/obo/hp.obo
+ goObo:
+  host: http://purl.obolibrary.org/obo/go/go-basic.obo
 species:
  vertebrates:
   - id: hsapiens

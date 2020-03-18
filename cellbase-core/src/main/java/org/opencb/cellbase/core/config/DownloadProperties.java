@@ -59,6 +59,8 @@ public class DownloadProperties {
     private URLProperties cadd;
     private URLProperties reactome;
     private URLProperties gnomad;
+    private URLProperties hpoObo;
+    private URLProperties goObo;
 
     public EnsemblProperties getEnsembl() {
         return ensembl;
@@ -364,6 +366,24 @@ public class DownloadProperties {
 
     public DownloadProperties setGnomad(URLProperties gnomad) {
         this.gnomad = gnomad;
+        return this;
+    }
+
+    public URLProperties getHpoObo() {
+        return hpoObo;
+    }
+
+    public DownloadProperties setHpoObo(URLProperties hpoObo) {
+        this.hpoObo = hpoObo;
+        return this;
+    }
+
+    public URLProperties getGoObo() {
+        return goObo;
+    }
+
+    public DownloadProperties setGoObo(URLProperties goObo) {
+        this.goObo = goObo;
         return this;
     }
 

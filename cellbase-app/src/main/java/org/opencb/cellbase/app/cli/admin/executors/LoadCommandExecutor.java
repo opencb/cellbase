@@ -102,7 +102,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                         EtlCommons.REGULATION_DATA, EtlCommons.PROTEIN_DATA, EtlCommons.PPI_DATA,
                         EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA, EtlCommons.VARIATION_DATA,
                         EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, EtlCommons.CLINICAL_VARIANTS_DATA,
-                        EtlCommons.REPEATS_DATA, EtlCommons.STRUCTURAL_VARIANTS_DATA, };
+                        EtlCommons.REPEATS_DATA, EtlCommons.STRUCTURAL_VARIANTS_DATA, EtlCommons.OBO_DATA};
             } else {
                 loadOptions = loadCommandOptions.data.split(",");
             }
@@ -169,6 +169,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.STRUCTURAL_VARIANTS_DATA:
                             loadStructuralVariants();
+                            break;
+                        case EtlCommons.OBO_DATA:
+                            loadIfExists(input.resolve("obo.json.gz"), "obo");
                             break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");

@@ -58,6 +58,9 @@ public class EtlCommons {
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
+    public static final String OBO_DATA = "obo";
+    public static final String HPO_FILE = "hp.obo";
+    public static final String GO_FILE = "go-basic.obo";
 
     // Build specific data options
     public static final String GENOME_INFO_DATA = "genome_info";
@@ -97,6 +100,8 @@ public class EtlCommons {
     public static final String WM_VERSION_FILE = "windowMasker.json";
     public static final String REPEATS_FOLDER = "repeats";
     public static final String REPEATS_JSON = "repeats";
+    public static final String OBO_FOLDER = "obo";
+    public static final String OBO_JSON = "obo";
     public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
     public static final String MOTIF_FEATURES_FILE = "motiffeatures.gff.gz";
 

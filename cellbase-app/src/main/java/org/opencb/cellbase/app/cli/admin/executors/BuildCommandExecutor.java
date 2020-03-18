@@ -159,6 +159,9 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.REPEATS_DATA:
                             parser = buildRepeats();
                             break;
+                        case EtlCommons.OBO_DATA:
+                            parser = buildObo();
+                            break;
                         default:
                             logger.error("Build option '" + buildCommandOptions.data + "' is not valid");
                             break;
@@ -199,6 +202,12 @@ public class BuildCommandExecutor extends CommandExecutor {
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REPEATS_JSON);
         return new RepeatsParser(repeatsFilesDir, serializer);
+    }
+
+    private CellBaseParser buildObo() {
+        Path oboDir = downloadFolder.resolve(EtlCommons.OBO_DATA);
+        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.OBO_JSON);
+        return new OboParser(oboDir, serializer);
     }
 
     private void copyVersionFiles(List<Path> pathList) {
