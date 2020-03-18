@@ -119,3 +119,11 @@
 {"collection": "variation_phenotype_annotation", "fields": {"phenotype": 1}, "options": {"background": true}}
 {"collection": "variation_phenotype_annotation", "fields": {"source": 1}, "options": {"background": true}}
 {"collection": "variation_phenotype_annotation", "fields": {"associatedGenes": 1}, "options": {"background": true}}
+
+{"collection": "obo", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "obo", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "obo", "fields": {"definition": 1}, "options": {"background": true}}
+{"collection": "obo", "fields": {"namespace": 1}, "options": {"background": true}}
+{"collection": "obo", "fields": {"synonyms": 1}, "options": {"background": true}}
+{"collection": "obo", "fields": {"xrefs": 1}, "options": {"background": true}}
+{"collection": "obo", "fields": {"parents": 1}, "options": {"background": true}}

@@ -172,6 +172,7 @@ public class LoadCommandExecutor extends CommandExecutor {
                             break;
                         case EtlCommons.OBO_DATA:
                             loadIfExists(input.resolve("obo.json.gz"), "obo");
+                            createIndex("obo");
                             break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");

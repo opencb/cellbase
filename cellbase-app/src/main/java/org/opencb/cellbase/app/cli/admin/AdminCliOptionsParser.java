@@ -181,7 +181,7 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "clinical_variants, repeats, svs. 'all' indexes everything", required = true, arity = 1)
         public String data;
 
-        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", arity = 1)
+        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be indexed, valid format include 'Homo sapiens' or 'hsapiens'", required = true, arity = 1)
         public String species = "Homo sapiens";
 
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", arity = 1)
