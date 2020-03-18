@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package org.opencb.cellbase.app.builders;
+package org.opencb.cellbase.lib.builders;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.opencb.cellbase.lib.builders.GeneParser;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
@@ -48,11 +47,11 @@ public class GeneParserTest {
         init();
     }
 
-    @Before
+    @BeforeEach
     public void init() throws URISyntaxException {
         Path genomeSequenceFastaFile
-                = Paths.get(getClass().getResource("/gene/Homo_sapiens.GRCh38.fa.gz").toURI());
-        Path geneDirectoryPath = Paths.get(getClass().getResource("/gene").toURI());
+                = Paths.get(GeneParserTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa.gz").toURI());
+        Path geneDirectoryPath = Paths.get(GeneParserTest.class.getResource("/gene").toURI());
         // put the results in /tmp
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "gene",
                 true);
