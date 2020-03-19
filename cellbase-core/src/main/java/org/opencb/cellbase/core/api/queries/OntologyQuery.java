@@ -29,11 +29,11 @@ public class OntologyQuery extends AbstractQuery {
     private List<String> names;
     @QueryParameter(id = "namespace")
     private List<String> namespaces;
-    @QueryParameter(id = "synonym")
+    @QueryParameter(id = "synonyms")
     private List<String> synonyms;
-    @QueryParameter(id = "xref")
+    @QueryParameter(id = "xrefs")
     private List<String> xrefs;
-    @QueryParameter(id = "parent")
+    @QueryParameter(id = "parents")
     private LogicalList<String> parents;
     @QueryParameter(id = "children")
     private LogicalList<String> children;

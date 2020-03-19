@@ -34,6 +34,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Path("/{apiVersion}/{species}/feature/ontology")
@@ -76,13 +78,13 @@ public class OntologyWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "namespace",  value = ParamConstants.ONTOLOGY_NAMESPACES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "synonym", value = ParamConstants.ONTOLOGY_SYNONYMS,
+            @ApiImplicitParam(name = "synonyms", value = ParamConstants.ONTOLOGY_SYNONYMS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "xref", value = ParamConstants.ONTOLOGY_XREFS,
+            @ApiImplicitParam(name = "xrefs", value = ParamConstants.ONTOLOGY_XREFS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "parent", value = ParamConstants.ONTOLOGY_PARENTS,
+            @ApiImplicitParam(name = "parents", value = ParamConstants.ONTOLOGY_PARENTS,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "chldren", value = ParamConstants.ONTOLOGY_CHILDREN,
+            @ApiImplicitParam(name = "children", value = ParamConstants.ONTOLOGY_CHILDREN,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -109,4 +111,31 @@ public class OntologyWSServer extends GenericRestWSServer {
         }
     }
 
+    @GET
+    @Path("/{ids}/info")
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified ontolgy terms(s)", response = OboTerm.class,
+            responseContainer = "QueryResponse")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getInfo(@PathParam("ids")
+                            @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_IDS, required = true) String ids) {
+        try {
+            List<OntologyQuery> queries = new ArrayList<>();
+            String[] identifiers = ids.split(",");
+            for (String identifier : identifiers) {
+                OntologyQuery query = new OntologyQuery(uriParams);
+                query.setIds(Arrays.asList(identifier));
+                queries.add(query);
+                logger.info("REST OntologyQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<OboTerm>> queryResults = ontologyManager.info(queries);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 }
