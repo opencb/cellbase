@@ -189,6 +189,12 @@ public class GenericRestWSServer implements IWSServer {
         return convertedMap;
     }
 
+    // "fields" is not part of genequery, will throw an exception, rename to be "facet"
+    public void copyToFacet(String columnName, String fields) {
+        uriParams.keySet().removeIf(columnName::equals);
+        uriParams.put("facet", fields);
+    }
+
     /**
      * Converts to canelcase, e.g. transcripts.biotype --> transcriptsBiotype. It's translated back to the full path right before the
      * mongo query is run.

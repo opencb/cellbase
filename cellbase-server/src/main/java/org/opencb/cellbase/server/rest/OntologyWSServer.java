@@ -138,4 +138,36 @@ public class OntologyWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
+
+    @GET
+    @Path("/distinct")
+    @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values, e.g. namespace",
+            value = "Get a unique list of values for a given field.")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "name", value = ParamConstants.ONTOLOGY_NAMES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "namespace",  value = ParamConstants.ONTOLOGY_NAMESPACES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "synonyms", value = ParamConstants.ONTOLOGY_SYNONYMS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "xrefs", value = ParamConstants.ONTOLOGY_XREFS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "parents", value = ParamConstants.ONTOLOGY_PARENTS,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "children", value = ParamConstants.ONTOLOGY_CHILDREN,
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
+            value = "Name of column to return, e.g. namespace") String field) {
+        try {
+            copyToFacet("field", field);
+            OntologyQuery query = new OntologyQuery(uriParams);
+            CellBaseDataResult<String> queryResults = ontologyManager.distinct(query);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
 }
