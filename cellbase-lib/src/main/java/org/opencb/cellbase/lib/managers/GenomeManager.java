@@ -16,11 +16,11 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import com.google.common.base.Splitter;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -31,7 +31,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenomeManager extends AbstractManager {
+public class GenomeManager extends AbstractManager implements AggregationApi {
 
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
@@ -40,26 +40,31 @@ public class GenomeManager extends AbstractManager {
         this.init();
     }
 
+    @Override
+    public CellBaseCoreDBAdaptor getDBAdaptor() {
+        return genomeDBAdaptor;
+    }
+
     private void init() {
         genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult info(QueryOptions queryOptions) {
-        CellBaseDataResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
-        queryResult.setId(species);
-        return queryResult;
-    }
+//    public CellBaseDataResult info(QueryOptions queryOptions) {
+//        CellBaseDataResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
+//        queryResult.setId(species);
+//        return queryResult;
+//    }
 
-    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId) {
-        List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
-        List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
-        for (String chromosome : chromosomeList) {
-            CellBaseDataResult queryResult = genomeDBAdaptor.getChromosomeInfo(chromosome, queryOptions);
-            queryResult.setId(chromosome);
-            queryResults.add(queryResult);
-        }
-        return queryResults;
-    }
+//    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId) {
+//        List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
+//        List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
+//        for (String chromosome : chromosomeList) {
+//            CellBaseDataResult queryResult = genomeDBAdaptor.getChromosomeInfo(chromosome, queryOptions);
+//            queryResult.setId(chromosome);
+//            queryResults.add(queryResult);
+//        }
+//        return queryResults;
+//    }
 
     public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String regions) {
         List<Region> regionList = Region.parseRegions(regions);

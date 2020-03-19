@@ -113,7 +113,7 @@ public class OntologyWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{ids}/info")
-    @ApiOperation(httpMethod = "GET", value = "Get information about the specified ontolgy terms(s)", response = OboTerm.class,
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified ontology terms(s)", response = OboTerm.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,

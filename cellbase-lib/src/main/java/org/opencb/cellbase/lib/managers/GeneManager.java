@@ -29,7 +29,7 @@ import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GeneManager extends AbstractManager implements AggregationApi  {
+public class GeneManager extends AbstractManager implements AggregationApi {
 
     private GeneMongoDBAdaptor geneDBAdaptor;
     private GenomeMongoDBAdaptor genomeDBAdaptor;

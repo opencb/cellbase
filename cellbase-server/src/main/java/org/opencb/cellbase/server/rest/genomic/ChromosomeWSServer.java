@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.rest.genomic;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.GenomeQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -34,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -95,8 +98,9 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     })
     public Response getAll() {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResults = genomeManager.info(queryOptions);
+            GenomeQuery query = new GenomeQuery(uriParams);
+            logger.info("/search GenomeQuery: " + query.toString());
+            CellBaseDataResult<Chromosome> queryResults = genomeManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -136,15 +140,26 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING")
     })
     public Response getChromosomes(@PathParam("chromosomeName") @ApiParam(name = "chromosomeName", value = ParamConstants.CHROMOSOMES,
-                                                required = true) String chromosomeId) {
+                                                required = true) String chromosomeName) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, chromosomeId);
+
+//            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, chromosomeName);
+            List<GenomeQuery> queries = new ArrayList<>();
+            String[] identifiers = chromosomeName.split(",");
+            for (String identifier : identifiers) {
+                GenomeQuery query = new GenomeQuery(uriParams);
+                query.setNames(Arrays.asList(identifier));
+                queries.add(query);
+                logger.info("REST GenomeQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Chromosome>> queryResults = genomeManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
+
+
 
 //    @GET
 //    @Path("/{chromosomeName}/size")

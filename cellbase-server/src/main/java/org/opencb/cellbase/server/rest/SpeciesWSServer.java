@@ -16,10 +16,10 @@
 
 package org.opencb.cellbase.server.rest;
 
-import com.mongodb.MongoException;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.GenomeQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GenomeManager;
@@ -32,6 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by imedina on 04/08/15.
@@ -74,12 +76,11 @@ public class SpeciesWSServer extends GenericRestWSServer {
     })
     public Response getSpeciesInfo() {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResult = genomeManager.info(queryOptions);
+            GenomeQuery query = new GenomeQuery(uriParams);
+            List<CellBaseDataResult> queryResult = genomeManager.info(Arrays.asList(query));
             return createOkResponse(queryResult);
-        } catch (MongoException e) {
-            e.printStackTrace();
-            return null;
+        } catch (Exception e) {
+            return createErrorResponse(e);
         }
     }
 

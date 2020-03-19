@@ -18,16 +18,15 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
-
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
-import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GenomeQuery;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +59,8 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void getChromosomeInfo() throws Exception {
-        CellBaseDataResult CellBaseDataResult = dbAdaptor.getChromosomeInfo("20", new QueryOptions());
+        GenomeQuery query = new GenomeQuery();
+        CellBaseDataResult CellBaseDataResult = dbAdaptor.query(query);
         assertEquals(Integer.valueOf(64444167),
                 ((Document) ((List) ((Document) CellBaseDataResult.getResults().get(0)).get("chromosomes")).get(0)).get("size"));
     }
