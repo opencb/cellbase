@@ -208,7 +208,7 @@ public class VcfStringAnnotatorTask implements ParallelTaskRunner.TaskWithExcept
             String ciposString = StringUtils.join(ciposValue, VCFConstants.INFO_FIELD_ARRAY_SEPARATOR);
 
             // Set CIPOS string of the sencond BND as part of the file INFO field in the first BND
-            Map<String, String> attributesMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
+            Map<String, String> attributesMap = variant.getStudies().get(0).getFiles().get(0).getData();
             attributesMap.put(MATE_CIPOS, ciposString);
 
             // CIPOS of the second breakend

@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
+import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
@@ -153,8 +154,10 @@ public class VariantManager extends AbstractManager {
                         formatList.add(AnnotationBasedPhasedQueryManager.GENOTYPE_TAG);
                         sampleData.add(variantStringPartArray[1]);
                     }
-                    variantBuilder.setFormat(formatList);
-                    variantBuilder.setSamplesData(Collections.singletonList(sampleData));
+                    variantBuilder.setSampleDataKeys(formatList);
+                    SampleEntry sampleEntry = new SampleEntry();
+                    sampleEntry.setData(sampleData);
+                    variantBuilder.setSamples(Collections.singletonList(sampleEntry));
                 }
             } else if (variantStringPartArray.length > 3) {
                 throw new IllegalArgumentException("Malformed variant string " + variantString + ". "

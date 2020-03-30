@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
 import org.opencb.biodata.models.variant.avro.PopulationFrequency;
+import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -84,8 +85,8 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 62165739,
                 "A",
                 "T");
-        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("62165739", "0|1")));
+        variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("62165739", "0|1"))));
         Variant variant = variantBuilder.build();
 
         variantBuilder = new VariantBuilder("1",
@@ -93,8 +94,8 @@ public class VariantMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 62165740,
                 "T",
                 "G");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("62165739", "0|1")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("62165739", "0|1"))));
         Variant variant1 = variantBuilder.build();
 
         VariantMongoDBAdaptor variationDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor("hsapiens",

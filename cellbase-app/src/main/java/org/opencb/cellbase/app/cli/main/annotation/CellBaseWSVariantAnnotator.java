@@ -112,7 +112,7 @@ public class CellBaseWSVariantAnnotator implements VariantAnnotator {
             // large deletion
             if (variant.getAlternate().equals("<DEL>")) {
                 // .get("_") because studyId and fileId are empty strings when VariantSource is initialized at readInputFile
-                int end = Integer.valueOf(variant.getSourceEntries().get("_").getAttributes().get("END"));
+                int end = Integer.valueOf(variant.getEnd());
                 ref = StringUtils.repeat("N", end - variant.getStart());
                 return new Variant(variant.getChromosome(), variant.getStart(),
                         ref, variant.getAlternate().equals("") ? "-" : variant.getAlternate());

@@ -224,7 +224,7 @@ public class VariantAnnotationCalculator {
                 && !variant.getStudies().isEmpty()
                 && variant.getStudies().get(0).getFiles() != null
                 && !variant.getStudies().get(0).getFiles().isEmpty()) {
-            return variant.getStudies().get(0).getFiles().get(0).getCall();
+            return variant.getStudies().get(0).getFiles().get(0).getCall().getVariantId();
         }
 
         return null;
@@ -283,7 +283,7 @@ public class VariantAnnotationCalculator {
 
     private boolean isPhased(Variant variant) {
         return (variant.getStudies() != null && !variant.getStudies().isEmpty())
-            && variant.getStudies().get(0).getFormat().contains("PS");
+            && variant.getStudies().get(0).getSampleDataKeys().contains("PS");
     }
 
     private String getCachedVariationIncludeFields() {
@@ -881,10 +881,10 @@ public class VariantAnnotationCalculator {
             if (genotype1 == null && genotype2 == null) {
                 return variant1.getStudies().get(0).getFiles() != null
                         && !variant1.getStudies().get(0).getFiles().isEmpty()
-                        && StringUtils.isNotBlank(variant1.getStudies().get(0).getFiles().get(0).getCall())
+                        && StringUtils.isNotBlank(variant1.getStudies().get(0).getFiles().get(0).getCall().getVariantId())
                         && variant2.getStudies().get(0).getFiles() != null
                         && !variant2.getStudies().get(0).getFiles().isEmpty()
-                        && StringUtils.isNotBlank(variant2.getStudies().get(0).getFiles().get(0).getCall())
+                        && StringUtils.isNotBlank(variant2.getStudies().get(0).getFiles().get(0).getCall().getVariantId())
                         && variant1.getStudies().get(0).getFiles().get(0).getCall()
                         .equals(variant2.getStudies().get(0).getFiles().get(0).getCall());
 

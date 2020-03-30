@@ -119,7 +119,7 @@ public class VcfVariantAnnotator implements VariantAnnotator {
         if (studyEntryList != null && !studyEntryList.isEmpty()) {
             StudyEntry studyEntry = studyEntryList.get(0);
             if (studyEntry.getFiles() != null && !studyEntry.getFiles().isEmpty()) {
-                Map<String, String> customAnnotationMap = studyEntry.getFiles().get(0).getAttributes();
+                Map<String, String> customAnnotationMap = studyEntry.getFiles().get(0).getData();
                 if (customAnnotationMap != null && !customAnnotationMap.isEmpty()) {
                     AdditionalAttribute infoAttribute = new AdditionalAttribute();
                     infoAttribute.setAttribute(customAnnotationMap);

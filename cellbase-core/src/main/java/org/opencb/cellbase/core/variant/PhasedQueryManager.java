@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.variant;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 
@@ -63,11 +64,12 @@ public abstract class PhasedQueryManager {
             // TODO: phase depends on the sample. Phased queries constrained to just one sample. The code below is
             // TODO: arbitrarily selecting the first one
             StudyEntry studyEntry = studyEntryList.get(0);
-            int attributePosition = studyEntry.getFormat().indexOf(attributeName);
+            int attributePosition = studyEntry.getSampleDataKeyPosition(attributeName);
             if (attributePosition != -1) {
-                List<List<String>> samplesData = studyEntry.getSamplesData();
+                List<SampleEntry> samplesData = studyEntry.getSamples();
                 if (samplesData != null && !samplesData.isEmpty()) {
-                    List<String> firstSampleData = samplesData.get(0);
+                    SampleEntry firstEntry = samplesData.get(0);
+                    List<String> firstSampleData = firstEntry.getData();
                     if (firstSampleData != null
                             && !firstSampleData.isEmpty()
                             && attributePosition < firstSampleData.size()

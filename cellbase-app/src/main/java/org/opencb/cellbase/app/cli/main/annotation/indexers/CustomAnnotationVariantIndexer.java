@@ -59,19 +59,19 @@ public class CustomAnnotationVariantIndexer extends VariantIndexer {
                 variant.getReference(),
                 variant.getAlternate());
 
-        variantBuilder.setAttributes(parseInfoAttributes(variant));
+        variantBuilder.setFileData(parseInfoAttributes(variant));
 
         // Samples data contains the phase
         if (variant.getStudies() != null && !variant.getStudies().isEmpty()) {
-            variantBuilder.setSamplesData(variant.getStudies().get(0).getSamplesData());
-            variantBuilder.setFormat(variant.getStudies().get(0).getFormat());
+            variantBuilder.setSamples(variant.getStudies().get(0).getSamples());
+            variantBuilder.setSampleDataKeys(variant.getStudies().get(0).getSampleDataKeys());
         }
 
          return variantBuilder.build();
     }
 
     private Map<String, String> parseInfoAttributes(Variant variant) {
-        Map<String, String> infoMap = variant.getStudies().get(0).getFiles().get(0).getAttributes();
+        Map<String, String> infoMap = variant.getStudies().get(0).getFiles().get(0).getData();
         Map<String, String> parsedInfo = new HashMap<>();
         for (String attribute : infoMap.keySet()) {
             if (fieldSet.contains(attribute)) {

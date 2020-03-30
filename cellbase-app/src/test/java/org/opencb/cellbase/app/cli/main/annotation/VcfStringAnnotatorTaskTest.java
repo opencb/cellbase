@@ -6,6 +6,7 @@ import htsjdk.variant.vcf.VCFHeaderVersion;
 import org.junit.Test;
 import org.opencb.biodata.formats.variant.vcf4.FullVcfCodec;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.StringDataReader;
 
@@ -63,20 +64,25 @@ public class VcfStringAnnotatorTaskTest {
         assertEquals(1, variantList.size());
         Variant variant = variantList.get(0);
         assertEquals(1, variant.getStudies().size());
-        List<String> format = variant.getStudies().get(0).getFormat();
-        List<List<String>> samplesData = variant.getStudies().get(0).getSamplesData();
+        List<String> format = variant.getStudies().get(0).getSampleDataKeys();
+        List<SampleEntry> entries = variant.getStudies().get(0).getSamples();
+
+        assertEquals(2, entries.size());
+
+        List<String> samplesData0 = entries.get(0).getData();
+        List<String> samplesData1 = entries.get(1).getData();
 
         // Check samples data is exactly in the same order as in the VCF (not alphabetical!)
-        assertEquals(2, samplesData.size());
+
         int dpPosition = format.indexOf(DP_TAG);
-        assertEquals("54", samplesData.get(0).get(dpPosition));
-        assertEquals("152", samplesData.get(1).get(dpPosition));
+        assertEquals("54", samplesData0.get(dpPosition));
+        assertEquals("152", samplesData1.get(dpPosition));
         int auPosition = format.indexOf(AU_TAG);
-        assertEquals("0,5", samplesData.get(0).get(auPosition));
-        assertEquals("3,26", samplesData.get(1).get(auPosition));
+        assertEquals("0,5", samplesData0.get(auPosition));
+        assertEquals("3,26", samplesData1.get(auPosition));
         int fdpPosition = format.indexOf(FDP_TAG);
-        assertEquals("14", samplesData.get(0).get(fdpPosition));
-        assertEquals("42", samplesData.get(1).get(fdpPosition));
+        assertEquals("14", samplesData0.get(fdpPosition));
+        assertEquals("42", samplesData1.get(fdpPosition));
 
     }
 }

@@ -18,16 +18,16 @@ package org.opencb.cellbase.lib.impl.core;
 
 import org.bson.Document;
 import org.hamcrest.CoreMatchers;
-
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
+import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
+import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,8 +38,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -71,8 +71,12 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653362,
                 "C",
                 "T");
-        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+
+        SampleEntry sampleEntry = new SampleEntry();
+        sampleEntry.setData(Arrays.asList("100653362", "1"));
+        variantBuilder.setSamples(Collections.singletonList(sampleEntry));
+
         Variant variant = variantBuilder.build();
 
         variantBuilder = new VariantBuilder("X",
@@ -80,8 +84,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653363,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653363", "0|1")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653363", "0|1"))));
         Variant variant1 = variantBuilder.build();
 
         List<CellBaseDataResult<Variant>> variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
@@ -116,8 +120,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653362,
                 "C",
                 "T");
-        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "1"))));
         variant = variantBuilder.build();
 
         variantBuilder = new VariantBuilder("X",
@@ -125,8 +129,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653363,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "0|0")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "0|0"))));
         variant1 = variantBuilder.build();
 
          variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
@@ -153,8 +157,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653362,
                 "C",
                 "T");
-        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "1"))));
         variant = variantBuilder.build();
 
         variantBuilder = new VariantBuilder("X",
@@ -162,8 +166,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653363,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "0|1")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "0|1"))));
         variant1 = variantBuilder.build();
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
@@ -200,8 +204,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653362,
                 "C",
                 "T");
-        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "1"))));
         variant = variantBuilder.build();
 
         variantBuilder = new VariantBuilder("X",
@@ -209,8 +213,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653363,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1|0")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "1|0"))));
         variant1 = variantBuilder.build();
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
@@ -247,8 +251,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653362,
                 "C",
                 "T");
-        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1")));
+        variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "1"))));
         variant = variantBuilder.build();
 
         variantBuilder = new VariantBuilder("X",
@@ -256,8 +260,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 100653363,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("100653362", "1/0")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("100653362", "1/0"))));
         variant1 = variantBuilder.build();
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
@@ -295,8 +299,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 115256528,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528", "0|1")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("115256528", "0|1"))));
         variant = variantBuilder.build();
 
         variantBuilder = new VariantBuilder("1",
@@ -304,8 +308,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 115256529,
                 "T",
                 "A");
-        variantBuilder.setFormat("PS", "GT");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528", "1/0")));
+        variantBuilder.setSampleDataKeys("PS", "GT");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("115256528", "1/0"))));
         variant1 = variantBuilder.build();
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
@@ -340,8 +344,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 115256528,
                 "T",
                 "C");
-        variantBuilder.setFormat(Arrays.asList("PS", "GT"));
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528", "0|1")));
+        variantBuilder.setSampleDataKeys(Arrays.asList("PS", "GT"));
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("115256528", "0|1"))));
         variant = variantBuilder.build();
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
@@ -362,8 +366,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 115256528,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528")));
+        variantBuilder.setSampleDataKeys("PS");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("115256528"))));
         variant = variantBuilder.build();
         variant1 = new Variant("1", 115256529, "T", "A");
 
@@ -399,8 +403,8 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 115256528,
                 "T",
                 "C");
-        variantBuilder.setFormat("PS");
-        variantBuilder.setSamplesData(Collections.singletonList(Arrays.asList("115256528")));
+        variantBuilder.setSampleDataKeys("PS");
+        variantBuilder.setSamples(Collections.singletonList(new SampleEntry(null, null, Arrays.asList("115256528"))));
         variant = variantBuilder.build();
 
         variantCellBaseDataResultList = clinicalDBAdaptor.getByVariant(
