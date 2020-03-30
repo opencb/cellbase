@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import com.google.common.base.Splitter;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
@@ -55,16 +56,16 @@ public class GenomeManager extends AbstractManager implements AggregationApi {
 //        return queryResult;
 //    }
 
-//    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId) {
-//        List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
-//        List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
-//        for (String chromosome : chromosomeList) {
-//            CellBaseDataResult queryResult = genomeDBAdaptor.getChromosomeInfo(chromosome, queryOptions);
-//            queryResult.setId(chromosome);
-//            queryResults.add(queryResult);
-//        }
-//        return queryResults;
-//    }
+    public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId) {
+        List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);
+        List<CellBaseDataResult> queryResults = new ArrayList<>(chromosomeList.size());
+        for (String chromosome : chromosomeList) {
+            CellBaseDataResult queryResult = genomeDBAdaptor.getChromosomeInfo(chromosome, queryOptions);
+            queryResult.setId(chromosome);
+            queryResults.add(queryResult);
+        }
+        return queryResults;
+    }
 
     public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String regions) {
         List<Region> regionList = Region.parseRegions(regions);

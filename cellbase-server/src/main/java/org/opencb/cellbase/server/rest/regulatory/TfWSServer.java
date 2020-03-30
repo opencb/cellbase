@@ -24,6 +24,7 @@ import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
 import org.opencb.cellbase.lib.managers.TFManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -47,6 +48,7 @@ public class TfWSServer extends RegulatoryWSServer {
 
     private RegulatoryManager regulatoryManager;
     private TFManager tfManager;
+    private GeneManager geneManager;
 
     public TfWSServer(@PathParam("apiVersion")
                       @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
@@ -89,7 +91,6 @@ public class TfWSServer extends RegulatoryWSServer {
     public Response getAllByTfbs(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf,
                                  @DefaultValue("") @QueryParam("celltype") String celltype) {
         try {
-            parseQueryParams();
             List<CellBaseDataResult> queryResults = regulatoryManager.getAllByTfbs(query, queryOptions, tf);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -135,7 +136,7 @@ public class TfWSServer extends RegulatoryWSServer {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             LogicalList<String> logicalList = new LogicalList(Arrays.asList(tf.split(",")));
             geneQuery.setTranscriptsTfbsName(logicalList);
-            CellBaseDataResult queryResults = tfManager.getByGene(geneQuery);
+            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

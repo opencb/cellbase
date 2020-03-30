@@ -35,8 +35,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -143,16 +141,16 @@ public class ChromosomeWSServer extends GenericRestWSServer {
                                                 required = true) String chromosomeName) {
         try {
 
-//            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, chromosomeName);
-            List<GenomeQuery> queries = new ArrayList<>();
-            String[] identifiers = chromosomeName.split(",");
-            for (String identifier : identifiers) {
-                GenomeQuery query = new GenomeQuery(uriParams);
-                query.setNames(Arrays.asList(identifier));
-                queries.add(query);
-                logger.info("REST GenomeQuery: " + query.toString());
-            }
-            List<CellBaseDataResult<Chromosome>> queryResults = genomeManager.info(queries);
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, chromosomeName);
+//            List<GenomeQuery> queries = new ArrayList<>();
+//            String[] identifiers = chromosomeName.split(",");
+//            for (String identifier : identifiers) {
+//                GenomeQuery query = new GenomeQuery(uriParams);
+//                query.setNames(Arrays.asList(identifier));
+//                queries.add(query);
+//                logger.info("REST GenomeQuery: " + query.toString());
+//            }
+//            List<CellBaseDataResult<Chromosome>> queryResults = genomeManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

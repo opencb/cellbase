@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
@@ -47,37 +48,36 @@ public class RegulatoryManager extends AbstractManager {
         return regulationDBAdaptor.distinct(query, "featureClass");
     }
 
-    public CellBaseDataResult search(Query query, QueryOptions queryOptions) {
-        // FIXME
+    public CellBaseDataResult<RegulatoryFeature> search(Query query, QueryOptions queryOptions) {
         return regulationDBAdaptor.query(new GeneQuery());
     }
 
-    public List<CellBaseDataResult> getByRegions(Query query, QueryOptions queryOptions, String regions) {
+    public List<CellBaseDataResult<RegulatoryFeature>> getByRegions(Query query, QueryOptions queryOptions, String regions) {
         List<Query> queries = createQueries(query, regions, RegulationDBAdaptor.QueryParams.REGION.key());
-        List<CellBaseDataResult> queryResults = regulationDBAdaptor.query(queries);
+        List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulationDBAdaptor.query(queries);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
         }
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getAllByTfbs(Query query, QueryOptions queryOptions, String tf) {
+    public List<CellBaseDataResult<RegulatoryFeature>> getAllByTfbs(Query query, QueryOptions queryOptions, String tf) {
         List<Query> queries = createQueries(query, tf, RegulationDBAdaptor.QueryParams.NAME.key(),
                 RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(), RegulationDBAdaptor.FeatureType.TF_binding_site
                         + "," + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-        List<CellBaseDataResult> queryResults = regulationDBAdaptor.query(queries);
+        List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulationDBAdaptor.query(queries);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.NAME.key()));
         }
         return queryResults;
     }
 
-    public List<CellBaseDataResult> getTfByRegions(Query query, QueryOptions queryOptions, String regions) {
+    public List<CellBaseDataResult<RegulatoryFeature>> getTfByRegions(Query query, QueryOptions queryOptions, String regions) {
         List<Query> queries = createQueries(query, regions, RegulationDBAdaptor.QueryParams.REGION.key(),
                 RegulationDBAdaptor.QueryParams.FEATURE_TYPE.key(),
                 RegulationDBAdaptor.FeatureType.TF_binding_site + ","
                         + RegulationDBAdaptor.FeatureType.TF_binding_site_motif);
-        List<CellBaseDataResult> queryResults = regulationDBAdaptor.query(queries);
+        List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulationDBAdaptor.query(queries);
         for (int i = 0; i < queries.size(); i++) {
             queryResults.get(i).setId((String) queries.get(i).get(RegulationDBAdaptor.QueryParams.REGION.key()));
         }

@@ -71,15 +71,15 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         return new CellBaseDataResult<>(genomeInfoMongoDBCollection.find(new Document(), queryOptions));
     }
 
-//    public CellBaseDataResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions) {
-//        if (queryOptions == null) {
-//            queryOptions = new QueryOptions("include", Collections.singletonList("chromosomes.$"));
-//        } else {
-//            queryOptions.addToListOption("include", "chromosomes.$");
-//        }
-//        Document dbObject = new Document("chromosomes", new Document("$elemMatch", new Document("name", chromosomeId)));
-//        return executeQuery(chromosomeId, dbObject, queryOptions, genomeInfoMongoDBCollection);
-//    }
+    public CellBaseDataResult getChromosomeInfo(String chromosomeId, QueryOptions queryOptions) {
+        if (queryOptions == null) {
+            queryOptions = new QueryOptions("include", Collections.singletonList("chromosomes.$"));
+        } else {
+            queryOptions.addToListOption("include", "chromosomes.$");
+        }
+        Document dbObject = new Document("chromosomes", new Document("$elemMatch", new Document("name", chromosomeId)));
+        return executeQuery(chromosomeId, dbObject, queryOptions, genomeInfoMongoDBCollection);
+    }
 
     public CellBaseDataResult<Cytoband> getCytobands(Region region, QueryOptions queryOptions) {
         List<Cytoband> cytobandList = new ArrayList<>();
@@ -91,8 +91,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         // May not have info for specified chromosome, e.g. 17_KI270729v1_random
         if (chromosomeInfo != null) {
             Chromosome chromosome = chromosomeInfo.getResults().get(0);
-            // FIXME which cytoband to use? Avro or core?
-//            cytobandList = chromosome.getCytobands();
+            cytobandList = chromosome.getCytobands();
 
 
 //            int i = 0;
@@ -124,32 +123,32 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         return cellBaseDataResultList;
     }
 
-//    private Document getOneChromosomeInfo(String chromosome) {
-//        Document genomeInfoVariable = getGenomeInfoVariable();
-//        if (genomeInfoVariable != null) {
-//            for (Document document : (List<Document>) genomeInfoVariable.get(CHROMOSOMES)) {
-//                if (document.get(NAME).equals(chromosome)) {
-//                    return document;
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private Document getGenomeInfoVariable() {
-//        if (genomeInfo == null) {
-//            CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult<>(
-//                    genomeInfoMongoDBCollection.find(new Document(), null));
-//            if (cellBaseDataResult.getNumResults() > 0) {
-//                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResults().get(0);
-//                for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
-//                    ((List<Document>) chromosomeDocument.get(CYTOBANDS))
-//                            .sort((c1, c2) -> Integer.compare((int) c1.get(START), (int) c2.get(START)));
-//                }
-//            }
-//        }
-//        return genomeInfo;
-//    }
+    private Document getOneChromosomeInfo(String chromosome) {
+        Document genomeInfoVariable = getGenomeInfoVariable();
+        if (genomeInfoVariable != null) {
+            for (Document document : (List<Document>) genomeInfoVariable.get(CHROMOSOMES)) {
+                if (document.get(NAME).equals(chromosome)) {
+                    return document;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Document getGenomeInfoVariable() {
+        if (genomeInfo == null) {
+            CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult<>(
+                    genomeInfoMongoDBCollection.find(new Document(), null));
+            if (cellBaseDataResult.getNumResults() > 0) {
+                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResults().get(0);
+                for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
+                    ((List<Document>) chromosomeDocument.get(CYTOBANDS))
+                            .sort(Comparator.comparingInt(c -> (int) c.get(START)));
+                }
+            }
+        }
+        return genomeInfo;
+    }
 
     @Deprecated
     public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions) {
@@ -359,7 +358,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Chromosome> converter = new GenericDocumentComplexConverter<>(Chromosome.class);
-        MongoDBIterator<Chromosome> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Chromosome> iterator = genomeInfoMongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 

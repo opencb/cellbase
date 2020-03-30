@@ -149,7 +149,7 @@ public class ParamConstants {
             + "e.g. missense_variant. Exact text matches will be returned. A list of searchable SO term names can be"
             + " accessed at https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/variation/consequence_types";
     public static final String FEATURE_IDS = "Comma separated list of feature ids, which can be either ENSEMBL gene "
-            + "ids, HGNC gene symbols, transcript symbols or ENSEMBL transcript ids, e.g.: BRCA2, ENST00000409047. "
+            + "ids, HGNC gene symbols, transcript symbols or ENSEMBL transcript ids, e.g.: BRCA2,ENST00000409047. "
             + "Exact text matches will be returned.";
     public static final String TRAITS = "Keywords search. Comma separated (no spaces in between) list of "
             + "keywords describing required phenotype/disease. All variants related somehow with all those keywords "
