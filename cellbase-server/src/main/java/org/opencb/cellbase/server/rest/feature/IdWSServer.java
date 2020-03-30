@@ -17,11 +17,11 @@
 package org.opencb.cellbase.server.rest.feature;
 
 import io.swagger.annotations.*;
-import org.bson.Document;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.XrefQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -37,10 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author imedina
@@ -85,12 +82,18 @@ public class IdWSServer extends GenericRestWSServer {
             notes = "An independent database query will be issued for each id, meaning that results for each id will be"
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.", response = Xref.class,
             responseContainer = "QueryResponse")
-    public Response getByFeatureIdInfo(@PathParam("id")
-                                       @ApiParam(name = "id", value = "Comma separated list of ids, e.g.: BRCA2. Exact "
-                                               + "text matches will be returned.", required = true) String id) {
+    public Response getInfo(@PathParam("id") @ApiParam(name = "id", value = ParamConstants.FEATURE_IDS, required = true) String id) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult<Document>> queryResults = xrefManager.info(query, queryOptions, id);
+
+            List<XrefQuery> queries = new ArrayList<>();
+            String[] identifiers = id.split(",");
+            for (String identifier : identifiers) {
+                XrefQuery query = new XrefQuery(uriParams);
+                query.setIds(Collections.singletonList(identifier));
+                queries.add(query);
+                logger.info("REST XrefQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -101,19 +104,16 @@ public class IdWSServer extends GenericRestWSServer {
     @Path("/{id}/xref")
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references related with given ID(s)",
         response = Xref.class, responseContainer = "QueryResponse")
-    public Response getAllXrefsByFeatureId(@PathParam("id")
-                                           @ApiParam(name = "id", value = "Comma separated list of ids, e.g.: BRCA2."
-                                                   + "Exact text matches will be searched.", required = true) String ids,
-                                           @DefaultValue("")
-                                           @QueryParam("dbname")
-                                           @ApiParam(name = "dbname", value = "Comma separated list of source DB names"
-                                                   + " to include in the search, e.g.: ensembl_gene,vega_gene,havana_gene."
-                                                   + " Available db names are shown by this web service: "
-                                                   + " https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Xref/"
-                                                   + "getDBNames", required = false) String dbname) {
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = ParamConstants.FEATURE_IDS,
+                    required = true, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "dbname", value = ParamConstants.XREF_DBNAMES,
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getAllXrefs() {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResults = xrefManager.getAllXrefsByFeatureId(queryOptions, ids, dbname);
+            XrefQuery query = new XrefQuery(uriParams);
+            CellBaseDataResult<Xref> queryResults = xrefManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -196,19 +196,19 @@ public class IdWSServer extends GenericRestWSServer {
         }
     }
 
-    @GET
-    @Path("/dbnames")
-    @ApiOperation(httpMethod = "GET", value = "Get list of distinct source DB names from which xref ids were collected ",
-        response = String.class, responseContainer = "QueryResponse")
-    public Response getDBNames() {
-        try {
-            parseQueryParams();
-            CellBaseDataResult queryResults = xrefManager.getDBNames(query);
-            return createOkResponse(queryResults);
-        } catch (Exception e) {
-            return createErrorResponse(e);
-        }
-    }
+//    @GET
+//    @Path("/dbnames")
+//    @ApiOperation(httpMethod = "GET", value = "Get list of distinct source DB names from which xref ids were collected ",
+//        response = String.class, responseContainer = "QueryResponse")
+//    public Response getDBNames() {
+//        try {
+//            parseQueryParams();
+//            CellBaseDataResult queryResults = xrefManager.getDBNames(query);
+//            return createOkResponse(queryResults);
+//        } catch (Exception e) {
+//            return createErrorResponse(e);
+//        }
+//    }
 
     @GET
     @Path("/help")

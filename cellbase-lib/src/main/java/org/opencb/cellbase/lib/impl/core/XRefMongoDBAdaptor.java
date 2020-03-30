@@ -16,31 +16,28 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.XRefDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.XrefQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Map;
 
 /**
  * Created by imedina on 07/12/15.
  */
-public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
+public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<XrefQuery, Xref> {
 
     public XRefMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -64,113 +61,147 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 //        return new CellBaseDataResult(mongoDBCollection.find(regex, include, options));
 //    }
 
-    public CellBaseDataResult<Long> count(Query query) {
-        Bson bson = parseQuery(query);
-        return new CellBaseDataResult(mongoDBCollection.count(bson));
-    }
-
-    public CellBaseDataResult distinct(Query query, String field) {
-        Bson bson = parseQuery(query);
-        return new CellBaseDataResult(mongoDBCollection.distinct(field, bson));
-    }
+//    public CellBaseDataResult<Long> count(Query query) {
+//        Bson bson = parseQuery(query);
+//        return new CellBaseDataResult(mongoDBCollection.count(bson));
+//    }
+//
+//    public CellBaseDataResult distinct(Query query, String field) {
+//        Bson bson = parseQuery(query);
+//        return new CellBaseDataResult(mongoDBCollection.distinct(field, bson));
+//    }
 
 //    @Override
 //    public CellBaseDataResult stats(Query query) {
 //        return null;
 //    }
 
-    public CellBaseDataResult<Xref> get(Query query, QueryOptions options) {
-        return null;
-    }
+//    public CellBaseDataResult<Xref> get(Query query, QueryOptions options) {
+//        return null;
+//    }
+//
+//    public List<CellBaseDataResult<Document>> nativeGet(List<Query> queries, QueryOptions options) {
+////        return new CellBaseDataResult(mongoDBCollection.find(new BsonDocument(), null));
+//        return null;
+//    }
 
-    public List<CellBaseDataResult<Document>> nativeGet(List<Query> queries, QueryOptions options) {
-//        return new CellBaseDataResult(mongoDBCollection.find(new BsonDocument(), null));
-        return null;
-    }
+//    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
+//        Bson bson = parseQuery(query);
+//        Bson match = Aggregates.match(bson);
+//
+//        Bson project = Aggregates.project(Projections.include("transcripts.xrefs"));
+//        Bson unwind = Aggregates.unwind("$transcripts");
+//        Bson unwind2 = Aggregates.unwind("$transcripts.xrefs");
+//
+//        // This project the three fields of Xref to the top of the object
+//        Document document = new Document("id", "$transcripts.xrefs.id");
+//        document.put("dbName", "$transcripts.xrefs.dbName");
+//        document.put("dbDisplayName", "$transcripts.xrefs.dbDisplayName");
+//        Bson project1 = Aggregates.project(document);
+//
+//        if (query.containsKey(XRefDBAdaptor.QueryParams.DBNAME.key())) {
+//            Bson bson2 = parseQuery(new Query(XRefDBAdaptor.QueryParams.DBNAME.key(), query.get(XRefDBAdaptor.QueryParams.DBNAME.key())));
+//            Bson match2 = Aggregates.match(bson2);
+//            return new CellBaseDataResult(mongoDBCollection.aggregate(
+//                    Arrays.asList(match, project, unwind, unwind2, match2, project1), options));
+//        }
+//        return new CellBaseDataResult(mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), options));
+//    }
 
-    public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        Bson match = Aggregates.match(bson);
-
-        Bson project = Aggregates.project(Projections.include("transcripts.xrefs"));
-        Bson unwind = Aggregates.unwind("$transcripts");
-        Bson unwind2 = Aggregates.unwind("$transcripts.xrefs");
-
-        // This project the three fields of Xref to the top of the object
-        Document document = new Document("id", "$transcripts.xrefs.id");
-        document.put("dbName", "$transcripts.xrefs.dbName");
-        document.put("dbDisplayName", "$transcripts.xrefs.dbDisplayName");
-        Bson project1 = Aggregates.project(document);
-
-        if (query.containsKey(XRefDBAdaptor.QueryParams.DBNAME.key())) {
-            Bson bson2 = parseQuery(new Query(XRefDBAdaptor.QueryParams.DBNAME.key(), query.get(XRefDBAdaptor.QueryParams.DBNAME.key())));
-            Bson match2 = Aggregates.match(bson2);
-            return new CellBaseDataResult(mongoDBCollection.aggregate(
-                    Arrays.asList(match, project, unwind, unwind2, match2, project1), options));
-        }
-        return new CellBaseDataResult(mongoDBCollection.aggregate(Arrays.asList(match, project, unwind, unwind2, project1), options));
-    }
-
-    public Iterator<Xref> iterator(Query query, QueryOptions options) {
-        return null;
-    }
-
-    public Iterator nativeIterator(Query query, QueryOptions options) {
-        Bson bson = parseQuery(query);
-        return mongoDBCollection.nativeQuery().find(bson, options);
-    }
+//    public Iterator<Xref> iterator(Query query, QueryOptions options) {
+//        return null;
+//    }
+//
+//    public Iterator nativeIterator(Query query, QueryOptions options) {
+//        Bson bson = parseQuery(query);
+//        return mongoDBCollection.nativeQuery().find(bson, options);
+//    }
 
 //    @Override
 //    public CellBaseDataResult rank(Query query, String field, int numResults, boolean asc) {
 //        return null;
 //    }
 
-    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
-        return groupBy(parseQuery(query), field, "name", options);
+//    public CellBaseDataResult groupBy(Query query, String field, QueryOptions options) {
+//        return groupBy(parseQuery(query), field, "name", options);
+//    }
+//
+//    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
+//        return groupBy(parseQuery(query), fields, "name", options);
+//    }
+//
+//    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
+//
+//    }
+
+//    private Bson parseQuery(Query query) {
+//        List<Bson> andBsonList = new ArrayList<>();
+//        createOrQuery(query, XRefDBAdaptor.QueryParams.ID.key(), "transcripts.xrefs.id", andBsonList);
+//        createOrQuery(query, XRefDBAdaptor.QueryParams.DBNAME.key(), "transcripts.xrefs.dbName", andBsonList);
+//
+//        if (andBsonList.size() > 0) {
+//            return Filters.and(andBsonList);
+//        } else {
+//            return new Document();
+//        }
+//    }
+
+    @Override
+    public CellBaseIterator iterator(XrefQuery query) {
+        Bson bson = parseQuery(query);
+        QueryOptions queryOptions = query.toQueryOptions();
+        Bson projection = getProjection(query);
+        GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
+        MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        return new CellBaseIterator<>(iterator);
     }
 
-    public CellBaseDataResult groupBy(Query query, List<String> fields, QueryOptions options) {
-        return groupBy(parseQuery(query), fields, "name", options);
+    @Override
+    public CellBaseDataResult<Long> count(XrefQuery query) {
+        return null;
     }
 
-    public void forEach(Query query, Consumer<? super Object> action, QueryOptions options) {
-
+    @Override
+    public CellBaseDataResult aggregationStats(XrefQuery query) {
+        return null;
     }
 
-    private Bson parseQuery(Query query) {
+    @Override
+    public CellBaseDataResult groupBy(XrefQuery query) {
+        return null;
+    }
+
+    @Override
+    public CellBaseDataResult<String> distinct(XrefQuery query) {
+        return null;
+    }
+
+    public Bson parseQuery(XrefQuery query) {
         List<Bson> andBsonList = new ArrayList<>();
-        createOrQuery(query, XRefDBAdaptor.QueryParams.ID.key(), "transcripts.xrefs.id", andBsonList);
-        createOrQuery(query, XRefDBAdaptor.QueryParams.DBNAME.key(), "transcripts.xrefs.dbName", andBsonList);
+        try {
+            for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
+                String dotNotationName = entry.getKey();
+                Object value = entry.getValue();
+                switch (dotNotationName) {
+                    case "id":
+                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
+                    case "dbname":
+                        createAndOrQuery(value, "transcripts.xrefs.dbName", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
 
+        logger.info("parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
             return new Document();
         }
     }
-    @Override
-    public CellBaseIterator iterator(AbstractQuery query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<Long> count(AbstractQuery query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult aggregationStats(AbstractQuery query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult groupBy(AbstractQuery query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<String> distinct(AbstractQuery query) {
-        return null;
-    }
-
 }

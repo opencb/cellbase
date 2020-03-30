@@ -210,4 +210,12 @@ public class ParamConstants {
     public static final String AA_DESCRIPTION = "Alternate aminoacid to check. Please, use upper-case letters and three letter encoding "
             + "of aminoacid names, e.g.: CYS";
     public static final String POSITION_DESCRIPTION = "Integer indicating the aminoacid position to check";
+
+    // ---------------------------------------------
+
+    public static final String XREF_DBNAMES = "Comma separated list of source DB names"
+            + " to include in the search, e.g.: ensembl_gene,vega_gene,havana_gene."
+            + " Available db names are shown by this web service: "
+            + " https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Xref/getDBNames";
+
 }
