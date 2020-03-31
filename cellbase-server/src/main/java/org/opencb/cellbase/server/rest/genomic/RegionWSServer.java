@@ -21,6 +21,7 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
+import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -37,10 +38,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Path("/{apiVersion}/{species}/genomic/region")
 @Produces(MediaType.APPLICATION_JSON)
@@ -435,12 +433,17 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getFeatureMap(@PathParam("regions")
-                                      @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
-                                              required = true) String regions) {
+    public Response getFeatureMap(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+            required = true) String regions) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = regulatoryManager.getByRegions(query, queryOptions, regions);
+            List<RegulationQuery> queries = new ArrayList<>();
+            String[] regionArray = regions.split(",");
+            for (String regionString : regionArray) {
+                RegulationQuery query = new RegulationQuery(uriParams);
+                query.setRegions(Collections.singletonList(Region.parseRegion(regionString)));
+                logger.info("REST RegulationQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -449,15 +452,8 @@ public class RegionWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{regions}/tfbs")
-    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. "
-            + "If query param "
-            + "histogram=true, frequency values per genomic interval will be returned instead.", notes = "If "
-            + "histogram=false RegulatoryFeature objects will be returned "
-            + "(see https://github.com/opencb/biodata/tree/develop/biodata-models/src/main/java/org/opencb/biodata/models/core). "
-            + "An independent database query will be issued for each region in regionStr, meaning that results for each "
-            + "region will be returned in independent QueryResult objects within the QueryResponse object."
-            + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
-            responseContainer = "QueryResponse")
+    @ApiOperation(httpMethod = "GET", value = "Retrieves all transcription factor binding site objects for the regions. ",
+            response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -471,10 +467,17 @@ public class RegionWSServer extends GenericRestWSServer {
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
     public Response getTfByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
-                                          required = false) String regions) {
+            required = false) String regions) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = regulatoryManager.getTfByRegions(query, queryOptions, regions);
+            List<RegulationQuery> queries = new ArrayList<>();
+            String[] regionArray = regions.split(",");
+            for (String regionString : regionArray) {
+                RegulationQuery query = new RegulationQuery(uriParams);
+                query.setRegions(Collections.singletonList(Region.parseRegion(regionString)));
+                query.setFeatureTypes(Arrays.asList("TF_binding_site_motif", "TF_binding_site"));
+                logger.info("REST RegulationQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

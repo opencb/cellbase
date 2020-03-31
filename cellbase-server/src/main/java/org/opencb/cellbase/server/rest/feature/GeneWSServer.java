@@ -644,7 +644,8 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             geneQuery.setIds(Arrays.asList(genes.split(",")));
-            CellBaseDataResult queryResults = tfManager.getByGene(geneQuery);
+            // TODO unwind to Transcript.TFBS
+            CellBaseDataResult queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -31,11 +31,11 @@ import org.opencb.cellbase.core.api.core.ConservationDBAdaptor;
 import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.*;
 import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
-import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1076,7 +1076,7 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(Variant variant) {
+    private boolean[] getRegulatoryRegionOverlaps(Variant variant) throws QueryException, IllegalAccessException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
@@ -1109,15 +1109,15 @@ public class VariantAnnotationCalculator {
         }
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position) {
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("include", REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
+    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer position) throws QueryException, IllegalAccessException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
 
-        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager
-                .search(new Query(REGION, toRegionString(chromosome, position)), queryOptions);
+        RegulationQuery query = new RegulationQuery();
+        query.setIncludes(Collections.singletonList(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE));
+        query.setRegions(Collections.singletonList(new Region(chromosome, position)));
+        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager.search(query);
 
         if (cellBaseDataResult.getNumMatches() > 0) {
             overlapsRegulatoryRegion[0] = true;
@@ -1135,19 +1135,20 @@ public class VariantAnnotationCalculator {
         return overlapsRegulatoryRegion;
     }
 
-    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end) {
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("exclude", "_id");
-        queryOptions.add("include", "chromosome");
-        queryOptions.add("limit", "1");
+    private boolean[] getRegulatoryRegionOverlaps(String chromosome, Integer start, Integer end)
+            throws QueryException, IllegalAccessException {
         // 0: overlaps any regulatory region type
         // 1: overlaps transcription factor binding site
         boolean[] overlapsRegulatoryRegion = {false, false};
-        String regionString = toRegionString(chromosome, start, end);
-        Query query = new Query(REGION, regionString);
 
-        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager
-                .search(query.append(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE, TF_BINDING_SITE), queryOptions);
+        RegulationQuery query = new RegulationQuery();
+        query.setExcludes(Collections.singletonList("_id"));
+        query.setIncludes(Collections.singletonList("chromosome"));
+        query.setLimit(1);
+        query.setRegions(Collections.singletonList(new Region(chromosome, start, end)));
+        query.setFeatureTypes(Collections.singletonList(TF_BINDING_SITE));
+
+        CellBaseDataResult<RegulatoryFeature> cellBaseDataResult = regulationManager.search(query);
 
         // Overlaps transcription factor binding site - it's therefore a regulatory variant
         if (cellBaseDataResult.getNumResults() == 1) {
@@ -1155,8 +1156,8 @@ public class VariantAnnotationCalculator {
             overlapsRegulatoryRegion[1] = true;
         // Does not overlap transcription factor binding site - check any other regulatory region type
         } else {
-            query.remove(REGULATORY_REGION_FEATURE_TYPE_ATTRIBUTE);
-            cellBaseDataResult = regulationManager.search(query, queryOptions);
+            query.setFeatureTypes(null);
+            cellBaseDataResult = regulationManager.search(query);
             // Does overlap other types of regulatory regions
             if (cellBaseDataResult.getNumResults() == 1) {
                 overlapsRegulatoryRegion[0] = true;
@@ -1180,7 +1181,8 @@ public class VariantAnnotationCalculator {
     }
 
     private List<ConsequenceType> getConsequenceTypeList(Variant variant, List<Gene> geneList,
-                                                         boolean regulatoryAnnotation, QueryOptions queryOptions) {
+                                                         boolean regulatoryAnnotation, QueryOptions queryOptions)
+            throws QueryException, IllegalAccessException {
         boolean[] overlapsRegulatoryRegion = {false, false};
         if (regulatoryAnnotation) {
             overlapsRegulatoryRegion = getRegulatoryRegionOverlaps(variant);

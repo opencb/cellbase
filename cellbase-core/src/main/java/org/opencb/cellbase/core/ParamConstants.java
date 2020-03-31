@@ -218,4 +218,17 @@ public class ParamConstants {
             + " Available db names are shown by this web service: "
             + " https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/#!/Xref/getDBNames";
 
+    // ---------------------------------------------
+
+    public static final String REGULATION_FEATURE_CLASSES = "Comma separated list of regulatory region classes, e.g.: "
+            + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
+            + "list of available regulatory types: "
+            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureClass";
+    public static final String REGULATION_FEATURE_TYPES = "Comma separated list of regulatory region types, e.g.: "
+            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
+            + "list of available regulatory types: "
+            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType";
+
+    public static final String CELLTYPE = "Type of cell.";
+
 }

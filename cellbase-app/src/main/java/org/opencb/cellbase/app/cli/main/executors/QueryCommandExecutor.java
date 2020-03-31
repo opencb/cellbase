@@ -232,20 +232,21 @@ public class QueryCommandExecutor extends CommandExecutor {
     private void executeRegulatoryRegionQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {
         RegulationMongoDBAdaptor regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(queryCommandOptions.species);
 
-        if (queryCommandOptions.resource != null) {
-            switch (queryCommandOptions.resource) {
-                case "info":
-                    query.append(RegulationDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
-                    Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
-                    while (iterator.hasNext()) {
-                        Object next = iterator.next();
-                        output.println(objectMapper.writeValueAsString(next));
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
+        // FIXME nativeIterator has been removed
+//        if (queryCommandOptions.resource != null) {
+//            switch (queryCommandOptions.resource) {
+//                case "info":
+//                    query.append(RegulationDBAdaptor.QueryParams.NAME.key(), queryCommandOptions.id);
+//                    Iterator iterator = regulationDBAdaptor.nativeIterator(query, queryOptions);
+//                    while (iterator.hasNext()) {
+//                        Object next = iterator.next();
+//                        output.println(objectMapper.writeValueAsString(next));
+//                    }
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
     }
 
     private void executeTranscriptQuery(Query query, QueryOptions queryOptions, PrintStream output) throws JsonProcessingException {

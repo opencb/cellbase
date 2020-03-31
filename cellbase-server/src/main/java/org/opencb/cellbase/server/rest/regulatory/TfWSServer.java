@@ -22,6 +22,7 @@ import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
+import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GeneManager;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -70,6 +72,8 @@ public class TfWSServer extends RegulatoryWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves the corresponding TFBS objects",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "cellType", value = ParamConstants.CELLTYPE,
+                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
@@ -88,10 +92,18 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getAllByTfbs(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf,
-                                 @DefaultValue("") @QueryParam("celltype") String celltype) {
+    public Response getAllByTfbs(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf) {
         try {
-            List<CellBaseDataResult> queryResults = regulatoryManager.getAllByTfbs(query, queryOptions, tf);
+            List<RegulationQuery> queries = new ArrayList<>();
+            String[] identifiers = tf.split(",");
+            for (String identifier : identifiers) {
+                RegulationQuery query = new RegulationQuery(uriParams);
+                query.setNames(Arrays.asList(identifier));
+                query.setFeatureTypes(Arrays.asList("TF_binding_site_motif", "TF_binding_site"));
+                queries.add(query);
+                logger.info("REST RegulationQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

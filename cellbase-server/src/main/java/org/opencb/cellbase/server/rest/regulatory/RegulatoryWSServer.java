@@ -19,11 +19,11 @@ package org.opencb.cellbase.server.rest.regulatory;
 import io.swagger.annotations.*;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.RegulationQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.GenericRestWSServer;
 
@@ -33,6 +33,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.Collections;
 
 @Path("/{apiVersion}/{species}/regulatory")
 @Produces("text/plain")
@@ -50,12 +51,39 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                               @DefaultValue("")
                               @QueryParam("assembly") String assembly,
                               @Context UriInfo uriInfo,
-                              @Context HttpServletRequest hsr) throws VersionException, SpeciesException, IOException, CellbaseException {
+                              @Context HttpServletRequest hsr) throws VersionException, IOException, CellbaseException {
         super(apiVersion, species, uriInfo, hsr);
         if (assembly == null) {
             assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
         }
         regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
+    }
+
+    @GET
+    @Path("/distinct")
+    @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values, e.g. biotype or chromosome",
+            value = "Get a unique list of values for a given field.")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "region",
+                    value = ParamConstants.REGION_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "featureClass",
+                    value = ParamConstants.REGULATION_FEATURE_CLASSES,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = "featureType",
+                    value = ParamConstants.REGULATION_FEATURE_TYPES,
+                    required = false, dataType = "java.util.List", paramType = "query")
+    })
+    public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
+            value = "Name of column to return, e.g. featureType or featureClass") String field) {
+        try {
+            copyToFacet("field", field);
+            RegulationQuery query = new RegulationQuery(uriParams);
+            CellBaseDataResult<String> queryResults = regulatoryManager.distinct(query);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
     }
 
     @GET
@@ -67,16 +95,14 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureClass",
-                    value = "Comma separated list of regulatory region classes, e.g.: "
-                            + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
-                            + "list of available regulatory types: "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureClass",
+                    value = ParamConstants.REGULATION_FEATURE_CLASSES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureTypes() {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResults = regulatoryManager.getFeatureTypes(query);
+            RegulationQuery query = new RegulationQuery(uriParams);
+            query.setIncludes(Collections.singletonList("featureType"));
+            CellBaseDataResult<String> queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -91,16 +117,14 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
-                    value = "Comma separated list of regulatory region types, e.g.: "
-                            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
-                            + "list of available regulatory types: "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
+                    value = ParamConstants.REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureClasses() {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResults = regulatoryManager.getFeatureClasses(query);
+            RegulationQuery query = new RegulationQuery(uriParams);
+            query.setIncludes(Collections.singletonList("featureClass"));
+            CellBaseDataResult queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -119,16 +143,10 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
-                    value = "Comma separated list of regulatory region types, e.g.: "
-                            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
-                            + "list of available regulatory types: "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureType\n ",
+                    value = ParamConstants.REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureClass",
-                    value = "Comma separated list of regulatory region classes, e.g.: "
-                            + "Histone,Transcription Factor. Exact text matches will be returned. For a full"
-                            + "list of available regulatory types: "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/latest/hsapiens/regulatory/featureClass",
+                    value = ParamConstants.REGULATION_FEATURE_CLASSES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -146,8 +164,8 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     })
     public Response getAll() {
         try {
-
-            CellBaseDataResult queryResults = regulatoryManager.search(query, queryOptions);
+            RegulationQuery query = new RegulationQuery(uriParams);
+            CellBaseDataResult<RegulatoryFeature> queryResults = regulatoryManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
