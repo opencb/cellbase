@@ -77,6 +77,7 @@ public class DownloadManager {
     private static final String GSD_NAME = "Genomic super duplications";
     private static final String WM_NAME = "WindowMasker";
     private static final String GNOMAD_NAME = "gnomAD";
+    private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
 
     private CellBaseConfiguration configuration;
     private Logger logger;
@@ -247,7 +248,19 @@ public class DownloadManager {
         downloadGeneExpressionAtlas(geneFolder);
         downloadGeneDiseaseAnnotation(geneFolder);
         downloadGnomad(geneFolder);
+        downloadGO(geneFolder);
+        // FIXME
 //        runGeneExtraInfo(geneFolder);
+    }
+
+    private void downloadGO(Path geneFolder) throws IOException, InterruptedException {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading go annotation...");
+            String url = configuration.getDownload().getGoAnnotation().getHost();
+            downloadFile(url, geneFolder.resolve("goa_human.gaf.gz").toString());
+            saveVersionData(EtlCommons.GENE_DATA, GO_ANNOTATION_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    geneFolder.resolve("goAnnotationVersion.json"));
+        }
     }
 
     private void downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
