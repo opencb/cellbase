@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
@@ -58,6 +59,7 @@ public class GeneParser extends CellBaseParser {
     private Path hpoFile;
     private Path disgenetFile;
     private Path gnomadFile;
+    private Path geneOntologyAnnotationFile;
     private Path genomeSequenceFilePath;
     private boolean flexibleGTFParsing;
 
@@ -101,6 +103,7 @@ public class GeneParser extends CellBaseParser {
                 geneDirectoryPath.resolve("phenotype_to_genes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
+                geneDirectoryPath.resolve("goa_human.gaf.gz"),
                 genomeSequenceFastaFile, speciesConfiguration, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -111,6 +114,7 @@ public class GeneParser extends CellBaseParser {
 
     public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
+                      Path geneOntologyAnnotationFile,
                       Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
                       CellBaseSerializer serializer) {
         super(serializer);
@@ -124,6 +128,7 @@ public class GeneParser extends CellBaseParser {
         this.hpoFile = hpoFile;
         this.disgenetFile = disgenetFile;
         this.gnomadFile = gnomadFile;
+        this.geneOntologyAnnotationFile = geneOntologyAnnotationFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -152,6 +157,9 @@ public class GeneParser extends CellBaseParser {
 
         // Transcript and Gene constraint scores annotation
         Map<String, List<Constraint>> constraints = GeneParserUtils.getConstraints(gnomadFile);
+
+        // Protein to gene ontology term
+        Map<String, List<OntologyAnnotation>> ontologyAnnotations = GeneParserUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
@@ -222,8 +230,11 @@ public class GeneParser extends CellBaseParser {
                 exon = exonDict.get(transcript.getId() + "_" + exon.getExonNumber());
                 if (gtf.getFeature().equalsIgnoreCase("CDS")) {
                     cds = processExons(transcript, exon, cdna, cds, gtf);
+                    String proteinId = gtf.getAttributes().get("protein_id");
                     // no strand dependent
-                    transcript.setProteinID(gtf.getAttributes().get("protein_id"));
+                    transcript.setProteinID(proteinId);
+
+                    addOntologyAnnotations(ontologyAnnotations, transcript, proteinId);
                 }
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
@@ -240,6 +251,25 @@ public class GeneParser extends CellBaseParser {
         gtfReader.close();
         serializer.close();
         fastaIndexManager.close();
+    }
+
+    private void addOntologyAnnotations(Map<String, List<OntologyAnnotation>> ontologyAnnotations, Transcript transcript,
+                                        String proteinId) {
+        List<OntologyAnnotation> annotations = ontologyAnnotations.get(proteinId);
+        if (CollectionUtils.isEmpty(annotations)) {
+            return;
+        }
+        TranscriptAnnotation annotation = transcript.getAnnotation();
+        // some transcripts won't have annotation
+        if (annotation == null) {
+            annotation = new TranscriptAnnotation(new ArrayList<>());
+            transcript.setAnnotation(annotation);
+        }
+        if (annotation.getOntologyAnnotations() == null) {
+            annotation.setOntologyAnnotations(annotations);
+        } else {
+            annotation.getOntologyAnnotations().addAll(annotations);
+        }
     }
 
     protected int processExons(Transcript transcript, Exon exon, int cdna, int cds, Gtf gtf) {

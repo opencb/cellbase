@@ -18,8 +18,10 @@ package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
+import org.opencb.biodata.formats.gaf.GafParser;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.Constraint;
+import org.opencb.biodata.models.core.OntologyAnnotation;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
@@ -300,5 +302,16 @@ public class GeneParserUtils {
             return;
         }
         constraints.add(constraint);
+    }
+
+    public static Map<String, List<OntologyAnnotation>> getOntologyAnnotations(Path goaFile) throws IOException {
+        Map<String, List<OntologyAnnotation>> annotations = new HashMap<>();
+        if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
+            logger.info("Loading GO annotation from '{}'", goaFile);
+            BufferedReader br = FileUtils.newBufferedReader(goaFile);
+            GafParser parser = new GafParser();
+            annotations = parser.parseGaf(br);
+        }
+        return annotations;
     }
 }
