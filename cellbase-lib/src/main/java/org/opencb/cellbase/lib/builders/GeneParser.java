@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
@@ -37,7 +36,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.*;
 
 public class GeneParser extends CellBaseParser {
@@ -159,7 +159,8 @@ public class GeneParser extends CellBaseParser {
         Map<String, List<Constraint>> constraints = GeneParserUtils.getConstraints(gnomadFile);
 
         // Protein to gene ontology term
-        Map<String, List<OntologyAnnotation>> ontologyAnnotations = GeneParserUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
+        Map<String, List<OntologyAnnotation>> proteinToOntologyAnnotations
+                = GeneParserUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();
@@ -193,7 +194,8 @@ public class GeneParser extends CellBaseParser {
 
             // Check if Transcript exist in the Gene Set of transcripts
             if (!transcriptDict.containsKey(transcriptId)) {
-                transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tfbsMap, constraints, gtf, transcriptId);
+                transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tfbsMap, constraints, gtf, transcriptId,
+                        proteinToOntologyAnnotations);
             } else {
                 transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
             }
@@ -233,8 +235,6 @@ public class GeneParser extends CellBaseParser {
                     String proteinId = gtf.getAttributes().get("protein_id");
                     // no strand dependent
                     transcript.setProteinID(proteinId);
-
-                    addOntologyAnnotations(ontologyAnnotations, transcript, proteinId);
                 }
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
@@ -251,25 +251,6 @@ public class GeneParser extends CellBaseParser {
         gtfReader.close();
         serializer.close();
         fastaIndexManager.close();
-    }
-
-    private void addOntologyAnnotations(Map<String, List<OntologyAnnotation>> ontologyAnnotations, Transcript transcript,
-                                        String proteinId) {
-        List<OntologyAnnotation> annotations = ontologyAnnotations.get(proteinId);
-        if (CollectionUtils.isEmpty(annotations)) {
-            return;
-        }
-        TranscriptAnnotation annotation = transcript.getAnnotation();
-        // some transcripts won't have annotation
-        if (annotation == null) {
-            annotation = new TranscriptAnnotation(new ArrayList<>());
-            transcript.setAnnotation(annotation);
-        }
-        if (annotation.getOntologyAnnotations() == null) {
-            annotation.setOntologyAnnotations(annotations);
-        } else {
-            annotation.getOntologyAnnotations().addAll(annotations);
-        }
     }
 
     protected int processExons(Transcript transcript, Exon exon, int cdna, int cds, Gtf gtf) {
@@ -340,13 +321,16 @@ public class GeneParser extends CellBaseParser {
 
     private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
                                      Map<String, Fasta> cDnaSequencesMap, Map<String, SortedSet<Gff2>> tfbsMap,
-                                     Map<String, List<Constraint>> constraints, Gtf gtf, String transcriptId) {
+                                     Map<String, List<Constraint>> constraints, Gtf gtf, String transcriptId, Map<String,
+                                     List<OntologyAnnotation>> proteinToOntologyAnnotations) {
         Transcript transcript; // TODO: transcript tfbs should be a list and not an array list
         String transcriptChrosome = gtf.getSequenceName().replaceFirst("chr", "");
         ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChrosome, tfbsMap);
         Map<String, String> gtfAttributes = gtf.getAttributes();
+        List<OntologyAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
+                proteinToOntologyAnnotations);
 
-        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(constraints.get(transcriptId));
+        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(constraints.get(transcriptId), ontologyAnnotations);
 
         transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                 (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
@@ -379,6 +363,22 @@ public class GeneParser extends CellBaseParser {
         // Do not change order!! size()-1 is the index of the transcript ID
         transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);
         return transcript;
+    }
+
+    private List<OntologyAnnotation> getOntologyAnnotations(ArrayList<Xref> xrefs,
+                                                            Map<String, List<OntologyAnnotation>> proteinToOntologyAnnotations) {
+        if (xrefs == null || proteinToOntologyAnnotations == null) {
+            return null;
+        }
+        List<OntologyAnnotation> annotations = new ArrayList<>();
+        for (Xref xref : xrefs) {
+            if (xref.getDbName().equals("uniprotkb_acc")) {
+                if (proteinToOntologyAnnotations.get(xref.getId()) != null) {
+                    annotations.addAll(proteinToOntologyAnnotations.get(xref.getId()));
+                }
+            }
+        }
+        return annotations;
     }
 
     private Gene getGene(Gene gene, Map<String, String> geneDescriptionMap, Map<String, List<Expression>> geneExpressionMap,

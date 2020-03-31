@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.builders;
 
 import org.junit.Test;
 import org.opencb.biodata.models.core.Constraint;
+import org.opencb.biodata.models.core.OntologyAnnotation;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -194,5 +196,21 @@ public class GeneParserUtilsTest {
         List<Constraint> geneConstraints = constraints.get("ENSG00000121410");
         assertEquals(5, geneConstraints.size());
         assertEquals(expected, geneConstraints);
+    }
+
+    @Test
+    public void testOntologyAnnotations() throws Exception {
+        Path goafile = Paths.get(getClass().getResource("/gene/goa_human.gaf.gz").getFile());
+        Map<String, List<OntologyAnnotation>> results = GeneParserUtils.getOntologyAnnotations(goafile);
+        assertEquals(1, results.size());
+
+        List<OntologyAnnotation> annotations = results.get("A0A024RBG1");
+        assertEquals(4, annotations.size());
+
+        OntologyAnnotation annotation0 = annotations.get(0);
+        assertEquals("GO:0003723", annotation0.getOboTermId());
+        assertEquals("IEA", annotation0.getEvidenceCodes().get(0));
+        assertNull(annotation0.getQualifier());
+        assertEquals("UniProtKB-KW:KW-0694", annotation0.getPublications().get(0));
     }
 }
