@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.lang.math.NumberUtils;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.cellbase.lib.builders.CellBaseParser;
+import org.opencb.cellbase.lib.builders.CellBaseBuilder;
 import org.opencb.cellbase.core.common.clinical.gwas.Gwas;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasStudy;
 import org.opencb.cellbase.core.common.clinical.gwas.GwasTest;
@@ -41,7 +41,7 @@ import java.util.Map;
  * @since October 08, 2014
  */
 @Deprecated
-public class GwasParser extends CellBaseParser {
+public class GwasBuilder extends CellBaseBuilder {
 
     private static final int REF = 0;
     private static final int ALT = 1;
@@ -53,7 +53,7 @@ public class GwasParser extends CellBaseParser {
     private int invalidChromosome;
     private int gwasLinesNotFoundInDbsnp;
 
-    public GwasParser(Path gwasFile, Path dbSnpTabixFilePath, CellBaseSerializer serializer) {
+    public GwasBuilder(Path gwasFile, Path dbSnpTabixFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.gwasFile = gwasFile;
         this.dbSnpTabixFilePath = dbSnpTabixFilePath;

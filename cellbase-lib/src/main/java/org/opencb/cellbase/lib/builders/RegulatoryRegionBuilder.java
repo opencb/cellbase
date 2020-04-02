@@ -34,7 +34,7 @@ import java.util.*;
  * Date: 4/10/13
  * Time: 10:14 AM
  */
-public class RegulatoryRegionParser extends CellBaseParser {
+public class RegulatoryRegionBuilder extends CellBaseBuilder {
 
     private static final int CHUNK_SIZE = 2000;
     private static final String REGULATORY_FEATURES = "regulatory_features";
@@ -47,7 +47,7 @@ public class RegulatoryRegionParser extends CellBaseParser {
     private static final String MOTIF_FEATURE_TYPE = "motif_feature_type";
     private Path regulatoryRegionPath;
 
-    public RegulatoryRegionParser(Path regulatoryRegionFilesDir, CellBaseSerializer serializer) {
+    public RegulatoryRegionBuilder(Path regulatoryRegionFilesDir, CellBaseSerializer serializer) {
         super(serializer);
 
         this.regulatoryRegionPath = regulatoryRegionFilesDir;

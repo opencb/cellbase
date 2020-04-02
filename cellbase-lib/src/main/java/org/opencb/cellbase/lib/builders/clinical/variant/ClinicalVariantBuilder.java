@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.lib.EtlCommons;
-import org.opencb.cellbase.lib.builders.CellBaseParser;
+import org.opencb.cellbase.lib.builders.CellBaseBuilder;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
@@ -36,7 +36,7 @@ import java.nio.file.Paths;
 /**
  * Created by fjlopez on 26/09/16.
  */
-public class ClinicalVariantParser extends CellBaseParser {
+public class ClinicalVariantBuilder extends CellBaseBuilder {
 
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
@@ -55,8 +55,8 @@ public class ClinicalVariantParser extends CellBaseParser {
     private boolean normalize = true;
 
 
-    public ClinicalVariantParser(Path clinicalVariantFolder, boolean normalize, Path genomeSequenceFilePath,
-                                 String assembly, CellBaseSerializer serializer) {
+    public ClinicalVariantBuilder(Path clinicalVariantFolder, boolean normalize, Path genomeSequenceFilePath,
+                                  String assembly, CellBaseSerializer serializer) {
         this(clinicalVariantFolder.resolve(EtlCommons.CLINVAR_XML_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE),
                 clinicalVariantFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE),
@@ -73,12 +73,12 @@ public class ClinicalVariantParser extends CellBaseParser {
                 genomeSequenceFilePath, assembly, serializer);
     }
 
-    public ClinicalVariantParser(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
-                                 Path clinvarEFOFile, Path cosmicFile, Path gwasFile, Path dbsnpFile,
-                                 Path iarctp53GermlineFile, Path iarctp53GermlineReferencesFile,
-                                 Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile, Path docmFile,
-                                 boolean normalize, Path genomeSequenceFilePath, String assembly,
-                                 CellBaseSerializer serializer) {
+    public ClinicalVariantBuilder(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
+                                  Path clinvarEFOFile, Path cosmicFile, Path gwasFile, Path dbsnpFile,
+                                  Path iarctp53GermlineFile, Path iarctp53GermlineReferencesFile,
+                                  Path iarctp53SomaticFile, Path iarctp53SomaticReferencesFile, Path docmFile,
+                                  boolean normalize, Path genomeSequenceFilePath, String assembly,
+                                  CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXMLFile = clinvarXMLFile;
         this.clinvarSummaryFile = clinvarSummaryFile;

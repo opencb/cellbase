@@ -24,13 +24,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class GenomeSequenceFastaParser extends CellBaseParser {
+public class GenomeSequenceFastaBuilder extends CellBaseBuilder {
 
     private Path genomeReferenceFastaFile;
 
     private static final int CHUNK_SIZE = 2000;
 
-    public GenomeSequenceFastaParser(Path genomeReferenceFastaFile, CellBaseSerializer serializer) {
+    public GenomeSequenceFastaBuilder(Path genomeReferenceFastaFile, CellBaseSerializer serializer) {
         super(serializer);
         this.genomeReferenceFastaFile = genomeReferenceFastaFile;
     }

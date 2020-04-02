@@ -46,7 +46,7 @@ public class RepeatsParserTest extends GenericParserTest<Repeat> {
     public void testParse() throws Exception {
         Path repeatsFilesDir = Paths.get(getClass().getResource("/repeats").getPath());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "repeats.test");
-        (new RepeatsParser(repeatsFilesDir, serializer)).parse();
+        (new RepeatsBuilder(repeatsFilesDir, serializer)).parse();
         serializer.close();
         assertEquals(loadRepeatSet(Paths.get(getClass().getResource("/repeats/repeats.test.json.gz").getFile())),
                 loadRepeatSet(Paths.get("/tmp/repeats.test.json.gz")));

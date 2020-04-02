@@ -31,13 +31,13 @@ import java.nio.file.Path;
 /**
  * Created by fjlopez on 05/05/17.
  */
-public class RepeatsParser extends CellBaseParser {
+public class RepeatsBuilder extends CellBaseBuilder {
     private static final String TRF = "trf";
     private static final String GSD = "genomicSuperDup";
     private static final String WM = "windowMasker";
     private final Path filesDir;
 
-    public RepeatsParser(Path filesDir, CellBaseFileSerializer serializer) {
+    public RepeatsBuilder(Path filesDir, CellBaseFileSerializer serializer) {
         super(serializer);
         this.filesDir = filesDir;
     }

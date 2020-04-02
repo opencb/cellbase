@@ -31,11 +31,11 @@ import java.util.*;
 /**
  * Created by antonior on 10/16/14.
  */
-public class GeneExpressionAtlasParser extends CellBaseParser {
+public class GeneExpressionAtlasBuilder extends CellBaseBuilder {
 
     private Path geneAtlasDirectoryPath;
 
-    public GeneExpressionAtlasParser(Path geneAtlasDirectoryPath, CellBaseSerializer serializer) {
+    public GeneExpressionAtlasBuilder(Path geneAtlasDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
         this.geneAtlasDirectoryPath = geneAtlasDirectoryPath;
 

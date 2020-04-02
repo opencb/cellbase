@@ -33,7 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ProteinParser extends CellBaseParser {
+public class ProteinBuilder extends CellBaseBuilder {
 
     private Path uniprotFilesDir;
     private Path interproFilePath;
@@ -43,11 +43,11 @@ public class ProteinParser extends CellBaseParser {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public ProteinParser(Path uniprotFilesDir, String species, CellBaseSerializer serializer) {
+    public ProteinBuilder(Path uniprotFilesDir, String species, CellBaseSerializer serializer) {
         this(uniprotFilesDir, null, species, serializer);
     }
 
-    public ProteinParser(Path uniprotFilesDir, Path interproFilePath, String species, CellBaseSerializer serializer) {
+    public ProteinBuilder(Path uniprotFilesDir, Path interproFilePath, String species, CellBaseSerializer serializer) {
         super(serializer);
 
         this.uniprotFilesDir = uniprotFilesDir;

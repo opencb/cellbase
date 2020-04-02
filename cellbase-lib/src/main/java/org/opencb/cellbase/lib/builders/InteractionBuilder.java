@@ -33,12 +33,12 @@ import java.util.*;
  * Time: 4:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class InteractionParser extends CellBaseParser {
+public class InteractionBuilder extends CellBaseBuilder {
 
     private final String species;
     private final Path psimiTabFile;
 
-    public InteractionParser(Path psimiTabFile, String species, CellBaseSerializer serializer) {
+    public InteractionBuilder(Path psimiTabFile, String species, CellBaseSerializer serializer) {
         super(serializer);
         this.species = species;
         this.psimiTabFile = psimiTabFile;

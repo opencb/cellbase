@@ -27,7 +27,7 @@ import org.opencb.biodata.models.variant.annotation.exceptions.SOTermNotAvailabl
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.biodata.models.variation.TranscriptVariation;
 
-import org.opencb.cellbase.lib.builders.CellBaseParser;
+import org.opencb.cellbase.lib.builders.CellBaseBuilder;
 import org.opencb.cellbase.lib.builders.utils.VariationUtils;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 
@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 
 import static org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils.getSequenceOntologyTerms;
 
-public class VariationParser extends CellBaseParser {
+public class VariationBuilder extends CellBaseBuilder {
 
     protected static final String PREPROCESSED_VARIATION_FILENAME = "variation.sorted.txt";
 
@@ -63,7 +63,7 @@ public class VariationParser extends CellBaseParser {
     private VariationSynonymFile variationSynonymFile;
     private ObjectWriter jsonObjectWriter;
 
-    public VariationParser(Path variationDirectoryPath, CellBaseFileSerializer serializer) {
+    public VariationBuilder(Path variationDirectoryPath, CellBaseFileSerializer serializer) {
         super(serializer);
         fileSerializer = serializer;
         this.variationDirectoryPath = variationDirectoryPath;

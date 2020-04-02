@@ -16,7 +16,7 @@
 
 package org.opencb.cellbase.lib.builders.clinical.variant;
 
-import org.opencb.cellbase.lib.builders.CellBaseParser;
+import org.opencb.cellbase.lib.builders.CellBaseBuilder;
 import org.opencb.cellbase.core.common.clinical.Cosmic;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * @since October 08, 2014
  */
 @Deprecated
-public class CosmicParser extends CellBaseParser {
+public class CosmicBuilder extends CellBaseBuilder {
 
     private final Path cosmicFilePath;
     private static final String CHROMOSOME = "CHR";
@@ -62,7 +62,7 @@ public class CosmicParser extends CellBaseParser {
 
     private static final String VARIANT_STRING_PATTERN = "[ACGT]*";
 
-    public CosmicParser(Path cosmicFilePath, CellBaseSerializer serializer, String assembly) {
+    public CosmicBuilder(Path cosmicFilePath, CellBaseSerializer serializer, String assembly) {
         super(serializer);
         this.cosmicFilePath = cosmicFilePath;
         this.compileRegularExpressionPatterns();

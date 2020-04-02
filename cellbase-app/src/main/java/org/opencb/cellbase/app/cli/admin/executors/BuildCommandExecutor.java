@@ -29,8 +29,8 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.builders.*;
-import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantParser;
-import org.opencb.cellbase.lib.builders.variation.VariationParser;
+import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
+import org.opencb.cellbase.lib.builders.variation.VariationBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,7 +117,7 @@ public class BuildCommandExecutor extends CommandExecutor {
                     String buildOption = buildOptions[i];
 
                     logger.info("Building '{}' data", buildOption);
-                    CellBaseParser parser = null;
+                    CellBaseBuilder parser = null;
                     switch (buildOption) {
                         case EtlCommons.GENOME_INFO_DATA:
                             buildGenomeInfo();
@@ -184,30 +184,30 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private CellBaseParser buildStructuralVariants() {
+    private CellBaseBuilder buildStructuralVariants() {
         Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
         copyVersionFiles(Arrays.asList(structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE)));
         Path structuralVariantsFile = structuralVariantsFolder.resolve(EtlCommons.DGV_FILE);
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.STRUCTURAL_VARIANTS_JSON,
                 true);
-        return new DgvParser(structuralVariantsFile, serializer);
+        return new DgvBuilder(structuralVariantsFile, serializer);
     }
 
-    private CellBaseParser buildRepeats() {
+    private CellBaseBuilder buildRepeats() {
         Path repeatsFilesDir = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.TRF_VERSION_FILE)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.GSD_VERSION_FILE)));
         copyVersionFiles(Arrays.asList(repeatsFilesDir.resolve(EtlCommons.WM_VERSION_FILE)));
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.REPEATS_JSON);
-        return new RepeatsParser(repeatsFilesDir, serializer);
+        return new RepeatsBuilder(repeatsFilesDir, serializer);
     }
 
-    private CellBaseParser buildObo() {
+    private CellBaseBuilder buildObo() {
         Path oboDir = downloadFolder.resolve(EtlCommons.OBO_DATA);
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.OBO_JSON);
-        return new OboParser(oboDir, serializer);
+        return new OboBuilder(oboDir, serializer);
     }
 
     private void copyVersionFiles(List<Path> pathList) {
@@ -253,14 +253,14 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private CellBaseParser buildGenomeSequence() {
+    private CellBaseBuilder buildGenomeSequence() {
         copyVersionFiles(Collections.singletonList(downloadFolder.resolve("genome/genomeVersion.json")));
         Path fastaFile = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "genome_sequence");
-        return new GenomeSequenceFastaParser(fastaFile, serializer);
+        return new GenomeSequenceFastaBuilder(fastaFile, serializer);
     }
 
-    private CellBaseParser buildGene() {
+    private CellBaseBuilder buildGene() {
         Path geneFolderPath = downloadFolder.resolve("gene");
         copyVersionFiles(Arrays.asList(geneFolderPath.resolve("dgidbVersion.json"),
                 geneFolderPath.resolve("ensemblCoreVersion.json"), geneFolderPath.resolve("uniprotXrefVersion.json"),
@@ -269,42 +269,42 @@ public class BuildCommandExecutor extends CommandExecutor {
                 geneFolderPath.resolve("gnomadVersion.json")));
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "gene");
-        return new GeneParser(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
+        return new GeneBuilder(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
     }
 
 
-    private CellBaseParser buildVariation() {
+    private CellBaseBuilder buildVariation() {
         Path variationFolderPath = downloadFolder.resolve("variation");
         copyVersionFiles(Arrays.asList(variationFolderPath.resolve("ensemblVariationVersion.json")));
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, null, true, true, true);
-        return new VariationParser(variationFolderPath, serializer);
+        return new VariationBuilder(variationFolderPath, serializer);
     }
 
-    private CellBaseParser buildCadd() {
+    private CellBaseBuilder buildCadd() {
         Path variationFunctionalScorePath = downloadFolder.resolve("variation_functional_score");
         copyVersionFiles(Arrays.asList(variationFunctionalScorePath.resolve("caddVersion.json")));
         Path caddFilePath = variationFunctionalScorePath.resolve("whole_genome_SNVs.tsv.gz");
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "cadd");
-        return new CaddScoreParser(caddFilePath, serializer);
+        return new CaddScoreBuilder(caddFilePath, serializer);
     }
 
-    private CellBaseParser buildRegulation() {
+    private CellBaseBuilder buildRegulation() {
         Path regulatoryRegionFilesDir = downloadFolder.resolve("regulation");
         copyVersionFiles(Arrays.asList(regulatoryRegionFilesDir.resolve("ensemblRegulationVersion.json"),
                 downloadFolder.resolve("mirbase/mirbaseVersion.json"),
                 regulatoryRegionFilesDir.resolve("targetScanVersion.json"),
                 regulatoryRegionFilesDir.resolve("miRTarBaseVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_region");
-        return new RegulatoryRegionParser(regulatoryRegionFilesDir, serializer);
+        return new RegulatoryRegionBuilder(regulatoryRegionFilesDir, serializer);
 
     }
 
-    private CellBaseParser buildProtein() {
+    private CellBaseBuilder buildProtein() {
         Path proteinFolder = downloadFolder.resolve("protein");
         copyVersionFiles(Arrays.asList(proteinFolder.resolve("uniprotVersion.json"),
                 proteinFolder.resolve("interproVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "protein");
-        return new ProteinParser(proteinFolder.resolve("uniprot_chunks"),
+        return new ProteinBuilder(proteinFolder.resolve("uniprot_chunks"),
                 downloadFolder.resolve("protein").resolve("protein2ipr.dat.gz"), speciesConfiguration.getScientificName(), serializer);
     }
 
@@ -330,15 +330,15 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private CellBaseParser getInteractionParser() {
+    private CellBaseBuilder getInteractionParser() {
         Path proteinFolder = downloadFolder.resolve("protein");
         Path psimiTabFile = proteinFolder.resolve("intact.txt");
         copyVersionFiles(Arrays.asList(proteinFolder.resolve("intactVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "protein_protein_interaction");
-        return new InteractionParser(psimiTabFile, speciesConfiguration.getScientificName(), serializer);
+        return new InteractionBuilder(psimiTabFile, speciesConfiguration.getScientificName(), serializer);
     }
 
-    private CellBaseParser buildConservation() {
+    private CellBaseBuilder buildConservation() {
         Path conservationFilesDir = downloadFolder.resolve("conservation");
         copyVersionFiles(Arrays.asList(conservationFilesDir.resolve("gerpVersion.json"),
                 conservationFilesDir.resolve("phastConsVersion.json"),
@@ -346,17 +346,17 @@ public class BuildCommandExecutor extends CommandExecutor {
         // TODO: chunk size is not really used in ConvervedRegionParser, remove?
         int conservationChunkSize = MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder);
-        return new ConservationParser(conservationFilesDir, conservationChunkSize, serializer);
+        return new ConservationBuilder(conservationFilesDir, conservationChunkSize, serializer);
     }
 
-    private CellBaseParser buildClinicalVariants() {
+    private CellBaseBuilder buildClinicalVariants() {
         Path clinicalVariantFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
         copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("clinvarVersion.json")));
         copyVersionFiles(Arrays.asList(clinicalVariantFolder.resolve("gwasVersion.json")));
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder,
                 EtlCommons.CLINICAL_VARIANTS_JSON_FILE.replace(".json.gz", ""), true);
-        return new ClinicalVariantParser(clinicalVariantFolder, normalize, getFastaReferenceGenome(),
+        return new ClinicalVariantBuilder(clinicalVariantFolder, normalize, getFastaReferenceGenome(),
                 buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
                 serializer);
     }

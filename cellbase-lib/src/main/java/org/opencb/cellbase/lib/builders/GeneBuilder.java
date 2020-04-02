@@ -40,7 +40,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.*;
 
-public class GeneParser extends CellBaseParser {
+public class GeneBuilder extends CellBaseBuilder {
 
     private static final String ENSEMBL_GTF_DBNAME = "ensembl_gtf";
     private static final java.lang.String ENSEMBL_GTF_DISPLAY = "Ensembl GTF";
@@ -87,15 +87,15 @@ public class GeneParser extends CellBaseParser {
     private String feature;
     private Gtf nextGtfToReturn;
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                      SpeciesConfiguration speciesConfiguration,
-                      CellBaseSerializer serializer) {
+    public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
+                       SpeciesConfiguration speciesConfiguration,
+                       CellBaseSerializer serializer) {
         this(geneDirectoryPath, genomeSequenceFastaFile, speciesConfiguration, false, serializer);
     }
 
-    public GeneParser(Path geneDirectoryPath, Path genomeSequenceFastaFile,
-                      SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                      CellBaseSerializer serializer) {
+    public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
+                       SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
+                       CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("motif_features.gff.gz"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
@@ -112,11 +112,11 @@ public class GeneParser extends CellBaseParser {
         this.genomeSequenceFilePath = genomeSequenceFastaFile;
     }
 
-    public GeneParser(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
-                      Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
-                      Path geneOntologyAnnotationFile,
-                      Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                      CellBaseSerializer serializer) {
+    public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
+                       Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
+                       Path geneOntologyAnnotationFile,
+                       Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
+                       CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -144,23 +144,24 @@ public class GeneParser extends CellBaseParser {
         int cdna = 1;
         int cds = 1;
         Map<String, String> geneDescriptionMap = getGeneDescriptionMap();
-        Map<String, ArrayList<Xref>> xrefMap = GeneParserUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
+        Map<String, ArrayList<Xref>> xrefMap = GeneBuilderUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
-        Map<String, SortedSet<Gff2>> tfbsMap = GeneParserUtils.getTfbsMap(tfbsFile);
+        Map<String, SortedSet<Gff2>> tfbsMap = GeneBuilderUtils.getTfbsMap(tfbsFile);
 
         // Gene annotation data
-        Map<String, List<Expression>> geneExpressionMap = GeneParserUtils
+        Map<String, List<Expression>> geneExpressionMap = GeneBuilderUtils
                 .getGeneExpressionMap(speciesConfiguration.getScientificName(), geneExpressionFile);
-        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
-        Map<String, List<GeneTraitAssociation>> diseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
+        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneBuilderUtils.getGeneDrugMap(geneDrugFile);
+        Map<String, List<GeneTraitAssociation>> diseaseAssociationMap
+                = GeneBuilderUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
 
         // Transcript and Gene constraint scores annotation
-        Map<String, List<Constraint>> constraints = GeneParserUtils.getConstraints(gnomadFile);
+        Map<String, List<Constraint>> constraints = GeneBuilderUtils.getConstraints(gnomadFile);
 
         // Protein to gene ontology term
         Map<String, List<OntologyAnnotation>> proteinToOntologyAnnotations
-                = GeneParserUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
+                = GeneBuilderUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
 
         // Preparing the fasta file for fast accessing
         FastaIndexManager fastaIndexManager = getFastaIndexManager();

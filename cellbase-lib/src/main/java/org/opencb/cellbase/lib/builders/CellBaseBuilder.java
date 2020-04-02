@@ -23,13 +23,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by imedina on 30/08/14.
  */
-public abstract class CellBaseParser {
+public abstract class CellBaseBuilder {
 
     protected CellBaseSerializer serializer;
 
     protected Logger logger;
 
-    public CellBaseParser(CellBaseSerializer serializer) {
+    public CellBaseBuilder(CellBaseSerializer serializer) {
         logger = LoggerFactory.getLogger(this.getClass());
 
         this.serializer = serializer;

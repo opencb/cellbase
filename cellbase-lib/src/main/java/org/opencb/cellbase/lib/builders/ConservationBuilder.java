@@ -32,7 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ConservationParser extends CellBaseParser {
+public class ConservationBuilder extends CellBaseBuilder {
 
     private static final int CHUNK_SIZE = 2000;
 
@@ -48,16 +48,16 @@ public class ConservationParser extends CellBaseParser {
     // done
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
-    public ConservationParser(Path conservedRegionPath, CellBaseFileSerializer serializer) {
+    public ConservationBuilder(Path conservedRegionPath, CellBaseFileSerializer serializer) {
         this(conservedRegionPath, CHUNK_SIZE, serializer);
     }
 
-    public ConservationParser(Path conservedRegionPath, int chunkSize, CellBaseFileSerializer serializer) {
+    public ConservationBuilder(Path conservedRegionPath, int chunkSize, CellBaseFileSerializer serializer) {
         super(serializer);
         fileSerializer = serializer;
         this.conservedRegionPath = conservedRegionPath;
         this.chunkSize = chunkSize;
-        logger = LoggerFactory.getLogger(ConservationParser.class);
+        logger = LoggerFactory.getLogger(ConservationBuilder.class);
         outputFileNames = new HashMap<>();
     }
 

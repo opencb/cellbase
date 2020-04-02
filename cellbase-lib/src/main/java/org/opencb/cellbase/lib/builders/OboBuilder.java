@@ -26,12 +26,12 @@ import java.io.BufferedReader;
 import java.nio.file.Path;
 import java.util.List;
 
-public class OboParser extends CellBaseParser {
+public class OboBuilder extends CellBaseBuilder {
 
     private Path hpoFile;
     private Path goFile;
 
-    public OboParser(Path oboDirectoryPath, CellBaseSerializer serializer) {
+    public OboBuilder(Path oboDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
         hpoFile = oboDirectoryPath.resolve(EtlCommons.HPO_FILE);
         goFile = oboDirectoryPath.resolve(EtlCommons.GO_FILE);

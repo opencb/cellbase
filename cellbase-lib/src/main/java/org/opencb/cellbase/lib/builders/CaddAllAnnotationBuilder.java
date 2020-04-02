@@ -28,13 +28,14 @@ import java.nio.file.Path;
  * @author Luis Miguel Cruz.
  * @since October 08, 2014
  */
-public class CaddAllAnnotationParser extends CellBaseParser {
+@Deprecated
+public class CaddAllAnnotationBuilder extends CellBaseBuilder {
 
 
     private final Path caddFilePath;
     private final String chrName;
 
-    public CaddAllAnnotationParser(Path caddFilePath, String chrName, CellBaseSerializer serializer) {
+    public CaddAllAnnotationBuilder(Path caddFilePath, String chrName, CellBaseSerializer serializer) {
         super(serializer);
         this.caddFilePath = caddFilePath;
         this.chrName = chrName;

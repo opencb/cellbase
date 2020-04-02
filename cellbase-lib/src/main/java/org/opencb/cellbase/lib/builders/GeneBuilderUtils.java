@@ -44,9 +44,9 @@ import java.util.zip.GZIPInputStream;
 /**
  * Created by imedina on 12/11/15.
  */
-public class GeneParserUtils {
+public class GeneBuilderUtils {
 
-    private static Logger logger = LoggerFactory.getLogger(GeneParserUtils.class);
+    private static Logger logger = LoggerFactory.getLogger(GeneBuilderUtils.class);
 
 
     public static Map<String, SortedSet<Gff2>> getTfbsMap(Path tfbsFile) throws IOException, NoSuchMethodException, FileFormatException {

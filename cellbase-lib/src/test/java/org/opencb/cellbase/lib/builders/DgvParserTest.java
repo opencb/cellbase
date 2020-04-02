@@ -45,7 +45,7 @@ public class DgvParserTest {
     public void parse() throws Exception {
         Path dgvFile = Paths.get(getClass().getResource("/dgv.txt.gz").getFile());
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "dgv.test");
-        (new DgvParser(dgvFile, serializer)).parse();
+        (new DgvBuilder(dgvFile, serializer)).parse();
         serializer.close();
         assertEquals(loadDGVSet(Paths.get(getClass().getResource("/dgv.json.gz").getFile())),
                 loadDGVSet(Paths.get("/tmp/dgv.test.json.gz")));

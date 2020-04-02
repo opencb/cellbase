@@ -31,18 +31,19 @@ import java.util.Map;
 /**
  * Created by imedina on 06/11/15.
  */
-public class CaddScoreParser extends CellBaseParser {
+@Deprecated
+public class CaddScoreBuilder extends CellBaseBuilder {
 
     private Path caddFilePath;
 
     private static final int CHUNK_SIZE = 1000;
     private static final int DECIMAL_RESOLUTION = 100;
 
-    public CaddScoreParser(Path caddFilePath, CellBaseSerializer serializer) {
+    public CaddScoreBuilder(Path caddFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.caddFilePath = caddFilePath;
 
-        logger = LoggerFactory.getLogger(ConservationParser.class);
+        logger = LoggerFactory.getLogger(ConservationBuilder.class);
     }
 
     /* Example:

@@ -45,7 +45,7 @@ public class RegulatoryRegionParserTest extends GenericParserTest<RegulatoryFeat
         Path regulationFolder = Paths.get(getClass().getResource("/regulation").toURI());
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "regulatory_region", true);
-        (new RegulatoryRegionParser(regulationFolder, serializer)).parse();
+        (new RegulatoryRegionBuilder(regulationFolder, serializer)).parse();
         serializer.close();
 
         List<RegulatoryFeature> regulatoryFeatureList = loadSerializedObjects("/tmp/regulatory_region.json.gz");

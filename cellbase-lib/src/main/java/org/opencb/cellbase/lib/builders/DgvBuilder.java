@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * Created by fjlopez on 08/05/17.
  */
-public class DgvParser extends CellBaseParser {
+public class DgvBuilder extends CellBaseBuilder {
 
     private static final int VARIANT_SUBTYPE_COLUMN = 5;
     private static final int CHR_COLUMN = 1;
@@ -82,7 +82,7 @@ public class DgvParser extends CellBaseParser {
 
     private Map<String, Integer> unexpectedVariantSubtype;
 
-    public DgvParser(Path file, CellBaseSerializer serializer) {
+    public DgvBuilder(Path file, CellBaseSerializer serializer) {
         super(serializer);
         this.file = file;
     }

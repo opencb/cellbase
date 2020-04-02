@@ -34,11 +34,11 @@ import java.util.*;
  * @author Javi Lopez fjlopez@ebi.ac.uk
  */
 @Deprecated
-public class DisgenetParser extends CellBaseParser {
+public class DisgenetBuilder extends CellBaseBuilder {
 
     private Path disgenetFilePath;
 
-    public DisgenetParser(Path disgenetFilePath, CellBaseSerializer serializer) {
+    public DisgenetBuilder(Path disgenetFilePath, CellBaseSerializer serializer) {
         super(serializer);
         this.disgenetFilePath = disgenetFilePath;
     }

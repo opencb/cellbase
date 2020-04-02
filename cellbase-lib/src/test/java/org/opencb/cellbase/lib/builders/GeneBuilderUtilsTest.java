@@ -38,7 +38,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class GeneParserUtilsTest {
+public class GeneBuilderUtilsTest {
 
 //    @Test
 //    public void testGetTfbsMap() throws Exception {
@@ -68,7 +68,7 @@ public class GeneParserUtilsTest {
         // TODO test xref file too. but I don't know what it looks like.
 
         Path idmappingFile = Paths.get(getClass().getResource("/idmapping_selected.tab.gz").getFile());
-        Map<String, ArrayList<Xref>> xrefMap = GeneParserUtils.getXrefMap(null, idmappingFile);
+        Map<String, ArrayList<Xref>> xrefMap = GeneBuilderUtils.getXrefMap(null, idmappingFile);
         assertEquals(2, xrefMap.size());
 
         assertTrue(xrefMap.containsKey("ENST00000372839"));
@@ -94,7 +94,7 @@ public class GeneParserUtilsTest {
     @Test
     public void testGetGeneDrugMap() throws IOException {
         Path geneDrugFile = Paths.get(getClass().getResource("/gene/dgidb.tsv").getFile());
-        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneParserUtils.getGeneDrugMap(geneDrugFile);
+        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneBuilderUtils.getGeneDrugMap(geneDrugFile);
         assertEquals(1, geneDrugMap.size());
         assertTrue(geneDrugMap.containsKey("CDK7"));
         List<GeneDrugInteraction> interactions = geneDrugMap.get("CDK7");
@@ -111,7 +111,7 @@ public class GeneParserUtilsTest {
     @Test
     public void testGetGeneExpressionMap() throws IOException {
         Path geneExpressionFile = Paths.get(getClass().getResource("/gene/allgenes_updown_in_organism_part.tab.gz").getFile());
-        Map<String, List<Expression>> geneExpressionMap = GeneParserUtils.getGeneExpressionMap("Arabidopsis thaliana", geneExpressionFile);
+        Map<String, List<Expression>> geneExpressionMap = GeneBuilderUtils.getGeneExpressionMap("Arabidopsis thaliana", geneExpressionFile);
         assertEquals(2, geneExpressionMap.size());
         assertTrue(geneExpressionMap.containsKey("AT4G08410"));
 
@@ -163,7 +163,7 @@ public class GeneParserUtilsTest {
     @Test
     public void testGetConstraints() throws Exception {
         Path gnmoadFile = Paths.get(getClass().getResource("/gene/gnomad.v2.1.1.lof_metrics.by_transcript.txt.gz").getFile());
-        Map<String, List<Constraint>> constraints = GeneParserUtils.getConstraints(gnmoadFile);
+        Map<String, List<Constraint>> constraints = GeneBuilderUtils.getConstraints(gnmoadFile);
 
         Constraint constraint1 = new Constraint("gnomAD", "pLoF", "oe_mis", 1.0187);
         Constraint constraint2 = new Constraint("gnomAD", "pLoF", "oe_syn", 1.0252);
@@ -201,7 +201,7 @@ public class GeneParserUtilsTest {
     @Test
     public void testOntologyAnnotations() throws Exception {
         Path goafile = Paths.get(getClass().getResource("/gene/goa_human.gaf.gz").getFile());
-        Map<String, List<OntologyAnnotation>> results = GeneParserUtils.getOntologyAnnotations(goafile);
+        Map<String, List<OntologyAnnotation>> results = GeneBuilderUtils.getOntologyAnnotations(goafile);
         assertEquals(1, results.size());
 
         List<OntologyAnnotation> annotations = results.get("A0A024RBG1");

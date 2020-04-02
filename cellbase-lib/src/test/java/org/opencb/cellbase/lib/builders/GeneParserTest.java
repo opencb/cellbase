@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class GeneParserTest {
-    private GeneParser geneParser;
+    private GeneBuilder geneParser;
     private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null, null);
     public GeneParserTest() throws URISyntaxException {
         init();
@@ -46,7 +46,7 @@ public class GeneParserTest {
         Path genomeSequenceFastaFile = Paths.get(getClass().getResource("/gene/Homo_sapiens.GRCh38.fa.gz").toURI());
         Path geneDirectoryPath = Paths.get(getClass().getResource("/gene").toURI());
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "regulatory_region", true);
-        geneParser = new GeneParser(geneDirectoryPath, genomeSequenceFastaFile, SPECIES, serializer);
+        geneParser = new GeneBuilder(geneDirectoryPath, genomeSequenceFastaFile, SPECIES, serializer);
     }
 
     @Test

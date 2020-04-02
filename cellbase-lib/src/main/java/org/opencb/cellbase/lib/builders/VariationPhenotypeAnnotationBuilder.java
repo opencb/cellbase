@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * Created by imedina on 12/01/14.
  */
-public class VariationPhenotypeAnnotationParser extends CellBaseParser {
+public class VariationPhenotypeAnnotationBuilder extends CellBaseBuilder {
 
 
     private static final int CHUNK_SIZE = 1000;
@@ -54,7 +54,7 @@ public class VariationPhenotypeAnnotationParser extends CellBaseParser {
 
     private Path ensemblVariationDir;
 
-    public VariationPhenotypeAnnotationParser(Path ensemblVariationDir, CellBaseSerializer serializer) {
+    public VariationPhenotypeAnnotationBuilder(Path ensemblVariationDir, CellBaseSerializer serializer) {
         super(serializer);
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

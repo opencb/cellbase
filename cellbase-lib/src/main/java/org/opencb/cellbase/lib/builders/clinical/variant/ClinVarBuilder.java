@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
 import org.opencb.biodata.formats.variant.clinvar.v54jaxb.*;
 //import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
-import org.opencb.cellbase.lib.builders.CellBaseParser;
+import org.opencb.cellbase.lib.builders.CellBaseBuilder;
 import org.opencb.cellbase.core.common.clinical.ClinvarPublicSet;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
@@ -41,7 +41,7 @@ import java.util.zip.GZIPInputStream;
  * Created by imedina on 26/09/14.
  */
 @Deprecated
-public class ClinVarParser extends CellBaseParser {
+public class ClinVarBuilder extends CellBaseBuilder {
 
     private static final String ASSEMBLY_PREFIX = "GRCh";
     public static final String GRCH37_ASSEMBLY = "37";
@@ -57,8 +57,8 @@ public class ClinVarParser extends CellBaseParser {
     private Path clinvarSummaryFile;
     private Path efosFile;
 
-    public ClinVarParser(Path clinvarXmlFile, Path clinvarSummaryFile, Path efosFile, String assembly,
-                         CellBaseSerializer serializer) {
+    public ClinVarBuilder(Path clinvarXmlFile, Path clinvarSummaryFile, Path efosFile, String assembly,
+                          CellBaseSerializer serializer) {
         super(serializer);
         this.clinvarXmlFile = clinvarXmlFile;
         this.clinvarSummaryFile = clinvarSummaryFile;

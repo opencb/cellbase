@@ -39,7 +39,7 @@ public class CaddScoreParserTest {
         CellBaseSerializer cellBaseSerializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "cadd");
 
         Path inputPath = Paths.get(getClass().getResource("/cadd_example.txt.gz").toURI());
-        CaddScoreParser caddScoreParser = new CaddScoreParser(inputPath, cellBaseSerializer);
+        CaddScoreBuilder caddScoreParser = new CaddScoreBuilder(inputPath, cellBaseSerializer);
         caddScoreParser.parse();
 
         // Next values are taken from the generated file at /tmp

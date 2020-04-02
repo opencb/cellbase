@@ -60,7 +60,7 @@ public class VariationParserTest {
 
     @AfterAll
     public static void tearDownClass() throws Exception {
-        variationParserTestDirectory.resolve(VariationParser.PREPROCESSED_VARIATION_FILENAME + ".gz").toFile().delete();
+        variationParserTestDirectory.resolve(VariationBuilder.PREPROCESSED_VARIATION_FILENAME + ".gz").toFile().delete();
         variationParserTestDirectory.resolve(VariationFeatureFile.PREPROCESSED_VARIATION_FEATURE_FILENAME + ".gz").toFile().delete();
         variationParserTestDirectory.resolve(VariationTranscriptFile.PREPROCESSED_TRANSCRIPT_VARIATION_FILENAME + ".gz").toFile().delete();
         variationParserTestDirectory.resolve(VariationSynonymFile.PREPROCESSED_VARIATION_SYNONYM_FILENAME + ".gz").toFile().delete();
@@ -72,7 +72,7 @@ public class VariationParserTest {
     @Test
     public void testParse() throws Exception {
         TestSerializer testSerializer = new TestSerializer();
-        VariationParser parser = new VariationParser(variationParserTestDirectory, testSerializer);
+        VariationBuilder parser = new VariationBuilder(variationParserTestDirectory, testSerializer);
         parser.parse();
 
         Set<String> outputFileNames = checkOutputFileNames(testSerializer.serializedVariants);
@@ -163,7 +163,7 @@ public class VariationParserTest {
     @Test
     public void testParseUsingPreprocessedFiles() throws Exception {
         TestSerializer testSerializer = new TestSerializer();
-        VariationParser parser = new VariationParser(variationParserTestDirectory, testSerializer);
+        VariationBuilder parser = new VariationBuilder(variationParserTestDirectory, testSerializer);
         parser.parse();
 
         Set<String> outputFileNames = checkOutputFileNames(testSerializer.serializedVariants);
@@ -175,7 +175,7 @@ public class VariationParserTest {
     @Test
     public void testParseToJson() throws Exception {
         CellBaseJsonFileSerializer serializer = new CellBaseJsonFileSerializer(variationParserTestDirectory.resolve("output"), "", false);
-        VariationParser parser = new VariationParser(variationParserTestDirectory, serializer);
+        VariationBuilder parser = new VariationBuilder(variationParserTestDirectory, serializer);
         parser.parse();
     }
 
