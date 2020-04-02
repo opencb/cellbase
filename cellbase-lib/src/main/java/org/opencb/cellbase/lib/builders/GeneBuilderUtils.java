@@ -251,6 +251,13 @@ public class GeneBuilderUtils {
         return geneDiseaseAssociationMap;
     }
 
+    /**
+     * For a gnomad file, parse and return a map of transcript to constraints
+     *
+     * @param gnomadFile gene annotation file path
+     * @return map of transcript to constraints
+     * @throws IOException if goa file can't be read
+     */
     public static Map<String, List<Constraint>> getConstraints(Path gnomadFile) throws IOException {
         Map<String, List<Constraint>> transcriptConstraints = new HashMap<>();
 
@@ -304,6 +311,13 @@ public class GeneBuilderUtils {
         constraints.add(constraint);
     }
 
+    /**
+     * For a gene annotation file, parse and return a map of proteins to ontology annotation objects.
+     *
+     * @param goaFile gene annotation file path
+     * @return map of proteins to ontology annotation objects.
+     * @throws IOException if goa file can't be read
+     */
     public static Map<String, List<OntologyAnnotation>> getOntologyAnnotations(Path goaFile) throws IOException {
         Map<String, List<OntologyAnnotation>> annotations = new HashMap<>();
         if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
