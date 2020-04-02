@@ -27,7 +27,7 @@ import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.managers.RegulatoryManager;
-import org.opencb.cellbase.lib.managers.TFManager;
+import org.opencb.cellbase.lib.managers.TfbsManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 
@@ -49,7 +49,7 @@ import java.util.List;
 public class TfWSServer extends RegulatoryWSServer {
 
     private RegulatoryManager regulatoryManager;
-    private TFManager tfManager;
+    private TfbsManager tfbsManager;
     private GeneManager geneManager;
 
     public TfWSServer(@PathParam("apiVersion")
@@ -64,7 +64,7 @@ public class TfWSServer extends RegulatoryWSServer {
             throws VersionException, SpeciesException, IOException, CellbaseException {
         super(apiVersion, species, assembly, uriInfo, hsr);
         regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
-        tfManager = cellBaseManagerFactory.getTFManager(species, assembly);
+        tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
     }
 
     @GET
