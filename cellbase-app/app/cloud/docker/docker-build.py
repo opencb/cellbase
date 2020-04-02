@@ -54,8 +54,11 @@ def build():
             os.system("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile --build-arg TAG=" + tag + " " + build_folder)
 
 def tag_latest(image):
-    all_tags = os.popen("wget -q https://registry.hub.docker.com/v1/repositories/opencb/cellbase-" + image + "/tags -O - | sed -e 's/[][]//g' -e 's/\"//g' -e 's/[ ]//g' -e 's/latest//g' | tr '}' '\n' | awk -F: '{print $3}'")
-    latest_tag = os.popen("echo " + all_tags.read() + " + | cut -d' ' -f1 | sort -h | head")
+    latest_tag = os.popen(("curl -s https://registry.hub.docker.com/v1/repositories/opencb/cellbase-" + image + "/tags"
+                           + " | jq -r .[].name"
+                           + " | grep -v latest"
+                           + " | sort -h"
+                           + " | head"))
     if tag >= latest_tag.read():
         print("*********************************************")
         print("Pushing opencb/cellbase-" + i + ":latest")
