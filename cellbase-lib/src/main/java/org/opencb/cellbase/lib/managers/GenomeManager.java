@@ -17,12 +17,14 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.google.common.base.Splitter;
+import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
+import org.opencb.cellbase.core.api.queries.GenomeQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.GenomeMongoDBAdaptor;
@@ -32,7 +34,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenomeManager extends AbstractManager implements AggregationApi {
+public class GenomeManager extends AbstractManager implements AggregationApi<GenomeQuery, Chromosome> {
 
     private GenomeMongoDBAdaptor genomeDBAdaptor;
 
@@ -42,7 +44,7 @@ public class GenomeManager extends AbstractManager implements AggregationApi {
     }
 
     @Override
-    public CellBaseCoreDBAdaptor getDBAdaptor() {
+    public CellBaseCoreDBAdaptor<GenomeQuery, Chromosome> getDBAdaptor() {
         return genomeDBAdaptor;
     }
 

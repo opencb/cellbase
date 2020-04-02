@@ -17,6 +17,7 @@
 package org.opencb.cellbase.lib.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.forester.protein.Protein;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
@@ -33,7 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class ProteinManager extends AbstractManager implements AggregationApi {
+public class ProteinManager extends AbstractManager implements AggregationApi<ProteinQuery, Protein> {
 
     private ProteinMongoDBAdaptor proteinDBAdaptor;
     private TranscriptMongoDBAdaptor transcriptDBAdaptor;

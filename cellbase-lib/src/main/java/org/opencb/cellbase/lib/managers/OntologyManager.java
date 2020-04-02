@@ -16,11 +16,13 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.biodata.models.core.OboTerm;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.core.api.queries.OntologyQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.OntologyMongoDBAdaptor;
 
-public class OntologyManager extends AbstractManager implements AggregationApi {
+public class OntologyManager extends AbstractManager implements AggregationApi<OntologyQuery, OboTerm> {
 
     private OntologyMongoDBAdaptor ontologyMongoDBAdaptor;
 
@@ -34,7 +36,7 @@ public class OntologyManager extends AbstractManager implements AggregationApi {
     }
 
     @Override
-    public CellBaseCoreDBAdaptor getDBAdaptor() {
+    public CellBaseCoreDBAdaptor<OntologyQuery, OboTerm> getDBAdaptor() {
         return ontologyMongoDBAdaptor;
     }
 }

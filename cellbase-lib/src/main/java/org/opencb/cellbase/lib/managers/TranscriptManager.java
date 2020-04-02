@@ -23,9 +23,12 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.TranscriptMongoDBAdaptor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-public class TranscriptManager extends AbstractManager implements AggregationApi  {
+public class TranscriptManager extends AbstractManager implements AggregationApi<TranscriptQuery, Transcript>  {
 
     private TranscriptMongoDBAdaptor transcriptDBAdaptor;
 
@@ -39,7 +42,7 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
     }
 
     @Override
-    public CellBaseCoreDBAdaptor getDBAdaptor() {
+    public CellBaseCoreDBAdaptor<TranscriptQuery, Transcript> getDBAdaptor() {
         return transcriptDBAdaptor;
     }
 
