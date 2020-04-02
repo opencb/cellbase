@@ -16,19 +16,13 @@
 
 package org.opencb.cellbase.lib.managers;
 
-import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.cellbase.core.api.core.RepeatsDBAdaptor;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.core.api.queries.RepeatsQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.impl.core.RepeatsMongoDBAdaptor;
-import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class RepeatsManager extends AbstractManager {
+public class RepeatsManager extends AbstractManager implements AggregationApi<RepeatsQuery, Repeat> {
 
     private RepeatsMongoDBAdaptor repeatsDBAdaptor;
 
@@ -41,26 +35,31 @@ public class RepeatsManager extends AbstractManager {
         repeatsDBAdaptor = dbAdaptorFactory.getRepeatsDBAdaptor(species, assembly);
     }
 
-    public CellBaseDataResult getByRegion(Region region, QueryOptions options) {
-        Query query = new Query("region", region.toString());
-        return repeatsDBAdaptor.get(query, options);
+    @Override
+    public CellBaseCoreDBAdaptor<RepeatsQuery, Repeat> getDBAdaptor() {
+        return repeatsDBAdaptor;
     }
 
-    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
-        List<Query> queries = createQueries(query, region, RepeatsDBAdaptor.QueryParams.REGION.key());
-        List<CellBaseDataResult> queryResults = repeatsDBAdaptor.nativeGet(queries, queryOptions);
-        for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(RepeatsDBAdaptor.QueryParams.REGION.key()));
-        }
-        return queryResults;
-    }
-
-    public List<CellBaseDataResult<Repeat>> getByRegion(List<Region> regions, QueryOptions options) {
-        List<CellBaseDataResult<Repeat>> results = new ArrayList<>(regions.size());
-        for (Region region : regions) {
-            Query query = new Query("region", region.toString());
-            results.add(repeatsDBAdaptor.get(query, options));
-        }
-        return results;
-    }
+//    public CellBaseDataResult getByRegion(Region region, QueryOptions options) {
+//        Query query = new Query("region", region.toString());
+//        return repeatsDBAdaptor.get(query, options);
+//    }
+//
+//    public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String region) {
+//        List<Query> queries = createQueries(query, region, RepeatsDBAdaptor.QueryParams.REGION.key());
+//        List<CellBaseDataResult> queryResults = repeatsDBAdaptor.nativeGet(queries, queryOptions);
+//        for (int i = 0; i < queries.size(); i++) {
+//            queryResults.get(i).setId((String) queries.get(i).get(RepeatsDBAdaptor.QueryParams.REGION.key()));
+//        }
+//        return queryResults;
+//    }
+//
+//    public List<CellBaseDataResult<Repeat>> getByRegion(List<Region> regions, QueryOptions options) {
+//        List<CellBaseDataResult<Repeat>> results = new ArrayList<>(regions.size());
+//        for (Region region : regions) {
+//            Query query = new Query("region", region.toString());
+//            results.add(repeatsDBAdaptor.get(query, options));
+//        }
+//        return results;
+//    }
 }

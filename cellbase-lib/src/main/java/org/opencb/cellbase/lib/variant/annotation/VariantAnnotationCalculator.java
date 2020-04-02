@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.api.core.RegulationDBAdaptor;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.api.queries.RegulationQuery;
+import org.opencb.cellbase.core.api.queries.RepeatsQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.managers.*;
@@ -360,7 +361,7 @@ public class VariantAnnotationCalculator {
         FutureRepeatsAnnotator futureRepeatsAnnotator = null;
         Future<List<CellBaseDataResult<Repeat>>> repeatsFuture = null;
         if (annotatorSet.contains("repeats")) {
-            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList, QueryOptions.empty());
+            futureRepeatsAnnotator = new FutureRepeatsAnnotator(normalizedVariantList);
             repeatsFuture = fixedThreadPool.submit(futureRepeatsAnnotator);
         }
 
@@ -1618,9 +1619,8 @@ public class VariantAnnotationCalculator {
         private List<Variant> variantList;
         private QueryOptions queryOptions;
 
-        FutureRepeatsAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureRepeatsAnnotator(List<Variant> variantList) {
             this.variantList = variantList;
-            this.queryOptions = queryOptions;
         }
 
         public List<CellBaseDataResult<Repeat>> call() throws Exception {
@@ -1631,8 +1631,13 @@ public class VariantAnnotationCalculator {
             logger.debug("Query repeats");
             // Want to return only one CellBaseDataResult object per Variant
             for (Variant variant : variantList) {
-                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsManager
-                        .getByRegion(breakpointsToRegionList(variant), queryOptions);
+                List<RepeatsQuery> queries = new ArrayList<>();
+                for (Region region :  breakpointsToRegionList(variant)) {
+                    RepeatsQuery query = new RepeatsQuery();
+                    query.setRegions(Collections.singletonList(region));
+                    queries.add(query);
+                }
+                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsManager.info(queries);
 
                 // There may be more than one CellBaseDataResult per variant for non SNV variants since there will be
                 // two breakpoints
