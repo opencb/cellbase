@@ -34,10 +34,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class GeneParserTest {
+public class GeneBuilderTest {
     private GeneBuilder geneParser;
     private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null, null);
-    public GeneParserTest() throws URISyntaxException {
+    public GeneBuilderTest() throws URISyntaxException {
         init();
     }
 

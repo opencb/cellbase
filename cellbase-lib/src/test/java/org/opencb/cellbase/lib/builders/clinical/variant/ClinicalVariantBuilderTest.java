@@ -54,13 +54,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * Created by fjlopez on 07/10/16.
  */
-public class ClinicalVariantParserTest {
+public class ClinicalVariantBuilderTest {
     private static final String SYMBOL = "symbol";
     private static final String DOCM = "docm";
 
     private ObjectMapper jsonObjectMapper;
 
-    public ClinicalVariantParserTest() {
+    public ClinicalVariantBuilderTest() {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

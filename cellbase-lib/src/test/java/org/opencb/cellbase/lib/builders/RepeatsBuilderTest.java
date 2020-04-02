@@ -36,9 +36,9 @@ import java.util.Set;
 /**
  * Created by fjlopez on 10/05/17.
  */
-public class RepeatsParserTest extends GenericParserTest<Repeat> {
+public class RepeatsBuilderTest extends GenericBuilderTest<Repeat> {
 
-    public RepeatsParserTest() {
+    public RepeatsBuilderTest() {
         super(Repeat.class);
     }
 

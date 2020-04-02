@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -24,6 +23,8 @@ import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 

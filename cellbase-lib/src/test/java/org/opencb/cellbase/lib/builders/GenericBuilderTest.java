@@ -33,12 +33,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 /**
  * Created by fjlopez on 14/07/17.
  */
-public class GenericParserTest<T> {
+public class GenericBuilderTest<T> {
 
     protected static final ObjectMapper jsonObjectMapper = new ObjectMapper();
     Class<T> clazz;
 
-    public GenericParserTest(Class<T> clazz) {
+    public GenericBuilderTest(Class<T> clazz) {
         this.clazz = clazz;
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

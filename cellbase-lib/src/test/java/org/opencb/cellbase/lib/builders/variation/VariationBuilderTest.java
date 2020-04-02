@@ -46,14 +46,14 @@ import java.util.List;
 /**
  * Created by parce on 03/12/15.
  */
-public class VariationParserTest {
+public class VariationBuilderTest {
 
     private static Path variationParserTestDirectory;
     private static Path variationParserTestOutputDirectory;
 
     @BeforeAll
     public static void setUpClass() throws Exception {
-        variationParserTestDirectory = Paths.get(VariationParserTest.class.getResource("/variationParser").getPath());
+        variationParserTestDirectory = Paths.get(VariationBuilderTest.class.getResource("/variationParser").getPath());
         variationParserTestOutputDirectory = variationParserTestDirectory.resolve("output");
         variationParserTestOutputDirectory.toFile().mkdir();
     }

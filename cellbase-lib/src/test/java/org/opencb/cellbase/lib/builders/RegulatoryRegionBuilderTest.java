@@ -35,9 +35,9 @@ import java.util.List;
 /**
  * Created by fjlopez on 13/07/17.
  */
-public class RegulatoryRegionParserTest extends GenericParserTest<RegulatoryFeature> {
+public class RegulatoryRegionBuilderTest extends GenericBuilderTest<RegulatoryFeature> {
 
-    public RegulatoryRegionParserTest() {
+    public RegulatoryRegionBuilderTest() {
         super(RegulatoryFeature.class);
     }
     @Test
