@@ -252,7 +252,7 @@ public class GeneBuilderUtils {
     }
 
     /**
-     * For a gnomad file, parse and return a map of transcript to constraints
+     * For a gnomad file, parse and return a map of transcript to constraints.
      *
      * @param gnomadFile gene annotation file path
      * @return map of transcript to constraints
