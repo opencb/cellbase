@@ -21,6 +21,7 @@ import org.opencb.cellbase.core.common.Species;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
+
 import java.util.List;
 
 
@@ -99,22 +100,22 @@ public class SpeciesUtils {
         return false;
     }
 
-    /**
-     * Get configuration for the specified species.
-     *
-     * @param configuration configuration for this cellbase instance
-     * @param species species of interest, e.g. hsapiens or Homo sapiens
-     * @return configuration for given species
-     */
-    public static SpeciesConfiguration getSpeciesConfiguration(CellBaseConfiguration configuration, String species) {
+
+    public static SpeciesConfiguration getSpeciesConfiguration(CellBaseConfiguration configuration, String species)
+            throws CellbaseException {
+        SpeciesConfiguration speciesConfiguration = null;
         for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
             if (species.equalsIgnoreCase(sp.getScientificName())
                     || species.equalsIgnoreCase(sp.getCommonName())
                     || species.equalsIgnoreCase(sp.getId())) {
-                return sp;
+                speciesConfiguration = sp;
+                break;
             }
         }
-        return null;
+        if (speciesConfiguration == null) {
+            throw new CellbaseException("Species not found: " + species);
+        }
+        return speciesConfiguration;
     }
 
     /**

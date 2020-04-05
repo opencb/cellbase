@@ -18,9 +18,7 @@ package org.opencb.cellbase.core.config;
 
 import java.util.List;
 
-/**
- * Created by imedina on 19/08/16.
- */
+
 public class SpeciesProperties {
 
     private List<SpeciesConfiguration> vertebrates;
@@ -47,7 +45,6 @@ public class SpeciesProperties {
         this.bacteria = bacteria;
     }
 
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SpeciesProperties{");
@@ -56,6 +53,8 @@ public class SpeciesProperties {
         sb.append(", fungi=").append(fungi);
         sb.append(", protist=").append(protist);
         sb.append(", plants=").append(plants);
+        sb.append(", virus=").append(virus);
+        sb.append(", bacteria=").append(bacteria);
         sb.append('}');
         return sb.toString();
     }
@@ -64,55 +63,62 @@ public class SpeciesProperties {
         return vertebrates;
     }
 
-    public void setVertebrates(List<SpeciesConfiguration> vertebrates) {
+    public SpeciesProperties setVertebrates(List<SpeciesConfiguration> vertebrates) {
         this.vertebrates = vertebrates;
+        return this;
     }
 
     public List<SpeciesConfiguration> getMetazoa() {
         return metazoa;
     }
 
-    public void setMetazoa(List<SpeciesConfiguration> metazoa) {
+    public SpeciesProperties setMetazoa(List<SpeciesConfiguration> metazoa) {
         this.metazoa = metazoa;
+        return this;
     }
 
     public List<SpeciesConfiguration> getFungi() {
         return fungi;
     }
 
-    public void setFungi(List<SpeciesConfiguration> fungi) {
+    public SpeciesProperties setFungi(List<SpeciesConfiguration> fungi) {
         this.fungi = fungi;
+        return this;
     }
 
     public List<SpeciesConfiguration> getProtist() {
         return protist;
     }
 
-    public void setProtist(List<SpeciesConfiguration> protist) {
+    public SpeciesProperties setProtist(List<SpeciesConfiguration> protist) {
         this.protist = protist;
+        return this;
     }
 
     public List<SpeciesConfiguration> getPlants() {
         return plants;
     }
 
-    public void setPlants(List<SpeciesConfiguration> plants) {
+    public SpeciesProperties setPlants(List<SpeciesConfiguration> plants) {
         this.plants = plants;
+        return this;
     }
 
     public List<SpeciesConfiguration> getVirus() {
         return virus;
     }
 
-    public void setVirus(List<SpeciesConfiguration> virus) {
+    public SpeciesProperties setVirus(List<SpeciesConfiguration> virus) {
         this.virus = virus;
+        return this;
     }
 
     public List<SpeciesConfiguration> getBacteria() {
         return bacteria;
     }
 
-    public void setBacteria(List<SpeciesConfiguration> bacteria) {
+    public SpeciesProperties setBacteria(List<SpeciesConfiguration> bacteria) {
         this.bacteria = bacteria;
+        return this;
     }
 }
