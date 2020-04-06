@@ -408,34 +408,28 @@ public class CoreDownloadManager extends DownloadManager {
         }
         logger.info("Downloading protein information ...");
         Path proteinFolder = downloadFolder.resolve("protein");
+        Files.createDirectories(proteinFolder);
 
-        if (!Files.exists(proteinFolder)) {
-            Files.createDirectories(proteinFolder);
-            String url = configuration.getDownload().getUniprot().getHost();
-            downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
-            String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
-            downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString());
-            saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
-                    getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
+        String url = configuration.getDownload().getUniprot().getHost();
+        downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString());
+        String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
+        downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString());
+        Files.createDirectories(proteinFolder.resolve("uniprot_chunks"));
+        splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
+        saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
+                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
 
-            Files.createDirectories(proteinFolder.resolve("uniprot_chunks"));
-            splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
+        url = configuration.getDownload().getIntact().getHost();
+        downloadFile(url, proteinFolder.resolve("intact.txt").toString());
+        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                proteinFolder.resolve("intactVersion.json"));
 
-            url = configuration.getDownload().getIntact().getHost();
-            downloadFile(url, proteinFolder.resolve("intact.txt").toString());
-            saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    proteinFolder.resolve("intactVersion.json"));
-
-            url = configuration.getDownload().getInterpro().getHost();
-            downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
-            relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
-            downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
-            saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
-                    getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
-
-        } else {
-            logger.info("Protein: skipping this since it is already downloaded. Delete 'protein' folder to force download");
-        }
+        url = configuration.getDownload().getInterpro().getHost();
+        downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
+        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
+        downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
+        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
+                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
     }
 
     private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
