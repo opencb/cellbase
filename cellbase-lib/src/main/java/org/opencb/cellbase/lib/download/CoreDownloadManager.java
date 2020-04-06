@@ -255,8 +255,8 @@ public class CoreDownloadManager extends DownloadManager {
         host = configuration.getDownload().getDisgenet().getHost();
         List<String> files = configuration.getDownload().getDisgenet().getFiles();
         for (String file : files) {
-            file = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
-            downloadFile(host + "/" + file, geneFolder.resolve(file).toString());
+            String outputFile = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
+            downloadFile(host + "/" + file, geneFolder.resolve(outputFile).toString());
         }
 
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
