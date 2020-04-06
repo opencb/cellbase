@@ -42,7 +42,7 @@ import java.nio.file.Paths;
 public abstract class CommandExecutor {
 
     protected String logLevel;
-    protected boolean verbose;
+//    protected boolean verbose;
     protected String conf;
 
     @Deprecated
@@ -59,9 +59,29 @@ public abstract class CommandExecutor {
 
     }
 
+    public CommandExecutor(String logLevel, String conf) {
+        this.logLevel = logLevel;
+        this.conf = conf;
+
+        /**
+         * System property 'app.home' is set up by cellbase.sh. If by any reason this is null
+         * then CELLBASE_HOME environment variable is used instead.
+         */
+        this.appHome = System.getProperty("app.home", System.getenv("CELLBASE_HOME"));
+
+        if (StringUtils.isEmpty(conf)) {
+            this.conf = this.appHome + "/conf";
+        }
+
+        if (logLevel != null && !logLevel.isEmpty()) {
+            // We must call to this method
+            setLogLevel(logLevel);
+        }
+    }
+
     public CommandExecutor(String logLevel, boolean verbose, String conf) {
         this.logLevel = logLevel;
-        this.verbose = verbose;
+//        this.verbose = verbose;
         this.conf = conf;
 
         /**
@@ -103,13 +123,13 @@ public abstract class CommandExecutor {
         this.logLevel = logLevel;
     }
 
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
+//    public boolean isVerbose() {
+//        return verbose;
+//    }
+//
+//    public void setVerbose(boolean verbose) {
+//        this.verbose = verbose;
+//    }
 
     public String getConfigFile() {
         return configFile;

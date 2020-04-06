@@ -41,14 +41,13 @@ import java.util.List;
 public class DownloadCommandExecutor extends CommandExecutor {
 
     private AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions;
-    private Path targetDirectory;
+    private Path outputDirectory;
 
     public DownloadCommandExecutor(AdminCliOptionsParser.DownloadCommandOptions downloadCommandOptions) {
-        super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.verbose,
-                downloadCommandOptions.commonOptions.conf);
+        super(downloadCommandOptions.commonOptions.logLevel, downloadCommandOptions.commonOptions.conf);
 
         this.downloadCommandOptions = downloadCommandOptions;
-        this.targetDirectory = Paths.get(downloadCommandOptions.targetDirectory);
+        this.outputDirectory = Paths.get(downloadCommandOptions.outputDirectory);
     }
 
     /**
@@ -76,17 +75,17 @@ public class DownloadCommandExecutor extends CommandExecutor {
 //            logger.info("Processing species " + speciesConfiguration.getScientificName());
 
             List<String> dataList = getDataList(species);
-            DownloadManager downloadManager = new DownloadManager(species, assembly, targetDirectory, configuration);
+            DownloadManager downloadManager = new DownloadManager(species, assembly, outputDirectory, configuration);
             for (String data : dataList) {
                 switch (data) {
                     case EtlCommons.GENOME_DATA:
-                        new CoreDownloadManager(species, assembly, targetDirectory, configuration).downloadReferenceGenome();
+                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
                         break;
                     case EtlCommons.GENE_DATA:
-                        new CoreDownloadManager(species, assembly, targetDirectory, configuration).downloadEnsemblGene();
+                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadEnsemblGene();
                         if (!dataList.contains(EtlCommons.GENOME_DATA)) {
                             // user didn't specify genome data to download, but we need it for gene data sources
-                            new CoreDownloadManager(species, assembly, targetDirectory, configuration).downloadReferenceGenome();
+                            new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
                         }
                         break;
 //                    case EtlCommons.VARIATION_DATA:
@@ -96,16 +95,16 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         downloadManager.downloadCaddScores();
                         break;
                     case EtlCommons.REGULATION_DATA:
-                        new RegulationDownloadManager(species, assembly, targetDirectory, configuration).downloadRegulation();
+                        new RegulationDownloadManager(species, assembly, outputDirectory, configuration).downloadRegulation();
                         break;
                     case EtlCommons.PROTEIN_DATA:
-                        new CoreDownloadManager(species, assembly, targetDirectory, configuration).downloadProtein();
+                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadProtein();
                         break;
                     case EtlCommons.CONSERVATION_DATA:
-                        new CoreDownloadManager(species, assembly, targetDirectory, configuration).downloadConservation();
+                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadConservation();
                         break;
                     case EtlCommons.CLINICAL_VARIANTS_DATA:
-                        new ClinicalDownloadManager(species, assembly, targetDirectory, configuration).downloadClinical();
+                        new ClinicalDownloadManager(species, assembly, outputDirectory, configuration).downloadClinical();
                         break;
                     case EtlCommons.STRUCTURAL_VARIANTS_DATA:
                         downloadManager.downloadStructuralVariants();
@@ -114,7 +113,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         downloadManager.downloadRepeats();
                         break;
                     case EtlCommons.OBO_DATA:
-                        new CoreDownloadManager(species, assembly, targetDirectory, configuration).downloadObo();
+                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadObo();
                         break;
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
@@ -133,7 +132,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
     }
 
     private List<String> getDataList(String species) throws CellbaseException {
-        if (StringUtils.isNotEmpty(downloadCommandOptions.data) || downloadCommandOptions.data.equals("all")) {
+        if (StringUtils.isEmpty(downloadCommandOptions.data) || downloadCommandOptions.data.equals("all")) {
             return SpeciesUtils.getSpeciesConfiguration(configuration, species).getData();
         } else {
             return Arrays.asList(downloadCommandOptions.data.split(","));

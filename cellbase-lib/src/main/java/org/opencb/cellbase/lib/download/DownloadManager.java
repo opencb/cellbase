@@ -108,6 +108,8 @@ public class DownloadManager {
     }
 
     private void init() throws CellbaseException, IOException {
+        logger = LoggerFactory.getLogger(this.getClass());
+
         // Check Species
         this.speciesConfiguration = SpeciesUtils.getSpeciesConfiguration(configuration, species);
         if (speciesConfiguration == null) {
@@ -136,8 +138,7 @@ public class DownloadManager {
         logger.info("Processing species " + speciesConfiguration.getScientificName());
     }
 
-    public void downloadStructuralVariants()
-            throws IOException, InterruptedException {
+    public void downloadStructuralVariants() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
             return;
         }

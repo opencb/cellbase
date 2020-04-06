@@ -19,6 +19,7 @@ package org.opencb.cellbase.app.cli.admin.executors;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.server.RestServer;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -30,8 +31,7 @@ public class ServerCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.ServerCommandOptions serverCommandOptions;
 
     public ServerCommandExecutor(AdminCliOptionsParser.ServerCommandOptions serverCommandOptions) {
-        super(serverCommandOptions.commonOptions.logLevel, serverCommandOptions.commonOptions.verbose,
-                serverCommandOptions.commonOptions.conf);
+        super(serverCommandOptions.commonOptions.logLevel, serverCommandOptions.commonOptions.conf);
         this.serverCommandOptions = serverCommandOptions;
     }
 

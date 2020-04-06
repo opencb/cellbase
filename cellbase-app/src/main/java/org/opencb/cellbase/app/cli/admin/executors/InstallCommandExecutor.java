@@ -26,8 +26,7 @@ public class InstallCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.InstallCommandOptions installCommandOptions;
 
     public InstallCommandExecutor(AdminCliOptionsParser.InstallCommandOptions installCommandOptions) {
-        super(installCommandOptions.commonOptions.logLevel, installCommandOptions.commonOptions.verbose,
-                installCommandOptions.commonOptions.conf);
+        super(installCommandOptions.commonOptions.logLevel, installCommandOptions.commonOptions.conf);
 
         this.installCommandOptions = installCommandOptions;
     }

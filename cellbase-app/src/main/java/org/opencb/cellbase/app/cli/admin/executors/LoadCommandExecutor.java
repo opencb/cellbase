@@ -19,9 +19,9 @@ package org.opencb.cellbase.app.cli.admin.executors;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.indexer.IndexManager;
 
 import java.io.File;
@@ -54,8 +54,7 @@ public class LoadCommandExecutor extends CommandExecutor {
     private IndexManager indexManager;
 
     public LoadCommandExecutor(AdminCliOptionsParser.LoadCommandOptions loadCommandOptions) {
-        super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.verbose,
-                loadCommandOptions.commonOptions.conf);
+        super(loadCommandOptions.commonOptions.logLevel, loadCommandOptions.commonOptions.conf);
 
         this.loadCommandOptions = loadCommandOptions;
 

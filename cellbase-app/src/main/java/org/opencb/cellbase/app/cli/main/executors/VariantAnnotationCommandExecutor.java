@@ -120,8 +120,7 @@ public class VariantAnnotationCommandExecutor extends CommandExecutor {
     private static final String VARIATION_ANNOTATION_FILE_PREFIX = "variation_annotation_";
 
     public VariantAnnotationCommandExecutor(CellBaseCliOptionsParser.VariantAnnotationCommandOptions variantAnnotationCommandOptions) {
-        super(variantAnnotationCommandOptions.commonOptions.logLevel, variantAnnotationCommandOptions.commonOptions.verbose,
-                variantAnnotationCommandOptions.commonOptions.conf);
+        super(variantAnnotationCommandOptions.commonOptions.logLevel, variantAnnotationCommandOptions.commonOptions.conf);
 
         this.variantAnnotationCommandOptions = variantAnnotationCommandOptions;
         this.serverQueryOptions = new QueryOptions();

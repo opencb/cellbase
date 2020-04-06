@@ -20,12 +20,12 @@ import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
-import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.builders.*;
@@ -57,8 +57,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private SpeciesConfiguration speciesConfiguration;
 
     public BuildCommandExecutor(AdminCliOptionsParser.BuildCommandOptions buildCommandOptions) {
-        super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.verbose,
-                buildCommandOptions.commonOptions.conf);
+        super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
 
         this.buildCommandOptions = buildCommandOptions;
         this.output = Paths.get(buildCommandOptions.targetDirectory);

@@ -103,7 +103,7 @@ public class EtlCommons {
     public static final String OBO_FOLDER = "obo";
     public static final String OBO_JSON = "obo";
     public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
-    public static final String MOTIF_FEATURES_FILE = "motiffeatures.gff.gz";
+    public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";
 
     public static boolean runCommandLineProcess(File workingDirectory, String binPath, List<String> args, String logFilePath)
             throws IOException, InterruptedException {

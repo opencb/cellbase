@@ -54,8 +54,7 @@ public class QueryCommandExecutor extends CommandExecutor {
     private Path outputFile;
 
     public QueryCommandExecutor(CellBaseCliOptionsParser.QueryCommandOptions queryCommandOptions) {
-        super(queryCommandOptions.commonOptions.logLevel, queryCommandOptions.commonOptions.verbose,
-                queryCommandOptions.commonOptions.conf);
+        super(queryCommandOptions.commonOptions.logLevel, queryCommandOptions.commonOptions.conf);
 
         this.queryCommandOptions = queryCommandOptions;
         objectMapper = new ObjectMapper();

@@ -73,13 +73,10 @@ public class CoreDownloadManager extends DownloadManager {
         Path sequenceFolder = downloadFolder.resolve("genome");
         Files.createDirectories(sequenceFolder);
 
-        /**
-         * Reference genome sequences are downloaded from Ensembl
-         */
+        // Reference genome sequences are downloaded from Ensembl
+        // New Homo sapiens assemblies contain too many ALT regions, so we download 'primary_assembly' file instead
         String url = ensemblHostUrl + "/" + ensemblRelease;
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            // New Homo sapiens assemblies contain too many ALT regions,
-            // so we download 'primary_assembly' file
             url = url + "/fasta/" + speciesShortName + "/dna/*.dna.primary_assembly.fa.gz";
         } else {
             if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
@@ -151,8 +148,7 @@ public class CoreDownloadManager extends DownloadManager {
         }
     }
 
-    private void downloadEnsemblData(Path geneFolder)
-            throws IOException, InterruptedException {
+    private void downloadEnsemblData(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
         List<String> downloadedUrls = new ArrayList<>(4);
 
@@ -186,10 +182,11 @@ public class CoreDownloadManager extends DownloadManager {
         downloadedUrls.add(url);
 
         //ftp://ftp.ensembl.org/pub/release-99/regulation/homo_sapiens/MotifFeatures/Homo_sapiens.GRCh38.motif_features.gff.gz
-        url = ensemblHost + "/regulation/" + speciesShortName + "/MotifFeatures/*.motif_features.gff.gz";
-        Path outputFile = geneFolder.resolve("motif_features.gff.gz");
-        downloadFile(url, outputFile.toString());
-        downloadedUrls.add(url);
+//        url = ensemblHost + "/regulation/" + speciesShortName + "/MotifFeatures/*.motif_features.gff.gz";
+//        Path outputFile = geneFolder.resolve("motif_features.gff.gz");
+//        downloadFile(url, outputFile.toString());
+//        downloadedUrls.add(url);
+
 
         saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 geneFolder.resolve("ensemblCoreVersion.json"));

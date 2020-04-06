@@ -29,8 +29,7 @@ public class IndexCommandExecutor extends CommandExecutor {
     private AdminCliOptionsParser.IndexCommandOptions indexCommandOptions;
 
     public IndexCommandExecutor(AdminCliOptionsParser.IndexCommandOptions indexCommandOptions) {
-        super(indexCommandOptions.commonOptions.logLevel, indexCommandOptions.commonOptions.verbose,
-                indexCommandOptions.commonOptions.conf);
+        super(indexCommandOptions.commonOptions.logLevel, indexCommandOptions.commonOptions.conf);
 
         this.indexCommandOptions = indexCommandOptions;
     }

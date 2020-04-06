@@ -76,15 +76,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
                 + "clinical_variants, repeats, svs and 'all' to download everything", required = true, arity = 1)
         public String data;
 
-//        @Parameter(names = {"-s", "--species"}, description = "Name of the species to be downloaded, valid formats include 'Homo sapiens'" +
-//                " or hsapiens", required = false, arity = 1)
-//        public String species = "Homo sapiens";
-//
-//        @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
-//        public String assembly;
-
-        @Parameter(names = {"-t", "--target-directory"}, description = "Downloaded files will be saved here.", required = true, arity = 1)
-        public String targetDirectory;
+        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true, arity = 1)
+        public String outputDirectory;
     }
 
     @Parameters(commandNames = {"build"}, commandDescription = "Build CellBase data models from all data sources downloaded")

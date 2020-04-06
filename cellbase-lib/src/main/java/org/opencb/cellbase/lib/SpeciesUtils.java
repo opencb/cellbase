@@ -101,8 +101,7 @@ public class SpeciesUtils {
     }
 
 
-    public static SpeciesConfiguration getSpeciesConfiguration(CellBaseConfiguration configuration, String species)
-            throws CellbaseException {
+    public static SpeciesConfiguration getSpeciesConfiguration(CellBaseConfiguration configuration, String species) {
         SpeciesConfiguration speciesConfiguration = null;
         for (SpeciesConfiguration sp : configuration.getAllSpecies()) {
             if (species.equalsIgnoreCase(sp.getScientificName())
@@ -111,9 +110,6 @@ public class SpeciesUtils {
                 speciesConfiguration = sp;
                 break;
             }
-        }
-        if (speciesConfiguration == null) {
-            throw new CellbaseException("Species not found: " + species);
         }
         return speciesConfiguration;
     }
