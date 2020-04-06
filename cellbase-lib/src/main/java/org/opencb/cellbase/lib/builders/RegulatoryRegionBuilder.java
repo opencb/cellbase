@@ -34,6 +34,7 @@ import java.util.*;
  * Date: 4/10/13
  * Time: 10:14 AM
  */
+@Deprecated
 public class RegulatoryRegionBuilder extends CellBaseBuilder {
 
     private static final int CHUNK_SIZE = 2000;

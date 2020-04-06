@@ -17,8 +17,8 @@
 package org.opencb.cellbase.lib.builders;
 
 
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Transcript;
@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class GeneBuilderTest {
@@ -45,7 +44,7 @@ public class GeneBuilderTest {
     public void init() throws URISyntaxException {
         Path genomeSequenceFastaFile = Paths.get(getClass().getResource("/gene/Homo_sapiens.GRCh38.fa.gz").toURI());
         Path geneDirectoryPath = Paths.get(getClass().getResource("/gene").toURI());
-        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "regulatory_region", true);
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "gene", true);
         geneParser = new GeneBuilder(geneDirectoryPath, genomeSequenceFastaFile, SPECIES, serializer);
     }
 

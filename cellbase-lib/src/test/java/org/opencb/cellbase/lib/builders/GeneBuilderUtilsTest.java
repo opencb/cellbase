@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.builders;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.OntologyAnnotation;
 import org.opencb.biodata.models.core.Xref;

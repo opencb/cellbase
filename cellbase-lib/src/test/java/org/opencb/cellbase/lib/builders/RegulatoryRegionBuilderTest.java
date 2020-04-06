@@ -16,8 +16,6 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -30,11 +28,14 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 
 /**
  * Created by fjlopez on 13/07/17.
  */
+@Deprecated
 public class RegulatoryRegionBuilderTest extends GenericBuilderTest<RegulatoryFeature> {
 
     public RegulatoryRegionBuilderTest() {

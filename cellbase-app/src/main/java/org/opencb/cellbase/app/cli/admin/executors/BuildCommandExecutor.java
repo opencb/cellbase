@@ -289,13 +289,9 @@ public class BuildCommandExecutor extends CommandExecutor {
 
     private CellBaseBuilder buildRegulation() {
         Path regulatoryRegionFilesDir = downloadFolder.resolve("regulation");
-        copyVersionFiles(Arrays.asList(regulatoryRegionFilesDir.resolve("ensemblRegulationVersion.json"),
-                downloadFolder.resolve("mirbase/mirbaseVersion.json"),
-                regulatoryRegionFilesDir.resolve("targetScanVersion.json"),
-                regulatoryRegionFilesDir.resolve("miRTarBaseVersion.json")));
+        copyVersionFiles(Collections.singletonList(regulatoryRegionFilesDir.resolve("ensemblRegulationVersion.json")));
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_region");
-        return new RegulatoryRegionBuilder(regulatoryRegionFilesDir, serializer);
-
+        return new RegulatoryFeatureBuilder(regulatoryRegionFilesDir, serializer);
     }
 
     private CellBaseBuilder buildProtein() {
