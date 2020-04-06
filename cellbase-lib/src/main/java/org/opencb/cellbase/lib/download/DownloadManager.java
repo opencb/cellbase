@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -323,35 +324,38 @@ public class DownloadManager {
         downloadFile(url, outputFileName, null);
     }
 
-    protected void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException {
-        downloadFiles(host, fileNames, fileNames);
-    }
+//    protected void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException {
+//        downloadFiles(host, fileNames, fileNames);
+//    }
 
-    protected void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames)
-        throws IOException, InterruptedException {
-        for (int i = 0; i < fileNames.size(); i++) {
-            downloadFile(host + "/" + fileNames.get(i), ouputFileNames.get(i), null);
-        }
-    }
+//    protected void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames)
+//        throws IOException, InterruptedException {
+//        for (int i = 0; i < fileNames.size(); i++) {
+//            downloadFile(host + "/" + fileNames.get(i), ouputFileNames.get(i), null);
+//        }
+//    }
 
     protected void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
+        DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(LocalDateTime.now()).toString());
         Long startTime = System.currentTimeMillis();
-        LocalDateTime now = LocalDateTime.now();
-        DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(now).toString());
-        final String outputLog = outputFileName + ".log";
-        List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
-        if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
-            wgetArgs.addAll(wgetAdditionalArgs);
+        if (Paths.get(outputFileName).toFile().exists()) {
+            logger.warn("File '{}' is already downloaded", outputFileName);
+            setDownloadStatusAndMessage(outputFileName, downloadFileInfo, "File '" + outputFileName + "' is already downloaded", true);
+        } else {
+            final String outputLog = outputFileName + ".log";
+            List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
+            if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
+                wgetArgs.addAll(wgetAdditionalArgs);
+            }
+            boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
+            setDownloadStatusAndMessage(outputFileName, downloadFileInfo, outputLog, downloaded);
         }
-        boolean downloaded = EtlCommons.runCommandLineProcess(null, "wget", wgetArgs, outputLog);
-        setDownloadStatusAndMessage(outputFileName, downloadFileInfo, outputLog, downloaded);
         downloadFileInfo.setElapsedTime(startTime, System.currentTimeMillis());
         downloadFiles.add(downloadFileInfo);
     }
 
-    private void setDownloadStatusAndMessage(String outputFileName, DownloadFile downloadFile, String outputLog, boolean downloaded)
-            throws IOException {
+    private void setDownloadStatusAndMessage(String outputFileName, DownloadFile downloadFile, String outputLog, boolean downloaded) {
         if (downloaded) {
             boolean validFileSize = validateDownloadFile(downloadFile, outputFileName, outputLog);
             if (validFileSize) {
