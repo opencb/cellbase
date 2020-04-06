@@ -22,6 +22,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.commons.utils.FileUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -419,21 +420,21 @@ public class CoreDownloadManager extends DownloadManager {
         saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
                 getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
 
-        url = configuration.getDownload().getIntact().getHost();
-        downloadFile(url, proteinFolder.resolve("intact.txt").toString());
-        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                proteinFolder.resolve("intactVersion.json"));
-
-        url = configuration.getDownload().getInterpro().getHost();
-        downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
-        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
-        downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
-        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
-                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
+//        url = configuration.getDownload().getIntact().getHost();
+//        downloadFile(url, proteinFolder.resolve("intact.txt").toString());
+//        saveVersionData(EtlCommons.PROTEIN_DATA, INTACT_NAME, null, getTimeStamp(), Collections.singletonList(url),
+//                proteinFolder.resolve("intactVersion.json"));
+//
+//        url = configuration.getDownload().getInterpro().getHost();
+//        downloadFile(url, proteinFolder.resolve("protein2ipr.dat.gz").toString());
+//        relNotesUrl = configuration.getDownload().getInterproRelNotes().getHost();
+//        downloadFile(relNotesUrl, proteinFolder.resolve("interproRelnotes.txt").toString());
+//        saveVersionData(EtlCommons.PROTEIN_DATA, INTERPRO_NAME, getLine(proteinFolder.resolve("interproRelnotes.txt"), 5),
+//                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("interproVersion.json"));
     }
 
     private void splitUniprot(Path uniprotFilePath, Path splitOutdirPath) throws IOException {
-        BufferedReader br = Files.newBufferedReader(uniprotFilePath);
+        BufferedReader br = FileUtils.newBufferedReader(uniprotFilePath);
         PrintWriter pw = null;
         StringBuilder header = new StringBuilder();
         boolean beforeEntry = true;
