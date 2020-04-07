@@ -23,8 +23,8 @@ public class DownloadFile {
     private String elapsedTime;
     private Status status;
     private String message;
-    private int expectedFileSize;
-    private int actualFileSize;
+    private long expectedFileSize;
+    private long actualFileSize;
     private String outputFile;
     private String url;
 
@@ -61,20 +61,20 @@ public class DownloadFile {
         return this;
     }
 
-    public int getExpectedFileSize() {
+    public long getExpectedFileSize() {
         return expectedFileSize;
     }
 
-    public DownloadFile setExpectedFileSize(int expectedFileSize) {
+    public DownloadFile setExpectedFileSize(long expectedFileSize) {
         this.expectedFileSize = expectedFileSize;
         return this;
     }
 
-    public int getActualFileSize() {
+    public long getActualFileSize() {
         return actualFileSize;
     }
 
-    public DownloadFile setActualFileSize(int actualFileSize) {
+    public DownloadFile setActualFileSize(long actualFileSize) {
         this.actualFileSize = actualFileSize;
         return this;
     }

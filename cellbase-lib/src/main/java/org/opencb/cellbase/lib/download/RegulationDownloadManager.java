@@ -100,7 +100,11 @@ public class RegulationDownloadManager extends DownloadManager {
     }
 
     private void loadPfmMatrices() throws IOException, NoSuchMethodException, FileFormatException {
-        logger.info("Downloading pfm matrices...");
+        logger.info("Downloading and building pfm matrices...");
+        if (Files.exists(buildFolder.resolve("regulatory_pfm.json.gz"))) {
+            logger.warn(buildFolder.resolve("regulatory_pfm.json.gz") + " is already built");
+            return;
+        }
         Path motifGffFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
         Gff2Reader motifsFeatureReader = new Gff2Reader(motifGffFile);
         Gff2 tfbsMotifFeature;
@@ -122,6 +126,11 @@ public class RegulationDownloadManager extends DownloadManager {
             RegulatoryPfm regulatoryPfm = mapper.readValue(url, RegulatoryPfm.class);
             serializer.serialize(regulatoryPfm);
         }
+    }
+
+    private boolean fileExists() {
+        buildFolder.resolve("regulatory_pfm");
+                return true;
     }
 
     private String getMatrixId(Gff2 tfbsMotifFeature) {

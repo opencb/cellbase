@@ -50,9 +50,9 @@ public class DownloadManager {
 
     private static final String CADD_NAME = "CADD";
     private static final String DGV_NAME = "DGV";
-    private static final String GWAS_NAME = "Gwas Catalog";
-    private static final String DBSNP_NAME = "dbSNP";
-    private static final String REACTOME_NAME = "Reactome";
+//    private static final String GWAS_NAME = "Gwas Catalog";
+//    private static final String DBSNP_NAME = "dbSNP";
+//    private static final String REACTOME_NAME = "Reactome";
     private static final String TRF_NAME = "Tandem repeats finder";
     private static final String GSD_NAME = "Genomic super duplications";
     private static final String WM_NAME = "WindowMasker";
@@ -202,7 +202,6 @@ public class DownloadManager {
         }
     }
 
-
     protected String getLine(Path readmePath, int lineNumber) {
         Files.exists(readmePath);
         try {
@@ -226,7 +225,6 @@ public class DownloadManager {
                 .readerFor(jsonObjectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
         return reader.readValue(json);
     }
-
 
     protected String getPhylo(SpeciesConfiguration sp) {
         if (configuration.getSpecies().getVertebrates().contains(sp)) {
@@ -258,8 +256,6 @@ public class DownloadManager {
         String[] pathParts = configuration.getDownload().getGwasCatalog().getHost().split("/");
         return pathParts[9] + "/" + pathParts[8] + "/" + pathParts[7];
     }
-
-
 
     public void downloadCaddScores() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
@@ -385,14 +381,11 @@ public class DownloadManager {
     }
 
     private boolean validateDownloadFile(DownloadFile downloadFile, String outputFileName, String outputFileLog) {
-        int expectedFileSize = getExpectedFileSize(outputFileLog);
+        long expectedFileSize = getExpectedFileSize(outputFileLog);
         long actualFileSize = FileUtils.sizeOf(new File(outputFileName));
-        downloadFile.setActualFileSize(Math.toIntExact(actualFileSize));
+        downloadFile.setActualFileSize(actualFileSize);
         downloadFile.setExpectedFileSize(expectedFileSize);
-        if (expectedFileSize != actualFileSize) {
-            return false;
-        }
-        return true;
+        return expectedFileSize == actualFileSize;
     }
 
     private int getExpectedFileSize(String outputFileLog) {
@@ -410,7 +403,6 @@ public class DownloadManager {
         }
         return 0;
     }
-
 
     protected String getVersionFromVersionLine(Path path, String tag) {
         Files.exists(path);
