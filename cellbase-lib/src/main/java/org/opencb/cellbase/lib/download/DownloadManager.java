@@ -73,7 +73,7 @@ public class DownloadManager {
     protected String ensemblVersion;
     protected String ensemblRelease;
     protected Path downloadFolder;
-
+    protected Path buildFolder; // <output>/<species>_<assembly>/generated-json
     protected Logger logger;
 
     public DownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
@@ -135,6 +135,10 @@ public class DownloadManager {
         Path speciesFolder = outdir.resolve(speciesShortName + "_" + assemblyConfiguration.getName().toLowerCase());
         downloadFolder = outdir.resolve(speciesFolder + "/download");
         Files.createDirectories(downloadFolder);
+
+        // <output>/<species>_<assembly>/generated_json
+        buildFolder = outdir.resolve(speciesFolder + "/generated_json");
+        Files.createDirectories(buildFolder);
 
         logger.info("Processing species " + speciesConfiguration.getScientificName());
     }

@@ -16,16 +16,24 @@
 
 package org.opencb.cellbase.lib.download;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.formats.feature.gff.Gff2;
+import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
+import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.models.core.RegulatoryPfm;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
 
 public class RegulationDownloadManager extends DownloadManager {
 
@@ -43,7 +51,7 @@ public class RegulationDownloadManager extends DownloadManager {
 
     }
 
-    public void downloadRegulation() throws IOException, InterruptedException {
+    public void downloadRegulation() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
             return;
         }
@@ -66,7 +74,8 @@ public class RegulationDownloadManager extends DownloadManager {
      * @throws IOException Any issue when writing files
      * @throws InterruptedException Any issue downloading files
      */
-    private List<String> downloadRegulatoryaAndMotifFeatures() throws IOException, InterruptedException {
+    private List<String> downloadRegulatoryaAndMotifFeatures()
+            throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         String regulationUrl = ensemblHostUrl + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
             regulationUrl = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
@@ -85,9 +94,47 @@ public class RegulationDownloadManager extends DownloadManager {
         outputFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE + ".tbi");
         downloadFile(motifTbiUrl, outputFile.toString());
 
-        // TODO fetch PFM matrices
+        loadPfmMatrices();
 
         return Arrays.asList(regulatoryBuildUrl, motifUrl, motifTbiUrl);
+    }
+
+    private void loadPfmMatrices() throws IOException, NoSuchMethodException, FileFormatException {
+        logger.info("Downloading pfm matrices...");
+        Path motifGffFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
+        Gff2Reader motifsFeatureReader = new Gff2Reader(motifGffFile);
+        Gff2 tfbsMotifFeature;
+        Set<String> motifIds = new HashSet<>();
+        while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
+            String pfmId = getMatrixId(tfbsMotifFeature);
+            if (StringUtils.isNotEmpty(pfmId)) {
+                motifIds.add(pfmId);
+            }
+        }
+        motifsFeatureReader.close();
+
+        ObjectMapper mapper = new ObjectMapper();
+        CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "regulatory_pfm", true);
+        for (String pfmId : motifIds) {
+            String urlString = "https://rest.ensembl.org/species/homo_sapiens/binding_matrix/" + pfmId
+                    + "?unit=frequencies;content-type=application/json";
+            URL url = new URL(urlString);
+            RegulatoryPfm regulatoryPfm = mapper.readValue(url, RegulatoryPfm.class);
+            serializer.serialize(regulatoryPfm);
+        }
+    }
+
+    private String getMatrixId(Gff2 tfbsMotifFeature) {
+        // binding_matrix_stable_id=ENSPFM0542;epigenomes_with_experimental_evidence=SK-N.%2CMCF-7%2CH1-hESC_3%2CHCT116;
+        // stable_id=ENSM00208374688;transcription_factor_complex=TEAD4::ESRRB
+        String[] attributes = tfbsMotifFeature.getAttribute().split(";");
+        for (String attributePair : attributes) {
+            String[] attributePairArray = attributePair.split("=");
+            if ("binding_matrix_stable_id".equals(attributePairArray[0])) {
+                return attributePairArray[1];
+            }
+        }
+        return null;
     }
 
     private List<String> downloadMirna() {
