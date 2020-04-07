@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -78,7 +79,7 @@ public class GeneBuilderTest {
 
         Gff2 tfbs = new Gff2(sequenceName, source, feature, start, end, score, strand, frame, attributes);
         Gtf transcript = new Gtf(sequenceName, source, feature, start, end, score, strand, frame, new HashMap<>());
-        ArrayList<TranscriptTfbs> transcriptTfbs = geneParser.addTranscriptTfbstoList(tfbs, transcript,"1", new ArrayList<>());
+        List<TranscriptTfbs> transcriptTfbs = geneParser.addTranscriptTfbstoList(tfbs, transcript,"1", new ArrayList<>());
 
         assertEquals(1, transcriptTfbs.size());
         TranscriptTfbs result = transcriptTfbs.get(0);

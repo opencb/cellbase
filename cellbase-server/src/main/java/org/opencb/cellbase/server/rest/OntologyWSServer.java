@@ -19,7 +19,7 @@ package org.opencb.cellbase.server.rest;
 import io.swagger.annotations.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.opencb.biodata.models.core.OboTerm;
+import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.OntologyQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -35,7 +35,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Path("/{apiVersion}/{species}/feature/ontology")
@@ -67,7 +67,7 @@ public class OntologyWSServer extends GenericRestWSServer {
     @GET
     @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
-            value = "Retrieves all ontology objects", response = OboTerm.class, responseContainer = "QueryResponse")
+            value = "Retrieves all ontology objects", response = OntologyTerm.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
@@ -104,7 +104,7 @@ public class OntologyWSServer extends GenericRestWSServer {
         try {
             OntologyQuery query = new OntologyQuery(uriParams);
             logger.info("/search OntologyQuery: " + query.toString());
-            CellBaseDataResult<OboTerm> queryResults = ontologyManager.search(query);
+            CellBaseDataResult<OntologyTerm> queryResults = ontologyManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -113,26 +113,25 @@ public class OntologyWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/{ids}/info")
-    @ApiOperation(httpMethod = "GET", value = "Get information about the specified ontology terms(s)", response = OboTerm.class,
+    @ApiOperation(httpMethod = "GET", value = "Get information about the specified ontology terms(s)", response = OntologyTerm.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query")
+            @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION, dataType = "java.util.List",
+                    paramType = "query"),
+            @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION, dataType = "java.util.List",
+                    paramType = "query")
     })
-    public Response getInfo(@PathParam("ids")
-                            @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_IDS, required = true) String ids) {
+    public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_IDS, required = true) String ids) {
         try {
             List<OntologyQuery> queries = new ArrayList<>();
             String[] identifiers = ids.split(",");
             for (String identifier : identifiers) {
                 OntologyQuery query = new OntologyQuery(uriParams);
-                query.setIds(Arrays.asList(identifier));
+                query.setIds(Collections.singletonList(identifier));
                 queries.add(query);
                 logger.info("REST OntologyQuery: " + query.toString());
             }
-            List<CellBaseDataResult<OboTerm>> queryResults = ontologyManager.info(queries);
+            List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.builders;
 
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Constraint;
-import org.opencb.biodata.models.core.OntologyAnnotation;
+import org.opencb.biodata.models.core.TranscriptOntologyTermAnnotation;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
@@ -201,14 +201,14 @@ public class GeneBuilderUtilsTest {
     @Test
     public void testOntologyAnnotations() throws Exception {
         Path goafile = Paths.get(getClass().getResource("/gene/goa_human.gaf.gz").getFile());
-        Map<String, List<OntologyAnnotation>> results = GeneBuilderUtils.getOntologyAnnotations(goafile);
+        Map<String, List<TranscriptOntologyTermAnnotation>> results = GeneBuilderUtils.getOntologyAnnotations(goafile);
         assertEquals(1, results.size());
 
-        List<OntologyAnnotation> annotations = results.get("A0A024RBG1");
+        List<TranscriptOntologyTermAnnotation> annotations = results.get("A0A024RBG1");
         assertEquals(4, annotations.size());
 
-        OntologyAnnotation annotation0 = annotations.get(0);
-        assertEquals("GO:0003723", annotation0.getOboTermId());
+        TranscriptOntologyTermAnnotation annotation0 = annotations.get(0);
+        assertEquals("GO:0003723", annotation0.getId());
         assertEquals("IEA", annotation0.getEvidenceCodes().get(0));
         assertNull(annotation0.getQualifier());
         assertEquals("UniProtKB-KW:KW-0694", annotation0.getPublications().get(0));

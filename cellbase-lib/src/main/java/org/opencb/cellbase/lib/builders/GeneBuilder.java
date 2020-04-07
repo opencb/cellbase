@@ -160,7 +160,7 @@ public class GeneBuilder extends CellBaseBuilder {
         Map<String, List<Constraint>> constraints = GeneBuilderUtils.getConstraints(gnomadFile);
 
         // Protein to gene ontology term
-        Map<String, List<OntologyAnnotation>> proteinToOntologyAnnotations
+        Map<String, List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations
                 = GeneBuilderUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
 
         // Preparing the fasta file for fast accessing
@@ -235,7 +235,7 @@ public class GeneBuilder extends CellBaseBuilder {
                     cds = processExons(transcript, exon, cdna, cds, gtf);
                     String proteinId = gtf.getAttributes().get("protein_id");
                     // no strand dependent
-                    transcript.setProteinID(proteinId);
+                    transcript.setProteinId(proteinId);
                 }
                 if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
                     //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
@@ -323,15 +323,15 @@ public class GeneBuilder extends CellBaseBuilder {
     private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
                                      Map<String, Fasta> cDnaSequencesMap, Map<String, SortedSet<Gff2>> tfbsMap,
                                      Map<String, List<Constraint>> constraints, Gtf gtf, String transcriptId, Map<String,
-                                     List<OntologyAnnotation>> proteinToOntologyAnnotations) {
+                                     List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations) {
         Transcript transcript; // TODO: transcript tfbs should be a list and not an array list
         String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
-        ArrayList<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tfbsMap);
+        List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tfbsMap);
         Map<String, String> gtfAttributes = gtf.getAttributes();
-        List<OntologyAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
+        List<TranscriptOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
                 proteinToOntologyAnnotations);
 
-        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(constraints.get(transcriptId), ontologyAnnotations);
+        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, constraints.get(transcriptId));
 
         transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                 (gtfAttributes.get("transcript_biotype") != null) ? gtfAttributes.get("transcript_biotype") : gtf.getSource(),
@@ -366,12 +366,12 @@ public class GeneBuilder extends CellBaseBuilder {
         return transcript;
     }
 
-    private List<OntologyAnnotation> getOntologyAnnotations(ArrayList<Xref> xrefs,
-                                                            Map<String, List<OntologyAnnotation>> proteinToOntologyAnnotations) {
+    private List<TranscriptOntologyTermAnnotation> getOntologyAnnotations(
+            ArrayList<Xref> xrefs,  Map<String, List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations) {
         if (xrefs == null || proteinToOntologyAnnotations == null) {
             return null;
         }
-        List<OntologyAnnotation> annotations = new ArrayList<>();
+        List<TranscriptOntologyTermAnnotation> annotations = new ArrayList<>();
         for (Xref xref : xrefs) {
             if (xref.getDbName().equals("uniprotkb_acc")) {
                 if (proteinToOntologyAnnotations.get(xref.getId()) != null) {
@@ -648,8 +648,8 @@ public class GeneBuilder extends CellBaseBuilder {
 
     }
 
-    private ArrayList<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
-        ArrayList<TranscriptTfbs> transcriptTfbses = null;
+    private List<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
+        List<TranscriptTfbs> transcriptTfbses = null;
         if (tfbsMap.containsKey(chromosome)) {
             for (Gff2 tfbs : tfbsMap.get(chromosome)) {
                 if (transcript.getStrand().equals("+")) {
@@ -671,8 +671,8 @@ public class GeneBuilder extends CellBaseBuilder {
         return transcriptTfbses;
     }
 
-    protected ArrayList<TranscriptTfbs> addTranscriptTfbstoList(Gff2 tfbs, Gtf transcript, String chromosome,
-                                                              ArrayList<TranscriptTfbs> transcriptTfbses) {
+    protected List<TranscriptTfbs> addTranscriptTfbstoList(Gff2 tfbs, Gtf transcript, String chromosome,
+                                                                List<TranscriptTfbs> transcriptTfbses) {
         if (transcriptTfbses == null) {
             transcriptTfbses = new ArrayList<>();
         }
@@ -681,9 +681,9 @@ public class GeneBuilder extends CellBaseBuilder {
         // stable_id=ENSM00208374688;transcription_factor_complex=TEAD4::ESRRB
         String[] attributes = tfbs.getAttribute().split(";");
 
-        String pfmId = null;
         String id = null;
-        List<String> complex = null;
+        String pfmId = null;
+        List<String> transciptionFactors = null;
 
         for (String attributePair : attributes) {
             String[] attributePairArray = attributePair.split("=");
@@ -695,14 +695,14 @@ public class GeneBuilder extends CellBaseBuilder {
                     id = attributePairArray[1];
                     break;
                 case "transcription_factor_complex":
-                    complex = Arrays.asList(attributes[3].split("::"));
+                    transciptionFactors = Arrays.asList(attributes[3].split("::"));
                     break;
                 default:
                     break;
             }
         }
 
-        transcriptTfbses.add(new TranscriptTfbs(id, pfmId, tfbs.getFeature(), complex, chromosome, tfbs.getStart(), tfbs.getEnd(),
+        transcriptTfbses.add(new TranscriptTfbs(id, pfmId, transciptionFactors, chromosome, tfbs.getStart(), tfbs.getEnd(),
                 getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript),
                 Float.parseFloat(tfbs.getScore())));
         return transcriptTfbses;

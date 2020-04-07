@@ -20,7 +20,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.OboTerm;
+import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.OntologyQuery;
@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * Created by fjlopez on 07/06/16.
  */
-public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OboTerm> {
+public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
 
     public OntologyMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -51,8 +51,8 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        GenericDocumentComplexConverter<OboTerm> converter = new GenericDocumentComplexConverter<>(OboTerm.class);
-        MongoDBIterator<OboTerm> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        GenericDocumentComplexConverter<OntologyTerm> converter = new GenericDocumentComplexConverter<>(OntologyTerm.class);
+        MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
 
@@ -68,7 +68,7 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
     }
 
     @Override
-    public CellBaseDataResult<OboTerm> aggregationStats(OntologyQuery query) {
+    public CellBaseDataResult<OntologyTerm> aggregationStats(OntologyQuery query) {
         return null;
     }
 

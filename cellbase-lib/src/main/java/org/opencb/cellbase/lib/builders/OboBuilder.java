@@ -18,7 +18,7 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.opencb.biodata.formats.obo.OboParser;
-import org.opencb.biodata.models.core.OboTerm;
+import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
@@ -42,14 +42,14 @@ public class OboBuilder extends CellBaseBuilder {
     public void parse() throws Exception {
         BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFile);
         OboParser parser = new OboParser();
-        List<OboTerm> terms = parser.parseOBO(bufferedReader);
-        for (OboTerm term : terms) {
+        List<OntologyTerm> terms = parser.parseOBO(bufferedReader);
+        for (OntologyTerm term : terms) {
             serializer.serialize(term);
         }
 
         bufferedReader = FileUtils.newBufferedReader(goFile);
         terms = parser.parseOBO(bufferedReader);
-        for (OboTerm term : terms) {
+        for (OntologyTerm term : terms) {
             serializer.serialize(term);
         }
 
