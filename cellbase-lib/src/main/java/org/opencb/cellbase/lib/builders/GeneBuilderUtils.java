@@ -48,7 +48,7 @@ public class GeneBuilderUtils {
 
     private static Logger logger = LoggerFactory.getLogger(GeneBuilderUtils.class);
 
-
+    @Deprecated
     public static Map<String, SortedSet<Gff2>> getTfbsMap(Path tfbsFile) throws IOException, NoSuchMethodException, FileFormatException {
         Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
         if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile) && Files.size(tfbsFile) > 0) {

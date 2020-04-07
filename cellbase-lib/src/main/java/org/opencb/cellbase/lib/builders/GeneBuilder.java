@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.lib.builders;
 
+
+import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
@@ -36,8 +38,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.*;
 
 public class GeneBuilder extends CellBaseBuilder {
@@ -54,6 +54,7 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path xrefsFile;
     private Path uniprotIdMappingFile;
     private Path tfbsFile;
+    private Path tabixFile;
     private Path geneExpressionFile;
     private Path geneDrugFile;
     private Path hpoFile;
@@ -65,17 +66,17 @@ public class GeneBuilder extends CellBaseBuilder {
 
     private SpeciesConfiguration speciesConfiguration;
 
-    private Connection sqlConn;
-    private PreparedStatement sqlQuery;
+//    private Connection sqlConn;
+//    private PreparedStatement sqlQuery;
 
     private int CHUNK_SIZE = 2000;
-    private String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
-    private Set<String> indexedSequences;
-
-    private int featureCounter = -1; // initialize to -1 so that first +1 sets it to 0
-    private String[] featureTypes = {"exon", "cds", "start_codon", "stop_codon"};
-    private String currentFeature = "";
-    private Map<String, Object> currentTranscriptMap;
+//    private String chunkIdSuffix = CHUNK_SIZE / 1000 + "k";
+//    private Set<String> indexedSequences;
+//
+//    private int featureCounter = -1; // initialize to -1 so that first +1 sets it to 0
+//    private String[] featureTypes = {"exon", "cds", "start_codon", "stop_codon"};
+//    private String currentFeature = "";
+//    private Map<String, Object> currentTranscriptMap;
 
     private int geneCounter;
     private ArrayList<String> geneList;
@@ -97,7 +98,9 @@ public class GeneBuilder extends CellBaseBuilder {
                        SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
                        CellBaseSerializer serializer) {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
-                geneDirectoryPath.resolve("idmapping_selected.tab.gz"), geneDirectoryPath.resolve("motif_features.gff.gz"),
+                geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
+                geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz"),
+                geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz.tbi"),
                 geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("dgidb.tsv"),
                 geneDirectoryPath.resolve("phenotype_to_genes.txt"),
@@ -112,17 +115,17 @@ public class GeneBuilder extends CellBaseBuilder {
         this.genomeSequenceFilePath = genomeSequenceFastaFile;
     }
 
-    public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile,
+    public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path tabixFile,
                        Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
-                       Path geneOntologyAnnotationFile,
-                       Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                       CellBaseSerializer serializer) {
+                       Path geneOntologyAnnotationFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
+                       boolean flexibleGTFParsing, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
         this.xrefsFile = xrefsFile;
         this.uniprotIdMappingFile = uniprotIdMappingFile;
         this.tfbsFile = tfbsFile;
+        this.tabixFile = tabixFile;
         this.geneExpressionFile = geneExpressionFile;
         this.geneDrugFile = geneDrugFile;
         this.hpoFile = hpoFile;
@@ -147,7 +150,8 @@ public class GeneBuilder extends CellBaseBuilder {
         Map<String, ArrayList<Xref>> xrefMap = GeneBuilderUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
-        Map<String, SortedSet<Gff2>> tfbsMap = GeneBuilderUtils.getTfbsMap(tfbsFile);
+
+        TabixReader tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
 
         // Gene annotation data
         Map<String, List<Expression>> geneExpressionMap = GeneBuilderUtils
@@ -195,8 +199,8 @@ public class GeneBuilder extends CellBaseBuilder {
 
             // Check if Transcript exist in the Gene Set of transcripts
             if (!transcriptDict.containsKey(transcriptId)) {
-                transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tfbsMap, constraints, gtf, transcriptId,
-                        proteinToOntologyAnnotations);
+                transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tabixReader, constraints, gtf,
+                        transcriptId, proteinToOntologyAnnotations);
             } else {
                 transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
             }
@@ -321,12 +325,12 @@ public class GeneBuilder extends CellBaseBuilder {
     }
 
     private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
-                                     Map<String, Fasta> cDnaSequencesMap, Map<String, SortedSet<Gff2>> tfbsMap,
+                                     Map<String, Fasta> cDnaSequencesMap, TabixReader tabixReader,
                                      Map<String, List<Constraint>> constraints, Gtf gtf, String transcriptId, Map<String,
-                                     List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations) {
+                                     List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations) throws IOException {
         Transcript transcript; // TODO: transcript tfbs should be a list and not an array list
         String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
-        List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tfbsMap);
+        List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tabixReader);
         Map<String, String> gtfAttributes = gtf.getAttributes();
         List<TranscriptOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
                 proteinToOntologyAnnotations);
@@ -648,6 +652,54 @@ public class GeneBuilder extends CellBaseBuilder {
 
     }
 
+    private List<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, TabixReader tabixReader) throws IOException {
+        List<TranscriptTfbs> transcriptTfbses = null;
+
+        int transcriptStart = transcript.getStart();
+        int transcriptEnd = transcript.getEnd();
+
+        TabixReader.Iterator iter = tabixReader.query(chromosome, transcriptStart, transcriptEnd);
+
+        String line;
+        while ((line = iter.next()) != null) {
+            String[] elements = line.split("\t");
+
+            String sequenceName = elements[0];
+            String source = elements[1];
+            String feature = elements[2];
+            int start = Integer.parseInt(elements[3]);
+            int end = Integer.parseInt(elements[4]);
+            String score = elements[5];
+            String strand = elements[6];
+            String frame = elements[7];
+            String attribute = elements[8];
+
+            if (strand.equals(transcript.getStrand())) {
+                continue;
+            }
+
+            if (transcript.getStrand().equals("+")) {
+                if (start > transcript.getStart() + 500) {
+                    break;
+                } else if (end > transcript.getStart() - 2500) {
+                    Gff2 tfbs = new Gff2(sequenceName, source, feature, start, end, score, strand, frame, attribute);
+                    transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
+                }
+            } else {
+                // transcript in negative strand
+                if (start > transcript.getEnd() + 2500) {
+                    break;
+                } else if (start > transcript.getEnd() - 500) {
+                    Gff2 tfbs = new Gff2(sequenceName, source, feature, start, end, score, strand, frame, attribute);
+                    transcriptTfbses = addTranscriptTfbstoList(tfbs, transcript, chromosome, transcriptTfbses);
+                }
+            }
+        }
+
+        return transcriptTfbses;
+    }
+
+    @Deprecated
     private List<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, Map<String, SortedSet<Gff2>> tfbsMap) {
         List<TranscriptTfbs> transcriptTfbses = null;
         if (tfbsMap.containsKey(chromosome)) {
@@ -695,7 +747,7 @@ public class GeneBuilder extends CellBaseBuilder {
                     id = attributePairArray[1];
                     break;
                 case "transcription_factor_complex":
-                    transciptionFactors = Arrays.asList(attributes[3].split("::"));
+                    transciptionFactors = Arrays.asList(attributePairArray[1].split("::"));
                     break;
                 default:
                     break;
@@ -744,7 +796,6 @@ public class GeneBuilder extends CellBaseBuilder {
         }
         return relativeEnd;
     }
-
 
     private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's cDNA sequences...");
