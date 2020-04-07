@@ -702,8 +702,8 @@ public class GeneBuilder extends CellBaseBuilder {
             }
         }
 
-        transcriptTfbses.add(new TranscriptTfbs(id, pfmId, transciptionFactors, chromosome, tfbs.getStart(), tfbs.getEnd(),
-                getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript),
+        transcriptTfbses.add(new TranscriptTfbs(id, pfmId, tfbs.getFeature(), transciptionFactors, chromosome, tfbs.getStart(),
+                tfbs.getEnd(), getRelativeTranscriptTfbsStart(tfbs, transcript), getRelativeTranscriptTfbsEnd(tfbs, transcript),
                 Float.parseFloat(tfbs.getScore())));
         return transcriptTfbses;
     }
