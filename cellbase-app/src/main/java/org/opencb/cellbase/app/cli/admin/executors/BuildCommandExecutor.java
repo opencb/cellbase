@@ -60,7 +60,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         super(buildCommandOptions.commonOptions.logLevel, buildCommandOptions.commonOptions.conf);
 
         this.buildCommandOptions = buildCommandOptions;
-        this.output = Paths.get(buildCommandOptions.targetDirectory);
+        this.output = Paths.get(buildCommandOptions.outputDirectory);
         normalize = !buildCommandOptions.skipNormalize;
 
         this.ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");

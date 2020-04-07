@@ -97,9 +97,8 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used", required = false, arity = 1)
         public String assembly;
 
-        @Parameter(names = {"-t", "--target-directory"}, description = "Location of data files and where generated JSON files will be " +
-                "saved", required = true, arity = 1)
-        public String targetDirectory;
+        @Parameter(names = {"-o", "--outdir"}, description = "Downloaded files will be saved in this directory.", required = true, arity = 1)
+        public String outputDirectory;
 
         @Parameter(names = {"--skip-normalize"}, description = "Skip normalization of clinical variants. Normalization"
                 + " includes allele trimming and left alignment. **NOTE** this parameter will only be used when building"
