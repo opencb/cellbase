@@ -122,8 +122,22 @@
 
 {"collection": "ontology", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"name": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"definition": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"description": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"namespace": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"comment": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"synonyms": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"xrefs": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"parents": 1}, "options": {"background": true}}
+{"collection": "ontology", "fields": {"children": 1}, "options": {"background": true}}
+
+{"collection": "regulatory_pfm", "fields": {"id": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"name": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"transcriptionFactors": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"threshold": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"source": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"unit": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"maxPositionSum": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"length": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"elements": 1}, "options": {"background": true}}
+{"collection": "regulatory_pfm", "fields": {"elementsString": 1}, "options": {"background": true}}
