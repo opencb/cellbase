@@ -42,13 +42,13 @@ public class OboBuilder extends CellBaseBuilder {
     public void parse() throws Exception {
         BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFile);
         OboParser parser = new OboParser();
-        List<OntologyTerm> terms = parser.parseOBO(bufferedReader);
+        List<OntologyTerm> terms = parser.parseOBO(bufferedReader, "Human Phenotype Ontology");
         for (OntologyTerm term : terms) {
             serializer.serialize(term);
         }
 
         bufferedReader = FileUtils.newBufferedReader(goFile);
-        terms = parser.parseOBO(bufferedReader);
+        terms = parser.parseOBO(bufferedReader, "Gene Ontology");
         for (OntologyTerm term : terms) {
             serializer.serialize(term);
         }
