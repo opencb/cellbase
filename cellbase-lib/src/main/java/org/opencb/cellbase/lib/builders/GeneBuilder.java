@@ -164,7 +164,7 @@ public class GeneBuilder extends CellBaseBuilder {
         Map<String, List<Constraint>> constraints = GeneBuilderUtils.getConstraints(gnomadFile);
 
         // Protein to gene ontology term
-        Map<String, List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations
+        Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations
                 = GeneBuilderUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
 
         // Preparing the fasta file for fast accessing
@@ -327,12 +327,12 @@ public class GeneBuilder extends CellBaseBuilder {
     private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
                                      Map<String, Fasta> cDnaSequencesMap, TabixReader tabixReader,
                                      Map<String, List<Constraint>> constraints, Gtf gtf, String transcriptId, Map<String,
-                                     List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations) throws IOException {
+                                     List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations) throws IOException {
         Transcript transcript; // TODO: transcript tfbs should be a list and not an array list
         String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
         List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tabixReader);
         Map<String, String> gtfAttributes = gtf.getAttributes();
-        List<TranscriptOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
+        List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
                 proteinToOntologyAnnotations);
 
         TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, constraints.get(transcriptId));
@@ -370,12 +370,12 @@ public class GeneBuilder extends CellBaseBuilder {
         return transcript;
     }
 
-    private List<TranscriptOntologyTermAnnotation> getOntologyAnnotations(
-            ArrayList<Xref> xrefs,  Map<String, List<TranscriptOntologyTermAnnotation>> proteinToOntologyAnnotations) {
+    private List<FeatureOntologyTermAnnotation> getOntologyAnnotations(
+            ArrayList<Xref> xrefs,  Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations) {
         if (xrefs == null || proteinToOntologyAnnotations == null) {
             return null;
         }
-        List<TranscriptOntologyTermAnnotation> annotations = new ArrayList<>();
+        List<FeatureOntologyTermAnnotation> annotations = new ArrayList<>();
         for (Xref xref : xrefs) {
             if (xref.getDbName().equals("uniprotkb_acc")) {
                 if (proteinToOntologyAnnotations.get(xref.getId()) != null) {
