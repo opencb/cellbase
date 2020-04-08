@@ -143,7 +143,8 @@ public class CoreDownloadManager extends DownloadManager {
             logger.info("Downloading gnomAD constraints data...");
             String url = configuration.getDownload().getGnomadConstraints().getHost();
             downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
-            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomadConstraints().getVersion(), getTimeStamp(),
+            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().
+                            getGnomadConstraints().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
         }
     }
