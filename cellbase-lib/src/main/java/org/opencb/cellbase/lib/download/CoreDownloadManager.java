@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+@Deprecated
 public class CoreDownloadManager extends DownloadManager {
 
     private static final String ENSEMBL_NAME = "ENSEMBL";

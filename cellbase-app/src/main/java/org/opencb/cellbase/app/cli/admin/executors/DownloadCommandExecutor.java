@@ -25,10 +25,7 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.SpeciesUtils;
-import org.opencb.cellbase.lib.download.ClinicalDownloadManager;
-import org.opencb.cellbase.lib.download.CoreDownloadManager;
-import org.opencb.cellbase.lib.download.DownloadManager;
-import org.opencb.cellbase.lib.download.RegulationDownloadManager;
+import org.opencb.cellbase.lib.download.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -80,13 +77,13 @@ public class DownloadCommandExecutor extends CommandExecutor {
             for (String data : dataList) {
                 switch (data) {
                     case EtlCommons.GENOME_DATA:
-                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
+                        new GenomeDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
                         break;
                     case EtlCommons.GENE_DATA:
-                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadEnsemblGene();
+                        new GeneDownloadManager(species, assembly, outputDirectory, configuration).downloadEnsemblGene();
                         if (!dataList.contains(EtlCommons.GENOME_DATA)) {
                             // user didn't specify genome data to download, but we need it for gene data sources
-                            new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
+                            new GenomeDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
                         }
                         break;
 //                    case EtlCommons.VARIATION_DATA:
@@ -99,10 +96,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         new RegulationDownloadManager(species, assembly, outputDirectory, configuration).downloadRegulation();
                         break;
                     case EtlCommons.PROTEIN_DATA:
-                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadProtein();
+                        new ProteinDownloadManager(species, assembly, outputDirectory, configuration).downloadProtein();
                         break;
                     case EtlCommons.CONSERVATION_DATA:
-                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadConservation();
+                        new GenomeDownloadManager(species, assembly, outputDirectory, configuration).downloadConservation();
                         break;
                     case EtlCommons.CLINICAL_VARIANTS_DATA:
                         new ClinicalDownloadManager(species, assembly, outputDirectory, configuration).downloadClinical();
