@@ -30,7 +30,6 @@ import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.builders.*;
 import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
-import org.opencb.cellbase.lib.builders.variation.VariationBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -130,9 +129,6 @@ public class BuildCommandExecutor extends CommandExecutor {
                                 buildGenomeSequence();
                             }
                             parser = buildGene();
-                            break;
-                        case EtlCommons.VARIATION_DATA:
-                            parser = buildVariation();
                             break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
                             parser = buildCadd();
@@ -269,14 +265,6 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path genomeFastaFilePath = getFastaReferenceGenome();
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, "gene");
         return new GeneBuilder(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
-    }
-
-
-    private CellBaseBuilder buildVariation() {
-        Path variationFolderPath = downloadFolder.resolve("variation");
-        copyVersionFiles(Arrays.asList(variationFolderPath.resolve("ensemblVariationVersion.json")));
-        CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, null, true, true, true);
-        return new VariationBuilder(variationFolderPath, serializer);
     }
 
     private CellBaseBuilder buildCadd() {

@@ -21,7 +21,7 @@ import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.gaf.GafParser;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.Constraint;
-import org.opencb.biodata.models.core.TranscriptOntologyTermAnnotation;
+import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
@@ -318,8 +318,8 @@ public class GeneBuilderUtils {
      * @return map of proteins to ontology annotation objects.
      * @throws IOException if goa file can't be read
      */
-    public static Map<String, List<TranscriptOntologyTermAnnotation>> getOntologyAnnotations(Path goaFile) throws IOException {
-        Map<String, List<TranscriptOntologyTermAnnotation>> annotations = new HashMap<>();
+    public static Map<String, List<FeatureOntologyTermAnnotation>> getOntologyAnnotations(Path goaFile) throws IOException {
+        Map<String, List<FeatureOntologyTermAnnotation>> annotations = new HashMap<>();
         if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
             logger.info("Loading GO annotation from '{}'", goaFile);
             BufferedReader br = FileUtils.newBufferedReader(goaFile);
