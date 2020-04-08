@@ -58,7 +58,7 @@ public class EtlCommons {
 
     public static final String STRUCTURAL_VARIANTS_DATA = "svs";
     public static final String REPEATS_DATA = "repeats";
-    public static final String OBO_DATA = "obo";
+    public static final String OBO_DATA = "ontology";
     public static final String HPO_FILE = "hp.obo";
     public static final String GO_FILE = "go-basic.obo";
 

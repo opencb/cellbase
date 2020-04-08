@@ -133,7 +133,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
                                 + " are: {genome, gene, gene_disease_association, variation, variation_functional_score,"
-                                + " regulation, protein, conservation, clinical_variants}");
+                                + " regulation, protein, conservation, clinical_variants, ontology}");
                         break;
                 }
             }
