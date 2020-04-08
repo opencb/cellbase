@@ -69,68 +69,64 @@ public class GeneDownloadManager extends DownloadManager {
     }
 
 
-    public void downloadEnsemblGene()throws IOException, InterruptedException {
+    public List<DownloadFile> downloadEnsemblGene() throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = downloadFolder.resolve("gene");
         Files.createDirectories(geneFolder);
 
-        downloadEnsemblData(geneFolder);
-        downloadDrugData(geneFolder);
-        downloadGeneUniprotXref(geneFolder);
-        downloadGeneExpressionAtlas(geneFolder);
-        downloadGeneDiseaseAnnotation(geneFolder);
-        downloadGnomadConstraints(geneFolder);
-        downloadGO(geneFolder);
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+
+        downloadFiles.addAll(downloadEnsemblData(geneFolder));
+        downloadFiles.add(downloadDrugData(geneFolder));
+        downloadFiles.addAll(downloadGeneUniprotXref(geneFolder));
+        downloadFiles.add(downloadGeneExpressionAtlas(geneFolder));
+        downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
+        downloadFiles.add(downloadGnomadConstraints(geneFolder));
+        downloadFiles.add(downloadGO(geneFolder));
         // FIXME
 //        runGeneExtraInfo(geneFolder);
+
+        return downloadFiles;
     }
 
-    private void downloadGO(Path geneFolder) throws IOException, InterruptedException {
+    private DownloadFile downloadGO(Path geneFolder) throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading go annotation...");
             String url = configuration.getDownload().getGoAnnotation().getHost();
-            downloadFile(url, geneFolder.resolve("goa_human.gaf.gz").toString());
             saveVersionData(EtlCommons.GENE_DATA, GO_ANNOTATION_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     geneFolder.resolve("goAnnotationVersion.json"));
+            return downloadFile(url, geneFolder.resolve("goa_human.gaf.gz").toString());
         }
+        return null;
     }
 
-    public void downloadObo() throws IOException, InterruptedException {
-        logger.info("Downloading obo files ...");
-
-        Path oboFolder = downloadFolder.resolve("obo");
-        Files.createDirectories(oboFolder);
-
-        String url = configuration.getDownload().getHpoObo().getHost();
-        downloadFile(url, oboFolder.resolve("hp.obo").toString());
-
-        url = configuration.getDownload().getGoObo().getHost();
-        downloadFile(url, oboFolder.resolve("go-basic.obo").toString());
-    }
-
-    private void downloadGnomadConstraints(Path geneFolder) throws IOException, InterruptedException {
+    private DownloadFile downloadGnomadConstraints(Path geneFolder) throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD constraints data...");
             String url = configuration.getDownload().getGnomadConstraints().getHost();
-            downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
             saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().
                             getGnomadConstraints().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
+            return downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
         }
+        return null;
     }
-    private void downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
+
+    private DownloadFile downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
             String url = configuration.getDownload().getDgidb().getHost();
-            downloadFile(url, geneFolder.resolve("dgidb.tsv").toString());
             saveVersionData(EtlCommons.GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     geneFolder.resolve("dgidbVersion.json"));
+            return downloadFile(url, geneFolder.resolve("dgidb.tsv").toString());
         }
+        return null;
     }
 
-    private void downloadEnsemblData(Path geneFolder) throws IOException, InterruptedException {
+    private List<DownloadFile> downloadEnsemblData(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene Ensembl data (gtf, pep, cdna, motifs) ...");
         List<String> downloadedUrls = new ArrayList<>(4);
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         String ensemblHost = ensemblHostUrl + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
@@ -148,20 +144,22 @@ public class GeneDownloadManager extends DownloadManager {
         String version = ensemblRelease.split("-")[1];
         String url = ensemblHost + "/gtf/" + bacteriaCollectionPath + speciesShortName + "/*" + version + ".gtf.gz";
         String fileName = geneFolder.resolve(speciesShortName + ".gtf.gz").toString();
-        downloadFile(url, fileName);
+        downloadFiles.add(downloadFile(url, fileName));
         downloadedUrls.add(url);
 
         url = ensemblHost + "/fasta/" + bacteriaCollectionPath + speciesShortName + "/pep/*.pep.all.fa.gz";
         fileName = geneFolder.resolve(speciesShortName + ".pep.all.fa.gz").toString();
-        downloadFile(url, fileName);
+        downloadFiles.add(downloadFile(url, fileName));
         downloadedUrls.add(url);
 
         url = ensemblHost + "/fasta/" + bacteriaCollectionPath + speciesShortName + "/cdna/*.cdna.all.fa.gz";
         fileName = geneFolder.resolve(speciesShortName + ".cdna.all.fa.gz").toString();
-        downloadFile(url, fileName);
+        downloadFiles.add(downloadFile(url, fileName));
         downloadedUrls.add(url);
         saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 geneFolder.resolve("ensemblCoreVersion.json"));
+
+        return downloadFiles;
     }
 
     private String getUniProtReleaseNotesUrl() {
@@ -184,31 +182,31 @@ public class GeneDownloadManager extends DownloadManager {
         return null;
     }
 
-
-    private void downloadGeneUniprotXref(Path geneFolder) throws IOException, InterruptedException {
+    private List<DownloadFile> downloadGeneUniprotXref(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading UniProt ID mapping ...");
+
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         if (GENE_UNIPROT_XREF_FILES.containsKey(speciesConfiguration.getScientificName())) {
             String geneGtfUrl = configuration.getDownload().getGeneUniprotXref().getHost() + "/"
                     + GENE_UNIPROT_XREF_FILES.get(speciesConfiguration.getScientificName());
-            downloadFile(geneGtfUrl, geneFolder.resolve("idmapping_selected.tab.gz").toString());
-            downloadFile(getUniProtReleaseNotesUrl(), geneFolder.resolve("uniprotRelnotes.txt").toString());
+            downloadFiles.add(downloadFile(geneGtfUrl, geneFolder.resolve("idmapping_selected.tab.gz").toString()));
+            downloadFiles.add(downloadFile(getUniProtReleaseNotesUrl(), geneFolder.resolve("uniprotRelnotes.txt").toString()));
 
             saveVersionData(EtlCommons.GENE_DATA, UNIPROT_NAME,
                     getUniProtRelease(geneFolder.resolve("uniprotRelnotes.txt").toString()), getTimeStamp(),
                     Collections.singletonList(geneGtfUrl), geneFolder.resolve("uniprotXrefVersion.json"));
         }
+
+        return downloadFiles;
     }
 
-    private void downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
+    private DownloadFile downloadGeneExpressionAtlas(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene expression atlas ...");
-
         String geneGtfUrl = configuration.getDownload().getGeneExpressionAtlas().getHost();
-        downloadFile(geneGtfUrl, geneFolder.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
-
         saveVersionData(EtlCommons.GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, getGeneExpressionAtlasVersion(), getTimeStamp(),
                 Collections.singletonList(geneGtfUrl), geneFolder.resolve("geneExpressionAtlasVersion.json"));
-
+        return downloadFile(geneGtfUrl, geneFolder.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
     }
 
     private String getGeneExpressionAtlasVersion() {
@@ -216,12 +214,14 @@ public class GeneDownloadManager extends DownloadManager {
                 .split("_")[5].replace(".tab", "");
     }
 
-    private void downloadGeneDiseaseAnnotation(Path geneFolder) throws IOException, InterruptedException {
+    private List<DownloadFile> downloadGeneDiseaseAnnotation(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene disease annotation ...");
+
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         String host = configuration.getDownload().getHpo().getHost();
         String fileName = StringUtils.substringAfterLast(host, "/");
-        downloadFile(host, geneFolder.resolve(fileName).toString());
+        downloadFiles.add(downloadFile(host, geneFolder.resolve(fileName).toString()));
         saveVersionData(EtlCommons.GENE_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(host),
                 geneFolder.resolve("hpoVersion.json"));
 
@@ -229,12 +229,14 @@ public class GeneDownloadManager extends DownloadManager {
         List<String> files = configuration.getDownload().getDisgenet().getFiles();
         for (String file : files) {
             String outputFile = file.equalsIgnoreCase("readme.txt") ? "disgenetReadme.txt" : file;
-            downloadFile(host + "/" + file, geneFolder.resolve(outputFile).toString());
+            downloadFiles.add(downloadFile(host + "/" + file, geneFolder.resolve(outputFile).toString()));
         }
 
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
                 getVersionFromVersionLine(geneFolder.resolve("disgenetReadme.txt"), "(version"), getTimeStamp(),
                 Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
+
+        return downloadFiles;
     }
 
     private void runGeneExtraInfo(Path geneFolder) throws IOException, InterruptedException {

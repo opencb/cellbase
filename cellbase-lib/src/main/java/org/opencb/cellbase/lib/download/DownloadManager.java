@@ -58,9 +58,6 @@ public class DownloadManager {
     private static final String WM_NAME = "WindowMasker";
     private static final String GNOMAD_NAME = "gnomAD";
 
-
-    private List<DownloadFile> downloadFiles = new ArrayList<>();
-
     protected String species;
     protected String assembly;
     protected Path outdir;
@@ -143,9 +140,9 @@ public class DownloadManager {
         logger.info("Processing species " + speciesConfiguration.getScientificName());
     }
 
-    public void downloadStructuralVariants() throws IOException, InterruptedException {
+    public DownloadFile downloadStructuralVariants() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
-            return;
+             return null;
         }
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading DGV data ...");
@@ -155,11 +152,11 @@ public class DownloadManager {
             String sourceFilename = (assemblyConfiguration.getName().equalsIgnoreCase("grch37") ? "GRCh37_hg19" : "GRCh38_hg38")
                     + "_variants_2016-05-15.txt";
             String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
-            downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
-
             saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
                     Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
+            return downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
         }
+        return null;
     }
 
     private String getDGVVersion(String sourceFilename) {
@@ -257,9 +254,9 @@ public class DownloadManager {
         return pathParts[9] + "/" + pathParts[8] + "/" + pathParts[7];
     }
 
-    public void downloadCaddScores() throws IOException, InterruptedException {
+    public DownloadFile downloadCaddScores() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
-            return;
+            return null;
         }
         if (speciesConfiguration.getScientificName().equals("Homo sapiens") && assemblyConfiguration.getName().equalsIgnoreCase("GRCh37")) {
             logger.info("Downloading CADD scores information ...");
@@ -269,20 +266,23 @@ public class DownloadManager {
 
             // Downloads CADD scores
             String url = configuration.getDownload().getCadd().getHost();
-            downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
+
             saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
                     Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
+            return downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
         }
+        return null;
     }
 
-    public void downloadRepeats() throws IOException, InterruptedException {
+    public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
-            return;
+            return null;
         }
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading repeats data ...");
             Path repeatsFolder = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
             Files.createDirectories(repeatsFolder);
+            List<DownloadFile> downloadFiles = new ArrayList<>();
             String pathParam;
             if (assemblyConfiguration.getName().equalsIgnoreCase("grch37")) {
                 pathParam = "hg19";
@@ -297,14 +297,14 @@ public class DownloadManager {
             // Download tandem repeat finder
             String url = configuration.getDownload().getSimpleRepeats().getHost() + "/" + pathParam
                     + "/database/simpleRepeat.txt.gz";
-            downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString());
+            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString()));
             saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILE));
 
             // Download genomic super duplications
             url = configuration.getDownload().getGenomicSuperDups().getHost() + "/" + pathParam
                     + "/database/genomicSuperDups.txt.gz";
-            downloadFile(url, repeatsFolder.resolve(EtlCommons.GSD_FILE).toString());
+            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.GSD_FILE).toString()));
             saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILE));
 
@@ -312,16 +312,17 @@ public class DownloadManager {
             if (!pathParam.equalsIgnoreCase("hg19")) {
                 url = configuration.getDownload().getWindowMasker().getHost() + "/" + pathParam
                         + "/database/windowmaskerSdust.txt.gz";
-                downloadFile(url, repeatsFolder.resolve(EtlCommons.WM_FILE).toString());
+                downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.WM_FILE).toString()));
                 saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, null, getTimeStamp(), Collections.singletonList(url),
                         repeatsFolder.resolve(EtlCommons.WM_VERSION_FILE));
             }
-
+            return downloadFiles;
         }
+        return null;
     }
 
-    protected void downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
-        downloadFile(url, outputFileName, null);
+    protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
+        return downloadFile(url, outputFileName, null);
     }
 
 //    protected void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException {
@@ -335,7 +336,7 @@ public class DownloadManager {
 //        }
 //    }
 
-    protected void downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
+    protected DownloadFile downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
         DownloadFile downloadFileInfo = new DownloadFile(url, outputFileName, Timestamp.valueOf(LocalDateTime.now()).toString());
         Long startTime = System.currentTimeMillis();
@@ -352,7 +353,7 @@ public class DownloadManager {
             setDownloadStatusAndMessage(outputFileName, downloadFileInfo, outputLog, downloaded);
         }
         downloadFileInfo.setElapsedTime(startTime, System.currentTimeMillis());
-        downloadFiles.add(downloadFileInfo);
+        return downloadFileInfo;
     }
 
     private void setDownloadStatusAndMessage(String outputFileName, DownloadFile downloadFile, String outputLog, boolean downloaded) {
@@ -374,7 +375,7 @@ public class DownloadManager {
         }
     }
 
-    public void writeDownloadLogFile() throws IOException {
+    public void writeDownloadLogFile(List<DownloadFile> downloadFiles) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
         writer.writeValue(new File(downloadFolder + "/download_log.json"), downloadFiles);

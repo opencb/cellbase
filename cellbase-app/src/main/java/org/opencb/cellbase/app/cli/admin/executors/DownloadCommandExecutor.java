@@ -30,6 +30,7 @@ import org.opencb.cellbase.lib.download.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -71,47 +72,63 @@ public class DownloadCommandExecutor extends CommandExecutor {
             String species = downloadCommandOptions.speciesAndAssemblyOptions.species;
             String assembly = downloadCommandOptions.speciesAndAssemblyOptions.assembly;
 //            logger.info("Processing species " + speciesConfiguration.getScientificName());
+            List<DownloadFile> downloadFiles = new ArrayList<>();
 
             List<String> dataList = getDataList(species);
             DownloadManager downloadManager = new DownloadManager(species, assembly, outputDirectory, configuration);
             for (String data : dataList) {
                 switch (data) {
                     case EtlCommons.GENOME_DATA:
-                        new GenomeDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
+                        GenomeDownloadManager genomeDownloadManager = new GenomeDownloadManager(species, assembly,
+                                outputDirectory, configuration);
+                        downloadFiles.add(genomeDownloadManager.downloadReferenceGenome());
                         break;
                     case EtlCommons.GENE_DATA:
-                        new GeneDownloadManager(species, assembly, outputDirectory, configuration).downloadEnsemblGene();
+                        GeneDownloadManager geneDownloadManager
+                                = new GeneDownloadManager(species, assembly, outputDirectory, configuration);
+                        downloadFiles.addAll(geneDownloadManager.downloadEnsemblGene());
                         if (!dataList.contains(EtlCommons.GENOME_DATA)) {
                             // user didn't specify genome data to download, but we need it for gene data sources
-                            new GenomeDownloadManager(species, assembly, outputDirectory, configuration).downloadReferenceGenome();
+                            genomeDownloadManager = new GenomeDownloadManager(species, assembly,
+                                    outputDirectory, configuration);
+                            downloadFiles.add(genomeDownloadManager.downloadReferenceGenome());
                         }
                         break;
 //                    case EtlCommons.VARIATION_DATA:
 //                        downloadManager.downloadVariation();
 //                        break;
                     case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-                        downloadManager.downloadCaddScores();
+                        downloadFiles.add(downloadManager.downloadCaddScores());
                         break;
                     case EtlCommons.REGULATION_DATA:
-                        new RegulationDownloadManager(species, assembly, outputDirectory, configuration).downloadRegulation();
+                        RegulationDownloadManager regulationDownloadManager = new RegulationDownloadManager(
+                                species, assembly, outputDirectory, configuration);
+                        downloadFiles.addAll(regulationDownloadManager.downloadRegulation());
                         break;
                     case EtlCommons.PROTEIN_DATA:
-                        new ProteinDownloadManager(species, assembly, outputDirectory, configuration).downloadProtein();
+                        ProteinDownloadManager proteinDownloadManager = new ProteinDownloadManager(
+                                species, assembly, outputDirectory, configuration);
+                        downloadFiles.addAll(proteinDownloadManager.downloadProtein());
                         break;
                     case EtlCommons.CONSERVATION_DATA:
-                        new GenomeDownloadManager(species, assembly, outputDirectory, configuration).downloadConservation();
+                        genomeDownloadManager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
+                        downloadFiles.addAll(genomeDownloadManager.downloadConservation());
                         break;
                     case EtlCommons.CLINICAL_VARIANTS_DATA:
-                        new ClinicalDownloadManager(species, assembly, outputDirectory, configuration).downloadClinical();
+                        ClinicalDownloadManager clinicalDownloadManager = new ClinicalDownloadManager(
+                                species, assembly, outputDirectory, configuration);
+                        downloadFiles.addAll(clinicalDownloadManager.downloadClinical());
                         break;
                     case EtlCommons.STRUCTURAL_VARIANTS_DATA:
-                        downloadManager.downloadStructuralVariants();
+                        downloadFiles.add(downloadManager.downloadStructuralVariants());
                         break;
                     case EtlCommons.REPEATS_DATA:
-                        downloadManager.downloadRepeats();
+                        downloadFiles.addAll(downloadManager.downloadRepeats());
                         break;
                     case EtlCommons.OBO_DATA:
-                        new CoreDownloadManager(species, assembly, outputDirectory, configuration).downloadObo();
+                        OntologyDownloadManager ontologyDownloadManager = new OntologyDownloadManager(species, assembly, outputDirectory,
+                                configuration);
+                        downloadFiles.addAll(ontologyDownloadManager.downloadObo());
                         break;
                     default:
                         System.out.println("Value \"" + data + "\" is not allowed for the data parameter. Allowed values"
@@ -120,7 +137,7 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         break;
                 }
             }
-            downloadManager.writeDownloadLogFile();
+            downloadManager.writeDownloadLogFile(downloadFiles);
         } catch (ParameterException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
         } catch (IOException | InterruptedException | CellbaseException | NoSuchMethodException | FileFormatException e) {

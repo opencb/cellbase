@@ -40,10 +40,11 @@ public class RegulationDownloadManager extends DownloadManager {
     private Path regulationFolder;
 
     private static final String ENSEMBL_NAME = "ENSEMBL";
-    private static final String MIRBASE_NAME = "miRBase";
-    private static final String MIRTARBASE_NAME = "miRTarBase";
-    private static final String TARGETSCAN_NAME = "TargetScan";
+//    private static final String MIRBASE_NAME = "miRBase";
+//    private static final String MIRTARBASE_NAME = "miRTarBase";
+//    private static final String TARGETSCAN_NAME = "TargetScan";
 
+    private List<DownloadFile> downloadFiles;
 
     public RegulationDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
@@ -51,14 +52,15 @@ public class RegulationDownloadManager extends DownloadManager {
 
     }
 
-    public void downloadRegulation() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
+    public List<DownloadFile> downloadRegulation() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
-            return;
+            return null;
         }
         this.regulationFolder = downloadFolder.resolve("regulation");
         Files.createDirectories(regulationFolder);
 
         logger.info("Downloading regulation information ...");
+        downloadFiles = new ArrayList<>();
 
         List<String> downloadedUrls = new ArrayList<>();
         downloadedUrls.addAll(downloadRegulatoryaAndMotifFeatures());
@@ -66,6 +68,8 @@ public class RegulationDownloadManager extends DownloadManager {
 
         saveVersionData(EtlCommons.REGULATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 regulationFolder.resolve("regulation_version.json"));
+
+        return downloadFiles;
     }
 
     /**
@@ -84,15 +88,15 @@ public class RegulationDownloadManager extends DownloadManager {
 
         Path outputFile = regulationFolder.resolve(EtlCommons.REGULATORY_FEATURES_FILE);
         String regulatoryBuildUrl = regulationUrl + "/*Regulatory_Build.regulatory_features*.gff.gz";
-        downloadFile(regulatoryBuildUrl, outputFile.toString());
+        downloadFiles.add(downloadFile(regulatoryBuildUrl, outputFile.toString()));
 
         outputFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
         String motifUrl = regulationUrl + "/MotifFeatures/*" + assemblyConfiguration.getName() + ".motif_features.gff.gz";
-        downloadFile(motifUrl, outputFile.toString());
+        downloadFiles.add(downloadFile(motifUrl, outputFile.toString()));
 
         String motifTbiUrl = regulationUrl + "/MotifFeatures/*" + assemblyConfiguration.getName() + ".motif_features.gff.gz.tbi";
         outputFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE + ".tbi");
-        downloadFile(motifTbiUrl, outputFile.toString());
+        downloadFiles.add(downloadFile(motifTbiUrl, outputFile.toString()));
 
         loadPfmMatrices();
 
@@ -126,11 +130,6 @@ public class RegulationDownloadManager extends DownloadManager {
             RegulatoryPfm regulatoryPfm = mapper.readValue(url, RegulatoryPfm.class);
             serializer.serialize(regulatoryPfm);
         }
-    }
-
-    private boolean fileExists() {
-        buildFolder.resolve("regulatory_pfm");
-                return true;
     }
 
     private String getMatrixId(Gff2 tfbsMotifFeature) {

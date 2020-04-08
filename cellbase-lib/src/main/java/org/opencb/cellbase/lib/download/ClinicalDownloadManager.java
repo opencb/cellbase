@@ -44,9 +44,9 @@ public class ClinicalDownloadManager extends DownloadManager {
         super(species, assembly, outdir, configuration);
     }
 
-    public void downloadClinical() throws IOException, InterruptedException {
+    public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "clinical_variants")) {
-            return;
+            return null;
         }
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             if (assemblyConfiguration.getName() == null) {
@@ -56,24 +56,26 @@ public class ClinicalDownloadManager extends DownloadManager {
 
             logger.info("Downloading clinical information ...");
 
+            List<DownloadFile> downloadFiles = new ArrayList<>();
+
             Path clinicalFolder = downloadFolder.resolve(EtlCommons.CLINICAL_VARIANTS_FOLDER);
             Files.createDirectories(clinicalFolder);
             List<String> clinvarUrls = new ArrayList<>(3);
             String url = configuration.getDownload().getClinvar().getHost();
 
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString());
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE).toString()));
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarEfoTerms().getHost();
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_EFO_FILE).toString());
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_EFO_FILE).toString()));
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarSummary().getHost();
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE).toString());
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_SUMMARY_FILE).toString()));
             clinvarUrls.add(url);
 
             url = configuration.getDownload().getClinvarVariationAllele().getHost();
-            downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString());
+            downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.CLINVAR_VARIATION_ALLELE_FILE).toString()));
             clinvarUrls.add(url);
             saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, CLINVAR_NAME, getClinVarVersion(), getTimeStamp(), clinvarUrls,
                     clinicalFolder.resolve("clinvarVersion.json"));
@@ -81,8 +83,8 @@ public class ClinicalDownloadManager extends DownloadManager {
             List<String> hgvsList = getDocmHgvsList();
             if (!hgvsList.isEmpty()) {
                 downloadDocm(hgvsList, clinicalFolder.resolve(EtlCommons.DOCM_FILE));
-                downloadFile(configuration.getDownload().getDocmVersion().getHost(),
-                        clinicalFolder.resolve("docmIndex.html").toString());
+                downloadFiles.add(downloadFile(configuration.getDownload().getDocmVersion().getHost(),
+                        clinicalFolder.resolve("docmIndex.html").toString()));
                 saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, EtlCommons.DOCM_NAME,
                         getDocmVersion(clinicalFolder.resolve("docmIndex.html")), getTimeStamp(),
                         Arrays.asList(configuration.getDownload().getDocm().getHost() + "v1/variants.json",
@@ -95,11 +97,11 @@ public class ClinicalDownloadManager extends DownloadManager {
 
             if (assemblyConfiguration.getName().equalsIgnoreCase("grch37")) {
                 url = configuration.getDownload().getIarctp53().getHost();
-                downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
+                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
                         Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
                                 + "&dataset-germlineMutationData=germlineMutationData"
                                 + "&dataset-somaticMutationReference=somaticMutationReference"
-                                + "&dataset-germlineMutationReference=germlineMutationReference"));
+                                + "&dataset-germlineMutationReference=germlineMutationReference")));
 
                 ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
                 Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -122,7 +124,9 @@ public class ClinicalDownloadManager extends DownloadManager {
                                 "The version of the database should be identified"), getTimeStamp(),
                         Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
             }
+            return downloadFiles;
         }
+        return null;
     }
 
     private String getDocmVersion(Path docmIndexHtml) {
