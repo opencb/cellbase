@@ -195,9 +195,9 @@ public class DownloadManager {
     private void downloadGnomad(Path geneFolder) throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading gnomAD data...");
-            String url = configuration.getDownload().getGnomad().getHost();
+            String url = configuration.getDownload().getGnomadConstraints().getHost();
             downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
-            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomad().getVersion(), getTimeStamp(),
+            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomadConstraints().getVersion(), getTimeStamp(),
                     Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
         }
     }

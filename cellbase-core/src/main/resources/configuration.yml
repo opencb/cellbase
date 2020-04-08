@@ -113,7 +113,7 @@ download:
   host: http://krishna.gs.washington.edu/download/CADD/v1.3/whole_genome_SNVs.tsv.gz
  reactome:
   host: http://www.reactome.org/download/current/biopax.zip
- gnomad:
+ gnomadConstraints:
   host: https://storage.googleapis.com/gnomad-public/release/2.1.1/constraint/gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz
   version: 2.1.1
  hpoObo:

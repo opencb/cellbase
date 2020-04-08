@@ -58,7 +58,7 @@ public class DownloadProperties {
     private URLProperties dbsnp;
     private URLProperties cadd;
     private URLProperties reactome;
-    private URLProperties gnomad;
+    private URLProperties gnomadConstraints;
     private URLProperties hpoObo;
     private URLProperties goObo;
     private URLProperties goAnnotation;
@@ -361,12 +361,12 @@ public class DownloadProperties {
         return this;
     }
 
-    public URLProperties getGnomad() {
-        return gnomad;
+    public URLProperties getGnomadConstraints() {
+        return gnomadConstraints;
     }
 
-    public DownloadProperties setGnomad(URLProperties gnomad) {
-        this.gnomad = gnomad;
+    public DownloadProperties setGnomadConstraints(URLProperties gnomadConstraints) {
+        this.gnomadConstraints = gnomadConstraints;
         return this;
     }
 

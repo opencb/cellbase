@@ -46,7 +46,7 @@ public class CoreDownloadManager extends DownloadManager {
     private static final String DISGENET_NAME = "DisGeNET";
     private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
     private static final String DGIDB_NAME = "DGIdb";
-
+    private static final String GNOMAD_NAME = "gnomAD";
 
     private static final HashMap GENE_UNIPROT_XREF_FILES = new HashMap() {
         {
@@ -109,7 +109,7 @@ public class CoreDownloadManager extends DownloadManager {
         downloadGeneUniprotXref(geneFolder);
         downloadGeneExpressionAtlas(geneFolder);
         downloadGeneDiseaseAnnotation(geneFolder);
-//        downloadGnomad(geneFolder);
+        downloadGnomadConstraints(geneFolder);
         downloadGO(geneFolder);
         // FIXME
 //        runGeneExtraInfo(geneFolder);
@@ -138,7 +138,15 @@ public class CoreDownloadManager extends DownloadManager {
         downloadFile(url, oboFolder.resolve("go-basic.obo").toString());
     }
 
-
+    private void downloadGnomadConstraints(Path geneFolder) throws IOException, InterruptedException {
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading gnomAD constraints data...");
+            String url = configuration.getDownload().getGnomadConstraints().getHost();
+            downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
+            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomadConstraints().getVersion(), getTimeStamp(),
+                    Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
+        }
+    }
     private void downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             logger.info("Downloading drug-gene data...");
