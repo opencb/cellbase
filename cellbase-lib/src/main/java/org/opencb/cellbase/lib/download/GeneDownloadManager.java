@@ -22,6 +22,7 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,15 +48,16 @@ public class GeneDownloadManager extends DownloadManager {
     private static final String DGIDB_NAME = "DGIdb";
     private static final String GNOMAD_NAME = "gnomAD";
 
-    private static final HashMap GENE_UNIPROT_XREF_FILES = new HashMap() {
-        {
-            put("Homo sapiens", "HUMAN_9606_idmapping_selected.tab.gz");
-            put("Mus musculus", "MOUSE_10090_idmapping_selected.tab.gz");
-            put("Rattus norvegicus", "RAT_10116_idmapping_selected.tab.gz");
-            put("Danio rerio", "DANRE_7955_idmapping_selected.tab.gz");
-            put("Drosophila melanogaster", "DROME_7227_idmapping_selected.tab.gz");
-            put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
-        }
+    private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
+
+    static {
+        GENE_UNIPROT_XREF_FILES = new HashMap<>();
+        GENE_UNIPROT_XREF_FILES.put("Homo sapiens", "HUMAN_9606_idmapping_selected.tab.gz");
+        GENE_UNIPROT_XREF_FILES.put("Mus musculus", "MOUSE_10090_idmapping_selected.tab.gz");
+        GENE_UNIPROT_XREF_FILES.put("Rattus norvegicus", "RAT_10116_idmapping_selected.tab.gz");
+        GENE_UNIPROT_XREF_FILES.put("Danio rerio", "DANRE_7955_idmapping_selected.tab.gz");
+        GENE_UNIPROT_XREF_FILES.put("Drosophila melanogaster", "DROME_7227_idmapping_selected.tab.gz");
+        GENE_UNIPROT_XREF_FILES.put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
     };
 
     public GeneDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
@@ -84,7 +86,7 @@ public class GeneDownloadManager extends DownloadManager {
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
         // FIXME
-//        runGeneExtraInfo(geneFolder);
+        runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
     }
@@ -133,29 +135,30 @@ public class GeneDownloadManager extends DownloadManager {
             ensemblHost = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
         }
 
-        String bacteriaCollectionPath = "";
+        String ensemblCollection = "";
         if (configuration.getSpecies().getBacteria().contains(speciesConfiguration)) {
             // WARN: assuming there's just one assembly
-            bacteriaCollectionPath =  speciesConfiguration.getAssemblies().get(0).getEnsemblCollection() + "/";
+            ensemblCollection =  speciesConfiguration.getAssemblies().get(0).getEnsemblCollection() + "/";
         }
 
         // Ensembl leaves now several GTF files in the FTP folder, we need to build a more accurate URL
         // to download the correct GTF file.
         String version = ensemblRelease.split("-")[1];
-        String url = ensemblHost + "/gtf/" + bacteriaCollectionPath + speciesShortName + "/*" + version + ".gtf.gz";
+        String url = ensemblHost + "/gtf/" + ensemblCollection + speciesShortName + "/*" + version + ".gtf.gz";
         String fileName = geneFolder.resolve(speciesShortName + ".gtf.gz").toString();
         downloadFiles.add(downloadFile(url, fileName));
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + speciesShortName + "/pep/*.pep.all.fa.gz";
+        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/pep/*.pep.all.fa.gz";
         fileName = geneFolder.resolve(speciesShortName + ".pep.all.fa.gz").toString();
         downloadFiles.add(downloadFile(url, fileName));
         downloadedUrls.add(url);
 
-        url = ensemblHost + "/fasta/" + bacteriaCollectionPath + speciesShortName + "/cdna/*.cdna.all.fa.gz";
+        url = ensemblHost + "/fasta/" + ensemblCollection + speciesShortName + "/cdna/*.cdna.all.fa.gz";
         fileName = geneFolder.resolve(speciesShortName + ".cdna.all.fa.gz").toString();
         downloadFiles.add(downloadFile(url, fileName));
         downloadedUrls.add(url);
+
         saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
                 geneFolder.resolve("ensemblCoreVersion.json"));
 
@@ -167,19 +170,14 @@ public class GeneDownloadManager extends DownloadManager {
                 + "/relnotes.txt";
     }
 
-    private String getUniProtRelease(String relnotesFilename) {
+    private String getUniProtRelease(String relnotesFilename) throws IOException {
         Path path = Paths.get(relnotesFilename);
-        Files.exists(path);
-        try {
-            // The first line at the relnotes.txt file contains the UniProt release
-            BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
-            String release = reader.readLine().split(" ")[2];
-            reader.close();
-            return  release;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        FileUtils.checkFile(path);
+        // The first line at the relnotes.txt file contains the UniProt release
+        BufferedReader reader = Files.newBufferedReader(path, Charset.defaultCharset());
+        String release = reader.readLine().split(" ")[2];
+        reader.close();
+        return release;
     }
 
     private List<DownloadFile> downloadGeneUniprotXref(Path geneFolder) throws IOException, InterruptedException {

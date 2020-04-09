@@ -27,15 +27,17 @@ import java.io.BufferedReader;
 import java.nio.file.Path;
 import java.util.List;
 
-public class OboBuilder extends CellBaseBuilder {
+public class OntologyBuilder extends CellBaseBuilder {
 
     private Path hpoFile;
     private Path goFile;
+    private Path doidFile;
 
-    public OboBuilder(Path oboDirectoryPath, CellBaseSerializer serializer) {
+    public OntologyBuilder(Path oboDirectoryPath, CellBaseSerializer serializer) {
         super(serializer);
         hpoFile = oboDirectoryPath.resolve(EtlCommons.HPO_FILE);
         goFile = oboDirectoryPath.resolve(EtlCommons.GO_FILE);
+        doidFile = oboDirectoryPath.resolve(EtlCommons.DOID_FILE);
     }
 
     @Override
@@ -44,12 +46,21 @@ public class OboBuilder extends CellBaseBuilder {
         OboParser parser = new OboParser();
         List<OntologyTerm> terms = parser.parseOBO(bufferedReader, "Human Phenotype Ontology");
         for (OntologyTerm term : terms) {
+            term.setSource("HP");
             serializer.serialize(term);
         }
 
         bufferedReader = FileUtils.newBufferedReader(goFile);
         terms = parser.parseOBO(bufferedReader, "Gene Ontology");
         for (OntologyTerm term : terms) {
+            term.setSource("GO");
+            serializer.serialize(term);
+        }
+
+        bufferedReader = FileUtils.newBufferedReader(doidFile);
+        terms = parser.parseOBO(bufferedReader, "Human Disease Ontology");
+        for (OntologyTerm term : terms) {
+            term.setSource("DOID");
             serializer.serialize(term);
         }
 

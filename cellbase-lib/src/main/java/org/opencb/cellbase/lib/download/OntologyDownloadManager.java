@@ -51,6 +51,9 @@ public class OntologyDownloadManager extends DownloadManager {
         url = configuration.getDownload().getGoObo().getHost();
         downloadFiles.add(downloadFile(url, oboFolder.resolve("go-basic.obo").toString()));
 
+        url = configuration.getDownload().getDoidObo().getHost();
+        downloadFiles.add(downloadFile(url, oboFolder.resolve("doid.obo").toString()));
+
         return downloadFiles;
     }
 }

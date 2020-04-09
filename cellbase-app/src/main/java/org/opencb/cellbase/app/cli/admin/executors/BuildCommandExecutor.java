@@ -202,7 +202,7 @@ public class BuildCommandExecutor extends CommandExecutor {
     private CellBaseBuilder buildObo() {
         Path oboDir = downloadFolder.resolve(EtlCommons.OBO_DATA);
         CellBaseFileSerializer serializer = new CellBaseJsonFileSerializer(buildFolder, EtlCommons.OBO_JSON);
-        return new OboBuilder(oboDir, serializer);
+        return new OntologyBuilder(oboDir, serializer);
     }
 
     private void copyVersionFiles(List<Path> pathList) {

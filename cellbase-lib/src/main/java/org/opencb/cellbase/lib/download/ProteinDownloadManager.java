@@ -30,23 +30,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 public class ProteinDownloadManager extends DownloadManager {
 
     private static final String UNIPROT_NAME = "UniProt";
-
-    private static final HashMap GENE_UNIPROT_XREF_FILES = new HashMap() {
-        {
-            put("Homo sapiens", "HUMAN_9606_idmapping_selected.tab.gz");
-            put("Mus musculus", "MOUSE_10090_idmapping_selected.tab.gz");
-            put("Rattus norvegicus", "RAT_10116_idmapping_selected.tab.gz");
-            put("Danio rerio", "DANRE_7955_idmapping_selected.tab.gz");
-            put("Drosophila melanogaster", "DROME_7227_idmapping_selected.tab.gz");
-            put("Saccharomyces cerevisiae", "YEAST_559292_idmapping_selected.tab.gz");
-        }
-    };
 
     public ProteinDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
@@ -73,12 +61,15 @@ public class ProteinDownloadManager extends DownloadManager {
         Path proteinFolder = downloadFolder.resolve("protein");
         Files.createDirectories(proteinFolder);
         List<DownloadFile> downloadFiles = new ArrayList<>();
+
         String url = configuration.getDownload().getUniprot().getHost();
         downloadFiles.add(downloadFile(url, proteinFolder.resolve("uniprot_sprot.xml.gz").toString()));
-        String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
-        downloadFiles.add(downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString()));
         Files.createDirectories(proteinFolder.resolve("uniprot_chunks"));
         splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
+
+        String relNotesUrl = configuration.getDownload().getUniprotRelNotes().getHost();
+        downloadFiles.add(downloadFile(relNotesUrl, proteinFolder.resolve("uniprotRelnotes.txt").toString()));
+
         saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
                 getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
 
@@ -138,5 +129,4 @@ public class ProteinDownloadManager extends DownloadManager {
         pw.close();
         br.close();
     }
-
 }

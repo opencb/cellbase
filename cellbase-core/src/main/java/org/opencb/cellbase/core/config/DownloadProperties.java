@@ -61,6 +61,7 @@ public class DownloadProperties {
     private URLProperties gnomadConstraints;
     private URLProperties hpoObo;
     private URLProperties goObo;
+    private URLProperties doidObo;
     private URLProperties goAnnotation;
 
     public EnsemblProperties getEnsembl() {
@@ -385,6 +386,15 @@ public class DownloadProperties {
 
     public DownloadProperties setGoObo(URLProperties goObo) {
         this.goObo = goObo;
+        return this;
+    }
+
+    public URLProperties getDoidObo() {
+        return doidObo;
+    }
+
+    public DownloadProperties setDoidObo(URLProperties doidObo) {
+        this.doidObo = doidObo;
         return this;
     }
 
