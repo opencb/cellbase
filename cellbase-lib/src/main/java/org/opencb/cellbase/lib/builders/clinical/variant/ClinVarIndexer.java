@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.formats.variant.clinvar.ClinvarParser;
-import org.opencb.biodata.formats.variant.clinvar.v54jaxb.*;
+import org.opencb.biodata.formats.variant.clinvar.v59jaxb.*;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
@@ -46,7 +46,7 @@ import java.util.stream.Stream;
  */
 public class ClinVarIndexer extends ClinicalIndexer {
 
-    private static final String CLINVAR_CONTEXT = "org.opencb.biodata.formats.variant.clinvar.v54jaxb";
+    private static final String CLINVAR_CONTEXT = "org.opencb.biodata.formats.variant.clinvar.v59jaxb";
 
     private static final String CLINVAR_NAME = "clinvar";
     private static final int VARIANT_SUMMARY_CHR_COLUMN = 18;
