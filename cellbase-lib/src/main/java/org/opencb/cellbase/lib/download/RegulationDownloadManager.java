@@ -130,6 +130,7 @@ public class RegulationDownloadManager extends DownloadManager {
             RegulatoryPfm regulatoryPfm = mapper.readValue(url, RegulatoryPfm.class);
             serializer.serialize(regulatoryPfm);
         }
+        serializer.close();
     }
 
     private String getMatrixId(Gff2 tfbsMotifFeature) {
