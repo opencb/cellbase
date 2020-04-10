@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -111,7 +111,7 @@ basedir = str(Path(__file__).resolve().parents[2])
 if args.tag is not None:
     tag = args.tag
 else:
-    stream = os.popen(basedir + "/build/bin/cellbase-admin.sh 2>&1 | grep Version | sed 's/ //g' | cut -d ':' -f 2")
+    stream = os.popen(basedir + "/bin/cellbase-admin.sh 2>&1 | grep Version | sed 's/ //g' | cut -d ':' -f 2")
     tag = stream.read()
     tag = tag.rstrip()
 
