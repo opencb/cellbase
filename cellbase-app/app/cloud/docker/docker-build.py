@@ -8,6 +8,16 @@ import json
 import pathlib
 from pathlib import Path
 
+
+## Configure command-line options
+parser = argparse.ArgumentParser()
+parser.add_argument('action', help="Action to execute", choices=["build", "push", "delete"], default="build")
+parser.add_argument('--images', help="comma separated list of images to be made, e.g. base,rest,python", default="base,rest,python")
+parser.add_argument('--tag', help="the tag for this code, e.g. v5.0.0")
+parser.add_argument('--build-folder', help="the location of the build folder, if not default location")
+parser.add_argument('--username', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
+parser.add_argument('--password', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
+
 ## Some ANSI colors to print shell output
 shell_colors = {
     'red': '\033[91m',
@@ -29,22 +39,23 @@ def run(command):
     if code != 0:
         error("Error executing: " + command)
 
+
 def print_header(str):
     print(shell_colors['magenta'] + "*************************************************" + shell_colors['reset'])
     print(shell_colors['magenta'] + str + shell_colors['reset'])
     print(shell_colors['magenta'] + "*************************************************" + shell_colors['reset'])
 
 
-def login(loginRequired=False):
-    if args.username is None or args.password is None:
-        if loginRequired:
-            error("Username and password are required")
-        else:
-            return
-
-    code = os.system("docker login -u " + args.username + " --password " + args.password)
-    if code != 0:
-        error("Error executing: docker login")
+# def login(loginRequired=False):
+#     if args.username is None or args.password is None:
+#         if loginRequired:
+#             error("Username and password are required")
+#         else:
+#             return
+#
+#     code = os.system("docker login -u " + args.username + " --password " + args.password)
+#     if code != 0:
+#         error("Error executing: docker login")
 
 
 def build():
@@ -92,6 +103,7 @@ def delete():
     if response.status_code != 200:
         error("dockerhub login failed")
     for i in images:
+        print()
         print(shell_colors['blue'] + 'Deleting image on Docker hub for opencb/cellbase-' + i + ':' + tag + shell_colors['reset'])
         headers = {
             'Authorization': 'JWT ' + json_response["token"]
@@ -99,23 +111,13 @@ def delete():
         requests.delete('https://hub.docker.com/v2/repositories/opencb/cellbase-' + i + '/tags/' + tag + '/', headers=headers)
 
 
-parser = argparse.ArgumentParser()
-
-# build, push or delete
-parser.add_argument('action', help="Action to execute", choices=["build", "push", "delete"], default="build")
-
-parser.add_argument('--images', help="comma separated list of images to be made, e.g. base,rest,python", default="base,rest,python")
-parser.add_argument('--tag', help="the tag for this code, e.g. v5.0.0")
-parser.add_argument('--build-folder', help="the location of the build folder, if not default location")
-parser.add_argument('--username', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
-parser.add_argument('--password', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
-
+## Parse command-line parameters and init basedir, tag and build_folder
 args = parser.parse_args()
 
-# root of the cellbase repo
+# 1. init basedir: root of the cellbase repo
 basedir = str(Path(__file__).resolve().parents[2])
 
-# set tag to default value if not set
+# 2. init tag: set tag to default value if not set
 if args.tag is not None:
     tag = args.tag
 else:
@@ -123,7 +125,7 @@ else:
     tag = stream.read()
     tag = tag.rstrip()
 
-# set build folder to default value if not set
+# 3. init build_folder: set build folder to default value if not set
 if args.build_folder is not None:
     build_folder = args.build_folder
 else:
@@ -132,20 +134,22 @@ else:
 if not os.path.isdir(build_folder):
     error("Build folder does not exist: " + build_folder)
 
-if not os.path.isdir(build_folder + "/libs") or not os.path.isdir(build_folder + "/conf") or not os.path.isdir(build_folder + "/bin"):
-    error("Not a build folder: " + build_folder)
+# if not os.path.isdir(build_folder + "/libs") or not os.path.isdir(build_folder + "/conf") or not os.path.isdir(build_folder + "/bin"):
+#     error("Not a build folder: " + build_folder)
 
-# get a list with all images
+# 4. init images: get a list with all images
 if args.images is None:
     images = ["base", "rest", "python"]
 else:
     images = args.images.split(",")
 
+
+## Execute the action
 if args.action == "build":
-    login(loginRequired=False)
+    # login(loginRequired=False)
     build()
 elif args.action == "push":
-    login(loginRequired=False)
+    # login(loginRequired=False)
     build()
     push()
 elif args.action == "delete":
