@@ -8,18 +8,31 @@ import json
 import pathlib
 from pathlib import Path
 
+## Some ANSI colors to print shell output
+shell_colors = {
+    'red': '\033[91m',
+    'green': '\033[92m',
+    'blue': '\033[94m',
+    'magenta': '\033[95m',
+    'bold': '\033[1m',
+    'reset': '\033[0m'
+}
 
 def error(message):
-    sys.stderr.write('error: %s\n' % message)
-    # parser.print_help()
+    sys.stderr.write(shell_colors['red'] + 'ERROR: %s\n' % message + shell_colors['reset'])
     sys.exit(2)
 
 
 def run(command):
-    print(command)
+    print(shell_colors['bold'] + command + shell_colors['reset'])
     code = os.system(command)
     if code != 0:
         error("Error executing: " + command)
+
+def print_header(str):
+    print(shell_colors['magenta'] + "*************************************************" + shell_colors['reset'])
+    print(shell_colors['magenta'] + str + shell_colors['reset'])
+    print(shell_colors['magenta'] + "*************************************************" + shell_colors['reset'])
 
 
 def login(loginRequired=False):
@@ -35,13 +48,10 @@ def login(loginRequired=False):
 
 
 def build():
-    print("Building docker images")
+    print_header('Building docker images: ' + ', '.join(images))
     for image in images:
-        print("*********************************************")
-        print("Building opencb/cellbase-" + image + ":" + tag)
-        print("*********************************************")
-        print(
-            "docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
+        print()
+        print(shell_colors['blue'] + "Building opencb/cellbase-" + image + ":" + tag + " ..." + shell_colors['reset'])
         if image == "base":
             run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
         else:
@@ -55,24 +65,22 @@ def tag_latest(image):
                            + " | sort -h"
                            + " | head"))
     if tag >= latest_tag.read():
-        print("*********************************************")
-        print("Pushing opencb/cellbase-" + image + ":latest")
-        print("*********************************************")
+        print(shell_colors['blue'] + "Pushing opencb/cellbase-" + image + ":latest" + shell_colors['reset'])
         run("docker tag opencb/cellbase-" + image + ":" + tag + " opencb/cellbase-" + image + ":latest")
         run("docker push opencb/cellbase-" + image + ":latest")
 
 
 def push():
-    print("Pushing images to Docker hub")
+    print_header('Pushing to DockerHub: ' + ', '.join(images))
     for i in images:
-        print("*********************************************")
-        print("Pushing opencb/cellbase-" + i + ":" + tag)
-        print("*********************************************")
+        print()
+        print(shell_colors['blue'] + "Pushing opencb/cellbase-" + i + ":" + tag + " ..." + shell_colors['reset'])
         run("docker push opencb/cellbase-" + i + ":" + tag)
         tag_latest(i)
 
 
 def delete():
+    print_header('Deleting from DockerHub: ' + ', '.join(images))
     if args.username is None or args.password is None:
         error("Username and password are required")
     headers = {
@@ -84,7 +92,7 @@ def delete():
     if response.status_code != 200:
         error("dockerhub login failed")
     for i in images:
-        print('Deleting image on Docker hub for opencb/cellbase-' + i + ':' + tag)
+        print(shell_colors['blue'] + 'Deleting image on Docker hub for opencb/cellbase-' + i + ':' + tag + shell_colors['reset'])
         headers = {
             'Authorization': 'JWT ' + json_response["token"]
         }
