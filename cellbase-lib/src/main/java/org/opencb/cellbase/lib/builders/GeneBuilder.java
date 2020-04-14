@@ -215,44 +215,8 @@ public class GeneBuilder extends CellBaseBuilder {
 
             // Check if Transcript exist in the Gene Set of transcripts
             if (!transcriptDict.containsKey(transcriptId)) {
-                String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
-                List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tabixReader);
-                Map<String, String> gtfAttributes = gtf.getAttributes();
-                List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
-                        proteinToOntologyAnnotations);
-
-                TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, constraints.get(transcriptId));
-                transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
-                        (gtfAttributes.get("transcript_biotype") != null)
-                                ? gtfAttributes.get("transcript_biotype")
-                                : gtf.getSource(),
-                        "KNOWN", transcriptChromosome, gtf.getStart(), gtf.getEnd(),
-                        gtf.getStrand(), 0, 0, 0, 0,
-                        0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
-                        transcriptTfbses, transcriptAnnotation);
-                // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
-                // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
-                // that the xrefs array contains all ids present in the GTF file
-                addGtfXrefs(transcript, gene);
-
-                String tags = gtf.getAttributes().get("tag");
-                if (tags != null) {
-                    transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
-                }
-
-                Fasta proteinFasta = proteinSequencesMap.get(transcriptId);
-                if (proteinFasta != null) {
-                    transcript.setProteinSequence(proteinFasta.getSeq());
-                }
-
-                Fasta cDnaFasta = cDnaSequencesMap.get(transcriptId);
-                if (cDnaFasta != null) {
-                    transcript.setcDnaSequence(cDnaFasta.getSeq());
-                }
-                gene.getTranscripts().add(transcript);
-                // TODO: could use a transcriptId -> transcript map?
-                // Do not change order!! size()-1 is the index of the transcript ID
-                transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);
+                transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tabixReader, constraints,
+                        proteinToOntologyAnnotations, gtf, transcriptId);
             } else {
                 transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
             }
@@ -390,6 +354,54 @@ public class GeneBuilder extends CellBaseBuilder {
         gtfReader.close();
         serializer.close();
         fastaIndexManager.close();
+    }
+
+    private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
+                                     Map<String, Fasta> cDnaSequencesMap, TabixReader tabixReader,
+                                     Map<String, List<Constraint>> constraints,
+                                     Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations, Gtf gtf,
+                                     String transcriptId)
+            throws IOException {
+        Transcript transcript;
+        String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
+        List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tabixReader);
+        Map<String, String> gtfAttributes = gtf.getAttributes();
+        List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
+                proteinToOntologyAnnotations);
+
+        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, constraints.get(transcriptId));
+        transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
+                (gtfAttributes.get("transcript_biotype") != null)
+                        ? gtfAttributes.get("transcript_biotype")
+                        : gtf.getSource(),
+                "KNOWN", transcriptChromosome, gtf.getStart(), gtf.getEnd(),
+                gtf.getStrand(), 0, 0, 0, 0,
+                0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
+                transcriptTfbses, transcriptAnnotation);
+        // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
+        // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
+        // that the xrefs array contains all ids present in the GTF file
+        addGtfXrefs(transcript, gene);
+
+        String tags = gtf.getAttributes().get("tag");
+        if (tags != null) {
+            transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
+        }
+
+        Fasta proteinFasta = proteinSequencesMap.get(transcriptId);
+        if (proteinFasta != null) {
+            transcript.setProteinSequence(proteinFasta.getSeq());
+        }
+
+        Fasta cDnaFasta = cDnaSequencesMap.get(transcriptId);
+        if (cDnaFasta != null) {
+            transcript.setcDnaSequence(cDnaFasta.getSeq());
+        }
+        gene.getTranscripts().add(transcript);
+        // TODO: could use a transcriptId -> transcript map?
+        // Do not change order!! size()-1 is the index of the transcript ID
+        transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);
+        return transcript;
     }
 
     private List<FeatureOntologyTermAnnotation> getOntologyAnnotations(
