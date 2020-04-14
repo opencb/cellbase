@@ -102,8 +102,8 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz.tbi"),
-                geneDirectoryPath.getParent().getParent().resolve("common/expression/allgenes_updown_in_organism_part.tab.gz"),
-                geneDirectoryPath.resolve("geneDrug/dgidb.tsv"),
+                geneDirectoryPath.resolve("allgenes_updown_in_organism_part.tab.gz"),
+                geneDirectoryPath.resolve("dgidb.tsv"),
                 geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
@@ -151,7 +151,7 @@ public class GeneBuilder extends CellBaseBuilder {
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
 
         // TODO check all files
-        if (Files.exists(tfbsFile) && Files.exists(tabixFile)) {
+        if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
             throw new CellbaseException("Tfbs or tabix file not found. Download them and try again.");
         }
 
