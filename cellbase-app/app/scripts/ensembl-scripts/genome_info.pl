@@ -3,14 +3,12 @@
 use strict;
 use Getopt::Long;
 use Data::Dumper;
-
 use JSON;
 
 use DB_CONFIG;
 
-
 my $species = 'Homo sapiens';
-my $assembly = 'GRCh37';
+my $assembly = 'GRCh38';
 my $phylo = "";
 my $outfile = "";
 my $verbose = '0';
@@ -19,64 +17,42 @@ my $help = '0';
 ####################################################################
 ## Parsing command line options ####################################
 ####################################################################
-# USAGE: ./info_stats.pl --species "Homo sapiens" --outdir ../../appl_db/ird_v1/hsa ...
+# USAGE: ./genome_info.pl --species "Homo sapiens" --outfile ../../appl_db/ird_v1/hsa ...
 
 ## Parsing command line
 GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly, 'o|outfile=s' => \$outfile, 'phylo=s' => \$phylo,
-            'ensembl-libs=s' => \$ENSEMBL_LIBS, 'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
-            'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
-            'ensembl-user=s' => \$ENSEMBL_USER, 'ensembl-pass=s' => \$ENSEMBL_PASS,
-            'v|verbose' => \$verbose, 'h|help' => \$help);
-
-## Checking help parameter
-print_usage() if $help;
+            'ensembl-registry=s' => \$ENSEMBL_REGISTRY, 'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
+            'ensembl-user=s' => \$ENSEMBL_USER, 'v|verbose' => \$verbose, 'h|help' => \$help);
 
 ## Printing parameters
 print_parameters() if $verbose;
 
-if($outfile eq "") {
+if ($outfile eq "") {
     $outfile = "/ensembl-data/$species.json";
 }
 
 ####################################################################
 ## Ensembl APIs ####################################################
 ####################################################################
-## loading ensembl libraries
-use lib "$ENSEMBL_LIBS/ensembl/modules";
-use lib "$ENSEMBL_LIBS/ensembl-variation/modules";
-use lib "$ENSEMBL_LIBS/ensembl-compara/modules";
-use lib "$ENSEMBL_LIBS/ensembl-funcgen/modules";
-use lib "$ENSEMBL_LIBS/bioperl-live";
-
 ## creating ensembl adaptors
 use Bio::EnsEMBL::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::Variation::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::Funcgen::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::Compara::DBSQL::DBAdaptor;
-use Bio::EnsEMBL::Variation::VariationFeatureOverlap;
-use Bio::EnsEMBL::Variation::Utils::Constants qw(%OVERLAP_CONSEQUENCES);
 
 ## loading the registry with the adaptors 
-#Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
+# Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
 if($phylo eq "" || $phylo eq "vertebrate") {
     print ("In vertebrates section\n");
-    if($species eq "Homo sapiens" && ($assembly eq "" || $assembly eq "GRCh37")) {
-        print ("Human selected, assembly ".$assembly." selected, connecting to port 3337\n");
+    if ($species eq "Homo sapiens" && $assembly eq "GRCh38") {
+        print ("Human selected, assembly ".$assembly." selected, connecting to port ".$ENSEMBL_PORT."\n");
         Bio::EnsEMBL::Registry->load_registry_from_db(
-            -host    => 'ensembldb.ensembl.org',
-            -user    => 'anonymous',
-            -port => 3337,
-            -verbose => '0'
+            -host     => $ENSEMBL_HOST,
+            -user     => $ENSEMBL_USER,
+            -port     => $ENSEMBL_PORT,
+            -verbose  => $verbose
         );
-    }else {
-        print ("Human selected, assembly ".$assembly." selected, connecting to default port\n");
-        Bio::EnsEMBL::Registry->load_registry_from_db(
-            -host    => 'ensembldb.ensembl.org',
-            -user    => 'anonymous',
-            -verbose => '0'
-        );
+    } else {
+        print ("Human selected, assembly ".$assembly." no supported\n");
     }
-}else {
+} else {
     print ("In no-vertebrates section\n");
     Bio::EnsEMBL::Registry->load_registry_from_db(
         -host => 'mysql-eg-publicsql.ebi.ac.uk',
@@ -84,24 +60,21 @@ if($phylo eq "" || $phylo eq "vertebrate") {
         -user => 'anonymous'
     );
 }
-####################################################################
 
 my $slice_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Slice");
-my $karyotype_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species,"core","KaryotypeBand");
-my $gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Gene");
+my $karyotype_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "KaryotypeBand");
+# my $gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Gene");
+####################################################################
 
 my %info_stats = ();
 my @chromosomes = ();
 my @supercontigs = ();
-my @cytobands = ();
 
 $species = ucfirst($species);
 $info_stats{'species'} = $species;
 
 my @all_chroms = @{$slice_adaptor->fetch_all('chromosome')};
-#my @chrom_ids = ();
 foreach my $chrom(@all_chroms) {
-
 	my %chromosome = ();
 	$chromosome{'name'} = $chrom->seq_region_name();
 	$chromosome{'start'} = int($chrom->start());
@@ -109,7 +82,7 @@ foreach my $chrom(@all_chroms) {
 	$chromosome{'size'} = int($chrom->seq_region_length());
 #	$chromosome{'numberGenes'} = scalar @{$chrom->get_all_Genes()};
 	$chromosome{'isCircular'} = $chrom->is_circular();
-	
+
 	my @cytobands = ();
 	foreach my $cyto(@{$karyotype_adaptor->fetch_all_by_chr_name($chrom->seq_region_name)}) {
 #		print $cytoband->name."\n";
@@ -142,11 +115,10 @@ $info_stats{'chromosomes'} = \@chromosomes;
 
 ## Now we also add the supercontigs
 my @all_supercontigs = @{$slice_adaptor->fetch_all('supercontig')};
-my @contigs_ids = ();
 foreach my $supercon(@all_supercontigs) {
     my %supercontig = ();
 
-    if($supercon->seq_region_name() !~ /PATCH/) {
+    if ($supercon->seq_region_name() !~ /PATCH/) {
         $supercontig{'name'} = $supercon->seq_region_name();
         $supercontig{'start'} = int($supercon->start());
         $supercontig{'end'} = int($supercon->end());
@@ -175,3 +147,12 @@ print OUTFILE $info_stats_json;
 close(OUTFILE);
 
 print "Wrote $outfile\n";
+
+sub print_parameters {
+    print "Parameters: ";
+    print "species: $species, outfile: $outfile, ";
+    print "ensembl-registry: $ENSEMBL_REGISTRY, ";
+    print "ensembl-host: $ENSEMBL_HOST, ensembl-port: $ENSEMBL_PORT, ";
+    print "ensembl-user: $ENSEMBL_USER, verbose: $verbose, help: $help";
+    print "\n";
+}

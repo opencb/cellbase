@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -9,39 +9,60 @@ import pathlib
 from pathlib import Path
 
 
+## Configure command-line options
+parser = argparse.ArgumentParser()
+parser.add_argument('action', help="Action to execute", choices=["build", "push", "delete"], default="build")
+parser.add_argument('--images', help="comma separated list of images to be made, e.g. base,rest,python,builder", default="base,rest,python")
+parser.add_argument('--tag', help="the tag for this code, e.g. v5.0.0")
+parser.add_argument('--build-folder', help="the location of the build folder, if not default location")
+parser.add_argument('--username', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
+parser.add_argument('--password', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
+
+## Some ANSI colors to print shell output
+shell_colors = {
+    'red': '\033[91m',
+    'green': '\033[92m',
+    'blue': '\033[94m',
+    'magenta': '\033[95m',
+    'bold': '\033[1m',
+    'reset': '\033[0m'
+}
+
 def error(message):
-    sys.stderr.write('error: %s\n' % message)
-    # parser.print_help()
+    sys.stderr.write(shell_colors['red'] + 'ERROR: %s\n' % message + shell_colors['reset'])
     sys.exit(2)
 
 
 def run(command):
-    print(command)
+    print(shell_colors['bold'] + command + shell_colors['reset'])
     code = os.system(command)
     if code != 0:
         error("Error executing: " + command)
 
 
-def login(loginRequired=False):
-    if args.username is None or args.password is None:
-        if loginRequired:
-            error("Username and password are required")
-        else:
-            return
+def print_header(str):
+    print(shell_colors['magenta'] + "*************************************************" + shell_colors['reset'])
+    print(shell_colors['magenta'] + str + shell_colors['reset'])
+    print(shell_colors['magenta'] + "*************************************************" + shell_colors['reset'])
 
-    code = os.system("docker login -u " + args.username + " --password " + args.password)
-    if code != 0:
-        error("Error executing: docker login")
+
+# def login(loginRequired=False):
+#     if args.username is None or args.password is None:
+#         if loginRequired:
+#             error("Username and password are required")
+#         else:
+#             return
+#
+#     code = os.system("docker login -u " + args.username + " --password " + args.password)
+#     if code != 0:
+#         error("Error executing: docker login")
 
 
 def build():
-    print("Building docker images")
+    print_header('Building docker images: ' + ', '.join(images))
     for image in images:
-        print("*********************************************")
-        print("Building opencb/cellbase-" + image + ":" + tag)
-        print("*********************************************")
-        print(
-            "docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
+        print()
+        print(shell_colors['blue'] + "Building opencb/cellbase-" + image + ":" + tag + " ..." + shell_colors['reset'])
         if image == "base":
             run("docker build -t opencb/cellbase-" + image + ":" + tag + " -f " + build_folder + "/cloud/docker/cellbase-" + image + "/Dockerfile " + build_folder)
         else:
@@ -55,24 +76,22 @@ def tag_latest(image):
                            + " | sort -h"
                            + " | head"))
     if tag >= latest_tag.read():
-        print("*********************************************")
-        print("Pushing opencb/cellbase-" + image + ":latest")
-        print("*********************************************")
+        print(shell_colors['blue'] + "Pushing opencb/cellbase-" + image + ":latest" + shell_colors['reset'])
         run("docker tag opencb/cellbase-" + image + ":" + tag + " opencb/cellbase-" + image + ":latest")
         run("docker push opencb/cellbase-" + image + ":latest")
 
 
 def push():
-    print("Pushing images to Docker hub")
+    print_header('Pushing to DockerHub: ' + ', '.join(images))
     for i in images:
-        print("*********************************************")
-        print("Pushing opencb/cellbase-" + i + ":" + tag)
-        print("*********************************************")
+        print()
+        print(shell_colors['blue'] + "Pushing opencb/cellbase-" + i + ":" + tag + " ..." + shell_colors['reset'])
         run("docker push opencb/cellbase-" + i + ":" + tag)
         tag_latest(i)
 
 
 def delete():
+    print_header('Deleting from DockerHub: ' + ', '.join(images))
     if args.username is None or args.password is None:
         error("Username and password are required")
     headers = {
@@ -84,38 +103,29 @@ def delete():
     if response.status_code != 200:
         error("dockerhub login failed")
     for i in images:
-        print('Deleting image on Docker hub for opencb/cellbase-' + i + ':' + tag)
+        print()
+        print(shell_colors['blue'] + 'Deleting image on Docker hub for opencb/cellbase-' + i + ':' + tag + shell_colors['reset'])
         headers = {
             'Authorization': 'JWT ' + json_response["token"]
         }
         requests.delete('https://hub.docker.com/v2/repositories/opencb/cellbase-' + i + '/tags/' + tag + '/', headers=headers)
 
 
-parser = argparse.ArgumentParser()
-
-# build, push or delete
-parser.add_argument('action', help="Action to execute", choices=["build", "push", "delete"], default="build")
-
-parser.add_argument('--images', help="comma separated list of images to be made, e.g. base,rest,python", default="base,rest,python")
-parser.add_argument('--tag', help="the tag for this code, e.g. v5.0.0")
-parser.add_argument('--build-folder', help="the location of the build folder, if not default location")
-parser.add_argument('--username', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
-parser.add_argument('--password', help="credentials for dockerhub (REQUIRED if deleting from DockerHub)")
-
+## Parse command-line parameters and init basedir, tag and build_folder
 args = parser.parse_args()
 
-# root of the cellbase repo
+# 1. init basedir: root of the cellbase repo
 basedir = str(Path(__file__).resolve().parents[2])
 
-# set tag to default value if not set
+# 2. init tag: set tag to default value if not set
 if args.tag is not None:
     tag = args.tag
 else:
-    stream = os.popen(basedir + "/build/bin/cellbase-admin.sh 2>&1 | grep Version | sed 's/ //g' | cut -d ':' -f 2")
+    stream = os.popen(basedir + "/bin/cellbase-admin.sh 2>&1 | grep Version | sed 's/ //g' | cut -d ':' -f 2")
     tag = stream.read()
     tag = tag.rstrip()
 
-# set build folder to default value if not set
+# 3. init build_folder: set build folder to default value if not set
 if args.build_folder is not None:
     build_folder = args.build_folder
 else:
@@ -124,20 +134,22 @@ else:
 if not os.path.isdir(build_folder):
     error("Build folder does not exist: " + build_folder)
 
-if not os.path.isdir(build_folder + "/libs") or not os.path.isdir(build_folder + "/conf") or not os.path.isdir(build_folder + "/bin"):
-    error("Not a build folder: " + build_folder)
+# if not os.path.isdir(build_folder + "/libs") or not os.path.isdir(build_folder + "/conf") or not os.path.isdir(build_folder + "/bin"):
+#     error("Not a build folder: " + build_folder)
 
-# get a list with all images
+# 4. init images: get a list with all images
 if args.images is None:
     images = ["base", "rest", "python"]
 else:
     images = args.images.split(",")
 
+
+## Execute the action
 if args.action == "build":
-    login(loginRequired=False)
+    # login(loginRequired=False)
     build()
 elif args.action == "push":
-    login(loginRequired=False)
+    # login(loginRequired=False)
     build()
     push()
 elif args.action == "delete":

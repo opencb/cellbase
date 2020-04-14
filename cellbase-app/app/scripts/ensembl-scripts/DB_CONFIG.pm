@@ -18,21 +18,17 @@ BEGIN {
 			%biomart_species
 			%trembl_species
 			@hsa_ext_refs
-			$INFRARED_HOST
-			$INFRARED_USER
-			$INFRARED_PASS
 			$ENSEMBL_HOST
 			$ENSEMBL_USER
-			$ENSEMBL_PASS
 			$ENSEMBL_PORT
 			$ENSEMBL_GENOMES_HOST
 			$ENSEMBL_GENOMES_USER
-			$ENSEMBL_GENOMES_PASS
 			$ENSEMBL_GENOMES_PORT
 
 			$HOMO_SAPIENS_CORE
 			$HOMO_SAPIENS_VARIATION
 			$HOMO_SAPIENS_FUNCTIONAL
+			$HOMO_SAPIENS_COMPARA
 			$MUS_MUSCULUS_CORE
 			$MUS_MUSCULUS_VARIATION
 			$MUS_MUSCULUS_FUNCTIONAL
@@ -117,7 +113,7 @@ BEGIN {
 our $HOME = "/mnt/mysql/infrared_dbs";
 
 my $user_home = $ENV{'HOME'};
-our $ENSEMBL_LIBS = "$user_home/apis/ensembl/api_79";
+our $ENSEMBL_LIBS = "/opt/ensembl";
 our $ENSEMBL_REGISTRY = "$user_home/appl/cellbase/cellbase-build/installation-dir/bin/ensembl-scripts/registry.conf";
 
 our $BIOMART_LIB = "/mnt/mysql/ensembl_apis/biomart-perl";
@@ -127,32 +123,21 @@ our $TEMP_PATH = "$HOME/temp";
 our %species_alias = ("Arabidopsis thaliana"=>"ath", "Homo sapiens"=>"hsa", "Pan troglodytes"=>"ptr", "Gorilla gorilla"=>"ggo", "Danio rerio"=>"dre", "Mus musculus"=>"mmu","Rattus norvegicus"=>"rno","Canis familiaris"=>"cfa","Bos taurus"=>"bta","Gallus gallus"=>"gga","Danio rerio"=>"dre","Drosophila melanogaster"=>"dme","Saccharomyces cerevisiae"=>"sce","Caenorhabditis elegans"=>"cel","Anopheles gambiae"=>"aga", "Plasmodium falciparum"=>"pfa");
 our %biomart_species = ("Anopheles gambiae"=>"agambiae_gene_ensembl","Arabidopsis thaliana"=>"athaliana_eg_gene","Bos taurus"=>"btaurus_gene_ensembl", "Caenorhabditis elegans"=>"celegans_gene_ensembl", "Canis familiaris"=>"cfamiliaris_gene_ensembl", "Danio rerio"=>"drerio_gene_ensembl", "Drosophila melanogaster"=>"dmelanogaster_gene_ensembl", "Gallus gallus"=>"ggallus_gene_ensembl", "Homo sapiens"=>"hsapiens_gene_ensembl","Mus musculus"=>"mmusculus_gene_ensembl","Rattus norvegicus"=>"rnorvegicus_gene_ensembl","Saccharomyces cerevisiae"=>"scerevisiae_gene_ensembl");
 our %trembl_species = ("Homo sapiens"=>"HUMAN", "Mus musculus"=>"MOUSE", "Rattus norvegicus"=>"RAT");
-#our @hsa_ext_refs = ("go_biological_process_id,Biological Process,Functional annotation","go_cellular_component_id","go_molecular_function_id","goslim_goa_accession","clone_based_ensembl_gene_name","clone_based_ensembl_transcript_name","clone_based_vega_gene_name","clone_based_vega_transcript_name","ccds","embl","ens_hs_gene","entrezgene","ottt","shares_cds_with_enst","shares_cds_with_ottt","shares_cds_and_utr_with_ottt","hgnc_id","hgnc_symbol","hgnc_automatic_gene_name","hgnc_curated_gene_name","hgnc_automatic_transcript_name","hgnc_curated_transcript_name","ipi","merops","imgt_gene_db","imgt_ligm_db","mim_morbid_accession","mim_morbid_description","mim_gene_accession","mim_gene_description","mirbase_accession","mirbase_id","pdb","protein_id","refseq_dna","refseq_dna_predicted","refseq_peptide","refseq_peptide_predicted","refseq_genomic","rfam","unigene","uniprot_sptrembl","uniprot_swissprot","uniprot_swissprot_accession","pubmed","wikigene_name","wikigene_description","hpa","dbass3_id","dbass3_name","dbass5_id","dbass5_name","affy_hc_g110","affy_hg_focus","affy_hg_u133_plus_2","affy_hg_u133a_2","affy_hg_u133a","affy_hg_u133b","affy_hg_u95av2","affy_hg_u95b","affy_hg_u95c","affy_hg_u95d","affy_hg_u95e","affy_hg_u95a","affy_hugenefl","affy_huex_1_0_st_v2","affy_hugene_1_0_st_v1","affy_u133_x3p","agilent_cgh_44b","agilent_wholegenome","codelink","illumina_humanwg_6_v1","illumina_humanwg_6_v2","illumina_humanwg_6_v3","phalanx_onearray","interpro");
 our @hsa_ext_refs = ("go", "go_biological_process_id","go_cellular_component_id","go_molecular_function_id","goslim_goa_accession","clone_based_ensembl_gene_name","clone_based_ensembl_transcript_name","clone_based_vega_gene_name","clone_based_vega_transcript_name","ccds","embl","ens_hs_gene","entrezgene","ottt","shares_cds_with_enst","shares_cds_with_ottt","shares_cds_and_utr_with_ottt","hgnc_id","hgnc_symbol","hgnc_automatic_gene_name","hgnc_curated_gene_name","hgnc_automatic_transcript_name","hgnc_curated_transcript_name","ipi","merops","imgt_gene_db","imgt_ligm_db","mim_morbid_accession","mim_morbid_description","mim_gene_accession","mim_gene_description","mirbase_accession","mirbase_id","pdb","protein_id","refseq_dna","refseq_dna_predicted","refseq_peptide","refseq_peptide_predicted","refseq_genomic","rfam","unigene","uniprot_sptrembl","uniprot_swissprot","uniprot_swissprot_accession","pubmed","wikigene_name","wikigene_description","hpa","dbass3_id","dbass3_name","dbass5_id","dbass5_name","affy_hc_g110","affy_hg_focus","affy_hg_u133_plus_2","affy_hg_u133a_2","affy_hg_u133a","affy_hg_u133b","affy_hg_u95av2","affy_hg_u95b","affy_hg_u95c","affy_hg_u95d","affy_hg_u95e","affy_hg_u95a","affy_hugenefl","affy_huex_1_0_st_v2","affy_hugene_1_0_st_v1","affy_u133_x3p","agilent_cgh_44b","agilent_wholegenome","codelink","illumina_humanwg_6_v1","illumina_humanwg_6_v2","illumina_humanwg_6_v3","phalanx_onearray","interpro");
 	
-our $ENSEMBL_HOST = "ensembldb.ensembl.org";
+our $ENSEMBL_HOST = "useastdb.ensembl.org";
+our $ENSEMBL_PORT = "3306";
 our $ENSEMBL_USER = "anonymous";
-our $ENSEMBL_PASS = "";
-our $ENSEMBL_PORT = "5306";
 
 our $ENSEMBL_GENOMES_HOST = "mysql-eg-publicsql.ebi.ac.uk";
-our $ENSEMBL_GENOMES_USER = "anonymous";
-our $ENSEMBL_GENOMES_PASS = "";
 our $ENSEMBL_GENOMES_PORT = "4157";
-
-our $INFRARED_HOST = "mysqlweb";
-our $INFRARED_USER = "biouser";
-our $INFRARED_PASS = "biopass";
-
-#our $ENS_HOST = "ensembldb.ensembl.org";
-#our $ENS_USER = "anonymous";
-#our $ENS_PORT = "5306";
-
+our $ENSEMBL_GENOMES_USER = "anonymous";
 
 ## Vertebrates
-our $HOMO_SAPIENS_CORE = "homo_sapiens_core_75_37";
-our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_75_37";
-our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_75_37";
+our $HOMO_SAPIENS_CORE = "homo_sapiens_core_99_38";
+our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_99_38";
+our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_99_38";
+our $HOMO_SAPIENS_COMPARA = "homo_sapiens_compara_99_38";
 #our $HOMO_SAPIENS_CORE = "homo_sapiens_core_78_38";
 #our $HOMO_SAPIENS_VARIATION = "homo_sapiens_variation_78_38";
 #our $HOMO_SAPIENS_FUNCTIONAL = "homo_sapiens_funcgen_78_38";
@@ -224,7 +209,6 @@ our $ORNITHORHYNCHUS_ANATINUS_CORE = "ornithorhynchus_anatinus_core_56_1k";
 
 our $COMPARA = "ensembl_compara_78";
 our $GO = "ensembl_ontology_78";
-
 
 # adding biocarta (http://cgap.nci.nih.gov/Info/CGAPDownload) ==> awk -F':' '// {if($1 == "UNIGENE") uni= $2;if($1 == "BIOCARTA") print uni" "$2}' Hs_GeneData.dat > unigene2biocarta.txt
 
