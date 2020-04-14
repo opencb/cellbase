@@ -20,9 +20,8 @@ my $help = '0';
 
 ## Parsing command line
 GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly, 'outdir=s' => \$outdir, 'phylo=s' => \$phylo,
-	'ensembl-libs=s' => \$ENSEMBL_LIBS, 'ensembl-registry=s' => \$ENSEMBL_REGISTRY,
-	'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
-	'ensembl-user=s' => \$ENSEMBL_USER, 'verbose' => \$verbose, 'help' => \$help);
+			'ensembl-registry=s' => \$ENSEMBL_REGISTRY, 'ensembl-host=s' => \$ENSEMBL_HOST, 'ensembl-port=s' => \$ENSEMBL_PORT,
+			'ensembl-user=s' => \$ENSEMBL_USER, 'verbose' => \$verbose, 'help' => \$help);
 
 ## Checking help parameter
 print_usage() if $help;
@@ -49,20 +48,20 @@ use Bio::EnsEMBL::DBSQL::DBAdaptor;
 # Bio::EnsEMBL::Registry->load_all("$ENSEMBL_REGISTRY");
 # print ("done!\n");
 
-if($phylo eq "" || $phylo eq "vertebrate") {
+if ($phylo eq "" || $phylo eq "vertebrate") {
 	print ("In vertebrates section\n");
-	if($species eq "Homo sapiens" && $assembly eq "GRCh38") {
-		print ("Human selected, assembly ".$assembly." selected, connecting to port 5306\n");
+	if ($species eq "Homo sapiens" && $assembly eq "GRCh38") {
+		print ("Human selected, assembly ".$assembly." selected, connecting to port ".$ENSEMBL_PORT."\n");
 		Bio::EnsEMBL::Registry->load_registry_from_db(
 			-host     => $ENSEMBL_HOST,
 			-user     => $ENSEMBL_USER,
 			-port     => $ENSEMBL_PORT,
-			-verbose  => '1'
+			-verbose  => $verbose
 		);
-	}else {
-		print ("Human selected, assembly ".$assembly." selected, connecting to default port\n");
+	} else {
+		print ("Human selected, assembly ".$assembly." no supported\n");
 	}
-}else {
+} else {
 	print ("In no-vertebrates section\n");
 	Bio::EnsEMBL::Registry->load_registry_from_db(
 		-host => 'mysql-eg-publicsql.ebi.ac.uk',
@@ -79,11 +78,7 @@ my $gene_adaptor = Bio::EnsEMBL::Registry->get_adaptor($species, "core", "Gene")
 ## variables definition
 my %dbnames = ();
 my ($ngene, $ntrans) = (0, 0);
-
 my ($gene, $translation, %uniq);
-
-## reset dbnames and xrefs
-
 
 open (GENE_DESC, ">$outdir/description.txt") || die "Cannot open gene_description.txt file";
 open (XREFS, ">$outdir/xrefs.txt") || die "Cannot open xref.txt file";
@@ -213,23 +208,20 @@ sub get_dbname_short {
 sub print_parameters {
 	print "Parameters: ";
 	print "species: $species, outdir: $outdir, ";
-	print "ensembl-libs: $ENSEMBL_LIBS, ensembl-registry: $ENSEMBL_REGISTRY, ";
+	print "ensembl-registry: $ENSEMBL_REGISTRY, ";
 	print "ensembl-host: $ENSEMBL_HOST, ensembl-port: $ENSEMBL_PORT, ";
 	print "ensembl-user: $ENSEMBL_USER, verbose: $verbose, help: $help";
 	print "\n";
 }
 
 sub print_usage {
-	print "Usage:   $0 [--species] [--outdir] [--ensembl-libs] [--ensembl-host] [--ensembl-port] ";
-	print "[--ensembl-user] [--ensembl-pass] [--verbose] [--help]\n";
+	print "Usage:   $0 [--species] [--outdir] [--ensembl-host] [--ensembl-port] [--ensembl-user] [--verbose] [--help]\n";
 	print "\tDescription:\n";
 	print "\t species: scientific name, i.e.: Homo sapiens\n";
 	print "\t outdir: default directory /tmp/species\n";
-	print "\t ensembl-libs: Ensembl libraries path\n";
 	print "\t ensembl-host: Ensembl database host\n";
 	print "\t ensembl-port: Ensembl database port\n";
 	print "\t ensembl-user: Ensembl database user\n";
-	print "\t ensembl-pass: Ensembl database pass\n";
 	print "\t verbose: print logs\n";
 	print "\t help: print this help\n";
 	print "\n";
