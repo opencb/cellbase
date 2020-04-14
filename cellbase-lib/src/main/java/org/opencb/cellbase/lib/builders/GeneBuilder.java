@@ -104,7 +104,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz.tbi"),
                 geneDirectoryPath.resolve("allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("dgidb.tsv"),
-                geneDirectoryPath.resolve("ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt"),
+                geneDirectoryPath.resolve("phenotype_to_genes.txt"),
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 geneDirectoryPath.resolve("goa_human.gaf.gz"),
