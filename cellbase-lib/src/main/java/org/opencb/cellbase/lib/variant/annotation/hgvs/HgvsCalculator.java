@@ -16,12 +16,14 @@
 
 package org.opencb.cellbase.lib.variant.annotation.hgvs;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.tools.variant.VariantNormalizer;
+import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.annotation.UnsupportedURLVariantFormat;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
@@ -38,9 +40,19 @@ import java.util.List;
  */
 public class HgvsCalculator {
 
-    private static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
+    protected static final char COLON = ':';
+    protected static final String MT = "MT";
+    private static final String CODING_TRANSCRIPT_CHAR = "c.";
+    private static final String NON_CODING_TRANSCRIPT_CHAR = "n.";
+    protected static final String PROTEIN_CHAR = ":p.";
+    protected static final char UNDERSCORE = '_';
+    protected static final String POSITIVE = "+";
+    private static final String UNKNOWN_AMINOACID = "X";
+    protected static Logger logger = LoggerFactory.getLogger(HgvsCalculator.class);
     protected static final int NEIGHBOURING_SEQUENCE_SIZE = 100;
     protected GenomeManager genomeManager;
+    protected GenomeDBAdaptor genomeDBAdaptor;
+    protected BuildingComponents buildingComponents;
 
     public HgvsCalculator(GenomeManager genomeManager) {
         this.genomeManager = genomeManager;
@@ -133,7 +145,7 @@ public class HgvsCalculator {
         return normalizedVariant;
     }
 
-    protected boolean isCoding(Transcript transcript) {
+    protected static boolean isCoding(Transcript transcript) {
         // 0 in the cdnaCodingEnd means that the transcript doesn't
         // have a coding end <==> is non coding. Just annotating
         // coding transcripts in a first approach
@@ -142,7 +154,7 @@ public class HgvsCalculator {
 
     protected void setRangeCoordsAndAlleles(int genomicStart, int genomicEnd, String genomicReference,
                                           String genomicAlternate, Transcript transcript,
-                                          HgvsStringBuilder hgvsStringBuilder) {
+                                          BuildingComponents buildingComponents) {
         int start;
         int end;
         String reference;
@@ -150,7 +162,7 @@ public class HgvsCalculator {
         if ("+".equals(transcript.getStrand())) {
             start = genomicStart;
             // TODO: probably needs +-1 bp adjust
-//            end = variant.getStart() + variant.getReference().length() - 1;
+//            end = variant.getStart() + variant.getReferenceStart().length() - 1;
             end = genomicEnd;
             reference = genomicReference.length() > MAX_ALLELE_LENGTH
                     ? String.valueOf(genomicReference.length()) : genomicReference;
@@ -160,7 +172,6 @@ public class HgvsCalculator {
             end = genomicStart;
             // TODO: probably needs +-1 bp adjust
             start = genomicEnd;
-//            start = variant.getStart() + variant.getReference().length() - 1;
             reference = genomicReference.length() > MAX_ALLELE_LENGTH
                     ? String.valueOf(genomicReference.length())
                     : reverseComplementary(genomicReference);
@@ -168,16 +179,22 @@ public class HgvsCalculator {
                     ? String.valueOf(genomicAlternate.length())
                     : reverseComplementary(genomicAlternate);
         }
-        hgvsStringBuilder.setReference(reference);
-        hgvsStringBuilder.setAlternate(alternate);
-        hgvsStringBuilder.setCdnaStart(genomicToCdnaCoord(transcript, start));
-        hgvsStringBuilder.setCdnaEnd(genomicToCdnaCoord(transcript, end));
+        buildingComponents.setReferenceStart(reference);
+        buildingComponents.setAlternate(alternate);
+        buildingComponents.setCdnaStart(genomicToCdnaCoord(transcript, start));
+        buildingComponents.setCdnaEnd(genomicToCdnaCoord(transcript, end));
     }
 
-    private String reverseComplementary(String string) {
+    protected String reverseComplementary(String string) {
         StringBuilder stringBuilder = new StringBuilder(string).reverse();
         for (int i = 0; i < stringBuilder.length(); i++) {
-            stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(stringBuilder.charAt(i)));
+            char nextNt = stringBuilder.charAt(i);
+            // Protection against weird characters, e.g. alternate:"TBS" found in ClinVar
+            if (VariantAnnotationUtils.COMPLEMENTARY_NT.containsKey(nextNt)) {
+                stringBuilder.setCharAt(i, VariantAnnotationUtils.COMPLEMENTARY_NT.get(nextNt));
+            } else {
+                return null;
+            }
         }
         return stringBuilder.toString();
     }
@@ -226,7 +243,7 @@ public class HgvsCalculator {
         }
     }
 
-    protected CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
+    protected static CdnaCoord genomicToCdnaCoord(Transcript transcript, int genomicPosition) {
         if (isCoding(transcript)) {
             return genomicToCdnaCoordInCodingTranscript(transcript, genomicPosition);
         } else {
@@ -235,7 +252,7 @@ public class HgvsCalculator {
 
     }
 
-    private CdnaCoord genomicToCdnaCoordInNonCodingTranscript(Transcript transcript, int genomicPosition) {
+    private static CdnaCoord genomicToCdnaCoordInNonCodingTranscript(Transcript transcript, int genomicPosition) {
         CdnaCoord cdnaCoord = new CdnaCoord();
         List<Exon> exonList = transcript.getExons();
 
@@ -302,7 +319,7 @@ public class HgvsCalculator {
 
     }
 
-    private CdnaCoord genomicToCdnaCoordInCodingTranscript(Transcript transcript, int genomicPosition) {
+    private static CdnaCoord genomicToCdnaCoordInCodingTranscript(Transcript transcript, int genomicPosition) {
         CdnaCoord cdnaCoord = new CdnaCoord();
         List<Exon> exonList = transcript.getExons();
 
@@ -339,7 +356,7 @@ public class HgvsCalculator {
                 }
             // Exonic variant
             // -------------S|||p||E------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
-            } else if (genomicPosition - nearestExon.getEnd() < 0) {
+            } else if (genomicPosition - nearestExon.getEnd() <= 0) {
                 // Before coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingStart());
@@ -402,7 +419,7 @@ public class HgvsCalculator {
                 }
             // Exonic variant
             // -------------E|||p||S------------; p = genomicPosition, S = nearestExon.getStart, E = nearestExon.getEnd
-            } else if (genomicPosition - nearestExon.getEnd() < 0) {
+            } else if (genomicPosition - nearestExon.getEnd() <= 0) {
                 // Before (genomic) coding start
                 if (genomicPosition < transcript.getGenomicCodingStart())  {
                     cdnaCoord.setOffset(getCdnaPosition(transcript, genomicPosition) - transcript.getCdnaCodingEnd());
@@ -443,7 +460,7 @@ public class HgvsCalculator {
         return cdnaCoord;
     }
 
-    private int getCdnaPosition(Transcript transcript, int genomicPosition) {
+    private static int getCdnaPosition(Transcript transcript, int genomicPosition) {
 
         int i = 0;
         int cdnaPosition = 0;
@@ -465,5 +482,160 @@ public class HgvsCalculator {
         }
 
     }
+
+    /**
+     * Generate a protein HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+    protected String formatProteinString(BuildingComponents buildingComponents) {
+        return null;
+    }
+
+    /**
+     * Generate a transcript HGVS string.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * @return String containing an HGVS formatted variant representation
+     */
+    protected String formatTranscriptString(BuildingComponents buildingComponents) {
+
+        StringBuilder allele = new StringBuilder();
+        allele.append(formatPrefix(buildingComponents));  // if use_prefix else ''
+        allele.append(COLON);
+
+        if (buildingComponents.getKind().equals(BuildingComponents.Kind.CODING)) {
+            allele.append(CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
+                    + formatDnaAllele(buildingComponents));
+        } else if (buildingComponents.getKind().equals(BuildingComponents.Kind.NON_CODING)) {
+            allele.append(NON_CODING_TRANSCRIPT_CHAR).append(formatCdnaCoords(buildingComponents)
+                    + formatDnaAllele(buildingComponents));
+        } else {
+            throw new NotImplementedException("HGVS calculation not implemented for variant "
+                    + buildingComponents.getChromosome() + ":"
+                    + buildingComponents.getStart() + ":" + buildingComponents.getReferenceStart() + ":"
+                    + buildingComponents.getAlternate() + "; kind: " + buildingComponents.getKind());
+        }
+
+        return allele.toString();
+
+    }
+
+    protected String formatDnaAllele(BuildingComponents buildingComponents) {
+        return null;
+    }
+
+    protected boolean onlySpansCodingSequence(Variant variant, Transcript transcript) {
+        if (buildingComponents.getCdnaStart().getOffset() == 0  // Start falls within coding exon
+                && buildingComponents.getCdnaEnd().getOffset() == 0) { // End falls within coding exon
+
+            List<Exon> exonList = transcript.getExons();
+            // Get the closest exon to the variant start, measured as the exon that presents the closest start OR end
+            // coordinate to the position
+            Exon nearestExon = exonList.stream().min(Comparator.comparing(exon ->
+                    Math.min(Math.abs(variant.getStart() - exon.getStart()),
+                            Math.abs(variant.getStart() - exon.getEnd())))).get();
+
+            // Check if the same exon contains the variant end
+            return variant.getEnd() >= nearestExon.getStart() && variant.getEnd() <= nearestExon.getEnd();
+
+        }
+        return false;
+    }
+
+    protected static int getFirstCdsPhase(Transcript transcript) {
+        if (transcript.getStrand().equals(POSITIVE)) {
+            return transcript.getExons().get(0).getPhase();
+        } else {
+            return transcript.getExons().get(transcript.getExons().size() - 1).getPhase();
+        }
+    }
+
+    protected static int getAminoAcidPosition(int cdsPosition, Transcript transcript) {
+        // cdsPosition might need adjusting for transcripts with unclear start
+        // Found GRCh38 transcript which does not have the unconfirmed start flag BUT the first aa is an X;
+        // ENST00000618610 (ENSP00000484524)
+        if (transcript.unconfirmedStart() || transcript.getProteinSequence().startsWith(UNKNOWN_AMINOACID)) {
+            int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
+            // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
+            // - 0 if fits perfectly with the reading frame, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons            ---|||---|||
+            // - 1 if shifted one position, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons             ---|||---||||
+            // - 2 if shifted two positions, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons              ---|||---|||
+            if (firstCodingExonPhase != -1) {
+                cdsPosition += (3 - firstCodingExonPhase) % 3;
+            }
+        }
+
+        return ((cdsPosition - 1) / 3) + 1;
+    }
+
+    protected static int getCdnaCodingStart(Transcript transcript) {
+        int cdnaCodingStart = transcript.getCdnaCodingStart();
+        if (transcript.unconfirmedStart()) {
+            cdnaCodingStart -= ((3 - getFirstCdsPhase(transcript)) % 3);
+        }
+        return cdnaCodingStart;
+    }
+
+    protected static int getFirstCodingExonPhase(Transcript transcript) {
+        // Assuming exons are ordered
+        for (Exon exon : transcript.getExons()) {
+            if (exon.getPhase() != -1) {
+                return exon.getPhase();
+            }
+        }
+
+        return -1;
+    }
+
+    protected static int getPhaseShift(int cdsPosition, Transcript transcript) {
+        // phase might need adjusting for transcripts with unclear start
+        // Found GRCh38 transcript which does not have the unconfirmed start flag BUT the first aa is an X;
+        // ENST00000618610 (ENSP00000484524)
+        if (transcript.unconfirmedStart() || transcript.getProteinSequence().startsWith(UNKNOWN_AMINOACID)) {
+            int firstCodingExonPhase = getFirstCodingExonPhase(transcript);
+            // firstCodingExonPhase is the ENSEMBL's annotated phase for the transcript, which takes following values
+            // - 0 if fits perfectly with the reading frame, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons            ---|||---|||
+            // - 1 if shifted one position, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons             ---|||---||||
+            // - 2 if shifted two positions, i.e.
+            // Sequence ---------ACTTACGGTC
+            // Codons              ---|||---|||
+            if (firstCodingExonPhase != -1) {
+                cdsPosition += (3 - firstCodingExonPhase) % 3;
+                return (cdsPosition - 1) % 3;
+            }
+        }
+
+        return (cdsPosition - 1) % 3;
+    }
+
+    protected String formatCdnaCoords(BuildingComponents buildingComponents) {
+        return null;
+    }
+
+    /**
+     * Generate HGVS trancript/geneId prefix.
+     * @param buildingComponents BuildingComponents object containing all elements needed to build the hgvs string
+     * Some examples of full hgvs names with transcriptId include:
+     * NM_007294.3:c.2207A>C
+     * NM_007294.3(BRCA1):c.2207A>C
+     */
+    private String formatPrefix(BuildingComponents buildingComponents) {
+        StringBuilder stringBuilder = new StringBuilder(buildingComponents.getTranscriptId());
+        stringBuilder.append("(").append(buildingComponents.getGeneId()).append(")");
+
+        return stringBuilder.toString();
+    }
+
+
 
 }

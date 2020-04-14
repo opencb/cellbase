@@ -410,9 +410,11 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getClinicalByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
             required = true) String regions) {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResult = clinicalManager.getByRegion(query, queryOptions, regions);
-            return createOkResponse(queryResult);
+            // FIXME
+//            parseQueryParams();
+//            CellBaseDataResult queryResult = clinicalManager.getByRegion(query, queryOptions, regions);
+//            return createOkResponse(queryResult);
+            return createErrorResponse(new CellbaseException("Not refactored, please update"));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

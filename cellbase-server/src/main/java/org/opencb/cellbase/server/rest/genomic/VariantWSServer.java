@@ -139,7 +139,13 @@ public class VariantWSServer extends GenericRestWSServer {
                                                         value = "Integer to optionally provide the size of the extra"
                                                                 + " padding to be used when annotating imprecise (or not)"
                                                                 + " CNVs",
-                                                        defaultValue = "0", required = false) Integer cnvExtraPadding) {
+                                                        defaultValue = "0", required = false) Integer cnvExtraPadding,
+                                                @QueryParam("checkAminoAcidChange")
+                                                @ApiParam(name = "checkAminoAcidChange",
+                                                value = "true/false to specify whether variant match in the clinical variant collection "
+                                                        + "should also be performed at the aminoacid change level",
+                                                allowableValues = "false,true",
+                                                defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
 
         return getAnnotationByVariant(variants,
                 normalize,
@@ -148,7 +154,8 @@ public class VariantWSServer extends GenericRestWSServer {
                 phased,
                 imprecise,
                 svExtraPadding,
-                cnvExtraPadding);
+                cnvExtraPadding,
+                checkAminoAcidChange);
     }
 
     @GET
@@ -202,9 +209,24 @@ public class VariantWSServer extends GenericRestWSServer {
                                                        defaultValue = "0", required = false) Integer svExtraPadding,
                                                @QueryParam("cnvExtraPadding")
                                                @ApiParam(name = "cnvExtraPadding",
-                                                       value = ParamConstants.CNV_EXTRA_PADDING,
-                                                       defaultValue = "0", required = false) Integer cnvExtraPadding) {
-        return getAnnotationByVariant(variants, normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding);
+                                                       value = "Integer to optionally provide the size of the extra"
+                                                               + " padding to be used when annotating imprecise (or not)"
+                                                               + " CNVs",
+                                                       defaultValue = "0", required = false) Integer cnvExtraPadding,
+                                               @QueryParam("checkAminoAcidChange")
+                                               @ApiParam(name = "checkAminoAcidChange",
+                                                           value = "<DESCRIPTION GOES HERE>",
+                                                           allowableValues = "false,true",
+                                                           defaultValue = "false", required = false) Boolean checkAminoAcidChange) {
+        return getAnnotationByVariant(variants,
+                normalize,
+                skipDecompose,
+                ignorePhase,
+                phased,
+                imprecise,
+                svExtraPadding,
+                cnvExtraPadding,
+                checkAminoAcidChange);
     }
     private Response getAnnotationByVariant(String variants,
                                             Boolean normalize,
@@ -213,9 +235,9 @@ public class VariantWSServer extends GenericRestWSServer {
                                             @Deprecated Boolean phased,
                                             Boolean imprecise,
                                             Integer svExtraPadding,
-                                            Integer cnvExtraPadding) {
+                                            Integer cnvExtraPadding,
+                                            Boolean checkAminoAcidChange) {
         try {
-            parseQueryParams();
             List<CellBaseDataResult<VariantAnnotation>> queryResults = variantManager.getAnnotationByVariant(queryOptions, variants,
                     normalize, skipDecompose, ignorePhase, phased, imprecise, svExtraPadding, cnvExtraPadding);
             return createOkResponse(queryResults);

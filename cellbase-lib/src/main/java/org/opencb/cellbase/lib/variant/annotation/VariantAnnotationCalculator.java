@@ -78,6 +78,7 @@ public class VariantAnnotationCalculator {
     private Boolean imprecise = true;
     private Integer svExtraPadding = 0;
     private Integer cnvExtraPadding = 0;
+    private Boolean checkAminoAcidChange = false;
 
     private static Logger logger = LoggerFactory.getLogger(VariantAnnotationCalculator.class);
     private static HgvsCalculator hgvsCalculator;
@@ -120,6 +121,7 @@ public class VariantAnnotationCalculator {
     public CellBaseDataResult getAllConsequenceTypesByVariant(Variant variant, QueryOptions queryOptions)
             throws QueryException, IllegalAccessException {
         long dbTimeStart = System.currentTimeMillis();
+
         parseQueryParam(queryOptions);
         List<Gene> batchGeneList = getBatchGeneList(Collections.singletonList(variant));
         List<Gene> geneList = getAffectedGenes(batchGeneList, variant);
@@ -328,6 +330,7 @@ public class VariantAnnotationCalculator {
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(5);
         FutureVariationAnnotator futureVariationAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> variationFuture = null;
+        List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
 
         if (annotatorSet.contains("variation") || annotatorSet.contains("populationFrequencies")) {
             futureVariationAnnotator = new FutureVariationAnnotator(normalizedVariantList, new QueryOptions("include",
@@ -353,8 +356,10 @@ public class VariantAnnotationCalculator {
         FutureClinicalAnnotator futureClinicalAnnotator = null;
         Future<List<CellBaseDataResult<Variant>>> clinicalFuture = null;
         if (annotatorSet.contains("clinical")) {
-            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList,
-                    new QueryOptions(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased));
+            QueryOptions queryOptions = new QueryOptions();
+            queryOptions.add(ClinicalDBAdaptor.QueryParams.PHASE.key(), phased);
+            queryOptions.add(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), checkAminoAcidChange);
+            futureClinicalAnnotator = new FutureClinicalAnnotator(normalizedVariantList, batchGeneList, queryOptions);
             clinicalFuture = fixedThreadPool.submit(futureClinicalAnnotator);
         }
 
@@ -375,7 +380,6 @@ public class VariantAnnotationCalculator {
         /*
          * We iterate over all variants to get the rest of the annotations and to create the VariantAnnotation objects
          */
-        List<Gene> batchGeneList = getBatchGeneList(normalizedVariantList);
         Queue<Variant> variantBuffer = new LinkedList<>();
         startTime = System.currentTimeMillis();
         for (int i = 0; i < normalizedVariantList.size(); i++) {
@@ -559,6 +563,9 @@ public class VariantAnnotationCalculator {
         // Default behaviour - no extra padding for CNV
         cnvExtraPadding = (queryOptions.get("cnvExtraPadding") != null ? (Integer) queryOptions.get("cnvExtraPadding") : 0);
         logger.debug("cnvExtraPadding = {}", cnvExtraPadding);
+
+        checkAminoAcidChange = (queryOptions.get("checkAminoAcidChange") != null && (Boolean) queryOptions.get("checkAminoAcidChange"));
+        logger.debug("checkAminoAcidChange = {}", checkAminoAcidChange);
     }
 
     private void mergeAnnotation(VariantAnnotation destination, VariantAnnotation origin) {
@@ -577,12 +584,9 @@ public class VariantAnnotationCalculator {
         if (annotatorSet.contains("conservation")) {
             destination.setConservation(origin.getConservation());
         }
-//        destination.setGeneExpression(origin.getGeneExpression());
-//        destination.setGeneTraitAssociation(origin.getGeneTraitAssociation());
         if (annotatorSet.contains("populationFrequencies")) {
             destination.setPopulationFrequencies(origin.getPopulationFrequencies());
         }
-//        destination.setGeneDrugInteraction(origin.getGeneDrugInteraction());
         if (annotatorSet.contains("clinical")) {
             destination.setVariantTraitAssociation(origin.getVariantTraitAssociation());
         }
@@ -980,7 +984,8 @@ public class VariantAnnotationCalculator {
     }
 
     private List<String> getIncludedGeneFields(Set<String> annotatorSet) {
-        List<String> includeGeneFields = Arrays.asList("name,id,chromosome,start,end,transcripts.id,transcripts.start,transcripts.end,"
+            List<String> includeGeneFields = Arrays.asList("name,id,chromosome,start,end,transcripts.id,transcripts.proteinID,"
+                + "transcripts.start,transcripts.end,transcripts.cDnaSequence,transcripts.proteinSequence,"
                 + "transcripts.strand,transcripts.cdsLength,transcripts.annotationFlags,transcripts.biotype,"
                 + "transcripts.genomicCodingStart,transcripts.genomicCodingEnd,transcripts.cdnaCodingStart,"
                 + "transcripts.cdnaCodingEnd,transcripts.exons.start,transcripts.exons.cdsStart,transcripts.exons.end,"
@@ -1488,19 +1493,25 @@ public class VariantAnnotationCalculator {
         private static final String MUTATION_SOMATIC_STATUS_IN_SOURCE_FILE = "mutationSomaticStatus_in_source_file";
         private static final String SYMBOL = "symbol";
         private List<Variant> variantList;
+        private List<Gene> batchGeneList;
         private QueryOptions queryOptions;
 
-        FutureClinicalAnnotator(List<Variant> variantList, QueryOptions queryOptions) {
+        FutureClinicalAnnotator(List<Variant> variantList, List<Gene> batchGeneList, QueryOptions queryOptions) {
             this.variantList = variantList;
+            this.batchGeneList = batchGeneList;
             this.queryOptions = queryOptions;
         }
 
         @Override
+        // FIXME
         public List<CellBaseDataResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList, queryOptions);
+//            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList,
+//                    batchGeneList,
+//                    queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
-            return clinicalCellBaseDataResultList;
+//            return clinicalCellBaseDataResultList;
+            return null;
         }
 
         public void processResults(Future<List<CellBaseDataResult<Variant>>> clinicalFuture,

@@ -426,17 +426,6 @@ public class MongoDBAdaptorFactory {
         return new ProteinMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-//    @Override
-//    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species) {
-//        return getProteinProteinInteractionDBAdaptor(species, null);
-//    }
-//
-//    @Override
-//    public ProteinProteinInteractionDBAdaptor getProteinProteinInteractionDBAdaptor(String species, String assembly) {
-//        MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-//        return new ProteinProteinInteractionMongoDBAdaptor(species, assembly, mongoDatastore);
-//    }
-
     public OntologyMongoDBAdaptor getOntologyMongoDBAdaptor(String species) {
         return getOntologyMongoDBAdaptor(species, null);
     }

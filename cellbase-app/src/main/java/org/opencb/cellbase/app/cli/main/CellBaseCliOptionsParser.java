@@ -246,6 +246,12 @@ public class CellBaseCliOptionsParser extends CliOptionsParser {
                 + " By default imprecision annotation is enabled.", required = false, arity = 0)
         public boolean noImprecision;
 
+        @Parameter(names = {"--check-aminoacid-change"}, description = "true/false to specify whether variant match in " +
+                "the clinical variant collection should also be performed at the aminoacid change level",
+                required = false,
+                arity = 0)
+        public boolean checkAminoAcidChange;
+
         @DynamicParameter(names = "-D", description = "Dynamic parameters. Available parameters: "
                 + "{population-frequencies=for internal purposes mainly. Full path to a json file containing Variant "
                 + "documents that include lists of population frequencies objects. Will allow annotating the input file "

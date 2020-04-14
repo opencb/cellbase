@@ -48,6 +48,9 @@ public interface ClinicalDBAdaptor {
         ALLELE_ORIGIN("alleleOrigin", TEXT_ARRAY, ""),
         ACCESSION("accession", TEXT_ARRAY, ""),
         PHASE("phased", TEXT_ARRAY, ""),
+        CHECK_AMINO_ACID_CHANGE("checkAminoAcidChange", BOOLEAN, ""),
+        BATCH_GENE_LIST("batchGeneList", TEXT_ARRAY, ""),
+        HGVS("hgvs", TEXT_ARRAY, ""),
 
         @Deprecated
         GENE("gene", TEXT_ARRAY, ""),
@@ -90,3 +93,4 @@ public interface ClinicalDBAdaptor {
         }
     }
 }
+

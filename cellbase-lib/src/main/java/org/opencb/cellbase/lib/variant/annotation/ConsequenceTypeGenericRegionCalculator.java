@@ -383,7 +383,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
             if (!splicing && cdnaVariantStart != -1) {
                 codingAnnotationAdded = true;
-//                if (variant.getReference().length() % 3 == 0) {
+//                if (variant.getReferenceStart().length() % 3 == 0) {
 //                    SoNames.add(VariantAnnotationUtils.INFRAME_DELETION);
 //                } else {
 //                    SoNames.add(VariantAnnotationUtils.FRAMESHIFT_VARIANT);
@@ -667,7 +667,7 @@ public class ConsequenceTypeGenericRegionCalculator extends ConsequenceTypeCalcu
             // just checks cdnaVariantStart!=null because no splicing means cdnaVariantEnd is also != null
             if (!splicing && cdnaVariantStart != -1) {
                 codingAnnotationAdded = true;
-//                if (variant.getReference().length() % 3 == 0) {
+//                if (variant.getReferenceStart().length() % 3 == 0) {
 //                    SoNames.add(VariantAnnotationUtils.INFRAME_DELETION);
 //                } else {
 //                    SoNames.add(VariantAnnotationUtils.FRAMESHIFT_VARIANT);
