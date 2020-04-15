@@ -22,10 +22,10 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.commons.utils.DockerUtils;
 import org.opencb.commons.utils.FileUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -47,6 +47,7 @@ public class GeneDownloadManager extends DownloadManager {
     private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
     private static final String DGIDB_NAME = "DGIdb";
     private static final String GNOMAD_NAME = "gnomAD";
+    private static final String DOCKER_IMAGE = "opencb/cellbase-builder:5.0.0-SNAPSHOT";
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
 
@@ -85,7 +86,6 @@ public class GeneDownloadManager extends DownloadManager {
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
-        // FIXME
         runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
@@ -240,31 +240,18 @@ public class GeneDownloadManager extends DownloadManager {
     private void runGeneExtraInfo(Path geneFolder) throws IOException, InterruptedException {
         logger.info("Downloading gene extra info ...");
 
-        String geneExtraInfoLogFile = geneFolder.resolve("gene_extra_info.log").toString();
-        List<String> args = new ArrayList<>();
-        args.addAll(Arrays.asList("--species", speciesConfiguration.getScientificName(), "--assembly", assemblyConfiguration.getName(),
-                "--outdir", geneFolder.toAbsolutePath().toString(),
-                "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
+        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(geneFolder.toAbsolutePath().toString(),
+                "/ensembl-data");
 
-        if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)
-                && !speciesConfiguration.getScientificName().equals("Drosophila melanogaster")) {
-            args.add("--phylo");
-            args.add("no-vertebrate");
-        }
+        Map<String, String> dockerParams = new HashMap<>();
+        dockerParams.put("it", "");
 
-        File ensemblScriptsFolder = new File(System.getProperty("basedir") + "/bin/ensembl-scripts/");
+        String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --verbose --outdir /ensembl-data";
 
-        // run gene_extra_info.pl
-        boolean geneExtraInfoDownloaded = EtlCommons.runCommandLineProcess(ensemblScriptsFolder,
-                "./gene_extra_info.pl",
-                args,
-                geneExtraInfoLogFile);
-
-        // check output
-        if (geneExtraInfoDownloaded) {
-            logger.info("Gene extra files created OK");
-        } else {
-            logger.error("Gene extra info for " + speciesConfiguration.getScientificName() + " cannot be downloaded");
+        try {
+            DockerUtils.run(DOCKER_IMAGE, null, outputBinding, ensemblScriptParams, null);
+        } catch (IOException e) {
+            throw new IOException(e);
         }
     }
 }
