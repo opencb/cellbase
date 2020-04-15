@@ -119,11 +119,12 @@ public class DownloadCommandExecutor extends CommandExecutor {
                                 species, assembly, outputDirectory, configuration);
                         downloadFiles.addAll(clinicalDownloadManager.downloadClinical());
                         break;
-                    case EtlCommons.STRUCTURAL_VARIANTS_DATA:
-                        downloadFiles.add(downloadManager.downloadStructuralVariants());
-                        break;
+//                    case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+//                        downloadFiles.add(downloadManager.downloadStructuralVariants());
+//                        break;
                     case EtlCommons.REPEATS_DATA:
-                        downloadFiles.addAll(downloadManager.downloadRepeats());
+                        genomeDownloadManager = new GenomeDownloadManager(species, assembly, outputDirectory, configuration);
+                        downloadFiles.addAll(genomeDownloadManager.downloadRepeats());
                         break;
                     case EtlCommons.OBO_DATA:
                         OntologyDownloadManager ontologyDownloadManager = new OntologyDownloadManager(species, assembly, outputDirectory,

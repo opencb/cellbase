@@ -53,9 +53,7 @@ public class DownloadManager {
 //    private static final String GWAS_NAME = "Gwas Catalog";
 //    private static final String DBSNP_NAME = "dbSNP";
 //    private static final String REACTOME_NAME = "Reactome";
-    private static final String TRF_NAME = "Tandem repeats finder";
-    private static final String GSD_NAME = "Genomic super duplications";
-    private static final String WM_NAME = "WindowMasker";
+
     private static final String GNOMAD_NAME = "gnomAD";
 
     protected String species;
@@ -189,16 +187,6 @@ public class DownloadManager {
         jsonObjectMapper.writeValue(outputFilePath.toFile(), versionDataMap);
     }
 
-    private void downloadGnomad(Path geneFolder) throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading gnomAD data...");
-            String url = configuration.getDownload().getGnomadConstraints().getHost();
-            downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
-            saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().getGnomadConstraints().getVersion(),
-                    getTimeStamp(), Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
-        }
-    }
-
     protected String getLine(Path readmePath, int lineNumber) {
         Files.exists(readmePath);
         try {
@@ -243,17 +231,6 @@ public class DownloadManager {
         }
     }
 
-    private String getDbsnpVersion() {
-        // ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b144_GRCh37p13/VCF/All_20150605.vcf.gz
-        return configuration.getDownload().getDbsnp().getHost().split("_")[2];
-    }
-
-    private String getGwasVersion() {
-        // ftp://ftp.ebi.ac.uk/pub/databases/gwas/releases/2016/05/10/gwas-catalog-associations.tsv
-        String[] pathParts = configuration.getDownload().getGwasCatalog().getHost().split("/");
-        return pathParts[9] + "/" + pathParts[8] + "/" + pathParts[7];
-    }
-
     public DownloadFile downloadCaddScores() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
             return null;
@@ -270,53 +247,6 @@ public class DownloadManager {
             saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
                     Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
             return downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
-        }
-        return null;
-    }
-
-    public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
-            return null;
-        }
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading repeats data ...");
-            Path repeatsFolder = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
-            Files.createDirectories(repeatsFolder);
-            List<DownloadFile> downloadFiles = new ArrayList<>();
-            String pathParam;
-            if (assemblyConfiguration.getName().equalsIgnoreCase("grch37")) {
-                pathParam = "hg19";
-            } else if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
-                pathParam = "hg38";
-            } else {
-                logger.error("Please provide a valid human assembly {GRCh37, GRCh38)");
-                throw new ParameterException("Assembly '" + assemblyConfiguration.getName() + "' is not valid. Please provide "
-                        + "a valid human assembly {GRCh37, GRCh38)");
-            }
-
-            // Download tandem repeat finder
-            String url = configuration.getDownload().getSimpleRepeats().getHost() + "/" + pathParam
-                    + "/database/simpleRepeat.txt.gz";
-            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString()));
-            saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILE));
-
-            // Download genomic super duplications
-            url = configuration.getDownload().getGenomicSuperDups().getHost() + "/" + pathParam
-                    + "/database/genomicSuperDups.txt.gz";
-            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.GSD_FILE).toString()));
-            saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILE));
-
-            // Download WindowMasker
-            if (!pathParam.equalsIgnoreCase("hg19")) {
-                url = configuration.getDownload().getWindowMasker().getHost() + "/" + pathParam
-                        + "/database/windowmaskerSdust.txt.gz";
-                downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.WM_FILE).toString()));
-                saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                        repeatsFolder.resolve(EtlCommons.WM_VERSION_FILE));
-            }
-            return downloadFiles;
         }
         return null;
     }
