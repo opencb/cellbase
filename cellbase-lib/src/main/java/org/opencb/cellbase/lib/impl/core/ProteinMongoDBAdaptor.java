@@ -391,9 +391,7 @@ public class ProteinMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
     }
 
     private void createProteinOrQuery(Object queryValues, List<Bson> andBsonList) {
-
         List<Bson> orBsonList = new ArrayList<>();
-
         String mongoDbField = "dbReference.id";
         Query query = new Query(mongoDbField, queryValues);
         Bson filter = MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query,

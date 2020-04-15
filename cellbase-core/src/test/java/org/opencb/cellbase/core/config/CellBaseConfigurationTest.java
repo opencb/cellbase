@@ -1,7 +1,10 @@
 package org.opencb.cellbase.core.config;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Test;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +17,48 @@ import static org.junit.Assert.assertThat;
  * Created by jacobo on 29/03/19.
  */
 public class CellBaseConfigurationTest {
+
+    CellBaseConfiguration cellBaseConfiguration;
+
+    @BeforeAll
+    public void setUp() throws Exception {
+        cellBaseConfiguration = CellBaseConfiguration.load(
+                org.opencb.cellbase.core.config.CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"),
+                CellBaseConfiguration.ConfigurationFileFormat.JSON);
+    }
+
+    @Test
+    public void load() throws Exception {
+        cellBaseConfiguration = CellBaseConfiguration.load(
+                org.opencb.cellbase.core.config.CellBaseConfigurationTest.class.getResourceAsStream("/cellBaseProperties_test.json"),
+                CellBaseConfiguration.ConfigurationFileFormat.JSON);
+        System.out.println(new ObjectMapper().writer().withDefaultPrettyPrinter().writeValueAsString(cellBaseConfiguration));
+    }
+
+    @Test
+    public void defaultOutdir() {
+        Assertions.assertEquals("/tmp", cellBaseConfiguration.getDefaultOutdir());
+    }
+
+    @Test
+    public void vertebrates() {
+        Assertions.assertEquals(3, cellBaseConfiguration.getSpecies().getVertebrates().size());
+    }
+
+    @Test
+    public void metazoa() {
+        Assertions.assertEquals(1, cellBaseConfiguration.getSpecies().getMetazoa().size());
+    }
+
+    @Test
+    public void fungi() {
+        Assertions.assertEquals(1, cellBaseConfiguration.getSpecies().getFungi().size());
+    }
+
+    @Test
+    public void plants() {
+        Assertions.assertEquals(2, cellBaseConfiguration.getSpecies().getPlants().size());
+    }
 
     @Test
     public void testEnvVars() throws Exception {

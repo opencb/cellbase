@@ -47,7 +47,7 @@ public class EtlCommons {
     public static final String CLINICAL_VARIANTS_DATA = "clinical_variants";
 
     public static final String CLINICAL_VARIANTS_FOLDER = "clinicalVariant";
-    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2019-06.xml.gz";
+    public static final String CLINVAR_XML_FILE = "ClinVarFullRelease_2020-02.xml.gz";
     public static final String CLINVAR_EFO_FILE = "ClinVar_Traits_EFO_Names.csv";
     public static final String CLINVAR_SUMMARY_FILE = "variant_summary.txt.gz";
     public static final String CLINVAR_VARIATION_ALLELE_FILE = "variation_allele.txt.gz";
@@ -99,10 +99,10 @@ public class EtlCommons {
     public static final String GSD_VERSION_FILE = "genomicSuperDups.json";
     public static final String WM_FILE = "windowMasker.txt.gz";
     public static final String WM_VERSION_FILE = "windowMasker.json";
-    public static final String REPEATS_FOLDER = "repeats";
+    public static final String REPEATS_FOLDER = "genome";
     public static final String REPEATS_JSON = "repeats";
-    public static final String OBO_FOLDER = "obo";
-    public static final String OBO_JSON = "obo";
+    public static final String OBO_FOLDER = "ontology";
+    public static final String OBO_JSON = "ontology";
     public static final String REGULATORY_FEATURES_FILE = "Regulatory_Build.regulatory_features.gff.gz";
     public static final String MOTIF_FEATURES_FILE = "motif_features.gff.gz";
 

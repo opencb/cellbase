@@ -108,7 +108,7 @@ public class BenchmarkTask implements
      */
     private boolean isValid(VariantAnnotation variantAnnotation) {
         return (variantAnnotation.getAlternate().matches(VARIANT_STRING_PATTERN)
-//                && variantAnnotation.getReference().matches(VARIANT_STRING_PATTERN)
+//                && variantAnnotation.getReferenceStart().matches(VARIANT_STRING_PATTERN)
                 && !variantAnnotation.getAlternate().equals(variantAnnotation.getReference()));
     }
 

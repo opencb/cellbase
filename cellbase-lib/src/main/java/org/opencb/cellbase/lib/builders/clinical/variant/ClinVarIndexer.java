@@ -72,6 +72,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final String COMPOUND_HETEROZYGOTE = "CompoundHeterozygote";
     private static final String DIPLOTYPE = "Diplotype";
     private static final String VARIANT = "Variant";
+    private static final char CLINICAL_SIGNIFICANCE_SEPARATOR = '/';
     private final Path clinvarXMLFile;
     private final Path clinvarSummaryFile;
     private final Path clinvarVariationAlleleFile;
@@ -114,9 +115,11 @@ public class ClinVarIndexer extends ClinicalIndexer {
             logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
             ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", clinvarRelease.getValue().getClinVarSet().size(),
                     200).setBatchSize(10000);
+
             for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
                 List<AlleleLocationData> alleleLocationDataList =
                         rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+
                 if (alleleLocationDataList != null) {
                     boolean success = false;
                     // Actually this list is currently not allowed to be > 2
@@ -245,8 +248,31 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     clinicalHaplotypeString = StringUtils.join(normalisedVariantStringList, HAPLOTYPE_STRING_SEPARATOR);
                 }
 
+                // parse RCVs
+                String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+                String clinicalSignficanceDescription = publicSet.getReferenceClinVarAssertion()
+                        .getClinicalSignificance()
+                        .getDescription();
+                String reviewStatusName = publicSet.getReferenceClinVarAssertion().getClinicalSignificance()
+                        .getReviewStatus().name();
+                List<ObservationSet> getObservedIn = publicSet.getReferenceClinVarAssertion().getObservedIn();
                 addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
-                        clinicalHaplotypeString, traitsToEfoTermsMap);
+                        clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
+                        reviewStatusName, getObservedIn);
+
+                // parse SCVs
+                for (MeasureTraitType measureTraitType : publicSet.getClinVarAssertion()) {
+                    accession = measureTraitType.getClinVarAccession().getAcc();
+                    clinicalSignficanceDescription
+                            = StringUtils.join(measureTraitType.getClinicalSignificance().getDescription(),
+                            CLINICAL_SIGNIFICANCE_SEPARATOR);
+
+                    reviewStatusName = getReviewStatusIfPresent(measureTraitType);
+                    getObservedIn = measureTraitType.getObservedIn();
+                    addNewEntries(variantAnnotation, publicSet, alleleLocationData.getAlleleId(), mateVariantString,
+                            clinicalHaplotypeString, traitsToEfoTermsMap, accession, clinicalSignficanceDescription,
+                            reviewStatusName, getObservedIn);
+                }
 
                 rdb.put(normalisedVariantString.getBytes(), jsonObjectWriter.writeValueAsBytes(variantAnnotation));
             }
@@ -254,6 +280,14 @@ public class ClinVarIndexer extends ClinicalIndexer {
         }
 
         return false;
+    }
+
+    private String getReviewStatusIfPresent(MeasureTraitType measureTraitType) {
+        if (measureTraitType.getClinicalSignificance().getReviewStatus() != null) {
+            return measureTraitType.getClinicalSignificance().getReviewStatus().name();
+        }
+
+        return null;
     }
 
     private void addNewEntries(VariantAnnotation variantAnnotation, String variationId, String[] lineFields,
@@ -322,10 +356,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
     }
 
     private ConsistencyStatus getConsistencyStatus(String lineField) {
-        for (String value : lineField.split("[,/;]")) {
-            value = value.toLowerCase().trim();
-            if (VariantAnnotationUtils.CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.containsKey(value)) {
-                return VariantAnnotationUtils.CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.get(value);
+        if (StringUtils.isNotBlank(lineField)) {
+            for (String value : lineField.split("[,/;]")) {
+                value = value.toLowerCase().trim();
+                if (VariantAnnotationUtils.CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.containsKey(value)) {
+                    return VariantAnnotationUtils.CLINVAR_REVIEW_TO_CONSISTENCY_STATUS.get(value);
+                }
             }
         }
         return null;
@@ -333,21 +369,21 @@ public class ClinVarIndexer extends ClinicalIndexer {
 
     private void addNewEntries(VariantAnnotation variantAnnotation, PublicSetType publicSet, String alleleId,
                                String mateVariantString, String clinicalHaplotypeString,
-                               Map<String, EFO> traitsToEfoTermsMap) throws JsonProcessingException {
+                               Map<String, EFO> traitsToEfoTermsMap, String accession,
+                               String clinicalSignficanceDescription, String reviewStatusName,
+                               List<ObservationSet> getObservedIn)
+        throws JsonProcessingException {
 
         List<Property> additionalProperties = new ArrayList<>(3);
         EvidenceSource evidenceSource = new EvidenceSource(EtlCommons.CLINVAR_DATA, null, null);
-        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
+//        String accession = publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc();
 
         VariantClassification variantClassification = getVariantClassification(
-                Arrays.asList(publicSet.getReferenceClinVarAssertion().getClinicalSignificance().getDescription().split("[,/;]")));
-        additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE, publicSet.getReferenceClinVarAssertion()
-                .getClinicalSignificance().getDescription()));
+                Arrays.asList(clinicalSignficanceDescription.split("[,/;]")));
+        additionalProperties.add(new Property(null, CLINICAL_SIGNIFICANCE_IN_SOURCE_FILE, clinicalSignficanceDescription));
 
-        ConsistencyStatus consistencyStatus = getConsistencyStatus(publicSet.getReferenceClinVarAssertion()
-                .getClinicalSignificance().getReviewStatus().name());
-        additionalProperties.add(new Property(null, REVIEW_STATUS_IN_SOURCE_FILE, publicSet.getReferenceClinVarAssertion()
-                .getClinicalSignificance().getReviewStatus().name()));
+        ConsistencyStatus consistencyStatus = getConsistencyStatus(reviewStatusName);
+        additionalProperties.add(new Property(null, REVIEW_STATUS_IN_SOURCE_FILE, reviewStatusName));
 
         // Multiple vars within the same RCV. Maximum of two vars permitted so far
         if (mateVariantString != null) {
@@ -364,8 +400,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
         List<EvidenceSubmission> submissions = getSubmissionList(publicSet);
 
         List<String> bibliography = new ArrayList<>();
-        Set<String> originSet = new HashSet<>(publicSet.getReferenceClinVarAssertion().getObservedIn().size());
-        for (ObservationSet observationSet : publicSet.getReferenceClinVarAssertion().getObservedIn()) {
+        Set<String> originSet = new HashSet<>(getObservedIn.size());
+        for (ObservationSet observationSet : getObservedIn) {
             // Origin for a number of the variants may not be clear, values found in the database for this field are:
             // {"germline",  "unknown",  "inherited",  "maternal",  "de novo",  "paternal",  "not provided",  "somatic",
             // "uniparental",  "biparental",  "tested-inconclusive",  "not applicable"}
@@ -542,24 +578,16 @@ public class ClinVarIndexer extends ClinicalIndexer {
                         sourceInheritableTraitMap);
 
         for (TraitType trait : publicSet.getReferenceClinVarAssertion().getTraitSet().getTrait()) {
-            // Look for the preferred trait name
-            int i = 0;
-            while (i < trait.getName().size()
-                    && !trait.getName().get(i).getElementValue().getType().equalsIgnoreCase("preferred")) {
-                i++;
-            }
-            // WARN: assuming there will always be a preferred trait name
-            // Found preferred trait name
-            if (i < trait.getName().size()) {
+            String traitName = getTraitName(trait, publicSet);
+            // WARN: assuming there will always be a trait name
+            if (StringUtils.isNotBlank(traitName)) {
                 Map<String, String> currentSourceInheritableTraitMap = new HashMap<>(sourceInheritableTraitMap);
                 // WARNING: overwrites previous TRAIT entry if present in order to reuse the same object in each
                 // iteration - in version 53 onwards of ClinVar schema the mode of inheritance is provided at the
                 // root of the ReferenceClinvarAssertion rather than for each trait
-                currentSourceInheritableTraitMap.put(TRAIT, trait.getName().get(i).getElementValue().getValue());
+                currentSourceInheritableTraitMap.put(TRAIT, traitName);
 
-//                heritableTraitList.add(new HeritableTrait(trait.getName().get(i).getElementValue().getValue(),
-//                        getInheritanceModel(trait, sourceInheritableTraitMap)));
-                heritableTraitList.add(new HeritableTrait(trait.getName().get(i).getElementValue().getValue(),
+                heritableTraitList.add(new HeritableTrait(traitName,
                         modeOfInheritance));
 
                 // This is to double-confirm that the new ClinVar (v53) schema is properly read. It will just check
@@ -574,7 +602,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             } else {
                 throw new IllegalArgumentException("ClinVar record found "
                         + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()
-                        + " with no preferred trait provided");
+                        + " with no trait provided");
             }
         }
 
@@ -587,6 +615,32 @@ public class ClinVarIndexer extends ClinicalIndexer {
                     jsonObjectWriter.writeValueAsString(sourceInheritableTraitList)));
         }
         return heritableTraitList;
+    }
+
+    private String getTraitName(TraitType trait, PublicSetType publicSet) {
+        // Look for the preferred trait name
+        int i = 0;
+        while (i < trait.getName().size()
+                && !trait.getName().get(i).getElementValue().getType().equalsIgnoreCase("preferred")) {
+            i++;
+        }
+
+        // Found preferred name
+        if (i < trait.getName().size()) {
+            return trait.getName().get(i).getElementValue().getValue();
+        // No preferred name indicated (e.g. RCV000013735 version Jan 2020); arbitrarily return first one
+        } else if (trait.getName().size() > 0) {
+            logger.warn("ClinVar record found "
+                    + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()
+                    + " with no preferred trait provided. Arbitrarily selecting first one: {}", trait.getName()
+                    .get(0).getElementValue().getValue());
+            return trait.getName().get(0).getElementValue().getValue();
+        // No trait name provided at all
+        } else {
+            throw new IllegalArgumentException("ClinVar record found "
+                    + publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc()
+                    + " with no trait provided");
+        }
     }
 
     private boolean traitInheritanceModesPresent(List<TraitType.AttributeSet> attributeSetList) {
@@ -648,7 +702,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             // Check assembly
             // Check coordinates fields are not missing
             // Check reference != alternate
-            if (parts[VARIANT_SUMMARY_ASSEMBLY_COLUMN].equals(assembly)
+            if (parts[VARIANT_SUMMARY_ASSEMBLY_COLUMN].equalsIgnoreCase(assembly)
                     && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_CHR_COLUMN])
                     && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_START_COLUMN])
                     && !EtlCommons.isMissing(parts[VARIANT_SUMMARY_END_COLUMN])
@@ -677,40 +731,52 @@ public class ClinVarIndexer extends ClinicalIndexer {
                                 + line);
                     } else {
                         alleleLocationDataList.add(new AlleleLocationData(parts[0], sequenceLocation));
+
                     }
                 }
                 // Index the Germline/Somatic documents corresponding to the aggregated variation object
                 // !EtlCommons.isMissing(parts[0]) is also checked above and therefore redundant but kept it here
                 // just in case
                 if (!EtlCommons.isMissing(parts[0])) {
-                    // One allele ID may be associated with multiple variation records e.g. 187140 -> [242617, 424712]
-                    for (VariationData variationData : alleleIdToVariationData.get(parts[0])) {
-                        // This is a "normal" line with just one variant being involved in this/these RCV records
-                        if (VARIANT.equals(variationData.getType())) {
-                            boolean success = updateRocksDB(sequenceLocation, variationData.getId(), parts, null,
-                                    traitsToEfoTermsMap);
-                            // updateRocksDB may fail (false) if normalisation process fails
-                            if (success) {
-                                numberIndexedRecords++;
-                            }
-                        // Save lines forming a compound variation/RCV record in memory, within a HashMap for
-                        // posterior processing.
-                        // In order to generate the EvidenceEntry object of compound variation records we need first to
-                        // collect all the lines associated with it, so that we are able to generate mate variant
-                        // strings for each of the forming variants
-                        } else {
-                            List<String[]> lineList;
-                            // Check if there was a list of lines already initialised for this variation id
-                            if (compoundVariationRecords.containsKey(variationData.getId())) {
-                                lineList = compoundVariationRecords.get(variationData.getId());
+                    List<VariationData> variationDataList = alleleIdToVariationData.get(parts[0]);
+                    // Found cases in which the allele taken from the variant_summary file is not found in the
+                    // variation_allele table, i.e. variant_summary and variation_allele files are not synchronised,
+                    // e.g. ALLELE ID 684879 is in variant_summary (downloaded 27th Jan 2020) but no entry can be found
+                    // for this ALLELE ID in variation_allele (also downloaded 27th Jan 2020).
+                    if (variationDataList != null) {
+                        // One allele ID may be associated with multiple variation records e.g. 187140 -> [242617, 424712]
+                        for (VariationData variationData : variationDataList) {
+                            // This is a "normal" line with just one variant being involved in this/these RCV records
+                            if (VARIANT.equals(variationData.getType())) {
+                                boolean success = updateRocksDB(sequenceLocation, variationData.getId(), parts, null,
+                                        traitsToEfoTermsMap);
+                                // updateRocksDB may fail (false) if normalisation process fails
+                                if (success) {
+                                    numberIndexedRecords++;
+                                }
+                                // Save lines forming a compound variation/RCV record in memory, within a HashMap for
+                                // posterior processing.
+                                // In order to generate the EvidenceEntry object of compound variation records we need first to
+                                // collect all the lines associated with it, so that we are able to generate mate variant
+                                // strings for each of the forming variants
                             } else {
-                                 lineList = new ArrayList<>(2);
-                                 compoundVariationRecords.put(variationData.getId(), lineList);
-                            }
-                            // Add current - splitted - line to the list for this variation id
-                            lineList.add(parts);
+                                List<String[]> lineList;
+                                // Check if there was a list of lines already initialised for this variation id
+                                if (compoundVariationRecords.containsKey(variationData.getId())) {
+                                    lineList = compoundVariationRecords.get(variationData.getId());
+                                } else {
+                                    lineList = new ArrayList<>(2);
+                                    compoundVariationRecords.put(variationData.getId(), lineList);
+                                }
+                                // Add current - splitted - line to the list for this variation id
+                                lineList.add(parts);
 
+                            }
                         }
+                    } else {
+                        logger.warn("No variation data found for allele ID {}. variant_summary line {}. This is "
+                                + "probably due to lack of synchronisation between "
+                                + "variant_summary and variation_allele files. ", parts[0], line);
                     }
                 }
                 totalNumberRecords++;

@@ -43,6 +43,7 @@ public abstract class ClinicalIndexer {
     protected static final String HAPLOTYPE_FIELD_NAME = "haplotype";
     protected static Logger logger
             = LoggerFactory.getLogger("org.opencb.cellbase.app.transform.clinical.variant.ClinicalIndexer");
+    private static final String VARIANT_STRING_PATTERN = "([ACGTN]*)|(<CNV[0-9]+>)|(<DUP>)|(<DEL>)|(<INS>)|(<INV>)";
 
     protected int numberNewVariants = 0;
     protected int numberVariantUpdates = 0;
@@ -163,21 +164,33 @@ public abstract class ClinicalIndexer {
 
      protected List<String> getNormalisedVariantString(String chromosome, int start, String reference, String alternate) {
         Variant variant = new Variant(chromosome, start, reference, alternate);
-        List<Variant> normalizedVariantList;
-        if (normalize) {
-            try {
-                // No decomposition allowed at the moment therefore only one variant in returned list of variants.
-                normalizedVariantList = normalizer.apply(Collections.singletonList(variant));
-            } catch (RuntimeException e) {
-                e.printStackTrace();
-                logger.warn("Error found during variant normalization. Skipping variant: {}", variant.toString());
-                return null;
+
+        // Checks no weird characters are part of the reference & alternate alleles
+        if (isValid(variant)) {
+            List<Variant> normalizedVariantList;
+            if (normalize) {
+                try {
+                    // No decomposition allowed at the moment therefore only one variant in returned list of variants.
+                    normalizedVariantList = normalizer.apply(Collections.singletonList(variant));
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                    logger.warn("Error found during variant normalization. Skipping variant: {}", variant.toString());
+                    return null;
+                }
+            } else {
+                normalizedVariantList = Collections.singletonList(variant);
             }
-        } else {
-            normalizedVariantList = Collections.singletonList(variant);
+
+            return normalizedVariantList.stream().map((variant1) -> variant1.toString()).collect(Collectors.toList());
         }
 
-        return normalizedVariantList.stream().map((variant1) -> variant1.toString()).collect(Collectors.toList());
+        return null;
+    }
+
+    protected boolean isValid(Variant variant) {
+        return (variant.getReference().matches(VARIANT_STRING_PATTERN)
+                && (variant.getAlternate().matches(VARIANT_STRING_PATTERN)
+                && !variant.getAlternate().equals(variant.getReference())));
     }
 
     protected void addHaplotypeProperty(List<EvidenceEntry> evidenceEntryList, List<String> normalisedVariantStringList) {

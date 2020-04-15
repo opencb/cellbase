@@ -42,7 +42,7 @@ public class OntologyDownloadManager extends DownloadManager {
         logger.info("Downloading obo files ...");
 
         List<DownloadFile> downloadFiles = new ArrayList<>();
-        Path oboFolder = downloadFolder.resolve("obo");
+        Path oboFolder = downloadFolder.resolve("ontology");
         Files.createDirectories(oboFolder);
 
         String url = configuration.getDownload().getHpoObo().getHost();

@@ -180,12 +180,26 @@ public class ClinicalManager extends AbstractManager {
         return results;
     }
 
-    public CellBaseDataResult getByRegion(Query query, QueryOptions queryOptions, String regions) {
-        query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), regions);
-
-        CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
-        queryResult.setId(regions);
-        return queryResult;
-
-    }
+//    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
+//                                                          QueryOptions queryOptions) {
+//        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
+//        for (Variant variant: variants) {
+//            results.add(getClinicalVariant(variant, genomeDBAdaptor, geneList, queryOptions));
+//        }
+//        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null
+//        && (Boolean) queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key())) {
+//            results = phasedQueryManager.run(variants, results);
+//
+//        }
+//        return results;
+//    }
+//
+//    public CellBaseDataResult getByRegion(Query query, QueryOptions queryOptions, String regions) {
+//        query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), regions);
+//
+//        CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
+//        queryResult.setId(regions);
+//        return queryResult;
+//
+//    }
 }

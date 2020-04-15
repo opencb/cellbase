@@ -66,6 +66,7 @@ public interface CellBaseDBAdaptor<T, Q> extends Iterable<T> {
 //        return stats(new Query());
 //    }
 
+
 //    CellBaseDataResult stats(Query query);
 
     /*

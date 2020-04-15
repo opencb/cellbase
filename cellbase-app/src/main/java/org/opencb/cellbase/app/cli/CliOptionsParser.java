@@ -86,7 +86,6 @@ public abstract class CliOptionsParser {
         @Parameter(names = {"-a", "--assembly"}, description = "Name of the assembly, if empty the first assembly in configuration.yml will be used",
                 arity = 1)
         public String assembly;
-
     }
 
     public static final String ANSI_RESET = "\u001B[0m";

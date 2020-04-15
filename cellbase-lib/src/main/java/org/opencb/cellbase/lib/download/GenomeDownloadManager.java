@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.download;
 
+import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
@@ -35,6 +36,9 @@ public class GenomeDownloadManager extends DownloadManager {
     private static final String GERP_NAME = "GERP++";
     private static final String PHASTCONS_NAME = "PhastCons";
     private static final String PHYLOP_NAME = "PhyloP";
+    private static final String TRF_NAME = "Tandem repeats finder";
+    private static final String GSD_NAME = "Genomic super duplications";
+    private static final String WM_NAME = "WindowMasker";
 
     public GenomeDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
@@ -175,5 +179,50 @@ public class GenomeDownloadManager extends DownloadManager {
                     conservationFolder.resolve("phastConsVersion.json"));
         }
         return downloadFiles;
+    }
+
+    public List<DownloadFile> downloadRepeats() throws IOException, InterruptedException {
+        if (!speciesHasInfoToDownload(speciesConfiguration, "repeats")) {
+            return null;
+        }
+        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+            logger.info("Downloading repeats data ...");
+            Path repeatsFolder = downloadFolder.resolve(EtlCommons.REPEATS_FOLDER);
+            Files.createDirectories(repeatsFolder);
+            List<DownloadFile> downloadFiles = new ArrayList<>();
+            String pathParam;
+            if (assemblyConfiguration.getName().equalsIgnoreCase("grch38")) {
+                pathParam = "hg38";
+            } else {
+                logger.error("Please provide a valid human assembly {GRCh37, GRCh38)");
+                throw new ParameterException("Assembly '" + assemblyConfiguration.getName() + "' is not valid. Please provide "
+                        + "a valid human assembly {GRCh37, GRCh38)");
+            }
+
+            // Download tandem repeat finder
+            String url = configuration.getDownload().getSimpleRepeats().getHost() + "/" + pathParam
+                    + "/database/simpleRepeat.txt.gz";
+            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.TRF_FILE).toString()));
+            saveVersionData(EtlCommons.REPEATS_DATA, TRF_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    repeatsFolder.resolve(EtlCommons.TRF_VERSION_FILE));
+
+            // Download genomic super duplications
+            url = configuration.getDownload().getGenomicSuperDups().getHost() + "/" + pathParam
+                    + "/database/genomicSuperDups.txt.gz";
+            downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.GSD_FILE).toString()));
+            saveVersionData(EtlCommons.REPEATS_DATA, GSD_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                    repeatsFolder.resolve(EtlCommons.GSD_VERSION_FILE));
+
+            // Download WindowMasker
+            if (!pathParam.equalsIgnoreCase("hg19")) {
+                url = configuration.getDownload().getWindowMasker().getHost() + "/" + pathParam
+                        + "/database/windowmaskerSdust.txt.gz";
+                downloadFiles.add(downloadFile(url, repeatsFolder.resolve(EtlCommons.WM_FILE).toString()));
+                saveVersionData(EtlCommons.REPEATS_DATA, WM_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                        repeatsFolder.resolve(EtlCommons.WM_VERSION_FILE));
+            }
+            return downloadFiles;
+        }
+        return null;
     }
 }
