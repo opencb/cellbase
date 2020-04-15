@@ -47,7 +47,7 @@ public class GeneDownloadManager extends DownloadManager {
     private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
     private static final String DGIDB_NAME = "DGIdb";
     private static final String GNOMAD_NAME = "gnomAD";
-    private static String DOCKER_IMAGE;
+    private static String dockerImage;
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
 
@@ -65,7 +65,7 @@ public class GeneDownloadManager extends DownloadManager {
             throws IOException, CellbaseException {
         super(species, assembly, targetDirectory, configuration);
 
-        DOCKER_IMAGE = "opencb/cellbase-builder:" + configuration.getApiVersion();
+        dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
     }
 
     public GeneDownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
@@ -74,8 +74,7 @@ public class GeneDownloadManager extends DownloadManager {
     }
 
 
-    @Override
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> downloadEnsemblGene() throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = downloadFolder.resolve("gene");
         Files.createDirectories(geneFolder);
@@ -248,7 +247,7 @@ public class GeneDownloadManager extends DownloadManager {
         String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --verbose --outdir /ensembl-data";
 
         try {
-            DockerUtils.run(DOCKER_IMAGE, null, outputBinding, ensemblScriptParams, null);
+            DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);
         } catch (IOException e) {
             throw new IOException(e);
         }
