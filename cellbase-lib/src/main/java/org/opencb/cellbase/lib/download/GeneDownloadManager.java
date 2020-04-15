@@ -47,7 +47,7 @@ public class GeneDownloadManager extends DownloadManager {
     private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
     private static final String DGIDB_NAME = "DGIdb";
     private static final String GNOMAD_NAME = "gnomAD";
-    private static final String DOCKER_IMAGE = "opencb/cellbase-builder:5.0.0-SNAPSHOT";
+    private static String DOCKER_IMAGE;
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
 
@@ -64,6 +64,8 @@ public class GeneDownloadManager extends DownloadManager {
     public GeneDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         super(species, assembly, targetDirectory, configuration);
+
+        DOCKER_IMAGE = "opencb/cellbase-builder:" + configuration.getApiVersion();
     }
 
     public GeneDownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
@@ -72,7 +74,8 @@ public class GeneDownloadManager extends DownloadManager {
     }
 
 
-    public List<DownloadFile> downloadEnsemblGene() throws IOException, InterruptedException {
+    @Override
+    public List<DownloadFile> download() throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = downloadFolder.resolve("gene");
         Files.createDirectories(geneFolder);
@@ -237,15 +240,11 @@ public class GeneDownloadManager extends DownloadManager {
         return downloadFiles;
     }
 
-    private void runGeneExtraInfo(Path geneFolder) throws IOException, InterruptedException {
+    private void runGeneExtraInfo(Path geneFolder) throws IOException {
         logger.info("Downloading gene extra info ...");
 
         AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(geneFolder.toAbsolutePath().toString(),
                 "/ensembl-data");
-
-        Map<String, String> dockerParams = new HashMap<>();
-        dockerParams.put("it", "");
-
         String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --verbose --outdir /ensembl-data";
 
         try {
