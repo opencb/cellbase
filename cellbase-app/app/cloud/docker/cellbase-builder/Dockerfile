@@ -20,9 +20,10 @@ RUN mkdir /opt/ensembl && cd /opt/ensembl && \
     git clone https://github.com/Ensembl/ensembl-compara.git && \
     git clone https://github.com/Ensembl/ensembl-io.git
 
-RUN echo export PATH=/opt/ensembl/ensembl-git-tools/bin:$PATH >> /etc/bash.bashrc && \
-    echo export PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase >> /etc/bash.bashrc
+#RUN echo export PATH=/opt/ensembl/ensembl-git-tools/bin:$PATH >> /etc/bash.bashrc && \
+#    echo export PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase >> /etc/bash.bashrc
 
+ENV PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase
 #VOLUME /ensembl-data
 
 #RUN addgroup -S cellbase && adduser -S cellbase -G cellbase
