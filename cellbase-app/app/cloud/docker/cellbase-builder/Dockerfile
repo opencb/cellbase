@@ -1,10 +1,10 @@
 FROM ubuntu:18.04
 
 LABEL org.label-schema.vendor="OpenCB" \
-      org.label-schema.name="cellbase-buld" \
+      org.label-schema.name="cellbase-builder" \
       org.label-schema.url="http://docs.opencb.org/display/cellbase" \
       org.label-schema.description="An Open Computational Genomics Analysis platform for big data processing and analysis in genomics" \
-      maintainer="Julie Sullivan <julie.sullivan@gmail.com>" \
+      maintainer="Nacho Medina <igmecas@gmail.com>" \
       org.label-schema.schema-version="1.0"
 
 RUN apt-get update --fix-missing && \
@@ -20,20 +20,8 @@ RUN mkdir /opt/ensembl && cd /opt/ensembl && \
     git clone https://github.com/Ensembl/ensembl-compara.git && \
     git clone https://github.com/Ensembl/ensembl-io.git
 
-#RUN echo export PATH=/opt/ensembl/ensembl-git-tools/bin:$PATH >> /etc/bash.bashrc && \
-#    echo export PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase >> /etc/bash.bashrc
-
 ENV PERL5LIB=$PERL5LIB:/opt/ensembl/bioperl-live:/opt/ensembl/ensembl/modules:/opt/ensembl/ensembl-variation/modules:/opt/ensembl/ensembl-funcgen/modules:/opt/ensembl/ensembl-compara/modules:/opt/ensembl/lib/perl/5.18.2:/opt/cellbase
-#VOLUME /ensembl-data
-
-#RUN addgroup -S cellbase && adduser -S cellbase -G cellbase
-#RUN groupadd -r cellbase && useradd -g cellbase cellbase
-#USER cellbase
 
 COPY scripts/ensembl-scripts/* /opt/cellbase/
-#RUN chown -R cellbase:cellbase /opt/cellbase
-#COPY cloud/docker/cellbase-builder/entrypoint.sh /usr/local/bin/
 
-#RUN chmod +x /usr/local/bin/entrypoint.sh
-#ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 WORKDIR /opt/cellbase
