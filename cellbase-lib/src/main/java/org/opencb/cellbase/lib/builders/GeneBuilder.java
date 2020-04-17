@@ -29,10 +29,10 @@ import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.tools.sequence.FastaIndexManager;
+import org.opencb.biodata.tools.sequence.SamtoolsFastaIndex;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.rocksdb.RocksDBException;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -108,7 +108,8 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 geneDirectoryPath.resolve("goa_human.gaf.gz"),
-                genomeSequenceFastaFile, speciesConfiguration, flexibleGTFParsing, serializer);
+                genomeSequenceFastaFile,
+                speciesConfiguration, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
         getProteinFastaFileFromGeneDirectoryPath(geneDirectoryPath);
         getCDnaFastaFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -172,7 +173,8 @@ public class GeneBuilder extends CellBaseBuilder {
                 = GeneBuilderUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
 
         // Preparing the fasta file for fast accessing
-        FastaIndexManager fastaIndexManager = getFastaIndexManager();
+//        FastaIndexManager fastaIndexManager = getFastaIndexManager();
+        SamtoolsFastaIndex fastaIndex = new SamtoolsFastaIndex(genomeSequenceFilePath);
 
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
@@ -229,12 +231,7 @@ public class GeneBuilder extends CellBaseBuilder {
             if (gtf.getFeature().equalsIgnoreCase("exon")) {
                 // Obtaining the exon sequence
                 //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-                String exonSequence = null;
-                try {
-                    exonSequence = fastaIndexManager.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-                } catch (RocksDBException e) {
-                    e.printStackTrace();
-                }
+                String exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
 
                 exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
                         gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
@@ -353,7 +350,7 @@ public class GeneBuilder extends CellBaseBuilder {
         // cleaning
         gtfReader.close();
         serializer.close();
-        fastaIndexManager.close();
+        fastaIndex.close();
     }
 
     private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
@@ -801,7 +798,6 @@ public class GeneBuilder extends CellBaseBuilder {
         return relativeEnd;
     }
 
-
     private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
         logger.info("Loading ENSEMBL's cDNA sequences...");
         Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
@@ -837,7 +833,6 @@ public class GeneBuilder extends CellBaseBuilder {
         }
         return proteinSequencesMap;
     }
-
 
     private Map<String, String> getGeneDescriptionMap() throws IOException {
         logger.info("Loading gene description data...");

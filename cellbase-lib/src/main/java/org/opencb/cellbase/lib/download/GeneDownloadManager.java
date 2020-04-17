@@ -244,7 +244,7 @@ public class GeneDownloadManager extends DownloadManager {
 
         AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(geneFolder.toAbsolutePath().toString(),
                 "/ensembl-data");
-        String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --verbose --outdir /ensembl-data";
+        String ensemblScriptParams = "/opt/cellbase/gene_extra_info.pl --outdir /ensembl-data";
 
         try {
             DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);

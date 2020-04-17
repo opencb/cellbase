@@ -359,7 +359,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         Path fastaFile = null;
         try {
             DirectoryStream<Path> stream = Files.newDirectoryStream(downloadFolder.resolve("genome"), entry -> {
-                return entry.toString().endsWith(".fa.gz");
+                return entry.toString().endsWith(".fa");
             });
             for (Path entry : stream) {
                 fastaFile = entry;

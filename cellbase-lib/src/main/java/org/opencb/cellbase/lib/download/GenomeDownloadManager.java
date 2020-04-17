@@ -231,6 +231,7 @@ public class GenomeDownloadManager extends DownloadManager {
     public void runGenomeInfo() throws IOException {
         logger.info("Downloading genome info ...");
 
+        // TODO don't run this if file already exists
         String dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
         Path genomeFolder = downloadFolder.resolve("genome");
 
