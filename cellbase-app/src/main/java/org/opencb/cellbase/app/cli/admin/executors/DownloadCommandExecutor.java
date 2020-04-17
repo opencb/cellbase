@@ -82,6 +82,8 @@ public class DownloadCommandExecutor extends CommandExecutor {
                         GenomeDownloadManager genomeDownloadManager = new GenomeDownloadManager(species, assembly,
                                 outputDirectory, configuration);
                         downloadFiles.add(genomeDownloadManager.downloadReferenceGenome());
+                        // download cytobands
+                        genomeDownloadManager.runGenomeInfo();
                         break;
                     case EtlCommons.GENE_DATA:
                         GeneDownloadManager geneDownloadManager

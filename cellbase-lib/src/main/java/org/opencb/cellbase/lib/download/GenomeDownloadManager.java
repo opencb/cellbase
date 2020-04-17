@@ -22,10 +22,12 @@ import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.commons.utils.DockerUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -224,5 +226,22 @@ public class GenomeDownloadManager extends DownloadManager {
             return downloadFiles;
         }
         return null;
+    }
+
+    public void runGenomeInfo() throws IOException {
+        logger.info("Downloading genome info ...");
+
+        String dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
+        Path genomeFolder = downloadFolder.resolve("genome");
+
+        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(genomeFolder.toAbsolutePath().toString(),
+                "/ensembl-data");
+        String ensemblScriptParams = "/opt/cellbase/genome_info.pl";
+
+        try {
+            DockerUtils.run(dockerImage, null, outputBinding, ensemblScriptParams, null);
+        } catch (IOException e) {
+            throw new IOException(e);
+        }
     }
 }
