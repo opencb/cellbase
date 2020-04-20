@@ -45,15 +45,9 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Deprecated
-public class DownloadManager {
-
-
+public class AbstractDownloadManager {
     private static final String CADD_NAME = "CADD";
     private static final String DGV_NAME = "DGV";
-//    private static final String GWAS_NAME = "Gwas Catalog";
-//    private static final String DBSNP_NAME = "dbSNP";
-//    private static final String REACTOME_NAME = "Reactome";
 
     private static final String GNOMAD_NAME = "gnomAD";
 
@@ -72,7 +66,7 @@ public class DownloadManager {
     protected Path buildFolder; // <output>/<species>_<assembly>/generated-json
     protected Logger logger;
 
-    public DownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
+    public AbstractDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         this.species = species;
         this.assembly = assembly;
@@ -80,28 +74,6 @@ public class DownloadManager {
         this.configuration = configuration;
 
         this.init();
-    }
-
-    @Deprecated
-    public DownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
-                           SpeciesConfiguration.Assembly assembly) throws IOException {
-        logger = LoggerFactory.getLogger(this.getClass());
-
-        this.configuration = configuration;
-        this.speciesConfiguration = speciesConfiguration;
-//        assemblyName = assembly.getName();
-
-        // Output folder creation
-        speciesShortName = SpeciesUtils.getSpeciesShortname(speciesConfiguration);
-        // <output>/<species>_<assembly>
-        Path speciesFolder = targetDirectory.resolve(speciesShortName + "_" + assembly.getName().toLowerCase());
-        // <output>/<species>_<assembly>/download
-        downloadFolder = targetDirectory.resolve(speciesFolder + "/download");
-        makeDir(downloadFolder);
-
-        ensemblHostUrl = getEnsemblURL(speciesConfiguration);
-        ensemblVersion = assembly.getEnsemblVersion();
-        ensemblRelease = "release-" + ensemblVersion.split("_")[0];
     }
 
     private void init() throws CellbaseException, IOException {
@@ -139,28 +111,32 @@ public class DownloadManager {
         logger.info("Processing species " + speciesConfiguration.getScientificName());
     }
 
-    public DownloadFile downloadStructuralVariants() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
-             return null;
-        }
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading DGV data ...");
-
-            Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
-            Files.createDirectories(structuralVariantsFolder);
-            String sourceFilename = (assemblyConfiguration.getName().equalsIgnoreCase("grch37") ? "GRCh37_hg19" : "GRCh38_hg38")
-                    + "_variants_2016-05-15.txt";
-            String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
-            saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
-                    Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
-            return downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
-        }
+    public List<DownloadFile> download() throws IOException, InterruptedException {
         return null;
     }
 
-    private String getDGVVersion(String sourceFilename) {
-        return sourceFilename.split("\\.")[0].split("_")[3];
-    }
+//    public DownloadFile downloadStructuralVariants() throws IOException, InterruptedException {
+//        if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
+//             return null;
+//        }
+//        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
+//            logger.info("Downloading DGV data ...");
+//
+//            Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
+//            Files.createDirectories(structuralVariantsFolder);
+//            String sourceFilename = (assemblyConfiguration.getName().equalsIgnoreCase("grch37") ? "GRCh37_hg19" : "GRCh38_hg38")
+//                    + "_variants_2016-05-15.txt";
+//            String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
+//            saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
+//                    Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
+//            return downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
+//        }
+//        return null;
+//    }
+
+//    private String getDGVVersion(String sourceFilename) {
+//        return sourceFilename.split("\\.")[0].split("_")[3];
+//    }
 
     protected boolean speciesHasInfoToDownload(SpeciesConfiguration sp, String info) {
         boolean hasInfo = true;
@@ -231,41 +207,31 @@ public class DownloadManager {
             throw new ParameterException("Species " + sp.getScientificName() + " not associated to any phylo in the configuration file");
         }
     }
-
-    public DownloadFile downloadCaddScores() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
-            return null;
-        }
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens") && assemblyConfiguration.getName().equalsIgnoreCase("GRCh37")) {
-            logger.info("Downloading CADD scores information ...");
-
-            Path variationFunctionalScoreFolder = downloadFolder.resolve("variation_functional_score");
-            Files.createDirectories(variationFunctionalScoreFolder);
-
-            // Downloads CADD scores
-            String url = configuration.getDownload().getCadd().getHost();
-
-            saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
-                    Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
-            return downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
-        }
-        return null;
-    }
+//
+//    public DownloadFile downloadCaddScores() throws IOException, InterruptedException {
+//        if (!speciesHasInfoToDownload(speciesConfiguration, "variation_functional_score")) {
+//            return null;
+//        }
+//        if (speciesConfiguration.getScientificName().equals("Homo sapiens") && assemblyConfiguration.getName()
+//        .equalsIgnoreCase("GRCh37")) {
+//            logger.info("Downloading CADD scores information ...");
+//
+//            Path variationFunctionalScoreFolder = downloadFolder.resolve("variation_functional_score");
+//            Files.createDirectories(variationFunctionalScoreFolder);
+//
+//            // Downloads CADD scores
+//            String url = configuration.getDownload().getCadd().getHost();
+//
+//            saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
+//                    Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
+//            return downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
+//        }
+//        return null;
+//    }
 
     protected DownloadFile downloadFile(String url, String outputFileName) throws IOException, InterruptedException {
         return downloadFile(url, outputFileName, null);
     }
-
-//    protected void downloadFiles(String host, List<String> fileNames) throws IOException, InterruptedException {
-//        downloadFiles(host, fileNames, fileNames);
-//    }
-
-//    protected void downloadFiles(String host, List<String> fileNames, List<String> ouputFileNames)
-//        throws IOException, InterruptedException {
-//        for (int i = 0; i < fileNames.size(); i++) {
-//            downloadFile(host + "/" + fileNames.get(i), ouputFileNames.get(i), null);
-//        }
-//    }
 
     protected DownloadFile downloadFile(String url, String outputFileName, List<String> wgetAdditionalArgs)
             throws IOException, InterruptedException {
@@ -306,7 +272,7 @@ public class DownloadManager {
         }
     }
 
-    public void writeDownloadLogFile(List<DownloadFile> downloadFiles) throws IOException {
+    public static void writeDownloadLogFile(Path downloadFolder, List<DownloadFile> downloadFiles) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
         writer.writeValue(new File(downloadFolder + "/download_log.json"), downloadFiles);
@@ -360,14 +326,6 @@ public class DownloadManager {
         return null;
     }
 
-    @Deprecated
-    private void makeDir(Path folderPath) throws IOException {
-        if (!Files.exists(folderPath)) {
-            Files.createDirectories(folderPath);
-        }
-    }
-
-    @Deprecated
     private String getEnsemblURL(SpeciesConfiguration sp) {
         // We need to find which is the correct Ensembl host URL.
         // This can different depending on if is a vertebrate species.

@@ -35,7 +35,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 
-public class RegulationDownloadManager extends DownloadManager {
+public class RegulationDownloadManager extends AbstractDownloadManager {
 
     private Path regulationFolder;
 

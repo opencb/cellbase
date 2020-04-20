@@ -33,7 +33,7 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class ClinicalDownloadManager extends DownloadManager {
+public class ClinicalDownloadManager extends AbstractDownloadManager {
 
     private static final String CLINVAR_NAME = "ClinVar";
     private static final String IARCTP53_NAME = "IARC TP53 Database";
@@ -42,6 +42,13 @@ public class ClinicalDownloadManager extends DownloadManager {
     public ClinicalDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         super(species, assembly, outdir, configuration);
+    }
+
+    @Override
+    public List<DownloadFile> download() throws IOException, InterruptedException {
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+        downloadFiles.addAll(downloadClinical());
+        return downloadFiles;
     }
 
     public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {

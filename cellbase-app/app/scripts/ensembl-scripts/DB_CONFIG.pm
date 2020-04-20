@@ -125,7 +125,7 @@ our %biomart_species = ("Anopheles gambiae"=>"agambiae_gene_ensembl","Arabidopsi
 our %trembl_species = ("Homo sapiens"=>"HUMAN", "Mus musculus"=>"MOUSE", "Rattus norvegicus"=>"RAT");
 our @hsa_ext_refs = ("go", "go_biological_process_id","go_cellular_component_id","go_molecular_function_id","goslim_goa_accession","clone_based_ensembl_gene_name","clone_based_ensembl_transcript_name","clone_based_vega_gene_name","clone_based_vega_transcript_name","ccds","embl","ens_hs_gene","entrezgene","ottt","shares_cds_with_enst","shares_cds_with_ottt","shares_cds_and_utr_with_ottt","hgnc_id","hgnc_symbol","hgnc_automatic_gene_name","hgnc_curated_gene_name","hgnc_automatic_transcript_name","hgnc_curated_transcript_name","ipi","merops","imgt_gene_db","imgt_ligm_db","mim_morbid_accession","mim_morbid_description","mim_gene_accession","mim_gene_description","mirbase_accession","mirbase_id","pdb","protein_id","refseq_dna","refseq_dna_predicted","refseq_peptide","refseq_peptide_predicted","refseq_genomic","rfam","unigene","uniprot_sptrembl","uniprot_swissprot","uniprot_swissprot_accession","pubmed","wikigene_name","wikigene_description","hpa","dbass3_id","dbass3_name","dbass5_id","dbass5_name","affy_hc_g110","affy_hg_focus","affy_hg_u133_plus_2","affy_hg_u133a_2","affy_hg_u133a","affy_hg_u133b","affy_hg_u95av2","affy_hg_u95b","affy_hg_u95c","affy_hg_u95d","affy_hg_u95e","affy_hg_u95a","affy_hugenefl","affy_huex_1_0_st_v2","affy_hugene_1_0_st_v1","affy_u133_x3p","agilent_cgh_44b","agilent_wholegenome","codelink","illumina_humanwg_6_v1","illumina_humanwg_6_v2","illumina_humanwg_6_v3","phalanx_onearray","interpro");
 	
-our $ENSEMBL_HOST = "useastdb.ensembl.org";
+our $ENSEMBL_HOST = "ensembldb.ensembl.org";
 our $ENSEMBL_PORT = "3306";
 our $ENSEMBL_USER = "anonymous";
 

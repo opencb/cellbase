@@ -19,7 +19,6 @@ package org.opencb.cellbase.lib.download;
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.DockerUtils;
@@ -32,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GenomeDownloadManager extends DownloadManager {
+public class GenomeDownloadManager extends AbstractDownloadManager {
 
     private static final String ENSEMBL_NAME = "ENSEMBL";
     private static final String GERP_NAME = "GERP++";
@@ -47,12 +46,18 @@ public class GenomeDownloadManager extends DownloadManager {
         super(species, assembly, targetDirectory, configuration);
     }
 
-    public GenomeDownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
-                                 SpeciesConfiguration.Assembly assembly) throws IOException, CellbaseException {
-        super(configuration, targetDirectory, speciesConfiguration, assembly);
+    @Override
+    public List<DownloadFile> download() throws IOException, InterruptedException {
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+        downloadFiles.addAll(downloadReferenceGenome());
+//        downloadFiles.addAll(downloadConservation());
+//        downloadFiles.addAll(downloadRepeats());
+//        downloadFiles.addAll(downloadConservation());
+//        runGenomeInfo();
+        return downloadFiles;
     }
 
-    public DownloadFile downloadReferenceGenome() throws IOException, InterruptedException {
+    public List<DownloadFile> downloadReferenceGenome() throws IOException, InterruptedException {
         logger.info("Downloading genome information ...");
         Path sequenceFolder = downloadFolder.resolve("genome");
         Files.createDirectories(sequenceFolder);
@@ -79,7 +84,7 @@ public class GenomeDownloadManager extends DownloadManager {
         logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("genomeVersion.json"));
         saveVersionData(EtlCommons.GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
                 Collections.singletonList(url), sequenceFolder.resolve("genomeVersion.json"));
-        return downloadFile(url, outputPath.toString());
+        return Collections.singletonList(downloadFile(url, outputPath.toString()));
     }
 
     /**

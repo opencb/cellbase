@@ -17,7 +17,6 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 
 import java.io.IOException;
@@ -26,19 +25,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OntologyDownloadManager extends DownloadManager {
+public class OntologyDownloadManager extends AbstractDownloadManager {
 
     public OntologyDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         super(species, assembly, targetDirectory, configuration);
     }
 
-    public OntologyDownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
-                                   SpeciesConfiguration.Assembly assembly) throws IOException, CellbaseException {
-        super(configuration, targetDirectory, speciesConfiguration, assembly);
-    }
 
-    public List<DownloadFile> downloadObo() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException {
         logger.info("Downloading obo files ...");
 
         List<DownloadFile> downloadFiles = new ArrayList<>();

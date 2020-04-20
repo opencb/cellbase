@@ -19,7 +19,6 @@ package org.opencb.cellbase.lib.download;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.DockerUtils;
@@ -34,7 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class GeneDownloadManager extends DownloadManager {
+public class GeneDownloadManager extends AbstractDownloadManager {
 
     private static final String ENSEMBL_NAME = "ENSEMBL";
     private static final String UNIPROT_NAME = "UniProt";
@@ -68,13 +67,8 @@ public class GeneDownloadManager extends DownloadManager {
         dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
     }
 
-    public GeneDownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
-                               SpeciesConfiguration.Assembly assembly) throws IOException, CellbaseException {
-        super(configuration, targetDirectory, speciesConfiguration, assembly);
-    }
-
-
-    public List<DownloadFile> downloadEnsemblGene() throws IOException, InterruptedException {
+    @Override
+    public List<DownloadFile> download() throws IOException, InterruptedException {
         logger.info("Downloading gene information ...");
         Path geneFolder = downloadFolder.resolve("gene");
         Files.createDirectories(geneFolder);
@@ -88,7 +82,7 @@ public class GeneDownloadManager extends DownloadManager {
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
-        runGeneExtraInfo(geneFolder);
+//        runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
     }
@@ -240,6 +234,7 @@ public class GeneDownloadManager extends DownloadManager {
     }
 
     private void runGeneExtraInfo(Path geneFolder) throws IOException {
+        // TODO skip if we already have these data
         logger.info("Downloading gene extra info ...");
 
         AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(geneFolder.toAbsolutePath().toString(),

@@ -17,7 +17,6 @@
 package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
-import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
@@ -32,18 +31,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ProteinDownloadManager extends DownloadManager {
+public class ProteinDownloadManager extends AbstractDownloadManager {
 
     private static final String UNIPROT_NAME = "UniProt";
 
     public ProteinDownloadManager(String species, String assembly, Path targetDirectory, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         super(species, assembly, targetDirectory, configuration);
-    }
-
-    public ProteinDownloadManager(CellBaseConfiguration configuration, Path targetDirectory, SpeciesConfiguration speciesConfiguration,
-                                  SpeciesConfiguration.Assembly assembly) throws IOException, CellbaseException {
-        super(configuration, targetDirectory, speciesConfiguration, assembly);
     }
 
     /**
@@ -53,7 +47,7 @@ public class ProteinDownloadManager extends DownloadManager {
      * @throws IOException if there is an error writing to a file
      * @throws InterruptedException if there is an error downloading files     *
      */
-    public List<DownloadFile> downloadProtein() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "protein")) {
             return null;
         }
