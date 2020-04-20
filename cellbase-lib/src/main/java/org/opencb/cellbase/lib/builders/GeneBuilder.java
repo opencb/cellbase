@@ -28,8 +28,7 @@ import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.biodata.tools.sequence.FastaIndexManager;
-import org.opencb.biodata.tools.sequence.SamtoolsFastaIndex;
+import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
@@ -174,7 +173,7 @@ public class GeneBuilder extends CellBaseBuilder {
 
         // Preparing the fasta file for fast accessing
 //        FastaIndexManager fastaIndexManager = getFastaIndexManager();
-        SamtoolsFastaIndex fastaIndex = new SamtoolsFastaIndex(genomeSequenceFilePath);
+        FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
 
         // Empty transcript and exon dictionaries
         transcriptDict.clear();
@@ -459,15 +458,15 @@ public class GeneBuilder extends CellBaseBuilder {
         }
     }
 
-    private FastaIndexManager getFastaIndexManager() throws Exception {
-        FastaIndexManager fastaIndexManager;
-        fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
-        if (!fastaIndexManager.isConnected()) {
-            fastaIndexManager.index();
-        }
-
-        return fastaIndexManager;
-    }
+//    private FastaIndexManager getFastaIndexManager() throws Exception {
+//        FastaIndexManager fastaIndexManager;
+//        fastaIndexManager = new FastaIndexManager(genomeSequenceFilePath, true);
+//        if (!fastaIndexManager.isConnected()) {
+//            fastaIndexManager.index();
+//        }
+//
+//        return fastaIndexManager;
+//    }
 
     private void addGtfXrefs(Transcript transcript, Gene gene) {
         List<Xref> xrefList = transcript.getXrefs();
