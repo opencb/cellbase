@@ -84,7 +84,11 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("genomeVersion.json"));
         saveVersionData(EtlCommons.GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
                 Collections.singletonList(url), sequenceFolder.resolve("genomeVersion.json"));
-        return Collections.singletonList(downloadFile(url, outputPath.toString()));
+        List<DownloadFile> downloadFiles = Collections.singletonList(downloadFile(url, outputPath.toString()));
+        logger.info("Unzipping file: " + outputFileName);
+        //CompressionUtils.gunzip(IOUtils.toByteArray(new FileInputStream(outputPath.toString())));
+        EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
+        return downloadFiles;
     }
 
     /**
