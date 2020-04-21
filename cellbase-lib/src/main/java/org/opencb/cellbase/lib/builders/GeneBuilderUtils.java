@@ -138,7 +138,17 @@ public class GeneBuilderUtils {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
-                addValueToMapElement(geneDrugMap, parts[0], new GeneDrugInteraction(parts[0], parts[4], "dgidb", parts[2], parts[3]));
+                String geneName = parts[0];
+                String drugName = null;
+                if (parts.length >= 6) {
+                    drugName = parts[5];
+                }
+                String studyType = null;
+                String type = null;
+                if (parts.length >= 5) {
+                    type = parts[4];
+                }
+                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, "dgidb", studyType, type));
                 lineCounter++;
             }
 

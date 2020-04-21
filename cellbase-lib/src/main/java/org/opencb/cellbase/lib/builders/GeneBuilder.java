@@ -87,7 +87,6 @@ public class GeneBuilder extends CellBaseBuilder {
     private String feature;
     private Gtf nextGtfToReturn;
 
-
     public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       SpeciesConfiguration speciesConfiguration,
                       CellBaseSerializer serializer) {
@@ -747,7 +746,7 @@ public class GeneBuilder extends CellBaseBuilder {
                     id = attributePairArray[1];
                     break;
                 case "transcription_factor_complex":
-                    transciptionFactors = Arrays.asList(attributePairArray[1].split("::"));
+                    transciptionFactors = Arrays.asList(attributePairArray[1].split("(::)|(%2C)"));
                     break;
                 default:
                     break;

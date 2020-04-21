@@ -102,11 +102,11 @@ public class GeneBuilderUtilsTest {
         assertEquals(1, interactions.size());
         Iterator<GeneDrugInteraction> iter = interactions.iterator();
         GeneDrugInteraction actionInteraction = iter.next();
-        assertEquals("inhibitor", actionInteraction.getDrugName());
+        assertEquals("SNS-032", actionInteraction.getDrugName());
         assertEquals("CDK7", actionInteraction.getGeneName());
         assertEquals("dgidb", actionInteraction.getSource());
-        assertEquals("1022", actionInteraction.getStudyType());
-        assertEquals("CancerCommons", actionInteraction.getType());
+        assertNull(actionInteraction.getStudyType());
+        assertEquals("inhibitor", actionInteraction.getType());
     }
 
     @Test
