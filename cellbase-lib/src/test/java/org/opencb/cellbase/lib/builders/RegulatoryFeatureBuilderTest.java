@@ -38,9 +38,9 @@ public class RegulatoryFeatureBuilderTest {
         assertEquals(10, features.size());
 
         Gff2 feature = features.iterator().next();
-        assertEquals(103826, feature.getStart());
-        assertEquals(104072, feature.getEnd());
-        assertEquals("ID=open_chromatin_region:ENSR00000898744;bound_end=104072;bound_start=103826;description=Open chromatin region;feature_type=Open chromatin", feature.getAttribute());
+        assertEquals(5881, feature.getStart());
+        assertEquals(6440, feature.getEnd());
+        assertEquals("ID=open_chromatin_region:ENSR00001156888;bound_end=6440;bound_start=5881;description=Open chromatin region;feature_type=Open chromatin", feature.getAttribute());
         assertEquals("GL000008.2", feature.getSequenceName());
         assertEquals("open_chromatin_region", feature.getFeature());
     }
