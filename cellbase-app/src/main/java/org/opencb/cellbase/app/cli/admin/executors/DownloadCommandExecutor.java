@@ -18,6 +18,7 @@ package org.opencb.cellbase.app.cli.admin.executors;
 
 import com.beust.jcommander.ParameterException;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.app.cli.CommandExecutor;
 import org.opencb.cellbase.app.cli.admin.AdminCliOptionsParser;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
@@ -101,10 +102,10 @@ public class DownloadCommandExecutor extends CommandExecutor {
                 }
             }
             AbstractDownloadManager.writeDownloadLogFile(outputDirectory, downloadFiles);
-        } catch (ParameterException | IOException | CellbaseException | InterruptedException e) {
+        } catch (ParameterException | IOException | CellbaseException | InterruptedException | NoSuchMethodException
+                | FileFormatException e) {
             logger.error("Error in 'download' command line: " + e.getMessage());
         }
-
     }
 
     private List<String> getDataList(String species) throws CellbaseException {

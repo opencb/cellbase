@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.download;
 
+import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 
@@ -47,7 +48,8 @@ public class Downloader {
         return manager.download();
     }
 
-    public List<DownloadFile> downloadRegulation() throws IOException, CellbaseException, InterruptedException {
+    public List<DownloadFile> downloadRegulation() throws IOException, CellbaseException, InterruptedException,
+            NoSuchMethodException, FileFormatException {
         RegulationDownloadManager manager = new RegulationDownloadManager(species, assembly, outputDirectory, configuration);
         return manager.download();
     }

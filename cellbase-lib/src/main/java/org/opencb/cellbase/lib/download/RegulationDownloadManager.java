@@ -52,6 +52,11 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
     }
 
+    @Override
+    public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
+        return downloadRegulation();
+    }
+
     public List<DownloadFile> downloadRegulation() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
             return null;

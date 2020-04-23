@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -111,7 +112,7 @@ public class AbstractDownloadManager {
         logger.info("Processing species " + speciesConfiguration.getScientificName());
     }
 
-    public List<DownloadFile> download() throws IOException, InterruptedException {
+    public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         return null;
     }
 
