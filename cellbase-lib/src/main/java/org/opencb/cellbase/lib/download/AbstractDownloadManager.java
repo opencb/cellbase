@@ -287,20 +287,20 @@ public class AbstractDownloadManager {
         return expectedFileSize == actualFileSize;
     }
 
-    private int getExpectedFileSize(String outputFileLog) {
+    private long getExpectedFileSize(String outputFileLog) {
         try (BufferedReader reader = new BufferedReader(new FileReader(outputFileLog))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 // looking for: Length: 13846591 (13M)
                 if (line.startsWith("Length:")) {
                     String[] parts = line.split("\\s");
-                    return Integer.parseInt(parts[1]);
+                    return Long.valueOf(parts[1]);
                 }
             }
         } catch (Exception e) {
-            System.err.println(e);
+            logger.info("Error getting expected file size " + e.getMessage());
         }
-        return 0;
+        return -1;
     }
 
     protected String getVersionFromVersionLine(Path path, String tag) {
