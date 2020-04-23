@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.apache.commons.lang.StringUtils;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.gaf.GafParser;
@@ -23,9 +24,9 @@ import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
-import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
@@ -139,16 +140,41 @@ public class GeneBuilderUtils {
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
                 String geneName = parts[0];
-                String drugName = null;
-                if (parts.length >= 6) {
-                    drugName = parts[5];
+
+                String source = null;
+                if (parts.length >= 4) {
+                    source = parts[3];
                 }
-                String studyType = null;
-                String type = null;
+
+                String interactionType = null;
                 if (parts.length >= 5) {
-                    type = parts[4];
+                    interactionType = parts[4];
                 }
-                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, "dgidb", studyType, type));
+
+                String drugName = null;
+                if (parts.length >= 8) {
+                    // if drug name column is empty, use drug claim name instead
+                    drugName = StringUtils.isEmpty(parts[7]) ? parts[6] : parts[7];
+                }
+                if (StringUtils.isEmpty(drugName)) {
+                    // no drug name
+                    continue;
+                }
+
+                String chemblId = null;
+                if (parts.length >= 9) {
+                    chemblId = parts[8];
+                }
+
+                List<String> publications = new ArrayList<>();
+                if (parts.length >= 10 && parts[9] != null) {
+                    publications = Arrays.asList(parts[9].split(","));
+                }
+
+                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, interactionType));
+                // TODO update model to add new attributes
+//                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, source, interactionType, drugName, chemblId,
+//                        publications));
                 lineCounter++;
             }
 
