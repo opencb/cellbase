@@ -213,6 +213,6 @@ public class GeneBuilderUtilsTest {
         assertEquals("GO:0005829", annotation0.getId());
         assertEquals("IDA", evidence.getCode());
         assertNull(evidence.getQualifier());
-        assertEquals("GO_REF:0000052", evidence.getPublications().toArray()[0]);
+        assertEquals("GO_REF:0000052", evidence.getReferences().toArray()[0]);
     }
 }
