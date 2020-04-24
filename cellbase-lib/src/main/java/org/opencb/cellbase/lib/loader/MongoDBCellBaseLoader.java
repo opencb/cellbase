@@ -239,7 +239,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
                 dbAdaptor = null;
 //                collectionName = "protein_functional_prediction";
                 break;
-            case "obo":
+            case "regulatory_pfm":
+                dbAdaptor = null;
+                break;
             case "ontology":
                 dbAdaptor = null;
                 break;
@@ -311,7 +313,9 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
             case "repeats":
                 collection = "repeats";
                 break;
-            case "obo":
+            case "regulatory_pfm":
+                collection = "regulatory_pfm";
+                break;
             case "ontology":
                 collection = "ontology";
                 break;

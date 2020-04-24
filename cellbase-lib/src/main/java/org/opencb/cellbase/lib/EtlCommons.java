@@ -62,6 +62,7 @@ public class EtlCommons {
     public static final String HPO_FILE = "hp.obo";
     public static final String GO_FILE = "go-basic.obo";
     public static final String DOID_FILE = "doid.obo";
+    public static final String PFM_DATA = "regulatory_pfm";
 
     // Build specific data options
     public static final String GENOME_INFO_DATA = "genome_info";

@@ -122,14 +122,13 @@ public class AdminCliOptionsParser extends CliOptionsParser {
         public CommonCommandOptions commonOptions = commonCommandOptions;
 
         @Parameter(names = {"-d", "--data"}, description = "Data model type to be loaded: genome, gene, variation, "
-                + "variation_functional_score, conservation, regulation, protein, ppi, protein_functional_prediction, "
-                + "clinical_variants, repeats, svs. 'all' loads everything", required = true, arity = 1)
+                + "conservation, regulation, protein, clinical_variants, repeats, regulatory_pfm. 'all' loads everything",
+                required = true, arity = 1)
         public String data;
 
         @Parameter(names = {"-i", "--input"}, description = "Input directory with the JSON data models to be loaded, e.g. "
-                + "'/tmp/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
-                + "--fields"
-                + " parameter).", required = true, arity = 1)
+                + "'/data/hsapiens_grch38/generated-json'. Can also be used to specify a custom json file to be loaded (look at the "
+                + "--fields parameter).", required = true, arity = 1)
         public String input;
 
         @Parameter(names = {"--database"}, description = "Database name", required = true, arity = 1)
