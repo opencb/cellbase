@@ -30,7 +30,6 @@ import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
-import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 
 import java.io.IOException;
@@ -149,9 +148,8 @@ public class GeneBuilder extends CellBaseBuilder {
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
 
-        // TODO check all files
         if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
-            throw new CellbaseException("Tfbs or tabix file not found. Download them and try again.");
+            logger.error("Tfbs or tabix file not found. Download them and try again.");
         }
 
         TabixReader tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
