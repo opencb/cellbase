@@ -35,7 +35,7 @@ jobs:
           options: ''
           ssh_options: ''
           src: 'cellbase-python-client-${{ steps.get_tag.outputs.TAG_NAME }}.tar.gz'
-          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/data/opencb/cellbase/python/'
+          dest: '${{ secrets.SCP_SITE_USER }}@128.232.224.128:/mnt/resources/opencb/cellbase/python/'
       - name: Display status from deploy
         run: echo "${{ steps.deploy.outputs.status }}"
   pypi:
