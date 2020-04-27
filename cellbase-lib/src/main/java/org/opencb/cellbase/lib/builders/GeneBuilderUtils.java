@@ -171,10 +171,10 @@ public class GeneBuilderUtils {
                     publications = Arrays.asList(parts[9].split(","));
                 }
 
-                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, interactionType));
+                //addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, interactionType));
                 // TODO update model to add new attributes
-//                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, source, interactionType, drugName, chemblId,
-//                        publications));
+                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, null,
+                        interactionType, chemblId, publications));
                 lineCounter++;
             }
 
