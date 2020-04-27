@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
-import org.opencb.cellbase.core.api.queries.OntologyQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.commons.datastore.core.ObjectMap;
 
@@ -61,20 +60,7 @@ public class GeneQueryTest {
         assertEquals("y", geneQuery.getAnnotationDrugsGene().get(1));
     }
 
-    @Test
-    public void testOnto() throws QueryException {
-        OntologyQuery query = new OntologyQuery();
-        paramMap = new HashMap<>();
 
-        paramMap.put("id", "GO:1234");
-        paramMap.put("parent", "parent1,parent2");
-
-        query = new OntologyQuery(paramMap);
-        assertEquals("GO:1234", query.getIds().get(0));
-
-        assertEquals("parent1", query.getParents().get(0));
-        assertEquals("parent2", query.getParents().get(1));
-    }
 
     @Test
     public void testFacets() throws QueryException {

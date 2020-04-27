@@ -2,9 +2,7 @@ package org.opencb.cellbase.core.config;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +14,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by jacobo on 29/03/19.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CellBaseConfigurationTest {
 
     CellBaseConfiguration cellBaseConfiguration;

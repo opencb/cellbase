@@ -155,7 +155,6 @@ public class OntologyQuery extends AbstractQuery {
         return this;
     }
 
-
     public static final class Builder {
         private List<String> includes;
         private List<String> excludes;
