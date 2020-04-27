@@ -148,11 +148,12 @@ public class GeneBuilder extends CellBaseBuilder {
         Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
         Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
 
+        TabixReader tabixReader = null;
         if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
             logger.error("Tfbs or tabix file not found. Download them and try again.");
+        } else {
+            tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
         }
-
-        TabixReader tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
 
         // Gene annotation data
         Map<String, List<Expression>> geneExpressionMap = GeneBuilderUtils
@@ -674,6 +675,9 @@ public class GeneBuilder extends CellBaseBuilder {
     }
 
     private List<TranscriptTfbs> getTranscriptTfbses(Gtf transcript, String chromosome, TabixReader tabixReader) throws IOException {
+        if (tabixReader == null) {
+            return null;
+        }
         List<TranscriptTfbs> transcriptTfbses = null;
 
         int transcriptStart = transcript.getStart();

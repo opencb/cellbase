@@ -17,8 +17,10 @@
 package org.opencb.cellbase.lib.impl.core;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bson.Document;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.opencb.biodata.models.core.Chromosome;
 import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
@@ -38,14 +40,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Created by fjlopez on 18/04/16.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     private GenomeMongoDBAdaptor dbAdaptor;
 
     public GenomeMongoDBAdaptorTest() throws Exception {
         super();
-        setUp();
     }
 
+    @BeforeAll
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
@@ -60,9 +63,9 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void getChromosomeInfo() throws Exception {
         GenomeQuery query = new GenomeQuery();
-        CellBaseDataResult CellBaseDataResult = dbAdaptor.query(query);
-        assertEquals(Integer.valueOf(64444167),
-                ((Document) ((List) ((Document) CellBaseDataResult.getResults().get(0)).get("chromosomes")).get(0)).get("size"));
+        CellBaseDataResult<Chromosome> cellBaseDataResult = dbAdaptor.query(query);
+        Chromosome chromosome = cellBaseDataResult.getResults().get(0);
+        assertEquals(Integer.valueOf(64444167), chromosome.getSize());
     }
 
     @Test
@@ -112,7 +115,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         assertEquals(2, CellBaseDataResultList.size());
 
-        assertEquals(2, CellBaseDataResultList.get(0).getNumTotalResults());
+        assertEquals(2, CellBaseDataResultList.get(0).getNumResults());
         String[] names1 = {"q13.42", "q13.43",};
         for (int i = 0; i < CellBaseDataResultList.get(0).getNumResults(); i++) {
             assertEquals(names1[i], CellBaseDataResultList.get(0).getResults().get(i).getName());

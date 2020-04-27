@@ -19,17 +19,17 @@ package org.opencb.cellbase.lib.variant.hgvs;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
-
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
 import org.opencb.cellbase.lib.managers.GeneManager;
 import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,10 +37,12 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by fjlopez on 14/02/17.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class HgvsCalculatorTest extends GenericMongoDBAdaptorTest {
     private HgvsCalculator hgvsCalculator;
     private GeneManager geneManager;

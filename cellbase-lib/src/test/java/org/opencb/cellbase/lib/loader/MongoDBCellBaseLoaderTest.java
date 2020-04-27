@@ -17,9 +17,7 @@
 package org.opencb.cellbase.lib.loader;
 
 import org.junit.After;
-
-;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.cellbase.core.loader.LoadRunner;
@@ -31,11 +29,13 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+;
+
 public class MongoDBCellBaseLoaderTest {
 
     private static MongoDBCellBaseLoader loader;
 
-    @BeforeAll
+    @BeforeEach
     public void setUp() throws Exception {
         // json lines
         String firstElement = "{\"alternate\":\"C\",\"reference\":\"T\",\"chromosome\":\"19\",\"start\":45411941,\"end\":45411941,\"geneName\":\"APOE\"}";
