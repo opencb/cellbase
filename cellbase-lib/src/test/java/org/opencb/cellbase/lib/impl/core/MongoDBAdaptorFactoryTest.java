@@ -49,7 +49,7 @@ public class MongoDBAdaptorFactoryTest extends GenericMongoDBAdaptorTest {
     public void testGetDatabaseName() throws Exception {
         // provide assembly
         String databaseName = mongoDBAdaptorFactory.getDatabaseName("speciesName", "assemblyName");
-        assertEquals("cellbase_speciesName_assemblyName_v4", databaseName);
+        assertEquals("cellbase_speciesname_assemblyname_v4", databaseName);
 
         // don't provide assembly
         InvalidParameterException thrown =

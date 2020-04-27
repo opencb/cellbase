@@ -62,7 +62,8 @@ public class CellBaseNormalizerSequenceAdaptor implements SequenceAdaptor {
         // bound, then a RunTime exception will be thrown. HOWEVER: if start is within the bounds BUT end is out of the
         // right bound, then THIS implementaiton will return available nucleotides while SamtoolsFastaIndex will keep
         // returning the exception.
-        if (cellBaseDataResult.getResults().size() > 0 && StringUtils.isNotBlank(cellBaseDataResult.getResults().get(0).getSequence())) {
+        if (cellBaseDataResult.getResults() != null && cellBaseDataResult.getResults().size() > 0
+                && StringUtils.isNotBlank(cellBaseDataResult.getResults().get(0).getSequence())) {
             if (cellBaseDataResult.getResults().get(0).getSequence().length() < (end - start + 1)) {
                 logger.warn("End coordinate out of the right bound. Returning available nucleotides.");
             }

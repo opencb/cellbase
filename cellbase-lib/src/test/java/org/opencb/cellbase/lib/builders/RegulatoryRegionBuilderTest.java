@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -36,12 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * Created by fjlopez on 13/07/17.
  */
 @Deprecated
+@Disabled
 public class RegulatoryRegionBuilderTest extends GenericBuilderTest<RegulatoryFeature> {
 
     public RegulatoryRegionBuilderTest() {
         super(RegulatoryFeature.class);
     }
     @Test
+    @Disabled
     public void parser() throws IOException, URISyntaxException, NoSuchMethodException, SQLException, ClassNotFoundException {
         Path regulationFolder = Paths.get(getClass().getResource("/regulation").toURI());
 
