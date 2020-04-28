@@ -16,7 +16,6 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
-import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
@@ -50,7 +49,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     }
 
     @Test
-    public void nativeGet() throws Exception {
+    public void testQuery() throws Exception {
 
         TranscriptMongoDBAdaptor transcriptDBAdaptor = dbAdaptorFactory.getTranscriptDBAdaptor("hsapiens", "GRCh37");
 //        Query query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:816481-825251");
@@ -77,7 +76,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setTranscriptsXrefs(new ArrayList<>(Arrays.asList("Q9UL59")));
         QueryOptions queryOptions = new QueryOptions("include", "id");
         cellBaseDataResult = transcriptDBAdaptor.query(query);
-        assertEquals(cellBaseDataResult.getNumResults(), 2);
+        assertEquals(2, cellBaseDataResult.getNumResults());
 //        assertEquals(1, ((Document) cellBaseDataResult.getResults().get(0)).size());
 //        assertEquals(1, ((Document) cellBaseDataResult.getResults().get(1)).size());
 
@@ -95,9 +94,9 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     }
 
-    private boolean transcriptIdEquals(CellBaseDataResult CellBaseDataResult, List<String> transcriptIdList) {
-        Set<String> set1 = (Set) CellBaseDataResult.getResults().stream()
-                .map(result -> ((String) ((Document) result).get("id"))).collect(Collectors.toSet());
+    private boolean transcriptIdEquals(CellBaseDataResult cellBaseDataResult, List<String> transcriptIdList) {
+        Set<String> set1 = (Set) cellBaseDataResult.getResults().stream()
+                .map(result -> ((String) ((Transcript) result).getId())).collect(Collectors.toSet());
         Set<String> set2 = new HashSet<>(transcriptIdList);
 
         return set1.equals(set2);

@@ -70,61 +70,61 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void getGenomicSequence() {
-        CellBaseDataResult<GenomeSequenceFeature> CellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions());
-        assertEquals(StringUtils.repeat("N", 1999), CellBaseDataResult.getResults().get(0).getSequence());
+        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "1:1-1999"), new QueryOptions());
+        assertEquals(StringUtils.repeat("N", 1999), cellBaseDataResult.getResults().get(0).getSequence());
 
-        CellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "17:63971994-63972004"), new QueryOptions());
-        assertEquals("GAGAAAAAACC", CellBaseDataResult.getResults().get(0).getSequence());
+        cellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "17:63971994-63972004"), new QueryOptions());
+        assertEquals("GAGAAAAAACC", cellBaseDataResult.getResults().get(0).getSequence());
 
-        CellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "13:47933990-47934003"), new QueryOptions());
-        assertEquals("TTCATTTTTAGATT", CellBaseDataResult.getResults().get(0).getSequence());
+        cellBaseDataResult = dbAdaptor.getGenomicSequence(new Query("region", "13:47933990-47934003"), new QueryOptions());
+        assertEquals("TTCATTTTTAGATT", cellBaseDataResult.getResults().get(0).getSequence());
     }
 
     @Test
     public void testGenomicSequenceChromosomeNotPresent() {
-        CellBaseDataResult<GenomeSequenceFeature> CellBaseDataResult = dbAdaptor.getSequence(new Region("1234:1-1999"), new QueryOptions());
-        assertEquals(0, CellBaseDataResult.getResults().size());
+        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = dbAdaptor.getSequence(new Region("1234:1-1999"), new QueryOptions());
+        assertEquals(0, cellBaseDataResult.getResults().size());
     }
 
     @Test
     public void testGenomicSequenceQueryOutOfBounds() {
         // Both start & end out of the right bound
-        CellBaseDataResult<GenomeSequenceFeature> CellBaseDataResult = dbAdaptor
+        CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("17", 73973989, 73974999), new QueryOptions());
-        assertEquals(0, CellBaseDataResult.getResults().size());
+        assertEquals(0, cellBaseDataResult.getResults().size());
 
         // start within the bounds, end out of the right bound. Should return last 10 nts.
-        CellBaseDataResult = dbAdaptor
+        cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("17", 63973989, 63974999), new QueryOptions());
-        assertEquals(1, CellBaseDataResult.getResults().size());
-        assertEquals("TCAAGACCAGC", CellBaseDataResult.getResults().get(0).getSequence());
+        assertEquals(1, cellBaseDataResult.getResults().size());
+        assertEquals("TCAAGACCAGC", cellBaseDataResult.getResults().get(0).getSequence());
 
         // Start out of the left bound
-        CellBaseDataResult = dbAdaptor
+        cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("1", -100, 1999), new QueryOptions());
-        assertEquals(0, CellBaseDataResult.getResults().size());
+        assertEquals(0, cellBaseDataResult.getResults().size());
 
 
     }
 
     @Test
-    public void getCytoband() {
-        List<CellBaseDataResult<Cytoband>> CellBaseDataResultList
+    public void testGetCytoband() {
+        List<CellBaseDataResult<Cytoband>> cellBaseDataResultList
                 = dbAdaptor.getCytobands(Arrays.asList(new Region("19:55799900-55803000"),
                 new Region("11:121300000-124030001")));
 
-        assertEquals(2, CellBaseDataResultList.size());
+        assertEquals(2, cellBaseDataResultList.size());
 
-        assertEquals(2, CellBaseDataResultList.get(0).getNumResults());
+        assertEquals(2, cellBaseDataResultList.get(0).getNumResults());
         String[] names1 = {"q13.42", "q13.43",};
-        for (int i = 0; i < CellBaseDataResultList.get(0).getNumResults(); i++) {
-            assertEquals(names1[i], CellBaseDataResultList.get(0).getResults().get(i).getName());
+        for (int i = 0; i < cellBaseDataResultList.get(0).getNumResults(); i++) {
+            assertEquals(names1[i], cellBaseDataResultList.get(0).getResults().get(i).getName());
         }
 
-        assertEquals(3, CellBaseDataResultList.get(1).getNumTotalResults());
+        assertEquals(3, cellBaseDataResultList.get(1).getNumTotalResults());
         String[] names2 = {"q23.3","q24.1","q24.2",};
-        for (int i = 0; i < CellBaseDataResultList.get(1).getNumResults(); i++) {
-            assertEquals(names2[i], CellBaseDataResultList.get(1).getResults().get(i).getName());
+        for (int i = 0; i < cellBaseDataResultList.get(1).getNumResults(); i++) {
+            assertEquals(names2[i], cellBaseDataResultList.get(1).getResults().get(i).getName());
         }
 
     }

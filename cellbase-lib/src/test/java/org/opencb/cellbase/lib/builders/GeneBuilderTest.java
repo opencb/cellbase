@@ -17,15 +17,14 @@
 package org.opencb.cellbase.lib.builders;
 
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.opencb.biodata.formats.feature.gff.Gff2;
-import org.opencb.biodata.formats.feature.gtf.Gtf;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.opencb.biodata.formats.feature.gff.Gff2;
+import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.models.core.Exon;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -46,7 +45,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GeneBuilderTest {
     private GeneBuilder geneParser;
     private ObjectMapper jsonObjectMapper;
@@ -55,10 +54,10 @@ public class GeneBuilderTest {
         init();
     }
 
-    @BeforeEach
+    @BeforeAll
     public void init() throws URISyntaxException {
         Path genomeSequenceFastaFile
-                = Paths.get(GeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa.gz").toURI());
+                = Paths.get(GeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
         Path geneDirectoryPath = Paths.get(GeneBuilderTest.class.getResource("/gene").toURI());
         // put the results in /tmp
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), "gene",
@@ -90,8 +89,11 @@ public class GeneBuilderTest {
 
     private Exon getExon(String exonId, List<Gene> genes) {
         for (Gene gene : genes) {
+            System.out.println("gene " + gene.getId());
             for (Transcript transcript : gene.getTranscripts()) {
+                System.out.println("transcript " + transcript.getId());
                 for (Exon exon : transcript.getExons()) {
+                    System.out.println("exon " + exon.getId());
                     if (exonId.equals(exon.getId())) {
                         return exon;
                     }
