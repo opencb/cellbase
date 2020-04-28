@@ -49,6 +49,9 @@ public class GeneQueryTest {
 
         paramMap.put("annotation.drugs.gene", "x,y");
 
+        paramMap.put("annotation.expression.tissue", "subthalamic nucleus");
+        paramMap.put("annotation.expression.value", "UP");
+
         geneQuery = new GeneQuery(paramMap);
         assertEquals("geneId123", geneQuery.getIds().get(0));
 
@@ -58,6 +61,9 @@ public class GeneQueryTest {
 
         assertEquals("x", geneQuery.getAnnotationDrugsGene().get(0));
         assertEquals("y", geneQuery.getAnnotationDrugsGene().get(1));
+
+        assertEquals("subthalamic nucleus", geneQuery.getAnnotationExpressionTissue().get(0));
+        assertEquals("UP", geneQuery.getAnnotationExpressionValue().get(0));
     }
 
 
