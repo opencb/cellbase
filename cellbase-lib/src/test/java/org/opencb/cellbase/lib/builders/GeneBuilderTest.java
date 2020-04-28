@@ -89,18 +89,14 @@ public class GeneBuilderTest {
 
     private Exon getExon(String exonId, List<Gene> genes) {
         for (Gene gene : genes) {
-            System.out.println("gene " + gene.getId());
             for (Transcript transcript : gene.getTranscripts()) {
-                System.out.println("transcript " + transcript.getId());
                 for (Exon exon : transcript.getExons()) {
-                    System.out.println("exon " + exon.getId());
                     if (exonId.equals(exon.getId())) {
                         return exon;
                     }
                 }
             }
         }
-
         return null;
     }
 
