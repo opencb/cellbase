@@ -32,7 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class testGenerateCellbaseLibProperties {
+public class GenerateCellbaseLibPropertiesTest {
     String USER_HOME = System.getProperty("user.home");
 
     @Test
