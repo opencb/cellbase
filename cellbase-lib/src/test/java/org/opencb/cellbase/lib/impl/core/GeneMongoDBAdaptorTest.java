@@ -62,13 +62,14 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        QueryOptions queryOptions = new QueryOptions("include", "id,name");
 
         Map<String, String> paramMap = new HashMap<>();
-        paramMap.put("annotationExpressionTissue", "midbrain");
-        paramMap.put("annotationExpressionValue", "UP");
+        paramMap.put("annotation.expression.tissue", "synovial");
+        paramMap.put("annotation.expression.value", "DOWN");
         paramMap.put("includes", "id,name");
 
         GeneQuery geneQuery = new GeneQuery(paramMap);
-
-        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(new GeneQuery());
+        geneQuery.setCount(Boolean.TRUE);
+        System.out.println("geene " + geneQuery.toString());
+        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
         // WARNING: these values below may slightly change from one data version to another
         assertEquals(22, cellBaseDataResult.getNumMatches());
         assertThat(cellBaseDataResult.getResults().stream().map(gene -> gene.getName()).collect(Collectors.toList()),

@@ -56,6 +56,7 @@ public class ProteinMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setExcludes(new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
         query.setLimit(3);
         query.setIncludes(new ArrayList<>(Arrays.asList("accession", "name")));
+        query.setCount(Boolean.TRUE);
 //        QueryOptions queryOptions = new QueryOptions(QueryOptions.EXCLUDE, new ArrayList<>(Arrays.asList("_id", "_chunkIds")));
 //        queryOptions.put(QueryOptions.LIMIT, 3);
 //        queryOptions.put(QueryOptions.INCLUDE, "accession,name");
