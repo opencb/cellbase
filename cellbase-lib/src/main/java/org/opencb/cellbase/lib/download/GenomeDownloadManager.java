@@ -50,10 +50,12 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
     public List<DownloadFile> download() throws IOException, InterruptedException {
         List<DownloadFile> downloadFiles = new ArrayList<>();
         downloadFiles.addAll(downloadReferenceGenome());
+        // FIXME - temporarily disabled until we see which files we want
 //        downloadFiles.addAll(downloadConservation());
 //        downloadFiles.addAll(downloadRepeats());
-//        downloadFiles.addAll(downloadConservation());
-//        runGenomeInfo();
+
+        // cytobands
+        runGenomeInfo();
         return downloadFiles;
     }
 
@@ -242,10 +244,9 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
 
         // TODO don't run this if file already exists
         String dockerImage = "opencb/cellbase-builder:" + configuration.getApiVersion();
-        Path genomeFolder = downloadFolder.resolve("genome");
+        String outputFolder = downloadFolder.getParent().toAbsolutePath().toString() + "/generated_json/";
 
-        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(genomeFolder.toAbsolutePath().toString(),
-                "/ensembl-data");
+        AbstractMap.SimpleEntry<String, String> outputBinding = new AbstractMap.SimpleEntry(outputFolder, "/ensembl-data");
         String ensemblScriptParams = "/opt/cellbase/genome_info.pl";
 
         try {

@@ -28,7 +28,8 @@ GetOptions ('species=s' => \$species, 'assembly=s' => \$assembly, 'o|outfile=s' 
 print_parameters() if $verbose;
 
 if ($outfile eq "") {
-    $outfile = "/ensembl-data/$species.json";
+    $outfile = "/ensembl-data/genome_info.json";
+    # $outfile = "/ensembl-data/$species.json";
 }
 
 ####################################################################
