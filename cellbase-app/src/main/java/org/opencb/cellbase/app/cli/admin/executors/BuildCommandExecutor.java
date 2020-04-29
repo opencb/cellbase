@@ -34,7 +34,6 @@ import org.opencb.cellbase.lib.builders.clinical.variant.ClinicalVariantBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -117,17 +116,13 @@ public class BuildCommandExecutor extends CommandExecutor {
                     logger.info("Building '{}' data", buildOption);
                     CellBaseBuilder parser = null;
                     switch (buildOption) {
-                        case EtlCommons.GENOME_INFO_DATA:
-                            buildGenomeInfo();
-                            break;
+//                        case EtlCommons.GENOME_INFO_DATA:
+//                            buildGenomeInfo();
+//                            break;
                         case EtlCommons.GENOME_DATA:
                             parser = buildGenomeSequence();
                             break;
                         case EtlCommons.GENE_DATA:
-                            if (!buildOption.contains(EtlCommons.GENOME_DATA)) {
-                                // user didn't specify, load it anyway because required to load gene
-                                buildGenomeSequence();
-                            }
                             parser = buildGene();
                             break;
                         case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
@@ -215,38 +210,38 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
-    private void buildGenomeInfo() {
-        /**
-         * To get some extra info about the genome such as chromosome length or cytobands
-         * we execute the following script.
-         */
-        try {
-            String outputFileName = downloadFolder.resolve("genome_info.json").toAbsolutePath().toString();
-            List<String> args = new ArrayList<>();
-            args.addAll(Arrays.asList("--species", speciesConfiguration.getScientificName(),
-                    "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
-                    "-o", outputFileName,
-                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
-            if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)
-                    && !speciesConfiguration.getScientificName().equals("Drosophila melanogaster")) {
-                args.add("--phylo");
-                args.add("no-vertebrate");
-            }
-
-            String geneInfoLogFileName = downloadFolder.resolve("genome_info.log").toAbsolutePath().toString();
-
-            boolean downloadedGenomeInfo;
-            downloadedGenomeInfo = EtlCommons.runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
-
-            if (downloadedGenomeInfo) {
-                logger.info(outputFileName + " created OK");
-            } else {
-                logger.error("Genome info for " + speciesConfiguration.getScientificName() + " cannot be downloaded");
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void buildGenomeInfo() {
+//        /**
+//         * To get some extra info about the genome such as chromosome length or cytobands
+//         * we execute the following script.
+//         */
+//        try {
+//            String outputFileName = downloadFolder.resolve("genome_info.json").toAbsolutePath().toString();
+//            List<String> args = new ArrayList<>();
+//            args.addAll(Arrays.asList("--species", speciesConfiguration.getScientificName(),
+//                    "--assembly", buildCommandOptions.assembly == null ? getDefaultHumanAssembly() : buildCommandOptions.assembly,
+//                    "-o", outputFileName,
+//                    "--ensembl-libs", configuration.getDownload().getEnsembl().getLibs()));
+//            if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)
+//                    && !speciesConfiguration.getScientificName().equals("Drosophila melanogaster")) {
+//                args.add("--phylo");
+//                args.add("no-vertebrate");
+//            }
+//
+//            String geneInfoLogFileName = downloadFolder.resolve("genome_info.log").toAbsolutePath().toString();
+//
+//            boolean downloadedGenomeInfo;
+//            downloadedGenomeInfo = EtlCommons.runCommandLineProcess(ensemblScriptsFolder, "./genome_info.pl", args, geneInfoLogFileName);
+//
+//            if (downloadedGenomeInfo) {
+//                logger.info(outputFileName + " created OK");
+//            } else {
+//                logger.error("Genome info for " + speciesConfiguration.getScientificName() + " cannot be downloaded");
+//            }
+//        } catch (IOException | InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private CellBaseBuilder buildGenomeSequence() {
         copyVersionFiles(Collections.singletonList(downloadFolder.resolve("genome/genomeVersion.json")));
