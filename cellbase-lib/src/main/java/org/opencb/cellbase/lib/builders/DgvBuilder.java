@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 /**
  * Created by fjlopez on 08/05/17.
  */
+@Deprecated
 public class DgvBuilder extends CellBaseBuilder {
 
     private static final int VARIANT_SUBTYPE_COLUMN = 5;

@@ -16,13 +16,13 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.commons.datastore.core.QueryOptions;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,9 +38,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public TranscriptMongoDBAdaptorTest() throws Exception {
         super();
-        setUp();
     }
 
+    @BeforeEach
     public void setUp() throws Exception {
         clearDB(GRCH37_DBNAME);
         Path path = Paths.get(getClass()
@@ -56,8 +56,10 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         TranscriptQuery query = new TranscriptQuery();
         Region region = Region.parseRegion("1:816481-825251");
         query.setRegions(new ArrayList<>(Arrays.asList(region)));
+        query.setCount(Boolean.TRUE);
         CellBaseDataResult<Transcript> cellBaseDataResult = transcriptDBAdaptor.query(query);
-        assertEquals(cellBaseDataResult.getNumResults(), 1);
+
+        assertEquals(1, cellBaseDataResult.getNumMatches());
         //assertEquals(((Document) CellBaseDataResult.getResults().get(0)).size(), 18);
         Transcript transcript = cellBaseDataResult.getResults().get(0);
         assertEquals("ENST00000594233", transcript.getId());
@@ -66,17 +68,19 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        query = new Query(TranscriptDBAdaptor.QueryParams.REGION.key(), "1:31851-44817");
         region = Region.parseRegion("1:31851-44817");
         query = new TranscriptQuery();
-        query.setRegions(new ArrayList<>(Arrays.asList(region)));
+        query.setCount(Boolean.TRUE);
+        query.setRegions(Collections.singletonList(region));
         cellBaseDataResult = transcriptDBAdaptor.query(query);
-        assertEquals(cellBaseDataResult.getNumResults(), 2);
+        assertEquals(2, cellBaseDataResult.getNumMatches());
         assertTrue(transcriptIdEquals(cellBaseDataResult, Arrays.asList("ENST00000417324", "ENST00000461467")));
 
 //        query = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), "Q9UL59");
         query = new TranscriptQuery();
-        query.setTranscriptsXrefs(new ArrayList<>(Arrays.asList("Q9UL59")));
-        QueryOptions queryOptions = new QueryOptions("include", "id");
+        query.setTranscriptsXrefs(Collections.singletonList("Q9UL59"));
+        query.setCount(Boolean.TRUE);
+        query.setIncludes(Collections.singletonList("id"));
         cellBaseDataResult = transcriptDBAdaptor.query(query);
-        assertEquals(2, cellBaseDataResult.getNumResults());
+        assertEquals(50, cellBaseDataResult.getNumMatches());
 //        assertEquals(1, ((Document) cellBaseDataResult.getResults().get(0)).size());
 //        assertEquals(1, ((Document) cellBaseDataResult.getResults().get(1)).size());
 
@@ -84,11 +88,12 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
 //        query = new Query(TranscriptDBAdaptor.QueryParams.BIOTYPE.key(), "protein_coding");
         query = new TranscriptQuery();
-        query.setTranscriptsBiotype(new ArrayList<>(Arrays.asList("protein_coding")));
-        query.setTranscriptsXrefs(new ArrayList<>(Arrays.asList("BRCA2")));
+        query.setCount(Boolean.TRUE);
+        query.setTranscriptsBiotype(Collections.singletonList("protein_coding"));
+        query.setTranscriptsXrefs(Collections.singletonList("BRCA2"));
 //        query.put(TranscriptDBAdaptor.QueryParams.XREFS.key(), "BRCA2");
 //        queryOptions = new QueryOptions("include", "transcripts.id");
-        query.setIncludes(new ArrayList<>(Arrays.asList("transcripts.id")));
+        query.setIncludes(Collections.singletonList("transcripts.id"));
         cellBaseDataResult = transcriptDBAdaptor.query(query);
         assertEquals(3, cellBaseDataResult.getNumMatches());
 
