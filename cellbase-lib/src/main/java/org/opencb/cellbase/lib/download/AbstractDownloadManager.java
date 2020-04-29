@@ -64,6 +64,7 @@ public class AbstractDownloadManager {
     protected String ensemblVersion;
     protected String ensemblRelease;
     protected Path downloadFolder;
+    protected Path downloadLogFolder; // /download/log
     protected Path buildFolder; // <output>/<species>_<assembly>/generated-json
     protected Logger logger;
 
@@ -104,6 +105,10 @@ public class AbstractDownloadManager {
         Path speciesFolder = outdir.resolve(speciesShortName + "_" + assemblyConfiguration.getName().toLowerCase());
         downloadFolder = outdir.resolve(speciesFolder + "/download");
         Files.createDirectories(downloadFolder);
+
+        downloadLogFolder = outdir.resolve(speciesFolder + "/download/log");
+        logger.error("creating download dir " + downloadLogFolder.toString());
+        Files.createDirectories(downloadLogFolder);
 
         // <output>/<species>_<assembly>/generated_json
         buildFolder = outdir.resolve(speciesFolder + "/generated_json");
@@ -242,7 +247,7 @@ public class AbstractDownloadManager {
             logger.warn("File '{}' is already downloaded", outputFileName);
             setDownloadStatusAndMessage(outputFileName, downloadFileInfo, "File '" + outputFileName + "' is already downloaded", true);
         } else {
-            final String outputLog = outputFileName + ".log";
+            final String outputLog = downloadLogFolder + "/" + Paths.get(outputFileName).toFile().getName() + ".log";
             List<String> wgetArgs = new ArrayList<>(Arrays.asList("--tries=10", url, "-O", outputFileName, "-o", outputLog));
             if (wgetAdditionalArgs != null && !wgetAdditionalArgs.isEmpty()) {
                 wgetArgs.addAll(wgetAdditionalArgs);
