@@ -102,7 +102,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.resolve("allgenes_updown_in_organism_part.tab.gz"),
                 geneDirectoryPath.resolve("dgidb.tsv"),
                 geneDirectoryPath.resolve("phenotype_to_genes.txt"),
-                geneDirectoryPath.resolve("all_gene_disease_associations.txt.gz"),
+                geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 geneDirectoryPath.resolve("goa_human.gaf.gz"),
                 genomeSequenceFastaFile,

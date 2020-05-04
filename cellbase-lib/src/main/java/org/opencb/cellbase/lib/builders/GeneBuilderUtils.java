@@ -246,9 +246,6 @@ public class GeneBuilderUtils {
 
         String line;
         if (hpoFilePath != null && hpoFilePath.toFile().exists() && Files.size(hpoFilePath) > 0) {
-
-            System.out.println(" processing ");
-
             BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath);
             // skip first header line
             bufferedReader.readLine();
@@ -258,18 +255,12 @@ public class GeneBuilderUtils {
                 String geneSymbol = fields[3];
                 String hpoId = fields[0];
                 String diseaseName = fields[1];
-
-
-                System.out.println(" diseaseName " + diseaseName);
-
                 GeneTraitAssociation disease =
                         new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
                 addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
             }
             bufferedReader.close();
         }
-
-
 
         if (disgenetFilePath != null && disgenetFilePath.toFile().exists() && Files.size(disgenetFilePath) > 0) {
             BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath);
