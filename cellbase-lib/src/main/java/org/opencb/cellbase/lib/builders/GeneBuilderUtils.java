@@ -244,18 +244,24 @@ public class GeneBuilderUtils {
             throws IOException {
         Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
 
-        String[] fields;
         String line;
         if (hpoFilePath != null && hpoFilePath.toFile().exists() && Files.size(hpoFilePath) > 0) {
+
+            System.out.println(" processing ");
+
             BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath);
             // skip first header line
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
-                fields = line.split("\t");
+                String[] fields = line.split("\t");
                 String omimId = fields[6];
                 String geneSymbol = fields[3];
                 String hpoId = fields[0];
                 String diseaseName = fields[1];
+
+
+                System.out.println(" diseaseName " + diseaseName);
+
                 GeneTraitAssociation disease =
                         new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
                 addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
@@ -263,20 +269,20 @@ public class GeneBuilderUtils {
             bufferedReader.close();
         }
 
+
+
         if (disgenetFilePath != null && disgenetFilePath.toFile().exists() && Files.size(disgenetFilePath) > 0) {
             BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath);
             // skip first header line
             bufferedReader.readLine();
             while ((line = bufferedReader.readLine()) != null) {
-                fields = line.split("\t");
-
+                String[] fields = line.split("\t");
                 String diseaseId = fields[4];
                 String diseaseName = fields[5];
                 String score = fields[9];
                 String numberOfPubmeds = fields[13].trim();
                 String numberOfSNPs = fields[14];
                 String source = fields[15];
-
                 GeneTraitAssociation disease = new GeneTraitAssociation(diseaseId, diseaseName, "", Float.parseFloat(score),
                         Integer.parseInt(numberOfPubmeds), Arrays.asList(numberOfSNPs), Arrays.asList(source), "disgenet");
                 addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);

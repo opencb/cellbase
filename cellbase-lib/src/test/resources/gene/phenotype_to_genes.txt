@@ -1,0 +1,2 @@
+#Format: HPO-id<tab>HPO label<tab>entrez-gene-id<tab>entrez-gene-symbol<tab>Additional Info from G-D source<tab>G-D source<tab>disease-ID for link
+HP:0002092	Pulmonary arterial hypertension	3988	LIPA	-	mim2gene	OMIM:278000

@@ -18,13 +18,14 @@ package org.opencb.cellbase.lib.builders;
 
 
 import org.junit.jupiter.api.Test;
+import org.opencb.biodata.models.core.AnnotationEvidence;
 import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
-import org.opencb.biodata.models.core.AnnotationEvidence;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -130,37 +131,37 @@ public class GeneBuilderUtilsTest {
         assertEquals(1.2705652E-10, expression.getPvalue(), 0.001);
     }
 
-//    @Test
-//    public void testGetGeneDiseaseAssociationMap() throws IOException {
-//
-//        Path hpoFilePath = Paths.get(getClass().getResource("/gene/ALL_SOURCES_ALL_FREQUENCIES_diseases_to_genes_to_phenotypes.txt").getFile());
-//        Path disgenetFilePath = Paths.get(getClass().getResource("/gene/all_gene_disease_associations.tsv.gz").getFile());
-//        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = GeneParserUtils.getGeneDiseaseAssociationMap(hpoFilePath, disgenetFilePath);
-//
-//        assertEquals(3, geneDiseaseAssociationMap.size());
-//        assertTrue(geneDiseaseAssociationMap.containsKey("LIPA"));
-//
-//        List<GeneTraitAssociation> results = geneDiseaseAssociationMap.get("LIPA");
-//        assertEquals(1, results.size());
-//        Iterator<GeneTraitAssociation> iter = results.iterator();
-//        GeneTraitAssociation geneTraitAssociation = iter.next();
-//        assertEquals("HP:0002092", geneTraitAssociation.getHpo());
-//        assertEquals("OMIM:278000", geneTraitAssociation.getId());
-//        assertEquals("Pulmonary arterial hypertension", geneTraitAssociation.getName());
-//        assertEquals(1, geneTraitAssociation.getNumberOfPubmeds(), 1);
-//        assertEquals(0, geneTraitAssociation.getScore(), 0.001);
-//        assertEquals("hpo", geneTraitAssociation.getSource());
-//
-//        results = geneDiseaseAssociationMap.get("A1BG");
-//        iter = results.iterator();
-//        assertEquals(6, results.size());
-//        geneTraitAssociation = iter.next();
-//        assertEquals("C0001418", geneTraitAssociation.getId());
-//        assertEquals("Adenocarcinoma", geneTraitAssociation.getName());
-//        assertEquals("disgenet", geneTraitAssociation.getSource());
-//        assertEquals(1, geneTraitAssociation.getNumberOfPubmeds(), 1);
-//        assertEquals(0.009999999776482582, geneTraitAssociation.getScore(), 0.001);
-//    }
+    @Test
+    public void testGetGeneDiseaseAssociationMap() throws IOException {
+
+        Path hpoFilePath = Paths.get(getClass().getResource("/gene/phenotype_to_genes.txt").getFile());
+        Path disgenetFilePath = Paths.get(getClass().getResource("/gene/all_gene_disease_associations.tsv.gz").getFile());
+        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = GeneBuilderUtils.getGeneDiseaseAssociationMap(hpoFilePath, disgenetFilePath);
+
+        assertEquals(3, geneDiseaseAssociationMap.size());
+        assertTrue(geneDiseaseAssociationMap.containsKey("LIPA"));
+
+        List<GeneTraitAssociation> results = geneDiseaseAssociationMap.get("LIPA");
+        assertEquals(1, results.size());
+        Iterator<GeneTraitAssociation> iter = results.iterator();
+        GeneTraitAssociation geneTraitAssociation = iter.next();
+        assertEquals("HP:0002092", geneTraitAssociation.getHpo());
+        assertEquals("OMIM:278000", geneTraitAssociation.getId());
+        assertEquals("Pulmonary arterial hypertension", geneTraitAssociation.getName());
+        assertEquals(1, geneTraitAssociation.getNumberOfPubmeds(), 1);
+        assertEquals(0, geneTraitAssociation.getScore(), 0.001);
+        assertEquals("hpo", geneTraitAssociation.getSource());
+
+        results = geneDiseaseAssociationMap.get("A1BG");
+        iter = results.iterator();
+        assertEquals(6, results.size());
+        geneTraitAssociation = iter.next();
+        assertEquals("C0001418", geneTraitAssociation.getId());
+        assertEquals("Adenocarcinoma", geneTraitAssociation.getName());
+        assertEquals("disgenet", geneTraitAssociation.getSource());
+        assertEquals(1, geneTraitAssociation.getNumberOfPubmeds(), 1);
+        assertEquals(0.009999999776482582, geneTraitAssociation.getScore(), 0.001);
+    }
 
     @Test
     public void testGetConstraints() throws Exception {
