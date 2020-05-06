@@ -289,7 +289,6 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getSequencesByIdList(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_IDS,
             required = true) String id) {
         try {
-            parseQueryParams();
             List<CellBaseDataResult<String>> queryResults = transcriptManager.getSequence(id);
             return createOkResponse(queryResults);
         } catch (Exception e) {

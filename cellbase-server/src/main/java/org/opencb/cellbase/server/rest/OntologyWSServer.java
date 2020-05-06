@@ -45,8 +45,8 @@ public class OntologyWSServer extends GenericRestWSServer {
 
     private OntologyManager ontologyManager;
 
-    public OntologyWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion", value = "Possible values: v4, v5",
-                                defaultValue = "v4") String apiVersion,
+    public OntologyWSServer(@ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                             @PathParam("species") @ApiParam(name = "species",
                                     value = ParamConstants.SPECIES_DESCRIPTION) String species,
                             @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)

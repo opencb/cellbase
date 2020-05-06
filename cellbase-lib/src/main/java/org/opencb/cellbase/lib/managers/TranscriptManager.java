@@ -48,23 +48,20 @@ public class TranscriptManager extends AbstractManager implements AggregationApi
 
     public CellBaseDataResult<String> getCdna(String id) {
         TranscriptQuery query = new TranscriptQuery();
-        query.setTranscriptsXrefs(Arrays.asList(id));
-        query.setIncludes(Arrays.asList("transcripts.id,transcripts.cDnaSequence"));
+        query.setTranscriptsXrefs(Collections.singletonList(id));
+//        query.setIncludes(Arrays.asList("transcripts.id", "transcripts.cDnaSequence"));
 
         CellBaseDataResult<Transcript> transcriptCellBaseDataResult = transcriptDBAdaptor.query(query);
 
-//        if (gene.getResults().get(0).getTranscripts().size() != 1) {
-//            // check id exists
-//        }
-
         String cdnaSequence = null;
-        for (Transcript transcript: transcriptCellBaseDataResult.getResults()) {
-            if (transcript.getId().equals(id)) {
-                cdnaSequence = transcript.getcDnaSequence();
-                break;
+        if (transcriptCellBaseDataResult != null && !transcriptCellBaseDataResult.getResults().isEmpty()) {
+            for (Transcript transcript: transcriptCellBaseDataResult.getResults()) {
+                if (id.equals(transcript.getId())) {
+                    cdnaSequence = transcript.getcDnaSequence();
+                    break;
+                }
             }
         }
-
         return new CellBaseDataResult<>(id, transcriptCellBaseDataResult.getTime(), transcriptCellBaseDataResult.getEvents(),
                 transcriptCellBaseDataResult.getNumResults(), Collections.singletonList(cdnaSequence), 1);
 
