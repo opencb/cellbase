@@ -21,6 +21,7 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import org.apache.commons.collections.CollectionUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Region;
@@ -206,19 +207,24 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                 switch (dotNotationName) {
                     case "region":
                     case "id":
-                    case "xrefs":
                         if (!visited) {
                            // parse region and ID at the same time
-                            createIdRegionQuery(query.getRegions(), query.getTranscriptsId(), andBsonList);
+                            createRegionQuery(query.getRegions(), query.getTranscriptsId(), andBsonList);
                             visited = true;
                         }
                         break;
+                    case "transcripts.xrefs":
+                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "biotype":
+                        createAndOrQuery(value, "transcripts.biotype", QueryParam.Type.STRING, andBsonList);
+                        break;
                     case "annotationFlags":
                         // TODO use unwind to filter out unwanted transcripts
-                        createAndOrQuery(value, "annotationFlags", QueryParam.Type.STRING, andBsonList);
+                        createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "tfbs.name":
-                        createAndOrQuery(value, "tfbs.tfName", QueryParam.Type.STRING, andBsonList);
+                        createAndOrQuery(value, "transcripts.tfbs.tfName", QueryParam.Type.STRING, andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -233,6 +239,39 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             return Filters.and(andBsonList);
         } else {
             return new Document();
+        }
+    }
+
+    // add regions and IDs to the query, joined with OR
+    private void createRegionQuery(List<Region> regions, List<String> ids, List<Bson> andBsonList) {
+        if (CollectionUtils.isEmpty(regions) && CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+        if (CollectionUtils.isEmpty(ids) && regions.size() == 1) {
+            Bson chromosome = Filters.eq("transcripts.chromosome", regions.get(0).getChromosome());
+            Bson start = Filters.lte("transcripts.start", regions.get(0).getEnd());
+            Bson end = Filters.gte("transcripts.nd", regions.get(0).getStart());
+            andBsonList.add(Filters.and(chromosome, start, end));
+        } else if (CollectionUtils.isEmpty(regions) && ids.size() == 1) {
+            Bson idFilter = Filters.eq("transcripts.id", ids.get(0));
+            andBsonList.add(idFilter);
+        } else {
+            List<Bson> orBsonList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(regions)) {
+                for (Region region : regions) {
+                    Bson chromosome = Filters.eq("transcripts.chromosome", region.getChromosome());
+                    Bson start = Filters.lte("transcripts.start", region.getEnd());
+                    Bson end = Filters.gte("transcripts.end", region.getStart());
+                    orBsonList.add(Filters.and(chromosome, start, end));
+                }
+            }
+            if (CollectionUtils.isNotEmpty(ids)) {
+                for (String id : ids) {
+                    Bson idFilter = Filters.eq("transcripts.id", id);
+                    orBsonList.add(idFilter);
+                }
+            }
+            andBsonList.add(Filters.or(orBsonList));
         }
     }
 

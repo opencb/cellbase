@@ -26,18 +26,18 @@ public class TranscriptQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     protected List<Region> regions;
 
-    @QueryParameter(id = "transcripts.biotype")
+    @QueryParameter(id = "biotype")
     protected List<String> transcriptsBiotype;
-    @QueryParameter(id = "transcripts.xrefs")
+    @QueryParameter(id = "xrefs")
     protected List<String> transcriptsXrefs;
-    @QueryParameter(id = "transcripts.id")
+    @QueryParameter(id = "id")
     protected List<String> transcriptsId;
-    @QueryParameter(id = "transcripts.name")
+    @QueryParameter(id = "name")
     protected List<String> transcriptsName;
 
-    @QueryParameter(id = "transcripts.annotationFlags")
+    @QueryParameter(id = "annotationFlags")
     protected LogicalList<String> transcriptsAnnotationFlags;
-    @QueryParameter(id = "transcripts.tfbs.name")
+    @QueryParameter(id = "tfbs.name")
     protected LogicalList<String> transcriptsTfbsName;
 
     public TranscriptQuery() {
