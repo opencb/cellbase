@@ -214,7 +214,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                             visited = true;
                         }
                         break;
-                    case "transcripts.xrefs":
+                    case "xrefs":
                         createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "biotype":

@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.MongoDBAdaptorFactory;
@@ -66,6 +67,7 @@ public class AbstractManager {
         dbAdaptorFactory = new MongoDBAdaptorFactory(this.configuration);
 
         logger = LoggerFactory.getLogger(this.getClass());
+        jsonObjectWriter = new ObjectMapper().writer();
     }
 
     @Deprecated

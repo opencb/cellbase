@@ -19,7 +19,9 @@ package org.opencb.cellbase.lib.managers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.forester.protein.Protein;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
+import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.avro.ProteinVariantAnnotation;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.ProteinQuery;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
@@ -32,7 +34,6 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class ProteinManager extends AbstractManager implements AggregationApi<ProteinQuery, Protein> {
 
@@ -89,19 +90,19 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
 //        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
 //        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
         query.setIncludes(Collections.singletonList("transcripts.id"));
-        CellBaseDataResult queryResult = transcriptDBAdaptor.query(query);
+        CellBaseDataResult<Transcript> queryResult = transcriptDBAdaptor.query(query);
         logger.info("{} transcripts found", queryResult.getNumResults());
-        logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
-
         // Get substitution scores for fetched transcript
         if (queryResult.getNumResults() > 0) {
-            String transcriptId = (String) ((Map) queryResult.getResults().get(0)).get("id");
+//            logger.info("Transcript IDs: {}", jsonObjectWriter.writeValueAsString(queryResult.getResults()));
+
+            String transcriptId = queryResult.getResults().get(0).getId();
             query.setTranscriptsId(Collections.singletonList(transcriptId));
 //            query.put("transcript", ((Map) queryResult.getResults().get(0)).get("id"));
             logger.info("Getting substitution scores for query {}", jsonObjectWriter.writeValueAsString(query));
             logger.info("queryOptions {}", jsonObjectWriter.writeValueAsString(query.toQueryOptions()));
-            CellBaseDataResult scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, position, aa);
-            scoresCellBaseDataResult.setId(query.getTranscriptsXrefs().get(0));
+            CellBaseDataResult<Score> scoresCellBaseDataResult = proteinDBAdaptor.getSubstitutionScores(query, position, aa);
+            scoresCellBaseDataResult.setId(transcriptId);
             return scoresCellBaseDataResult;
         } else {
             return queryResult;
