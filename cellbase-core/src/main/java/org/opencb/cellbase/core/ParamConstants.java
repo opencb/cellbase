@@ -19,7 +19,7 @@ package org.opencb.cellbase.core;
 public class ParamConstants {
 
     public static final String VERSION_DESCRIPTION = "Possible values: v4, v5";
-    public static final String DEFAULT_VERSION = "v4";
+    public static final String DEFAULT_VERSION = "v5";
     public static final String ASSEMBLY_DESCRIPTION = "Set the reference genome assembly, e.g. grch38. For a full list of "
             + "potentially available assemblies, please refer to: "
             + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species";

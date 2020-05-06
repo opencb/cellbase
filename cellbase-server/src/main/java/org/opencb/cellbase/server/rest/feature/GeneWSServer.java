@@ -43,10 +43,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author imedina
@@ -415,7 +412,7 @@ public class GeneWSServer extends GenericRestWSServer {
             String[] identifiers = genes.split(",");
             for (String identifier : identifiers) {
                 GeneQuery geneQuery = new GeneQuery(uriParams);
-                geneQuery.setTranscriptsXrefs(Arrays.asList(identifier));
+                geneQuery.setTranscriptsXrefs(Collections.singletonList(identifier));
                 geneQueries.add(geneQuery);
                 logger.info("REST geneQuery: " + geneQuery.toString());
             }

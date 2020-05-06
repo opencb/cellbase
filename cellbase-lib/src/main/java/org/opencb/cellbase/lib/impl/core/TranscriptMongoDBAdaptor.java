@@ -78,6 +78,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         return new CellBaseIterator<>(iterator);
     }
 
+    @Deprecated
     public List<Bson> unwind(TranscriptQuery query) {
         Bson document = parseQuery(query);
         Bson match = Aggregates.match(document);

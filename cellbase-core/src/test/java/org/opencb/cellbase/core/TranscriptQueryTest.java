@@ -18,7 +18,6 @@ package org.opencb.cellbase.core;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.QueryException;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 
@@ -34,7 +33,7 @@ public class TranscriptQueryTest {
 
     @BeforeEach
     public void beforeEach() {
-        transcriptQuery = new GeneQuery();
+        transcriptQuery = new TranscriptQuery();
         paramMap = new HashMap<>();
     }
 
