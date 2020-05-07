@@ -15,15 +15,6 @@
 {"collection": "conservation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "conservation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 
-{"collection": "drugbank", "fields": {"type": 1}, "options": {"background": true}}
-{"collection": "drugbank", "fields": {"action": 1}, "options": {"background": true}}
-{"collection": "drugbank", "fields": {"drug.xrefs.id": 1}, "options": {"background": true}}
-{"collection": "drugbank", "fields": {"drug.type": 1}, "options": {"background": true}}
-{"collection": "drugbank", "fields": {"drug.group": 1}, "options": {"background": true}}
-{"collection": "drugbank", "fields": {"drug.category": 1}, "options": {"background": true}}
-{"collection": "drugbank", "fields": {"partner.xrefs.id": 1}, "options": {"background": true}}
-{"collection": "drugbank", "fields": {"partner.essentiality": 1}, "options": {"background": true}}
-
 {"collection": "genome_sequence", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "genome_sequence", "fields": {"sequenceType": 1}, "options": {"background": true}}
 
@@ -42,19 +33,6 @@
 {"collection": "gene", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
 
-{"collection": "mutation", "fields": {"chunkIds": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"protein": 1, "proteinStart": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"gene": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"transcriptId": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"sampleName": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"primarySite": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"siteSubtype": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"primaryHistology": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"histologySubtype": 1}, "options": {"background": true}}
-{"collection": "mutation", "fields": {"description": 1}, "options": {"background": true}}
-
 {"collection": "protein", "fields": {"accession": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "protein", "fields": {"protein.recommendedName.fullName.value": 1}, "options": {"background": true}}
@@ -71,22 +49,6 @@
 {"collection": "protein_functional_prediction", "fields": {"checksum": 1}, "options": {"background": true}}
 {"collection": "protein_functional_prediction", "fields": {"uniprotId": 1}, "options": {"background": true}}
 {"collection": "protein_functional_prediction", "fields": {"transcriptId": 1}, "options": {"background": true}}
-
-{"collection": "protein_protein_interaction", "fields": {"interactorA.id": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"interactorA.dbName": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"interactorA.xrefs.id": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"interactorB.id": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"interactorB.dbName": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"interactorB.xrefs.id": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"type.psimi": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"type.name": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"detectionMethod.psimi": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"detectionMethod.name": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"status": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"xrefs.id": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"xrefs.dbName": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"source.psimi": 1}, "options": {"background": true}}
-{"collection": "protein_protein_interaction", "fields": {"source.name": 1}, "options": {"background": true}}
 
 {"collection": "regulatory_region", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
@@ -110,16 +72,6 @@
 {"collection": "variation_functional_score", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "variation_functional_score", "fields": {"source": 1}, "options": {"background": true}}
 
-{"collection": "variation_phenotype", "fields": {"phenotype": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype", "fields": {"associatedGenes": 1}, "options": {"background": true}}
-
-{"collection": "variation_phenotype_annotation", "fields": {"id": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation", "fields": {"chunkIds": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation", "fields": {"phenotype": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation", "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "variation_phenotype_annotation", "fields": {"associatedGenes": 1}, "options": {"background": true}}
-
 {"collection": "ontology", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"source": 1}, "options": {"background": true}}
@@ -137,5 +89,4 @@
 {"collection": "regulatory_pfm", "fields": {"unit": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"maxPositionSum": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"length": 1}, "options": {"background": true}}
-{"collection": "regulatory_pfm", "fields": {"elements": 1}, "options": {"background": true}}
 {"collection": "regulatory_pfm", "fields": {"elementsString": 1}, "options": {"background": true}}
