@@ -125,27 +125,27 @@ public class BuildCommandExecutor extends CommandExecutor {
                         case EtlCommons.GENE_DATA:
                             parser = buildGene();
                             break;
-                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
-                            parser = buildCadd();
-                            break;
+//                        case EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA:
+//                            parser = buildCadd();
+//                            break;
                         case EtlCommons.REGULATION_DATA:
                             parser = buildRegulation();
                             break;
                         case EtlCommons.PROTEIN_DATA:
                             parser = buildProtein();
                             break;
-                        case EtlCommons.PPI_DATA:
-                            parser = getInteractionParser();
-                            break;
+//                        case EtlCommons.PPI_DATA:
+//                            parser = getInteractionParser();
+//                            break;
                         case EtlCommons.CONSERVATION_DATA:
                             parser = buildConservation();
                             break;
                         case EtlCommons.CLINICAL_VARIANTS_DATA:
                             parser = buildClinicalVariants();
                             break;
-                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
-                            parser = buildStructuralVariants();
-                            break;
+//                        case EtlCommons.STRUCTURAL_VARIANTS_DATA:
+//                            parser = buildStructuralVariants();
+//                            break;
                         case EtlCommons.REPEATS_DATA:
                             parser = buildRepeats();
                             break;
@@ -174,6 +174,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         }
     }
 
+    @Deprecated
     private CellBaseBuilder buildStructuralVariants() {
         Path structuralVariantsFolder = downloadFolder.resolve(EtlCommons.STRUCTURAL_VARIANTS_FOLDER);
         copyVersionFiles(Arrays.asList(structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE)));
@@ -262,6 +263,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new GeneBuilder(geneFolderPath, genomeFastaFilePath, speciesConfiguration, flexibleGTFParsing, serializer);
     }
 
+    @Deprecated
     private CellBaseBuilder buildCadd() {
         Path variationFunctionalScorePath = downloadFolder.resolve("variation_functional_score");
         copyVersionFiles(Arrays.asList(variationFunctionalScorePath.resolve("caddVersion.json")));
