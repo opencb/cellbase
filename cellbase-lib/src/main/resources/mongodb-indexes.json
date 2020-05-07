@@ -123,9 +123,7 @@
 {"collection": "ontology", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"source": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"description": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"namespace": 1}, "options": {"background": true}}
-{"collection": "ontology", "fields": {"comment": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"synonyms": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"xrefs": 1}, "options": {"background": true}}
 {"collection": "ontology", "fields": {"parents": 1}, "options": {"background": true}}
