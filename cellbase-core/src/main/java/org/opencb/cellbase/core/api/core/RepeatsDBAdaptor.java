@@ -23,6 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by fjlopez on 10/05/17.
  */
+@Deprecated
 public interface RepeatsDBAdaptor {
 
     enum QueryParams implements QueryParam {

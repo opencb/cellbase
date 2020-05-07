@@ -133,13 +133,20 @@ public class RepeatsMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 //
 //    }
 
-        public Bson parseQuery(RepeatsQuery query) {
+    public Bson parseQuery(RepeatsQuery query) {
         List<Bson> andBsonList = new ArrayList<>();
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
-                createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                switch (dotNotationName) {
+                    case "region":
+                        createRegionQuery(query, value, andBsonList);
+                        break;
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();

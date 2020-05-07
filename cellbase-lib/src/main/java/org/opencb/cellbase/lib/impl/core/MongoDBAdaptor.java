@@ -107,6 +107,7 @@ public class MongoDBAdaptor {
         return query;
     }
 
+    @Deprecated
     protected void createRegionQuery(Query query, String queryParam, List<Bson> andBsonList) {
         if (query != null && query.getString(queryParam) != null && !query.getString(queryParam).isEmpty()) {
             List<Region> regions = Region.parseRegions(query.getString(queryParam));
@@ -134,6 +135,32 @@ public class MongoDBAdaptor {
         }
     }
 
+    protected void createRegionQuery(AbstractQuery query, Object queryValues, List<Bson> andBsonList) {
+        if (query != null && queryValues instanceof List) {
+            List<Region> regions =  (List<Region>) queryValues;
+            if (regions != null && regions.size() > 0) {
+                // if there is only one region we add the AND filter directly to the andBsonList passed
+                if (regions.size() == 1) {
+                    Bson chromosome = Filters.eq("chromosome", regions.get(0).getChromosome());
+                    Bson start = Filters.lte("start", regions.get(0).getEnd());
+                    Bson end = Filters.gte("end", regions.get(0).getStart());
+                    andBsonList.add(Filters.and(chromosome, start, end));
+                } else {
+                    // when multiple regions then we create and OR list before add it to andBsonList
+                    List<Bson> orRegionBsonList = new ArrayList<>(regions.size());
+                    for (Region region : regions) {
+                        Bson chromosome = Filters.eq("chromosome", region.getChromosome());
+                        Bson start = Filters.lte("start", region.getEnd());
+                        Bson end = Filters.gte("end", region.getStart());
+                        orRegionBsonList.add(Filters.and(chromosome, start, end));
+                    }
+                    andBsonList.add(Filters.or(orRegionBsonList));
+                }
+            } else {
+                logger.warn("Region query no created, region object is null or empty.");
+            }
+        }
+    }
 
     // add regions and IDs to the query, joined with OR
     protected void createIdRegionQuery(List<Region> regions, List<String> ids, List<Bson> andBsonList) {
