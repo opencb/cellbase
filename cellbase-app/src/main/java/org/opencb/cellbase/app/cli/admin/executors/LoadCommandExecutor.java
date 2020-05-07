@@ -141,10 +141,9 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.REGULATION_DATA:
                             loadIfExists(input.resolve("regulatory_region.json.gz"), "regulatory_region");
                             loadIfExists(input.resolve("ensemblRegulationVersion.json"), METADATA);
-                            loadIfExists(input.resolve("mirbaseVersion.json"), METADATA);
-                            loadIfExists(input.resolve("targetScanVersion.json"), METADATA);
-                            loadIfExists(input.resolve("miRTarBaseVersion.json"), METADATA);
                             createIndex("regulatory_region");
+                            loadIfExists(input.resolve("regulatory_pfm.json.gz"), "regulatory_pfm");
+                            createIndex("regulatory_pfm");
                             break;
                         case EtlCommons.PROTEIN_DATA:
                             loadIfExists(input.resolve("protein.json.gz"), "protein");
@@ -172,10 +171,6 @@ public class LoadCommandExecutor extends CommandExecutor {
                         case EtlCommons.OBO_DATA:
                             loadIfExists(input.resolve("ontology.json.gz"), "ontology");
                             createIndex("ontology");
-                            break;
-                        case EtlCommons.PFM_DATA:
-                            loadIfExists(input.resolve("regulatory_pfm.json.gz"), "regulatory_pfm");
-                            createIndex("regulatory_pfm");
                             break;
                         default:
                             logger.warn("Not valid 'data'. We should not reach this point");
