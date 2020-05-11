@@ -97,7 +97,7 @@ public class CoreDownloadManager extends DownloadManager {
         downloadFile(url, outputPath.toString());
         logger.info("Saving reference genome version data at {}", sequenceFolder.resolve("genomeVersion.json"));
         saveVersionData(EtlCommons.GENOME_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(),
-                Collections.singletonList(url), sequenceFolder.resolve("genomeVersion.json"));
+                Collections.singletonList(url), buildFolder.resolve("genomeVersion.json"));
     }
 
     public void downloadEnsemblGene()throws IOException, InterruptedException {
@@ -122,7 +122,7 @@ public class CoreDownloadManager extends DownloadManager {
             String url = configuration.getDownload().getGoAnnotation().getHost();
             downloadFile(url, geneFolder.resolve("goa_human.gaf.gz").toString());
             saveVersionData(EtlCommons.GENE_DATA, GO_ANNOTATION_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    geneFolder.resolve("goAnnotationVersion.json"));
+                    buildFolder.resolve("goAnnotationVersion.json"));
         }
     }
 
@@ -146,7 +146,7 @@ public class CoreDownloadManager extends DownloadManager {
             downloadFile(url, geneFolder.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz").toString());
             saveVersionData(EtlCommons.GENE_DATA, GNOMAD_NAME, configuration.getDownload().
                             getGnomadConstraints().getVersion(), getTimeStamp(),
-                    Collections.singletonList(url), geneFolder.resolve("gnomadVersion.json"));
+                    Collections.singletonList(url), buildFolder.resolve("gnomadVersion.json"));
         }
     }
     private void downloadDrugData(Path geneFolder) throws IOException, InterruptedException {
@@ -155,7 +155,7 @@ public class CoreDownloadManager extends DownloadManager {
             String url = configuration.getDownload().getDgidb().getHost();
             downloadFile(url, geneFolder.resolve("dgidb.tsv").toString());
             saveVersionData(EtlCommons.GENE_DATA, DGIDB_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    geneFolder.resolve("dgidbVersion.json"));
+                    buildFolder.resolve("dgidbVersion.json"));
         }
     }
 
@@ -200,7 +200,7 @@ public class CoreDownloadManager extends DownloadManager {
 
 
         saveVersionData(EtlCommons.GENE_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
-                geneFolder.resolve("ensemblCoreVersion.json"));
+                buildFolder.resolve("ensemblCoreVersion.json"));
     }
 
     private void downloadGeneUniprotXref(Path geneFolder) throws IOException, InterruptedException {
@@ -214,7 +214,7 @@ public class CoreDownloadManager extends DownloadManager {
 
             saveVersionData(EtlCommons.GENE_DATA, UNIPROT_NAME,
                     getUniProtRelease(geneFolder.resolve("uniprotRelnotes.txt").toString()), getTimeStamp(),
-                    Collections.singletonList(geneGtfUrl), geneFolder.resolve("uniprotXrefVersion.json"));
+                    Collections.singletonList(geneGtfUrl), buildFolder.resolve("uniprotXrefVersion.json"));
         }
     }
 
@@ -245,7 +245,7 @@ public class CoreDownloadManager extends DownloadManager {
         downloadFile(geneGtfUrl, geneFolder.resolve("allgenes_updown_in_organism_part.tab.gz").toString());
 
         saveVersionData(EtlCommons.GENE_DATA, GENE_EXPRESSION_ATLAS_NAME, getGeneExpressionAtlasVersion(), getTimeStamp(),
-                Collections.singletonList(geneGtfUrl), geneFolder.resolve("geneExpressionAtlasVersion.json"));
+                Collections.singletonList(geneGtfUrl), buildFolder.resolve("geneExpressionAtlasVersion.json"));
 
     }
 
@@ -261,7 +261,7 @@ public class CoreDownloadManager extends DownloadManager {
         String fileName = StringUtils.substringAfterLast(host, "/");
         downloadFile(host, geneFolder.resolve(fileName).toString());
         saveVersionData(EtlCommons.GENE_DATA, HPO_NAME, null, getTimeStamp(), Collections.singletonList(host),
-                geneFolder.resolve("hpoVersion.json"));
+                buildFolder.resolve("hpoVersion.json"));
 
         host = configuration.getDownload().getDisgenet().getHost();
         List<String> files = configuration.getDownload().getDisgenet().getFiles();
@@ -272,7 +272,7 @@ public class CoreDownloadManager extends DownloadManager {
 
         saveVersionData(EtlCommons.GENE_DISEASE_ASSOCIATION_DATA, DISGENET_NAME,
                 getVersionFromVersionLine(geneFolder.resolve("disgenetReadme.txt"), "(version"), getTimeStamp(),
-                Collections.singletonList(host), geneFolder.resolve("disgenetVersion.json"));
+                Collections.singletonList(host), buildFolder.resolve("disgenetVersion.json"));
     }
 
     private void runGeneExtraInfo(Path geneFolder) throws IOException, InterruptedException {
@@ -334,7 +334,7 @@ public class CoreDownloadManager extends DownloadManager {
                         conservationFolder.resolve(EtlCommons.GERP_SUBDIRECTORY + "/" + EtlCommons.GERP_FILE).toAbsolutePath().toString());
                 saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(),
                         Collections.singletonList(configuration.getDownload().getGerp().getHost()),
-                        conservationFolder.resolve("gerpVersion.json"));
+                        buildFolder.resolve("gerpVersion.json"));
 
                 String url = configuration.getDownload().getConservation().getHost() + "/hg19";
                 List<String> phastconsUrls = new ArrayList<>(chromosomes.length);
@@ -351,9 +351,9 @@ public class CoreDownloadManager extends DownloadManager {
                     phyloPUrls.add(phyloPUrl);
                 }
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
-                        conservationFolder.resolve("phastConsVersion.json"));
+                        buildFolder.resolve("phastConsVersion.json"));
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                        conservationFolder.resolve("phyloPVersion.json"));
+                        buildFolder.resolve("phyloPVersion.json"));
             }
 
             if (assemblyConfiguration.getName().equalsIgnoreCase("GRCh38")) {
@@ -373,9 +373,9 @@ public class CoreDownloadManager extends DownloadManager {
                     phyloPUrls.add(phyloPUrl);
                 }
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
-                        conservationFolder.resolve("phastConsVersion.json"));
+                        buildFolder.resolve("phastConsVersion.json"));
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                        conservationFolder.resolve("phyloPVersion.json"));
+                        buildFolder.resolve("phyloPVersion.json"));
             }
         }
 
@@ -400,9 +400,9 @@ public class CoreDownloadManager extends DownloadManager {
                 phyloPUrls.add(phyloPUrl);
             }
             saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
-                    conservationFolder.resolve("phastConsVersion.json"));
+                    buildFolder.resolve("phastConsVersion.json"));
             saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
-                    conservationFolder.resolve("phastConsVersion.json"));
+                    buildFolder.resolve("phastConsVersion.json"));
         }
     }
 
@@ -428,7 +428,7 @@ public class CoreDownloadManager extends DownloadManager {
         Files.createDirectories(proteinFolder.resolve("uniprot_chunks"));
         splitUniprot(proteinFolder.resolve("uniprot_sprot.xml.gz"), proteinFolder.resolve("uniprot_chunks"));
         saveVersionData(EtlCommons.PROTEIN_DATA, UNIPROT_NAME, getLine(proteinFolder.resolve("uniprotRelnotes.txt"), 1),
-                getTimeStamp(), Collections.singletonList(url), proteinFolder.resolve("uniprotVersion.json"));
+                getTimeStamp(), Collections.singletonList(url), buildFolder.resolve("uniprotVersion.json"));
 
 //        url = configuration.getDownload().getIntact().getHost();
 //        downloadFile(url, proteinFolder.resolve("intact.txt").toString());

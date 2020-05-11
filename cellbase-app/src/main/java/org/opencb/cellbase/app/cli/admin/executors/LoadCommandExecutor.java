@@ -170,6 +170,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                            break;
                         case EtlCommons.OBO_DATA:
                             loadIfExists(input.resolve("ontology.json.gz"), "ontology");
+                            loadIfExists(input.resolve(EtlCommons.HPO_VERSION_FILE), METADATA);
+                            loadIfExists(input.resolve(EtlCommons.GO_VERSION_FILE), METADATA);
+                            loadIfExists(input.resolve(EtlCommons.DO_VERSION_FILE), METADATA);
                             createIndex("ontology");
                             break;
                         default:

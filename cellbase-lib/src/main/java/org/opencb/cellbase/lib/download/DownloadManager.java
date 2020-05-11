@@ -139,6 +139,7 @@ public class DownloadManager {
         logger.info("Processing species " + speciesConfiguration.getScientificName());
     }
 
+    @Deprecated
     public DownloadFile downloadStructuralVariants() throws IOException, InterruptedException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "svs")) {
              return null;
@@ -152,7 +153,7 @@ public class DownloadManager {
                     + "_variants_2016-05-15.txt";
             String url = configuration.getDownload().getDgv().getHost() + "/" + sourceFilename;
             saveVersionData(EtlCommons.STRUCTURAL_VARIANTS_DATA, DGV_NAME, getDGVVersion(sourceFilename), getTimeStamp(),
-                    Collections.singletonList(url), structuralVariantsFolder.resolve(EtlCommons.DGV_VERSION_FILE));
+                    Collections.singletonList(url), buildFolder.resolve(EtlCommons.DGV_VERSION_FILE));
             return downloadFile(url, structuralVariantsFolder.resolve(EtlCommons.DGV_FILE).toString());
         }
         return null;
@@ -246,7 +247,7 @@ public class DownloadManager {
             String url = configuration.getDownload().getCadd().getHost();
 
             saveVersionData(EtlCommons.VARIATION_FUNCTIONAL_SCORE_DATA, CADD_NAME, url.split("/")[5], getTimeStamp(),
-                    Collections.singletonList(url), variationFunctionalScoreFolder.resolve("caddVersion.json"));
+                    Collections.singletonList(url), buildFolder.resolve("caddVersion.json"));
             return downloadFile(url, variationFunctionalScoreFolder.resolve("whole_genome_SNVs.tsv.gz").toString());
         }
         return null;

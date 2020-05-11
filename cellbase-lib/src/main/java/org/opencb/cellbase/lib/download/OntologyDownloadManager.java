@@ -18,11 +18,13 @@ package org.opencb.cellbase.lib.download;
 
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
+import org.opencb.cellbase.lib.EtlCommons;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class OntologyDownloadManager extends AbstractDownloadManager {
@@ -43,11 +45,20 @@ public class OntologyDownloadManager extends AbstractDownloadManager {
         String url = configuration.getDownload().getHpoObo().getHost();
         downloadFiles.add(downloadFile(url, oboFolder.resolve("hp.obo").toString()));
 
+        saveVersionData(EtlCommons.OBO_DATA, "HPO", getTimeStamp(), getTimeStamp(),
+                Collections.singletonList(url), buildFolder.resolve(EtlCommons.HPO_VERSION_FILE));
+
         url = configuration.getDownload().getGoObo().getHost();
         downloadFiles.add(downloadFile(url, oboFolder.resolve("go-basic.obo").toString()));
 
+        saveVersionData(EtlCommons.OBO_DATA, "GO", getTimeStamp(), getTimeStamp(),
+                Collections.singletonList(url), buildFolder.resolve(EtlCommons.GO_VERSION_FILE));
+
         url = configuration.getDownload().getDoidObo().getHost();
         downloadFiles.add(downloadFile(url, oboFolder.resolve("doid.obo").toString()));
+
+        saveVersionData(EtlCommons.OBO_DATA, "DO", getTimeStamp(), getTimeStamp(),
+                Collections.singletonList(url), buildFolder.resolve(EtlCommons.DO_VERSION_FILE));
 
         return downloadFiles;
     }
