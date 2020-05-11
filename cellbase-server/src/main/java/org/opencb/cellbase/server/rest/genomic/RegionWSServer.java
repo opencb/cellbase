@@ -182,9 +182,15 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                              required = true) String regions) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            geneQuery.setRegions(Region.parseRegions(regions));
-            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
+            List<GeneQuery> queries = new ArrayList<>();
+            String[] coordinates = regions.split(",");
+            for (String coordinate : coordinates) {
+                GeneQuery query = new GeneQuery(uriParams);
+                query.setRegions(Collections.singletonList(Region.parseRegion(coordinate)));
+                queries.add(query);
+                logger.info("REST GeneQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -220,11 +226,16 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getTranscriptByRegion(@PathParam("regions") @ApiParam(name = "regions",
             value = ParamConstants.REGION_DESCRIPTION, required = true) String regions) {
         try {
-            TranscriptQuery query = new TranscriptQuery(uriParams);
-            query.setRegions(new ArrayList(Arrays.asList(Region.parseRegions(regions))));
-            logger.info("/search TranscriptQuery: " + query.toString());
-            CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query);
-            return createOkResponse(queryResult);
+            List<TranscriptQuery> queries = new ArrayList<>();
+            String[] coordinates = regions.split(",");
+            for (String coordinate : coordinates) {
+                TranscriptQuery query = new TranscriptQuery(uriParams);
+                query.setRegions(Collections.singletonList(Region.parseRegion(coordinate)));
+                queries.add(query);
+                logger.info("REST TranscriptQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }

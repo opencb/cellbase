@@ -21,7 +21,6 @@ import org.opencb.biodata.models.core.Region;
 import java.util.List;
 import java.util.Map;
 
-@Deprecated
 public class RegulationQuery extends AbstractQuery {
 
     @QueryParameter(id = "name")
