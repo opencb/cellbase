@@ -251,7 +251,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         if (CollectionUtils.isEmpty(ids) && regions.size() == 1) {
             Bson chromosome = Filters.eq("transcripts.chromosome", regions.get(0).getChromosome());
             Bson start = Filters.lte("transcripts.start", regions.get(0).getEnd());
-            Bson end = Filters.gte("transcripts.nd", regions.get(0).getStart());
+            Bson end = Filters.gte("transcripts.end", regions.get(0).getStart());
             andBsonList.add(Filters.and(chromosome, start, end));
         } else if (CollectionUtils.isEmpty(regions) && ids.size() == 1) {
             Bson idFilter = Filters.eq("transcripts.id", ids.get(0));
@@ -274,6 +274,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             }
             andBsonList.add(Filters.or(orBsonList));
         }
+        logger.info("transcript parsed query: " + andBsonList.toString());
     }
 
 //    private Bson parseQuery(Query query) {
