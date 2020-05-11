@@ -23,6 +23,7 @@ import static org.opencb.commons.datastore.core.QueryParam.Type.TEXT_ARRAY;
 /**
  * Created by imedina on 30/11/15.
  */
+@Deprecated
 public interface XRefDBAdaptor {
 
     enum QueryParams implements QueryParam {

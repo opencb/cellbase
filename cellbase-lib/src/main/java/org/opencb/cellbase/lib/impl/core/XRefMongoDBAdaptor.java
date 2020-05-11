@@ -16,7 +16,9 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
@@ -147,13 +149,37 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 //    }
 
     @Override
-    public CellBaseIterator iterator(XrefQuery query) {
-        Bson bson = parseQuery(query);
+    public CellBaseIterator<Xref> iterator(XrefQuery query) {
         QueryOptions queryOptions = query.toQueryOptions();
-        Bson projection = getProjection(query);
+        List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
-        MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
+    }
+
+    public List<Bson> unwind(XrefQuery query) {
+        Bson bson = parseQuery(query);
+        Bson match = Aggregates.match(bson);
+
+        Bson project = Aggregates.project(Projections.include("transcripts.xrefs"));
+        Bson unwind = Aggregates.unwind("$transcripts");
+        Bson unwind2 = Aggregates.unwind("$transcripts.xrefs");
+
+        // This project the three fields of Xref to the top of the object
+        Document document = new Document("id", "$transcripts.xrefs.id");
+        document.put("dbName", "$transcripts.xrefs.dbName");
+        document.put("dbDisplayName", "$transcripts.xrefs.dbDisplayName");
+        Bson project1 = Aggregates.project(document);
+
+        List<Bson> aggregateList = new ArrayList<>();
+
+        aggregateList.add(match);
+        aggregateList.add(project);
+        aggregateList.add(unwind);
+        aggregateList.add(unwind2);
+        aggregateList.add(project1);
+
+        return aggregateList;
     }
 
     @Override
@@ -185,6 +211,7 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                 switch (dotNotationName) {
                     case "id":
                         createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
+                        break;
                     case "dbname":
                         createAndOrQuery(value, "transcripts.xrefs.dbName", QueryParam.Type.STRING, andBsonList);
                         break;
