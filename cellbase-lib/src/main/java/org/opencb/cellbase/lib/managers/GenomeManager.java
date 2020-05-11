@@ -52,11 +52,9 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         genomeDBAdaptor = dbAdaptorFactory.getGenomeDBAdaptor(species, assembly);
     }
 
-//    public CellBaseDataResult info(QueryOptions queryOptions) {
-//        CellBaseDataResult queryResult = genomeDBAdaptor.getGenomeInfo(queryOptions);
-//        queryResult.setId(species);
-//        return queryResult;
-//    }
+    public CellBaseDataResult getGenomeInfo(QueryOptions queryOptions) {
+        return genomeDBAdaptor.getGenomeInfo(queryOptions);
+    }
 
     public List<CellBaseDataResult> getChromosomes(QueryOptions queryOptions, String chromosomeId) {
         List<String> chromosomeList = Splitter.on(",").splitToList(chromosomeId);

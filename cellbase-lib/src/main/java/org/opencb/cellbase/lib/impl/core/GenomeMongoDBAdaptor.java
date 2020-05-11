@@ -383,19 +383,26 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         return new CellBaseDataResult<>(genomeInfoMongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
-    public Bson parseQuery(GenomeQuery query) {
+    public Bson parseQuery(GenomeQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
         try {
-            for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
+            for (Map.Entry<String, Object> entry : geneQuery.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
-                createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                switch (dotNotationName) {
+                    case "name":
+                        createAndOrQuery(value, "chromosomes.name", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
 
-        logger.info("genome parsed query: " + andBsonList.toString());
+        logger.info("gene parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
