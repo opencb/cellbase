@@ -156,6 +156,9 @@ public class RegulationMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
                 switch (dotNotationName) {
+                    case "region":
+                        createRegionQuery(query, value, andBsonList);
+                        break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;

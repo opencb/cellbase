@@ -267,7 +267,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] coordinates = region.split(",");
             for (String coordinate : coordinates) {
                 RepeatsQuery query = new RepeatsQuery(uriParams);
-                query.setRegions(Collections.singletonList(Region.parseRegion(coordinate)));
+                query.setRegions(Region.parseRegions(coordinate));
                 queries.add(query);
                 logger.info("REST RepeatsQuery: " + query.toString());
             }
@@ -451,7 +451,7 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
                     required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
     })
-    public Response getFeatureMap(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
+    public Response getRegulatoryRegions(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
             required = true) String regions) {
         try {
             List<RegulationQuery> queries = new ArrayList<>();
@@ -460,6 +460,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 RegulationQuery query = new RegulationQuery(uriParams);
                 query.setRegions(Region.parseRegions(regionString));
                 logger.info("REST RegulationQuery: " + query.toString());
+                queries.add(query);
             }
             List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
             return createOkResponse(queryResults);
