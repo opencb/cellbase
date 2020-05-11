@@ -33,7 +33,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.Collections;
 
 @Path("/{apiVersion}/{species}/regulatory")
 @Produces("text/plain")
@@ -101,7 +100,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureTypes() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
-            query.setIncludes(Collections.singletonList("featureType"));
+            query.setFacet("featureType");
             CellBaseDataResult<String> queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -123,7 +122,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     public Response getFeatureClasses() {
         try {
             RegulationQuery query = new RegulationQuery(uriParams);
-            query.setIncludes(Collections.singletonList("featureClass"));
+            query.setFacet("featureClass");
             CellBaseDataResult queryResults = regulatoryManager.distinct(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
