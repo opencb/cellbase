@@ -230,7 +230,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] coordinates = regions.split(",");
             for (String coordinate : coordinates) {
                 TranscriptQuery query = new TranscriptQuery(uriParams);
-                query.setRegions(Collections.singletonList(Region.parseRegion(coordinate)));
+                query.setRegions(Region.parseRegions(coordinate));
                 queries.add(query);
                 logger.info("REST TranscriptQuery: " + query.toString());
             }
@@ -358,7 +358,7 @@ public class RegionWSServer extends GenericRestWSServer {
                                         @ApiParam(name = "strand", value = ParamConstants.STRAND,
                                             allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
-            parseQueryParams();
+//            parseQueryParams();
             if (regions.contains(",")) {
                 List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(queryOptions, regions);
                 return createOkResponse(queryResults);
@@ -438,11 +438,7 @@ public class RegionWSServer extends GenericRestWSServer {
             + " returned in independent QueryResult objects within the QueryResponse object.",
             response = RegulatoryFeature.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "featureType",
-                    value = "Comma separated list of regulatory region types, e.g.: "
-                            + "TF_binding_site,histone_acetylation_site. Exact text matches will be returned. For a full"
-                            + "list of available regulatory types: "
-                            + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/regulatory/featureType\n ",
+            @ApiImplicitParam(name = "featureType", value = ParamConstants.REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -462,7 +458,7 @@ public class RegionWSServer extends GenericRestWSServer {
             String[] regionArray = regions.split(",");
             for (String regionString : regionArray) {
                 RegulationQuery query = new RegulationQuery(uriParams);
-                query.setRegions(Collections.singletonList(Region.parseRegion(regionString)));
+                query.setRegions(Region.parseRegions(regionString));
                 logger.info("REST RegulationQuery: " + query.toString());
             }
             List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
