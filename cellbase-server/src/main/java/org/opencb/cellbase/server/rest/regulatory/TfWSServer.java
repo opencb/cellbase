@@ -123,7 +123,7 @@ public class TfWSServer extends RegulatoryWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.name", value = ParamConstants.TRANSCRIPT_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.name", value = ParamConstants.TRANSCRIPT_TFBS_NAMES,
+            @ApiImplicitParam(name = "transcripts.tfbs.id", value = ParamConstants.TRANSCRIPT_TFBS_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -148,7 +148,7 @@ public class TfWSServer extends RegulatoryWSServer {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             LogicalList<String> logicalList = new LogicalList(Arrays.asList(tf.split(",")));
-            geneQuery.setTranscriptsTfbsName(logicalList);
+            geneQuery.setTranscriptsTfbsId(logicalList);
             CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {

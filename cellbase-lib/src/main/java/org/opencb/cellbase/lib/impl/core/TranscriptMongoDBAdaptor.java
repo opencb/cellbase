@@ -224,8 +224,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                         // TODO use unwind to filter out unwanted transcripts
                         createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "tfbs.name":
-                        createAndOrQuery(value, "transcripts.tfbs.tfName", QueryParam.Type.STRING, andBsonList);
+                    case "tfbs.id":
+                        createAndOrQuery(value, "transcripts.tfbs.id", QueryParam.Type.STRING, andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);

@@ -37,8 +37,8 @@ public class TranscriptQuery extends AbstractQuery {
 
     @QueryParameter(id = "annotationFlags")
     protected LogicalList<String> transcriptsAnnotationFlags;
-    @QueryParameter(id = "tfbs.name")
-    protected LogicalList<String> transcriptsTfbsName;
+    @QueryParameter(id = "tfbs.id")
+    protected LogicalList<String> transcriptsTfbsId;
 
     public TranscriptQuery() {
     }
@@ -62,7 +62,7 @@ public class TranscriptQuery extends AbstractQuery {
         setTranscriptsId(builder.transcriptsId);
         setTranscriptsName(builder.transcriptsName);
         setTranscriptsAnnotationFlags(builder.transcriptsAnnotationFlags);
-        setTranscriptsTfbsName(builder.transcriptsTfbsName);
+        setTranscriptsTfbsId(builder.transcriptsTfbsName);
     }
 
     @Override
@@ -124,12 +124,12 @@ public class TranscriptQuery extends AbstractQuery {
         return this;
     }
 
-    public LogicalList<String> getTranscriptsTfbsName() {
-        return transcriptsTfbsName;
+    public LogicalList<String> getTranscriptsTfbsId() {
+        return transcriptsTfbsId;
     }
 
-    public TranscriptQuery setTranscriptsTfbsName(LogicalList<String> transcriptsTfbsName) {
-        this.transcriptsTfbsName = transcriptsTfbsName;
+    public TranscriptQuery setTranscriptsTfbsId(LogicalList<String> transcriptsTfbsId) {
+        this.transcriptsTfbsId = transcriptsTfbsId;
         return this;
     }
 
@@ -243,7 +243,7 @@ public class TranscriptQuery extends AbstractQuery {
         sb.append(", transcriptsId=").append(transcriptsId);
         sb.append(", transcriptsName=").append(transcriptsName);
         sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
-        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsName);
+        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsId);
         sb.append(", limit=").append(limit);
         sb.append(", skip=").append(skip);
         sb.append(", count=").append(count);

@@ -62,8 +62,8 @@ public class TranscriptQueryTest {
         assertEquals("flag1", transcriptQuery.getTranscriptsAnnotationFlags().get(0));
         assertEquals("flag2", transcriptQuery.getTranscriptsAnnotationFlags().get(1));
 
-        assertEquals("tfbs1", transcriptQuery.getTranscriptsTfbsName().get(0));
-        assertEquals("tfbs2", transcriptQuery.getTranscriptsTfbsName().get(1));
+        assertEquals("tfbs1", transcriptQuery.getTranscriptsTfbsId().get(0));
+        assertEquals("tfbs2", transcriptQuery.getTranscriptsTfbsId().get(1));
     }
 
 

@@ -90,7 +90,7 @@ public class ParamConstants {
     public static final String TRANSCRIPT_ANNOTATION_FLAGS = "Comma separated list of annotation flags that must be "
             + "present in the transcripts returned within the gene model, e.g. basic,CCDS. Exact text matches will "
             + "be returned";
-    public static final String TRANSCRIPT_TFBS_NAMES = "Comma separated list of TFBS names, e.g. CTCF,Gabp."
+    public static final String TRANSCRIPT_TFBS_IDS = "Comma separated list of TFBS ids, e.g. ENSM00526048956,ENSM00522505783."
             + " Exact text matches will be returned";
 
     // ---------------------------------------------

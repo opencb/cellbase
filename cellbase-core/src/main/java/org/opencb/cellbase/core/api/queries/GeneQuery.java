@@ -46,8 +46,8 @@ public class GeneQuery extends AbstractQuery {
 
     @QueryParameter(id = "transcripts.annotationFlags")
     protected LogicalList<String> transcriptsAnnotationFlags;
-    @QueryParameter(id = "transcripts.tfbs.name")
-    protected LogicalList<String> transcriptsTfbsName;
+    @QueryParameter(id = "transcripts.tfbs.id")
+    protected LogicalList<String> transcriptsTfbsId;
 
     @QueryParameter(id = "annotation.diseases.id")
     private LogicalList<String> annotationDiseasesId;
@@ -89,7 +89,7 @@ public class GeneQuery extends AbstractQuery {
         setTranscriptsId(builder.transcriptsId);
         setTranscriptsName(builder.transcriptsName);
         setTranscriptsAnnotationFlags(builder.transcriptsAnnotationFlags);
-        setTranscriptsTfbsName(builder.transcriptsTfbsName);
+        setTranscriptsTfbsId(builder.transcriptsTfbsName);
         setAnnotationDiseasesId(builder.annotationDiseasesId);
         setAnnotationDiseasesName(builder.annotationDiseasesName);
         setAnnotationExpressionGene(builder.annotationExpressionGene);
@@ -122,7 +122,7 @@ public class GeneQuery extends AbstractQuery {
         sb.append(", transcriptsId=").append(transcriptsId);
         sb.append(", transcriptsName=").append(transcriptsName);
         sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
-        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsName);
+        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsId);
         sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
         sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
         sb.append(", annotationExpressionGene=").append(annotationExpressionGene);
@@ -223,12 +223,12 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public LogicalList<String> getTranscriptsTfbsName() {
-        return transcriptsTfbsName;
+    public LogicalList<String> getTranscriptsTfbsId() {
+        return transcriptsTfbsId;
     }
 
-    public GeneQuery setTranscriptsTfbsName(LogicalList<String> transcriptsTfbsName) {
-        this.transcriptsTfbsName = transcriptsTfbsName;
+    public GeneQuery setTranscriptsTfbsId(LogicalList<String> transcriptsTfbsId) {
+        this.transcriptsTfbsId = transcriptsTfbsId;
         return this;
     }
 
