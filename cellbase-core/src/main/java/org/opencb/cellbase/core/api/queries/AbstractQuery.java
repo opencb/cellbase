@@ -262,12 +262,14 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
                 List<String> values = (List<String>) value;
                 for (String s : values) {
                     if (!allowedValues.contains(s)) {
-                        throw new QueryException(s + " is not a legal value for " + fieldNameCamelCase);
+                        throw new QueryException("'" + s + "' is not a legal value for '" + fieldNameCamelCase + "'. Looking for "
+                                + StringUtils.join(allowedValuesArray, ","));
                     }
                 }
             } else {
-                if (!allowedValues.contains(value)) {
-                    throw new QueryException(value + " is not a legal value for " + fieldNameCamelCase);
+                if (!allowedValues.contains(value.toString())) {
+                    throw new QueryException("'" + value + "' is not a legal value for '" + fieldNameCamelCase + "'. Looking for "
+                            + StringUtils.join(allowedValuesArray, ","));
                 }
             }
         }

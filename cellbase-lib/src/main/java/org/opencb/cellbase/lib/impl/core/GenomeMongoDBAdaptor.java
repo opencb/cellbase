@@ -35,6 +35,7 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDBIterator;
@@ -121,32 +122,32 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         return cellBaseDataResultList;
     }
 
-    private Document getOneChromosomeInfo(String chromosome) {
-        Document genomeInfoVariable = getGenomeInfoVariable();
-        if (genomeInfoVariable != null) {
-            for (Document document : (List<Document>) genomeInfoVariable.get(CHROMOSOMES)) {
-                if (document.get(NAME).equals(chromosome)) {
-                    return document;
-                }
-            }
-        }
-        return null;
-    }
+//    private Document getOneChromosomeInfo(String chromosome) {
+//        Document genomeInfoVariable = getGenomeInfoVariable();
+//        if (genomeInfoVariable != null) {
+//            for (Document document : (List<Document>) genomeInfoVariable.get(CHROMOSOMES)) {
+//                if (document.get(NAME).equals(chromosome)) {
+//                    return document;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
-    private Document getGenomeInfoVariable() {
-        if (genomeInfo == null) {
-            CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult<>(
-                    genomeInfoMongoDBCollection.find(new Document(), null));
-            if (cellBaseDataResult.getNumResults() > 0) {
-                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResults().get(0);
-                for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
-                    ((List<Document>) chromosomeDocument.get(CYTOBANDS))
-                            .sort(Comparator.comparingInt(c -> (int) c.get(START)));
-                }
-            }
-        }
-        return genomeInfo;
-    }
+//    private Document getGenomeInfoVariable() {
+//        if (genomeInfo == null) {
+//            CellBaseDataResult<Document> cellBaseDataResult = new CellBaseDataResult<>(
+//                    genomeInfoMongoDBCollection.find(new Document(), null));
+//            if (cellBaseDataResult.getNumResults() > 0) {
+//                genomeInfo = genomeInfoMongoDBCollection.find(new Document(), null).getResults().get(0);
+//                for (Document chromosomeDocument : (List<Document>) genomeInfo.get(CHROMOSOMES)) {
+//                    ((List<Document>) chromosomeDocument.get(CYTOBANDS))
+//                            .sort(Comparator.comparingInt(c -> (int) c.get(START)));
+//                }
+//            }
+//        }
+//        return genomeInfo;
+//    }
 
     @Deprecated
     public CellBaseDataResult<GenomeSequenceFeature> getGenomicSequence(Query query, QueryOptions queryOptions) {
@@ -302,10 +303,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 //        return null;
 //    }
 
-//    public CellBaseDataResult nativeGet(AbstractQuery query) {
-//        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
-//    }
-
+    @Deprecated
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
         Bson bson = parseQuery(query);
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
@@ -336,6 +334,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 //        return null;
 //    }
 
+    @Deprecated
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
@@ -351,11 +350,12 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
 
 
     @Override
-    public CellBaseIterator iterator(GenomeQuery query) {
+    public CellBaseIterator<Chromosome> iterator(GenomeQuery query) {
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
         GenericDocumentComplexConverter<Chromosome> converter = new GenericDocumentComplexConverter<>(Chromosome.class);
+        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
         MongoDBIterator<Chromosome> iterator = genomeInfoMongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
     }
@@ -380,7 +380,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     @Override
     public CellBaseDataResult<String> distinct(GenomeQuery query) {
         Bson bsonDocument = parseQuery(query);
-        return new CellBaseDataResult<>(mongoDBCollection.distinct(query.getFacet(), bsonDocument));
+        return new CellBaseDataResult<>(genomeInfoMongoDBCollection.distinct(query.getFacet(), bsonDocument));
     }
 
     public Bson parseQuery(GenomeQuery query) {
@@ -389,7 +389,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
                 Object value = entry.getValue();
-                createAndOrQuery(value, dotNotationName, org.opencb.commons.datastore.core.QueryParam.Type.STRING, andBsonList);
+                createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
