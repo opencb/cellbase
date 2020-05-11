@@ -65,6 +65,7 @@ public class TfWSServer extends RegulatoryWSServer {
         super(apiVersion, species, assembly, uriInfo, hsr);
         regulatoryManager = cellBaseManagerFactory.getRegulatoryManager(species, assembly);
         tfbsManager = cellBaseManagerFactory.getTFManager(species, assembly);
+        geneManager = cellBaseManagerFactory.getGeneManager(species, assembly);
     }
 
     @GET

@@ -16,10 +16,13 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
+import org.opencb.cellbase.core.api.queries.TfbsQuery;
+import org.opencb.cellbase.core.common.regulatory.Tfbs;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.GeneMongoDBAdaptor;
 
-public class TfbsManager extends AbstractManager {
+public class TfbsManager extends AbstractManager implements AggregationApi<TfbsQuery, Tfbs> {
 
     private GeneMongoDBAdaptor geneDBAdaptor;
 
@@ -30,6 +33,11 @@ public class TfbsManager extends AbstractManager {
 
     private void init() {
         geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor(species, assembly);
+    }
+
+    @Override
+    public CellBaseCoreDBAdaptor getDBAdaptor() {
+        return geneDBAdaptor;
     }
 
 //    public CellBaseDataResult getByGene(GeneQuery geneQuery) {

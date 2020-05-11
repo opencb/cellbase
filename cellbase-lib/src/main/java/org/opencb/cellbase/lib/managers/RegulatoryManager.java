@@ -22,7 +22,6 @@ import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.RegulationMongoDBAdaptor;
 
-@Deprecated
 public class RegulatoryManager extends AbstractManager implements AggregationApi<RegulationQuery, RegulatoryRegion>  {
 
     private RegulationMongoDBAdaptor regulationDBAdaptor;
@@ -35,7 +34,6 @@ public class RegulatoryManager extends AbstractManager implements AggregationApi
     private void init() {
         regulationDBAdaptor = dbAdaptorFactory.getRegulationDBAdaptor(species, assembly);
     }
-
 
     @Override
     public CellBaseCoreDBAdaptor getDBAdaptor() {
