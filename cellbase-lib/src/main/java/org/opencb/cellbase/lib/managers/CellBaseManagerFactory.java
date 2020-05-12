@@ -286,7 +286,6 @@ public class CellBaseManagerFactory {
         return metaManager;
     }
 
-
     public OntologyManager getOntologyManager(String species) throws CellbaseException {
         if (species == null) {
             throw new CellbaseException("Species is required.");

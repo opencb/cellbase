@@ -30,9 +30,10 @@ public class MetaManager extends AbstractManager {
     }
 
     public CellBaseDataResult getVersions(String species, String assembly) {
+        logger.error("species " + species);
+        logger.error("assembly " + assembly);
         MetaMongoDBAdaptor metaDBAdaptor = dbAdaptorFactory.getMetaDBAdaptor(species, assembly);
-//        return metaDBAdaptor.nativeGet(new Query(), new QueryOptions());
-        return null;
+        return metaDBAdaptor.getAll();
     }
 
     public String getMaintenanceFlagFile() {

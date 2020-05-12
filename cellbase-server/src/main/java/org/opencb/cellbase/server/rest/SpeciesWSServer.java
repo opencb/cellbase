@@ -32,8 +32,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by imedina on 04/08/15.
@@ -50,9 +48,7 @@ public class SpeciesWSServer extends GenericRestWSServer {
                                    defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                            @PathParam("species")
                            @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION) String species,
-                           @ApiParam(name = "assembly", value = "Set the reference genome assembly, e.g. grch38. For a full list of "
-                                   + "potentially available assemblies, please refer to: "
-                                   + "https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/meta/species")
+                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION)
                            @DefaultValue("")
                            @QueryParam("assembly") String assembly,
                            @Context UriInfo uriInfo,
@@ -70,18 +66,15 @@ public class SpeciesWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getSpeciesInfo() {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            List<CellBaseDataResult> queryResult = genomeManager.info(Arrays.asList(query));
-            return createOkResponse(queryResult);
+            CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions());
+            return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
     }
-
 }

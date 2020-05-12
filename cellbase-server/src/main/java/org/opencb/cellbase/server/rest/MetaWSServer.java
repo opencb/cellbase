@@ -28,7 +28,6 @@ import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.MetaManager;
 import org.opencb.cellbase.lib.monitor.HealthStatus;
-import org.opencb.cellbase.server.exception.SpeciesException;
 import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.cellbase.server.rest.clinical.ClinicalWSServer;
 import org.opencb.cellbase.server.rest.feature.GeneWSServer;
@@ -64,15 +63,15 @@ public class MetaWSServer extends GenericRestWSServer {
 
     private static final String PONG = "pong";
     private static final String STATUS = "status";
-    private static final String HEALTH = "health";
-    private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
+//    private static final String HEALTH = "health";
+//    private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
 
 
     public MetaWSServer(@PathParam("version")
-                        @ApiParam(name = "version", value = "Possible values: v4, v5",
-                                defaultValue = "v5") String version,
+                        @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+                                defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
-            throws VersionException, SpeciesException, IOException, CellbaseException {
+            throws VersionException, IOException, CellbaseException {
         super(version, uriInfo, hsr);
         metaManager = cellBaseManagerFactory.getMetaManager();
     }
@@ -82,22 +81,23 @@ public class MetaWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Returns source version metadata, including source urls from which "
             + "data files were downloaded.", response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response getVersion(@PathParam("species")
-                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species) {
+                               @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true) String species,
+                               @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
+                                       String assembly) {
         try {
-            MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-            String assemblyName = multivaluedMap.get("assembly").get(0);
-            if (StringUtils.isEmpty(assemblyName)) {
+            if (StringUtils.isEmpty(assembly)) {
                 SpeciesConfiguration.Assembly assemblyObject = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species);
                 if (assemblyObject != null) {
-                    assemblyName = assemblyObject.getName();
+                    assembly = assemblyObject.getName();
                 }
             }
-            if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assemblyName)) {
+            if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
                 return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
-                        + assemblyName + "'");
+                        + assembly + "'");
             }
-            CellBaseDataResult queryResults = metaManager.getVersions(species, assemblyName);
-            return createOkResponse(queryResults);
+            logger.error("species " + species);
+            CellBaseDataResult queryResult = metaManager.getVersions(species, assembly);
+            return createOkResponse(queryResult);
         } catch (CellbaseException e) {
             return createErrorResponse(e);
         }
@@ -115,24 +115,37 @@ public class MetaWSServer extends GenericRestWSServer {
     @GET
     @Path("/{category}")
     @ApiOperation(httpMethod = "GET", value = "Returns available subcategories for a given category",
-            response = String.class, responseContainer = "QueryResponse")
+           responseContainer = "QueryResponse")
     public Response getCategory(@PathParam("category")
                                 @ApiParam(name = "category", value = "String containing the name of the category",
-                                            allowableValues = "feature,genomic,network,regulatory", required = true)
+                                            allowableValues = "feature,genomic,regulatory", required = true)
                                             String category) {
+
+        Set<String> subcategories = new HashSet<>();
+
         if ("feature".equalsIgnoreCase(category)) {
-            return createOkResponse("exon\ngene\nkaryotype\nprotein\nsnp\ntranscript");
+            subcategories.add("exon");
+            subcategories.add("gene");
+            subcategories.add("protein");
+            subcategories.add("variant");
+            subcategories.add("transcript");
         }
         if ("genomic".equalsIgnoreCase(category)) {
-            return createOkResponse("position\nregion\nvariant");
-        }
-        if ("network".equalsIgnoreCase(category)) {
-            return createOkResponse("pathway");
+            subcategories.add("position");
+            subcategories.add("region");
+            subcategories.add("variant");
         }
         if ("regulatory".equalsIgnoreCase(category)) {
-            return createOkResponse("mirna_gene\nmirna_mature\ntf");
+            subcategories.add("tfbs");
+            subcategories.add("regulatory region");
         }
-        return createOkResponse("feature\ngenomic\nnetwork\nregulatory");
+
+        CellBaseDataResult queryResult = new CellBaseDataResult();
+        queryResult.setId("subcategories");
+        queryResult.setTime(0);
+        queryResult.setResults(Collections.singletonList(subcategories));
+
+        return createOkResponse(queryResult);
     }
 
     @GET
