@@ -41,8 +41,6 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-;
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
