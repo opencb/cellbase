@@ -43,7 +43,6 @@ import org.opencb.cellbase.server.rest.regulatory.TfWSServer;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -208,24 +207,23 @@ public class MetaWSServer extends GenericRestWSServer {
             + "as database connections and the ability to access other APIs.",
             response = DownloadProperties.class, responseContainer = "QueryResponse")
     public Response status(@PathParam("species") @ApiParam(name = "species", value = ParamConstants.SPECIES_DESCRIPTION, required = true)
-                                       String species) {
-
-        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-        String assemblyName = multivaluedMap.get("assembly").get(0);
-        if (assemblyName == null) {
+                                       String species,
+                           @ApiParam(name = "assembly", value = ParamConstants.ASSEMBLY_DESCRIPTION) @QueryParam("assembly")
+                                        String assembly) {
+        if (StringUtils.isEmpty(assembly)) {
             try {
-                assemblyName = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
+                assembly = SpeciesUtils.getDefaultAssembly(cellBaseConfiguration, species).getName();
             } catch (CellbaseException e) {
                 return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
-                        + assemblyName + "'");
+                        + assembly + "'");
             }
         }
-        if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assemblyName)) {
+        if (!SpeciesUtils.validateSpeciesAndAssembly(cellBaseConfiguration, species, assembly)) {
             return createErrorResponse("getVersion", "Invalid species: '" + species + "' or assembly: '"
-                    + assemblyName + "'");
+                    + assembly + "'");
         }
 
-        HealthStatus health = monitor.run(species, assemblyName);
+        HealthStatus health = monitor.run(species, assembly);
         CellBaseDataResult<HealthStatus> queryResult = new CellBaseDataResult();
         queryResult.setId(STATUS);
         queryResult.setTime(0);

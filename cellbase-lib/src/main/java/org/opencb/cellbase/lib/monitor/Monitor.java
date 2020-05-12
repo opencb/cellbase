@@ -55,7 +55,7 @@ public class Monitor {
     private static final String NONE = "None";
     private static final String WEBSERVICES = "webservices";
     private static final String REST = "rest";
-    private static final String VERSION = "v4";  // TODO: CAREFUL hardcoded to v4
+    private static final String VERSION = "v5";  // TODO: CAREFUL hardcoded to v5
     private static final String META = "meta";
     private static final String STATUS = "status";
     private static final String CELLBASE_TOMCAT = "CellBase-tomcat";
