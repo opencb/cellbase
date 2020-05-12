@@ -46,7 +46,7 @@ public class TranscriptQueryTest {
         paramMap.put("name", "transcriptName");
 
         paramMap.put("annotationFlags", "flag1,flag2");
-        paramMap.put("tfbs.name", "tfbs1,tfbs2");
+        paramMap.put("tfbs.id", "tfbs1,tfbs2");
 
         transcriptQuery = new TranscriptQuery(paramMap);
         assertEquals("ENST00000342992", transcriptQuery.getTranscriptsId().get(0));

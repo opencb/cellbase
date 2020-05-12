@@ -21,45 +21,39 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.hamcrest.CoreMatchers;
-
-;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
-import org.opencb.biodata.models.variant.avro.ConsequenceType;
-import org.opencb.biodata.models.variant.avro.Repeat;
-import org.opencb.biodata.models.variant.avro.SequenceOntologyTerm;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.api.queries.QueryException;
-import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
-import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.lib.GenericMongoDBAdaptorTest;
+import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
+import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
-    ObjectMapper jsonObjectMapper;
-    VariantAnnotationCalculator variantAnnotationCalculator;
+    private ObjectMapper jsonObjectMapper;
+    private VariantAnnotationCalculator variantAnnotationCalculator;
 
     public VariantAnnotationCalculatorTest() throws Exception {
         super();
-        setUp();
     }
 
-
+    @BeforeAll
     public void setUp() throws Exception {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
