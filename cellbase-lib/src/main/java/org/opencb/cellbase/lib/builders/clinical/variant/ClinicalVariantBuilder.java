@@ -112,7 +112,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
                     && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
                     && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
-                ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile, clinvarSummaryFile,
+                ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
                         clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 clinvarIndexer.index();
             } else {

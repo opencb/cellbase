@@ -16,11 +16,10 @@
 
 package org.opencb.cellbase.lib.download;
 
-import com.beust.jcommander.ParameterException;
-import org.apache.commons.io.IOUtils;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.commons.utils.FileUtils;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -29,9 +28,10 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class ClinicalDownloadManager extends AbstractDownloadManager {
 
@@ -52,14 +52,11 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
     }
 
     public List<DownloadFile> downloadClinical() throws IOException, InterruptedException {
-        if (!speciesHasInfoToDownload(speciesConfiguration, "clinical_variants")) {
-            return null;
-        }
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            if (assemblyConfiguration.getName() == null) {
-                throw new ParameterException("Assembly must be provided for downloading clinical variants data."
-                        + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
-            }
+//            if (assemblyConfiguration.getName() == null) {
+//                throw new ParameterException("Assembly must be provided for downloading clinical variants data."
+//                        + " Please, specify either --assembly GRCh37 or --assembly GRCh38");
+//            }
 
             logger.info("Downloading clinical information ...");
 
@@ -102,38 +99,86 @@ public class ClinicalDownloadManager extends AbstractDownloadManager {
                         + "assembly", assemblyConfiguration.getName());
             }
 
-            if (assemblyConfiguration.getName().equalsIgnoreCase("grch37")) {
-                url = configuration.getDownload().getIarctp53().getHost();
-                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
-                        Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
-                                + "&dataset-germlineMutationData=germlineMutationData"
-                                + "&dataset-somaticMutationReference=somaticMutationReference"
-                                + "&dataset-germlineMutationReference=germlineMutationReference")));
+//            if (assemblyConfiguration.getName().equalsIgnoreCase("grch37")) {
+//                url = configuration.getDownload().getIarctp53().getHost();
+//                downloadFiles.add(downloadFile(url, clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString(),
+//                        Collections.singletonList("--post-data=dataset-somaticMutationData=somaticMutationData"
+//                                + "&dataset-germlineMutationData=germlineMutationData"
+//                                + "&dataset-somaticMutationReference=somaticMutationReference"
+//                                + "&dataset-germlineMutationReference=germlineMutationReference")));
+//
+//                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
+//                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+//                while (entries.hasMoreElements()) {
+//                    ZipEntry entry = entries.nextElement();
+//                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
+//                    if (entry.isDirectory()) {
+//                        entryDestination.mkdirs();
+//                    } else {
+//                        entryDestination.getParentFile().mkdirs();
+//                        InputStream in = zipFile.getInputStream(entry);
+//                        OutputStream out = new FileOutputStream(entryDestination);
+//                        IOUtils.copy(in, out);
+//                        IOUtils.closeQuietly(in);
+//                        out.close();
+//                    }
+//                }
+//                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
+//                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
+//                                "The version of the database should be identified"), getTimeStamp(),
+//                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
+//            }
 
-                ZipFile zipFile = new ZipFile(clinicalFolder.resolve(EtlCommons.IARCTP53_FILE).toString());
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-                    File entryDestination = new File(clinicalFolder.toFile(), entry.getName());
-                    if (entry.isDirectory()) {
-                        entryDestination.mkdirs();
-                    } else {
-                        entryDestination.getParentFile().mkdirs();
-                        InputStream in = zipFile.getInputStream(entry);
-                        OutputStream out = new FileOutputStream(entryDestination);
-                        IOUtils.copy(in, out);
-                        IOUtils.closeQuietly(in);
-                        out.close();
-                    }
-                }
-                saveVersionData(EtlCommons.CLINICAL_VARIANTS_DATA, IARCTP53_NAME,
-                        getVersionFromVersionLine(clinicalFolder.resolve("Disclaimer.txt"),
-                                "The version of the database should be identified"), getTimeStamp(),
-                        Collections.singletonList(url), clinicalFolder.resolve("iarctp53Version.json"));
+            if (Files.notExists(clinicalFolder.resolve("clinvar_chunks"))) {
+                Files.createDirectories(clinicalFolder.resolve("clinvar_chunks"));
+                splitClinvar(clinicalFolder.resolve(EtlCommons.CLINVAR_XML_FILE), clinicalFolder.resolve("clinvar_chunks"));
             }
+
             return downloadFiles;
         }
         return null;
+    }
+
+    private void splitClinvar(Path clinvarXmlFilePath, Path splitOutdirPath) throws IOException {
+        BufferedReader br = FileUtils.newBufferedReader(clinvarXmlFilePath);
+        PrintWriter pw = null;
+        StringBuilder header = new StringBuilder();
+        boolean beforeEntry = true;
+        boolean inEntry = false;
+        int count = 0;
+        int chunk = 0;
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (line.trim().startsWith("<ClinVarSet ")) {
+                inEntry = true;
+                beforeEntry = false;
+                if (count % 10000 == 0) {
+                    pw = new PrintWriter(new FileOutputStream(splitOutdirPath.resolve("chunk_" + chunk + ".xml").toFile()));
+                    pw.println(header.toString().trim());
+                }
+                count++;
+            }
+
+            if (beforeEntry) {
+                header.append(line).append("\n");
+            }
+
+            if (inEntry) {
+                pw.println(line);
+            }
+
+            if (line.trim().startsWith("</ClinVarSet>")) {
+                inEntry = false;
+                if (count % 10000 == 0) {
+                    pw.print("</ReleaseSet>");
+                    pw.close();
+                    chunk++;
+                }
+            }
+        }
+        pw.print("</ReleaseSet>");
+        pw.close();
+        br.close();
     }
 
     private String getDocmVersion(Path docmIndexHtml) {
