@@ -207,8 +207,9 @@ public class GeneBuilder extends CellBaseBuilder {
                         geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraints.get(geneId));
 
                 gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getSequenceName().replaceFirst("chr", ""),
-                        gtf.getStart(), gtf.getEnd(), gtf.getStrand(), gtf.getAttributes().get("gene_biotype"), "KNOWN",
-                        "Ensembl", geneDescriptionMap.get(geneId), new ArrayList<>(), null, geneAnnotation);
+                        gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),
+                        gtf.getAttributes().get("gene_biotype"), "KNOWN",
+                        gtf.getSource(), geneDescriptionMap.get(geneId), new ArrayList<>(), null, geneAnnotation);
                 // Do not change order!! size()-1 is the index of the gene ID
             }
 
@@ -369,8 +370,9 @@ public class GeneBuilder extends CellBaseBuilder {
                         ? gtfAttributes.get("transcript_biotype")
                         : gtf.getSource(),
                 "KNOWN", transcriptChromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), 0, 0, 0, 0,
-                0, "", "", gtfAttributes.get("transcript_version"), xrefMap.get(transcriptId), new ArrayList<Exon>(),
+                gtf.getStrand(), Integer.parseInt(gtfAttributes.get("transcript_version")), gtfAttributes.get("transcript_source"),
+                gtfAttributes.get("transcript_support_level"), 0, 0, 0, 0,
+                0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
                 transcriptTfbses, transcriptAnnotation);
         // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
         // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
