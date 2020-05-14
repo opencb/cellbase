@@ -93,6 +93,11 @@ public class ClinicalVariantBuilderTest {
 
         Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
 
+        Path clinicalVariantChunksFolder = Paths.get("/tmp/clinicalVariant3/clinvar_chunks");
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/clinicalVariant/ClinVarFullRelease_2020-02.xml.gz").toURI()).toFile(),
+                clinicalVariantChunksFolder.resolve("ClinVarFullRelease_2020-02.xml.gz").toFile());
+
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
         (new ClinicalVariantBuilder(clinicalVariantFolder, false, genomeSequenceFilePath, "GRCh37",  serializer)).parse();
 
@@ -139,6 +144,12 @@ public class ClinicalVariantBuilderTest {
         org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
                         .getResource("/variant/annotation/Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toURI()).toFile(),
                 clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toFile());
+
+
+        Path clinicalVariantChunksFolder = Paths.get("/tmp/clinicalVariant1/clinvar_chunks");
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/clinicalVariant/ClinVarFullRelease_2020-02.xml.gz").toURI()).toFile(),
+                clinicalVariantChunksFolder.resolve("ClinVarFullRelease_2020-02.xml.gz").toFile());
 
         Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
 
@@ -221,6 +232,11 @@ public class ClinicalVariantBuilderTest {
                 clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz.gzi").toFile());
 
         Path genomeSequenceFilePath = clinicalVariantFolder.resolve("Homo_sapiens.GRCh37.75.dna.primary_assembly.chr17.fa.gz");
+
+        Path clinicalVariantChunksFolder = Paths.get("/tmp/clinicalVariant2/clinvar_chunks");
+        org.apache.commons.io.FileUtils.copyFile(Paths.get(getClass()
+                        .getResource("/variant/annotation/clinicalVariant/ClinVarFullRelease_2020-02.xml.gz").toURI()).toFile(),
+                clinicalVariantChunksFolder.resolve("ClinVarFullRelease_2020-02.xml.gz").toFile());
 
         CellBaseSerializer serializer = new CellBaseJsonFileSerializer(Paths.get("/tmp/"), EtlCommons.CLINICAL_VARIANTS_DATA, true);
         (new ClinicalVariantBuilder(clinicalVariantFolder, true, genomeSequenceFilePath, "GRCh37",  serializer)).parse();

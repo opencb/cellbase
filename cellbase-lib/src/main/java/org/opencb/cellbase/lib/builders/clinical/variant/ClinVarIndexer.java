@@ -117,6 +117,8 @@ public class ClinVarIndexer extends ClinicalIndexer {
                 }
             });
 
+            Arrays.sort(files);
+
             ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", files.length * 10000,
                     200).setBatchSize(10000);
 
