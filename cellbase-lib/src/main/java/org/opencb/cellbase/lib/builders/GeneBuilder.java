@@ -369,11 +369,12 @@ public class GeneBuilder extends CellBaseBuilder {
                 (gtfAttributes.get("transcript_biotype") != null)
                         ? gtfAttributes.get("transcript_biotype")
                         : gtf.getSource(),
-                "KNOWN", transcriptChromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), Integer.parseInt(gtfAttributes.get("transcript_version")), gtfAttributes.get("transcript_source"),
+                "KNOWN", gtfAttributes.get("transcript_source"), transcriptChromosome, gtf.getStart(), gtf.getEnd(),
+                gtf.getStrand(), Integer.parseInt(gtfAttributes.get("transcript_version")),
                 gtfAttributes.get("transcript_support_level"), 0, 0, 0, 0,
                 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
                 transcriptTfbses, transcriptAnnotation);
+
         // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
         // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
         // that the xrefs array contains all ids present in the GTF file
