@@ -20,7 +20,6 @@ package org.opencb.cellbase.lib.builders;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -31,6 +30,7 @@ import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -51,12 +51,12 @@ public class GeneBuilderTest {
     private GeneBuilder geneParser;
     private ObjectMapper jsonObjectMapper;
     private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null, null);
-    public GeneBuilderTest() throws URISyntaxException {
+    public GeneBuilderTest() throws URISyntaxException, CellbaseException {
         init();
     }
 
     @BeforeAll
-    public void init() throws URISyntaxException {
+    public void init() throws URISyntaxException, CellbaseException {
         Path genomeSequenceFastaFile
                 = Paths.get(GeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
         Path geneDirectoryPath = Paths.get(GeneBuilderTest.class.getResource("/gene").toURI());
@@ -69,6 +69,18 @@ public class GeneBuilderTest {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    @Test
+    public void testRocksdb() throws Exception {
+        geneParser.parse();
+
+        List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
+
+        Gene gene = getGene("ENSG00000227232", genes);
+
+        assertNotNull(gene);
+        assertEquals("WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]", gene.getDescription());
     }
 
     /**
@@ -96,6 +108,15 @@ public class GeneBuilderTest {
                         return exon;
                     }
                 }
+            }
+        }
+        return null;
+    }
+
+    private Gene getGene(String id, List<Gene> genes) {
+        for (Gene gene : genes) {
+            if (id.equals(gene.getId())) {
+                return gene;
             }
         }
         return null;

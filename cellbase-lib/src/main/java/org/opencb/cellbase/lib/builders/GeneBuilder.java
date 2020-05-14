@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import htsjdk.tribble.readers.TabixReader;
 import org.apache.commons.collections.map.HashedMap;
 import org.opencb.biodata.formats.feature.gff.Gff2;
@@ -30,10 +31,16 @@ import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -86,15 +93,19 @@ public class GeneBuilder extends CellBaseBuilder {
     private String feature;
     private Gtf nextGtfToReturn;
 
+    private RocksDbManager rocksDbManager;
+    private RocksDB rdb;
+    private static final String GENE_DESCRIPTION_SUFFIX = "gene-description";
+
     public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       SpeciesConfiguration speciesConfiguration,
-                      CellBaseSerializer serializer) {
+                      CellBaseSerializer serializer) throws CellbaseException {
         this(geneDirectoryPath, genomeSequenceFastaFile, speciesConfiguration, false, serializer);
     }
 
     public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing,
-                      CellBaseSerializer serializer) {
+                      CellBaseSerializer serializer) throws CellbaseException {
         this(null, geneDirectoryPath.resolve("description.txt"), geneDirectoryPath.resolve("xrefs.txt"),
                 geneDirectoryPath.resolve("idmapping_selected.tab.gz"),
                 geneDirectoryPath.getParent().resolve("regulation/motif_features.gff.gz"),
@@ -115,7 +126,7 @@ public class GeneBuilder extends CellBaseBuilder {
     public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path tabixFile,
                        Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
                        Path geneOntologyAnnotationFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
-                       boolean flexibleGTFParsing, CellBaseSerializer serializer) {
+                       boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellbaseException {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -133,222 +144,282 @@ public class GeneBuilder extends CellBaseBuilder {
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
 
+//        if (gtfFile == null) {
+//            throw new CellbaseException("required file not found: gtfFile");
+//        }
+//        if (geneDescriptionFile == null) {
+//            throw new CellbaseException("required file not found: geneDescriptionFile");
+//        }
+//        if (xrefsFile == null) {
+//            throw new CellbaseException("required file not found: xrefsFile");
+//        }
+//        if (uniprotIdMappingFile == null) {
+//            throw new CellbaseException("required file not found: uniprotIdMappingFile");
+//        }
+//        if (tfbsFile == null || tabixFile == null) {
+//            throw new CellbaseException("required file not found: tabixFile and tfbsFile");
+//        }
+//        if (geneExpressionFile == null) {
+//            throw new CellbaseException("required file not found: geneExpressionFile");
+//        }
+//        if (geneDrugFile == null) {
+//            throw new CellbaseException("required file not found: geneDrugFile");
+//        }
+//        if (hpoFile == null) {
+//            throw new CellbaseException("required file not found: hpoFile");
+//        }
+//        if (disgenetFile == null) {
+//            throw new CellbaseException("required file not found: disgenetFile");
+//        }
+//        if (gnomadFile == null) {
+//            throw new CellbaseException("required file not found: gnomadFile");
+//        }
+//        if (geneOntologyAnnotationFile == null) {
+//            throw new CellbaseException("required file not found: geneOntologyAnnotationFile");
+//        }
+
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
     }
 
     public void parse() throws Exception {
+
+        rocksDbManager = new RocksDbManager();
+        Options dbOption = null;
+        String dbLocation = null;
+
         Gene gene = null;
         Transcript transcript;
         Exon exon = null;
         int cdna = 1;
         int cds = 1;
-        Map<String, String> geneDescriptionMap = getGeneDescriptionMap();
-        Map<String, ArrayList<Xref>> xrefMap = GeneBuilderUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
-        Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
-        Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
 
-        TabixReader tabixReader = null;
-        if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
-            logger.error("Tfbs or tabix file not found. Download them and try again.");
-        } else {
-            tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
-        }
+        try {
+            rdb = rocksDbManager.getDBConnection(gtfFile.getParent().toString() + "/integration.idx");
+            logger.error("loading gene descriptions");
+            loadGeneDescriptions();
+            logger.error("DONE -- loading gene descriptions");
 
-        // Gene annotation data
-        Map<String, List<Expression>> geneExpressionMap = GeneBuilderUtils
-                .getGeneExpressionMap(speciesConfiguration.getScientificName(), geneExpressionFile);
-        Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneBuilderUtils.getGeneDrugMap(geneDrugFile);
-        Map<String, List<GeneTraitAssociation>> diseaseAssociationMap
-                = GeneBuilderUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
+            Map<String, ArrayList<Xref>> xrefMap = GeneBuilderUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
+            Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
+            Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
 
-        // Transcript and Gene constraint scores annotation
-        Map<String, List<Constraint>> constraints = GeneBuilderUtils.getConstraints(gnomadFile);
+            TabixReader tabixReader = null;
+            if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
+                logger.error("Tfbs or tabix file not found. Download them and try again.");
+            } else {
+                tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
+            }
 
-        // Protein to gene ontology term
-        Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations
-                = GeneBuilderUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
+            // Gene annotation data
+            Map<String, List<Expression>> geneExpressionMap = GeneBuilderUtils
+                    .getGeneExpressionMap(speciesConfiguration.getScientificName(), geneExpressionFile);
+            Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneBuilderUtils.getGeneDrugMap(geneDrugFile);
+            Map<String, List<GeneTraitAssociation>> diseaseAssociationMap
+                    = GeneBuilderUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
 
-        // Preparing the fasta file for fast accessing
+            // Transcript and Gene constraint scores annotation
+            Map<String, List<Constraint>> constraints = GeneBuilderUtils.getConstraints(gnomadFile);
+
+            // Protein to gene ontology term
+            Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations
+                    = GeneBuilderUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
+
+            // Preparing the fasta file for fast accessing
 //        FastaIndexManager fastaIndexManager = getFastaIndexManager();
-        FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
+            FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
 
-        // Empty transcript and exon dictionaries
-        transcriptDict.clear();
-        exonDict.clear();
-        logger.info("Parsing gtf...");
-        GtfReader gtfReader = new GtfReader(gtfFile);
+            // Empty transcript and exon dictionaries
+            transcriptDict.clear();
+            exonDict.clear();
+            logger.info("Parsing gtf...");
+            GtfReader gtfReader = new GtfReader(gtfFile);
 
-        // Gene->Transcript->Feature->GTF line
-        Map<String, Map<String, Map<String, Object>>> gtfMap = null;
-        if (flexibleGTFParsing) {
-            gtfMap = loadGTFMap(gtfReader);
-            initializePointers(gtfMap);
-        }
-
-        Gtf gtf;
-        while ((gtf = getGTFEntry(gtfReader, gtfMap)) != null) {
-
-            if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
-                    || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
-                continue;
+            // Gene->Transcript->Feature->GTF line
+            Map<String, Map<String, Map<String, Object>>> gtfMap = null;
+            if (flexibleGTFParsing) {
+                gtfMap = loadGTFMap(gtfReader);
+                initializePointers(gtfMap);
             }
 
-            String geneId = gtf.getAttributes().get("gene_id");
-            String transcriptId = gtf.getAttributes().get("transcript_id");
-            if (newGene(gene, geneId)) {
-                // If new geneId is different from the current then we must serialize before data new gene
-                if (gene != null) {
-                    serializer.serialize(gene);
+            Gtf gtf;
+            while ((gtf = getGTFEntry(gtfReader, gtfMap)) != null) {
+
+                if (gtf.getFeature().equals("gene") || gtf.getFeature().equals("transcript")
+                        || gtf.getFeature().equals("UTR") || gtf.getFeature().equals("Selenocysteine")) {
+                    continue;
                 }
 
-                GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
-                        diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                        geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraints.get(geneId));
-
-                gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getSequenceName().replaceFirst("chr", ""),
-                        gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),
-                        gtf.getAttributes().get("gene_biotype"), "KNOWN",
-                        gtf.getSource(), geneDescriptionMap.get(geneId), new ArrayList<>(), null, geneAnnotation);
-                // Do not change order!! size()-1 is the index of the gene ID
-            }
-
-            // Check if Transcript exist in the Gene Set of transcripts
-            if (!transcriptDict.containsKey(transcriptId)) {
-                transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tabixReader, constraints,
-                        proteinToOntologyAnnotations, gtf, transcriptId);
-            } else {
-                transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
-            }
-
-            // At this point gene and transcript objects are set up
-            // Update gene and transcript genomic coordinates, start must be the
-            // lower, and end the higher
-            updateTranscriptAndGeneCoords(transcript, gene, gtf);
-
-            if (gtf.getFeature().equalsIgnoreCase("exon")) {
-                // Obtaining the exon sequence
-                //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-                String exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
-
-                exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
-                        gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
-                        .getAttributes().get("exon_number")), exonSequence);
-                transcript.getExons().add(exon);
-                exonDict.put(transcript.getId() + "_" + exon.getExonNumber(), exon);
-                if (gtf.getAttributes().get("exon_number").equals("1")) {
-                    cdna = 1;
-                    cds = 1;
-                } else {
-                    // with every exon we update cDNA length with the previous exon length
-                    cdna += exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getEnd()
-                            - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
-                }
-            } else {
-                exon = exonDict.get(transcript.getId() + "_" + exon.getExonNumber());
-                if (gtf.getFeature().equalsIgnoreCase("CDS")) {
-                    if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
-                        // CDS states the beginning of coding start
-                        exon.setGenomicCodingStart(gtf.getStart());
-                        exon.setGenomicCodingEnd(gtf.getEnd());
-
-                        // cDNA coordinates
-                        exon.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
-                        exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-                        // Set cdnaCodingEnd to prevent those cases without stop_codon
-
-                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-                        exon.setCdsStart(cds);
-                        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
-
-                        // increment in the coding length
-                        cds += gtf.getEnd() - gtf.getStart() + 1;
-                        transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-
-                        exon.setPhase(Integer.valueOf(gtf.getFrame()));
-
-                        if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
-                            transcript.setGenomicCodingStart(gtf.getStart());
-                        }
-                        if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < gtf.getEnd()) {
-                            transcript.setGenomicCodingEnd(gtf.getEnd());
-                        }
-                        // only first time
-                        if (transcript.getCdnaCodingStart() == 0) {
-                            transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
-                        }
-                        // strand -
-                    } else {
-                        // CDS states the beginning of coding start
-                        exon.setGenomicCodingStart(gtf.getStart());
-                        exon.setGenomicCodingEnd(gtf.getEnd());
-                        // cDNA coordinates
-                        // cdnaCodingStart points to the same base position than genomicCodingEnd
-                        exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
-                        // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-                        // Set cdnaCodingEnd to prevent those cases without stop_codon
-                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-                        exon.setCdsStart(cds);
-                        exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
-
-                        // increment in the coding length
-                        cds += gtf.getEnd() - gtf.getStart() + 1;
-                        transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
-                        exon.setPhase(Integer.valueOf(gtf.getFrame()));
-
-                        if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
-                            transcript.setGenomicCodingStart(gtf.getStart());
-                        }
-                        if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < gtf.getEnd()) {
-                            transcript.setGenomicCodingEnd(gtf.getEnd());
-                        }
-                        // only first time
-                        if (transcript.getCdnaCodingStart() == 0) {
-                            // cdnaCodingStart points to the same base position than genomicCodingEnd
-                            transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
-                        }
+                String geneId = gtf.getAttributes().get("gene_id");
+                String transcriptId = gtf.getAttributes().get("transcript_id");
+                if (newGene(gene, geneId)) {
+                    // If new geneId is different from the current then we must serialize before data new gene
+                    if (gene != null) {
+                        serializer.serialize(gene);
                     }
-                    // no strand dependent
-                    transcript.setProteinId(gtf.getAttributes().get("protein_id"));
+
+                    GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
+                            diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
+                            geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraints.get(geneId));
+
+                    byte[] bytes = rocksDbManager.get(rdb, geneId + GENE_DESCRIPTION_SUFFIX);
+
+                    String description = "";
+                    if (bytes != null) {
+                        description = new String(bytes, StandardCharsets.UTF_8);
+                    }
+
+                    gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getSequenceName().replaceFirst("chr", ""),
+                            gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),
+                            gtf.getAttributes().get("gene_biotype"), "KNOWN",
+                            gtf.getSource(), description, new ArrayList<>(), null,
+                            geneAnnotation);
                 }
+
+                // Check if Transcript exist in the Gene Set of transcripts
+                if (!transcriptDict.containsKey(transcriptId)) {
+                    transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tabixReader, constraints,
+                            proteinToOntologyAnnotations, gtf, transcriptId);
+                } else {
+                    transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
+                }
+
+                // At this point gene and transcript objects are set up
+                // Update gene and transcript genomic coordinates, start must be the
+                // lower, and end the higher
+                updateTranscriptAndGeneCoords(transcript, gene, gtf);
+
+                if (gtf.getFeature().equalsIgnoreCase("exon")) {
+                    // Obtaining the exon sequence
+                    //String exonSequence = getExonSequence(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+                    String exonSequence = fastaIndex.query(gtf.getSequenceName(), gtf.getStart(), gtf.getEnd());
+
+                    exon = new Exon(gtf.getAttributes().get("exon_id"), gtf.getSequenceName().replaceFirst("chr", ""),
+                            gtf.getStart(), gtf.getEnd(), gtf.getStrand(), 0, 0, 0, 0, 0, 0, -1, Integer.parseInt(gtf
+                            .getAttributes().get("exon_number")), exonSequence);
+                    transcript.getExons().add(exon);
+                    exonDict.put(transcript.getId() + "_" + exon.getExonNumber(), exon);
+                    if (gtf.getAttributes().get("exon_number").equals("1")) {
+                        cdna = 1;
+                        cds = 1;
+                    } else {
+                        // with every exon we update cDNA length with the previous exon length
+                        cdna += exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getEnd()
+                                - exonDict.get(transcript.getId() + "_" + (exon.getExonNumber() - 1)).getStart() + 1;
+                    }
+                } else {
+                    exon = exonDict.get(transcript.getId() + "_" + exon.getExonNumber());
+                    if (gtf.getFeature().equalsIgnoreCase("CDS")) {
+                        if (gtf.getStrand().equals("+") || gtf.getStrand().equals("1")) {
+                            // CDS states the beginning of coding start
+                            exon.setGenomicCodingStart(gtf.getStart());
+                            exon.setGenomicCodingEnd(gtf.getEnd());
+
+                            // cDNA coordinates
+                            exon.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
+                            exon.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                            // Set cdnaCodingEnd to prevent those cases without stop_codon
+
+                            transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                            exon.setCdsStart(cds);
+                            exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
+
+                            // increment in the coding length
+                            cds += gtf.getEnd() - gtf.getStart() + 1;
+                            transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+
+                            exon.setPhase(Integer.valueOf(gtf.getFrame()));
+
+                            if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
+                                transcript.setGenomicCodingStart(gtf.getStart());
+                            }
+                            if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < gtf.getEnd()) {
+                                transcript.setGenomicCodingEnd(gtf.getEnd());
+                            }
+                            // only first time
+                            if (transcript.getCdnaCodingStart() == 0) {
+                                transcript.setCdnaCodingStart(gtf.getStart() - exon.getStart() + cdna);
+                            }
+                            // strand -
+                        } else {
+                            // CDS states the beginning of coding start
+                            exon.setGenomicCodingStart(gtf.getStart());
+                            exon.setGenomicCodingEnd(gtf.getEnd());
+                            // cDNA coordinates
+                            // cdnaCodingStart points to the same base position than genomicCodingEnd
+                            exon.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+                            // cdnaCodingEnd points to the same base position than genomicCodingStart
+                            exon.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                            // Set cdnaCodingEnd to prevent those cases without stop_codon
+                            transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                            exon.setCdsStart(cds);
+                            exon.setCdsEnd(gtf.getEnd() - gtf.getStart() + cds);
+
+                            // increment in the coding length
+                            cds += gtf.getEnd() - gtf.getStart() + 1;
+                            transcript.setCdsLength(cds - 1);  // Set cdnaCodingEnd to prevent those cases without stop_codon
+                            exon.setPhase(Integer.valueOf(gtf.getFrame()));
+
+                            if (transcript.getGenomicCodingStart() == 0 || transcript.getGenomicCodingStart() > gtf.getStart()) {
+                                transcript.setGenomicCodingStart(gtf.getStart());
+                            }
+                            if (transcript.getGenomicCodingEnd() == 0 || transcript.getGenomicCodingEnd() < gtf.getEnd()) {
+                                transcript.setGenomicCodingEnd(gtf.getEnd());
+                            }
+                            // only first time
+                            if (transcript.getCdnaCodingStart() == 0) {
+                                // cdnaCodingStart points to the same base position than genomicCodingEnd
+                                transcript.setCdnaCodingStart(exon.getEnd() - gtf.getEnd() + cdna);
+                            }
+                        }
+                        // no strand dependent
+                        transcript.setProteinId(gtf.getAttributes().get("protein_id"));
+                    }
 //                if (gtf.getFeature().equalsIgnoreCase("start_codon")) {
 //                    // nothing to do
 //                    System.out.println("Empty block, this should be redesigned");
 //                }
-                if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
-                    //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
-                    //                      no need to set it at the beginning of next feature
-                    if (exon.getStrand().equals("+")) {
-                        updateStopCodingDataPositiveExon(exon, cdna, cds, gtf);
+                    if (gtf.getFeature().equalsIgnoreCase("stop_codon")) {
+                        //                      setCdnaCodingEnd = false; // stop_codon found, cdnaCodingEnd will be set here,
+                        //                      no need to set it at the beginning of next feature
+                        if (exon.getStrand().equals("+")) {
+                            updateStopCodingDataPositiveExon(exon, cdna, cds, gtf);
 
-                        cds += gtf.getEnd() - gtf.getStart();
-                        // If stop_codon appears, overwrite values
-                        transcript.setGenomicCodingEnd(gtf.getEnd());
-                        transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
-                        transcript.setCdsLength(cds - 1);
+                            cds += gtf.getEnd() - gtf.getStart();
+                            // If stop_codon appears, overwrite values
+                            transcript.setGenomicCodingEnd(gtf.getEnd());
+                            transcript.setCdnaCodingEnd(gtf.getEnd() - exon.getStart() + cdna);
+                            transcript.setCdsLength(cds - 1);
 
-                    } else {
-                        updateNegativeExonCodingData(exon, cdna, cds, gtf);
+                        } else {
+                            updateNegativeExonCodingData(exon, cdna, cds, gtf);
 
-                        cds += gtf.getEnd() - gtf.getStart();
-                        // If stop_codon appears, overwrite values
-                        transcript.setGenomicCodingStart(gtf.getStart());
-                        // cdnaCodingEnd points to the same base position than genomicCodingStart
-                        transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
-                        transcript.setCdsLength(cds - 1);
+                            cds += gtf.getEnd() - gtf.getStart();
+                            // If stop_codon appears, overwrite values
+                            transcript.setGenomicCodingStart(gtf.getStart());
+                            // cdnaCodingEnd points to the same base position than genomicCodingStart
+                            transcript.setCdnaCodingEnd(exon.getEnd() - gtf.getStart() + cdna);
+                            transcript.setCdsLength(cds - 1);
+                        }
                     }
                 }
             }
-        }
 
-        // last gene must be serialized
-        serializer.serialize(gene);
 
-        // cleaning
-        gtfReader.close();
+
+            // last gene must be serialized
+            serializer.serialize(gene);
+
+            // cleaning
+            gtfReader.close();
         serializer.close();
         fastaIndex.close();
+
+            rocksDbManager.closeIndex(rdb, dbOption, dbLocation);
+        } catch (Exception e) {
+            rocksDbManager.closeIndex(rdb, dbOption, dbLocation);
+            throw e;
+        }
     }
 
     private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
@@ -369,11 +440,12 @@ public class GeneBuilder extends CellBaseBuilder {
                 (gtfAttributes.get("transcript_biotype") != null)
                         ? gtfAttributes.get("transcript_biotype")
                         : gtf.getSource(),
-                "KNOWN", transcriptChromosome, gtf.getStart(), gtf.getEnd(),
-                gtf.getStrand(), Integer.parseInt(gtfAttributes.get("transcript_version")), gtfAttributes.get("transcript_source"),
+                "KNOWN", gtfAttributes.get("transcript_source"), transcriptChromosome, gtf.getStart(), gtf.getEnd(),
+                gtf.getStrand(), Integer.parseInt(gtfAttributes.get("transcript_version")),
                 gtfAttributes.get("transcript_support_level"), 0, 0, 0, 0,
                 0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
                 transcriptTfbses, transcriptAnnotation);
+
         // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
         // Perl API often doesn't return all genes resulting in an incomplete xrefs.txt file. We must ensure
         // that the xrefs array contains all ids present in the GTF file
@@ -836,22 +908,19 @@ public class GeneBuilder extends CellBaseBuilder {
         return proteinSequencesMap;
     }
 
-    private Map<String, String> getGeneDescriptionMap() throws IOException {
+    private void loadGeneDescriptions() throws IOException, RocksDBException {
         logger.info("Loading gene description data...");
-        Map<String, String> geneDescriptionMap = new HashMap<>();
         String[] fields;
         if (geneDescriptionFile != null && Files.exists(geneDescriptionFile) && Files.size(geneDescriptionFile) > 0) {
             List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.forName("ISO-8859-1"));
-//            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.defaultCharset());
             for (String line : lines) {
                 fields = line.split("\t", -1);
-                geneDescriptionMap.put(fields[0], fields[1]);
+                rocksDbManager.update(rdb, fields[0] + GENE_DESCRIPTION_SUFFIX, fields[1]);
             }
         } else {
             logger.warn("Gene description file " + geneDescriptionFile + " not found");
             logger.warn("Gene description data not loaded");
         }
-        return geneDescriptionMap;
     }
 
     private boolean newGene(Gene previousGene, String newGeneId) {
@@ -908,4 +977,24 @@ public class GeneBuilder extends CellBaseBuilder {
             }
         }
     }
+
+        private void serializeRDB(RocksDB rdb) throws IOException {
+            // DO NOT change the name of the rocksIterator variable - for some unexplainable reason Java VM crashes if it's
+            // named "iterator"
+            RocksIterator rocksIterator = rdb.newIterator();
+
+            ObjectMapper mapper = new ObjectMapper();
+            logger.info("Reading from RoocksDB index and serializing to {}.json.gz",
+                    serializer.getOutdir().resolve(serializer.getFileName()));
+            int counter = 0;
+            for (rocksIterator.seekToFirst(); rocksIterator.isValid(); rocksIterator.next()) {
+                serializer.serialize(mapper.readValue(rocksIterator.value(), Gene.class));
+                counter++;
+                if (counter % 10000 == 0) {
+                    logger.info("{} written", counter);
+                }
+            }
+            serializer.close();
+            logger.info("Done.");
+        }
 }

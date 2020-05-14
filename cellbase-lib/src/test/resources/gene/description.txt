@@ -1,0 +1,1 @@
+ENSG00000227232	WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]
