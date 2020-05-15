@@ -33,14 +33,10 @@ import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
-import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -92,10 +88,6 @@ public class GeneBuilder extends CellBaseBuilder {
     private int exonCounter;
     private String feature;
     private Gtf nextGtfToReturn;
-
-    private RocksDbManager rocksDbManager;
-    private RocksDB rdb;
-    private static final String GENE_DESCRIPTION_SUFFIX = "gene-description";
 
     public GeneBuilder(Path geneDirectoryPath, Path genomeSequenceFastaFile,
                       SpeciesConfiguration speciesConfiguration,
@@ -184,21 +176,16 @@ public class GeneBuilder extends CellBaseBuilder {
 
     public void parse() throws Exception {
 
-        rocksDbManager = new RocksDbManager();
-        Options dbOption = null;
-        String dbLocation = null;
-
         Gene gene = null;
         Transcript transcript;
         Exon exon = null;
         int cdna = 1;
         int cds = 1;
+        GeneBuilderIndexer indexer = new GeneBuilderIndexer(gtfFile.getParent());
 
         try {
-            rdb = rocksDbManager.getDBConnection(gtfFile.getParent().toString() + "/integration.idx");
-            logger.error("loading gene descriptions");
-            loadGeneDescriptions();
-            logger.error("DONE -- loading gene descriptions");
+
+            indexer.index(geneDescriptionFile, xrefsFile, uniprotIdMappingFile);
 
             Map<String, ArrayList<Xref>> xrefMap = GeneBuilderUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
             Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
@@ -262,17 +249,10 @@ public class GeneBuilder extends CellBaseBuilder {
                             diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
                             geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraints.get(geneId));
 
-                    byte[] bytes = rocksDbManager.get(rdb, geneId + GENE_DESCRIPTION_SUFFIX);
-
-                    String description = "";
-                    if (bytes != null) {
-                        description = new String(bytes, StandardCharsets.UTF_8);
-                    }
-
                     gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),
                             gtf.getAttributes().get("gene_biotype"), "KNOWN",
-                            gtf.getSource(), description, new ArrayList<>(), null,
+                            gtf.getSource(), indexer.getDescription(geneId), new ArrayList<>(), null,
                             geneAnnotation);
                 }
 
@@ -412,12 +392,11 @@ public class GeneBuilder extends CellBaseBuilder {
 
             // cleaning
             gtfReader.close();
-        serializer.close();
-        fastaIndex.close();
-
-            rocksDbManager.closeIndex(rdb, dbOption, dbLocation);
+            serializer.close();
+            fastaIndex.close();
+            indexer.close();
         } catch (Exception e) {
-            rocksDbManager.closeIndex(rdb, dbOption, dbLocation);
+            indexer.close();
             throw e;
         }
     }
@@ -906,21 +885,6 @@ public class GeneBuilder extends CellBaseBuilder {
             logger.warn("ENSEMBL's protein sequences not loaded");
         }
         return proteinSequencesMap;
-    }
-
-    private void loadGeneDescriptions() throws IOException, RocksDBException {
-        logger.info("Loading gene description data...");
-        String[] fields;
-        if (geneDescriptionFile != null && Files.exists(geneDescriptionFile) && Files.size(geneDescriptionFile) > 0) {
-            List<String> lines = Files.readAllLines(geneDescriptionFile, Charset.forName("ISO-8859-1"));
-            for (String line : lines) {
-                fields = line.split("\t", -1);
-                rocksDbManager.update(rdb, fields[0] + GENE_DESCRIPTION_SUFFIX, fields[1]);
-            }
-        } else {
-            logger.warn("Gene description file " + geneDescriptionFile + " not found");
-            logger.warn("Gene description data not loaded");
-        }
     }
 
     private boolean newGene(Gene previousGene, String newGeneId) {
