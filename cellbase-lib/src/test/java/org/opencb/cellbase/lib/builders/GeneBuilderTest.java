@@ -25,10 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
-import org.opencb.biodata.models.core.Exon;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.core.TranscriptTfbs;
+import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
@@ -81,6 +78,40 @@ public class GeneBuilderTest {
 
         assertNotNull(gene);
         assertEquals("WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]", gene.getDescription());
+
+        List<Transcript> transcripts = gene.getTranscripts();
+
+        Transcript transcript = getTranscript(gene, "ENST00000488147");
+        assertEquals(4, transcript.getXrefs().size());
+
+        Xref xref = getXref(transcript, "ENSG00000227232");
+        assertNotNull(xref);
+        assertEquals("ensembl_gtf", xref.getDbName());
+        assertEquals("Ensembl GTF", xref.getDbDisplayName());
+
+        xref = getXref(transcript, "WASH7P");
+        assertNotNull(xref);
+        assertEquals("ensembl_gtf", xref.getDbName());
+        assertEquals("Ensembl GTF", xref.getDbDisplayName());
+
+        xref = getXref(transcript, "ENST00000488147");
+        assertNotNull(xref);
+        assertEquals("ensembl_gtf", xref.getDbName());
+        assertEquals("Ensembl GTF", xref.getDbDisplayName());
+
+        xref = getXref(transcript,"WASH7P-201");
+        assertNotNull(xref);
+        assertEquals("ensembl_gtf", xref.getDbName());
+        assertEquals("Ensembl GTF", xref.getDbDisplayName());
+    }
+
+    private Xref getXref(Transcript transcript, String xrefId) {
+        for (Xref xref : transcript.getXrefs()) {
+            if (xref.getId().equals(xrefId)) {
+                return xref;
+            }
+        }
+        return null;
     }
 
     /**
@@ -135,15 +166,19 @@ public class GeneBuilderTest {
         assertEquals("1", transcript.getSupportLevel());
     }
 
-    private Transcript getTranscript(String transcriptId, List<Gene> geneList) {
-        for (Gene gene : geneList) {
-            for (Transcript transcript : gene.getTranscripts()) {
-                if (transcript.getId().equals(transcriptId)) {
-                    return transcript;
-                }
+    private Transcript getTranscript(Gene gene, String transcriptId) {
+        for (Transcript transcript : gene.getTranscripts()) {
+            if (transcript.getId().equals(transcriptId)) {
+                return transcript;
             }
         }
+        return null;
+    }
 
+    private Transcript getTranscript(String transcriptId, List<Gene> geneList) {
+        for (Gene gene : geneList) {
+            return getTranscript(gene, transcriptId);
+        }
         return null;
     }
 

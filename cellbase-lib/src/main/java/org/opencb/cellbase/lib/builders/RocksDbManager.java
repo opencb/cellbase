@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.biodata.models.core.Xref;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -28,6 +29,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 public class RocksDbManager {
 
@@ -61,9 +64,13 @@ public class RocksDbManager {
         return null;
     }
 
-    public byte[] get(RocksDB rdb, String key) throws RocksDBException {
+    public List<Xref> getXrefs(RocksDB rdb, String key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key.getBytes());
-        return dbContent;
+        if (dbContent == null) {
+            return null;
+        }
+        Xref[] xrefs =  mapper.readValue(dbContent, Xref[].class);
+        return Arrays.asList(xrefs);
     }
 
     /**
@@ -77,6 +84,18 @@ public class RocksDbManager {
      */
     public void update(RocksDB rdb, String key, Object value) throws JsonProcessingException, RocksDBException {
         rdb.put(key.getBytes(), jsonObjectWriter.writeValueAsBytes(value));
+    }
+
+    /**
+     * Add an entry to specified rocksdb. Overwrites any existing entry.
+     *
+     * @param rdb rockdb to update
+     * @param key key to insert
+     * @param value valud to insert
+     * @throws RocksDBException something went wrong with rocksdb
+     */
+    public void update(RocksDB rdb, String key, String value) throws RocksDBException {
+        rdb.put(key.getBytes(), value.getBytes());
     }
 
     public void closeIndex(RocksDB rdb, Options dbOption, String dbLocation) throws IOException {

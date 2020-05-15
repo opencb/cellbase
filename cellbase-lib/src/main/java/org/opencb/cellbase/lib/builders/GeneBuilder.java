@@ -34,6 +34,7 @@ import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import java.io.IOException;
@@ -184,10 +185,9 @@ public class GeneBuilder extends CellBaseBuilder {
         GeneBuilderIndexer indexer = new GeneBuilderIndexer(gtfFile.getParent());
 
         try {
-
+            // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, uniprotIdMappingFile);
 
-            Map<String, ArrayList<Xref>> xrefMap = GeneBuilderUtils.getXrefMap(xrefsFile, uniprotIdMappingFile);
             Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
             Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
 
@@ -258,7 +258,7 @@ public class GeneBuilder extends CellBaseBuilder {
 
                 // Check if Transcript exist in the Gene Set of transcripts
                 if (!transcriptDict.containsKey(transcriptId)) {
-                    transcript = getTranscript(gene, xrefMap, proteinSequencesMap, cDnaSequencesMap, tabixReader, constraints,
+                    transcript = getTranscript(gene, indexer, proteinSequencesMap, cDnaSequencesMap, tabixReader, constraints,
                             proteinToOntologyAnnotations, gtf, transcriptId);
                 } else {
                     transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
@@ -401,17 +401,17 @@ public class GeneBuilder extends CellBaseBuilder {
         }
     }
 
-    private Transcript getTranscript(Gene gene, Map<String, ArrayList<Xref>> xrefMap, Map<String, Fasta> proteinSequencesMap,
+    private Transcript getTranscript(Gene gene, GeneBuilderIndexer indexer, Map<String, Fasta> proteinSequencesMap,
                                      Map<String, Fasta> cDnaSequencesMap, TabixReader tabixReader,
                                      Map<String, List<Constraint>> constraints,
                                      Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations, Gtf gtf,
                                      String transcriptId)
-            throws IOException {
+            throws IOException, RocksDBException {
         Transcript transcript;
         String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
         List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tabixReader);
         Map<String, String> gtfAttributes = gtf.getAttributes();
-        List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(xrefMap.get(transcriptId),
+        List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(indexer.getXrefs(transcriptId),
                 proteinToOntologyAnnotations);
 
         TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, constraints.get(transcriptId));
@@ -422,7 +422,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 "KNOWN", gtfAttributes.get("transcript_source"), transcriptChromosome, gtf.getStart(), gtf.getEnd(),
                 gtf.getStrand(), Integer.parseInt(gtfAttributes.get("transcript_version")),
                 gtfAttributes.get("transcript_support_level"), 0, 0, 0, 0,
-                0, "", "", xrefMap.get(transcriptId), new ArrayList<Exon>(),
+                0, "", "", indexer.getXrefs(transcriptId), new ArrayList<Exon>(),
                 transcriptTfbses, transcriptAnnotation);
 
         // Adding Ids appearing in the GTF to the xrefs is required, since for some unknown reason the ENSEMBL
@@ -452,7 +452,7 @@ public class GeneBuilder extends CellBaseBuilder {
     }
 
     private List<FeatureOntologyTermAnnotation> getOntologyAnnotations(
-            ArrayList<Xref> xrefs,  Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations) {
+            List<Xref> xrefs,  Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations) {
         if (xrefs == null || proteinToOntologyAnnotations == null) {
             return null;
         }

@@ -17,16 +17,12 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.formats.feature.gff.Gff2;
-import org.opencb.biodata.formats.feature.gff.io.Gff2Reader;
 import org.opencb.biodata.formats.gaf.GafParser;
-import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
-import org.opencb.biodata.models.core.Xref;
-import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
+import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
@@ -36,7 +32,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -49,82 +44,82 @@ public class GeneBuilderUtils {
 
     private static Logger logger = LoggerFactory.getLogger(GeneBuilderUtils.class);
 
-    @Deprecated
-    public static Map<String, SortedSet<Gff2>> getTfbsMap(Path tfbsFile) throws IOException, NoSuchMethodException, FileFormatException {
-        Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
-        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile) && Files.size(tfbsFile) > 0) {
-            Gff2Reader motifsFeatureReader = new Gff2Reader(tfbsFile);
-            Gff2 tfbsMotifFeature;
-            while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
-                // we only want high quality data. See issue 466
-                if (!tfbsMotifFeature.getAttribute().contains("experimental_evidence")) {
-                    continue;
-                }
-                String chromosome = tfbsMotifFeature.getSequenceName().replaceFirst("chr", "");
-                SortedSet<Gff2> chromosomeTfbsSet = tfbsMap.get(chromosome);
-                if (chromosomeTfbsSet == null) {
-                    chromosomeTfbsSet = new TreeSet<>((Comparator<Gff2>) (feature1, feature2) -> {
-                        // TODO: maybe this should be in TranscriptTfbs class, and equals method should be overriden too
-                        if (feature1.getStart() != feature2.getStart()) {
-                            return feature1.getStart() - feature2.getStart();
-                        } else {
-                            return feature1.getAttribute().compareTo(feature2.getAttribute());
-                        }
-                    });
-                    tfbsMap.put(chromosome, chromosomeTfbsSet);
-                }
-                chromosomeTfbsSet.add(tfbsMotifFeature);
-            }
-            motifsFeatureReader.close();
-        }
-        return tfbsMap;
-    }
+//    @Deprecated
+//    public static Map<String, SortedSet<Gff2>> getTfbsMap(Path tfbsFile) throws IOException, NoSuchMethodException, FileFormatException {
+//        Map<String, SortedSet<Gff2>> tfbsMap = new HashMap<>();
+//        if (tfbsFile != null && Files.exists(tfbsFile) && !Files.isDirectory(tfbsFile) && Files.size(tfbsFile) > 0) {
+//            Gff2Reader motifsFeatureReader = new Gff2Reader(tfbsFile);
+//            Gff2 tfbsMotifFeature;
+//            while ((tfbsMotifFeature = motifsFeatureReader.read()) != null) {
+//                // we only want high quality data. See issue 466
+//                if (!tfbsMotifFeature.getAttribute().contains("experimental_evidence")) {
+//                    continue;
+//                }
+//                String chromosome = tfbsMotifFeature.getSequenceName().replaceFirst("chr", "");
+//                SortedSet<Gff2> chromosomeTfbsSet = tfbsMap.get(chromosome);
+//                if (chromosomeTfbsSet == null) {
+//                    chromosomeTfbsSet = new TreeSet<>((Comparator<Gff2>) (feature1, feature2) -> {
+//                        // TODO: maybe this should be in TranscriptTfbs class, and equals method should be overriden too
+//                        if (feature1.getStart() != feature2.getStart()) {
+//                            return feature1.getStart() - feature2.getStart();
+//                        } else {
+//                            return feature1.getAttribute().compareTo(feature2.getAttribute());
+//                        }
+//                    });
+//                    tfbsMap.put(chromosome, chromosomeTfbsSet);
+//                }
+//                chromosomeTfbsSet.add(tfbsMotifFeature);
+//            }
+//            motifsFeatureReader.close();
+//        }
+//        return tfbsMap;
+//    }
 
-    public static Map<String, ArrayList<Xref>> getXrefMap(Path xrefsFile, Path uniprotIdMappingFile) throws IOException {
-        Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
-        logger.info("Loading xref data...");
-        String[] fields;
-        if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
-            List<String> lines = Files.readAllLines(xrefsFile, Charset.forName("ISO-8859-1"));
-            for (String line : lines) {
-                fields = line.split("\t", -1);
-                if (fields.length >= 4) {
-                    if (!xrefMap.containsKey(fields[0])) {
-                        xrefMap.put(fields[0], new ArrayList<>());
-                    }
-                    xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3]));
-                }
-            }
-        } else {
-            logger.warn("Xrefs file " + xrefsFile + " not found");
-            logger.warn("Xref data not loaded");
-        }
-
-        logger.info("Loading protein mapping into xref data...");
-        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile) && Files.size(uniprotIdMappingFile) > 0) {
-            BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
-            String line;
-            while ((line = br.readLine()) != null) {
-                fields = line.split("\t", -1);
-                if (fields.length >= 19 && fields[19].startsWith("ENST")) {
-                    String[] transcripts = fields[19].split("; ");
-                    for (String transcript : transcripts) {
-                        if (!xrefMap.containsKey(transcript)) {
-                            xrefMap.put(transcript, new ArrayList<Xref>());
-                        }
-                        xrefMap.get(transcript).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
-                        xrefMap.get(transcript).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
-                    }
-                }
-            }
-            br.close();
-        } else {
-            logger.warn("Uniprot if mapping file " + uniprotIdMappingFile + " not found");
-            logger.warn("Protein mapping into xref data not loaded");
-        }
-
-        return xrefMap;
-    }
+//    public static Map<String, ArrayList<Xref>> getXrefMap(Path xrefsFile, Path uniprotIdMappingFile) throws IOException {
+//        Map<String, ArrayList<Xref>> xrefMap = new HashMap<>();
+//        logger.info("Loading xref data...");
+//        String[] fields;
+//        if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
+//            List<String> lines = Files.readAllLines(xrefsFile, Charset.forName("ISO-8859-1"));
+//            for (String line : lines) {
+//                fields = line.split("\t", -1);
+//                if (fields.length >= 4) {
+//                    if (!xrefMap.containsKey(fields[0])) {
+//                        xrefMap.put(fields[0], new ArrayList<>());
+//                    }
+//                    xrefMap.get(fields[0]).add(new Xref(fields[1], fields[2], fields[3]));
+//                }
+//            }
+//        } else {
+//            logger.warn("Xrefs file " + xrefsFile + " not found");
+//            logger.warn("Xref data not loaded");
+//        }
+//
+//        logger.info("Loading protein mapping into xref data...");
+//        if (uniprotIdMappingFile != null && Files.exists(uniprotIdMappingFile) && Files.size(uniprotIdMappingFile) > 0) {
+//            BufferedReader br = FileUtils.newBufferedReader(uniprotIdMappingFile);
+//            String line;
+//            while ((line = br.readLine()) != null) {
+//                fields = line.split("\t", -1);
+//                if (fields.length >= 19 && fields[19].startsWith("ENST")) {
+//                    String[] transcripts = fields[19].split("; ");
+//                    for (String transcript : transcripts) {
+//                        if (!xrefMap.containsKey(transcript)) {
+//                            xrefMap.put(transcript, new ArrayList<Xref>());
+//                        }
+//                        xrefMap.get(transcript).add(new Xref(fields[0], "uniprotkb_acc", "UniProtKB ACC"));
+//                        xrefMap.get(transcript).add(new Xref(fields[1], "uniprotkb_id", "UniProtKB ID"));
+//                    }
+//                }
+//            }
+//            br.close();
+//        } else {
+//            logger.warn("Uniprot if mapping file " + uniprotIdMappingFile + " not found");
+//            logger.warn("Protein mapping into xref data not loaded");
+//        }
+//
+//        return xrefMap;
+//    }
 
     public static Map<String, List<GeneDrugInteraction>> getGeneDrugMap(Path geneDrugFile) throws IOException {
         Map<String, List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
