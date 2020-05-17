@@ -16,30 +16,13 @@
 
 package org.opencb.cellbase.lib.builders;
 
-import org.apache.commons.lang.StringUtils;
-import org.opencb.biodata.formats.gaf.GafParser;
-import org.opencb.biodata.models.core.Constraint;
-import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
-import org.opencb.biodata.models.variant.avro.Expression;
-import org.opencb.biodata.models.variant.avro.ExpressionCall;
-import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
-import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
-import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by imedina on 12/11/15.
  */
+@Deprecated
 public class GeneBuilderUtils {
 
     private static Logger logger = LoggerFactory.getLogger(GeneBuilderUtils.class);
@@ -121,239 +104,188 @@ public class GeneBuilderUtils {
 //        return xrefMap;
 //    }
 
-    public static Map<String, List<GeneDrugInteraction>> getGeneDrugMap(Path geneDrugFile) throws IOException {
-        Map<String, List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
-        if (geneDrugFile != null && Files.exists(geneDrugFile) && Files.size(geneDrugFile) > 0) {
-            logger.info("Loading gene-drug interaction data from '{}'", geneDrugFile);
-            BufferedReader br = FileUtils.newBufferedReader(geneDrugFile);
+//    public static Map<String, List<GeneDrugInteraction>> getGeneDrugMap(Path geneDrugFile) throws IOException {
+//        Map<String, List<GeneDrugInteraction>> geneDrugMap = new HashMap<>();
+//        if (geneDrugFile != null && Files.exists(geneDrugFile) && Files.size(geneDrugFile) > 0) {
+//            logger.info("Loading gene-drug interaction data from '{}'", geneDrugFile);
+//            BufferedReader br = FileUtils.newBufferedReader(geneDrugFile);
+//
+//            // Skip header
+//            br.readLine();
+//
+//            int lineCounter = 1;
+//            String line;
+//            while ((line = br.readLine()) != null) {
+//                String[] parts = line.split("\t");
+//                String geneName = parts[0];
+//
+//                String source = null;
+//                if (parts.length >= 4) {
+//                    source = parts[3];
+//                }
+//
+//                String interactionType = null;
+//                if (parts.length >= 5) {
+//                    interactionType = parts[4];
+//                }
+//
+//                String drugName = null;
+//                if (parts.length >= 8) {
+//                    // if drug name column is empty, use drug claim name instead
+//                    drugName = StringUtils.isEmpty(parts[7]) ? parts[6] : parts[7];
+//                }
+//                if (StringUtils.isEmpty(drugName)) {
+//                    // no drug name
+//                    continue;
+//                }
+//
+//                String chemblId = null;
+//                if (parts.length >= 9) {
+//                    chemblId = parts[8];
+//                }
+//
+//                List<String> publications = new ArrayList<>();
+//                if (parts.length >= 10 && parts[9] != null) {
+//                    publications = Arrays.asList(parts[9].split(","));
+//                }
+//
+//                //addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, interactionType));
+//                // TODO update model to add new attributes
+//                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, null,
+//                        interactionType, chemblId, publications));
+//                lineCounter++;
+//            }
+//
+//            br.close();
+//        } else {
+//            logger.warn("Gene drug file " + geneDrugFile + " not found");
+//            logger.warn("Ignoring " + geneDrugFile);
+//        }
+//
+//        return geneDrugMap;
+//    }
 
-            // Skip header
-            br.readLine();
 
-            int lineCounter = 1;
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\t");
-                String geneName = parts[0];
-
-                String source = null;
-                if (parts.length >= 4) {
-                    source = parts[3];
-                }
-
-                String interactionType = null;
-                if (parts.length >= 5) {
-                    interactionType = parts[4];
-                }
-
-                String drugName = null;
-                if (parts.length >= 8) {
-                    // if drug name column is empty, use drug claim name instead
-                    drugName = StringUtils.isEmpty(parts[7]) ? parts[6] : parts[7];
-                }
-                if (StringUtils.isEmpty(drugName)) {
-                    // no drug name
-                    continue;
-                }
-
-                String chemblId = null;
-                if (parts.length >= 9) {
-                    chemblId = parts[8];
-                }
-
-                List<String> publications = new ArrayList<>();
-                if (parts.length >= 10 && parts[9] != null) {
-                    publications = Arrays.asList(parts[9].split(","));
-                }
-
-                //addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, interactionType));
-                // TODO update model to add new attributes
-                addValueToMapElement(geneDrugMap, geneName, new GeneDrugInteraction(geneName, drugName, source, null, null,
-                        interactionType, chemblId, publications));
-                lineCounter++;
-            }
-
-            br.close();
-        } else {
-            logger.warn("Gene drug file " + geneDrugFile + " not found");
-            logger.warn("Ignoring " + geneDrugFile);
-        }
-
-        return geneDrugMap;
-    }
-
-    public static Map<String, List<Expression>> getGeneExpressionMap(String species, Path geneExpressionFile) throws IOException {
-        Map<String, List<Expression>> geneExpressionMap = new HashMap<>();
-
-        if (geneExpressionFile != null && Files.exists(geneExpressionFile) && Files.size(geneExpressionFile) > 0
-                && species != null) {
-            logger.info("Loading gene expression data from '{}'", geneExpressionFile);
-            BufferedReader br = FileUtils.newBufferedReader(geneExpressionFile);
-
-            // Skip header. Column name line does not start with # so the last line read by this while will be this one
-            int lineCounter = 0;
-            String line;
-            while (((line = br.readLine()) != null)) {  //  && (line.startsWith("#"))
-                if (line.startsWith("#")) {
-                    lineCounter++;
-                } else {
-                    break;
-                }
-            }
-
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\t");
-                if (species.equals(parts[2])) {
-                    if (parts[7].equals("UP")) {
-                        addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-                                parts[4], parts[5], parts[6], ExpressionCall.UP, Float.valueOf(parts[8])));
-                    } else if (parts[7].equals("DOWN")) {
-                        addValueToMapElement(geneExpressionMap, parts[1], new Expression(parts[1], null, parts[3],
-                                parts[4], parts[5], parts[6], ExpressionCall.DOWN, Float.valueOf(parts[8])));
-                    } else {
-                        logger.warn("Expression tags found different from UP/DOWN at line {}. Entry omitted. ", lineCounter);
-                    }
-                }
-                lineCounter++;
-            }
-
-            br.close();
-        } else {
-            logger.warn("Parameters are not correct");
-        }
-
-        return geneExpressionMap;
-    }
-
-    private static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {
-        if (map.containsKey(key)) {
-            map.get(key).add(value);
-        } else {
-            List<T> expressionValueList = new ArrayList<>();
-            expressionValueList.add(value);
-            map.put(key, expressionValueList);
-        }
-    }
-
-    public static Map<String, List<GeneTraitAssociation>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath)
-            throws IOException {
-        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
-
-        String line;
-        if (hpoFilePath != null && hpoFilePath.toFile().exists() && Files.size(hpoFilePath) > 0) {
-            BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath);
-            // skip first header line
-            bufferedReader.readLine();
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] fields = line.split("\t");
-                String omimId = fields[6];
-                String geneSymbol = fields[3];
-                String hpoId = fields[0];
-                String diseaseName = fields[1];
-                GeneTraitAssociation disease =
-                        new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
-                addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
-            }
-            bufferedReader.close();
-        }
-
-        if (disgenetFilePath != null && disgenetFilePath.toFile().exists() && Files.size(disgenetFilePath) > 0) {
-            BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath);
-            // skip first header line
-            bufferedReader.readLine();
-            while ((line = bufferedReader.readLine()) != null) {
-                String[] fields = line.split("\t");
-                String diseaseId = fields[4];
-                String diseaseName = fields[5];
-                String score = fields[9];
-                String numberOfPubmeds = fields[13].trim();
-                String numberOfSNPs = fields[14];
-                String source = fields[15];
-                GeneTraitAssociation disease = new GeneTraitAssociation(diseaseId, diseaseName, "", Float.parseFloat(score),
-                        Integer.parseInt(numberOfPubmeds), Arrays.asList(numberOfSNPs), Arrays.asList(source), "disgenet");
-                addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
-            }
-            bufferedReader.close();
-        }
-
-        return geneDiseaseAssociationMap;
-    }
-
-    /**
-     * For a gnomad file, parse and return a map of transcript to constraints.
-     *
-     * @param gnomadFile gene annotation file path
-     * @return map of transcript to constraints
-     * @throws IOException if goa file can't be read
-     */
-    public static Map<String, List<Constraint>> getConstraints(Path gnomadFile) throws IOException {
-        Map<String, List<Constraint>> transcriptConstraints = new HashMap<>();
-
-        if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
-            logger.info("Loading OE scores from '{}'", gnomadFile);
-//            BufferedReader br = FileUtils.newBufferedReader(gnomadFile);
-            InputStream inputStream = Files.newInputStream(gnomadFile);
-            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
-            // Skip header.
-            br.readLine();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\t");
-                String transcriptIdentifier = parts[1];
-                String canonical = parts[2];
-                String oeMis = parts[5];
-                String oeSyn = parts[14];
-                String oeLof = parts[24];
-                String exacPLI = parts[70];
-                String exacLof = parts[73];
-                String geneIdentifier = parts[64];
-
-                List<Constraint> constraints = new ArrayList<>();
-                addConstraint(constraints, "oe_mis", oeMis);
-                addConstraint(constraints, "oe_syn", oeSyn);
-                addConstraint(constraints, "oe_lof", oeLof);
-                addConstraint(constraints, "exac_pLI", exacPLI);
-                addConstraint(constraints, "exac_oe_lof", exacLof);
-                transcriptConstraints.put(transcriptIdentifier, constraints);
-
-                if ("TRUE".equalsIgnoreCase(canonical)) {
-                    transcriptConstraints.put(geneIdentifier, constraints);
-                }
-            }
-            br.close();
-        }
-        return transcriptConstraints;
-    }
-
-    private static void addConstraint(List<Constraint> constraints, String name, String value) {
-        Constraint constraint = new Constraint();
-        constraint.setMethod("pLoF");
-        constraint.setSource("gnomAD");
-        constraint.setName(name);
-        try {
-            constraint.setValue(Double.parseDouble(value));
-        } catch (NumberFormatException e) {
-            // invalid number (e.g. NA), discard.
-            return;
-        }
-        constraints.add(constraint);
-    }
-
-    /**
-     * For a gene annotation file, parse and return a map of proteins to ontology annotation objects.
-     *
-     * @param goaFile gene annotation file path
-     * @return map of proteins to ontology annotation objects.
-     * @throws IOException if goa file can't be read
-     */
-    public static Map<String, List<FeatureOntologyTermAnnotation>> getOntologyAnnotations(Path goaFile) throws IOException {
-        Map<String, List<FeatureOntologyTermAnnotation>> annotations = new HashMap<>();
-        if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
-            logger.info("Loading GO annotation from '{}'", goaFile);
-            BufferedReader br = FileUtils.newBufferedReader(goaFile);
-            GafParser parser = new GafParser();
-            annotations = parser.parseGaf(br);
-        }
-        return annotations;
-    }
+//
+//    public static Map<String, List<GeneTraitAssociation>> getGeneDiseaseAssociationMap(Path hpoFilePath, Path disgenetFilePath)
+//            throws IOException {
+//        Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
+//
+//        String line;
+//        if (hpoFilePath != null && hpoFilePath.toFile().exists() && Files.size(hpoFilePath) > 0) {
+//            BufferedReader bufferedReader = FileUtils.newBufferedReader(hpoFilePath);
+//            // skip first header line
+//            bufferedReader.readLine();
+//            while ((line = bufferedReader.readLine()) != null) {
+//                String[] fields = line.split("\t");
+//                String omimId = fields[6];
+//                String geneSymbol = fields[3];
+//                String hpoId = fields[0];
+//                String diseaseName = fields[1];
+//                GeneTraitAssociation disease =
+//                        new GeneTraitAssociation(omimId, diseaseName, hpoId, 0f, 0, new ArrayList<>(), new ArrayList<>(), "hpo");
+//                addValueToMapElement(geneDiseaseAssociationMap, geneSymbol, disease);
+//            }
+//            bufferedReader.close();
+//        }
+//
+//        if (disgenetFilePath != null && disgenetFilePath.toFile().exists() && Files.size(disgenetFilePath) > 0) {
+//            BufferedReader bufferedReader = FileUtils.newBufferedReader(disgenetFilePath);
+//            // skip first header line
+//            bufferedReader.readLine();
+//            while ((line = bufferedReader.readLine()) != null) {
+//                String[] fields = line.split("\t");
+//                String diseaseId = fields[4];
+//                String diseaseName = fields[5];
+//                String score = fields[9];
+//                String numberOfPubmeds = fields[13].trim();
+//                String numberOfSNPs = fields[14];
+//                String source = fields[15];
+//                GeneTraitAssociation disease = new GeneTraitAssociation(diseaseId, diseaseName, "", Float.parseFloat(score),
+//                        Integer.parseInt(numberOfPubmeds), Arrays.asList(numberOfSNPs), Arrays.asList(source), "disgenet");
+//                addValueToMapElement(geneDiseaseAssociationMap, fields[1], disease);
+//            }
+//            bufferedReader.close();
+//        }
+//
+//        return geneDiseaseAssociationMap;
+//    }
+//
+//    /**
+//     * For a gnomad file, parse and return a map of transcript to constraints.
+//     *
+//     * @param gnomadFile gene annotation file path
+//     * @return map of transcript to constraints
+//     * @throws IOException if goa file can't be read
+//     */
+//    public static Map<String, List<Constraint>> getConstraints(Path gnomadFile) throws IOException {
+//        Map<String, List<Constraint>> transcriptConstraints = new HashMap<>();
+//
+//        if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
+//            logger.info("Loading OE scores from '{}'", gnomadFile);
+////            BufferedReader br = FileUtils.newBufferedReader(gnomadFile);
+//            InputStream inputStream = Files.newInputStream(gnomadFile);
+//            BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream)));
+//            // Skip header.
+//            br.readLine();
+//            String line;
+//            while ((line = br.readLine()) != null) {
+//                String[] parts = line.split("\t");
+//                String transcriptIdentifier = parts[1];
+//                String canonical = parts[2];
+//                String oeMis = parts[5];
+//                String oeSyn = parts[14];
+//                String oeLof = parts[24];
+//                String exacPLI = parts[70];
+//                String exacLof = parts[73];
+//                String geneIdentifier = parts[64];
+//
+//                List<Constraint> constraints = new ArrayList<>();
+//                addConstraint(constraints, "oe_mis", oeMis);
+//                addConstraint(constraints, "oe_syn", oeSyn);
+//                addConstraint(constraints, "oe_lof", oeLof);
+//                addConstraint(constraints, "exac_pLI", exacPLI);
+//                addConstraint(constraints, "exac_oe_lof", exacLof);
+//                transcriptConstraints.put(transcriptIdentifier, constraints);
+//
+//                if ("TRUE".equalsIgnoreCase(canonical)) {
+//                    transcriptConstraints.put(geneIdentifier, constraints);
+//                }
+//            }
+//            br.close();
+//        }
+//        return transcriptConstraints;
+//    }
+//
+//    private static void addConstraint(List<Constraint> constraints, String name, String value) {
+//        Constraint constraint = new Constraint();
+//        constraint.setMethod("pLoF");
+//        constraint.setSource("gnomAD");
+//        constraint.setName(name);
+//        try {
+//            constraint.setValue(Double.parseDouble(value));
+//        } catch (NumberFormatException e) {
+//            // invalid number (e.g. NA), discard.
+//            return;
+//        }
+//        constraints.add(constraint);
+//    }
+//
+//    /**
+//     * For a gene annotation file, parse and return a map of proteins to ontology annotation objects.
+//     *
+//     * @param goaFile gene annotation file path
+//     * @return map of proteins to ontology annotation objects.
+//     * @throws IOException if goa file can't be read
+//     */
+//    public static Map<String, List<FeatureOntologyTermAnnotation>> getOntologyAnnotations(Path goaFile) throws IOException {
+//        Map<String, List<FeatureOntologyTermAnnotation>> annotations = new HashMap<>();
+//        if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
+//            logger.info("Loading GO annotation from '{}'", goaFile);
+//            BufferedReader br = FileUtils.newBufferedReader(goaFile);
+//            GafParser parser = new GafParser();
+//            annotations = parser.parseGaf(br);
+//        }
+//        return annotations;
+//    }
 }

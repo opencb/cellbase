@@ -20,7 +20,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.opencb.biodata.models.core.Constraint;
+import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
 import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.variant.avro.Expression;
+import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
+import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -71,6 +76,46 @@ public class RocksDbManager {
         }
         Xref[] xrefs =  mapper.readValue(dbContent, Xref[].class);
         return Arrays.asList(xrefs);
+    }
+
+    public List<Expression> getExpression(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, Expression[].class));
+    }
+
+    public List<GeneDrugInteraction> getDrugs(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, GeneDrugInteraction[].class));
+    }
+
+    public List<GeneTraitAssociation> getDiseases(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, GeneTraitAssociation[].class));
+    }
+
+    public List<Constraint> getConstraints(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, Constraint[].class));
+    }
+
+    public List<FeatureOntologyTermAnnotation> getOntologyAnnotations(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, FeatureOntologyTermAnnotation[].class));
     }
 
     /**

@@ -23,12 +23,7 @@ import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
 import org.opencb.biodata.formats.feature.gtf.io.GtfReader;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.formats.sequence.fasta.Fasta;
-import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
-import org.opencb.biodata.models.variant.avro.Expression;
-import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
-import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
 import org.opencb.biodata.tools.sequence.FastaIndex;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
@@ -137,40 +132,6 @@ public class GeneBuilder extends CellBaseBuilder {
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
 
-//        if (gtfFile == null) {
-//            throw new CellbaseException("required file not found: gtfFile");
-//        }
-//        if (geneDescriptionFile == null) {
-//            throw new CellbaseException("required file not found: geneDescriptionFile");
-//        }
-//        if (xrefsFile == null) {
-//            throw new CellbaseException("required file not found: xrefsFile");
-//        }
-//        if (uniprotIdMappingFile == null) {
-//            throw new CellbaseException("required file not found: uniprotIdMappingFile");
-//        }
-//        if (tfbsFile == null || tabixFile == null) {
-//            throw new CellbaseException("required file not found: tabixFile and tfbsFile");
-//        }
-//        if (geneExpressionFile == null) {
-//            throw new CellbaseException("required file not found: geneExpressionFile");
-//        }
-//        if (geneDrugFile == null) {
-//            throw new CellbaseException("required file not found: geneDrugFile");
-//        }
-//        if (hpoFile == null) {
-//            throw new CellbaseException("required file not found: hpoFile");
-//        }
-//        if (disgenetFile == null) {
-//            throw new CellbaseException("required file not found: disgenetFile");
-//        }
-//        if (gnomadFile == null) {
-//            throw new CellbaseException("required file not found: gnomadFile");
-//        }
-//        if (geneOntologyAnnotationFile == null) {
-//            throw new CellbaseException("required file not found: geneOntologyAnnotationFile");
-//        }
-
         transcriptDict = new HashMap<>(250000);
         exonDict = new HashMap<>(8000000);
     }
@@ -186,10 +147,9 @@ public class GeneBuilder extends CellBaseBuilder {
 
         try {
             // process files and put values in rocksdb
-            indexer.index(geneDescriptionFile, xrefsFile, uniprotIdMappingFile);
-
-            Map<String, Fasta> proteinSequencesMap = getProteinSequencesMap();
-            Map<String, Fasta> cDnaSequencesMap = getCDnaSequencesMap();
+            indexer.index(geneDescriptionFile, xrefsFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
+                    speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
+                    geneOntologyAnnotationFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
@@ -198,22 +158,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 tabixReader = new TabixReader(tfbsFile.toAbsolutePath().toString(), tabixFile.toAbsolutePath().toString());
             }
 
-            // Gene annotation data
-            Map<String, List<Expression>> geneExpressionMap = GeneBuilderUtils
-                    .getGeneExpressionMap(speciesConfiguration.getScientificName(), geneExpressionFile);
-            Map<String, List<GeneDrugInteraction>> geneDrugMap = GeneBuilderUtils.getGeneDrugMap(geneDrugFile);
-            Map<String, List<GeneTraitAssociation>> diseaseAssociationMap
-                    = GeneBuilderUtils.getGeneDiseaseAssociationMap(hpoFile, disgenetFile);
-
-            // Transcript and Gene constraint scores annotation
-            Map<String, List<Constraint>> constraints = GeneBuilderUtils.getConstraints(gnomadFile);
-
-            // Protein to gene ontology term
-            Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations
-                    = GeneBuilderUtils.getOntologyAnnotations(geneOntologyAnnotationFile);
-
             // Preparing the fasta file for fast accessing
-//        FastaIndexManager fastaIndexManager = getFastaIndexManager();
             FastaIndex fastaIndex = new FastaIndex(genomeSequenceFilePath);
 
             // Empty transcript and exon dictionaries
@@ -245,9 +190,9 @@ public class GeneBuilder extends CellBaseBuilder {
                         serializer.serialize(gene);
                     }
 
-                    GeneAnnotation geneAnnotation = new GeneAnnotation(geneExpressionMap.get(geneId),
-                            diseaseAssociationMap.get(gtf.getAttributes().get("gene_name")),
-                            geneDrugMap.get(gtf.getAttributes().get("gene_name")), constraints.get(geneId));
+                    GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId),
+                            indexer.getDiseases(gtf.getAttributes().get("gene_name")),
+                            indexer.getDrugs(gtf.getAttributes().get("gene_name")), indexer.getConstraints(geneId));
 
                     gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),
@@ -258,8 +203,7 @@ public class GeneBuilder extends CellBaseBuilder {
 
                 // Check if Transcript exist in the Gene Set of transcripts
                 if (!transcriptDict.containsKey(transcriptId)) {
-                    transcript = getTranscript(gene, indexer, proteinSequencesMap, cDnaSequencesMap, tabixReader, constraints,
-                            proteinToOntologyAnnotations, gtf, transcriptId);
+                    transcript = getTranscript(gene, indexer, tabixReader, gtf, transcriptId);
                 } else {
                     transcript = gene.getTranscripts().get(transcriptDict.get(transcriptId));
                 }
@@ -401,20 +345,15 @@ public class GeneBuilder extends CellBaseBuilder {
         }
     }
 
-    private Transcript getTranscript(Gene gene, GeneBuilderIndexer indexer, Map<String, Fasta> proteinSequencesMap,
-                                     Map<String, Fasta> cDnaSequencesMap, TabixReader tabixReader,
-                                     Map<String, List<Constraint>> constraints,
-                                     Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations, Gtf gtf,
-                                     String transcriptId)
+    private Transcript getTranscript(Gene gene, GeneBuilderIndexer indexer, TabixReader tabixReader, Gtf gtf, String transcriptId)
             throws IOException, RocksDBException {
         Transcript transcript;
         String transcriptChromosome = gtf.getSequenceName().replaceFirst("chr", "");
         List<TranscriptTfbs> transcriptTfbses = getTranscriptTfbses(gtf, transcriptChromosome, tabixReader);
         Map<String, String> gtfAttributes = gtf.getAttributes();
-        List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(indexer.getXrefs(transcriptId),
-                proteinToOntologyAnnotations);
+        List<FeatureOntologyTermAnnotation> ontologyAnnotations = getOntologyAnnotations(indexer.getXrefs(transcriptId), indexer);
 
-        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, constraints.get(transcriptId));
+        TranscriptAnnotation transcriptAnnotation = new TranscriptAnnotation(ontologyAnnotations, indexer.getConstraints(transcriptId));
         transcript = new Transcript(transcriptId, gtfAttributes.get("transcript_name"),
                 (gtfAttributes.get("transcript_biotype") != null)
                         ? gtfAttributes.get("transcript_biotype")
@@ -435,38 +374,32 @@ public class GeneBuilder extends CellBaseBuilder {
             transcript.setAnnotationFlags(new HashSet<String>(Arrays.asList(tags.split(","))));
         }
 
-        Fasta proteinFasta = proteinSequencesMap.get(transcriptId);
-        if (proteinFasta != null) {
-            transcript.setProteinSequence(proteinFasta.getSeq());
-        }
+        transcript.setProteinSequence(indexer.getProteinFasta(transcriptId));
+        transcript.setcDnaSequence(indexer.getCdnaFasta(transcriptId));
 
-        Fasta cDnaFasta = cDnaSequencesMap.get(transcriptId);
-        if (cDnaFasta != null) {
-            transcript.setcDnaSequence(cDnaFasta.getSeq());
-        }
         gene.getTranscripts().add(transcript);
-        // TODO: could use a transcriptId -> transcript map?
+
         // Do not change order!! size()-1 is the index of the transcript ID
         transcriptDict.put(transcriptId, gene.getTranscripts().size() - 1);
         return transcript;
     }
 
-    private List<FeatureOntologyTermAnnotation> getOntologyAnnotations(
-            List<Xref> xrefs,  Map<String, List<FeatureOntologyTermAnnotation>> proteinToOntologyAnnotations) {
-        if (xrefs == null || proteinToOntologyAnnotations == null) {
+    private List<FeatureOntologyTermAnnotation> getOntologyAnnotations(List<Xref> xrefs,  GeneBuilderIndexer indexer)
+            throws IOException, RocksDBException {
+        if (xrefs == null || indexer == null) {
             return null;
         }
         List<FeatureOntologyTermAnnotation> annotations = new ArrayList<>();
         for (Xref xref : xrefs) {
             if (xref.getDbName().equals("uniprotkb_acc")) {
-                if (proteinToOntologyAnnotations.get(xref.getId()) != null) {
-                    annotations.addAll(proteinToOntologyAnnotations.get(xref.getId()));
+                String key = xref.getId();
+                if (key != null && indexer.getOntologyAnnotations(key) != null) {
+                    annotations.addAll(indexer.getOntologyAnnotations(key));
                 }
             }
         }
         return annotations;
     }
-
 
     private void updateNegativeExonCodingData(Exon exon, int cdna, int cds, Gtf gtf) {
         // we need to increment 3 nts, the stop_codon length.
@@ -851,41 +784,7 @@ public class GeneBuilder extends CellBaseBuilder {
         return relativeEnd;
     }
 
-    private Map<String, Fasta> getCDnaSequencesMap() throws IOException, FileFormatException {
-        logger.info("Loading ENSEMBL's cDNA sequences...");
-        Map<String, Fasta> cDnaSequencesMap = new HashMap<>();
-        if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)
-                && Files.size(cDnaFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(cDnaFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for (Fasta fasta : fastaList) {
-                cDnaSequencesMap.put(fasta.getId().split("\\.")[0], fasta);
-            }
-        } else {
-            logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
-            logger.warn("ENSEMBL's cDNA sequences not loaded");
-        }
-        return cDnaSequencesMap;
-    }
 
-    private Map<String, Fasta> getProteinSequencesMap() throws IOException, FileFormatException {
-        logger.info("Loading ENSEMBL's protein sequences...");
-        Map<String, Fasta> proteinSequencesMap = new HashMap<>();
-        if (proteinFastaFile != null && Files.exists(proteinFastaFile) && !Files.isDirectory(proteinFastaFile)
-                && Files.size(proteinFastaFile) > 0) {
-            FastaReader fastaReader = new FastaReader(proteinFastaFile);
-            List<Fasta> fastaList = fastaReader.readAll();
-            fastaReader.close();
-            for (Fasta fasta : fastaList) {
-                proteinSequencesMap.put(fasta.getDescription().split("transcript:")[1].split("\\s")[0].split("\\.")[0], fasta);
-            }
-        } else {
-            logger.warn("Protein fasta file " + proteinFastaFile + " not found");
-            logger.warn("ENSEMBL's protein sequences not loaded");
-        }
-        return proteinSequencesMap;
-    }
 
     private boolean newGene(Gene previousGene, String newGeneId) {
         return previousGene == null || !newGeneId.equals(previousGene.getId());
