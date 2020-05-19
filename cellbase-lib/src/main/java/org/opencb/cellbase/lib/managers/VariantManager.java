@@ -23,8 +23,10 @@ import org.opencb.biodata.models.variant.avro.SampleEntry;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.biodata.models.variant.avro.VariantType;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.QueryException;
+import org.opencb.cellbase.core.api.queries.VariantQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -41,7 +43,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-public class VariantManager extends AbstractManager {
+public class VariantManager extends AbstractManager implements AggregationApi<VariantQuery, Variant> {
 
     private static final String PHASE_DATA_URL_SEPARATOR = "\\+";
     private static final String VARIANT_STRING_FORMAT = "(chr)"
@@ -61,15 +63,21 @@ public class VariantManager extends AbstractManager {
         cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
     }
 
-    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
-        logger.debug("Querying for variant info");
-        List<Query> queries = createQueries(query, id, VariantDBAdaptor.QueryParams.ID.key());
-        List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
-        for (int i = 0; i < queries.size(); i++) {
-            queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
-        }
-        return queryResults;
+    @Override
+    public CellBaseCoreDBAdaptor getDBAdaptor() {
+        return variantDBAdaptor;
     }
+
+//    @Deprecated
+//    public List<CellBaseDataResult> info(Query query, QueryOptions queryOptions, String id) {
+//        logger.debug("Querying for variant info");
+//        List<Query> queries = createQueries(query, id, VariantDBAdaptor.QueryParams.ID.key());
+//        List<CellBaseDataResult> queryResults = variantDBAdaptor.nativeGet(queries, queryOptions);
+//        for (int i = 0; i < queries.size(); i++) {
+//            queryResults.get(i).setId((String) queries.get(i).get(VariantDBAdaptor.QueryParams.ID.key()));
+//        }
+//        return queryResults;
+//    }
 
     public CellBaseDataResult search(Query query, QueryOptions queryOptions) {
         return variantDBAdaptor.nativeGet(query, queryOptions);
@@ -227,4 +235,6 @@ public class VariantManager extends AbstractManager {
     public List<CellBaseDataResult<Variant>> getPopulationFrequencyByVariant(List<Variant> variants, QueryOptions queryOptions) {
         return variantDBAdaptor.getPopulationFrequencyByVariant(variants, queryOptions);
     }
+
+
 }

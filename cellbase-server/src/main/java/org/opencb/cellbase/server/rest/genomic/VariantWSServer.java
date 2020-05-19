@@ -20,6 +20,7 @@ import io.swagger.annotations.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.cellbase.core.ParamConstants;
+import org.opencb.cellbase.core.api.queries.VariantQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -34,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -300,22 +302,23 @@ public class VariantWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query",
-                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getByEnsemblId(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
             required = true) String id) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, id);
+//            parseQueryParams();
+//            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, id);
+//            return createOkResponse(queryResults);
+            List<VariantQuery> queries = new ArrayList<>();
+            String[] identifiers = id.split(",");
+            for (String identifier : identifiers) {
+                VariantQuery query = new VariantQuery(uriParams);
+                query.setId(identifier);
+                queries.add(query);
+                logger.info("REST VariantQuery: " + query.toString());
+            }
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

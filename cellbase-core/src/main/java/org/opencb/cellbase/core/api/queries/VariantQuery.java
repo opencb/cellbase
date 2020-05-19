@@ -40,21 +40,23 @@ public class VariantQuery extends AbstractQuery {
     protected String id;
 
     @QueryParameter(id = "sv.ciStartLeft")
-    protected String ciStartLeft;
+    protected Integer ciStartLeft;
     @QueryParameter(id = "sv.ciStartRight")
-    protected String ciStartRight;
+    protected Integer ciStartRight;
     @QueryParameter(id = "sv.ciEndLeft")
-    protected String ciEndLeft;
+    protected Integer ciEndLeft;
     @QueryParameter(id = "sv.ciEndRight")
-    protected String ciEndRight;
+    protected Integer ciEndRight;
 
     @QueryParameter(id = "sv.type")
     protected String svType;
     @QueryParameter(id = "type")
     protected String type;
-
-    @QueryParameter(id = "annotation.consequenceTypes.sequenceOntologyTerms.name")
+    @QueryParameter(id = "consequenceType")
     protected String consequenceType;
+
+    @QueryParameter(id = "gene")
+    private LogicalList<String> genes;
 
     public VariantQuery() {
     }
@@ -86,6 +88,7 @@ public class VariantQuery extends AbstractQuery {
         setSvType(builder.svType);
         setType(builder.type);
         setConsequenceType(builder.consequenceType);
+        setGenes(builder.genes);
     }
 
     @Override
@@ -103,14 +106,14 @@ public class VariantQuery extends AbstractQuery {
         sb.append(", reference='").append(reference).append('\'');
         sb.append(", alternate='").append(alternate).append('\'');
         sb.append(", id='").append(id).append('\'');
-        sb.append(", ciStartLeft='").append(ciStartLeft).append('\'');
-        sb.append(", ciStartRight='").append(ciStartRight).append('\'');
-        sb.append(", ciEndLeft='").append(ciEndLeft).append('\'');
-        sb.append(", ciEndRight='").append(ciEndRight).append('\'');
+        sb.append(", ciStartLeft=").append(ciStartLeft);
+        sb.append(", ciStartRight=").append(ciStartRight);
+        sb.append(", ciEndLeft=").append(ciEndLeft);
+        sb.append(", ciEndRight=").append(ciEndRight);
         sb.append(", svType='").append(svType).append('\'');
         sb.append(", type='").append(type).append('\'');
         sb.append(", consequenceType='").append(consequenceType).append('\'');
-        sb.append(", objectMapper=").append(objectMapper);
+        sb.append(", genes=").append(genes);
         sb.append(", limit=").append(limit);
         sb.append(", skip=").append(skip);
         sb.append(", count=").append(count);
@@ -186,39 +189,48 @@ public class VariantQuery extends AbstractQuery {
         return this;
     }
 
-    public String getCiStartLeft() {
+    public Integer getCiStartLeft() {
         return ciStartLeft;
     }
 
-    public VariantQuery setCiStartLeft(String ciStartLeft) {
+    public VariantQuery setCiStartLeft(Integer ciStartLeft) {
         this.ciStartLeft = ciStartLeft;
         return this;
     }
 
-    public String getCiStartRight() {
+    public Integer getCiStartRight() {
         return ciStartRight;
     }
 
-    public VariantQuery setCiStartRight(String ciStartRight) {
+    public VariantQuery setCiStartRight(Integer ciStartRight) {
         this.ciStartRight = ciStartRight;
         return this;
     }
 
-    public String getCiEndLeft() {
+    public Integer getCiEndLeft() {
         return ciEndLeft;
     }
 
-    public VariantQuery setCiEndLeft(String ciEndLeft) {
+    public VariantQuery setCiEndLeft(Integer ciEndLeft) {
         this.ciEndLeft = ciEndLeft;
         return this;
     }
 
-    public String getCiEndRight() {
+    public Integer getCiEndRight() {
         return ciEndRight;
     }
 
-    public VariantQuery setCiEndRight(String ciEndRight) {
+    public VariantQuery setCiEndRight(Integer ciEndRight) {
         this.ciEndRight = ciEndRight;
+        return this;
+    }
+
+    public LogicalList<String> getGenes() {
+        return genes;
+    }
+
+    public VariantQuery setGenes(LogicalList<String> genes) {
+        this.genes = genes;
         return this;
     }
 
@@ -265,13 +277,14 @@ public class VariantQuery extends AbstractQuery {
         private String reference;
         private String alternate;
         private String id;
-        private String ciStartLeft;
-        private String ciStartRight;
-        private String ciEndLeft;
-        private String ciEndRight;
+        private int ciStartLeft;
+        private int ciStartRight;
+        private int ciEndLeft;
+        private int ciEndRight;
         private String svType;
         private String type;
         private String consequenceType;
+        private LogicalList<String> genes;
 
         public Builder() {
         }
@@ -351,22 +364,22 @@ public class VariantQuery extends AbstractQuery {
             return this;
         }
 
-        public Builder withCiStartLeft(String val) {
+        public Builder withCiStartLeft(int val) {
             ciStartLeft = val;
             return this;
         }
 
-        public Builder withCiStartRight(String val) {
+        public Builder withCiStartRight(int val) {
             ciStartRight = val;
             return this;
         }
 
-        public Builder withCiEndLeft(String val) {
+        public Builder withCiEndLeft(int val) {
             ciEndLeft = val;
             return this;
         }
 
-        public Builder withCiEndRight(String val) {
+        public Builder withCiEndRight(int val) {
             ciEndRight = val;
             return this;
         }
@@ -383,6 +396,11 @@ public class VariantQuery extends AbstractQuery {
 
         public Builder withConsequenceType(String val) {
             consequenceType = val;
+            return this;
+        }
+
+        public Builder withGenes(LogicalList<String> val) {
+            genes = val;
             return this;
         }
 
