@@ -156,9 +156,9 @@ public class LoadCommandExecutor extends CommandExecutor {
 //                            loadIfExists(input.resolve("intactVersion.json"), METADATA);
 //                            createIndex("protein_protein_interaction");
 //                            break;
-//                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA:
-//                            loadProteinFunctionalPrediction();
-//                            break;
+                        case EtlCommons.PROTEIN_FUNCTIONAL_PREDICTION_DATA:
+                            loadProteinFunctionalPrediction();
+                            break;
                         case EtlCommons.CLINICAL_VARIANTS_DATA:
                             loadClinical();
                             break;
