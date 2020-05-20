@@ -46,7 +46,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     private static final String MIRBASE_NAME = "miRBase";
     private static final String MIRTARBASE_NAME = "miRTarBase";
 
-    private List<DownloadFile> downloadFiles;
+
 
     public RegulationDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
@@ -64,9 +64,11 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
         logger.info("Downloading regulation information ...");
 
-        downloadRegulatoryaAndMotifFeatures();
-        downloadMirna();
-        downloadMiRTarBase();
+        List<DownloadFile> downloadFiles = new ArrayList<>();
+
+        downloadFiles.addAll(downloadRegulatoryaAndMotifFeatures());
+        downloadFiles.add(downloadMirna());
+        downloadFiles.add(downloadMiRTarBase());
 
         return downloadFiles;
     }
@@ -76,13 +78,15 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
      * @throws IOException Any issue when writing files
      * @throws InterruptedException Any issue downloading files
      */
-    private void downloadRegulatoryaAndMotifFeatures()
+    private List<DownloadFile> downloadRegulatoryaAndMotifFeatures()
             throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         String regulationUrl = ensemblHostUrl + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
             regulationUrl = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
         }
         regulationUrl += "/regulation/" + speciesShortName;
+
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         Path outputFile = regulationFolder.resolve(EtlCommons.REGULATORY_FEATURES_FILE);
         String regulatoryBuildUrl = regulationUrl + "/*Regulatory_Build.regulatory_features*.gff.gz";
@@ -97,6 +101,8 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         downloadFiles.add(downloadFile(motifTbiUrl, outputFile.toString()));
 
         loadPfmMatrices();
+
+        return downloadFiles;
     }
 
     private void loadPfmMatrices() throws IOException, NoSuchMethodException, FileFormatException, InterruptedException {
@@ -141,21 +147,21 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         return null;
     }
 
-    private void downloadMirna() throws IOException, InterruptedException {
+    private DownloadFile downloadMirna() throws IOException, InterruptedException {
         String url = configuration.getDownload().getMirbase().getHost() + "/miRNA.xls.gz";
-        downloadFiles.add(downloadFile(url, regulationFolder.resolve("miRNA.xls.gz").toString()));
-
         String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
         downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
         saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME,
                 getLine(regulationFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
                 Collections.singletonList(url), regulationFolder.resolve("mirbaseVersion.json"));
+
+        return downloadFile(url, regulationFolder.resolve("miRNA.xls.gz").toString());
     }
 
-    private void downloadMiRTarBase() throws IOException, InterruptedException {
+    private DownloadFile downloadMiRTarBase() throws IOException, InterruptedException {
         String url = configuration.getDownload().getMiRTarBase().getHost();
         saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, null, getTimeStamp(), Collections.singletonList(url),
                 regulationFolder.resolve("miRTarBaseVersion.json"));
-        downloadFiles.add(downloadFile(url, regulationFolder.resolve("hsa_MTI.xlsx").toString()));
+        return downloadFile(url, regulationFolder.resolve("hsa_MTI.xlsx").toString());
     }
 }
