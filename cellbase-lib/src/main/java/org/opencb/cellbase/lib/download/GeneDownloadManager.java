@@ -46,8 +46,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
     private static final String GO_ANNOTATION_NAME = "EBI Gene Ontology Annotation";
     private static final String DGIDB_NAME = "DGIdb";
     private static final String GNOMAD_NAME = "gnomAD";
-    private static final String MIRBASE_NAME = "miRBase";
-    private static final String MIRTARBASE_NAME = "miRTarBase";
     private static String dockerImage;
 
     private static final Map<String, String> GENE_UNIPROT_XREF_FILES;
@@ -84,7 +82,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
-        downloadFiles.addAll(downloadMirna(geneFolder));
         runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
@@ -97,27 +94,6 @@ public class GeneDownloadManager extends AbstractDownloadManager {
             saveVersionData(EtlCommons.GENE_DATA, GO_ANNOTATION_NAME, null, getTimeStamp(), Collections.singletonList(url),
                     geneFolder.resolve("goAnnotationVersion.json"));
             return downloadFile(url, geneFolder.resolve("goa_human.gaf.gz").toString());
-        }
-        return null;
-    }
-
-    private List<DownloadFile> downloadMirna(Path geneFolder) throws IOException, InterruptedException {
-        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-            logger.info("Downloading mirna...");
-
-            List<DownloadFile> downloadFiles = new ArrayList<>();
-
-            String url = configuration.getDownload().getMirbase().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, MIRBASE_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    geneFolder.resolve("miRBaseVersion.json"));
-            downloadFiles.add(downloadFile(url, geneFolder.resolve("miRNA.xls.gz").toString()));
-
-            url = configuration.getDownload().getMiRTarBase().getHost();
-            saveVersionData(EtlCommons.GENE_DATA, MIRTARBASE_NAME, null, getTimeStamp(), Collections.singletonList(url),
-                    geneFolder.resolve("miRTarBaseVersion.json"));
-            downloadFiles.add(downloadFile(url, geneFolder.resolve("hsa_MTI.xlsx").toString()));
-
-            return downloadFiles;
         }
         return null;
     }

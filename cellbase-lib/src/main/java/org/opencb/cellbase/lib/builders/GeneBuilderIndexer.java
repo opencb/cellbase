@@ -59,6 +59,7 @@ public class GeneBuilderIndexer {
     private static final String DISEASE_SUFFIX = "_disease";
     private static final String CONSTRAINT_SUFFIX = "_constraint";
     private static final String ONTOLOGY_SUFFIX = "_ontology";
+    private static final String MIRBASE_SUFFIX = "_mirbase";
     private RocksDbManager rocksDbManager;
     protected Logger logger;
     private Options dbOption = null;
@@ -79,7 +80,7 @@ public class GeneBuilderIndexer {
 
     public void index(Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path proteinFastaFile, Path cDnaFastaFile,
                       String species, Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
-                      Path geneOntologyAnnotationFile)
+                      Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile)
             throws IOException, RocksDBException, FileFormatException {
         indexDescriptions(geneDescriptionFile);
         indexXrefs(xrefsFile, uniprotIdMappingFile);
@@ -90,6 +91,7 @@ public class GeneBuilderIndexer {
         indexDiseases(hpoFile, disgenetFile);
         indexConstraints(gnomadFile);
         indexOntologyAnnotations(geneOntologyAnnotationFile);
+        indexMiRBase(miRBaseFile);
     }
 
     public String getDescription(String id) throws RocksDBException {
@@ -496,6 +498,13 @@ public class GeneBuilderIndexer {
         for (Map.Entry<String, List<FeatureOntologyTermAnnotation>> entry : annotations.entrySet()) {
             rocksDbManager.update(rocksdb, entry.getKey() + ONTOLOGY_SUFFIX, entry.getValue());
         }
+    }
+
+    private void indexMiRBase(Path miRBaseFile) throws IOException, RocksDBException {
+        if (miRBaseFile != null && Files.exists(miRBaseFile) && Files.size(miRBaseFile) > 0) {
+
+        }
+
     }
 
     private static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {

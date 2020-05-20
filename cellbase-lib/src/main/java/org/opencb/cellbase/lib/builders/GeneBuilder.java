@@ -59,6 +59,8 @@ public class GeneBuilder extends CellBaseBuilder {
     private Path genomeSequenceFilePath;
     private Path gnomadFile;
     private Path geneOntologyAnnotationFile;
+    private Path miRBaseFile;
+    private Path miRTarBaseFile;
     private boolean flexibleGTFParsing;
 
     private SpeciesConfiguration speciesConfiguration;
@@ -104,6 +106,8 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 geneDirectoryPath.resolve("goa_human.gaf.gz"),
+                geneDirectoryPath.getParent().resolve("regulation/miRNA.xls.gz"),
+                geneDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
         getGtfFileFromGeneDirectoryPath(geneDirectoryPath);
@@ -113,8 +117,8 @@ public class GeneBuilder extends CellBaseBuilder {
 
     public GeneBuilder(Path gtfFile, Path geneDescriptionFile, Path xrefsFile, Path uniprotIdMappingFile, Path tfbsFile, Path tabixFile,
                        Path geneExpressionFile, Path geneDrugFile, Path hpoFile, Path disgenetFile, Path gnomadFile,
-                       Path geneOntologyAnnotationFile, Path genomeSequenceFilePath, SpeciesConfiguration speciesConfiguration,
-                       boolean flexibleGTFParsing, CellBaseSerializer serializer) throws CellbaseException {
+                       Path geneOntologyAnnotationFile, Path miRBaseFile, Path miRTarBaseFile, Path genomeSequenceFilePath,
+                       SpeciesConfiguration speciesConfiguration, boolean flexibleGTFParsing, CellBaseSerializer serializer) {
         super(serializer);
         this.gtfFile = gtfFile;
         this.geneDescriptionFile = geneDescriptionFile;
@@ -128,6 +132,8 @@ public class GeneBuilder extends CellBaseBuilder {
         this.disgenetFile = disgenetFile;
         this.gnomadFile = gnomadFile;
         this.geneOntologyAnnotationFile = geneOntologyAnnotationFile;
+        this.miRBaseFile = miRBaseFile;
+        this.miRTarBaseFile = miRTarBaseFile;
         this.genomeSequenceFilePath = genomeSequenceFilePath;
         this.speciesConfiguration = speciesConfiguration;
         this.flexibleGTFParsing = flexibleGTFParsing;
@@ -149,7 +155,7 @@ public class GeneBuilder extends CellBaseBuilder {
             // process files and put values in rocksdb
             indexer.index(geneDescriptionFile, xrefsFile, uniprotIdMappingFile, proteinFastaFile, cDnaFastaFile,
                     speciesConfiguration.getScientificName(), geneExpressionFile, geneDrugFile, hpoFile, disgenetFile, gnomadFile,
-                    geneOntologyAnnotationFile);
+                    geneOntologyAnnotationFile, miRBaseFile, miRTarBaseFile);
 
             TabixReader tabixReader = null;
             if (!Files.exists(tfbsFile) || !Files.exists(tabixFile)) {
