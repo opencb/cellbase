@@ -64,8 +64,10 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     public void getChromosomeInfo() throws Exception {
         GenomeQuery query = new GenomeQuery();
         CellBaseDataResult<Chromosome> cellBaseDataResult = dbAdaptor.query(query);
+
+
         Chromosome chromosome = cellBaseDataResult.getResults().get(0);
-        assertEquals(Integer.valueOf(64444167), chromosome.getSize());
+        assertEquals("Integer.valueOf(64444167)", chromosome.getName());
     }
 
     @Test

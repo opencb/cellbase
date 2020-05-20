@@ -26,9 +26,7 @@ import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.core.TranscriptTfbs;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.ProteinQuery;
-import org.opencb.cellbase.core.api.queries.TranscriptQuery;
+import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -567,8 +565,15 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getSNPByGenes(@PathParam("genes")
                 @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, genes);
+            List<VariantQuery> queries = new ArrayList<>();
+            String[] identifiers = genes.split(",");
+            for (String identifier : identifiers) {
+                VariantQuery query = new VariantQuery(uriParams);
+                query.setGenes(new LogicalList(Collections.singletonList(identifier)));
+                queries.add(query);
+                logger.info("REST VariantQuery: " + query.toString());
+            }
+            List<CellBaseDataResult> queryResults = variantManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

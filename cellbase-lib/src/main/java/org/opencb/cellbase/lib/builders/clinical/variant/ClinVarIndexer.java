@@ -38,6 +38,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.io.File;
+import java.io.FilenameFilter;
 
 //import org.opencb.biodata.formats.variant.clinvar.v24jaxb.*;
 
@@ -73,7 +75,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final String DIPLOTYPE = "Diplotype";
     private static final String VARIANT = "Variant";
     private static final char CLINICAL_SIGNIFICANCE_SEPARATOR = '/';
-    private final Path clinvarXMLFile;
+    private final Path clinvarXMLFiles;
     private final Path clinvarSummaryFile;
     private final Path clinvarVariationAlleleFile;
     private final Path clinvarEFOFile;
@@ -89,12 +91,12 @@ public class ClinVarIndexer extends ClinicalIndexer {
     private static final Set<ModeOfInheritance> RECESSIVE_TERM_SET
             = new HashSet<>(Arrays.asList(ModeOfInheritance.biallelic));
 
-    public ClinVarIndexer(Path clinvarXMLFile, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
+    public ClinVarIndexer(Path clinvarXMLFiles, Path clinvarSummaryFile, Path clinvarVariationAlleleFile,
                           Path clinvarEFOFile, boolean normalize, Path genomeSequenceFilePath, String assembly,
                           RocksDB rdb) throws IOException {
         super(genomeSequenceFilePath);
         this.rdb = rdb;
-        this.clinvarXMLFile = clinvarXMLFile;
+        this.clinvarXMLFiles = clinvarXMLFiles;
         this.clinvarSummaryFile = clinvarSummaryFile;
         this.clinvarVariationAlleleFile = clinvarVariationAlleleFile;
         this.clinvarEFOFile = clinvarEFOFile;
@@ -108,33 +110,47 @@ public class ClinVarIndexer extends ClinicalIndexer {
             Map<String, EFO> traitsToEfoTermsMap = loadEFOTerms();
             Map<String, List<AlleleLocationData>> rcvToAlleleLocationData = parseVariantSummary(traitsToEfoTermsMap);
 
-            logger.info("Unmarshalling clinvar file " + clinvarXMLFile + " ...");
-            JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile);
-            logger.info("Done");
+            File[] files = clinvarXMLFiles.toFile().listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".xml") || name.endsWith(".xml.gz");
+                }
+            });
 
-            logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
-            ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", clinvarRelease.getValue().getClinVarSet().size(),
+            Arrays.sort(files);
+
+            ProgressLogger progressLogger = new ProgressLogger("Parsed XML records:", files.length * 10000,
                     200).setBatchSize(10000);
 
-            for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
-                List<AlleleLocationData> alleleLocationDataList =
-                        rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+            for (File clinvarXMLFile : files) {
 
-                if (alleleLocationDataList != null) {
-                    boolean success = false;
-                    // Actually this list is currently not allowed to be > 2
-                    for (int i = 0; i < alleleLocationDataList.size(); i++) {
-                        String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
-                        // updateRocksDB may fail (false) if normalisation process fails
-                        success = updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
-                                traitsToEfoTermsMap) || success;
+                logger.info("Unmarshalling clinvar file " + clinvarXMLFile + " ...");
+                JAXBElement<ReleaseType> clinvarRelease = unmarshalXML(clinvarXMLFile.toPath());
+                logger.info("Done");
+
+                logger.info("Serializing clinvar records that have Sequence Location for Assembly " + assembly + " ...");
+
+
+                for (PublicSetType publicSet : clinvarRelease.getValue().getClinVarSet()) {
+                    List<AlleleLocationData> alleleLocationDataList =
+                            rcvToAlleleLocationData.get(publicSet.getReferenceClinVarAssertion().getClinVarAccession().getAcc());
+
+                    if (alleleLocationDataList != null) {
+                        boolean success = false;
+                        // Actually this list is currently not allowed to be > 2
+                        for (int i = 0; i < alleleLocationDataList.size(); i++) {
+                            String mateVariantString = getMateVariantStringByAlleleLocationData(i, alleleLocationDataList);
+                            // updateRocksDB may fail (false) if normalisation process fails
+                            success = updateRocksDB(alleleLocationDataList.get(i), publicSet, mateVariantString,
+                                    traitsToEfoTermsMap) || success;
+                        }
+                        if (success) {
+                            numberIndexedRecords++;
+                        }
                     }
-                    if (success) {
-                        numberIndexedRecords++;
-                    }
+                    progressLogger.increment(1);
+                    totalNumberRecords++;
                 }
-                progressLogger.increment(1);
-                totalNumberRecords++;
             }
             logger.info("Done");
             printSummary();
@@ -142,7 +158,7 @@ public class ClinVarIndexer extends ClinicalIndexer {
             logger.error("Error reading/writing from/to the RocksDB index while indexing ClinVar");
             throw e;
         } catch (JAXBException e) {
-            logger.error("Error unmarshalling clinvar Xml file " + clinvarXMLFile + ": " + e.getMessage());
+            logger.error("Error unmarshalling clinvar Xml file: " + e.getMessage());
         } catch (IOException e) {
             logger.error("Error indexing clinvar Xml file: " + e.getMessage());
         }

@@ -19,9 +19,9 @@ package org.opencb.cellbase.lib.builders.clinical.variant;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.cellbase.lib.builders.CellBaseBuilder;
-import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -112,7 +112,7 @@ public class ClinicalVariantBuilder extends CellBaseBuilder {
             if (this.clinvarXMLFile != null && this.clinvarSummaryFile != null
                     && this.clinvarVariationAlleleFile != null && Files.exists(clinvarXMLFile)
                     && Files.exists(clinvarSummaryFile) && Files.exists(clinvarVariationAlleleFile)) {
-                ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile, clinvarSummaryFile,
+                ClinVarIndexer clinvarIndexer = new ClinVarIndexer(clinvarXMLFile.getParent().resolve("clinvar_chunks"), clinvarSummaryFile,
                         clinvarVariationAlleleFile, clinvarEFOFile, normalize, genomeSequenceFilePath, assembly, rdb);
                 clinvarIndexer.index();
             } else {

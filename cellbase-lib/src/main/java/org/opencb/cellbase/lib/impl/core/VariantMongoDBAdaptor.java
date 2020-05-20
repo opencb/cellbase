@@ -31,15 +31,18 @@ import org.opencb.biodata.models.variant.avro.StructuralVariantType;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
-import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.VariantQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.PopulationFrequencyPhasedQueryManager;
 import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.cellbase.lib.VariantMongoIterator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
+import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
@@ -48,7 +51,7 @@ import java.util.function.Consumer;
 /**
  * Created by imedina on 26/11/15.
  */
-public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
+public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<VariantQuery, Variant> {
 
     private static final String POP_FREQUENCIES_FIELD = "annotation.populationFrequencies";
     private static final String ANNOTATION_FIELD = "annotation";
@@ -213,6 +216,7 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return groupBy(bsonQuery, fields, "name", options);
     }
 
+    @Deprecated
     private Bson parseQuery(Query query) {
         List<Bson> andBsonList = new ArrayList<>();
 
@@ -249,9 +253,55 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         }
     }
 
+    public Bson parseQuery(VariantQuery query) {
+        List<Bson> andBsonList = new ArrayList<>();
+        try {
+            for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
+                String dotNotationName = entry.getKey();
+                Object value = entry.getValue();
+                switch (dotNotationName) {
+                    case "region":
+                        createRegionQuery(query, query.getRegions(), andBsonList);
+                        break;
+                    case "svType":
+                        // don't do anything, this is parsed later
+                        break;
+                    case "type":
+                        createTypeQuery(query, "type", "sv.type", andBsonList);
+                        break;
+                    case "ciStartRight":
+                        // don't do anything, this is parsed later
+                        break;
+                    case "ciStartLeft":
+                        createImprecisePositionQueryStart(query, andBsonList);
+                    case "ciEndRight":
+                        // don't do anything, this is parsed later
+                        break;
+                    case "ciEndLeft":
+                        createImprecisePositionQueryEnd(query, andBsonList);
+                    case "gene":
+                        createRegionQuery(query, query.getRegions(), andBsonList);
+                        break;
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("gene parsed query: " + andBsonList.toString());
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
+    }
+
+    @Deprecated
     private void createTypeQuery(Query query, String typeQueryParam, String svTypeQueryParam, String typeMongoField,
                                  String svTypeMongoField, List<Bson> andBsonList) {
-
 
         if (query != null && StringUtils.isNotBlank(query.getString(typeQueryParam))) {
             List<Bson> orBsonList = new ArrayList<>();
@@ -275,6 +325,31 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         }
     }
 
+
+    private void createTypeQuery(VariantQuery query, String typeMongoField, String svTypeMongoField, List<Bson> andBsonList) {
+        if (query != null && StringUtils.isNotBlank(query.getType())) {
+            List<Bson> orBsonList = new ArrayList<>();
+            String variantTypeString = query.getType();
+            if (variantTypeString.equals(VariantType.DELETION.toString())
+                    || (StructuralVariantType.COPY_NUMBER_LOSS.toString().equals(query.getSvType()))) {
+                orBsonList.add(Filters.eq(typeMongoField, VariantType.DELETION.toString()));
+                orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_LOSS.toString()));
+                andBsonList.add(Filters.or(orBsonList));
+            } else if (variantTypeString.equals(VariantType.INSERTION.toString())
+                    || variantTypeString.equals(VariantType.DUPLICATION.toString())
+                    || StructuralVariantType.COPY_NUMBER_GAIN.toString().equals(query.getSvType())) {
+                orBsonList.add(Filters.eq(typeMongoField, VariantType.INSERTION.toString()));
+                orBsonList.add(Filters.eq(typeMongoField, VariantType.DUPLICATION.toString()));
+                orBsonList.add(Filters.eq(svTypeMongoField, StructuralVariantType.COPY_NUMBER_GAIN.toString()));
+                andBsonList.add(Filters.or(orBsonList));
+                // Inversion or just CNV (without subtype)
+            } else {
+                andBsonList.add(Filters.eq(typeMongoField, variantTypeString.toString()));
+            }
+        }
+    }
+
+    @Deprecated
     private void createImprecisePositionQuery(Query query, String leftQueryParam, String rightQueryParam,
                                               String leftLimitMongoField, String righLimitMongoField,
                                               List<Bson> andBsonList) {
@@ -284,6 +359,20 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
             int rightQueryValue = query.getInt(rightQueryParam);
             andBsonList.add(Filters.lte(leftLimitMongoField, rightQueryValue));
             andBsonList.add(Filters.gte(righLimitMongoField, leftQueryValue));
+        }
+    }
+
+    private void createImprecisePositionQueryStart(VariantQuery query, List<Bson> andBsonList) {
+        if (query.getCiStartLeft() != null && query.getCiStartRight() != null) {
+            andBsonList.add(Filters.lte("ciStartLeft", query.getCiStartRight()));
+            andBsonList.add(Filters.gte("ciStartRight", query.getCiStartLeft()));
+        }
+    }
+
+    private void createImprecisePositionQueryEnd(VariantQuery query, List<Bson> andBsonList) {
+        if (query.getCiEndLeft() != null && query.getCiEndRight() != null) {
+            andBsonList.add(Filters.lte("ciEndLeft", query.getCiEndRight()));
+            andBsonList.add(Filters.gte("ciEndRight", query.getCiEndLeft()));
         }
     }
 
@@ -609,29 +698,31 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
         return results;
     }
 
+
+
     @Override
-    public CellBaseIterator iterator(AbstractQuery query) {
+    public CellBaseIterator<Variant> iterator(VariantQuery query) {
+        Bson bson = parseQuery(query);
+        QueryOptions queryOptions = query.toQueryOptions();
+        Bson projection = getProjection(query);
+        GenericDocumentComplexConverter<Variant> converter = new GenericDocumentComplexConverter<>(Variant.class);
+        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
+        MongoDBIterator<Variant> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        return new CellBaseIterator<>(iterator);
+    }
+
+    @Override
+    public CellBaseDataResult<Variant> aggregationStats(VariantQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<Long> count(AbstractQuery query) {
+    public CellBaseDataResult<Variant> groupBy(VariantQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult aggregationStats(AbstractQuery query) {
+    public CellBaseDataResult<String> distinct(VariantQuery query) {
         return null;
     }
-
-    @Override
-    public CellBaseDataResult groupBy(AbstractQuery query) {
-        return null;
-    }
-
-    @Override
-    public CellBaseDataResult<String> distinct(AbstractQuery query) {
-        return null;
-    }
-
 }
