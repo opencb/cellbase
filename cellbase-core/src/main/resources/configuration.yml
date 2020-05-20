@@ -55,13 +55,13 @@ download:
  geneExpressionAtlas:
   host: ftp://ftp.ebi.ac.uk/pub/databases/microarray/data/gxa/allgenes_updown_in_organism_part_2.0.14.tab.gz
  mirbase:
-  host: ftp://mirbase.org/pub/mirbase/CURRENT/
+  host: ftp://mirbase.org/pub/mirbase/CURRENT/miRNA.xls.gz
  mirbaseReadme:
   host: ftp://mirbase.org/pub/mirbase/CURRENT/README
  targetScan:
   host: http://hgdownload.cse.ucsc.edu/goldenPath/
  miRTarBase:
-  host: http://mirtarbase.mbc.nctu.edu.tw/cache/download/4.5/
+  host: http://mirtarbase.cuhk.edu.cn/cache/download/8.0/hsa_MTI.xlsx
  uniprot:
   host: ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
  uniprotRelNotes:
@@ -124,6 +124,8 @@ download:
   host: http://purl.obolibrary.org/obo/doid.obo
  goAnnotation:
   host: http://geneontology.org/gene-associations/goa_human.gaf.gz
+
+
 species:
  vertebrates:
   - id: hsapiens
