@@ -1,0 +1,11 @@
+ENST00000488147	ENSG00000227232	ensembl_gene	Ensembl gene	WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]
+ENST00000488147	FAM39F	ensembl_gene	Ensembl gene	WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]
+ENST00000488147	ENSG00000227232	expression_atlas	Expression Atlas	
+ENST00000488147	WASH7P	hgnc_symbol	HGNC Symbol	WASP family homolog 7, pseudogene
+ENST00000488147	ENST00000488147	ensembl_transcript	Ensembl transcript	
+ENST00000488147	NR_024540.1	refseq_ncrna	RefSeq ncRNA	
+ENST00000488147	NR_024540	refseq_ncrna	RefSeq ncRNA	
+ENST00000488147	ENST00000488147.1	ucsc_stable_id	UCSC Stable ID	
+ENST00000488147	ENST00000488147	ucsc_stable_id	UCSC Stable ID	
+ENST00000488147	WASH7P-201	transcript_name	Transcript name	WASP family homolog 7, pseudogene
+ENST00000488147	hsa-let-7a-1	mirbase	miRBase

@@ -20,12 +20,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.opencb.biodata.models.core.Constraint;
-import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
-import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
 import org.opencb.biodata.models.variant.avro.GeneTraitAssociation;
+import org.opencb.biodata.models.core.MiRnaTarget;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -118,6 +117,23 @@ public class RocksDbManager {
         return Arrays.asList(mapper.readValue(dbContent, FeatureOntologyTermAnnotation[].class));
     }
 
+    public List<MiRnaTarget> getMirnaTargets(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return Arrays.asList(mapper.readValue(dbContent, MiRnaTarget[].class));
+    }
+
+    public MiRNAGene getMirnaGene(RocksDB rdb, String key) throws RocksDBException, IOException {
+        byte[] dbContent = rdb.get(key.getBytes());
+        if (dbContent == null) {
+            return null;
+        }
+        return mapper.readValue(dbContent, MiRNAGene.class);
+    }
+
+
     /**
      * Add an entry to specified rocksdb. Overwrites any existing entry.
      *
@@ -154,6 +170,4 @@ public class RocksDbManager {
             org.apache.commons.io.FileUtils.deleteDirectory(new File(dbLocation));
         }
     }
-
-
 }

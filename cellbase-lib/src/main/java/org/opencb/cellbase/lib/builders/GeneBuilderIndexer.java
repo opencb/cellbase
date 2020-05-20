@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-
 package org.opencb.cellbase.lib.builders;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.formats.gaf.GafParser;
 import org.opencb.biodata.formats.io.FileFormatException;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
-import org.opencb.biodata.models.core.Constraint;
-import org.opencb.biodata.models.core.FeatureOntologyTermAnnotation;
-import org.opencb.biodata.models.core.Xref;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
 import org.opencb.biodata.models.variant.avro.GeneDrugInteraction;
@@ -36,10 +35,7 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,6 +56,7 @@ public class GeneBuilderIndexer {
     private static final String CONSTRAINT_SUFFIX = "_constraint";
     private static final String ONTOLOGY_SUFFIX = "_ontology";
     private static final String MIRBASE_SUFFIX = "_mirbase";
+    private static final String MIRTARBASE_SUFFIX = "_mirtarbase";
     private RocksDbManager rocksDbManager;
     protected Logger logger;
     private Options dbOption = null;
@@ -91,74 +88,8 @@ public class GeneBuilderIndexer {
         indexDiseases(hpoFile, disgenetFile);
         indexConstraints(gnomadFile);
         indexOntologyAnnotations(geneOntologyAnnotationFile);
-        indexMiRBase(miRBaseFile);
-    }
-
-    public String getDescription(String id) throws RocksDBException {
-        String key = id + DESCRIPTION_SUFFIX;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
-    }
-
-    public List<Xref> getXrefs(String id) throws RocksDBException, IOException {
-        List<Xref> xrefs = new ArrayList<>();
-        String key = id + XREF_SUFFIX;
-        List<Xref> ensemblXrefs = rocksDbManager.getXrefs(rocksdb, key);
-        if (ensemblXrefs != null) {
-            xrefs.addAll(ensemblXrefs);
-        }
-        key = id + PROTEIN_XREF_SUFFIX;
-        List<Xref> proteinXrefs = rocksDbManager.getXrefs(rocksdb, key);
-        if (proteinXrefs != null) {
-            xrefs.addAll(proteinXrefs);
-        }
-        return xrefs;
-    }
-
-    public String getProteinFasta(String id) throws RocksDBException {
-        String key = id + PROTEIN_SEQUENCE_SUFFIX;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
-    }
-
-    public String getCdnaFasta(String id) throws RocksDBException {
-        String key = id + CDNA_SEQUENCE_SUFFIX;
-        byte[] value = rocksdb.get(key.getBytes());
-        if (value != null) {
-            return new String(value);
-        }
-        return null;
-    }
-
-    public List<Expression> getExpression(String id) throws RocksDBException, IOException {
-        String key = id + EXPRESSION_SUFFIX;
-        return rocksDbManager.getExpression(rocksdb, key);
-    }
-
-    public List<GeneDrugInteraction> getDrugs(String id) throws RocksDBException, IOException {
-        String key = id + DRUGS_SUFFIX;
-        return rocksDbManager.getDrugs(rocksdb, key);
-    }
-
-    public List<GeneTraitAssociation> getDiseases(String id) throws RocksDBException, IOException {
-        String key = id + DISEASE_SUFFIX;
-        return rocksDbManager.getDiseases(rocksdb, key);
-    }
-
-    public List<Constraint> getConstraints(String id) throws RocksDBException, IOException {
-        String key = id + CONSTRAINT_SUFFIX;
-        return rocksDbManager.getConstraints(rocksdb, key);
-    }
-
-    public List<FeatureOntologyTermAnnotation> getOntologyAnnotations(String id) throws RocksDBException, IOException {
-        String key = id + ONTOLOGY_SUFFIX;
-        return rocksDbManager.getOntologyAnnotations(rocksdb, key);
+//        indexMiRBase(miRBaseFile);
+        indexMiRTarBase(miRTarBaseFile);
     }
 
     private void indexDescriptions(Path geneDescriptionFile) throws IOException, RocksDBException {
@@ -174,6 +105,15 @@ public class GeneBuilderIndexer {
             logger.warn("Gene description file " + geneDescriptionFile + " not found");
             logger.warn("Gene description data not loaded");
         }
+    }
+
+    public String getDescription(String id) throws RocksDBException {
+        String key = id + DESCRIPTION_SUFFIX;
+        byte[] value = rocksdb.get(key.getBytes());
+        if (value != null) {
+            return new String(value);
+        }
+        return null;
     }
 
     public void indexXrefs(Path xrefsFile, Path uniprotIdMappingFile) throws IOException, RocksDBException {
@@ -242,6 +182,21 @@ public class GeneBuilderIndexer {
         }
     }
 
+    public List<Xref> getXrefs(String id) throws RocksDBException, IOException {
+        List<Xref> xrefs = new ArrayList<>();
+        String key = id + XREF_SUFFIX;
+        List<Xref> ensemblXrefs = rocksDbManager.getXrefs(rocksdb, key);
+        if (ensemblXrefs != null) {
+            xrefs.addAll(ensemblXrefs);
+        }
+        key = id + PROTEIN_XREF_SUFFIX;
+        List<Xref> proteinXrefs = rocksDbManager.getXrefs(rocksdb, key);
+        if (proteinXrefs != null) {
+            xrefs.addAll(proteinXrefs);
+        }
+        return xrefs;
+    }
+
     private void indexCdnaSequences(Path cDnaFastaFile) throws IOException, FileFormatException, RocksDBException {
         logger.info("Loading ENSEMBL's cDNA sequences...");
         if (cDnaFastaFile != null && Files.exists(cDnaFastaFile) && !Files.isDirectory(cDnaFastaFile)
@@ -256,6 +211,15 @@ public class GeneBuilderIndexer {
             logger.warn("cDNA fasta file " + cDnaFastaFile + " not found");
             logger.warn("ENSEMBL's cDNA sequences not loaded");
         }
+    }
+
+    public String getCdnaFasta(String id) throws RocksDBException {
+        String key = id + CDNA_SEQUENCE_SUFFIX;
+        byte[] value = rocksdb.get(key.getBytes());
+        if (value != null) {
+            return new String(value);
+        }
+        return null;
     }
 
     private void indexProteinSequences(Path proteinFastaFile) throws IOException, FileFormatException, RocksDBException {
@@ -274,6 +238,15 @@ public class GeneBuilderIndexer {
             logger.warn("Protein fasta file " + proteinFastaFile + " not found");
             logger.warn("ENSEMBL's protein sequences not loaded");
         }
+    }
+
+    public String getProteinFasta(String id) throws RocksDBException {
+        String key = id + PROTEIN_SEQUENCE_SUFFIX;
+        byte[] value = rocksdb.get(key.getBytes());
+        if (value != null) {
+            return new String(value);
+        }
+        return null;
     }
 
     private void indexExpression(String species, Path geneExpressionFile) throws IOException, RocksDBException {
@@ -320,6 +293,11 @@ public class GeneBuilderIndexer {
         } else {
             logger.warn("Parameters are not correct");
         }
+    }
+
+    public List<Expression> getExpression(String id) throws RocksDBException, IOException {
+        String key = id + EXPRESSION_SUFFIX;
+        return rocksDbManager.getExpression(rocksdb, key);
     }
 
     private void indexDrugs(Path geneDrugFile) throws IOException, RocksDBException {
@@ -389,6 +367,11 @@ public class GeneBuilderIndexer {
         }
     }
 
+    public List<GeneDrugInteraction> getDrugs(String id) throws RocksDBException, IOException {
+        String key = id + DRUGS_SUFFIX;
+        return rocksDbManager.getDrugs(rocksdb, key);
+    }
+
     private void indexDiseases(Path hpoFilePath, Path disgenetFilePath) throws IOException, RocksDBException {
         Map<String, List<GeneTraitAssociation>> geneDiseaseAssociationMap = new HashMap<>(50000);
 
@@ -434,6 +417,11 @@ public class GeneBuilderIndexer {
         }
     }
 
+    public List<GeneTraitAssociation> getDiseases(String id) throws RocksDBException, IOException {
+        String key = id + DISEASE_SUFFIX;
+        return rocksDbManager.getDiseases(rocksdb, key);
+    }
+
     private void indexConstraints(Path gnomadFile) throws IOException, RocksDBException {
         if (gnomadFile != null && Files.exists(gnomadFile) && Files.size(gnomadFile) > 0) {
             logger.info("Loading OE scores from '{}'", gnomadFile);
@@ -472,6 +460,11 @@ public class GeneBuilderIndexer {
 
     }
 
+    public List<Constraint> getConstraints(String id) throws RocksDBException, IOException {
+        String key = id + CONSTRAINT_SUFFIX;
+        return rocksDbManager.getConstraints(rocksdb, key);
+    }
+
     private void addConstraint(List<Constraint> constraints, String name, String value) {
         Constraint constraint = new Constraint();
         constraint.setMethod("pLoF");
@@ -500,20 +493,174 @@ public class GeneBuilderIndexer {
         }
     }
 
+    public List<FeatureOntologyTermAnnotation> getOntologyAnnotations(String id) throws RocksDBException, IOException {
+        String key = id + ONTOLOGY_SUFFIX;
+        return rocksDbManager.getOntologyAnnotations(rocksdb, key);
+    }
+
     private void indexMiRBase(Path miRBaseFile) throws IOException, RocksDBException {
         if (miRBaseFile != null && Files.exists(miRBaseFile) && Files.size(miRBaseFile) > 0) {
+            logger.info("Loading mirna from '{}'", miRBaseFile);
+            FileInputStream file = new FileInputStream(miRBaseFile.toFile());
+            org.apache.poi.ss.usermodel.Workbook workbook = WorkbookFactory.create(file);
+            org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0);
+            Iterator<org.apache.poi.ss.usermodel.Row> iterator = sheet.iterator();
+            while (iterator.hasNext()) {
+                Row currentRow = iterator.next();
+                Iterator<Cell> cellIterator = currentRow.iterator();
 
+                org.apache.poi.ss.usermodel.Cell cell = cellIterator.next();
+                String miRBaseAccession = cell.getStringCellValue();
+
+                cell = cellIterator.next();
+                String miRBaseID = cell.getStringCellValue();
+
+                cell = cellIterator.next();
+                String status = cell.getStringCellValue();
+
+                cell = cellIterator.next();
+                String sequence = cell.getStringCellValue();
+
+                cellIterator.next();
+                String mature1Accession = cell.getStringCellValue();
+
+                cellIterator.next();
+                String mature1Id = cell.getStringCellValue();
+
+                cellIterator.next();
+                String mature1Sequence = cell.getStringCellValue();
+
+                cellIterator.next();
+                String mature2Accession = cell.getStringCellValue();
+
+                cellIterator.next();
+                String mature2Id = cell.getStringCellValue();
+
+                cellIterator.next();
+                String mature2Sequence = cell.getStringCellValue();
+
+                MiRNAGene miRNAGene = new MiRNAGene(miRBaseAccession, miRBaseID, status, sequence, null, null);
+                miRNAGene.addMiRNAMature(mature1Accession, mature1Id, mature1Sequence, 0, 0);
+                miRNAGene.addMiRNAMature(mature2Accession, mature2Id, mature2Sequence, 0, 0);
+
+                logger.error("**** adding miRBaseID " + miRBaseID + MIRBASE_SUFFIX);
+
+                rocksDbManager.update(rocksdb, miRBaseID + MIRBASE_SUFFIX, miRNAGene);
+            }
+        } else {
+            logger.error("mirna file not found");
         }
+    }
 
+    public MiRNAGene getMirnaGene(String id) throws RocksDBException, IOException {
+        String xrefKey = id + XREF_SUFFIX;
+        logger.error("xref key : " + xrefKey);
+        List<Xref> xrefs = rocksDbManager.getXrefs(rocksdb, xrefKey);
+        if (xrefs == null || xrefs.isEmpty()) {
+            return null;
+        }
+        for (Xref xref : xrefs) {
+            if ("mirbase".equals(xref.getDbName())) {
+                String mirnaKey = xref.getId() + MIRBASE_SUFFIX;
+                logger.error("Mirbase id " + mirnaKey);
+                return rocksDbManager.getMirnaGene(rocksdb, mirnaKey);
+            }
+        }
+        return null;
+    }
+
+    private void indexMiRTarBase(Path miRTarBaseFile) throws IOException, RocksDBException {
+        if (miRTarBaseFile != null && Files.exists(miRTarBaseFile) && Files.size(miRTarBaseFile) > 0) {
+            FileInputStream file = new FileInputStream(miRTarBaseFile.toFile());
+            Workbook workbook = new XSSFWorkbook(file);
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> iterator = sheet.iterator();
+            String currentMiRTarBaseId = null;
+            String currentMiRNA = null;
+            String currentGene = null;
+            List<TargetGene> targetGenes = new ArrayList();
+            Map<String, List<MiRnaTarget>> geneToMirna = new HashMap();
+            while (iterator.hasNext()) {
+
+                Row currentRow = iterator.next();
+                Iterator<Cell> cellIterator = currentRow.iterator();
+
+                Cell cell = cellIterator.next();
+                String miRTarBaseId = cell.getStringCellValue();
+
+                if (currentMiRTarBaseId == null) {
+                    currentMiRTarBaseId = miRTarBaseId;
+                }
+
+                cell = cellIterator.next();
+                String miRNA = cell.getStringCellValue();
+                if (currentMiRNA == null) {
+                    currentMiRNA = miRNA;
+                }
+
+                // species
+                cellIterator.next();
+
+                cellIterator.next();
+                String geneName = cell.getStringCellValue();
+
+                // entrez
+                cellIterator.next();
+                // species
+                cellIterator.next();
+
+                if (currentGene == null) {
+                    currentGene = geneName;
+                }
+
+                if (!miRTarBaseId.equals(currentMiRTarBaseId) || !geneName.equals(currentGene)) {
+                    // new entry, store current one
+                    MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, currentMiRNA, targetGenes, "mirTarbase");
+                    addValueToMapElement(geneToMirna, geneName, miRnaTarget);
+                    targetGenes = new ArrayList();
+                    currentGene = geneName;
+                    currentMiRTarBaseId = miRTarBaseId;
+                    currentMiRNA = miRNA;
+                }
+
+                // experiment
+                cell = cellIterator.next();
+                String experiment = cell.getStringCellValue();
+
+                // support type
+                cell = cellIterator.next();
+                String supportType = cell.getStringCellValue();
+
+                // pubmeds
+                cell = cellIterator.next();
+                String pubmed = null;
+                // seems to vary, so check both
+                if (cell.getCellType().equals(CellType.NUMERIC)) {
+                    pubmed = String.valueOf(cell.getNumericCellValue());
+                } else {
+                    pubmed = cell.getStringCellValue();
+                }
+
+                targetGenes.add(new TargetGene(experiment, supportType, pubmed));
+            }
+            for (Map.Entry<String, List<MiRnaTarget>> entry : geneToMirna.entrySet()) {
+                rocksDbManager.update(rocksdb, entry.getKey() + MIRTARBASE_SUFFIX, entry.getValue());
+            }
+        }
+    }
+
+    public List<MiRnaTarget> getMirnaTargets(String id) throws RocksDBException, IOException {
+        String key = id + MIRTARBASE_SUFFIX;
+        return rocksDbManager.getMirnaTargets(rocksdb, key);
     }
 
     private static <T> void addValueToMapElement(Map<String, List<T>> map, String key, T value) {
         if (map.containsKey(key)) {
             map.get(key).add(value);
         } else {
-            List<T> expressionValueList = new ArrayList<>();
-            expressionValueList.add(value);
-            map.put(key, expressionValueList);
+            List<T> valueList = new ArrayList<>();
+            valueList.add(value);
+            map.put(key, valueList);
         }
     }
 

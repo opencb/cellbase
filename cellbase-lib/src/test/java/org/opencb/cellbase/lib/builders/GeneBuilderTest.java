@@ -79,6 +79,12 @@ public class GeneBuilderTest {
         assertNotNull(gene);
         assertEquals("WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]", gene.getDescription());
 
+//        MiRNAGene miRNAGene = gene.getMirna();
+//        assertNotNull(miRNAGene);
+
+        GeneAnnotation annotation = gene.getAnnotation();
+        assertEquals(1, annotation.getTargets().size());
+
         List<Transcript> transcripts = gene.getTranscripts();
 
         Transcript transcript = getTranscript(gene, "ENST00000488147");

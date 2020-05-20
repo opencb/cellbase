@@ -190,21 +190,23 @@ public class GeneBuilder extends CellBaseBuilder {
 
                 String geneId = gtf.getAttributes().get("gene_id");
                 String transcriptId = gtf.getAttributes().get("transcript_id");
+                String geneName = gtf.getAttributes().get("gene_name");
                 if (newGene(gene, geneId)) {
                     // If new geneId is different from the current then we must serialize before data new gene
                     if (gene != null) {
                         serializer.serialize(gene);
                     }
 
-                    GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId),
-                            indexer.getDiseases(gtf.getAttributes().get("gene_name")),
-                            indexer.getDrugs(gtf.getAttributes().get("gene_name")), indexer.getConstraints(geneId));
+                    GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId), indexer.getDiseases(geneName),
+                            indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName));
 
-                    gene = new Gene(geneId, gtf.getAttributes().get("gene_name"), gtf.getSequenceName().replaceFirst("chr", ""),
+                    logger.error("GENEID  " + geneId);
+                    logger.error("TRANSCRIPT " + transcriptId);
+
+                    gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),
-                            gtf.getAttributes().get("gene_biotype"), "KNOWN",
-                            gtf.getSource(), indexer.getDescription(geneId), new ArrayList<>(), null,
-                            geneAnnotation);
+                            gtf.getAttributes().get("gene_biotype"), "KNOWN", gtf.getSource(), indexer.getDescription(geneId),
+                            new ArrayList<>(), indexer.getMirnaGene(transcriptId), geneAnnotation);
                 }
 
                 // Check if Transcript exist in the Gene Set of transcripts
