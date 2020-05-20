@@ -39,8 +39,8 @@ import java.util.List;
 
 public class RocksDbManager {
 
-    protected static ObjectMapper mapper;
-    protected static ObjectWriter jsonObjectWriter;
+    private static ObjectMapper mapper;
+    private static ObjectWriter jsonObjectWriter;
 
     public RocksDbManager() {
         init();
