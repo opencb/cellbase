@@ -105,7 +105,7 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     private void loadPfmMatrices() throws IOException, NoSuchMethodException, FileFormatException, InterruptedException {
         logger.info("Downloading and building pfm matrices...");
         if (Files.exists(buildFolder.resolve("regulatory_pfm.json.gz"))) {
-            logger.info(buildFolder.resolve("regulatory_pfm.json.gz") + " is already built");
+            logger.info("regulatory_pfm.json.gz is already built");
             return;
         }
         Path motifGffFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
