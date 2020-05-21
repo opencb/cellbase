@@ -79,36 +79,25 @@ public class GeneBuilderTest {
         assertNotNull(gene);
         assertEquals("WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]", gene.getDescription());
 
-//        MiRNAGene miRNAGene = gene.getMirna();
-//        assertNotNull(miRNAGene);
+        MiRNAGene miRNAGene = gene.getMirna();
+        assertNotNull(miRNAGene);
+        assertEquals("UGGGAUGAGGUAGUAGGUUGUAUAGUUUUAGGGUCACACCCACCACUGGGAGAUAACUAUACAAUCUACUGUCUUUCCUA", miRNAGene.getSequence());
+        assertEquals("UNCHANGED", miRNAGene.getStatus());
+        assertEquals("MI0000060", miRNAGene.getMiRBaseAccession());
+        assertEquals("hsa-let-7a-1", miRNAGene.getMiRBaseID());
+        assertEquals(2, miRNAGene.getMatures().size());
 
         GeneAnnotation annotation = gene.getAnnotation();
         assertEquals(1, annotation.getTargets().size());
-
-        List<Transcript> transcripts = gene.getTranscripts();
+        MiRnaTarget target = annotation.getTargets().get(0);
+        assertEquals("MIRT000002", target.getId());
+        assertEquals("miRTarBase", target.getSource());
+        assertEquals("hsa-miR-20a-5p", target.getSourceId());
+        assertEquals(3, target.getTargets().size());
 
         Transcript transcript = getTranscript(gene, "ENST00000488147");
-        assertEquals(4, transcript.getXrefs().size());
+        assertEquals(15, transcript.getXrefs().size());
 
-        Xref xref = getXref(transcript, "ENSG00000227232");
-        assertNotNull(xref);
-        assertEquals("ensembl_gtf", xref.getDbName());
-        assertEquals("Ensembl GTF", xref.getDbDisplayName());
-
-        xref = getXref(transcript, "WASH7P");
-        assertNotNull(xref);
-        assertEquals("ensembl_gtf", xref.getDbName());
-        assertEquals("Ensembl GTF", xref.getDbDisplayName());
-
-        xref = getXref(transcript, "ENST00000488147");
-        assertNotNull(xref);
-        assertEquals("ensembl_gtf", xref.getDbName());
-        assertEquals("Ensembl GTF", xref.getDbDisplayName());
-
-        xref = getXref(transcript,"WASH7P-201");
-        assertNotNull(xref);
-        assertEquals("ensembl_gtf", xref.getDbName());
-        assertEquals("Ensembl GTF", xref.getDbDisplayName());
     }
 
     private Xref getXref(Transcript transcript, String xrefId) {

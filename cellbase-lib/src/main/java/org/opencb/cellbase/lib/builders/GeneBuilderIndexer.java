@@ -17,6 +17,8 @@
 package org.opencb.cellbase.lib.builders;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.formats.gaf.GafParser;
@@ -88,7 +90,7 @@ public class GeneBuilderIndexer {
         indexDiseases(hpoFile, disgenetFile);
         indexConstraints(gnomadFile);
         indexOntologyAnnotations(geneOntologyAnnotationFile);
-//        indexMiRBase(miRBaseFile);
+        indexMiRBase(miRBaseFile);
         indexMiRTarBase(miRTarBaseFile);
     }
 
@@ -116,8 +118,7 @@ public class GeneBuilderIndexer {
         return null;
     }
 
-    public void indexXrefs(Path xrefsFile, Path uniprotIdMappingFile) throws IOException, RocksDBException {
-
+    private void indexXrefs(Path xrefsFile, Path uniprotIdMappingFile) throws IOException, RocksDBException {
         logger.info("Loading xref data...");
         String[] fields;
         if (xrefsFile != null && Files.exists(xrefsFile) && Files.size(xrefsFile) > 0) {
@@ -501,9 +502,9 @@ public class GeneBuilderIndexer {
     private void indexMiRBase(Path miRBaseFile) throws IOException, RocksDBException {
         if (miRBaseFile != null && Files.exists(miRBaseFile) && Files.size(miRBaseFile) > 0) {
             logger.info("Loading mirna from '{}'", miRBaseFile);
-            FileInputStream file = new FileInputStream(miRBaseFile.toFile());
-            org.apache.poi.ss.usermodel.Workbook workbook = WorkbookFactory.create(file);
-            org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0);
+            FileInputStream fileInputStream = new FileInputStream(miRBaseFile.toFile());
+            HSSFWorkbook workbook = new HSSFWorkbook(fileInputStream);
+            HSSFSheet sheet = workbook.getSheetAt(0);
             Iterator<org.apache.poi.ss.usermodel.Row> iterator = sheet.iterator();
             while (iterator.hasNext()) {
                 Row currentRow = iterator.next();
@@ -530,20 +531,23 @@ public class GeneBuilderIndexer {
                 cellIterator.next();
                 String mature1Sequence = cell.getStringCellValue();
 
-                cellIterator.next();
-                String mature2Accession = cell.getStringCellValue();
+                String mature2Accession = "";
+                String mature2Id = "";
+                String mature2Sequence = "";
+                if (cellIterator.hasNext()) {
+                    cellIterator.next();
+                    mature2Accession = cell.getStringCellValue();
 
-                cellIterator.next();
-                String mature2Id = cell.getStringCellValue();
+                    cellIterator.next();
+                    mature2Id = cell.getStringCellValue();
 
-                cellIterator.next();
-                String mature2Sequence = cell.getStringCellValue();
+                    cellIterator.next();
+                    mature2Sequence = cell.getStringCellValue();
+                }
 
-                MiRNAGene miRNAGene = new MiRNAGene(miRBaseAccession, miRBaseID, status, sequence, null, null);
+                MiRNAGene miRNAGene = new MiRNAGene(miRBaseAccession, miRBaseID, status, sequence, new ArrayList<>(), new ArrayList<>());
                 miRNAGene.addMiRNAMature(mature1Accession, mature1Id, mature1Sequence, 0, 0);
                 miRNAGene.addMiRNAMature(mature2Accession, mature2Id, mature2Sequence, 0, 0);
-
-                logger.error("**** adding miRBaseID " + miRBaseID + MIRBASE_SUFFIX);
 
                 rocksDbManager.update(rocksdb, miRBaseID + MIRBASE_SUFFIX, miRNAGene);
             }
@@ -552,9 +556,8 @@ public class GeneBuilderIndexer {
         }
     }
 
-    public MiRNAGene getMirnaGene(String id) throws RocksDBException, IOException {
-        String xrefKey = id + XREF_SUFFIX;
-        logger.error("xref key : " + xrefKey);
+    public MiRNAGene getMirnaGene(String transcriptId) throws RocksDBException, IOException {
+        String xrefKey = transcriptId + XREF_SUFFIX;
         List<Xref> xrefs = rocksDbManager.getXrefs(rocksdb, xrefKey);
         if (xrefs == null || xrefs.isEmpty()) {
             return null;
@@ -562,7 +565,6 @@ public class GeneBuilderIndexer {
         for (Xref xref : xrefs) {
             if ("mirbase".equals(xref.getDbName())) {
                 String mirnaKey = xref.getId() + MIRBASE_SUFFIX;
-                logger.error("Mirbase id " + mirnaKey);
                 return rocksDbManager.getMirnaGene(rocksdb, mirnaKey);
             }
         }
@@ -571,6 +573,7 @@ public class GeneBuilderIndexer {
 
     private void indexMiRTarBase(Path miRTarBaseFile) throws IOException, RocksDBException {
         if (miRTarBaseFile != null && Files.exists(miRTarBaseFile) && Files.size(miRTarBaseFile) > 0) {
+            logger.info("Loading mirna targets from '{}'", miRTarBaseFile);
             FileInputStream file = new FileInputStream(miRTarBaseFile.toFile());
             Workbook workbook = new XSSFWorkbook(file);
             Sheet sheet = workbook.getSheetAt(0);
@@ -588,6 +591,11 @@ public class GeneBuilderIndexer {
                 Cell cell = cellIterator.next();
                 String miRTarBaseId = cell.getStringCellValue();
 
+                // skip header
+                if (miRTarBaseId.startsWith("miRTarBase")) {
+                    continue;
+                }
+
                 if (currentMiRTarBaseId == null) {
                     currentMiRTarBaseId = miRTarBaseId;
                 }
@@ -601,22 +609,21 @@ public class GeneBuilderIndexer {
                 // species
                 cellIterator.next();
 
-                cellIterator.next();
+                cell = cellIterator.next();
                 String geneName = cell.getStringCellValue();
+                if (currentGene == null) {
+                    currentGene = geneName;
+                }
 
                 // entrez
                 cellIterator.next();
                 // species
                 cellIterator.next();
 
-                if (currentGene == null) {
-                    currentGene = geneName;
-                }
-
                 if (!miRTarBaseId.equals(currentMiRTarBaseId) || !geneName.equals(currentGene)) {
                     // new entry, store current one
-                    MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, currentMiRNA, targetGenes, "mirTarbase");
-                    addValueToMapElement(geneToMirna, geneName, miRnaTarget);
+                    MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, currentMiRNA, targetGenes, "miRTarBase");
+                    addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
                     targetGenes = new ArrayList();
                     currentGene = geneName;
                     currentMiRTarBaseId = miRTarBaseId;
@@ -643,14 +650,21 @@ public class GeneBuilderIndexer {
 
                 targetGenes.add(new TargetGene(experiment, supportType, pubmed));
             }
+
+            // parse last entry
+            MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, currentMiRNA, targetGenes, "mirTarBase");
+            addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
+
             for (Map.Entry<String, List<MiRnaTarget>> entry : geneToMirna.entrySet()) {
                 rocksDbManager.update(rocksdb, entry.getKey() + MIRTARBASE_SUFFIX, entry.getValue());
             }
+        } else {
+            logger.error("mirtarbase file not found");
         }
     }
 
-    public List<MiRnaTarget> getMirnaTargets(String id) throws RocksDBException, IOException {
-        String key = id + MIRTARBASE_SUFFIX;
+    public List<MiRnaTarget> getMirnaTargets(String geneName) throws RocksDBException, IOException {
+        String key = geneName + MIRTARBASE_SUFFIX;
         return rocksDbManager.getMirnaTargets(rocksdb, key);
     }
 

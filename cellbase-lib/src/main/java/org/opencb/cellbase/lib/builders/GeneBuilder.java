@@ -106,7 +106,7 @@ public class GeneBuilder extends CellBaseBuilder {
                 geneDirectoryPath.resolve("all_gene_disease_associations.tsv.gz"),
                 geneDirectoryPath.resolve("gnomad.v2.1.1.lof_metrics.by_transcript.txt.bgz"),
                 geneDirectoryPath.resolve("goa_human.gaf.gz"),
-                geneDirectoryPath.getParent().resolve("regulation/miRNA.xls.gz"),
+                geneDirectoryPath.getParent().resolve("regulation/miRNA.xls"),
                 geneDirectoryPath.getParent().resolve("regulation/hsa_MTI.xlsx"),
                 genomeSequenceFastaFile,
                 speciesConfiguration, flexibleGTFParsing, serializer);
@@ -199,9 +199,6 @@ public class GeneBuilder extends CellBaseBuilder {
 
                     GeneAnnotation geneAnnotation = new GeneAnnotation(indexer.getExpression(geneId), indexer.getDiseases(geneName),
                             indexer.getDrugs(geneName), indexer.getConstraints(geneId), indexer.getMirnaTargets(geneName));
-
-                    logger.error("GENEID  " + geneId);
-                    logger.error("TRANSCRIPT " + transcriptId);
 
                     gene = new Gene(geneId, geneName, gtf.getSequenceName().replaceFirst("chr", ""),
                             gtf.getStart(), gtf.getEnd(), gtf.getStrand(), Integer.parseInt(gtf.getAttributes().get("gene_version")),

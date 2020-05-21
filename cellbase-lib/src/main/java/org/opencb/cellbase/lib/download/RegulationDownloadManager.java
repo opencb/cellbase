@@ -46,12 +46,9 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     private static final String MIRBASE_NAME = "miRBase";
     private static final String MIRTARBASE_NAME = "miRTarBase";
 
-
-
     public RegulationDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         super(species, assembly, outdir, configuration);
-
     }
 
     @Override
@@ -148,14 +145,16 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     }
 
     private DownloadFile downloadMirna() throws IOException, InterruptedException {
-        String url = configuration.getDownload().getMirbase().getHost() + "/miRNA.xls.gz";
+        String url = configuration.getDownload().getMirbase().getHost();
         String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
         downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
         saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME,
                 getLine(regulationFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
                 Collections.singletonList(url), regulationFolder.resolve("mirbaseVersion.json"));
-
-        return downloadFile(url, regulationFolder.resolve("miRNA.xls.gz").toString());
+        Path outputPath = regulationFolder.resolve("miRNA.xls.gz");
+        DownloadFile downloadFile = downloadFile(url, regulationFolder.resolve("miRNA.xls.gz").toString());
+        EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
+        return downloadFile;
     }
 
     private DownloadFile downloadMiRTarBase() throws IOException, InterruptedException {
