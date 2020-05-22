@@ -67,7 +67,7 @@ public class IndexManager {
      * Create indexes for specified collection. Use by the load to create indexes. Will throw an exception if
      * given database does not already exist.
      *
-     * @param collectionName create indexes for this collection
+     * @param collectionName create indexes for this collection, can be "all" or a list of collection names
      * @param databaseName name of database
      * @param dropIndexesFirst if TRUE, deletes the index before creating a new one. FALSE, no index is created if it
      *                         already exists.
@@ -82,7 +82,15 @@ public class IndexManager {
         }
         MongoDBAdaptorFactory factory = new MongoDBAdaptorFactory(configuration);
         MongoDataStore mongoDataStore = factory.getMongoDBDatastore(databaseName);
-        MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collectionName, dropIndexesFirst);
+
+        if (StringUtils.isEmpty(collectionName) || "all".equalsIgnoreCase(collectionName)) {
+            MongoDBIndexUtils.createAllIndexes(mongoDataStore, resourceAsStream, dropIndexesFirst);
+        } else {
+            String[] collections = collectionName.split(",");
+            for (String collection : collections) {
+                MongoDBIndexUtils.createIndexes(mongoDataStore, resourceAsStream, collection, dropIndexesFirst);
+            }
+        }
     }
 
     private void createMongoDBIndexes(String[] collections, String species, String assembly, boolean dropIndexesFirst)
