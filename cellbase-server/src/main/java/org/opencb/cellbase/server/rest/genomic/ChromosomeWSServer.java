@@ -103,7 +103,7 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             GenomeQuery query = new GenomeQuery(uriParams);
-            logger.info("/search GenomeQuery: " + query.toString());
+            logger.info("/search GenomeQuery: {}", query.toString());
             CellBaseDataResult queryResults = genomeManager.getGenomeInfo(query.toQueryOptions());
             return createOkResponse(queryResults);
         } catch (Exception e) {

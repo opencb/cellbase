@@ -102,7 +102,7 @@ public class TfWSServer extends RegulatoryWSServer {
                 query.setNames(Arrays.asList(identifier));
                 query.setFeatureTypes(Arrays.asList("TF_binding_site_motif", "TF_binding_site"));
                 queries.add(query);
-                logger.info("REST RegulationQuery: " + query.toString());
+                logger.info("REST RegulationQuery: {}", query.toString());
             }
             List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
             return createOkResponse(queryResults);

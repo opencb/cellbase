@@ -153,7 +153,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                 TranscriptQuery query = new TranscriptQuery(uriParams);
                 query.setTranscriptsXrefs(Arrays.asList(identifier));
                 queries.add(query);
-                logger.info("REST TranscriptQuery: " + query.toString());
+                logger.info("REST TranscriptQuery: {}", query.toString());
             }
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
             return createOkResponse(queryResults);
@@ -254,7 +254,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
-            logger.info("/search TranscriptQuery: " + query.toString());
+            logger.info("/search TranscriptQuery: {}", query.toString());
             CellBaseDataResult<Transcript> queryResult = transcriptManager.search(query);
             return createOkResponse(queryResult);
         } catch (Exception e) {
@@ -322,7 +322,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             query.setXrefs(Arrays.asList(transcripts.split(",")));
-            logger.info("REST proteinQuery: " + query.toString());
+            logger.info("REST proteinQuery: {}", query.toString());
             CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {

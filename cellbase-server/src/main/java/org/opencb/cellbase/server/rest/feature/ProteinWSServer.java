@@ -92,7 +92,7 @@ public class ProteinWSServer extends GenericRestWSServer {
                 ProteinQuery query = new ProteinQuery(uriParams);
                 query.setXrefs(Arrays.asList(identifier));
                 proteinQueries.add(query);
-                logger.info("REST proteinQuery: " + query.toString());
+                logger.info("REST proteinQuery: {}", query.toString());
             }
             List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(proteinQueries);
             return createOkResponse(queryResults);
