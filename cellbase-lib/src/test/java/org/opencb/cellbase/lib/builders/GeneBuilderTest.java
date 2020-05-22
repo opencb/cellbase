@@ -87,6 +87,31 @@ public class GeneBuilderTest {
         assertEquals("hsa-let-7a-1", miRNAGene.getMiRBaseID());
         assertEquals(2, miRNAGene.getMatures().size());
 
+        String sequence = "UGGGAUGAGGUAGUAGGUUGUAUAGUUUUAGGGUCACACCCACCACUGGGAGAUAACUAUACAAUCUACUGUCUUUCCUA";
+        String shortSequence = "CUAUACAAUCUACUGUCUUUC";
+        String otherSequence = "UGAGGUAGUAGGUUGUAUAGUU";
+        assertEquals(1, sequence.indexOf(otherSequence));
+
+
+        List<MiRNAGene.MiRNAMature> matures = miRNAGene.getMatures();
+        for (MiRNAGene.MiRNAMature mature : matures) {
+
+
+            if (mature.miRBaseID.equals("hsa-let-7a-5p")) {
+                assertEquals("UGAGGUAGUAGGUUGUAUAGUU", mature.sequence);
+                assertEquals("MIMAT0000062", mature.miRBaseAccession);
+                assertEquals("5", String.valueOf(mature.cdnaStart));
+                assertEquals("27", String.valueOf(mature.cdnaEnd));
+            }
+
+            if (mature.miRBaseID.equals("hsa-let-7a-3p")) {
+                assertEquals("CUAUACAAUCUACUGUCUUUC", mature.sequence);
+                assertEquals("MIMAT0004481", mature.miRBaseAccession);
+                assertEquals("56", String.valueOf(mature.cdnaStart));
+                assertEquals("77", String.valueOf(mature.cdnaEnd));
+            }
+        }
+
         GeneAnnotation annotation = gene.getAnnotation();
         assertEquals(1, annotation.getTargets().size());
         MiRnaTarget target = annotation.getTargets().get(0);

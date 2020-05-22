@@ -522,32 +522,38 @@ public class GeneBuilderIndexer {
                 cell = cellIterator.next();
                 String sequence = cell.getStringCellValue();
 
-                cellIterator.next();
+                cell = cellIterator.next();
                 String mature1Accession = cell.getStringCellValue();
 
-                cellIterator.next();
+                cell = cellIterator.next();
                 String mature1Id = cell.getStringCellValue();
 
-                cellIterator.next();
+                cell = cellIterator.next();
                 String mature1Sequence = cell.getStringCellValue();
 
                 String mature2Accession = "";
                 String mature2Id = "";
                 String mature2Sequence = "";
                 if (cellIterator.hasNext()) {
-                    cellIterator.next();
+                    cell = cellIterator.next();
                     mature2Accession = cell.getStringCellValue();
 
-                    cellIterator.next();
+                    cell = cellIterator.next();
                     mature2Id = cell.getStringCellValue();
 
-                    cellIterator.next();
+                    cell = cellIterator.next();
                     mature2Sequence = cell.getStringCellValue();
                 }
 
-                MiRNAGene miRNAGene = new MiRNAGene(miRBaseAccession, miRBaseID, status, sequence, new ArrayList<>(), new ArrayList<>());
-                miRNAGene.addMiRNAMature(mature1Accession, mature1Id, mature1Sequence, 0, 0);
-                miRNAGene.addMiRNAMature(mature2Accession, mature2Id, mature2Sequence, 0, 0);
+                MiRNAGene miRNAGene = new MiRNAGene(miRBaseAccession, miRBaseID, status, sequence, new ArrayList<>(),
+                        new ArrayList<>());
+                int cdnaStart = sequence.indexOf(mature1Sequence);
+                int cdnaEnd = cdnaStart + mature1Sequence.length();
+                miRNAGene.addMiRNAMature(mature1Accession, mature1Id, mature1Sequence, cdnaStart, cdnaEnd);
+
+                cdnaStart = sequence.indexOf(mature2Sequence);
+                cdnaEnd = cdnaStart + mature2Sequence.length();
+                miRNAGene.addMiRNAMature(mature2Accession, mature2Id, mature2Sequence, cdnaStart, cdnaEnd);
 
                 rocksDbManager.update(rocksdb, miRBaseID + MIRBASE_SUFFIX, miRNAGene);
             }
