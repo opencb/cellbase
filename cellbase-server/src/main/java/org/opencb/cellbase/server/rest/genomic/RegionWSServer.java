@@ -21,10 +21,7 @@ import org.bson.Document;
 import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.GeneQuery;
-import org.opencb.cellbase.core.api.queries.RegulationQuery;
-import org.opencb.cellbase.core.api.queries.RepeatsQuery;
-import org.opencb.cellbase.core.api.queries.TranscriptQuery;
+import org.opencb.cellbase.core.api.queries.*;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
@@ -96,12 +93,6 @@ public class RegionWSServer extends GenericRestWSServer {
             + "If histogram=true Document objects with keys start,end,chromosome & feature_count will be returned.",
             responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "histogram",
-                    value = "Boolean to indicate whether gene counts per interval shall be returned", defaultValue = "false",
-                    required = false, allowableValues = "true,false", dataType = "boolean", paramType = "query"),
-            @ApiImplicitParam(name = "interval",
-                    value = "Use only if histogram=true. Boolean indicating the size of the histogram interval",
-                    defaultValue = "200000", required = false, dataType = "Integer", paramType = "query"),
             @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
@@ -493,7 +484,7 @@ public class RegionWSServer extends GenericRestWSServer {
             for (String regionString : regionArray) {
                 RegulationQuery query = new RegulationQuery(uriParams);
                 query.setRegions(Collections.singletonList(Region.parseRegion(regionString)));
-                query.setFeatureTypes(Arrays.asList("TF_binding_site_motif", "TF_binding_site"));
+                query.setFeatureTypes(Collections.singletonList("TF_binding_site"));
                 logger.info("REST RegulationQuery: {}", query.toString());
             }
             List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
@@ -511,8 +502,9 @@ public class RegionWSServer extends GenericRestWSServer {
                                  @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                          required = true) String regions) {
         try {
-            parseQueryParams();
-            List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults = genomeManager.getConservation(queryOptions, regions);
+            GenomeQuery query = new GenomeQuery(uriParams);
+            List<CellBaseDataResult<GenomicScoreRegion<Float>>> queryResults
+                    = genomeManager.getConservation(query.toQueryOptions(), regions);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
