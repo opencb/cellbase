@@ -18,8 +18,11 @@ package org.opencb.cellbase.lib.managers;
 
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
+import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
+import org.opencb.cellbase.core.api.queries.ClinicalVariantQuery;
+import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
@@ -33,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ClinicalManager extends AbstractManager {
+public class ClinicalManager extends AbstractManager implements AggregationApi<ClinicalVariantQuery, ClinicalVariant> {
 
     private ClinicalMongoDBAdaptor clinicalDBAdaptor;
 
@@ -44,6 +47,11 @@ public class ClinicalManager extends AbstractManager {
 
     private void init() {
         clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
+    }
+
+    @Override
+    public CellBaseCoreDBAdaptor getDBAdaptor() {
+        return clinicalDBAdaptor;
     }
 
     public CellBaseDataResult<Variant> search(Query query, QueryOptions queryOptions) {
@@ -179,6 +187,8 @@ public class ClinicalManager extends AbstractManager {
         }
         return results;
     }
+
+
 
 //    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
 //                                                          QueryOptions queryOptions) {
