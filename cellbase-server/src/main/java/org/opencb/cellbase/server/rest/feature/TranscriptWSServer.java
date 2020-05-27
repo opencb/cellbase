@@ -17,6 +17,7 @@
 package org.opencb.cellbase.server.rest.feature;
 
 import io.swagger.annotations.*;
+import org.forester.protein.Protein;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -205,9 +206,15 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
                                     value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String id) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            geneQuery.setTranscriptsId(Arrays.asList(id.split(",")));
-            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
+            List<GeneQuery> queries = new ArrayList<>();
+            String[] identifiers =  id.split(",");
+            for (String identifier : identifiers) {
+                GeneQuery query = new GeneQuery(uriParams);
+                query.setTranscriptsXrefs(Arrays.asList(identifier));
+                queries.add(query);
+                logger.info("REST GeneQuery: {}", query.toString());
+            }
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -320,10 +327,15 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String transcripts) {
         try {
-            ProteinQuery query = new ProteinQuery(uriParams);
-            query.setXrefs(Arrays.asList(transcripts.split(",")));
-            logger.info("REST proteinQuery: {}", query.toString());
-            CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
+            List<ProteinQuery> queries = new ArrayList<>();
+            String[] identifiers =  transcripts.split(",");
+            for (String identifier : identifiers) {
+                ProteinQuery query = new ProteinQuery(uriParams);
+                query.setXrefs(Arrays.asList(identifier));
+                queries.add(query);
+                logger.info("REST proteinQuery: {}", query.toString());
+            }
+            List<CellBaseDataResult<Protein>> queryResults = proteinManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -334,7 +346,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcripts}/functionPrediction")
     @ApiOperation(httpMethod = "GET", value = "Get the gene corresponding substitution scores for the protein of a certain transcript",
             notes = ParamConstants.SUBSTITUTION_SCORE_NOTE, response = List.class, responseContainer = "QueryResponse")
-    public Response getProteinFunctionPredictionBytranscripts(@PathParam("transcript") @ApiParam(name = "transcript",
+    public Response getProteinFunctionPredictionBytranscripts(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_XREF, required = true) String id,
                                                               @QueryParam("position") @ApiParam(name = "position",
                                                                       value = ParamConstants.POSITION_DESCRIPTION,
