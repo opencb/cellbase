@@ -356,7 +356,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                                                                       required = false) String aa) {
         try {
             TranscriptQuery query = new TranscriptQuery(uriParams);
-            query.setTranscriptsXrefs(Arrays.asList(id.split(",")));
+            query.setTranscriptsXrefs(Arrays.asList(id));
             CellBaseDataResult queryResults = proteinManager.getSubstitutionScores(query, position, aa);
             return createOkResponse(queryResults);
         } catch (Exception e) {

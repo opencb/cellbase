@@ -89,7 +89,7 @@ public class ProteinManager extends AbstractManager implements AggregationApi<Pr
         logger.info("Searching transcripts for {}", query.getTranscriptsXrefs());
 //        Query transcriptQuery = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), id);
 //        QueryOptions transcriptQueryOptions = new QueryOptions("include", "transcripts.id");
-        query.setIncludes(Collections.singletonList("transcripts.id"));
+//        query.setIncludes(Collections.singletonList("transcripts.id"));
         CellBaseDataResult<Transcript> queryResult = transcriptDBAdaptor.query(query);
         logger.info("{} transcripts found", queryResult.getNumResults());
         // Get substitution scores for fetched transcript
