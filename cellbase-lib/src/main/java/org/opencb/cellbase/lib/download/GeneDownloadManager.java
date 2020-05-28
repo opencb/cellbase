@@ -82,7 +82,7 @@ public class GeneDownloadManager extends AbstractDownloadManager {
         downloadFiles.addAll(downloadGeneDiseaseAnnotation(geneFolder));
         downloadFiles.add(downloadGnomadConstraints(geneFolder));
         downloadFiles.add(downloadGO(geneFolder));
-//        runGeneExtraInfo(geneFolder);
+        runGeneExtraInfo(geneFolder);
 
         return downloadFiles;
     }

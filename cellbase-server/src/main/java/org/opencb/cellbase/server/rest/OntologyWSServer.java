@@ -31,21 +31,24 @@ import org.opencb.cellbase.server.exception.VersionException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Path("/{apiVersion}/{species}/feature/ontology")
-@Produces("application/json")
+@Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Ontology", description = "Ontology RESTful Web Services API")
 public class OntologyWSServer extends GenericRestWSServer {
 
     private OntologyManager ontologyManager;
 
-    public OntologyWSServer(@ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
+    public OntologyWSServer(@PathParam("apiVersion") @ApiParam(name = "apiVersion",
+                                value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                             @PathParam("species") @ApiParam(name = "species",
                                     value = ParamConstants.SPECIES_DESCRIPTION) String species,
@@ -129,7 +132,7 @@ public class OntologyWSServer extends GenericRestWSServer {
                 OntologyQuery query = new OntologyQuery(uriParams);
                 query.setIds(Collections.singletonList(identifier));
                 queries.add(query);
-                logger.info("REST OntologyQuery: " + query.toString());
+                logger.info("REST OntologyQuery: {}", query.toString());
             }
             List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(queries);
             return createOkResponse(queryResults);
@@ -169,4 +172,13 @@ public class OntologyWSServer extends GenericRestWSServer {
             return createErrorResponse(e);
         }
     }
+
+    @GET
+    @Path("/model")
+    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
+            responseContainer = "QueryResponse")
+    public Response getModel() {
+        return createModelResponse(OntologyTerm.class);
+    }
+
 }

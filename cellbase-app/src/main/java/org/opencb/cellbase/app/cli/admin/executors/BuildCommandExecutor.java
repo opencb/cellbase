@@ -251,7 +251,7 @@ public class BuildCommandExecutor extends CommandExecutor {
         return new GenomeSequenceFastaBuilder(fastaFile, serializer);
     }
 
-    private CellBaseBuilder buildGene() {
+    private CellBaseBuilder buildGene() throws CellbaseException {
         Path geneFolderPath = downloadFolder.resolve("gene");
         copyVersionFiles(Arrays.asList(geneFolderPath.resolve("dgidbVersion.json"),
                 geneFolderPath.resolve("ensemblCoreVersion.json"), geneFolderPath.resolve("uniprotXrefVersion.json"),

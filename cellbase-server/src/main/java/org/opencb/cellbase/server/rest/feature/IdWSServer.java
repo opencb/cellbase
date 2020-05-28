@@ -91,7 +91,7 @@ public class IdWSServer extends GenericRestWSServer {
                 XrefQuery query = new XrefQuery(uriParams);
                 query.setIds(Collections.singletonList(identifier));
                 queries.add(query);
-                logger.info("REST XrefQuery: " + query.toString());
+                logger.info("REST XrefQuery: {}", query.toString());
             }
             List<CellBaseDataResult<Xref>> queryResults = xrefManager.info(queries);
             return createOkResponse(queryResults);
@@ -187,7 +187,7 @@ public class IdWSServer extends GenericRestWSServer {
                 GeneQuery geneQuery = new GeneQuery(uriParams);
                 geneQuery.setTranscriptsXrefs(Arrays.asList(identifier));
                 geneQueries.add(geneQuery);
-                logger.info("REST geneQuery: " + geneQuery.toString());
+                logger.info("REST geneQuery: {}", geneQuery.toString());
             }
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
             return createOkResponse(queryResults);

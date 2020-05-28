@@ -20,17 +20,14 @@ package org.opencb.cellbase.lib.builders;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.opencb.biodata.formats.feature.gff.Gff2;
 import org.opencb.biodata.formats.feature.gtf.Gtf;
-import org.opencb.biodata.models.core.Exon;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.Transcript;
-import org.opencb.biodata.models.core.TranscriptTfbs;
+import org.opencb.biodata.models.core.*;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.serializer.CellBaseJsonFileSerializer;
 import org.opencb.cellbase.core.serializer.CellBaseSerializer;
 import org.opencb.commons.utils.FileUtils;
@@ -51,12 +48,12 @@ public class GeneBuilderTest {
     private GeneBuilder geneParser;
     private ObjectMapper jsonObjectMapper;
     private static final SpeciesConfiguration SPECIES = new SpeciesConfiguration("hsapiens", "Homo sapiens", "human", null, null, null);
-    public GeneBuilderTest() throws URISyntaxException {
+    public GeneBuilderTest() throws URISyntaxException, CellbaseException {
         init();
     }
 
     @BeforeAll
-    public void init() throws URISyntaxException {
+    public void init() throws URISyntaxException, CellbaseException {
         Path genomeSequenceFastaFile
                 = Paths.get(GeneBuilderTest.class.getResource("/gene/Homo_sapiens.GRCh38.fa").toURI());
         Path geneDirectoryPath = Paths.get(GeneBuilderTest.class.getResource("/gene").toURI());
@@ -69,6 +66,72 @@ public class GeneBuilderTest {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectMapper.configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, true);
         jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
+
+    @Test
+    public void testRocksdb() throws Exception {
+        geneParser.parse();
+
+        List<Gene> genes = loadSerializedGenes("/tmp/gene.json.gz");
+
+        Gene gene = getGene("ENSG00000227232", genes);
+
+        assertNotNull(gene);
+        assertEquals("WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]", gene.getDescription());
+
+        MiRNAGene miRNAGene = gene.getMirna();
+        assertNotNull(miRNAGene);
+        assertEquals("UGGGAUGAGGUAGUAGGUUGUAUAGUUUUAGGGUCACACCCACCACUGGGAGAUAACUAUACAAUCUACUGUCUUUCCUA", miRNAGene.getSequence());
+        assertEquals("UNCHANGED", miRNAGene.getStatus());
+        assertEquals("MI0000060", miRNAGene.getMiRBaseAccession());
+        assertEquals("hsa-let-7a-1", miRNAGene.getMiRBaseID());
+        assertEquals(2, miRNAGene.getMatures().size());
+
+        String sequence = "UGGGAUGAGGUAGUAGGUUGUAUAGUUUUAGGGUCACACCCACCACUGGGAGAUAACUAUACAAUCUACUGUCUUUCCUA";
+        String shortSequence = "CUAUACAAUCUACUGUCUUUC";
+        String otherSequence = "UGAGGUAGUAGGUUGUAUAGUU";
+        assertEquals(1, sequence.indexOf(otherSequence));
+
+
+        List<MiRNAGene.MiRNAMature> matures = miRNAGene.getMatures();
+        for (MiRNAGene.MiRNAMature mature : matures) {
+
+
+            if (mature.miRBaseID.equals("hsa-let-7a-5p")) {
+                assertEquals("UGAGGUAGUAGGUUGUAUAGUU", mature.sequence);
+                assertEquals("MIMAT0000062", mature.miRBaseAccession);
+                assertEquals("5", String.valueOf(mature.cdnaStart));
+                assertEquals("27", String.valueOf(mature.cdnaEnd));
+            }
+
+            if (mature.miRBaseID.equals("hsa-let-7a-3p")) {
+                assertEquals("CUAUACAAUCUACUGUCUUUC", mature.sequence);
+                assertEquals("MIMAT0004481", mature.miRBaseAccession);
+                assertEquals("56", String.valueOf(mature.cdnaStart));
+                assertEquals("77", String.valueOf(mature.cdnaEnd));
+            }
+        }
+
+        GeneAnnotation annotation = gene.getAnnotation();
+        assertEquals(1, annotation.getTargets().size());
+        MiRnaTarget target = annotation.getTargets().get(0);
+        assertEquals("MIRT000002", target.getId());
+        assertEquals("miRTarBase", target.getSource());
+        assertEquals("hsa-miR-20a-5p", target.getSourceId());
+        assertEquals(3, target.getTargets().size());
+
+        Transcript transcript = getTranscript(gene, "ENST00000488147");
+        assertEquals(15, transcript.getXrefs().size());
+
+    }
+
+    private Xref getXref(Transcript transcript, String xrefId) {
+        for (Xref xref : transcript.getXrefs()) {
+            if (xref.getId().equals(xrefId)) {
+                return xref;
+            }
+        }
+        return null;
     }
 
     /**
@@ -101,6 +164,15 @@ public class GeneBuilderTest {
         return null;
     }
 
+    private Gene getGene(String id, List<Gene> genes) {
+        for (Gene gene : genes) {
+            if (id.equals(gene.getId())) {
+                return gene;
+            }
+        }
+        return null;
+    }
+
     @Test
     public void testTranscriptSequenceAndVersion() throws Exception {
         geneParser.parse();
@@ -114,15 +186,19 @@ public class GeneBuilderTest {
         assertEquals("1", transcript.getSupportLevel());
     }
 
-    private Transcript getTranscript(String transcriptId, List<Gene> geneList) {
-        for (Gene gene : geneList) {
-            for (Transcript transcript : gene.getTranscripts()) {
-                if (transcript.getId().equals(transcriptId)) {
-                    return transcript;
-                }
+    private Transcript getTranscript(Gene gene, String transcriptId) {
+        for (Transcript transcript : gene.getTranscripts()) {
+            if (transcript.getId().equals(transcriptId)) {
+                return transcript;
             }
         }
+        return null;
+    }
 
+    private Transcript getTranscript(String transcriptId, List<Gene> geneList) {
+        for (Gene gene : geneList) {
+            return getTranscript(gene, transcriptId);
+        }
         return null;
     }
 

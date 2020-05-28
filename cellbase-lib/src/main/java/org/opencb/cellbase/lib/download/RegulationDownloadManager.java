@@ -43,24 +43,16 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
     private Path regulationFolder;
 
     private static final String ENSEMBL_NAME = "ENSEMBL";
-//    private static final String MIRBASE_NAME = "miRBase";
-//    private static final String MIRTARBASE_NAME = "miRTarBase";
-//    private static final String TARGETSCAN_NAME = "TargetScan";
-
-    private List<DownloadFile> downloadFiles;
+    private static final String MIRBASE_NAME = "miRBase";
+    private static final String MIRTARBASE_NAME = "miRTarBase";
 
     public RegulationDownloadManager(String species, String assembly, Path outdir, CellBaseConfiguration configuration)
             throws IOException, CellbaseException {
         super(species, assembly, outdir, configuration);
-
     }
 
     @Override
     public List<DownloadFile> download() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
-        return downloadRegulation();
-    }
-
-    public List<DownloadFile> downloadRegulation() throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         if (!speciesHasInfoToDownload(speciesConfiguration, "regulation")) {
             return null;
         }
@@ -68,31 +60,30 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         Files.createDirectories(regulationFolder);
 
         logger.info("Downloading regulation information ...");
-        downloadFiles = new ArrayList<>();
 
-        List<String> downloadedUrls = new ArrayList<>();
-        downloadedUrls.addAll(downloadRegulatoryaAndMotifFeatures());
-        downloadedUrls.addAll(downloadMirna());
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
-        saveVersionData(EtlCommons.REGULATION_DATA, ENSEMBL_NAME, ensemblVersion, getTimeStamp(), downloadedUrls,
-                regulationFolder.resolve("regulation_version.json"));
+        downloadFiles.addAll(downloadRegulatoryaAndMotifFeatures());
+        downloadFiles.add(downloadMirna());
+        downloadFiles.add(downloadMiRTarBase());
 
         return downloadFiles;
     }
 
     /**
      * Downloads Ensembl regulatory buid and motif feature files.
-     * @return A list of all URLs downloaded
      * @throws IOException Any issue when writing files
      * @throws InterruptedException Any issue downloading files
      */
-    private List<String> downloadRegulatoryaAndMotifFeatures()
+    private List<DownloadFile> downloadRegulatoryaAndMotifFeatures()
             throws IOException, InterruptedException, NoSuchMethodException, FileFormatException {
         String regulationUrl = ensemblHostUrl + "/" + ensemblRelease;
         if (!configuration.getSpecies().getVertebrates().contains(speciesConfiguration)) {
             regulationUrl = ensemblHostUrl + "/" + ensemblRelease + "/" + getPhylo(speciesConfiguration);
         }
         regulationUrl += "/regulation/" + speciesShortName;
+
+        List<DownloadFile> downloadFiles = new ArrayList<>();
 
         Path outputFile = regulationFolder.resolve(EtlCommons.REGULATORY_FEATURES_FILE);
         String regulatoryBuildUrl = regulationUrl + "/*Regulatory_Build.regulatory_features*.gff.gz";
@@ -108,13 +99,13 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
 
         loadPfmMatrices();
 
-        return Arrays.asList(regulatoryBuildUrl, motifUrl, motifTbiUrl);
+        return downloadFiles;
     }
 
     private void loadPfmMatrices() throws IOException, NoSuchMethodException, FileFormatException, InterruptedException {
         logger.info("Downloading and building pfm matrices...");
         if (Files.exists(buildFolder.resolve("regulatory_pfm.json.gz"))) {
-            logger.info(buildFolder.resolve("regulatory_pfm.json.gz") + " is already built");
+            logger.info("regulatory_pfm.json.gz is already built");
             return;
         }
         Path motifGffFile = regulationFolder.resolve(EtlCommons.MOTIF_FEATURES_FILE);
@@ -153,59 +144,23 @@ public class RegulationDownloadManager extends AbstractDownloadManager {
         return null;
     }
 
-    private List<String> downloadMirna() {
-        List<String> downloadedUrls = new ArrayList<>();
-//        String url;
-//        Path mirbaseFolder = regulationFolder.resolve("mirbase");
-//        if (!Files.exists(mirbaseFolder)) {
-//            Files.createDirectories(mirbaseFolder);
-//            downloadedUrls = new ArrayList<>(2);
-//
-//            url = configuration.getDownload().getMirbase().getHost() + "/miRNA.xls.gz";
-//            downloadFile(url, mirbaseFolder.resolve("miRNA.xls.gz").toString());
-//            downloadedUrls.add(url);
-//
-//            url = configuration.getDownload().getMirbase().getHost() + "/aliases.txt.gz";
-//            downloadFile(url, mirbaseFolder.resolve("aliases.txt.gz").toString());
-//            downloadedUrls.add(url);
-//
-//            String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
-//            downloadFile(readmeUrl, mirbaseFolder.resolve("mirbaseReadme.txt").toString());
-//            saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME,
-//                    getLine(mirbaseFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
-//                    Collections.singletonList(url), mirbaseFolder.resolve("mirbaseVersion.json"));
-//        }
-//
-//        if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
-//            if (assemblyConfiguration.getName().equalsIgnoreCase("GRCh37")) {
-//                url = configuration.getDownload().getTargetScan().getHost() + "/hg19/database/targetScanS.txt.gz";
-//                downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
-//
-//                String readmeUrl = configuration.getDownload().getTargetScan().getHost() + "/hg19/database/README.txt";
-//                saveVersionData(EtlCommons.REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
-//                        Collections.singletonList(url), regulationFolder.resolve("targetScanVersion.json"));
-//
-//                url = configuration.getDownload().getMiRTarBase().getHost() + "/hsa_MTI.xls";
-//                downloadFile(url, regulationFolder.resolve("hsa_MTI.xls").toString());
-//                saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
-//                        Collections.singletonList(url), regulationFolder.resolve("miRTarBaseVersion.json"));
-//            }
-//        }
-//        if (speciesConfiguration.getScientificName().equals("Mus musculus")) {
-//            url = configuration.getDownload().getTargetScan().getHost() + "/mm9/database/targetScanS.txt.gz";
-//            downloadFile(url, regulationFolder.resolve("targetScanS.txt.gz").toString());
-//
-//            String readmeUrl = configuration.getDownload().getTargetScan().getHost() + "/mm9/database/README.txt";
-//            downloadFile(readmeUrl, regulationFolder.resolve("targetScanReadme.txt").toString());
-//            saveVersionData(EtlCommons.REGULATION_DATA, TARGETSCAN_NAME, null, getTimeStamp(),
-//                    Collections.singletonList(url), regulationFolder.resolve("targetScanVersion.json"));
-//
-//            url = configuration.getDownload().getMiRTarBase().getHost() + "/mmu_MTI.xls";
-//            downloadFile(url, regulationFolder.resolve("mmu_MTI.xls").toString());
-//            saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, url.split("/")[5], getTimeStamp(),
-//                    Collections.singletonList(url),
-//                    regulationFolder.resolve("miRTarBaseVersion.json"));
-//        }
-        return downloadedUrls;
+    private DownloadFile downloadMirna() throws IOException, InterruptedException {
+        String url = configuration.getDownload().getMirbase().getHost();
+        String readmeUrl = configuration.getDownload().getMirbaseReadme().getHost();
+        downloadFile(readmeUrl, regulationFolder.resolve("mirbaseReadme.txt").toString());
+        saveVersionData(EtlCommons.REGULATION_DATA, MIRBASE_NAME,
+                getLine(regulationFolder.resolve("mirbaseReadme.txt"), 1), getTimeStamp(),
+                Collections.singletonList(url), regulationFolder.resolve("mirbaseVersion.json"));
+        Path outputPath = regulationFolder.resolve("miRNA.xls.gz");
+        DownloadFile downloadFile = downloadFile(url, regulationFolder.resolve("miRNA.xls.gz").toString());
+        EtlCommons.runCommandLineProcess(null, "gunzip", Collections.singletonList(outputPath.toString()), null);
+        return downloadFile;
+    }
+
+    private DownloadFile downloadMiRTarBase() throws IOException, InterruptedException {
+        String url = configuration.getDownload().getMiRTarBase().getHost();
+        saveVersionData(EtlCommons.REGULATION_DATA, MIRTARBASE_NAME, null, getTimeStamp(), Collections.singletonList(url),
+                regulationFolder.resolve("miRTarBaseVersion.json"));
+        return downloadFile(url, regulationFolder.resolve("hsa_MTI.xlsx").toString());
     }
 }

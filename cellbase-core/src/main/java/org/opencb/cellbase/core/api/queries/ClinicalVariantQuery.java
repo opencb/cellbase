@@ -26,6 +26,13 @@ public class ClinicalVariantQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     protected List<Region> regions;
 
+    @QueryParameter(id = "chromosome")
+    protected String chromosome;
+    @QueryParameter(id = "start")
+    protected String start;
+    @QueryParameter(id = "end")
+    protected String end;
+
     @QueryParameter(id = "source")
     protected List<String> sources;
     @QueryParameter(id = "so")
@@ -58,28 +65,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
         super(params);
     }
 
-    private ClinicalVariantQuery(Builder builder) {
-        setIncludes(builder.includes);
-        setExcludes(builder.excludes);
-        setLimit(builder.limit);
-        setSkip(builder.skip);
-        setCount(builder.count);
-        setSort(builder.sort);
-        setOrder(builder.order);
-        setFacet(builder.facet);
-        setRegions(builder.regions);
-        setSources(builder.sources);
-        setSo(builder.so);
-        setFeatures(builder.features);
-        setTraits(builder.traits);
-        setAccessions(builder.accessions);
-        setIds(builder.ids);
-        setTypes(builder.types);
-        setConsistencyStatuses(builder.consistencyStatuses);
-        setClinicalSignificances(builder.clinicalSignificances);
-        setModeInheritances(builder.modeInheritances);
-        setAlleleOrigins(builder.alleleOrigins);
-    }
 
     @Override
     protected void validateQuery() throws QueryException {
@@ -90,6 +75,9 @@ public class ClinicalVariantQuery extends AbstractQuery {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ClinicalVariantQuery{");
         sb.append("regions=").append(regions);
+        sb.append(", chromosome='").append(chromosome).append('\'');
+        sb.append(", start='").append(start).append('\'');
+        sb.append(", end='").append(end).append('\'');
         sb.append(", sources=").append(sources);
         sb.append(", so=").append(so);
         sb.append(", features=").append(features);
@@ -117,237 +105,296 @@ public class ClinicalVariantQuery extends AbstractQuery {
         return regions;
     }
 
-    public ClinicalVariantQuery setRegions(List<Region> regions) {
+    public void setRegions(List<Region> regions) {
         this.regions = regions;
-        return this;
+    }
+
+    public String getChromosome() {
+        return chromosome;
+    }
+
+    public void setChromosome(String chromosome) {
+        this.chromosome = chromosome;
+    }
+
+    public String getStart() {
+        return start;
+    }
+
+    public void setStart(String start) {
+        this.start = start;
+    }
+
+    public String getEnd() {
+        return end;
+    }
+
+    public void setEnd(String end) {
+        this.end = end;
     }
 
     public List<String> getSources() {
         return sources;
     }
 
-    public ClinicalVariantQuery setSources(List<String> sources) {
+    public void setSources(List<String> sources) {
         this.sources = sources;
-        return this;
     }
 
     public List<String> getSo() {
         return so;
     }
 
-    public ClinicalVariantQuery setSo(List<String> so) {
+    public void setSo(List<String> so) {
         this.so = so;
-        return this;
     }
 
     public List<String> getFeatures() {
         return features;
     }
 
-    public ClinicalVariantQuery setFeatures(List<String> features) {
+    public void setFeatures(List<String> features) {
         this.features = features;
-        return this;
     }
 
     public List<String> getTraits() {
         return traits;
     }
 
-    public ClinicalVariantQuery setTraits(List<String> traits) {
+    public void setTraits(List<String> traits) {
         this.traits = traits;
-        return this;
     }
 
     public List<String> getAccessions() {
         return accessions;
     }
 
-    public ClinicalVariantQuery setAccessions(List<String> accessions) {
+    public void setAccessions(List<String> accessions) {
         this.accessions = accessions;
-        return this;
     }
 
     public List<String> getIds() {
         return ids;
     }
 
-    public ClinicalVariantQuery setIds(List<String> ids) {
+    public void setIds(List<String> ids) {
         this.ids = ids;
-        return this;
     }
 
     public List<String> getTypes() {
         return types;
     }
 
-    public ClinicalVariantQuery setTypes(List<String> types) {
+    public void setTypes(List<String> types) {
         this.types = types;
-        return this;
     }
 
     public List<String> getConsistencyStatuses() {
         return consistencyStatuses;
     }
 
-    public ClinicalVariantQuery setConsistencyStatuses(List<String> consistencyStatuses) {
+    public void setConsistencyStatuses(List<String> consistencyStatuses) {
         this.consistencyStatuses = consistencyStatuses;
-        return this;
     }
 
     public List<String> getClinicalSignificances() {
         return clinicalSignificances;
     }
 
-    public ClinicalVariantQuery setClinicalSignificances(List<String> clinicalSignificances) {
+    public void setClinicalSignificances(List<String> clinicalSignificances) {
         this.clinicalSignificances = clinicalSignificances;
-        return this;
     }
 
     public List<String> getModeInheritances() {
         return modeInheritances;
     }
 
-    public ClinicalVariantQuery setModeInheritances(List<String> modeInheritances) {
+    public void setModeInheritances(List<String> modeInheritances) {
         this.modeInheritances = modeInheritances;
-        return this;
     }
 
     public List<String> getAlleleOrigins() {
         return alleleOrigins;
     }
 
-    public ClinicalVariantQuery setAlleleOrigins(List<String> alleleOrigins) {
+    public void setAlleleOrigins(List<String> alleleOrigins) {
         this.alleleOrigins = alleleOrigins;
-        return this;
     }
 
-    public static final class Builder {
-        private List<String> includes;
-        private List<String> excludes;
-        private Integer limit;
-        private Integer skip;
-        private Boolean count;
-        private String sort;
-        private Order order;
-        private String facet;
-        private List<Region> regions;
-        private List<String> sources;
-        private List<String> so;
-        private List<String> features;
-        private List<String> traits;
-        private List<String> accessions;
-        private List<String> ids;
-        private List<String> types;
-        private List<String> consistencyStatuses;
-        private List<String> clinicalSignificances;
-        private List<String> modeInheritances;
-        private List<String> alleleOrigins;
 
-        public Builder() {
+    public static final class ClinicalVariantQueryBuilder {
+        protected List<Region> regions;
+        protected String chromosome;
+        protected String start;
+        protected String end;
+        protected List<String> sources;
+        protected List<String> so;
+        protected List<String> features;
+        protected List<String> traits;
+        protected List<String> accessions;
+        protected List<String> ids;
+        protected List<String> types;
+        protected List<String> consistencyStatuses;
+        protected List<String> clinicalSignificances;
+        protected List<String> modeInheritances;
+        protected List<String> alleleOrigins;
+        protected Integer limit;
+        protected Integer skip;
+        protected Boolean count = false;
+        protected String sort;
+        protected Order order;
+        protected String facet;
+        protected List<String> includes;
+        protected List<String> excludes;
+
+        private ClinicalVariantQueryBuilder() {
         }
 
-        public Builder withIncludes(List<String> val) {
-            includes = val;
+        public static ClinicalVariantQueryBuilder aClinicalVariantQuery() {
+            return new ClinicalVariantQueryBuilder();
+        }
+
+        public ClinicalVariantQueryBuilder withRegions(List<Region> regions) {
+            this.regions = regions;
             return this;
         }
 
-        public Builder withExcludes(List<String> val) {
-            excludes = val;
+        public ClinicalVariantQueryBuilder withChromosome(String chromosome) {
+            this.chromosome = chromosome;
             return this;
         }
 
-        public Builder withLimit(Integer val) {
-            limit = val;
+        public ClinicalVariantQueryBuilder withStart(String start) {
+            this.start = start;
             return this;
         }
 
-        public Builder withSkip(Integer val) {
-            skip = val;
+        public ClinicalVariantQueryBuilder withEnd(String end) {
+            this.end = end;
             return this;
         }
 
-        public Builder withCount(Boolean val) {
-            count = val;
+        public ClinicalVariantQueryBuilder withSources(List<String> sources) {
+            this.sources = sources;
             return this;
         }
 
-        public Builder withSort(String val) {
-            sort = val;
+        public ClinicalVariantQueryBuilder withSo(List<String> so) {
+            this.so = so;
             return this;
         }
 
-        public Builder withOrder(Order val) {
-            order = val;
+        public ClinicalVariantQueryBuilder withFeatures(List<String> features) {
+            this.features = features;
             return this;
         }
 
-        public Builder withFacet(String val) {
-            facet = val;
+        public ClinicalVariantQueryBuilder withTraits(List<String> traits) {
+            this.traits = traits;
             return this;
         }
 
-        public Builder withRegions(List<Region> val) {
-            regions = val;
+        public ClinicalVariantQueryBuilder withAccessions(List<String> accessions) {
+            this.accessions = accessions;
             return this;
         }
 
-        public Builder withSources(List<String> val) {
-            sources = val;
+        public ClinicalVariantQueryBuilder withIds(List<String> ids) {
+            this.ids = ids;
             return this;
         }
 
-        public Builder withSo(List<String> val) {
-            so = val;
+        public ClinicalVariantQueryBuilder withTypes(List<String> types) {
+            this.types = types;
             return this;
         }
 
-        public Builder withFeatures(List<String> val) {
-            features = val;
+        public ClinicalVariantQueryBuilder withConsistencyStatuses(List<String> consistencyStatuses) {
+            this.consistencyStatuses = consistencyStatuses;
             return this;
         }
 
-        public Builder withTraits(List<String> val) {
-            traits = val;
+        public ClinicalVariantQueryBuilder withClinicalSignificances(List<String> clinicalSignificances) {
+            this.clinicalSignificances = clinicalSignificances;
             return this;
         }
 
-        public Builder withAccessions(List<String> val) {
-            accessions = val;
+        public ClinicalVariantQueryBuilder withModeInheritances(List<String> modeInheritances) {
+            this.modeInheritances = modeInheritances;
             return this;
         }
 
-        public Builder withIds(List<String> val) {
-            ids = val;
+        public ClinicalVariantQueryBuilder withAlleleOrigins(List<String> alleleOrigins) {
+            this.alleleOrigins = alleleOrigins;
             return this;
         }
 
-        public Builder withTypes(List<String> val) {
-            types = val;
+        public ClinicalVariantQueryBuilder withLimit(Integer limit) {
+            this.limit = limit;
             return this;
         }
 
-        public Builder withConsistencyStatuses(List<String> val) {
-            consistencyStatuses = val;
+        public ClinicalVariantQueryBuilder withSkip(Integer skip) {
+            this.skip = skip;
             return this;
         }
 
-        public Builder withClinicalSignificances(List<String> val) {
-            clinicalSignificances = val;
+        public ClinicalVariantQueryBuilder withCount(Boolean count) {
+            this.count = count;
             return this;
         }
 
-        public Builder withModeInheritances(List<String> val) {
-            modeInheritances = val;
+        public ClinicalVariantQueryBuilder withSort(String sort) {
+            this.sort = sort;
             return this;
         }
 
-        public Builder withAlleleOrigins(List<String> val) {
-            alleleOrigins = val;
+        public ClinicalVariantQueryBuilder withOrder(Order order) {
+            this.order = order;
+            return this;
+        }
+
+        public ClinicalVariantQueryBuilder withFacet(String facet) {
+            this.facet = facet;
+            return this;
+        }
+
+        public ClinicalVariantQueryBuilder withIncludes(List<String> includes) {
+            this.includes = includes;
+            return this;
+        }
+
+        public ClinicalVariantQueryBuilder withExcludes(List<String> excludes) {
+            this.excludes = excludes;
             return this;
         }
 
         public ClinicalVariantQuery build() {
-            return new ClinicalVariantQuery(this);
+            ClinicalVariantQuery clinicalVariantQuery = new ClinicalVariantQuery();
+            clinicalVariantQuery.setRegions(regions);
+            clinicalVariantQuery.setChromosome(chromosome);
+            clinicalVariantQuery.setStart(start);
+            clinicalVariantQuery.setEnd(end);
+            clinicalVariantQuery.setSources(sources);
+            clinicalVariantQuery.setSo(so);
+            clinicalVariantQuery.setFeatures(features);
+            clinicalVariantQuery.setTraits(traits);
+            clinicalVariantQuery.setAccessions(accessions);
+            clinicalVariantQuery.setIds(ids);
+            clinicalVariantQuery.setTypes(types);
+            clinicalVariantQuery.setConsistencyStatuses(consistencyStatuses);
+            clinicalVariantQuery.setClinicalSignificances(clinicalSignificances);
+            clinicalVariantQuery.setModeInheritances(modeInheritances);
+            clinicalVariantQuery.setAlleleOrigins(alleleOrigins);
+            clinicalVariantQuery.setLimit(limit);
+            clinicalVariantQuery.setSkip(skip);
+            clinicalVariantQuery.setCount(count);
+            clinicalVariantQuery.setSort(sort);
+            clinicalVariantQuery.setOrder(order);
+            clinicalVariantQuery.setFacet(facet);
+            clinicalVariantQuery.setIncludes(includes);
+            clinicalVariantQuery.setExcludes(excludes);
+            return clinicalVariantQuery;
         }
     }
 }

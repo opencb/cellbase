@@ -315,7 +315,7 @@ public class GeneWSServer extends GenericRestWSServer {
     public Response getAll() {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
-            logger.info("/search GeneQuery: " + geneQuery.toString());
+            logger.info("/search GeneQuery: {} ", geneQuery.toString());
             CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -412,7 +412,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 GeneQuery geneQuery = new GeneQuery(uriParams);
                 geneQuery.setTranscriptsXrefs(Collections.singletonList(identifier));
                 geneQueries.add(geneQuery);
-                logger.info("REST geneQuery: " + geneQuery.toString());
+                logger.info("REST geneQuery: {}", geneQuery.toString());
             }
             List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
             return createOkResponse(queryResults);
@@ -473,7 +473,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 TranscriptQuery query = new TranscriptQuery(uriParams);
                 query.setTranscriptsXrefs(Arrays.asList(identifier));
                 queries.add(query);
-                logger.info("REST TranscriptQuery: " + query.toString());
+                logger.info("REST TranscriptQuery: {}", query.toString());
             }
             List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
             return createOkResponse(queryResults);
@@ -571,7 +571,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 VariantQuery query = new VariantQuery(uriParams);
                 query.setGenes(new LogicalList(Collections.singletonList(identifier)));
                 queries.add(query);
-                logger.info("REST VariantQuery: " + query.toString());
+                logger.info("REST VariantQuery: {}", query.toString());
             }
             List<CellBaseDataResult> queryResults = variantManager.info(queries);
             return createOkResponse(queryResults);
@@ -646,8 +646,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             GeneQuery geneQuery = new GeneQuery(uriParams);
             geneQuery.setIds(Arrays.asList(genes.split(",")));
-            // TODO unwind to Transcript.TFBS
-            CellBaseDataResult queryResults = geneManager.search(geneQuery);
+            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -683,7 +682,7 @@ public class GeneWSServer extends GenericRestWSServer {
         try {
             ProteinQuery query = new ProteinQuery(uriParams);
             query.setGenes(Arrays.asList(genes.split(",")));
-            logger.info("REST proteinQuery: " + query.toString());
+            logger.info("REST proteinQuery: {}", query.toString());
             CellBaseDataResult<Entry> queryResults = proteinManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
@@ -710,7 +709,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 GeneQuery query = new GeneQuery(uriParams);
                 query.setTranscriptsXrefs(Arrays.asList(identifier));
                 queries.add(query);
-                logger.info("REST GeneQuery: " + query.toString());
+                logger.info("REST GeneQuery: {} ", query.toString());
             }
             List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = geneManager.getSequence(queries);
             return createOkResponse(queryResults);
