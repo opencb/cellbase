@@ -75,16 +75,18 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
     }
 
     /**
+     * Used by the dbadapters to generate the mongo queries. This method returns a map of field names (dot notation,
+     * e.g. transcripts.biotype) to field value. This value is what the user entered (e.g. "protein_coding")
+     *
      * @return map of fieldName (dot notation) to field value
      * @throws IllegalAccessException if field is not accessible
      */
     public ObjectMap toObjectMap() throws IllegalAccessException {
-        classAttributesToType = getClassAttributesToType();
         annotations = getAnnotations();
         classFields = getClassFields();
         QueryOptions queryOptions = toQueryOptions();
         ObjectMap queryMap = new ObjectMap();
-        for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
+        for (Map.Entry<String, QueryParameter> entry : annotations.entrySet()) {
             String fieldNameCamelCase = entry.getKey();
             String dotNotationName = annotations.get(fieldNameCamelCase).id();
             Field field = classFields.get(fieldNameCamelCase);
@@ -99,6 +101,11 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         return queryMap;
     }
 
+    /**
+     * Updates this query object with the values provided by the REST layer.
+     *
+     * @param uriParams map from the REST
+     */
     public void updateParams(Map<String, String> uriParams) {
         classAttributesToType = getClassAttributesToType();
         annotations = getAnnotations();
@@ -143,7 +150,15 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         }
     }
 
-    public Map<String, Class<?>> loadPropertiesMap() {
+    /**
+     * For this Query class, returns a map of class attributes and the types of those attributes.
+     *
+     *  key: fieldName, e.g. transcriptsBiotype
+     *  value: type, e.g. List<String>
+     *
+     * @return map of field names to type
+     */
+    private Map<String, Class<?>> loadPropertiesMap() {
         final ObjectMapper objectMapper = new ObjectMapper();
         BeanDescription beanDescription = objectMapper.getSerializationConfig().introspect(objectMapper.constructType(this.getClass()));
         Map<String, Class<?>> internalPropertiesMap = new HashMap<>(beanDescription.findProperties().size() * 2);
@@ -153,7 +168,15 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         return internalPropertiesMap;
     }
 
-    public Map<String, QueryParameter> loadAnnotationMap() {
+    /**
+     * For this Query Class, generates a map of all annotations.
+     *
+     *  key: fieldName, e.g. transcriptsBiotype
+     *  value: QueryParameter for transcriptsBiotype
+     *
+     * @return map of field names to annotations.
+     */
+    private Map<String, QueryParameter> loadAnnotationMap() {
         Map<String, QueryParameter> annotations = new HashMap<>();
         for (Field declaredField : FieldUtils.getAllFields(this.getClass())) {
             QueryParameter declaredAnnotation = declaredField.getDeclaredAnnotation(QueryParameter.class);
@@ -164,8 +187,25 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         return annotations;
     }
 
+    /**
+     * Subclasses can optionally add custom validation if needed.
+     *
+     * @throws QueryException if query fails validation.
+     */
     protected abstract void validateQuery() throws QueryException;
 
+    /**
+     * Run validation for all queries. Plus run any query-specific validation, if present).
+     *
+     * Current global validation:
+     *  - required
+     *  - dependsOn
+     *  - allowedValues
+     *  - min and max
+     *
+     * @throws QueryException if query is invalid
+     * @throws IllegalAccessException if something goes wrong when checking field values
+     */
     public void validate() throws QueryException, IllegalAccessException {
         validateParams();
 
@@ -197,6 +237,14 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         return classFields;
     }
 
+    /**
+     * Returns the map. If map is empty, generates map.
+     *
+     * - key: dot notation, e.g. transcripts.biotype
+     * - value: camel case, e.g. transcriptsBiotype
+     *
+     * @return the map from dot notation to camel case
+     */
     private Map<String, String> getDotNotationToCamelCase() {
         if (dotNotationToCamelCase == null) {
             dotNotationToCamelCase = new HashMap<>();
