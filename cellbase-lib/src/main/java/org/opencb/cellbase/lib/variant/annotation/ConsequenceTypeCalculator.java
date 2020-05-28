@@ -17,7 +17,7 @@
 package org.opencb.cellbase.lib.variant.annotation;
 
 import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.MiRNAGene;
+import org.opencb.biodata.models.core.MiRnaMature;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.annotation.ConsequenceTypeMappings;
@@ -283,10 +283,10 @@ public abstract class ConsequenceTypeCalculator {
                 if (cdnaVariantEnd == -1) {    // Probably deletion ending after the miRNA location
                     cdnaVariantEnd = gene.getMirna().getSequence().length();  // Truncate to the last transcript position to avoid NPE
                 }
-                List<MiRNAGene.MiRNAMature> miRNAMatureList = gene.getMirna().getMatures();
+                List<MiRnaMature> miRNAMatureList = gene.getMirna().getMatures();
                 int i = 0;
-                while (i < miRNAMatureList.size() && !regionsOverlap(miRNAMatureList.get(i).cdnaStart,
-                        miRNAMatureList.get(i).cdnaEnd, cdnaVariantStart, cdnaVariantEnd)) {
+                while (i < miRNAMatureList.size() && !regionsOverlap(miRNAMatureList.get(i).getStart(),
+                        miRNAMatureList.get(i).getEnd(), cdnaVariantStart, cdnaVariantEnd)) {
                     i++;
                 }
                 if (i < miRNAMatureList.size()) {  // Variant overlaps at least one mature miRNA

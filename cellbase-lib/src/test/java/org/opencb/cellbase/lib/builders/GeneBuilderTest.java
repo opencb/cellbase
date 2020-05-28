@@ -79,12 +79,12 @@ public class GeneBuilderTest {
         assertNotNull(gene);
         assertEquals("WASP family homolog 7, pseudogene [Source:HGNC Symbol;Acc:HGNC:38034]", gene.getDescription());
 
-        MiRNAGene miRNAGene = gene.getMirna();
+        MiRnaGene miRNAGene = gene.getMirna();
         assertNotNull(miRNAGene);
         assertEquals("UGGGAUGAGGUAGUAGGUUGUAUAGUUUUAGGGUCACACCCACCACUGGGAGAUAACUAUACAAUCUACUGUCUUUCCUA", miRNAGene.getSequence());
         assertEquals("UNCHANGED", miRNAGene.getStatus());
-        assertEquals("MI0000060", miRNAGene.getMiRBaseAccession());
-        assertEquals("hsa-let-7a-1", miRNAGene.getMiRBaseID());
+        assertEquals("MI0000060", miRNAGene.getAccession());
+        assertEquals("hsa-let-7a-1", miRNAGene.getId());
         assertEquals(2, miRNAGene.getMatures().size());
 
         String sequence = "UGGGAUGAGGUAGUAGGUUGUAUAGUUUUAGGGUCACACCCACCACUGGGAGAUAACUAUACAAUCUACUGUCUUUCCUA";
@@ -93,22 +93,22 @@ public class GeneBuilderTest {
         assertEquals(1, sequence.indexOf(otherSequence));
 
 
-        List<MiRNAGene.MiRNAMature> matures = miRNAGene.getMatures();
-        for (MiRNAGene.MiRNAMature mature : matures) {
+        List<MiRnaMature> matures = miRNAGene.getMatures();
+        for (MiRnaMature mature : matures) {
 
 
-            if (mature.miRBaseID.equals("hsa-let-7a-5p")) {
-                assertEquals("UGAGGUAGUAGGUUGUAUAGUU", mature.sequence);
-                assertEquals("MIMAT0000062", mature.miRBaseAccession);
-                assertEquals("5", String.valueOf(mature.cdnaStart));
-                assertEquals("27", String.valueOf(mature.cdnaEnd));
+            if (mature.getId().equals("hsa-let-7a-5p")) {
+                assertEquals("UGAGGUAGUAGGUUGUAUAGUU", mature.getSequence());
+                assertEquals("MIMAT0000062", mature.getAccession());
+                assertEquals("5", String.valueOf(mature.getStart()));
+                assertEquals("27", String.valueOf(mature.getEnd()));
             }
 
-            if (mature.miRBaseID.equals("hsa-let-7a-3p")) {
-                assertEquals("CUAUACAAUCUACUGUCUUUC", mature.sequence);
-                assertEquals("MIMAT0004481", mature.miRBaseAccession);
-                assertEquals("56", String.valueOf(mature.cdnaStart));
-                assertEquals("77", String.valueOf(mature.cdnaEnd));
+            if (mature.getId().equals("hsa-let-7a-3p")) {
+                assertEquals("CUAUACAAUCUACUGUCUUUC", mature.getSequence());
+                assertEquals("MIMAT0004481", mature.getAccession());
+                assertEquals("56", String.valueOf(mature.getStart()));
+                assertEquals("77", String.valueOf(mature.getEnd()));
             }
         }
 

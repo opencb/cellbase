@@ -125,12 +125,12 @@ public class RocksDbManager {
         return Arrays.asList(mapper.readValue(dbContent, MiRnaTarget[].class));
     }
 
-    public MiRNAGene getMirnaGene(RocksDB rdb, String key) throws RocksDBException, IOException {
+    public MiRnaGene getMirnaGene(RocksDB rdb, String key) throws RocksDBException, IOException {
         byte[] dbContent = rdb.get(key.getBytes());
         if (dbContent == null) {
             return null;
         }
-        return mapper.readValue(dbContent, MiRNAGene.class);
+        return mapper.readValue(dbContent, MiRnaGene.class);
     }
 
 

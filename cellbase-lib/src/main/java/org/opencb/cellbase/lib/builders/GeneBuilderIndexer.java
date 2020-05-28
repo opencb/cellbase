@@ -545,8 +545,7 @@ public class GeneBuilderIndexer {
                     mature2Sequence = cell.getStringCellValue();
                 }
 
-                MiRNAGene miRNAGene = new MiRNAGene(miRBaseAccession, miRBaseID, status, sequence, new ArrayList<>(),
-                        new ArrayList<>());
+                MiRnaGene miRNAGene = new MiRnaGene(miRBaseAccession, miRBaseID, status, sequence, new ArrayList<>());
                 int cdnaStart = sequence.indexOf(mature1Sequence);
                 int cdnaEnd = cdnaStart + mature1Sequence.length();
                 miRNAGene.addMiRNAMature(mature1Accession, mature1Id, mature1Sequence, cdnaStart, cdnaEnd);
@@ -562,7 +561,7 @@ public class GeneBuilderIndexer {
         }
     }
 
-    public MiRNAGene getMirnaGene(String transcriptId) throws RocksDBException, IOException {
+    public MiRnaGene getMirnaGene(String transcriptId) throws RocksDBException, IOException {
         String xrefKey = transcriptId + XREF_SUFFIX;
         List<Xref> xrefs = rocksDbManager.getXrefs(rocksdb, xrefKey);
         if (xrefs == null || xrefs.isEmpty()) {
@@ -628,7 +627,8 @@ public class GeneBuilderIndexer {
 
                 if (!miRTarBaseId.equals(currentMiRTarBaseId) || !geneName.equals(currentGene)) {
                     // new entry, store current one
-                    MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, currentMiRNA, targetGenes, "miRTarBase");
+                    MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
+                            targetGenes);
                     addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
                     targetGenes = new ArrayList();
                     currentGene = geneName;
@@ -658,7 +658,8 @@ public class GeneBuilderIndexer {
             }
 
             // parse last entry
-            MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, currentMiRNA, targetGenes, "mirTarBase");
+            MiRnaTarget miRnaTarget = new MiRnaTarget(currentMiRTarBaseId, "miRTarBase", currentMiRNA,
+                    targetGenes);
             addValueToMapElement(geneToMirna, currentGene, miRnaTarget);
 
             for (Map.Entry<String, List<MiRnaTarget>> entry : geneToMirna.entrySet()) {

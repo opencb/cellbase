@@ -16,10 +16,7 @@
 
 package org.opencb.cellbase.lib.variant.annotation;
 
-import org.opencb.biodata.models.core.Exon;
-import org.opencb.biodata.models.core.Gene;
-import org.opencb.biodata.models.core.MiRNAGene;
-import org.opencb.biodata.models.core.Transcript;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.ExonOverlap;
@@ -405,10 +402,10 @@ public class ConsequenceTypeSNVCalculator extends ConsequenceTypeCalculator {
                 if (cdnaVariantPosition == -1) {
                     SoNames.add(VariantAnnotationUtils.MATURE_MIRNA_VARIANT);
                 } else {
-                    List<MiRNAGene.MiRNAMature> miRNAMatureList = gene.getMirna().getMatures();
+                    List<MiRnaMature> miRNAMatureList = gene.getMirna().getMatures();
                     int i = 0;
-                    while (i < miRNAMatureList.size() && (cdnaVariantPosition < miRNAMatureList.get(i).cdnaStart
-                            || cdnaVariantPosition > miRNAMatureList.get(i).cdnaEnd)) {
+                    while (i < miRNAMatureList.size() && (cdnaVariantPosition < miRNAMatureList.get(i).getStart()
+                            || cdnaVariantPosition > miRNAMatureList.get(i).getEnd())) {
                         i++;
                     }
                     if (i < miRNAMatureList.size()) {  // Variant overlaps at least one mature miRNA
