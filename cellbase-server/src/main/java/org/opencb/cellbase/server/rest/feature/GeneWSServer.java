@@ -308,9 +308,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getAll() {
         try {
@@ -460,9 +462,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getTranscriptsByGenes(@PathParam("genes") @ApiParam(name = "genes",
             value = ParamConstants.GENE_XREF_IDS, required = true) String genes) {
@@ -558,9 +562,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getSNPByGenes(@PathParam("genes")
                 @ApiParam(name = "genes", value = ParamConstants.GENE_XREF_IDS) String genes) {
@@ -637,9 +643,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getAllTfbs(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_ENSEMBL_IDS,
                                        required = true) String genes) {
@@ -673,9 +681,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query", defaultValue = "",
                     allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getProteinById(@PathParam("genes") @ApiParam(name = "genes", value = ParamConstants.GENE_IDS,
                                            required = true) String genes) {

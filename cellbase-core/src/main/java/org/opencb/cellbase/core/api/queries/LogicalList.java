@@ -19,6 +19,12 @@ package org.opencb.cellbase.core.api.queries;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An array list that also has an associate boolean. Used by AbstractQuery. If TRUE, then the objects in the list
+ * will be added to the query with AND. By default, the values are added with an OR.
+ *
+ * @param <T> Type of object in list
+ */
 public class LogicalList<T> extends ArrayList<T> {
     private boolean and;
 

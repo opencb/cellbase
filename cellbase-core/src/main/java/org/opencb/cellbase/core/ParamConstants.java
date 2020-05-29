@@ -29,7 +29,9 @@ public class ParamConstants {
     public static final String INCLUDE_DESCRIPTION = "Fields included in the response, whole JSON path must be provided";
     public static final String EXCLUDE_DESCRIPTION = "Fields excluded in the response, whole JSON path must be provided";
     public static final String LIMIT_DESCRIPTION = "Number of results to be returned";
+    public static final String DEFAULT_LIMIT = "10";
     public static final String SKIP_DESCRIPTION = "Number of results to skip";
+    public static final String DEFAULT_SKIP = "0";
     public static final String SORT_DESCRIPTION = "Sort returned results by a certain data model attribute";
     public static final String ORDER_DESCRIPTION = "Results are in ascending order by default";
 

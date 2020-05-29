@@ -89,9 +89,11 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getAllByTfbs(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf) {
         try {
@@ -140,9 +142,11 @@ public class TfWSServer extends RegulatoryWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getEnsemblGenes(@PathParam("tf") @ApiParam(name = "tf", value = ParamConstants.TFBS_IDS, required = true) String tf) {
         try {

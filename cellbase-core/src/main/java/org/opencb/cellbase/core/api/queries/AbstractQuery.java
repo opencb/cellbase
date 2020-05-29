@@ -33,6 +33,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.util.*;
 
+/**
+* Helper object used to construct queries consumed by the dbadapters.
+*/
 public abstract class AbstractQuery extends CellBaseQueryOptions {
 
     protected ObjectMapper objectMapper;
@@ -40,7 +43,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
 
     public static final int DEFAULT_LIMIT = 50;
     public static final int DEFAULT_SKIP = 0;
-//    public static final int MAX_RECORDS = 1000;
 
     // list of fields in this class
     private Map<String, Field> classFields;
@@ -353,6 +355,12 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         }
     }
 
+    /**
+     * Produces QueryOptions object with the values from our current Query. The mongo code uses the QueryOptions
+     * object to construct queries for mongo.
+     *
+     * @return object map populated by query options ONLY from this query
+     */
     public QueryOptions toQueryOptions() {
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.put(QueryOptions.SKIP, skip);

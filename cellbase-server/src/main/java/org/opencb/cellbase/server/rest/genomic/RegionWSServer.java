@@ -118,9 +118,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
 
     })
     public Response getGenesByRegionPost(@FormParam("region") @ApiParam(name = "region",
@@ -166,9 +168,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getGenesByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                              required = true) String regions) {
@@ -210,9 +214,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getTranscriptByRegion(@PathParam("regions") @ApiParam(name = "regions",
             value = ParamConstants.REGION_DESCRIPTION, required = true) String regions) {
@@ -247,9 +253,11 @@ public class RegionWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getRepeatByRegion(@PathParam("regions") @ApiParam(name = "regions",
                                                   value = ParamConstants.REGION_DESCRIPTION, required = true) String region) {
@@ -302,9 +310,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getVariationByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                                  required = true) String regions) {
@@ -405,9 +415,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getClinicalByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
             required = true) String regions) {
@@ -438,9 +450,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getRegulatoryRegions(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
             required = true) String regions) {
@@ -472,9 +486,11 @@ public class RegionWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getTfByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
             required = false) String regions) {

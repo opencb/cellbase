@@ -129,9 +129,11 @@ public class ProteinWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getAll() {
         try {
@@ -159,9 +161,11 @@ public class ProteinWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query",
                     defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
             @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = "10", dataType = "java.util.List", paramType = "query"),
+                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
+                    paramType = "query"),
             @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = "0", dataType = "java.util.List", paramType = "query")
+                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
+                    paramType = "query")
     })
     public Response getSubstitutionScores(@PathParam("proteins") @ApiParam(name = "proteins", value = ParamConstants.PROTEIN_XREF_ID,
                                                   required = true) String id,

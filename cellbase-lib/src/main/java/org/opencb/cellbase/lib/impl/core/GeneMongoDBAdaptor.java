@@ -341,9 +341,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                         // TODO use unwind to filter out unwanted transcripts
                         createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "transcripts.tfbs.id":
-                        createAndOrQuery(value, "transcripts.tfbs.id", QueryParam.Type.STRING, andBsonList);
-                        break;
                     case "annotation.expression.gene":
                         createAndOrQuery(value, "annotation.expression.geneName", QueryParam.Type.STRING, andBsonList);
                         break;
