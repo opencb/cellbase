@@ -25,8 +25,6 @@ public class TfbsQuery extends AbstractQuery {
 
     @QueryParameter(id = "featureType")
     private List<String> featureTypes;
-    @QueryParameter(id = "featureClass")
-    private List<String> featureClasses;
     @QueryParameter(id = "region")
     protected List<Region> regions;
 
@@ -47,7 +45,6 @@ public class TfbsQuery extends AbstractQuery {
         setOrder(builder.order);
         setFacet(builder.facet);
         setFeatureTypes(builder.featureTypes);
-        setFeatureClasses(builder.featureClasses);
         setRegions(builder.regions);
     }
 
@@ -60,7 +57,6 @@ public class TfbsQuery extends AbstractQuery {
     public String toString() {
         final StringBuilder sb = new StringBuilder("TfbsQuery{");
         sb.append("featureTypes=").append(featureTypes);
-        sb.append(", featureClasses=").append(featureClasses);
         sb.append(", regions=").append(regions);
         sb.append(", limit=").append(limit);
         sb.append(", skip=").append(skip);
@@ -80,15 +76,6 @@ public class TfbsQuery extends AbstractQuery {
 
     public TfbsQuery setFeatureTypes(List<String> featureTypes) {
         this.featureTypes = featureTypes;
-        return this;
-    }
-
-    public List<String> getFeatureClasses() {
-        return featureClasses;
-    }
-
-    public TfbsQuery setFeatureClasses(List<String> featureClasses) {
-        this.featureClasses = featureClasses;
         return this;
     }
 

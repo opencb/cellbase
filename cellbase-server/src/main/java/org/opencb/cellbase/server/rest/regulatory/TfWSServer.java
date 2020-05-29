@@ -100,7 +100,7 @@ public class TfWSServer extends RegulatoryWSServer {
             for (String identifier : identifiers) {
                 RegulationQuery query = new RegulationQuery(uriParams);
                 query.setNames(Arrays.asList(identifier));
-                query.setFeatureTypes(Arrays.asList("TF_binding_site_motif", "TF_binding_site"));
+                query.setFeatureTypes(Arrays.asList("TF_binding_site"));
                 queries.add(query);
                 logger.info("REST RegulationQuery: {}", query.toString());
             }

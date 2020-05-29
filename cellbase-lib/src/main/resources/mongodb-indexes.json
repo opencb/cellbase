@@ -55,7 +55,6 @@
 {"collection": "regulatory_region", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "regulatory_region", "fields": {"featureType": 1}, "options": {"background": true}}
-{"collection": "regulatory_region", "fields": {"featureClass": 1}, "options": {"background": true}}
 
 {"collection": "repeats", "fields": {"_chunkIds": 1, "start": 1, "end": 1}, "options": {"background": true}}
 

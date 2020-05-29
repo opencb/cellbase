@@ -66,15 +66,13 @@ public class RegulatoryWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "region",
                     value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "featureClass",
-                    value = ParamConstants.REGULATION_FEATURE_CLASSES,
-                    required = false, dataType = "java.util.List", paramType = "query"),
+
             @ApiImplicitParam(name = "featureType",
                     value = ParamConstants.REGULATION_FEATURE_TYPES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getUniqueValues(@QueryParam("field") @ApiParam(name = "field", required = true,
-            value = "Name of column to return, e.g. featureType or featureClass") String field) {
+            value = "Name of column to return, e.g. featureType") String field) {
         try {
             copyToFacet("field", field);
             RegulationQuery query = new RegulationQuery(uriParams);
@@ -92,9 +90,6 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region",
                     value = ParamConstants.REGION_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "featureClass",
-                    value = ParamConstants.REGULATION_FEATURE_CLASSES,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getFeatureTypes() {
@@ -111,7 +106,7 @@ public class RegulatoryWSServer extends GenericRestWSServer {
     @GET
     @Path("/featureClass")
     @ApiOperation(httpMethod = "GET", value = "Retrieves a list of available regulatory feature classes",
-            response = String.class, responseContainer = "QueryResponse")
+            response = String.class, responseContainer = "QueryResponse", hidden = true)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -143,9 +138,6 @@ public class RegulatoryWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "featureType",
                     value = ParamConstants.REGULATION_FEATURE_TYPES,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "featureClass",
-                    value = ParamConstants.REGULATION_FEATURE_CLASSES,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),

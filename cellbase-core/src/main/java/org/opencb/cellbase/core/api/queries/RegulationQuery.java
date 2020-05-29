@@ -27,8 +27,6 @@ public class RegulationQuery extends AbstractQuery {
     private List<String> names;
     @QueryParameter(id = "featureType")
     private List<String> featureTypes;
-    @QueryParameter(id = "featureClass")
-    private List<String> featureClasses;
     @QueryParameter(id = "cellType")
     private List<String> cellTypes;
     @QueryParameter(id = "region")
@@ -52,7 +50,6 @@ public class RegulationQuery extends AbstractQuery {
         setFacet(builder.facet);
         setNames(builder.names);
         setFeatureTypes(builder.featureTypes);
-        setFeatureClasses(builder.featureClasses);
         setCellTypes(builder.cellTypes);
         setRegions(builder.regions);
     }
@@ -68,7 +65,6 @@ public class RegulationQuery extends AbstractQuery {
         final StringBuilder sb = new StringBuilder("RegulationQuery{");
         sb.append("names=").append(names);
         sb.append(", featureTypes=").append(featureTypes);
-        sb.append(", featureClasses=").append(featureClasses);
         sb.append(", cellTypes=").append(cellTypes);
         sb.append(", regions=").append(regions);
         sb.append(", limit=").append(limit);
@@ -98,15 +94,6 @@ public class RegulationQuery extends AbstractQuery {
 
     public RegulationQuery setFeatureTypes(List<String> featureTypes) {
         this.featureTypes = featureTypes;
-        return this;
-    }
-
-    public List<String> getFeatureClasses() {
-        return featureClasses;
-    }
-
-    public RegulationQuery setFeatureClasses(List<String> featureClasses) {
-        this.featureClasses = featureClasses;
         return this;
     }
 
@@ -140,7 +127,6 @@ public class RegulationQuery extends AbstractQuery {
         private String facet;
         private List<String> names;
         private List<String> featureTypes;
-        private List<String> featureClasses;
         private List<String> cellTypes;
         private List<Region> regions;
 
@@ -194,11 +180,6 @@ public class RegulationQuery extends AbstractQuery {
 
         public Builder withFeatureTypes(List<String> val) {
             featureTypes = val;
-            return this;
-        }
-
-        public Builder withFeatureClasses(List<String> val) {
-            featureClasses = val;
             return this;
         }
 
