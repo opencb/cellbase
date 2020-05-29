@@ -19,7 +19,7 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 
-public interface AggregationApi<Q extends AbstractQuery, T> extends FeatureApi {
+public interface AggregationApi<Q extends AbstractQuery, T> extends FeatureApi<Q, T> {
 
     default CellBaseDataResult<T> count(Q query) {
         query.setCount(Boolean.TRUE);

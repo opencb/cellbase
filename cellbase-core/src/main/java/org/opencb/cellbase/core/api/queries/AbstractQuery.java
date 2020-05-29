@@ -68,14 +68,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         logger = LoggerFactory.getLogger(this.getClass());
     }
 
-    public void updateParams(ObjectMap objectMap) {
-        try {
-            objectMapper.updateValue(this, objectMap);
-        } catch (JsonMappingException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     /**
      * Used by the dbadapters to generate the mongo queries. This method returns a map of field names (dot notation,
      * e.g. transcripts.biotype) to field value. This value is what the user entered (e.g. "protein_coding")
@@ -101,6 +93,14 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         }
         logger.info("toObjectMap(): " + queryMap.safeToString());
         return queryMap;
+    }
+
+    public void updateParams(ObjectMap objectMap) {
+        try {
+            objectMapper.updateValue(this, objectMap);
+        } catch (JsonMappingException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     /**

@@ -579,7 +579,7 @@ public class GeneWSServer extends GenericRestWSServer {
                 queries.add(query);
                 logger.info("REST VariantQuery: {}", query.toString());
             }
-            List<CellBaseDataResult> queryResults = variantManager.info(queries);
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
