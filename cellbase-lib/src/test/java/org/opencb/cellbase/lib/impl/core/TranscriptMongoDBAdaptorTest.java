@@ -59,7 +59,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setCount(Boolean.TRUE);
         CellBaseDataResult<Transcript> cellBaseDataResult = transcriptDBAdaptor.query(query);
 
-        assertEquals(1, cellBaseDataResult.getNumMatches());
+        assertEquals(1, cellBaseDataResult.getNumResults());
         //assertEquals(((Document) CellBaseDataResult.getResults().get(0)).size(), 18);
         Transcript transcript = cellBaseDataResult.getResults().get(0);
         assertEquals("ENST00000594233", transcript.getId());
@@ -71,7 +71,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setCount(Boolean.TRUE);
         query.setRegions(Collections.singletonList(region));
         cellBaseDataResult = transcriptDBAdaptor.query(query);
-        assertEquals(2, cellBaseDataResult.getNumMatches());
+        assertEquals(2, cellBaseDataResult.getNumResults());
         assertTrue(transcriptIdEquals(cellBaseDataResult, Arrays.asList("ENST00000417324", "ENST00000461467")));
 
 //        query = new Query(TranscriptDBAdaptor.QueryParams.XREFS.key(), "Q9UL59");
@@ -80,7 +80,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         query.setCount(Boolean.TRUE);
         query.setIncludes(Collections.singletonList("id"));
         cellBaseDataResult = transcriptDBAdaptor.query(query);
-        assertEquals(50, cellBaseDataResult.getNumMatches());
+        assertEquals(2, cellBaseDataResult.getNumResults());
 //        assertEquals(1, ((Document) cellBaseDataResult.getResults().get(0)).size());
 //        assertEquals(1, ((Document) cellBaseDataResult.getResults().get(1)).size());
 
@@ -95,7 +95,7 @@ public class TranscriptMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 //        queryOptions = new QueryOptions("include", "transcripts.id");
         query.setIncludes(Collections.singletonList("transcripts.id"));
         cellBaseDataResult = transcriptDBAdaptor.query(query);
-        assertEquals(3, cellBaseDataResult.getNumMatches());
+        assertEquals(3, cellBaseDataResult.getNumResults());
 
     }
 

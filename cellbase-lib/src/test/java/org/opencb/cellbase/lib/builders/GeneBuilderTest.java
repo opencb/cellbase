@@ -87,12 +87,6 @@ public class GeneBuilderTest {
         assertEquals("hsa-let-7a-1", miRNAGene.getId());
         assertEquals(2, miRNAGene.getMatures().size());
 
-        String sequence = "UGGGAUGAGGUAGUAGGUUGUAUAGUUUUAGGGUCACACCCACCACUGGGAGAUAACUAUACAAUCUACUGUCUUUCCUA";
-        String shortSequence = "CUAUACAAUCUACUGUCUUUC";
-        String otherSequence = "UGAGGUAGUAGGUUGUAUAGUU";
-        assertEquals(1, sequence.indexOf(otherSequence));
-
-
         List<MiRnaMature> matures = miRNAGene.getMatures();
         for (MiRnaMature mature : matures) {
 
