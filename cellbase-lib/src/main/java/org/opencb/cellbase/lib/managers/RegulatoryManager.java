@@ -16,13 +16,13 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.biodata.models.core.RegulatoryFeature;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.RegulationQuery;
-import org.opencb.cellbase.core.common.regulatory.RegulatoryRegion;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.lib.impl.core.RegulationMongoDBAdaptor;
 
-public class RegulatoryManager extends AbstractManager implements AggregationApi<RegulationQuery, RegulatoryRegion>  {
+public class RegulatoryManager extends AbstractManager implements AggregationApi<RegulationQuery, RegulatoryFeature>  {
 
     private RegulationMongoDBAdaptor regulationDBAdaptor;
 

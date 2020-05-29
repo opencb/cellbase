@@ -17,11 +17,10 @@
 package org.opencb.cellbase.server.rest.clinical;
 
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.NotImplementedException;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.cellbase.core.ParamConstants;
-import org.opencb.cellbase.core.api.queries.ClinicalVariantQuery;
 import org.opencb.cellbase.core.exception.CellbaseException;
-import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.cellbase.lib.SpeciesUtils;
 import org.opencb.cellbase.lib.managers.ClinicalManager;
 import org.opencb.cellbase.server.exception.SpeciesException;
@@ -113,9 +112,11 @@ public class ClinicalWSServer extends GenericRestWSServer {
     })
     public Response getAll() {
         try {
-            ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
-            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query);
-            return createOkResponse(queryResults);
+//            ClinicalVariantQuery query = new ClinicalVariantQuery(uriParams);
+//            CellBaseDataResult<Variant> queryResults = clinicalManager.search(query);
+//            return createOkResponse(queryResults);
+            // TODO
+            return createErrorResponse(new NotImplementedException("not implemented"));
         } catch (Exception e) {
             return createErrorResponse(e);
         }

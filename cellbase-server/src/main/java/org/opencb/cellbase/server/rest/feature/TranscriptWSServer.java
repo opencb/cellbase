@@ -17,7 +17,6 @@
 package org.opencb.cellbase.server.rest.feature;
 
 import io.swagger.annotations.*;
-import org.forester.protein.Protein;
 import org.opencb.biodata.formats.protein.uniprot.v202003jaxb.Entry;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Transcript;
@@ -341,7 +340,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                 queries.add(query);
                 logger.info("REST proteinQuery: {}", query.toString());
             }
-            List<CellBaseDataResult<Protein>> queryResults = proteinManager.info(queries);
+            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
