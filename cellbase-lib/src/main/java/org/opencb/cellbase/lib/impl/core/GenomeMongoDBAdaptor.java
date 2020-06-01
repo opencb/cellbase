@@ -92,7 +92,13 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         // May not have info for specified chromosome, e.g. 17_KI270729v1_random
         if (chromosomeInfo != null && chromosomeInfo.getResults() != null && !chromosomeInfo.getResults().isEmpty()) {
             Chromosome chromosome = chromosomeInfo.getResults().get(0);
-            cytobandList = chromosome.getCytobands();
+            logger.error("chromosome " + chromosome.toString());
+            List<Cytoband> results = chromosome.getCytobands();
+            for (Cytoband cytoband : results) {
+                if (cytoband.getEnd() >= region.getStart() && cytoband.getStart() <= region.getEnd()) {
+                    cytobandList.add(cytoband);
+                }
+            }
 //            int i = 0;
 //            while (i < cytobandDocumentList.size() && ((int) cytobandDocumentList.get(i).get(START)) <= region.getEnd()) {
 //                if (((int) cytobandDocumentList.get(i).get(END)) >= region.getStart()) {
@@ -402,7 +408,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             e.printStackTrace();
         }
 
-        logger.info("gene parsed query: " + andBsonList.toString());
+        logger.info("chromosome parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

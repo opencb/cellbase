@@ -33,6 +33,7 @@ import org.opencb.commons.datastore.core.QueryOptions;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,11 +64,13 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void getChromosomeInfo() throws Exception {
         GenomeQuery query = new GenomeQuery();
+        query.setNames(Collections.singletonList("1"));
         CellBaseDataResult<Chromosome> cellBaseDataResult = dbAdaptor.query(query);
 
-
         Chromosome chromosome = cellBaseDataResult.getResults().get(0);
-        assertEquals("Integer.valueOf(64444167)", chromosome.getName());
+        assertEquals("1", chromosome.getName());
+        assertEquals(64444167, chromosome.getSize());
+
     }
 
     @Test
@@ -111,19 +114,20 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
     @Test
     public void testGetCytoband() {
-        List<CellBaseDataResult<Cytoband>> cellBaseDataResultList
-                = dbAdaptor.getCytobands(Arrays.asList(new Region("19:55799900-55803000"),
-                new Region("11:121300000-124030001")));
+        List<Region> regions = Arrays.asList(new Region("19:55799900-55803000"),
+                new Region("11:121300000-124030001"));
+        List<CellBaseDataResult<Cytoband>> cellBaseDataResultList = dbAdaptor.getCytobands(regions);
 
         assertEquals(2, cellBaseDataResultList.size());
-
+        CellBaseDataResult<Cytoband> result = cellBaseDataResultList.get(0);
+        logger.error("result + " + result.toString());
         assertEquals(2, cellBaseDataResultList.get(0).getNumResults());
         String[] names1 = {"q13.42", "q13.43",};
         for (int i = 0; i < cellBaseDataResultList.get(0).getNumResults(); i++) {
             assertEquals(names1[i], cellBaseDataResultList.get(0).getResults().get(i).getName());
         }
 
-        assertEquals(3, cellBaseDataResultList.get(1).getNumTotalResults());
+        assertEquals(3, cellBaseDataResultList.get(1).getNumResults());
         String[] names2 = {"q23.3","q24.1","q24.2",};
         for (int i = 0; i < cellBaseDataResultList.get(1).getNumResults(); i++) {
             assertEquals(names2[i], cellBaseDataResultList.get(1).getResults().get(i).getName());
