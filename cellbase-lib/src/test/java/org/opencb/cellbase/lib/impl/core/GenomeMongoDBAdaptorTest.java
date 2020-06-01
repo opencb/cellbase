@@ -85,7 +85,7 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
     @Test
     public void testGenomicSequenceChromosomeNotPresent() {
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = dbAdaptor.getSequence(new Region("1234:1-1999"), new QueryOptions());
-        assertEquals(0, cellBaseDataResult.getResults().size());
+        assertEquals(0, cellBaseDataResult.getNumResults());
     }
 
     @Test
@@ -93,18 +93,18 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         // Both start & end out of the right bound
         CellBaseDataResult<GenomeSequenceFeature> cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("17", 73973989, 73974999), new QueryOptions());
-        assertEquals(0, cellBaseDataResult.getResults().size());
+        assertEquals(0, cellBaseDataResult.getNumResults());
 
         // start within the bounds, end out of the right bound. Should return last 10 nts.
         cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("17", 63973989, 63974999), new QueryOptions());
-        assertEquals(1, cellBaseDataResult.getResults().size());
+        assertEquals(1, cellBaseDataResult.getNumResults());
         assertEquals("TCAAGACCAGC", cellBaseDataResult.getResults().get(0).getSequence());
 
         // Start out of the left bound
         cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("1", -100, 1999), new QueryOptions());
-        assertEquals(0, cellBaseDataResult.getResults().size());
+        assertEquals(0, cellBaseDataResult.getNumResults());
 
 
     }
