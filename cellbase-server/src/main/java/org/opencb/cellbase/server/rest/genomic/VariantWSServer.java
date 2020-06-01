@@ -283,7 +283,7 @@ public class VariantWSServer extends GenericRestWSServer {
 //    }
 
     @GET
-    @Path("/{id}/info")
+    @Path("/{variants}/info")
     @ApiOperation(httpMethod = "GET", value = "Resource to get information about a (list of) variants", notes = "An independent"
             + " database query will be issued for each region in id, meaning that results for each region will be"
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.",

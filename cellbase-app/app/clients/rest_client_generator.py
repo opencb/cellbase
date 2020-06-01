@@ -61,11 +61,11 @@ class RestClientGenerator(ABC):
 
     @staticmethod
     def get_category_path(category):
-        return category['path'].replace('/{apiVersion}/{species}/', '')
+        return category['path'].replace('/{apiVersion}/', '').replace('{species}/', '')
 
     @staticmethod
     def get_endpoint_path(endpoint):
-        return endpoint['path'].replace('/{apiVersion}/{species}/', '')
+        return endpoint['path'].replace('/{apiVersion}/', '').replace('{species}/', '')
 
     @staticmethod
     def get_endpoint_description(endpoint):

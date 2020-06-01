@@ -68,10 +68,10 @@ public class MetaWSServer extends GenericRestWSServer {
 
     public MetaWSServer(@PathParam("apiVersion")
                         @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
-                                defaultValue = ParamConstants.DEFAULT_VERSION) String version,
+                                defaultValue = ParamConstants.DEFAULT_VERSION) String apiVersion,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, IOException, CellbaseException {
-        super(version, uriInfo, hsr);
+        super(apiVersion, uriInfo, hsr);
         metaManager = cellBaseManagerFactory.getMetaManager();
     }
 

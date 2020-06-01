@@ -24,7 +24,8 @@ class JavaClientGenerator(RestClientGenerator):
             'int': 'int',
             'map': 'ObjectMap',
             'boolean': 'boolean',
-            'enum': 'String'
+            'enum': 'String',
+            'java.util.List': 'List'
         }
 
     def get_imports(self):
