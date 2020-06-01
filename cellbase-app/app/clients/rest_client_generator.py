@@ -30,7 +30,8 @@ class RestClientGenerator(ABC):
             'Admin': 'Admin',
             'Clinical': 'Clinical',
             'Gene': 'Gene',
-            'Chromosome': 'Genome Sequence',
+            'Genome Sequence': 'GenomeSequence',
+            'Meta': 'Meta',
             'Protein': 'Protein',
             'Region': 'Region',
             'Regulation': 'Regulation',
@@ -60,11 +61,11 @@ class RestClientGenerator(ABC):
 
     @staticmethod
     def get_category_path(category):
-        return category['path'].replace('/{apiVersion}/', '')
+        return category['path'].replace('/{apiVersion}/{species}/', '')
 
     @staticmethod
     def get_endpoint_path(endpoint):
-        return endpoint['path'].replace('/{apiVersion}/', '')
+        return endpoint['path'].replace('/{apiVersion}/{species}/', '')
 
     @staticmethod
     def get_endpoint_description(endpoint):

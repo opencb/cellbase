@@ -53,7 +53,7 @@ import java.util.*;
 /**
  * Created by imedina on 04/08/15.
  */
-@Path("/{version}/meta")
+@Path("/{apiVersion}/meta")
 @Produces("application/json")
 @Api(value = "Meta", description = "Meta RESTful Web Services API")
 public class MetaWSServer extends GenericRestWSServer {
@@ -66,8 +66,8 @@ public class MetaWSServer extends GenericRestWSServer {
 //    private static final String LOCALHOST_REST_API = "http://localhost:8080/cellbase";
 
 
-    public MetaWSServer(@PathParam("version")
-                        @ApiParam(name = "version", value = ParamConstants.VERSION_DESCRIPTION,
+    public MetaWSServer(@PathParam("apiVersion")
+                        @ApiParam(name = "apiVersion", value = ParamConstants.VERSION_DESCRIPTION,
                                 defaultValue = ParamConstants.DEFAULT_VERSION) String version,
                         @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws VersionException, IOException, CellbaseException {
