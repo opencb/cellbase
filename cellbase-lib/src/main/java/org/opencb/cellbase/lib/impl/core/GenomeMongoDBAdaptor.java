@@ -201,8 +201,9 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             result.setResults(Collections.singletonList(new GenomeSequenceFeature(
                     region.getChromosome(), region.getStart(), region.getEnd(), Integer.parseInt(strand), sequenceType, assembly, sequence)
             ));
+            result.setNumMatches(1);
+            result.setNumResults(1);
         }
-
         return result;
     }
 
