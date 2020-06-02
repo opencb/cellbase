@@ -18,7 +18,9 @@ package org.opencb.cellbase.lib.impl.core;
 
 import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Chromosome;
@@ -354,16 +356,44 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         }
     }
 
-
     @Override
     public CellBaseIterator<Chromosome> iterator(GenomeQuery query) {
-        Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
-        Bson projection = getProjection(query);
+        List<Bson> pipeline = unwind(query);
         GenericDocumentComplexConverter<Chromosome> converter = new GenericDocumentComplexConverter<>(Chromosome.class);
-        logger.info("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()) .toJson());
-        MongoDBIterator<Chromosome> iterator = genomeInfoMongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
+        MongoDBIterator<Chromosome> iterator = genomeInfoMongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
+    }
+
+    public List<Bson> unwind(GenomeQuery query) {
+        Bson bson = parseQuery(query);
+        Bson match = Aggregates.match(bson);
+
+        Bson project = Aggregates.project(Projections.include("chromosomes"));
+        Bson unwind = Aggregates.unwind("$chromosomes");
+
+        // This project the fields of Chromosome to the top of the object
+        Document document = new Document("name", "$chromosomes.name");
+        document.put("start", "$chromosomes.start");
+        document.put("end", "$chromosomes.end");
+        document.put("size", "$chromosomes.size");
+        document.put("isCircular", "$chromosomes.isCircular");
+        document.put("numberGenes", "$chromosomes.numberGenes");
+        document.put("cytobands", "$chromosomes.cytobands");
+
+        Bson project1 = Aggregates.project(document);
+
+        Bson match2 = Aggregates.match(bson);
+
+        List<Bson> aggregateList = new ArrayList<>();
+
+        aggregateList.add(match);
+        aggregateList.add(project);
+        aggregateList.add(unwind);
+        aggregateList.add(match2);
+        aggregateList.add(project1);
+
+        return aggregateList;
     }
 
     @Override
@@ -408,7 +438,7 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
             e.printStackTrace();
         }
 
-        logger.info("chromosome parsed query: " + andBsonList.toString());
+        logger.info("chromosome parsed query: {}", andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {

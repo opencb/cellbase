@@ -66,10 +66,10 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         GenomeQuery query = new GenomeQuery();
         query.setNames(Collections.singletonList("1"));
         CellBaseDataResult<Chromosome> cellBaseDataResult = dbAdaptor.query(query);
-
+        logger.error("cellBaseDataResult.getResults()" + cellBaseDataResult.getResults().size());
         Chromosome chromosome = cellBaseDataResult.getResults().get(0);
         assertEquals("1", chromosome.getName());
-        assertEquals(64444167, chromosome.getSize());
+        assertEquals(248956422, chromosome.getSize());
 
     }
 
@@ -108,9 +108,8 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("1", -100, 1999), new QueryOptions());
         assertEquals(0, cellBaseDataResult.getNumResults());
-
-
     }
+
 
     @Test
     public void testGetCytoband() {
