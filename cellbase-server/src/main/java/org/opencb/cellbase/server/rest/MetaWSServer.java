@@ -242,8 +242,9 @@ public class MetaWSServer extends GenericRestWSServer {
         Map<String, Class> classes = new LinkedHashMap<>();
         classes.put("clinical", ClinicalWSServer.class);
         classes.put("gene", GeneWSServer.class);
-        classes.put("genomeSequence", ChromosomeWSServer.class);
+        classes.put("chromosome", ChromosomeWSServer.class);
         classes.put("meta", MetaWSServer.class);
+        classes.put("ontology", OntologyWSServer.class);
         classes.put("protein", ProteinWSServer.class);
         classes.put("region", RegionWSServer.class);
         classes.put("regulation", RegulatoryWSServer.class);
