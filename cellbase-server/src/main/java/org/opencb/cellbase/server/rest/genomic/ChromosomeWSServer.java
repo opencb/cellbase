@@ -44,7 +44,7 @@ import java.util.List;
  */
 @Path("/{apiVersion}/{species}/genomic/chromosome")
 @Produces(MediaType.APPLICATION_JSON)
-@Api(value = "Genome Sequence", description = "Genome Sequence RESTful Web Services API")
+@Api(value = "Chromosome", description = "Chromosome RESTful Web Services API")
 public class ChromosomeWSServer extends GenericRestWSServer {
 
     private GenomeManager genomeManager;

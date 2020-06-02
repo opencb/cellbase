@@ -30,7 +30,7 @@ class RestClientGenerator(ABC):
             'Admin': 'Admin',
             'Clinical': 'Clinical',
             'Gene': 'Gene',
-            'Genome Sequence': 'GenomeSequence',
+            'Chromosome': 'Chromosome',
             'Meta': 'Meta',
             'Protein': 'Protein',
             'Region': 'Region',
