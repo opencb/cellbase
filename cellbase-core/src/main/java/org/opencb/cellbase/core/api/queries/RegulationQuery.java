@@ -30,7 +30,7 @@ public class RegulationQuery extends AbstractQuery {
     @QueryParameter(id = "cellType")
     private List<String> cellTypes;
     @QueryParameter(id = "region")
-    protected List<Region> regions;
+    private List<Region> regions;
 
     public RegulationQuery() {
     }

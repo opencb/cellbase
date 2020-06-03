@@ -26,7 +26,7 @@ public class TfbsQuery extends AbstractQuery {
     @QueryParameter(id = "featureType")
     private List<String> featureTypes;
     @QueryParameter(id = "region")
-    protected List<Region> regions;
+    private List<Region> regions;
 
     public TfbsQuery() {
     }

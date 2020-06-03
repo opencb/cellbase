@@ -24,7 +24,7 @@ import java.util.Map;
 public class RepeatsQuery extends AbstractQuery {
 
     @QueryParameter(id = "region")
-    protected List<Region> regions;
+    private List<Region> regions;
 
     public RepeatsQuery() {
     }

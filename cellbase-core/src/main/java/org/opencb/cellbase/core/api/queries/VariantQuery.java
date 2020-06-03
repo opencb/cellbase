@@ -24,36 +24,36 @@ import java.util.Map;
 public class VariantQuery extends AbstractQuery {
 
     @QueryParameter(id = "chromosome")
-    protected String chromosome;
+    private String chromosome;
     @QueryParameter(id = "start")
-    protected String start;
+    private String start;
     @QueryParameter(id = "end")
-    protected String end;
+    private String end;
     @QueryParameter(id = "region")
-    protected List<Region> regions;
+    private List<Region> regions;
 
     @QueryParameter(id = "reference")
-    protected String reference;
+    private String reference;
     @QueryParameter(id = "alternate")
-    protected String alternate;
+    private String alternate;
     @QueryParameter(id = "id")
-    protected String id;
+    private String id;
 
     @QueryParameter(id = "sv.ciStartLeft")
-    protected Integer ciStartLeft;
+    private Integer ciStartLeft;
     @QueryParameter(id = "sv.ciStartRight")
-    protected Integer ciStartRight;
+    private Integer ciStartRight;
     @QueryParameter(id = "sv.ciEndLeft")
-    protected Integer ciEndLeft;
+    private Integer ciEndLeft;
     @QueryParameter(id = "sv.ciEndRight")
-    protected Integer ciEndRight;
+    private Integer ciEndRight;
 
     @QueryParameter(id = "sv.type")
-    protected String svType;
+    private String svType;
     @QueryParameter(id = "type")
-    protected String type;
+    private String type;
     @QueryParameter(id = "consequenceType")
-    protected String consequenceType;
+    private String consequenceType;
 
     @QueryParameter(id = "gene")
     private LogicalList<String> genes;

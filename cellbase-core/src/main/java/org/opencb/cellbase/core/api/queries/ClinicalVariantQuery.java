@@ -24,39 +24,39 @@ import java.util.Map;
 public class ClinicalVariantQuery extends AbstractQuery {
 
     @QueryParameter(id = "region")
-    protected List<Region> regions;
+    private List<Region> regions;
 
     @QueryParameter(id = "chromosome")
-    protected String chromosome;
+    private String chromosome;
     @QueryParameter(id = "start")
-    protected String start;
+    private String start;
     @QueryParameter(id = "end")
-    protected String end;
+    private String end;
 
     @QueryParameter(id = "source")
-    protected List<String> sources;
+    private List<String> sources;
     @QueryParameter(id = "so")
-    protected List<String> so;
+    private List<String> so;
     @QueryParameter(id = "feature")
-    protected List<String> features;
+    private List<String> features;
     @QueryParameter(id = "trait")
-    protected List<String> traits;
+    private List<String> traits;
 
     @QueryParameter(id = "accession")
-    protected List<String> accessions;
+    private List<String> accessions;
     @QueryParameter(id = "id")
-    protected List<String> ids;
+    private List<String> ids;
 
     @QueryParameter(id = "type")
-    protected List<String> types;
+    private List<String> types;
     @QueryParameter(id = "consistencyStatus")
-    protected List<String> consistencyStatuses;
+    private List<String> consistencyStatuses;
     @QueryParameter(id = "clinicalSignificance")
-    protected List<String> clinicalSignificances;
+    private List<String> clinicalSignificances;
     @QueryParameter(id = "modeInheritance")
-    protected List<String> modeInheritances;
+    private List<String> modeInheritances;
     @QueryParameter(id = "alleleOrigin")
-    protected List<String> alleleOrigins;
+    private List<String> alleleOrigins;
 
     public ClinicalVariantQuery() {
     }

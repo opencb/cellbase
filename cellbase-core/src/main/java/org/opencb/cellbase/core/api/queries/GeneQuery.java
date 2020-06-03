@@ -33,21 +33,21 @@ public class GeneQuery extends AbstractQuery {
     private List<String> biotypes;
 
     @QueryParameter(id = "region")
-    protected List<Region> regions;
+    private List<Region> regions;
 
     @QueryParameter(id = "transcripts.biotype")
-    protected List<String> transcriptsBiotype;
+    private List<String> transcriptsBiotype;
     @QueryParameter(id = "transcripts.xrefs")
-    protected List<String> transcriptsXrefs;
+    private List<String> transcriptsXrefs;
     @QueryParameter(id = "transcripts.id")
-    protected List<String> transcriptsId;
+    private List<String> transcriptsId;
     @QueryParameter(id = "transcripts.name")
-    protected List<String> transcriptsName;
+    private List<String> transcriptsName;
 
     @QueryParameter(id = "transcripts.annotationFlags")
-    protected LogicalList<String> transcriptsAnnotationFlags;
+    private LogicalList<String> transcriptsAnnotationFlags;
     @QueryParameter(id = "transcripts.tfbs.id")
-    protected LogicalList<String> transcriptsTfbsId;
+    private LogicalList<String> transcriptsTfbsId;
 
     @QueryParameter(id = "annotation.diseases.id")
     private LogicalList<String> annotationDiseasesId;
