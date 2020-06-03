@@ -76,10 +76,9 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
     public void testGenomicSequenceQueryStartOutOfLeftBound() throws Exception {
         // start within the bounds, end out of the right bound. Should return last 10 nts.
         Throwable exception = assertThrows(RuntimeException.class, () -> {
-            cellBaseNormalizerSequenceAdaptor.query("1", -100, 1999);
+            cellBaseNormalizerSequenceAdaptor.query("13", 1000, 2000);
         });
-        assertEquals("Unable to find entry for 1:-100-1999", exception.getMessage());
+        assertEquals("Unable to find entry for 13:1000-2000", exception.getMessage());
     }
-
 
 }

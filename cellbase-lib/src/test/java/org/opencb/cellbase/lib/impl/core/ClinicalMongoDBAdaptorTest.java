@@ -576,16 +576,18 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
                 new Region("2", 170360030, 170362030));
         QueryOptions queryOptions4 = new QueryOptions();
         queryOptions4.add(QueryOptions.INCLUDE, "annotation.traitAssociation.id");
+        queryOptions4.add(QueryOptions.COUNT, "true");
         CellBaseDataResult<Variant> CellBaseDataResult4 = clinicalDBAdaptor.get(query4, queryOptions4);
-        assertEquals(2, CellBaseDataResult4.getNumTotalResults());
+        assertEquals(2, CellBaseDataResult4.getNumResults());
         assertTrue(containsAccession(CellBaseDataResult4, "COSM4624460"));
         assertTrue(containsAccession(CellBaseDataResult4, "RCV000171500"));
 
         Query query5 = new Query();
         query5.put(ClinicalDBAdaptor.QueryParams.CLINICALSIGNIFICANCE.key(), "likely_pathogenic");
         QueryOptions queryOptions5 = new QueryOptions();
+        queryOptions4.add(QueryOptions.COUNT, "true");
         CellBaseDataResult CellBaseDataResult5 = clinicalDBAdaptor.nativeGet(query5, queryOptions5);
-        assertEquals(2, CellBaseDataResult5.getNumTotalResults());
+        assertEquals(2, CellBaseDataResult5.getNumResults());
 
         Query query6 = new Query();
         query6.put(ClinicalDBAdaptor.QueryParams.FEATURE.key(), "APOE");
@@ -602,11 +604,11 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         queryOptions6.remove(QueryOptions.SORT);
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "clinvar");
         CellBaseDataResult CellBaseDataResult7 = clinicalDBAdaptor.nativeGet(query6, queryOptions6);
-        assertEquals(1, CellBaseDataResult7.getNumTotalResults());
+        assertEquals(1, CellBaseDataResult7.getNumResults());
 
         query6.put(ClinicalDBAdaptor.QueryParams.SOURCE.key(), "cosmic");
         CellBaseDataResult<Variant> CellBaseDataResult8 = clinicalDBAdaptor.get(query6, queryOptions6);
-        assertEquals(1, CellBaseDataResult8.getNumTotalResults());
+        assertEquals(1, CellBaseDataResult8.getNumResults());
         List<String> geneSymbols = CellBaseDataResult8.getResults().get(0).getAnnotation().getTraitAssociation().stream()
                 .map((evidenceEntry) -> evidenceEntry.getGenomicFeatures().get(0).getXrefs().get("symbol"))
                 .collect(Collectors.toList());
