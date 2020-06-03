@@ -26,6 +26,7 @@ import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
 import org.opencb.cellbase.core.config.SpeciesConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.DataStoreServerAddress;
 import org.opencb.commons.datastore.mongodb.MongoDBConfiguration;
@@ -403,13 +404,15 @@ public class MongoDBAdaptorFactory {
         return new VariantMongoDBAdaptor(species, assembly, mongoDatastore);
     }
 
-    public ClinicalMongoDBAdaptor getClinicalDBAdaptor(String species) {
+    public ClinicalMongoDBAdaptor getClinicalDBAdaptor(String species) throws CellbaseException {
         return getClinicalDBAdaptor(species, null);
     }
 
-    public ClinicalMongoDBAdaptor getClinicalDBAdaptor(String species, String assembly) {
+    public ClinicalMongoDBAdaptor getClinicalDBAdaptor(String species, String assembly) throws CellbaseException {
         MongoDataStore mongoDatastore = createMongoDBDatastore(species, assembly);
-        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore);
+        // FIXME temporarily add config so we can get to the manager. this should be removed when we move all
+        // methods to the manager.
+        return new ClinicalMongoDBAdaptor(species, assembly, mongoDatastore, cellBaseConfiguration);
     }
 
     public RepeatsMongoDBAdaptor getRepeatsDBAdaptor(String species, String assembly) {

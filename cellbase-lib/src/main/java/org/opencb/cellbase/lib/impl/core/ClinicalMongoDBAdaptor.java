@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
@@ -29,7 +30,15 @@ import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
 import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.ClinicalVariantQuery;
+import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
+import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
+import org.opencb.cellbase.lib.managers.CellBaseManagerFactory;
+import org.opencb.cellbase.lib.managers.GenomeManager;
+import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
@@ -40,17 +49,25 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 06/12/16.
  */
-public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor {
+public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
+        implements CellBaseCoreDBAdaptor<ClinicalVariantQuery, ClinicalVariant> {
 
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
     private static final String SEPARATOR = ",";
+    // TODO: watch out this prefix only works for ENSMBL hgvs strings!!
+    private static final String PROTEIN_HGVS_PREFIX = "ENSP";
+    private static ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
+    private GenomeManager genomeManager;
 
-    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
+
+    public ClinicalMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore,
+                                  CellBaseConfiguration configuration) throws CellbaseException {
         super(species, assembly, mongoDataStore);
         mongoDBCollection = mongoDataStore.getCollection("clinical_variants");
-
         logger.debug("ClinicalMongoDBAdaptor: in 'constructor'");
+        CellBaseManagerFactory cellBaseManagerFactory = new CellBaseManagerFactory(configuration);
+        genomeManager = cellBaseManagerFactory.getGenomeManager(species, assembly);
     }
 
     public CellBaseDataResult<Variant> next(Query query, QueryOptions options) {
@@ -224,7 +241,57 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         }
     }
 
-    public CellBaseDataResult<Variant> getByVariant(Variant variant, QueryOptions options) {
+    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
+
+        List<Bson> pipeline = new ArrayList<>();
+        pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
+                new Document("$exists", 1))));
+//        pipeline.add(new Document("$match", new Document("clinvarSet", new Document("$exists", 1))));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait"));
+        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name"));
+        Document groupFields = new Document();
+        groupFields.put("_id", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
+        groupFields.put("associatedGenes",
+                new Document("$addToSet",
+                        "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value"));
+        pipeline.add(new Document("$group", groupFields));
+        Document fields = new Document();
+        fields.put("_id", 0);
+        fields.put("phenotype", "$_id");
+        fields.put("associatedGenes", 1);
+        pipeline.add(new Document("$project", fields));
+
+        return executeAggregation2("", pipeline, queryOptions);
+
+    }
+
+    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
+
+        List<Bson> pipeline = new ArrayList<>();
+        // Select only GWAS documents
+        pipeline.add(new Document("$match", new Document("snpIdCurrent", new Document("$exists", 1))));
+        pipeline.add(new Document("$unwind", "$studies"));
+        pipeline.add(new Document("$unwind", "$studies.traits"));
+        Document groupFields = new Document();
+        groupFields.put("_id", "$studies.traits.diseaseTrait");
+        groupFields.put("associatedGenes", new Document("$addToSet", "$reportedGenes"));
+        pipeline.add(new Document("$group", groupFields));
+        Document fields = new Document();
+        fields.put("_id", 0);
+        fields.put("phenotype", "$_id");
+        fields.put("associatedGenes", 1);
+        pipeline.add(new Document("$project", fields));
+
+        return executeAggregation2("", pipeline, queryOptions);
+    }
+
+    private CellBaseDataResult<Variant> getClinicalVariant(Variant variant,
+                                                    GenomeManager genomeManager,
+                                                    List<Gene> geneList,
+                                                    QueryOptions options) {
         Query query;
         if (VariantType.CNV.equals(variant.getType())) {
             query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
@@ -235,47 +302,89 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
                     .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
                     .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
         } else {
-            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
-                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
-                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+            query = new Query();
+            if (options.get(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key()) != null
+                    && (Boolean) options.get(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key())
+                    && genomeManager != null
+                    && geneList != null
+                    && !geneList.isEmpty()) {
+                HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager);
+                List<String> proteinHgvsList = getProteinHgvs(hgvsCalculator.run(variant, geneList));
+                // Only add the protein HGVS query if it's a protein coding variant
+                if (!proteinHgvsList.isEmpty()) {
+                    query.append(ClinicalDBAdaptor.QueryParams.HGVS.key(), proteinHgvsList);
+                }
+            }
+
+            // If checkAminoAcidChange IS enabled but it's not a protein coding variant we still MUST raise the
+            // genomic query. However, the protein hgvs query must be enough to solve the variant match if it is a
+            // protein coding variant and we therefore would not need the specific genomic query
+            if (query.isEmpty()) {
+                query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
+                        .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
+                        .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
+                        .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
+            }
+
         }
+
         CellBaseDataResult<Variant> queryResult = get(query, options);
         queryResult.setId(variant.toString());
 
         return queryResult;
     }
 
-    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions options) {
+    private List<String> getProteinHgvs(List<String> hgvsList) {
+        List<String> proteinHgvsList = new ArrayList<>(hgvsList.size());
+        for (String hgvs : hgvsList) {
+            if (hgvs.startsWith(PROTEIN_HGVS_PREFIX)) {
+                proteinHgvsList.add(hgvs);
+            }
+        }
+
+        return proteinHgvsList;
+    }
+
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
+        return this.getByVariant(variants, null, queryOptions);
+    }
+
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
+                                                   QueryOptions queryOptions) {
         List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
         for (Variant variant: variants) {
-            results.add(getByVariant(variant, options));
+            results.add(getClinicalVariant(variant, genomeManager, geneList, queryOptions));
+        }
+        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null
+                && (Boolean) queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key())) {
+            results = phasedQueryManager.run(variants, results);
+
         }
         return results;
     }
 
     @Override
-    public CellBaseIterator iterator(AbstractQuery query) {
+    public CellBaseIterator iterator(ClinicalVariantQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<Long> count(AbstractQuery query) {
+    public CellBaseDataResult<Long> count(ClinicalVariantQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult aggregationStats(AbstractQuery query) {
+    public CellBaseDataResult aggregationStats(ClinicalVariantQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult groupBy(AbstractQuery query) {
+    public CellBaseDataResult groupBy(ClinicalVariantQuery query) {
         return null;
     }
 
     @Override
-    public CellBaseDataResult<String> distinct(AbstractQuery query) {
+    public CellBaseDataResult<String> distinct(ClinicalVariantQuery query) {
         return null;
     }
 

@@ -32,6 +32,7 @@ import org.opencb.cellbase.core.api.core.CellBaseDBAdaptor;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.config.DatabaseCredentials;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.loader.CellBaseLoader;
 import org.opencb.cellbase.core.loader.LoadRunner;
 import org.opencb.cellbase.core.loader.LoaderException;
@@ -166,7 +167,7 @@ public class MongoDBCellBaseLoader extends CellBaseLoader {
     }
 
     @Deprecated
-    private CellBaseCoreDBAdaptor getDBAdaptor(String data) throws LoaderException {
+    private CellBaseCoreDBAdaptor getDBAdaptor(String data) throws LoaderException, CellbaseException {
         String[] databaseParts = database.split("_");
         String species = databaseParts[1];
 //        String assembly = databaseParts[2];

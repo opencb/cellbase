@@ -19,18 +19,15 @@ package org.opencb.cellbase.lib.managers;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
-import org.opencb.cellbase.core.api.core.ClinicalDBAdaptor;
-import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.ClinicalVariantQuery;
 import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
+import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
-import org.opencb.cellbase.core.variant.ClinicalPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.ClinicalMongoDBAdaptor;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,12 +37,13 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
 
     private ClinicalMongoDBAdaptor clinicalDBAdaptor;
 
-    public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration) {
+    public ClinicalManager(String species, String assembly, CellBaseConfiguration configuration)
+            throws CellbaseException {
         super(species, assembly, configuration);
         this.init();
     }
 
-    private void init() {
+    private void init() throws CellbaseException {
         clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor(species, assembly);
     }
 
@@ -107,109 +105,4 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
         return new CellBaseDataResult<String>("variant_types", 0, Collections.emptyList(),
                 variantTypes.size(), variantTypes, variantTypes.size());
     }
-
-//    private CellBaseDataResult getClinvarPhenotypeGeneRelations(QueryOptions queryOptions) {
-//        List<Bson> pipeline = new ArrayList<>();
-//        pipeline.add(new Document("$match", new Document("clinvarSet.referenceClinVarAssertion.clinVarAccession.acc",
-//                new Document("$exists", 1))));
-//        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure"));
-//        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship"));
-//        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol"));
-//        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait"));
-//        pipeline.add(new Document("$unwind", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name"));
-//        Document groupFields = new Document();
-//        groupFields.put("_id", "$clinvarSet.referenceClinVarAssertion.traitSet.trait.name.elementValue.value");
-//        groupFields.put("associatedGenes",
-//                new Document("$addToSet",
-//                        "$clinvarSet.referenceClinVarAssertion.measureSet.measure.measureRelationship.symbol.elementValue.value"));
-//        pipeline.add(new Document("$group", groupFields));
-//        Document fields = new Document();
-//        fields.put("_id", 0);
-//        fields.put("phenotype", "$_id");
-//        fields.put("associatedGenes", 1);
-//        pipeline.add(new Document("$project", fields));
-//
-//        return executeAggregation2("", pipeline, queryOptions);
-//    }
-
-//    private CellBaseDataResult getGwasPhenotypeGeneRelations(QueryOptions queryOptions) {
-//        List<Bson> pipeline = new ArrayList<>();
-//        // Select only GWAS documents
-//        pipeline.add(new Document("$match", new Document("snpIdCurrent", new Document("$exists", 1))));
-//        pipeline.add(new Document("$unwind", "$studies"));
-//        pipeline.add(new Document("$unwind", "$studies.traits"));
-//        Document groupFields = new Document();
-//        groupFields.put("_id", "$studies.traits.diseaseTrait");
-//        groupFields.put("associatedGenes", new Document("$addToSet", "$reportedGenes"));
-//        pipeline.add(new Document("$group", groupFields));
-//        Document fields = new Document();
-//        fields.put("_id", 0);
-//        fields.put("phenotype", "$_id");
-//        fields.put("associatedGenes", 1);
-//        pipeline.add(new Document("$project", fields));
-//
-//        return executeAggregation2("", pipeline, queryOptions);
-//    }
-//
-
-    public CellBaseDataResult getByVariant(Variant variant, QueryOptions options) {
-        Query query;
-        if (VariantType.CNV.equals(variant.getType())) {
-            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(VariantDBAdaptor.QueryParams.CI_START_LEFT.key(), variant.getSv().getCiStartLeft())
-                    .append(VariantDBAdaptor.QueryParams.CI_START_RIGHT.key(), variant.getSv().getCiStartRight())
-                    .append(VariantDBAdaptor.QueryParams.CI_END_LEFT.key(), variant.getSv().getCiEndLeft())
-                    .append(VariantDBAdaptor.QueryParams.CI_END_RIGHT.key(), variant.getSv().getCiEndRight())
-                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
-                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
-        } else {
-            query = new Query(VariantDBAdaptor.QueryParams.CHROMOSOME.key(), variant.getChromosome())
-                    .append(VariantDBAdaptor.QueryParams.START.key(), variant.getStart())
-                    .append(VariantDBAdaptor.QueryParams.REFERENCE.key(), variant.getReference())
-                    .append(VariantDBAdaptor.QueryParams.ALTERNATE.key(), variant.getAlternate());
-        }
-        CellBaseDataResult queryResult = search(query, options);
-        queryResult.setId(variant.toString());
-
-        return queryResult;
-    }
-
-    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, QueryOptions queryOptions) {
-        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
-        for (Variant variant : variants) {
-            results.add(getByVariant(variant, queryOptions));
-        }
-        ClinicalPhasedQueryManager phasedQueryManager = new ClinicalPhasedQueryManager();
-        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null && (Boolean) queryOptions.get(ClinicalDBAdaptor
-        .QueryParams.PHASE.key())) {
-            results = phasedQueryManager.run(variants, results);
-
-        }
-        return results;
-    }
-
-
-
-//    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
-//                                                          QueryOptions queryOptions) {
-//        List<CellBaseDataResult<Variant>> results = new ArrayList<>(variants.size());
-//        for (Variant variant: variants) {
-//            results.add(getClinicalVariant(variant, genomeDBAdaptor, geneList, queryOptions));
-//        }
-//        if (queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key()) != null
-//        && (Boolean) queryOptions.get(ClinicalDBAdaptor.QueryParams.PHASE.key())) {
-//            results = phasedQueryManager.run(variants, results);
-//
-//        }
-//        return results;
-//    }
-//
-//    public CellBaseDataResult getByRegion(Query query, QueryOptions queryOptions, String regions) {
-//        query.put(ClinicalDBAdaptor.QueryParams.REGION.key(), regions);
-//
-//        CellBaseDataResult queryResult = clinicalDBAdaptor.nativeGet(query, queryOptions);
-//        queryResult.setId(regions);
-//        return queryResult;
-//
-//    }
 }

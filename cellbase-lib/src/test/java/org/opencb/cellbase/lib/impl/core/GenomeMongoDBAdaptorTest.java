@@ -104,12 +104,12 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(1, cellBaseDataResult.getNumResults());
         assertEquals("TCAAGACCAGC", cellBaseDataResult.getResults().get(0).getSequence());
 
-        // Start out of the left bound
+        // Start out of the left bound, end in bound. should return nts.
         QueryOptions queryOptions = new QueryOptions();
         queryOptions.add("count", "true");
         cellBaseDataResult = dbAdaptor
                 .getSequence(new Region("17", 63960000, 63970000), queryOptions);
-        assertEquals(0, cellBaseDataResult.getNumResults());
+        assertEquals(1, cellBaseDataResult.getNumResults());
     }
 
 
