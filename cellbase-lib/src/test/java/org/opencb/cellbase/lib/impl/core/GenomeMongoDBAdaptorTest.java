@@ -106,9 +106,9 @@ public class GenomeMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         // Start out of the left bound
         QueryOptions queryOptions = new QueryOptions();
-        queryOptions.add("count", "false");
+        queryOptions.add("count", "true");
         cellBaseDataResult = dbAdaptor
-                .getSequence(new Region("13", 1000, 2000), queryOptions);
+                .getSequence(new Region("17", 63960000, 63970000), queryOptions);
         assertEquals(0, cellBaseDataResult.getNumResults());
     }
 

@@ -74,11 +74,13 @@ public class CellBaseNormalizerSequenceAdaptorTest  extends GenericMongoDBAdapto
 
     @Test
     public void testGenomicSequenceQueryStartOutOfLeftBound() throws Exception {
-        // start within the bounds, end out of the right bound. Should return last 10 nts.
         Throwable exception = assertThrows(RuntimeException.class, () -> {
-            cellBaseNormalizerSequenceAdaptor.query("13", 1000, 2000);
+            cellBaseNormalizerSequenceAdaptor.query("17", 63960000, 63969999);
         });
-        assertEquals("Unable to find entry for 13:1000-2000", exception.getMessage());
+        // TODO FIXME What should happen here?
+        // the left coordinate is out of bounds, but the right one is not. Should this fail?
+        // previously the test coordinates were 1:-100-1999 but that's an illegal value now.
+        assertEquals("Unable to find entry for 17:63960000-63970000", exception.getMessage());
     }
 
 }
