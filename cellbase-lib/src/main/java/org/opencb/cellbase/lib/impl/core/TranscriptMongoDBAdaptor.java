@@ -357,7 +357,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         document.put("cdnaCodingStart", "$transcripts.cdnaCodingStart");
         document.put("cdnaCodingEnd", "$transcripts.cdnaCodingEnd");
         document.put("cdsLength", "$transcripts.cdsLength");
-        document.put("proteinID", "$transcripts.proteinID");
+        document.put("proteinId", "$transcripts.proteinId");
         document.put("proteinSequence", "$transcripts.proteinSequence");
         document.put("cDnaSequence", "$transcripts.cDnaSequence");
         document.put("xrefs", "$transcripts.xrefs");
