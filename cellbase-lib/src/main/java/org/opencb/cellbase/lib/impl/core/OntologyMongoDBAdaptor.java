@@ -35,9 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by fjlopez on 07/06/16.
- */
 public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<OntologyQuery, OntologyTerm> {
 
     public OntologyMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
