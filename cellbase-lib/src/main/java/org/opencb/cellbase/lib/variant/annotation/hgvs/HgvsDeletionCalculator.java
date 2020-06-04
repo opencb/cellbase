@@ -337,7 +337,7 @@ public class HgvsDeletionCalculator extends HgvsCalculator {
         Query query = new Query(GenomeDBAdaptor.QueryParams.REGION.key(), chromosome
                 + ":" + genomicCoordinate
                 + "-" + (genomicCoordinate + 1));
-        substitutingNt = genomeDBAdaptor
+        substitutingNt = genomeManager
                 .getGenomicSequence(query, new QueryOptions()).getResults().get(0).getSequence().charAt(0);
 
         if (POSITIVE.equals(transcript.getStrand())) {
