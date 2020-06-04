@@ -515,12 +515,10 @@ public class ClinicalMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
         ClinicalMongoDBAdaptor clinicalDBAdaptor = dbAdaptorFactory.getClinicalDBAdaptor("hsapiens", "GRCh37");
 
-//        List<CellBaseDataResult<Variant>> queryResultList = clinicalDBAdaptor.getByVariant(
-//                Collections.singletonList(new Variant("2:170361068:G:C")),
-//                loadGeneList(),
-//                new QueryOptions(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), true));
-
-        List<CellBaseDataResult<Variant>> queryResultList = new ArrayList<>();
+        List<CellBaseDataResult<Variant>> queryResultList = clinicalDBAdaptor.getByVariant(
+                Collections.singletonList(new Variant("2:170361068:G:C")),
+                loadGeneList(),
+                new QueryOptions(ClinicalDBAdaptor.QueryParams.CHECK_AMINO_ACID_CHANGE.key(), true));
 
         assertEquals(1, queryResultList.size());
         CellBaseDataResult<Variant> queryResult = queryResultList.get(0);
