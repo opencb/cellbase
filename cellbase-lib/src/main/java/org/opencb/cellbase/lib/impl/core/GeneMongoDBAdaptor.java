@@ -426,7 +426,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
             String value = geneQuery.getAnnotationConstraintsValue().get(0);
 
             // parse constraint value. value will contain an operator, e.g. > or <=
-            Query query = new Query("value", ">=1.0");
+            Query query = new Query("value", value);
             Bson valueFilter = MongoDBQueryUtils.createAutoFilter("value",
                     "value", query, QueryParam.Type.DECIMAL,
                     MongoDBQueryUtils.LogicalOperator.OR);
