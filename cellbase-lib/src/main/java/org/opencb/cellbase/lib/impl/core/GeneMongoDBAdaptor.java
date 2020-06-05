@@ -27,6 +27,7 @@ import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
+import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryParam;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
@@ -343,8 +344,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                         // TODO use unwind to filter out unwanted transcripts
                         createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "annotation.expression.gene":
-                        createAndOrQuery(value, "annotation.expression.geneName", QueryParam.Type.STRING, andBsonList);
+                    case "transcripts.supportLevel":
+                        createSupportLevelQuery(value, andBsonList);
                         break;
                     case "annotation.expression.tissue":
                         createExpressionQuery(geneQuery, andBsonList);
@@ -355,8 +356,14 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                     case "annotation.drugs.name":
                         createAndOrQuery(value, "annotation.drugs.drugName", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "annotation.drugs.gene":
-                        createAndOrQuery(value, "annotation.drugs.geneName", QueryParam.Type.STRING, andBsonList);
+                    case "annotation.constraints.name":
+                        createConstraintsQuery(geneQuery, andBsonList);
+                        break;
+                    case "annotation.constraints.value":
+                        // don't do anything, this value is parsed with the constraints name
+                        break;
+                    case "mirna":
+                        createMirnaQuery(value, andBsonList);
                         break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
@@ -375,6 +382,47 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         }
     }
 
+    private void createSupportLevelQuery(Object value, List<Bson> andBsonList) {
+        if (value != null) {
+            andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
+        }
+    }
+
+    // check in both the id and accession field.
+    private void createMirnaQuery(Object queryValues, List<Bson> andBsonList) {
+        if (queryValues != null) {
+            List<Bson> orBsonList = new ArrayList<>();
+            orBsonList.add(getLogicalListFilter(queryValues, "mirna.id"));
+            orBsonList.add(getLogicalListFilter(queryValues, "mirna.accession"));
+            andBsonList.add(Filters.or(orBsonList));
+        }
+    }
+
+    private Bson getLogicalListFilter(Object queryValues, String mongoDbField) {
+        MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
+                ? MongoDBQueryUtils.LogicalOperator.AND
+                : MongoDBQueryUtils.LogicalOperator.OR;
+        Query query = new Query(mongoDbField, queryValues);
+        return MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, QueryParam.Type.STRING, operator);
+    }
+
+    private void createConstraintsQuery(GeneQuery geneQuery, List<Bson> andBsonList) {
+        if (geneQuery != null && geneQuery.getAnnotationConstraintsName() != null
+                && geneQuery.getAnnotationConstraintsValue().get(0) != null) {
+            String name = geneQuery.getAnnotationConstraintsName().get(0);
+            String value = geneQuery.getAnnotationConstraintsValue().get(0);
+
+            // parse constraint value. value will contain an operator, e.g. > or <=
+            Query query = new Query("value", ">=1.0");
+            Bson valueFilter = MongoDBQueryUtils.createAutoFilter("value",
+                    "value", query, QueryParam.Type.DECIMAL,
+                    MongoDBQueryUtils.LogicalOperator.OR);
+
+            andBsonList.add(Filters.elemMatch("annotation.constraints",
+                    Filters.and(Filters.eq("name", name), valueFilter)));
+        }
+    }
+
     private void createExpressionQuery(GeneQuery geneQuery, List<Bson> andBsonList) {
         if (geneQuery != null) {
             List<String> tissues = geneQuery.getAnnotationExpressionTissue();
@@ -390,11 +438,13 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                             if (tissuesOperator.equals(MongoDBQueryUtils.LogicalOperator.AND)) {
                                 andBsonList.add(Filters.elemMatch("annotation.expression",
                                         Filters.and(Filters.regex("factorValue", "(.)*" + tissue
-                                                        + "(.)*", "i"), Filters.eq("expression", expressionValue))));
+                                                        + "(.)*", "i"),
+                                                Filters.eq("expression", expressionValue))));
                             } else {
                                 orBsonList.add(Filters.elemMatch("annotation.expression",
                                         Filters.and(Filters.regex("factorValue", "(.)*" + tissue
-                                                + "(.)*", "i"), Filters.eq("expression", expressionValue))));
+                                                + "(.)*", "i"),
+                                                Filters.eq("expression", expressionValue))));
                             }
                         }
                         if (!orBsonList.isEmpty()) {

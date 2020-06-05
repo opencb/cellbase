@@ -92,8 +92,19 @@ public class ParamConstants {
     public static final String TRANSCRIPT_ANNOTATION_FLAGS = "Comma separated list of annotation flags that must be "
             + "present in the transcripts returned within the gene model, e.g. basic,CCDS. Exact text matches will "
             + "be returned";
-    public static final String TRANSCRIPT_TFBS_IDS = "Comma separated list of TFBS ids, e.g. ENSM00526048956,ENSM00522505783."
+    public static final String TRANSCRIPT_TFBS_IDS = "Comma separated list of TFBS ids, "
+            + "e.g. ENSM00526048956,ENSM00522505783."
             + " Exact text matches will be returned";
+    public static final String TRANSCRIPT_TFBS_PFMIDS = "Comma separated list of TFBS pfm ids, "
+            + "e.g. ENSPFM0571,ENSPFM0402."
+            + " Exact text matches will be returned";
+    public static final String TRANSCRIPT_TRANSCRIPTION_FACTORS = "Comma separated list of transcription factors, "
+            + "e.g. MYBL1,MAX"
+            + " Exact text matches will be returned";
+    public static final String TRANSCRIPT_SUPPORT_LEVEL = "This highlights the well-supported and poorly-supported "
+            + "transcript models. Valid values are 1 (all splice junctions of the transcript are supported) "
+            + "to 5 (no single transcript supports the model structure) and NA (not analysed), "
+            + "see https://www.ensembl.org/info/genome/genebuild/transcript_quality_tags.html for details.";
 
     // ---------------------------------------------
 
@@ -113,6 +124,11 @@ public class ParamConstants {
             + "e.g. BMN673,OLAPARIB,VELIPARIB. Exact text matches will be returned";
     public static final String ANNOTATION_DRUGS_GENE = "Comma separated list of gene names for which "
             + "drug data is available, e.g. BRCA2,TTN. Exact text matches will be returned";
+
+    public static final String ANNOTATION_CONSTRAINTS_VALUE = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
+
+    public static final String MIRNA = "Id or accession for miRNA, e.g. MI0022666 or hsa-mir-8069-1";
+
 
     // ---------------------------------------------
 

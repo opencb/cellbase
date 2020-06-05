@@ -24,20 +24,25 @@
 {"collection": "gene", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.chromosome": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.supportLevel": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.xrefs.id": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.xrefs.dbName": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.xrefs.dbDisplayName": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.exons.chromosome": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.tfbs.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.tfbs.pfmId": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.tfbs.transcriptionFactors": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.annotation.ontologies.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"transcripts.annotation.constraints.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.diseases.name": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"annotation.expression.geneName": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.expression": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.expression.factorValue": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.drugs.drugName": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"annotation.drugs.geneName": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"annotation.constraints.name": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"annotation.constraints.value": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"mirna.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"mirna.accession": 1}, "options": {"background": true}}
 
 
 {"collection": "protein", "fields": {"accession": 1}, "options": {"background": true}}

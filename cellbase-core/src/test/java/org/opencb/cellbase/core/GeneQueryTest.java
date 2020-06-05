@@ -47,8 +47,6 @@ public class GeneQueryTest {
         paramMap.put("id", "geneId123");
         paramMap.put("biotype", "a,b,c");
 
-        paramMap.put("annotation.drugs.gene", "x,y");
-
         paramMap.put("annotation.expression.tissue", "subthalamic nucleus");
         paramMap.put("annotation.expression.value", "UP");
 
@@ -58,9 +56,6 @@ public class GeneQueryTest {
         assertEquals("a", geneQuery.getBiotypes().get(0));
         assertEquals("b", geneQuery.getBiotypes().get(1));
         assertEquals("c", geneQuery.getBiotypes().get(2));
-
-        assertEquals("x", geneQuery.getAnnotationDrugsGene().get(0));
-        assertEquals("y", geneQuery.getAnnotationDrugsGene().get(1));
 
         assertEquals("subthalamic nucleus", geneQuery.getAnnotationExpressionTissue().get(0));
         assertEquals("UP", geneQuery.getAnnotationExpressionValue().get(0));
@@ -185,19 +180,19 @@ public class GeneQueryTest {
         });
     }
 
-    @Test
-    public void testBuild() {
-        LogicalList geneList = new LogicalList(Arrays.asList("My gene", "another-gene"));
-        geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))
-                .withAnnotationDrugsGene(geneList).build();
-
-        assertEquals("1", geneQuery.getIds().get(0));
-
-        assertEquals("a", geneQuery.getBiotypes().get(0));
-        assertEquals("b", geneQuery.getBiotypes().get(1));
-        assertEquals("c", geneQuery.getBiotypes().get(2));
-
-        assertEquals("My gene", geneQuery.getAnnotationDrugsGene().get(0));
-        assertEquals("another-gene", geneQuery.getAnnotationDrugsGene().get(1));
-    }
+//    @Test
+//    public void testBuild() {
+//        LogicalList geneList = new LogicalList(Arrays.asList("My gene", "another-gene"));
+//        geneQuery = new GeneQuery.Builder().withIds(Arrays.asList("1")).withBiotypes(Arrays.asList("a", "b", "c"))
+//                .withAnnotationDrugsGene(geneList).build();
+//
+//        assertEquals("1", geneQuery.getIds().get(0));
+//
+//        assertEquals("a", geneQuery.getBiotypes().get(0));
+//        assertEquals("b", geneQuery.getBiotypes().get(1));
+//        assertEquals("c", geneQuery.getBiotypes().get(2));
+//
+//        assertEquals("My gene", geneQuery.getAnnotationDrugsGene().get(0));
+//        assertEquals("another-gene", geneQuery.getAnnotationDrugsGene().get(1));
+//    }
 }
