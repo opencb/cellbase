@@ -22,9 +22,7 @@
 {"collection": "gene", "fields": {"name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"biotype": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"_chunkIds": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"chromosome": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.id": 1}, "options": {"background": true}}
-{"collection": "gene", "fields": {"transcripts.name": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"chromosome": 1, "start": 1, "end": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.biotype": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.chromosome": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"transcripts.xrefs.id": 1}, "options": {"background": true}}

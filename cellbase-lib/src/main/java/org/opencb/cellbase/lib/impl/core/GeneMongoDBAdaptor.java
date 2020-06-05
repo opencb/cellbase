@@ -334,6 +334,8 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                             visited = true;
                         }
                         break;
+                    case "transcripts.id":
+                    case "transcripts.name":
                     case "transcripts.xrefs":
                         createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
                         break;
