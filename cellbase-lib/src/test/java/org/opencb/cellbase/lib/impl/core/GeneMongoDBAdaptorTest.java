@@ -41,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
 
+    private GeneMongoDBAdaptor geneDBAdaptor;
+
     public GeneMongoDBAdaptorTest() throws IOException { super(); }
 
     @BeforeEach
@@ -49,11 +51,12 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         Path path = Paths.get(getClass()
                 .getResource("/gene/gene-test.json.gz").toURI());
         loadRunner.load(path, "gene");
+        geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
     }
 
     @Test
     public void testQuery() throws Exception {
-       GeneMongoDBAdaptor geneDBAdaptor = dbAdaptorFactory.getGeneDBAdaptor("hsapiens", "GRCh37");
+
 
 //        Query query = new Query(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_TISSUE.key(), "synovial");
 //        query.put(GeneDBAdaptor.QueryParams.ANNOTATION_EXPRESSION_VALUE.key(), "DOWN");
@@ -115,5 +118,32 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
             }
         }
         assertEquals(true, found);
+    }
+
+    @Test
+    public void testTranscriptIdName() throws Exception {
+        Map<String, String> paramMap = new HashMap<>();
+
+        // DDX11L1 is the gene name, so this shouldn't return anything if it wasn't looking in xrefs
+        paramMap.put("transcripts.id", "DDX11L1");
+        GeneQuery geneQuery = new GeneQuery(paramMap);
+        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(1, cellBaseDataResult.getNumResults());
+
+        // DDX11L1 is the gene name, so this shouldn't return anything if it wasn't looking in xrefs
+        paramMap = new HashMap<>();
+        paramMap.put("transcripts.name", "DDX11L1");
+        geneQuery = new GeneQuery(paramMap);
+        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(1, cellBaseDataResult.getNumResults());
+
+        paramMap = new HashMap<>();
+        paramMap.put("transcripts.id", "DDX11L1");
+        paramMap.put("transcripts.name", "DDX11L1");
+        paramMap.put("transcripts.xrefs", "DDX11L1");
+        geneQuery = new GeneQuery(paramMap);
+        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(1, cellBaseDataResult.getNumResults());
+
     }
 }
