@@ -126,6 +126,7 @@ public class ParamConstants {
             + "drug data is available, e.g. BRCA2,TTN. Exact text matches will be returned";
 
     public static final String ANNOTATION_CONSTRAINTS_VALUE = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
+    public static final String ANNOTATION_TARGETS = "e.g. MIRT001919 or hsa-miR-146a-5p";
 
     public static final String MIRNA = "Id or accession for miRNA, e.g. MI0022666 or hsa-mir-8069-1";
 

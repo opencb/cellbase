@@ -41,6 +41,8 @@
 {"collection": "gene", "fields": {"annotation.drugs.drugName": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.constraints.name": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"annotation.constraints.value": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"annotation.targets.id": 1}, "options": {"background": true}}
+{"collection": "gene", "fields": {"annotation.targets.sourceId": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"mirna.id": 1}, "options": {"background": true}}
 {"collection": "gene", "fields": {"mirna.accession": 1}, "options": {"background": true}}
 

@@ -73,6 +73,8 @@ public class GeneQuery extends AbstractQuery {
     protected LogicalList<String> annotationConstraintsName;
     @QueryParameter(id = "annotation.constraints.value", dependsOn = "annotation.constraints.name")
     protected LogicalList<String> annotationConstraintsValue;
+    @QueryParameter(id = "annotation.targets")
+    protected LogicalList<String> annotationTargets;
     @QueryParameter(id = "mirna")
     private LogicalList<String> mirnas;
 
@@ -118,6 +120,7 @@ public class GeneQuery extends AbstractQuery {
         sb.append(", annotationDrugsName=").append(annotationDrugsName);
         sb.append(", annotationConstraintsName=").append(annotationConstraintsName);
         sb.append(", annotationConstraintsValue=").append(annotationConstraintsValue);
+        sb.append(", annotationTargets=").append(annotationTargets);
         sb.append(", mirnas=").append(mirnas);
         sb.append('}');
         return sb.toString();
@@ -309,6 +312,15 @@ public class GeneQuery extends AbstractQuery {
 
     public GeneQuery setAnnotationConstraintsValue(LogicalList<String> annotationConstraintsValue) {
         this.annotationConstraintsValue = annotationConstraintsValue;
+        return this;
+    }
+
+    public LogicalList<String> getAnnotationTargets() {
+        return annotationTargets;
+    }
+
+    public GeneQuery setAnnotationTargets(LogicalList<String> annotationTargets) {
+        this.annotationTargets = annotationTargets;
         return this;
     }
 
