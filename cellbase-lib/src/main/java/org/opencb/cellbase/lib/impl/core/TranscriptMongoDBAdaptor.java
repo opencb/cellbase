@@ -214,31 +214,21 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                             visited = true;
                         }
                         break;
-                    case "name":
-                        createAndOrQuery(value, "transcripts.name", QueryParam.Type.STRING, andBsonList);
-                        break;
                     case "xrefs":
                         createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
                         break;
-                    case "biotype":
-                        createAndOrQuery(value, "transcripts.biotype", QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "annotationFlags":
-                        // TODO use unwind to filter out unwanted transcripts
-                        createAndOrQuery(value, "transcripts.annotationFlags", QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "tfbs.id":
-                        createAndOrQuery(value, "transcripts.tfbs.id", QueryParam.Type.STRING, andBsonList);
+                    case "supportLevel":
+                        andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
                         break;
                     default:
-                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        createAndOrQuery(value, "transcripts." + dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;
                 }
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-
+        logger.info("transcript parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
@@ -348,6 +338,7 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         document.put("name", "$transcripts.name");
         document.put("biotype", "$transcripts.biotype");
         document.put("status", "$transcripts.status");
+        document.put("supportLevel", "$transcripts.supportLevel");
         document.put("chromosome", "$transcripts.chromosome");
         document.put("start", "$transcripts.start");
         document.put("end", "$transcripts.end");
@@ -362,7 +353,9 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         document.put("cDnaSequence", "$transcripts.cDnaSequence");
         document.put("xrefs", "$transcripts.xrefs");
         document.put("exons", "$transcripts.exons");
+        document.put("tfbs", "$transcripts.tfbs");
         document.put("annotationFlags", "$transcripts.annotationFlags");
+        document.put("annotation", "$transcripts.annotation");
         Bson project = Aggregates.project(document);
 
         Bson match2 = Aggregates.match(bson);

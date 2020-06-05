@@ -34,11 +34,20 @@ public class TranscriptQuery extends AbstractQuery {
     private List<String> transcriptsId;
     @QueryParameter(id = "name")
     private List<String> transcriptsName;
+    @QueryParameter(id = "supportLevel", allowedValues = {"1", "2", "3", "4", "5", "NA"})
+    private List<String> transcriptSupportLevels;
 
     @QueryParameter(id = "annotationFlags")
     private LogicalList<String> transcriptsAnnotationFlags;
     @QueryParameter(id = "tfbs.id")
     private LogicalList<String> transcriptsTfbsId;
+    @QueryParameter(id = "tfbs.pfmId")
+    private LogicalList<String> transcriptsTfbsPfmId;
+    @QueryParameter(id = "tfbs.transcriptionFactors")
+    private LogicalList<String> transcriptsTfbsTranscriptionFactors;
+    @QueryParameter(id = "annotation.ontologies.id")
+    private LogicalList<String> annotationOntologiesId;
+
 
     public TranscriptQuery() {
     }
@@ -47,27 +56,35 @@ public class TranscriptQuery extends AbstractQuery {
         super(params);
     }
 
-    private TranscriptQuery(Builder builder) {
-        setIncludes(builder.includes);
-        setExcludes(builder.excludes);
-        setLimit(builder.limit);
-        setSkip(builder.skip);
-        setCount(builder.count);
-        setSort(builder.sort);
-        setOrder(builder.order);
-        setFacet(builder.facet);
-        setRegions(builder.regions);
-        setTranscriptsBiotype(builder.transcriptsBiotype);
-        setTranscriptsXrefs(builder.transcriptsXrefs);
-        setTranscriptsId(builder.transcriptsId);
-        setTranscriptsName(builder.transcriptsName);
-        setTranscriptsAnnotationFlags(builder.transcriptsAnnotationFlags);
-        setTranscriptsTfbsId(builder.transcriptsTfbsName);
-    }
-
     @Override
     protected void validateQuery() throws QueryException {
 
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TranscriptQuery{");
+        sb.append("regions=").append(regions);
+        sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
+        sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
+        sb.append(", transcriptsId=").append(transcriptsId);
+        sb.append(", transcriptsName=").append(transcriptsName);
+        sb.append(", transcriptSupportLevels=").append(transcriptSupportLevels);
+        sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
+        sb.append(", transcriptsTfbsId=").append(transcriptsTfbsId);
+        sb.append(", transcriptsTfbsPfmId=").append(transcriptsTfbsPfmId);
+        sb.append(", transcriptsTfbsTranscriptionFactors=").append(transcriptsTfbsTranscriptionFactors);
+        sb.append(", annotationOntologiesId=").append(annotationOntologiesId);
+        sb.append(", limit=").append(limit);
+        sb.append(", skip=").append(skip);
+        sb.append(", count=").append(count);
+        sb.append(", sort='").append(sort).append('\'');
+        sb.append(", order=").append(order);
+        sb.append(", facet='").append(facet).append('\'');
+        sb.append(", includes=").append(includes);
+        sb.append(", excludes=").append(excludes);
+        sb.append('}');
+        return sb.toString();
     }
 
     public List<Region> getRegions() {
@@ -115,6 +132,15 @@ public class TranscriptQuery extends AbstractQuery {
         return this;
     }
 
+    public List<String> getTranscriptSupportLevels() {
+        return transcriptSupportLevels;
+    }
+
+    public TranscriptQuery setTranscriptSupportLevels(List<String> transcriptSupportLevels) {
+        this.transcriptSupportLevels = transcriptSupportLevels;
+        return this;
+    }
+
     public LogicalList<String> getTranscriptsAnnotationFlags() {
         return transcriptsAnnotationFlags;
     }
@@ -133,126 +159,178 @@ public class TranscriptQuery extends AbstractQuery {
         return this;
     }
 
+    public LogicalList<String> getTranscriptsTfbsPfmId() {
+        return transcriptsTfbsPfmId;
+    }
 
-    public static final class Builder {
-        private List<String> includes;
-        private List<String> excludes;
-        private Integer limit;
-        private Integer skip;
-        private Boolean count;
-        private String sort;
-        private Order order;
-        private String facet;
+    public TranscriptQuery setTranscriptsTfbsPfmId(LogicalList<String> transcriptsTfbsPfmId) {
+        this.transcriptsTfbsPfmId = transcriptsTfbsPfmId;
+        return this;
+    }
+
+    public LogicalList<String> getTranscriptsTfbsTranscriptionFactors() {
+        return transcriptsTfbsTranscriptionFactors;
+    }
+
+    public TranscriptQuery setTranscriptsTfbsTranscriptionFactors(LogicalList<String> transcriptsTfbsTranscriptionFactors) {
+        this.transcriptsTfbsTranscriptionFactors = transcriptsTfbsTranscriptionFactors;
+        return this;
+    }
+
+    public LogicalList<String> getAnnotationOntologiesId() {
+        return annotationOntologiesId;
+    }
+
+    public TranscriptQuery setAnnotationOntologiesId(LogicalList<String> annotationOntologiesId) {
+        this.annotationOntologiesId = annotationOntologiesId;
+        return this;
+    }
+
+    public static final class TranscriptQueryBuilder {
+        protected Integer limit;
+        protected Integer skip;
+        protected Boolean count = false;
+        protected String sort;
+        protected Order order;
+        protected String facet;
+        protected List<String> includes;
+        protected List<String> excludes;
         private List<Region> regions;
         private List<String> transcriptsBiotype;
         private List<String> transcriptsXrefs;
         private List<String> transcriptsId;
         private List<String> transcriptsName;
+        private List<String> transcriptSupportLevels;
         private LogicalList<String> transcriptsAnnotationFlags;
-        private LogicalList<String> transcriptsTfbsName;
+        private LogicalList<String> transcriptsTfbsId;
+        private LogicalList<String> transcriptsTfbsPfmId;
+        private LogicalList<String> transcriptsTfbsTranscriptionFactors;
+        private LogicalList<String> annotationOntologiesId;
 
-        public Builder() {
+        private TranscriptQueryBuilder() {
         }
 
-        public Builder withIncludes(List<String> val) {
-            includes = val;
+        public static TranscriptQueryBuilder aTranscriptQuery() {
+            return new TranscriptQueryBuilder();
+        }
+
+        public TranscriptQueryBuilder withRegions(List<Region> regions) {
+            this.regions = regions;
             return this;
         }
 
-        public Builder withExcludes(List<String> val) {
-            excludes = val;
+        public TranscriptQueryBuilder withTranscriptsBiotype(List<String> transcriptsBiotype) {
+            this.transcriptsBiotype = transcriptsBiotype;
             return this;
         }
 
-        public Builder withLimit(Integer val) {
-            limit = val;
+        public TranscriptQueryBuilder withTranscriptsXrefs(List<String> transcriptsXrefs) {
+            this.transcriptsXrefs = transcriptsXrefs;
             return this;
         }
 
-        public Builder withSkip(Integer val) {
-            skip = val;
+        public TranscriptQueryBuilder withTranscriptsId(List<String> transcriptsId) {
+            this.transcriptsId = transcriptsId;
             return this;
         }
 
-        public Builder withCount(Boolean val) {
-            count = val;
+        public TranscriptQueryBuilder withTranscriptsName(List<String> transcriptsName) {
+            this.transcriptsName = transcriptsName;
             return this;
         }
 
-        public Builder withSort(String val) {
-            sort = val;
+        public TranscriptQueryBuilder withTranscriptSupportLevels(List<String> transcriptSupportLevels) {
+            this.transcriptSupportLevels = transcriptSupportLevels;
             return this;
         }
 
-        public Builder withOrder(Order val) {
-            order = val;
+        public TranscriptQueryBuilder withTranscriptsAnnotationFlags(LogicalList<String> transcriptsAnnotationFlags) {
+            this.transcriptsAnnotationFlags = transcriptsAnnotationFlags;
             return this;
         }
 
-        public Builder withFacet(String val) {
-            facet = val;
+        public TranscriptQueryBuilder withTranscriptsTfbsId(LogicalList<String> transcriptsTfbsId) {
+            this.transcriptsTfbsId = transcriptsTfbsId;
             return this;
         }
 
-        public Builder withRegions(List<Region> val) {
-            regions = val;
+        public TranscriptQueryBuilder withTranscriptsTfbsPfmId(LogicalList<String> transcriptsTfbsPfmId) {
+            this.transcriptsTfbsPfmId = transcriptsTfbsPfmId;
             return this;
         }
 
-        public Builder withTranscriptsBiotype(List<String> val) {
-            transcriptsBiotype = val;
+        public TranscriptQueryBuilder withTranscriptsTfbsTranscriptionFactors(LogicalList<String> transcriptsTfbsTranscriptionFactors) {
+            this.transcriptsTfbsTranscriptionFactors = transcriptsTfbsTranscriptionFactors;
             return this;
         }
 
-        public Builder withTranscriptsXrefs(List<String> val) {
-            transcriptsXrefs = val;
+        public TranscriptQueryBuilder withAnnotationOntologiesId(LogicalList<String> annotationOntologiesId) {
+            this.annotationOntologiesId = annotationOntologiesId;
             return this;
         }
 
-        public Builder withTranscriptsId(List<String> val) {
-            transcriptsId = val;
+        public TranscriptQueryBuilder withLimit(Integer limit) {
+            this.limit = limit;
             return this;
         }
 
-        public Builder withTranscriptsName(List<String> val) {
-            transcriptsName = val;
+        public TranscriptQueryBuilder withSkip(Integer skip) {
+            this.skip = skip;
             return this;
         }
 
-        public Builder withTranscriptsAnnotationFlags(LogicalList<String> val) {
-            transcriptsAnnotationFlags = val;
+        public TranscriptQueryBuilder withCount(Boolean count) {
+            this.count = count;
             return this;
         }
 
-        public Builder withTranscriptsTfbsName(LogicalList<String> val) {
-            transcriptsTfbsName = val;
+        public TranscriptQueryBuilder withSort(String sort) {
+            this.sort = sort;
+            return this;
+        }
+
+        public TranscriptQueryBuilder withOrder(Order order) {
+            this.order = order;
+            return this;
+        }
+
+        public TranscriptQueryBuilder withFacet(String facet) {
+            this.facet = facet;
+            return this;
+        }
+
+        public TranscriptQueryBuilder withIncludes(List<String> includes) {
+            this.includes = includes;
+            return this;
+        }
+
+        public TranscriptQueryBuilder withExcludes(List<String> excludes) {
+            this.excludes = excludes;
             return this;
         }
 
         public TranscriptQuery build() {
-            return new TranscriptQuery(this);
+            TranscriptQuery transcriptQuery = new TranscriptQuery();
+            transcriptQuery.setRegions(regions);
+            transcriptQuery.setTranscriptsBiotype(transcriptsBiotype);
+            transcriptQuery.setTranscriptsXrefs(transcriptsXrefs);
+            transcriptQuery.setTranscriptsId(transcriptsId);
+            transcriptQuery.setTranscriptsName(transcriptsName);
+            transcriptQuery.setTranscriptSupportLevels(transcriptSupportLevels);
+            transcriptQuery.setTranscriptsAnnotationFlags(transcriptsAnnotationFlags);
+            transcriptQuery.setTranscriptsTfbsId(transcriptsTfbsId);
+            transcriptQuery.setTranscriptsTfbsPfmId(transcriptsTfbsPfmId);
+            transcriptQuery.setTranscriptsTfbsTranscriptionFactors(transcriptsTfbsTranscriptionFactors);
+            transcriptQuery.setAnnotationOntologiesId(annotationOntologiesId);
+            transcriptQuery.setLimit(limit);
+            transcriptQuery.setSkip(skip);
+            transcriptQuery.setCount(count);
+            transcriptQuery.setSort(sort);
+            transcriptQuery.setOrder(order);
+            transcriptQuery.setFacet(facet);
+            transcriptQuery.setIncludes(includes);
+            transcriptQuery.setExcludes(excludes);
+            return transcriptQuery;
         }
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("TranscriptQuery{");
-        sb.append("regions=").append(regions);
-        sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
-        sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
-        sb.append(", transcriptsId=").append(transcriptsId);
-        sb.append(", transcriptsName=").append(transcriptsName);
-        sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
-        sb.append(", transcriptsTfbsName=").append(transcriptsTfbsId);
-        sb.append(", limit=").append(limit);
-        sb.append(", skip=").append(skip);
-        sb.append(", count=").append(count);
-        sb.append(", sort='").append(sort).append('\'');
-        sb.append(", order=").append(order);
-        sb.append(", facet='").append(facet).append('\'');
-        sb.append(", includes=").append(includes);
-        sb.append(", excludes=").append(excludes);
-        sb.append('}');
-        return sb.toString();
     }
 }

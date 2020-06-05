@@ -31,8 +31,6 @@ public class GeneQuery extends AbstractQuery {
     private List<String> names;
     @QueryParameter(id = "biotype")
     private List<String> biotypes;
-    @QueryParameter(id = "supportLevel")
-    private List<String> supportLevels;
 
     @QueryParameter(id = "region")
     private List<Region> regions;
@@ -45,6 +43,8 @@ public class GeneQuery extends AbstractQuery {
     private List<String> transcriptsId;
     @QueryParameter(id = "transcripts.name")
     private List<String> transcriptsName;
+    @QueryParameter(id = "transcripts.supportLevel", allowedValues = {"1", "2", "3", "4", "5", "NA"})
+    private List<String> transcriptsSupportLevels;
 
     @QueryParameter(id = "transcripts.annotationFlags")
     private LogicalList<String> transcriptsAnnotationFlags;
@@ -102,7 +102,7 @@ public class GeneQuery extends AbstractQuery {
         sb.append("ids=").append(ids);
         sb.append(", names=").append(names);
         sb.append(", biotypes=").append(biotypes);
-        sb.append(", supportLevels=").append(supportLevels);
+        sb.append(", transcriptsSupportLevels=").append(transcriptsSupportLevels);
         sb.append(", regions=").append(regions);
         sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
         sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
@@ -153,12 +153,12 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public List<String> getSupportLevels() {
-        return supportLevels;
+    public List<String> getTranscriptsSupportLevels() {
+        return transcriptsSupportLevels;
     }
 
-    public GeneQuery setSupportLevels(List<String> supportLevels) {
-        this.supportLevels = supportLevels;
+    public GeneQuery setTranscriptsSupportLevels(List<String> transcriptsSupportLevels) {
+        this.transcriptsSupportLevels = transcriptsSupportLevels;
         return this;
     }
 
@@ -333,8 +333,10 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-
     public static final class GeneQueryBuilder {
+        protected LogicalList<String> annotationConstraintsName;
+        protected LogicalList<String> annotationConstraintsValue;
+        protected LogicalList<String> annotationTargets;
         protected Integer limit;
         protected Integer skip;
         protected Boolean count = false;
@@ -346,12 +348,12 @@ public class GeneQuery extends AbstractQuery {
         private List<String> ids;
         private List<String> names;
         private List<String> biotypes;
-        private List<String> supportLevels;
         private List<Region> regions;
         private List<String> transcriptsBiotype;
         private List<String> transcriptsXrefs;
         private List<String> transcriptsId;
         private List<String> transcriptsName;
+        private List<String> transcriptsSupportLevels;
         private LogicalList<String> transcriptsAnnotationFlags;
         private LogicalList<String> transcriptsTfbsId;
         private LogicalList<String> transcriptsTfbsPfmId;
@@ -362,8 +364,6 @@ public class GeneQuery extends AbstractQuery {
         private LogicalList<String> annotationExpressionTissue;
         private LogicalList<String> annotationExpressionValue;
         private LogicalList<String> annotationDrugsName;
-        private LogicalList<String> annotationConstraintsName;
-        private LogicalList<String> annotationConstraintsValue;
         private LogicalList<String> mirnas;
 
         private GeneQueryBuilder() {
@@ -385,11 +385,6 @@ public class GeneQuery extends AbstractQuery {
 
         public GeneQueryBuilder withBiotypes(List<String> biotypes) {
             this.biotypes = biotypes;
-            return this;
-        }
-
-        public GeneQueryBuilder withSupportLevels(List<String> supportLevels) {
-            this.supportLevels = supportLevels;
             return this;
         }
 
@@ -415,6 +410,11 @@ public class GeneQuery extends AbstractQuery {
 
         public GeneQueryBuilder withTranscriptsName(List<String> transcriptsName) {
             this.transcriptsName = transcriptsName;
+            return this;
+        }
+
+        public GeneQueryBuilder withTranscriptsSupportLevels(List<String> transcriptsSupportLevels) {
+            this.transcriptsSupportLevels = transcriptsSupportLevels;
             return this;
         }
 
@@ -478,6 +478,11 @@ public class GeneQuery extends AbstractQuery {
             return this;
         }
 
+        public GeneQueryBuilder withAnnotationTargets(LogicalList<String> annotationTargets) {
+            this.annotationTargets = annotationTargets;
+            return this;
+        }
+
         public GeneQueryBuilder withMirnas(LogicalList<String> mirnas) {
             this.mirnas = mirnas;
             return this;
@@ -528,12 +533,12 @@ public class GeneQuery extends AbstractQuery {
             geneQuery.setIds(ids);
             geneQuery.setNames(names);
             geneQuery.setBiotypes(biotypes);
-            geneQuery.setSupportLevels(supportLevels);
             geneQuery.setRegions(regions);
             geneQuery.setTranscriptsBiotype(transcriptsBiotype);
             geneQuery.setTranscriptsXrefs(transcriptsXrefs);
             geneQuery.setTranscriptsId(transcriptsId);
             geneQuery.setTranscriptsName(transcriptsName);
+            geneQuery.setTranscriptsSupportLevels(transcriptsSupportLevels);
             geneQuery.setTranscriptsAnnotationFlags(transcriptsAnnotationFlags);
             geneQuery.setTranscriptsTfbsId(transcriptsTfbsId);
             geneQuery.setTranscriptsTfbsPfmId(transcriptsTfbsPfmId);
@@ -546,6 +551,7 @@ public class GeneQuery extends AbstractQuery {
             geneQuery.setAnnotationDrugsName(annotationDrugsName);
             geneQuery.setAnnotationConstraintsName(annotationConstraintsName);
             geneQuery.setAnnotationConstraintsValue(annotationConstraintsValue);
+            geneQuery.setAnnotationTargets(annotationTargets);
             geneQuery.setMirnas(mirnas);
             geneQuery.setLimit(limit);
             geneQuery.setSkip(skip);
