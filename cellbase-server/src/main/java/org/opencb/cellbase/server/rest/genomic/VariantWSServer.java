@@ -367,8 +367,8 @@ public class VariantWSServer extends GenericRestWSServer {
     })
     public Response search() {
         try {
-            parseQueryParams();
-            CellBaseDataResult queryResults = variantManager.search(query, queryOptions);
+            VariantQuery query = new VariantQuery(uriParams);
+            CellBaseDataResult<Variant> queryResults = variantManager.search(query);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -400,7 +400,7 @@ public class VariantWSServer extends GenericRestWSServer {
             response = String.class, responseContainer = "QueryResponse")
     public Response getAllConsequenceTypes() {
         try {
-            parseQueryParams();
+//            parseQueryParams();
             CellBaseDataResult<String> queryResult = variantManager.getConsequenceTypes();
             return createOkResponse(queryResult);
         } catch (Exception e) {

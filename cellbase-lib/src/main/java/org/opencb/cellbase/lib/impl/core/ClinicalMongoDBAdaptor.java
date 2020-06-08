@@ -192,6 +192,50 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
                 switch (dotNotationName) {
                     case "region":
                         createRegionQuery(query, value, andBsonList);
+                        break;
+                    case "id":
+                        createAndOrQuery(value, "annotation.id", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "start":
+                        createAndOrQuery(value, "start", QueryParam.Type.INTEGER, andBsonList);
+                        break;
+                    case "end":
+                        createAndOrQuery(value, "end", QueryParam.Type.INTEGER, andBsonList);
+                        break;
+                    case "feature":
+                        createAndOrQuery(value, "_featureXrefs", QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "so":
+                        createAndOrQuery(value, "annotation.consequenceTypes.sequenceOntologyTerms.name",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "source":
+                        createAndOrQuery(value, "annotation.traitAssociation.source.name",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "accession":
+                        createAndOrQuery(value, "annotation.traitAssociation.id",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "consistencyStatus":
+                        createAndOrQuery(value, "annotation.traitAssociation.consistencyStatus",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "clinicalSignificance":
+                        createAndOrQuery(value,
+                                "annotation.traitAssociation.variantClassification.clinicalSignificance",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "inheritanceMode":
+                        createAndOrQuery(value, "annotation.traitAssociation.heritableTraits.inheritanceMode",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "alleleOrigin":
+                        createAndOrQuery(value, "annotation.traitAssociation.alleleOrigin",
+                                QueryParam.Type.STRING, andBsonList);
+                        break;
+                    case "trait":
+                        createTraitQuery(String.valueOf(value), andBsonList);
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;
@@ -200,6 +244,12 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+
+        // TODO implement these
+//        createImprecisePositionQuery(query, ClinicalDBAdaptor.QueryParams.CI_START_LEFT.key(),
+//                ClinicalDBAdaptor.QueryParams.CI_START_RIGHT.key(), "sv.ciStartLeft", "sv.ciStartRight", andBsonList);
+//        createImprecisePositionQuery(query, ClinicalDBAdaptor.QueryParams.CI_END_LEFT.key(),
+//                ClinicalDBAdaptor.QueryParams.CI_END_RIGHT.key(), "sv.ciEndLeft", "sv.ciEndRight", andBsonList);
 
         logger.info("clinical variant parsed query: " + andBsonList.toString());
         if (andBsonList.size() > 0) {
