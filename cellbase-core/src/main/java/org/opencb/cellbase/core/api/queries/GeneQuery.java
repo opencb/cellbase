@@ -35,7 +35,7 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     private List<Region> regions;
 
-    @QueryParameter(id = "transcripts.biotype", alias = {"transcriptsBiotypes"})
+    @QueryParameter(id = "transcripts.biotype", alias = {"transcriptsBiotype"})
     private List<String> transcriptsBiotype;
 
     @QueryParameter(id = "transcripts.xrefs.id", alias = {"transcriptsXrefs"})
@@ -70,13 +70,15 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "annotation.drugs.name", alias = {"annotationDrugsName"})
     private LogicalList<String> annotationDrugsName;
     @QueryParameter(id = "annotation.constraints.name", alias = {"annotationConstraintsName"},
-            allowedValues = {"exac_oe_lof", "exac_pLI", "oe_lof", "oe_mis", "oe_syn"})
+            allowedValues = {"exac_oe_lof", "exac_pLI", "oe_lof", "oe_mis", "oe_syn"},
+            dependsOn = "annotation.constraints.value")
     // this has to be protected to allow validation
     protected LogicalList<String> annotationConstraintsName;
     @QueryParameter(id = "annotation.constraints.value", alias = {"annotationConstraintsValue"}, dependsOn = "annotation.constraints.name")
+    // this has to be protected to allow validation
     protected LogicalList<String> annotationConstraintsValue;
     @QueryParameter(id = "annotation.targets", alias = {"annotationTargets"})
-    protected LogicalList<String> annotationTargets;
+    private LogicalList<String> annotationTargets;
     @QueryParameter(id = "mirna")
     private LogicalList<String> mirnas;
 

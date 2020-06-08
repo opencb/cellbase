@@ -58,7 +58,7 @@ public class ParamConstants {
     public static final String GENE_NAMES = "Comma separated list of gene HGNC names, e.g.: BRCA2,TTN,MUC4."
             + " Exact text matches will be returned";
     public static final String GENE_BIOTYPES = "Comma separated list of gene gencode biotypes,"
-            + " e.g. protein_coding,miRNA,lincRNA. Exact text matches will be returned";
+            + " e.g. protein_coding,miRNA,lncRNA. Exact text matches will be returned";
 
 
     // ---------------------------------------------
@@ -80,7 +80,7 @@ public class ParamConstants {
     public static final String TRANSCRIPT_IDS = "Comma separated list of transcript IDs, e.g.  ENST00000342992. Other transcript symbols "
             + "such as HGNC symbols are allowed as well, e.g.: BRCA2-001";
     public static final String TRANSCRIPT_BIOTYPES = "Comma separated list of transcript gencode biotypes, "
-            + "e.g. protein_coding,miRNA,lincRNA. Exact text matches will be returned";
+            + "e.g. protein_coding,miRNA,lncRNA. Exact text matches will be returned";
     public static final String TRANSCRIPT_XREFS = "Comma separated list transcript xrefs ids, "
             + "e.g. ENSG00000145113,35912_at,GO:0002020. Exact text matches will be returned";
     public static final String TRANSCRIPT_XREF = "String indicating one ENSEMBL transcript id e.g.: ENST00000536068. "
