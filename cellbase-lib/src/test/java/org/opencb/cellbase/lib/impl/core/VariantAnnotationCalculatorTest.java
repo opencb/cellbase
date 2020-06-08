@@ -857,36 +857,36 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         QueryOptions queryOptions = new QueryOptions("useCache", false);
         queryOptions.put("include", "cytoband");
         queryOptions.put("cnvExtraPadding", 500);
-        CellBaseDataResult<VariantAnnotation> CellBaseDataResult = variantAnnotationCalculator
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(new Variant("19:37800050-37801000:<CN3>"), queryOptions);
-        assertEquals(1, CellBaseDataResult.getNumMatches());
-        assertEquals(2, CellBaseDataResult.getResults().get(0).getCytoband().size());
-        assertEquals(CellBaseDataResult.getResults().get(0).getCytoband().stream().collect(Collectors.toSet()),
-                new HashSet<Cytoband>(Arrays.asList(
+        assertEquals(1, cellBaseDataResult.getNumResults());
+        assertEquals(2, cellBaseDataResult.getResults().get(0).getCytoband().size());
+        assertEquals(new HashSet<Cytoband>(Arrays.asList(
                         new Cytoband("19", "gpos25", "q13.12", 35100001,37800000),
-                        new Cytoband("19", "gneg", "q13.13", 37800001,38200000))));
+                        new Cytoband("19", "gneg", "q13.13", 37800001,38200000))),
+                cellBaseDataResult.getResults().get(0).getCytoband().stream().collect(Collectors.toSet()));
 
-        List<CellBaseDataResult<VariantAnnotation>> CellBaseDataResultList = variantAnnotationCalculator
+        List<CellBaseDataResult<VariantAnnotation>> cellBaseDataResultList = variantAnnotationCalculator
                 .getAnnotationByVariantList(Arrays.asList(new Variant("19:37800050-42910001:<CN3>"),
                         new Variant("18:63902001:T:A"),
                         new Variant("6:148500101-148500201:<DEL>")), queryOptions);
-        assertEquals(3, CellBaseDataResultList.size());
-        assertEquals(1, CellBaseDataResultList.get(0).getNumTotalResults());
-        assertEquals(3, CellBaseDataResultList.get(0).getResults().get(0).getCytoband().size());
-        assertEquals(CellBaseDataResultList.get(0).getResults().get(0).getCytoband().stream().collect(Collectors.toSet()),
+        assertEquals(3, cellBaseDataResultList.size());
+        assertEquals(1, cellBaseDataResultList.get(0).getNumResults());
+        assertEquals(3, cellBaseDataResultList.get(0).getResults().get(0).getCytoband().size());
+        assertEquals(cellBaseDataResultList.get(0).getResults().get(0).getCytoband().stream().collect(Collectors.toSet()),
                 new HashSet<Cytoband>(Arrays.asList(
                         new Cytoband("19", "gpos25", "q13.12", 35100001,37800000),
                         new Cytoband("19", "gneg", "q13.13", 37800001,38200000),
                         new Cytoband("19", "gneg", "q13.31", 42900001,44700000))));
 
-        assertEquals(1, CellBaseDataResultList.get(1).getNumTotalResults());
-        assertEquals(1, CellBaseDataResultList.get(1).getResults().get(0).getCytoband().size());
-        assertEquals(CellBaseDataResultList.get(1).getResults().get(0).getCytoband().get(0),
+        assertEquals(1, cellBaseDataResultList.get(1).getNumResults());
+        assertEquals(1, cellBaseDataResultList.get(1).getResults().get(0).getCytoband().size());
+        assertEquals(cellBaseDataResultList.get(1).getResults().get(0).getCytoband().get(0),
                         new Cytoband("18", "gpos100", "q22.1", 63900001,69100000));
 
-        assertEquals(1, CellBaseDataResultList.get(2).getNumTotalResults());
-        assertEquals(1, CellBaseDataResultList.get(2).getResults().get(0).getCytoband().size());
-        assertEquals(CellBaseDataResultList.get(2).getResults().get(0).getCytoband().get(0),
+        assertEquals(1, cellBaseDataResultList.get(2).getNumResults());
+        assertEquals(1, cellBaseDataResultList.get(2).getResults().get(0).getCytoband().size());
+        assertEquals(cellBaseDataResultList.get(2).getResults().get(0).getCytoband().get(0),
                 new Cytoband("6", "gneg", "q25.1", 148500001,152100000));
 
     }
