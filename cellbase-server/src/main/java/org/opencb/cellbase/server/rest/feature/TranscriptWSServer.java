@@ -167,42 +167,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all gene objects for given ENSEMBL transcript ids.",
             response = Gene.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
-                    required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
-                    allowableValues = "false,true"),
-            @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "transcripts.tfbs.id", value = ParamConstants.TRANSCRIPT_TFBS_IDS,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.id", value = ParamConstants.ANNOTATION_DISEASES_IDS,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.diseases.name", value = ParamConstants.ANNOTATION_DISEASES_NAMES,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.gene", value = ParamConstants.ANNOTATION_EXPRESSION_GENE,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.expression.tissue", value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.name", value = ParamConstants.ANNOTATION_DRUGS_NAME,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
-                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query",
-                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
-                    paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
-                    paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
                                     value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String id) {
@@ -322,23 +290,10 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Get the protein info for the given transcript(s)", response = Entry.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "keyword", value = ParamConstants.PROTEIN_KEYWORD, required = false,
-                    dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "sort", value = ParamConstants.SORT_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "order", value = ParamConstants.ORDER_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query",
-                    defaultValue = "", allowableValues="ASCENDING,DESCENDING"),
-            @ApiImplicitParam(name = "limit", value = ParamConstants.LIMIT_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_LIMIT, dataType = "java.util.List",
-                    paramType = "query"),
-            @ApiImplicitParam(name = "skip", value = ParamConstants.SKIP_DESCRIPTION,
-                    required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
-                    paramType = "query")
+                    required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String transcripts) {

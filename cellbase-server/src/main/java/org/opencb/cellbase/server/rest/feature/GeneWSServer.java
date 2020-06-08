@@ -206,8 +206,6 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
-
-
     @GET
     @Path("/aggregationStats")
     @ApiOperation(httpMethod = "GET", value = "Counts gene HGNC symbols by a field(s). ", response = Integer.class,
