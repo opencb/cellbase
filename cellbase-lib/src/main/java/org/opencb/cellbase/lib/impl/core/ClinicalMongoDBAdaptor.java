@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opencb.biodata.models.clinical.interpretation.ClinicalVariant;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantType;
@@ -31,7 +32,6 @@ import org.opencb.cellbase.core.api.core.VariantDBAdaptor;
 import org.opencb.cellbase.core.api.queries.AbstractQuery;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
 import org.opencb.cellbase.core.api.queries.ClinicalVariantQuery;
-import org.opencb.cellbase.core.common.clinical.ClinicalVariant;
 import org.opencb.cellbase.core.config.CellBaseConfiguration;
 import org.opencb.cellbase.core.exception.CellbaseException;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -448,8 +448,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
         Bson bson = parseQuery(query);
         QueryOptions queryOptions = query.toQueryOptions();
         Bson projection = getProjection(query);
-        GenericDocumentComplexConverter<ClinicalVariant> converter = new GenericDocumentComplexConverter<>(
-                ClinicalVariant.class);
+        GenericDocumentComplexConverter<org.opencb.biodata.models.clinical.interpretation.ClinicalVariant> converter
+                = new GenericDocumentComplexConverter<>(
+                org.opencb.biodata.models.clinical.interpretation.ClinicalVariant.class);
         MongoDBIterator<ClinicalVariant> iterator = mongoDBCollection.iterator(null, bson, projection,
                 converter, queryOptions);
         return new CellBaseIterator<>(iterator);
