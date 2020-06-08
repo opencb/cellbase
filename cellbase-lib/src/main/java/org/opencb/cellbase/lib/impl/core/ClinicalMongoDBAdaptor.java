@@ -41,6 +41,9 @@ import org.opencb.cellbase.lib.managers.GenomeManager;
 import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
+import org.opencb.commons.datastore.core.QueryParam;
+import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
+import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
 import java.util.*;
@@ -177,6 +180,33 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
             return parsedQueryOptions;
         }
         return new QueryOptions();
+    }
+
+    public Bson parseQuery(ClinicalVariantQuery query) {
+        List<Bson> andBsonList = new ArrayList<>();
+        boolean visited = false;
+        try {
+            for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
+                String dotNotationName = entry.getKey();
+                Object value = entry.getValue();
+                switch (dotNotationName) {
+                    case "region":
+                        createRegionQuery(query, value, andBsonList);
+                    default:
+                        createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
+                        break;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("clinical variant parsed query: " + andBsonList.toString());
+        if (andBsonList.size() > 0) {
+            return Filters.and(andBsonList);
+        } else {
+            return new Document();
+        }
     }
 
     private Bson parseQuery(Query query) {
@@ -365,7 +395,14 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
 
     @Override
     public CellBaseIterator iterator(ClinicalVariantQuery query) {
-        return null;
+        Bson bson = parseQuery(query);
+        QueryOptions queryOptions = query.toQueryOptions();
+        Bson projection = getProjection(query);
+        GenericDocumentComplexConverter<ClinicalVariant> converter = new GenericDocumentComplexConverter<>(
+                ClinicalVariant.class);
+        MongoDBIterator<ClinicalVariant> iterator = mongoDBCollection.iterator(null, bson, projection,
+                converter, queryOptions);
+        return new CellBaseIterator<>(iterator);
     }
 
     @Override
