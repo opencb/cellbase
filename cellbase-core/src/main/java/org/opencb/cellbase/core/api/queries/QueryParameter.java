@@ -34,7 +34,9 @@ public @interface QueryParameter {
 
     String dependsOn() default "";
 
-    String[] allowedValues() default "";
+    String[] alias() default {};
+
+    String[] allowedValues() default {};
 
     String min() default "";
 

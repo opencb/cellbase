@@ -35,9 +35,10 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     private List<Region> regions;
 
-    @QueryParameter(id = "transcripts.biotype")
+    @QueryParameter(id = "transcriptsBiotype", alias = {"transcripts.biotype"})
     private List<String> transcriptsBiotype;
-    @QueryParameter(id = "transcripts.xrefs")
+
+    @QueryParameter(id = "transcriptsXref", alias = {"transcripts.xrefs.id"})
     private List<String> transcriptsXrefs;
     @QueryParameter(id = "transcripts.id")
     private List<String> transcriptsId;

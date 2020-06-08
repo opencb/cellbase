@@ -115,17 +115,31 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
             Map<String, Object> objectHashMap = new HashMap<>();
             for (Map.Entry<String, Class<?>> entry : classAttributesToType.entrySet()) {
                 String fieldNameDotNotation = null;
+                String[] fieldAliases = new String[0];
                 String fieldNameCamelCase = entry.getKey();
                 Class fieldType = entry.getValue();
                 QueryParameter queryParameter = annotations.get(fieldNameCamelCase);
                 if (queryParameter != null) {
                     fieldNameDotNotation = queryParameter.id();
+                    fieldAliases = queryParameter.alias();
                 }
                 if (fieldNameDotNotation == null) {
                     // field has no annotation
                     continue;
                 }
-                String value = uriParams.get(fieldNameDotNotation.replace("\\.", "\\\\."));
+                String value = null;
+                String s = fieldNameDotNotation.replace("\\.", "\\\\.");
+                if (uriParams.containsKey(s)) {
+                    value = uriParams.get(s);
+                } else {
+                    for (String alias : fieldAliases) {
+                        s = alias.replace("\\.", "\\\\.");
+                        if (uriParams.containsKey(s)) {
+                            value = uriParams.get(s);
+                            break;
+                        }
+                    }
+                }
                 if (value != null) {
                     if (Collection.class.isAssignableFrom(fieldType)) {
                         if (LogicalList.class.isAssignableFrom(fieldType)) {
