@@ -693,41 +693,41 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
 
         // One MNV and one singleton SNV. Two CellBaseDataResults must be returned: first with two VariantAnnotation objects
         // and id corresponding to the original MNV call. Second with just one VariantAnnotation object.
-        List<CellBaseDataResult<VariantAnnotation>> CellBaseDataResultList =
+        List<CellBaseDataResult<VariantAnnotation>> cellBaseDataResultList =
                 localScopeCalculator
                         .getAnnotationByVariantList(Arrays.asList(new Variant("19:33167329:AC:TT"),
                                 new Variant("MT:1438:A:G")),
                                 queryOptions);
 
-        assertEquals(2, CellBaseDataResultList.size());
+        assertEquals(2, cellBaseDataResultList.size());
 
         // First CellBaseDataResult (MNV one)
-        CellBaseDataResult<VariantAnnotation> CellBaseDataResult = CellBaseDataResultList.get(0);
-        assertNotNull(CellBaseDataResult.getResults());
-        assertEquals(2, CellBaseDataResult.getNumMatches());
-        assertEquals(2, CellBaseDataResult.getNumResults());
-        assertEquals("19:33167329:AC:TT", CellBaseDataResult.getId());
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = cellBaseDataResultList.get(0);
+        assertNotNull(cellBaseDataResult.getResults());
+        assertEquals(2, cellBaseDataResult.getNumMatches());
+        assertEquals(2, cellBaseDataResult.getNumResults());
+        assertEquals("19:33167329:AC:TT", cellBaseDataResult.getId());
 
-        VariantAnnotation variantAnnotation =  CellBaseDataResult.getResults().get(0);
+        VariantAnnotation variantAnnotation =  cellBaseDataResult.getResults().get(0);
         assertEquals("19", variantAnnotation.getChromosome());
         assertEquals(Integer.valueOf("33167329"), variantAnnotation.getStart());
         assertEquals("A", variantAnnotation.getReference());
         assertEquals("T", variantAnnotation.getAlternate());
 
-        variantAnnotation =  CellBaseDataResult.getResults().get(1);
+        variantAnnotation =  cellBaseDataResult.getResults().get(1);
         assertEquals("19", variantAnnotation.getChromosome());
         assertEquals(Integer.valueOf("33167330"), variantAnnotation.getStart());
         assertEquals("C", variantAnnotation.getReference());
         assertEquals("T", variantAnnotation.getAlternate());
 
         // Second CellBaseDataResult (singleton SNV)
-        CellBaseDataResult = CellBaseDataResultList.get(1);
-        assertNotNull(CellBaseDataResult.getResults());
-        assertEquals(1, CellBaseDataResult.getNumMatches());
-        assertEquals(1, CellBaseDataResult.getNumResults());
-        assertEquals("MT:1438:A:G", CellBaseDataResult.getId());
+        cellBaseDataResult = cellBaseDataResultList.get(1);
+        assertNotNull(cellBaseDataResult.getResults());
+        assertEquals(1, cellBaseDataResult.getNumMatches());
+        assertEquals(1, cellBaseDataResult.getNumResults());
+        assertEquals("MT:1438:A:G", cellBaseDataResult.getId());
 
-        variantAnnotation =  CellBaseDataResult.getResults().get(0);
+        variantAnnotation =  cellBaseDataResult.getResults().get(0);
         assertEquals("MT", variantAnnotation.getChromosome());
         assertEquals(Integer.valueOf("1438"), variantAnnotation.getStart());
         assertEquals("A", variantAnnotation.getReference());
@@ -736,25 +736,25 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // One MNV gets decomposed into two SNVs; Only one CellBaseDataResult to be returned. This CellBaseDataResult must contain
         // two annotation objects, one for each decomposed SNV. Id of the query result must be equal to the .toString()
         // of the original MNV
-        CellBaseDataResultList =
+        cellBaseDataResultList =
                 localScopeCalculator
                         .getAnnotationByVariantList(Arrays.asList(new Variant("19:33167329:AC:TT")),
                                 queryOptions);
 
-        assertEquals(1, CellBaseDataResultList.size());
-        CellBaseDataResult = CellBaseDataResultList.get(0);
-        assertNotNull(CellBaseDataResult.getResults());
-        assertEquals(2, CellBaseDataResult.getNumMatches());
-        assertEquals(2, CellBaseDataResult.getNumResults());
-        assertEquals("19:33167329:AC:TT", CellBaseDataResult.getId());
+        assertEquals(1, cellBaseDataResultList.size());
+        cellBaseDataResult = cellBaseDataResultList.get(0);
+        assertNotNull(cellBaseDataResult.getResults());
+        assertEquals(2, cellBaseDataResult.getNumMatches());
+        assertEquals(2, cellBaseDataResult.getNumResults());
+        assertEquals("19:33167329:AC:TT", cellBaseDataResult.getId());
 
-        variantAnnotation =  CellBaseDataResult.getResults().get(0);
+        variantAnnotation =  cellBaseDataResult.getResults().get(0);
         assertEquals("19", variantAnnotation.getChromosome());
         assertEquals(Integer.valueOf("33167329"), variantAnnotation.getStart());
         assertEquals("A", variantAnnotation.getReference());
         assertEquals("T", variantAnnotation.getAlternate());
 
-        variantAnnotation =  CellBaseDataResult.getResults().get(1);
+        variantAnnotation =  cellBaseDataResult.getResults().get(1);
         assertEquals("19", variantAnnotation.getChromosome());
         assertEquals(Integer.valueOf("33167330"), variantAnnotation.getStart());
         assertEquals("C", variantAnnotation.getReference());
@@ -778,10 +778,10 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // Also, ENSEMBL does not provide 1kG freqs for MT variants, just HAPMAP ones. I've manually checked that
         // approximately match 1kG freqs CellBase is returning and that's why it just tests some of the populations
         // below
-        CellBaseDataResult<VariantAnnotation> CellBaseDataResult =
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult =
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("MT", 1438,
                                 "A", "G"), queryOptions);
-        assertThat(CellBaseDataResult.getResults().get(0).getPopulationFrequencies(),
+        assertThat(cellBaseDataResult.getResults().get(0).getPopulationFrequencies(),
                 CoreMatchers.hasItems(new PopulationFrequency("1kG_phase3_chrMT", "ASW", "A",
                         "G", 0.16666667f, 0.8333333f, 0.16666667f,
                         0f, 0.8333333f),
@@ -810,29 +810,29 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
                                 0.14814815f, 0.8518519f, 0.14814815f,
                                 0f, 0.8518519f)));
 
-        CellBaseDataResult =
+        cellBaseDataResult =
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("1", 55505283,
                                 "GGAGGAGTGA", "G"), queryOptions);
         assertObjectListEquals("[{\"study\":\"GNOMAD_GENOMES\",\"population\":\"ALL\",\"refAllele\":\"GAGGAGTGA\",\"altAllele\":\"\",\"refAlleleFreq\":0.9999677,\"altAlleleFreq\":0.00003229974,\"refHomGenotypeFreq\":0.9999354,\"hetGenotypeFreq\":0.00006459948,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"NFE\",\"refAllele\":\"GAGGAGTGA\",\"altAllele\":\"\",\"refAlleleFreq\":0.99993336,\"altAlleleFreq\":0.000066657776,\"refHomGenotypeFreq\":0.99986666,\"hetGenotypeFreq\":0.00013331555,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"MALE\",\"refAllele\":\"GAGGAGTGA\",\"altAllele\":\"\",\"refAlleleFreq\":0.9999415,\"altAlleleFreq\":0.00005845902,\"refHomGenotypeFreq\":0.99988306,\"hetGenotypeFreq\":0.00011691804,\"altHomGenotypeFreq\":0}]",
-                CellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
+                cellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
 
-        CellBaseDataResult =
+        cellBaseDataResult =
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("1", 55516888,
                                 "G", "GA"), queryOptions);
         assertObjectListEquals("[{\"study\":\"GNOMAD_EXOMES\",\"population\":\"ALL\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99901116,\"altAlleleFreq\":0.00092401967,\"refHomGenotypeFreq\":0.9980385,\"hetGenotypeFreq\":0.0019453046,\"altHomGenotypeFreq\":0.000016210872},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"OTH\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9994266,\"altAlleleFreq\":0.00057339447,\"refHomGenotypeFreq\":0.9988532,\"hetGenotypeFreq\":0.0011467889,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"AMR\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9992799,\"altAlleleFreq\":0.0007200949,\"refHomGenotypeFreq\":0.99855983,\"hetGenotypeFreq\":0.0014401898,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"NFE\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9999111,\"altAlleleFreq\":0.00008888099,\"refHomGenotypeFreq\":0.99982226,\"hetGenotypeFreq\":0.00017776198,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"AFR\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.984375,\"altAlleleFreq\":0.015625,\"refHomGenotypeFreq\":0.9690934,\"hetGenotypeFreq\":0.030563187,\"altHomGenotypeFreq\":0.0003434066},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"MALE\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9993554,\"altAlleleFreq\":0.0005713616,\"refHomGenotypeFreq\":0.9987401,\"hetGenotypeFreq\":0.001230625,\"altHomGenotypeFreq\":0.000029300594},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"FEMALE\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9985848,\"altAlleleFreq\":0.0013607664,\"refHomGenotypeFreq\":0.9971696,\"hetGenotypeFreq\":0.002830394,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"ALL\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99486005,\"altAlleleFreq\":0.0051399753,\"refHomGenotypeFreq\":0.98972005,\"hetGenotypeFreq\":0.010279951,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"OTH\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99796337,\"altAlleleFreq\":0.00203666,\"refHomGenotypeFreq\":0.9959267,\"hetGenotypeFreq\":0.00407332,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"NFE\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99993324,\"altAlleleFreq\":0.000066755674,\"refHomGenotypeFreq\":0.9998665,\"hetGenotypeFreq\":0.00013351135,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"AFR\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.98210186,\"altAlleleFreq\":0.017898118,\"refHomGenotypeFreq\":0.9642038,\"hetGenotypeFreq\":0.035796236,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"MALE\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99467963,\"altAlleleFreq\":0.005320393,\"refHomGenotypeFreq\":0.9893592,\"hetGenotypeFreq\":0.010640786,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"FEMALE\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99508315,\"altAlleleFreq\":0.004916847,\"refHomGenotypeFreq\":0.9901663,\"hetGenotypeFreq\":0.009833694,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"ALL\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9998099,\"altAlleleFreq\":0.000095038966,\"refHomGenotypeFreq\":0.99961984,\"hetGenotypeFreq\":0.00038015586,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"AFR\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9947917,\"altAlleleFreq\":0.0052083335,\"refHomGenotypeFreq\":0.9895833,\"hetGenotypeFreq\":0.010416667,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"ALL\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99680513,\"altAlleleFreq\":0.0031948881,\"refHomGenotypeFreq\":0.9936102,\"hetGenotypeFreq\":0.0063897762,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"AFR\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.98865354,\"altAlleleFreq\":0.0113464445,\"refHomGenotypeFreq\":0.9773071,\"hetGenotypeFreq\":0.022692889,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"YRI\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9907407,\"altAlleleFreq\":0.009259259,\"refHomGenotypeFreq\":0.9814815,\"hetGenotypeFreq\":0.018518519,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"GWD\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99115044,\"altAlleleFreq\":0.0088495575,\"refHomGenotypeFreq\":0.9823009,\"hetGenotypeFreq\":0.017699115,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"ACB\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.984375,\"altAlleleFreq\":0.015625,\"refHomGenotypeFreq\":0.96875,\"hetGenotypeFreq\":0.03125,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"ESN\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9949495,\"altAlleleFreq\":0.005050505,\"refHomGenotypeFreq\":0.989899,\"hetGenotypeFreq\":0.01010101,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"LWK\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.989899,\"altAlleleFreq\":0.01010101,\"refHomGenotypeFreq\":0.97979796,\"hetGenotypeFreq\":0.02020202,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"ASW\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9918033,\"altAlleleFreq\":0.008196721,\"refHomGenotypeFreq\":0.9836066,\"hetGenotypeFreq\":0.016393442,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"AMR\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99855906,\"altAlleleFreq\":0.0014409221,\"refHomGenotypeFreq\":0.9971182,\"hetGenotypeFreq\":0.0028818443,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"MSL\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9764706,\"altAlleleFreq\":0.023529412,\"refHomGenotypeFreq\":0.9529412,\"hetGenotypeFreq\":0.047058824,\"altHomGenotypeFreq\":0},{\"study\":\"1kG_phase3\",\"population\":\"PUR\",\"refAllele\":\"\",\"altAllele\":\"A\",\"refAlleleFreq\":0.9951923,\"altAlleleFreq\":0.0048076925,\"refHomGenotypeFreq\":0.99038464,\"hetGenotypeFreq\":0.009615385,\"altHomGenotypeFreq\":0}]",
-                CellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
+                cellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
 
-        CellBaseDataResult =
+        cellBaseDataResult =
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("19", 45411941,
                                 "T", "C"), queryOptions);
         assertObjectListEquals("[{\"study\":\"GNOMAD_EXOMES\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.86164606,\"altAlleleFreq\":0.13835394,\"refHomGenotypeFreq\":0.7428665,\"hetGenotypeFreq\":0.23755904,\"altHomGenotypeFreq\":0.019574426},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"OTH\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8729389,\"altAlleleFreq\":0.1270611,\"refHomGenotypeFreq\":0.7594568,\"hetGenotypeFreq\":0.22696412,\"altHomGenotypeFreq\":0.013579049},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"EAS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9130086,\"altAlleleFreq\":0.08699144,\"refHomGenotypeFreq\":0.83297646,\"hetGenotypeFreq\":0.16006424,\"altHomGenotypeFreq\":0.006959315},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"AMR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.89662445,\"altAlleleFreq\":0.103375524,\"refHomGenotypeFreq\":0.8039965,\"hetGenotypeFreq\":0.18525594,\"altHomGenotypeFreq\":0.010747552},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"ASJ\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8845232,\"altAlleleFreq\":0.11547676,\"refHomGenotypeFreq\":0.7800671,\"hetGenotypeFreq\":0.20891231,\"altHomGenotypeFreq\":0.011020604},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"FIN\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.79147565,\"altAlleleFreq\":0.20852435,\"refHomGenotypeFreq\":0.6279271,\"hetGenotypeFreq\":0.32709703,\"altHomGenotypeFreq\":0.04497584},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"NFE\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.84970874,\"altAlleleFreq\":0.15029128,\"refHomGenotypeFreq\":0.71927917,\"hetGenotypeFreq\":0.26085907,\"altHomGenotypeFreq\":0.019861752},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"AFR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.7777113,\"altAlleleFreq\":0.22228873,\"refHomGenotypeFreq\":0.60090977,\"hetGenotypeFreq\":0.35360307,\"altHomGenotypeFreq\":0.04548719},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"MALE\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8640703,\"altAlleleFreq\":0.13592973,\"refHomGenotypeFreq\":0.7469009,\"hetGenotypeFreq\":0.23433875,\"altHomGenotypeFreq\":0.018760357},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"FEMALE\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8586724,\"altAlleleFreq\":0.14132762,\"refHomGenotypeFreq\":0.7379178,\"hetGenotypeFreq\":0.24150923,\"altHomGenotypeFreq\":0.020573009},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.83512056,\"altAlleleFreq\":0.16487944,\"refHomGenotypeFreq\":0.6976669,\"hetGenotypeFreq\":0.27490738,\"altHomGenotypeFreq\":0.02742575},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"OTH\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.838809,\"altAlleleFreq\":0.16119097,\"refHomGenotypeFreq\":0.69609857,\"hetGenotypeFreq\":0.28542095,\"altHomGenotypeFreq\":0.018480493},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"EAS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.900625,\"altAlleleFreq\":0.099375,\"refHomGenotypeFreq\":0.80875,\"hetGenotypeFreq\":0.18375,\"altHomGenotypeFreq\":0.0075},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"AMR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.875,\"altAlleleFreq\":0.125,\"refHomGenotypeFreq\":0.7644231,\"hetGenotypeFreq\":0.22115384,\"altHomGenotypeFreq\":0.014423077},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"ASJ\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8833333,\"altAlleleFreq\":0.11666667,\"refHomGenotypeFreq\":0.7733333,\"hetGenotypeFreq\":0.22,\"altHomGenotypeFreq\":0.006666667},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"FIN\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.81095815,\"altAlleleFreq\":0.18904188,\"refHomGenotypeFreq\":0.65404475,\"hetGenotypeFreq\":0.31382674,\"altHomGenotypeFreq\":0.032128513},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"NFE\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.85714287,\"altAlleleFreq\":0.14285715,\"refHomGenotypeFreq\":0.7344064,\"hetGenotypeFreq\":0.24547283,\"altHomGenotypeFreq\":0.020120725},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"AFR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.788976,\"altAlleleFreq\":0.21102399,\"refHomGenotypeFreq\":0.6226937,\"hetGenotypeFreq\":0.33256456,\"altHomGenotypeFreq\":0.044741698},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"MALE\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.83254886,\"altAlleleFreq\":0.16745116,\"refHomGenotypeFreq\":0.69404566,\"hetGenotypeFreq\":0.27700636,\"altHomGenotypeFreq\":0.028947989},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"FEMALE\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.83829296,\"altAlleleFreq\":0.16170707,\"refHomGenotypeFreq\":0.70213383,\"hetGenotypeFreq\":0.27231818,\"altHomGenotypeFreq\":0.025547976},{\"study\":\"UK10K_TWINSUK\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.86030203,\"altAlleleFreq\":0.13969795},{\"study\":\"GONL\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8416834,\"altAlleleFreq\":0.15831663},{\"study\":\"UK10K_ALSPAC\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8461339,\"altAlleleFreq\":0.15386611},{\"study\":\"EXAC\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.81566757,\"altAlleleFreq\":0.18433243,\"refHomGenotypeFreq\":0.65346056,\"hetGenotypeFreq\":0.324414,\"altHomGenotypeFreq\":0.022125423},{\"study\":\"EXAC\",\"population\":\"OTH\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8293651,\"altAlleleFreq\":0.17063493,\"refHomGenotypeFreq\":0.6666667,\"hetGenotypeFreq\":0.32539684,\"altHomGenotypeFreq\":0.007936508},{\"study\":\"EXAC\",\"population\":\"SAS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8898131,\"altAlleleFreq\":0.110186875,\"refHomGenotypeFreq\":0.7932999,\"hetGenotypeFreq\":0.19302644,\"altHomGenotypeFreq\":0.013673656},{\"study\":\"EXAC\",\"population\":\"EAS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8496169,\"altAlleleFreq\":0.15038314,\"refHomGenotypeFreq\":0.710728,\"hetGenotypeFreq\":0.2777778,\"altHomGenotypeFreq\":0.011494253},{\"study\":\"EXAC\",\"population\":\"AMR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.7854512,\"altAlleleFreq\":0.2145488,\"refHomGenotypeFreq\":0.5782689,\"hetGenotypeFreq\":0.41436464,\"altHomGenotypeFreq\":0.0073664826},{\"study\":\"EXAC\",\"population\":\"FIN\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.6733746,\"altAlleleFreq\":0.32662538,\"refHomGenotypeFreq\":0.4148607,\"hetGenotypeFreq\":0.51702785,\"altHomGenotypeFreq\":0.06811146},{\"study\":\"EXAC\",\"population\":\"NFE\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.79221934,\"altAlleleFreq\":0.20778066,\"refHomGenotypeFreq\":0.60645425,\"hetGenotypeFreq\":0.37153015,\"altHomGenotypeFreq\":0.022015588},{\"study\":\"EXAC\",\"population\":\"AFR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.72676283,\"altAlleleFreq\":0.27323717,\"refHomGenotypeFreq\":0.50641024,\"hetGenotypeFreq\":0.44070512,\"altHomGenotypeFreq\":0.052884616},{\"study\":\"ESP6500\",\"population\":\"AA\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.81068414,\"altAlleleFreq\":0.18931584,\"refHomGenotypeFreq\":0.66166824,\"hetGenotypeFreq\":0.29803187,\"altHomGenotypeFreq\":0.040299907},{\"study\":\"ESP6500\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.85836667,\"altAlleleFreq\":0.1416333,\"refHomGenotypeFreq\":0.74107283,\"hetGenotypeFreq\":0.23458767,\"altHomGenotypeFreq\":0.024339471},{\"study\":\"ESP6500\",\"population\":\"EA\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.88311845,\"altAlleleFreq\":0.116881534,\"refHomGenotypeFreq\":0.7822914,\"hetGenotypeFreq\":0.20165409,\"altHomGenotypeFreq\":0.016054489},{\"study\":\"1kG_phase3\",\"population\":\"MXL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9140625,\"altAlleleFreq\":0.0859375,\"refHomGenotypeFreq\":0.828125,\"hetGenotypeFreq\":0.171875,\"altHomGenotypeFreq\":0.0},{\"study\":\"1kG_phase3\",\"population\":\"ALL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8494409,\"altAlleleFreq\":0.15055911,\"refHomGenotypeFreq\":0.72723645,\"hetGenotypeFreq\":0.24440894,\"altHomGenotypeFreq\":0.028354632},{\"study\":\"1kG_phase3\",\"population\":\"SAS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.91308796,\"altAlleleFreq\":0.086912066,\"refHomGenotypeFreq\":0.8364008,\"hetGenotypeFreq\":0.15337422,\"altHomGenotypeFreq\":0.010224949},{\"study\":\"1kG_phase3\",\"population\":\"CLM\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.84574467,\"altAlleleFreq\":0.15425532,\"refHomGenotypeFreq\":0.71276593,\"hetGenotypeFreq\":0.26595744,\"altHomGenotypeFreq\":0.021276595},{\"study\":\"1kG_phase3\",\"population\":\"ITU\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9166667,\"altAlleleFreq\":0.083333336,\"refHomGenotypeFreq\":0.8333333,\"hetGenotypeFreq\":0.16666667,\"altHomGenotypeFreq\":0.0},{\"study\":\"1kG_phase3\",\"population\":\"AFR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.7322239,\"altAlleleFreq\":0.2677761,\"refHomGenotypeFreq\":0.5385779,\"hetGenotypeFreq\":0.38729197,\"altHomGenotypeFreq\":0.0741301},{\"study\":\"1kG_phase3\",\"population\":\"CHS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.94285715,\"altAlleleFreq\":0.057142857,\"refHomGenotypeFreq\":0.8857143,\"hetGenotypeFreq\":0.11428572,\"altHomGenotypeFreq\":0.0},{\"study\":\"1kG_phase3\",\"population\":\"JPT\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9182692,\"altAlleleFreq\":0.08173077,\"refHomGenotypeFreq\":0.8557692,\"hetGenotypeFreq\":0.125,\"altHomGenotypeFreq\":0.01923077},{\"study\":\"1kG_phase3\",\"population\":\"YRI\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.7638889,\"altAlleleFreq\":0.2361111,\"refHomGenotypeFreq\":0.5740741,\"hetGenotypeFreq\":0.3796296,\"altHomGenotypeFreq\":0.046296295},{\"study\":\"1kG_phase3\",\"population\":\"PJL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9166667,\"altAlleleFreq\":0.083333336,\"refHomGenotypeFreq\":0.84375,\"hetGenotypeFreq\":0.14583334,\"altHomGenotypeFreq\":0.010416667},{\"study\":\"1kG_phase3\",\"population\":\"GWD\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.7256637,\"altAlleleFreq\":0.27433628,\"refHomGenotypeFreq\":0.53097343,\"hetGenotypeFreq\":0.38938054,\"altHomGenotypeFreq\":0.07964602},{\"study\":\"1kG_phase3\",\"population\":\"STU\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.86764705,\"altAlleleFreq\":0.13235295,\"refHomGenotypeFreq\":0.75490195,\"hetGenotypeFreq\":0.22549021,\"altHomGenotypeFreq\":0.019607844},{\"study\":\"1kG_phase3\",\"population\":\"GBR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.82417583,\"altAlleleFreq\":0.17582418,\"refHomGenotypeFreq\":0.6923077,\"hetGenotypeFreq\":0.26373628,\"altHomGenotypeFreq\":0.043956045},{\"study\":\"1kG_phase3\",\"population\":\"CDX\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.89784944,\"altAlleleFreq\":0.10215054,\"refHomGenotypeFreq\":0.79569894,\"hetGenotypeFreq\":0.20430107,\"altHomGenotypeFreq\":0.0},{\"study\":\"1kG_phase3\",\"population\":\"KHV\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.90909094,\"altAlleleFreq\":0.09090909,\"refHomGenotypeFreq\":0.83838385,\"hetGenotypeFreq\":0.14141414,\"altHomGenotypeFreq\":0.02020202},{\"study\":\"1kG_phase3\",\"population\":\"IBS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8598131,\"altAlleleFreq\":0.14018692,\"refHomGenotypeFreq\":0.72897196,\"hetGenotypeFreq\":0.26168224,\"altHomGenotypeFreq\":0.009345794},{\"study\":\"1kG_phase3\",\"population\":\"BEB\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9127907,\"altAlleleFreq\":0.0872093,\"refHomGenotypeFreq\":0.8372093,\"hetGenotypeFreq\":0.15116279,\"altHomGenotypeFreq\":0.011627907},{\"study\":\"1kG_phase3\",\"population\":\"ACB\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.7447917,\"altAlleleFreq\":0.25520834,\"refHomGenotypeFreq\":0.5625,\"hetGenotypeFreq\":0.36458334,\"altHomGenotypeFreq\":0.072916664},{\"study\":\"1kG_phase3\",\"population\":\"ESN\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.75757575,\"altAlleleFreq\":0.24242425,\"refHomGenotypeFreq\":0.57575756,\"hetGenotypeFreq\":0.36363637,\"altHomGenotypeFreq\":0.060606062},{\"study\":\"1kG_phase3\",\"population\":\"LWK\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.6212121,\"altAlleleFreq\":0.37878788,\"refHomGenotypeFreq\":0.3939394,\"hetGenotypeFreq\":0.45454544,\"altHomGenotypeFreq\":0.15151516},{\"study\":\"1kG_phase3\",\"population\":\"EUR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8449304,\"altAlleleFreq\":0.15506959,\"refHomGenotypeFreq\":0.71172965,\"hetGenotypeFreq\":0.2664016,\"altHomGenotypeFreq\":0.021868788},{\"study\":\"1kG_phase3\",\"population\":\"ASW\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.795082,\"altAlleleFreq\":0.20491803,\"refHomGenotypeFreq\":0.6229508,\"hetGenotypeFreq\":0.3442623,\"altHomGenotypeFreq\":0.032786883},{\"study\":\"1kG_phase3\",\"population\":\"AMR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8962536,\"altAlleleFreq\":0.1037464,\"refHomGenotypeFreq\":0.7982709,\"hetGenotypeFreq\":0.19596541,\"altHomGenotypeFreq\":0.0057636886},{\"study\":\"1kG_phase3\",\"population\":\"MSL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.7411765,\"altAlleleFreq\":0.25882354,\"refHomGenotypeFreq\":0.5411765,\"hetGenotypeFreq\":0.4,\"altHomGenotypeFreq\":0.05882353},{\"study\":\"1kG_phase3\",\"population\":\"GIH\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9514563,\"altAlleleFreq\":0.048543688,\"refHomGenotypeFreq\":0.9126214,\"hetGenotypeFreq\":0.0776699,\"altHomGenotypeFreq\":0.009708738},{\"study\":\"1kG_phase3\",\"population\":\"FIN\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.81313133,\"altAlleleFreq\":0.18686868,\"refHomGenotypeFreq\":0.6666667,\"hetGenotypeFreq\":0.2929293,\"altHomGenotypeFreq\":0.04040404},{\"study\":\"1kG_phase3\",\"population\":\"TSI\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.89719623,\"altAlleleFreq\":0.10280374,\"refHomGenotypeFreq\":0.7943925,\"hetGenotypeFreq\":0.20560747,\"altHomGenotypeFreq\":0.0},{\"study\":\"1kG_phase3\",\"population\":\"PUR\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.8942308,\"altAlleleFreq\":0.10576923,\"refHomGenotypeFreq\":0.78846157,\"hetGenotypeFreq\":0.21153846,\"altHomGenotypeFreq\":0.0},{\"study\":\"1kG_phase3\",\"population\":\"CEU\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.82323235,\"altAlleleFreq\":0.17676768,\"refHomGenotypeFreq\":0.6666667,\"hetGenotypeFreq\":0.3131313,\"altHomGenotypeFreq\":0.02020202},{\"study\":\"1kG_phase3\",\"population\":\"EAS\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.91369045,\"altAlleleFreq\":0.08630952,\"refHomGenotypeFreq\":0.83531743,\"hetGenotypeFreq\":0.15674603,\"altHomGenotypeFreq\":0.007936508},{\"study\":\"1kG_phase3\",\"population\":\"PEL\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.9411765,\"altAlleleFreq\":0.05882353,\"refHomGenotypeFreq\":0.88235295,\"hetGenotypeFreq\":0.11764707,\"altHomGenotypeFreq\":0.0},{\"study\":\"1kG_phase3\",\"population\":\"CHB\",\"refAllele\":\"T\",\"altAllele\":\"C\",\"refAlleleFreq\":0.89805824,\"altAlleleFreq\":0.10194175,\"refHomGenotypeFreq\":0.79611653,\"hetGenotypeFreq\":0.2038835,\"altHomGenotypeFreq\":0.0}]",
-                CellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
+                cellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
 
-        CellBaseDataResult =
+        cellBaseDataResult =
                 variantAnnotationCalculator.getAnnotationByVariant(new Variant("2", 114340663,
                                 "GCTGGGCATCC", "ACTGGGCATCC"), queryOptions);
         assertObjectListEquals("[{\"study\":\"MGP\",\"population\":\"ALL\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.99250937,\"altAlleleFreq\":0.007490637,\"refHomGenotypeFreq\":0.98501873,\"hetGenotypeFreq\":0.014981274,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"ALL\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.68756205,\"altAlleleFreq\":0.31243795,\"refHomGenotypeFreq\":0.3751358,\"hetGenotypeFreq\":0.62485254,\"altHomGenotypeFreq\":0.000011682107},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"OTH\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.64637905,\"altAlleleFreq\":0.35362095,\"refHomGenotypeFreq\":0.29275808,\"hetGenotypeFreq\":0.7072419,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"EAS\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.6414259,\"altAlleleFreq\":0.3585741,\"refHomGenotypeFreq\":0.28285182,\"hetGenotypeFreq\":0.7171482,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"AMR\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.6448952,\"altAlleleFreq\":0.35510483,\"refHomGenotypeFreq\":0.28979036,\"hetGenotypeFreq\":0.71020967,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"ASJ\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.6128126,\"altAlleleFreq\":0.38718742,\"refHomGenotypeFreq\":0.22562517,\"hetGenotypeFreq\":0.77437484,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"FIN\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.6261249,\"altAlleleFreq\":0.37387505,\"refHomGenotypeFreq\":0.25224987,\"hetGenotypeFreq\":0.7477501,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"NFE\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.751171,\"altAlleleFreq\":0.248829,\"refHomGenotypeFreq\":0.502342,\"hetGenotypeFreq\":0.497658,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"AFR\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.65996754,\"altAlleleFreq\":0.3400325,\"refHomGenotypeFreq\":0.31993502,\"hetGenotypeFreq\":0.680065,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"MALE\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.69635016,\"altAlleleFreq\":0.30364984,\"refHomGenotypeFreq\":0.39272162,\"hetGenotypeFreq\":0.60725707,\"altHomGenotypeFreq\":0.000021319234},{\"study\":\"GNOMAD_EXOMES\",\"population\":\"FEMALE\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.67690915,\"altAlleleFreq\":0.32309085,\"refHomGenotypeFreq\":0.35381833,\"hetGenotypeFreq\":0.6461817,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"ALL\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.50730366,\"altAlleleFreq\":0.49269632,\"refHomGenotypeFreq\":0.014607344,\"hetGenotypeFreq\":0.98539263,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"OTH\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.51265824,\"altAlleleFreq\":0.48734176,\"refHomGenotypeFreq\":0.025316456,\"hetGenotypeFreq\":0.9746835,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"EAS\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.50253487,\"altAlleleFreq\":0.49746513,\"refHomGenotypeFreq\":0.0050697085,\"hetGenotypeFreq\":0.99493027,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"AMR\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.50493824,\"altAlleleFreq\":0.49506173,\"refHomGenotypeFreq\":0.009876544,\"hetGenotypeFreq\":0.99012345,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"ASJ\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.51459855,\"altAlleleFreq\":0.48540145,\"refHomGenotypeFreq\":0.02919708,\"hetGenotypeFreq\":0.9708029,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"FIN\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.5056514,\"altAlleleFreq\":0.49434862,\"refHomGenotypeFreq\":0.011302796,\"hetGenotypeFreq\":0.98869723,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"NFE\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.5101583,\"altAlleleFreq\":0.48984167,\"refHomGenotypeFreq\":0.02031666,\"hetGenotypeFreq\":0.97968334,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"AFR\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.5034876,\"altAlleleFreq\":0.49651244,\"refHomGenotypeFreq\":0.0069751223,\"hetGenotypeFreq\":0.9930249,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"MALE\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.5076308,\"altAlleleFreq\":0.49236917,\"refHomGenotypeFreq\":0.015261628,\"hetGenotypeFreq\":0.98473835,\"altHomGenotypeFreq\":0},{\"study\":\"GNOMAD_GENOMES\",\"population\":\"FEMALE\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.50689864,\"altAlleleFreq\":0.4931014,\"refHomGenotypeFreq\":0.01379724,\"hetGenotypeFreq\":0.9862028,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"ALL\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.7961549,\"altAlleleFreq\":0.20384505,\"refHomGenotypeFreq\":0.5923099,\"hetGenotypeFreq\":0.4076901,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"OTH\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.76941746,\"altAlleleFreq\":0.23058252,\"refHomGenotypeFreq\":0.5388349,\"hetGenotypeFreq\":0.46116504,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"SAS\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.6825376,\"altAlleleFreq\":0.31746238,\"refHomGenotypeFreq\":0.3650752,\"hetGenotypeFreq\":0.63492477,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"EAS\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.78699017,\"altAlleleFreq\":0.21300986,\"refHomGenotypeFreq\":0.5739803,\"hetGenotypeFreq\":0.42601973,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"AMR\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.89922637,\"altAlleleFreq\":0.100773655,\"refHomGenotypeFreq\":0.7984527,\"hetGenotypeFreq\":0.20154731,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"FIN\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.76068676,\"altAlleleFreq\":0.23931324,\"refHomGenotypeFreq\":0.5213735,\"hetGenotypeFreq\":0.4786265,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"NFE\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.82728344,\"altAlleleFreq\":0.17271654,\"refHomGenotypeFreq\":0.6545669,\"hetGenotypeFreq\":0.3454331,\"altHomGenotypeFreq\":0},{\"study\":\"EXAC\",\"population\":\"AFR\",\"refAllele\":\"G\",\"altAllele\":\"A\",\"refAlleleFreq\":0.69621515,\"altAlleleFreq\":0.30378485,\"refHomGenotypeFreq\":0.39243028,\"hetGenotypeFreq\":0.6075697,\"altHomGenotypeFreq\":0}]",
-                CellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
+                cellBaseDataResult.getResults().get(0).getPopulationFrequencies(), PopulationFrequency.class);
 
     }
 
@@ -1097,31 +1097,31 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         queryOptions.put("normalize", true);
 
         Variant variant = new Variant("5", 112136975, "GAG", "G");
-        CellBaseDataResult<VariantAnnotation> CellBaseDataResult = variantAnnotationCalculator
+        CellBaseDataResult<VariantAnnotation> cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(112136974), CellBaseDataResult.getResults().get(0).getStart());
-        assertEquals("AG", CellBaseDataResult.getResults().get(0).getReference());
-        assertEquals("", CellBaseDataResult.getResults().get(0).getAlternate());
-        assertNotNull(CellBaseDataResult.getResults().get(0).getTraitAssociation());
-        assertTrue(containsAccession(CellBaseDataResult, "RCV000000829"));
+        assertEquals(Integer.valueOf(112136974), cellBaseDataResult.getResults().get(0).getStart());
+        assertEquals("AG", cellBaseDataResult.getResults().get(0).getReference());
+        assertEquals("", cellBaseDataResult.getResults().get(0).getAlternate());
+        assertNotNull(cellBaseDataResult.getResults().get(0).getTraitAssociation());
+        assertTrue(containsAccession(cellBaseDataResult, "RCV000000829"));
 
         variant = new Variant("11", 64577375, "G", "GGGGGC");
-        CellBaseDataResult = variantAnnotationCalculator
+        cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(64577376), CellBaseDataResult.getResults().get(0).getStart());
-        assertEquals("", CellBaseDataResult.getResults().get(0).getReference());
-        assertEquals("GGGGC", CellBaseDataResult.getResults().get(0).getAlternate());
-        assertNotNull(CellBaseDataResult.getResults().get(0).getTraitAssociation());
-        assertTrue(containsAccession(CellBaseDataResult, "RCV000161945"));
+        assertEquals(Integer.valueOf(64577376), cellBaseDataResult.getResults().get(0).getStart());
+        assertEquals("", cellBaseDataResult.getResults().get(0).getReference());
+        assertEquals("GGGGC", cellBaseDataResult.getResults().get(0).getAlternate());
+        assertNotNull(cellBaseDataResult.getResults().get(0).getTraitAssociation());
+        assertTrue(containsAccession(cellBaseDataResult, "RCV000161945"));
 
         variant = new Variant("3", 37090475, "C", "CTT");
-        CellBaseDataResult = variantAnnotationCalculator
+        cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(37090476), CellBaseDataResult.getResults().get(0).getStart());
-        assertEquals("", CellBaseDataResult.getResults().get(0).getReference());
-        assertEquals("TT", CellBaseDataResult.getResults().get(0).getAlternate());
-        assertNotNull(CellBaseDataResult.getResults().get(0).getTraitAssociation());
-        assertTrue(containsAccession(CellBaseDataResult, "RCV000221270"));
+        assertEquals(Integer.valueOf(37090476), cellBaseDataResult.getResults().get(0).getStart());
+        assertEquals("", cellBaseDataResult.getResults().get(0).getReference());
+        assertEquals("TT", cellBaseDataResult.getResults().get(0).getAlternate());
+        assertNotNull(cellBaseDataResult.getResults().get(0).getTraitAssociation());
+        assertTrue(containsAccession(cellBaseDataResult, "RCV000221270"));
 
         // This example is peculiar. Was sent to me by Alona (slack 30th May). She expected this var below
         // 3:37089111:TGTTGAGTTTCTGAA:T
@@ -1133,41 +1133,41 @@ public class VariantAnnotationCalculatorTest extends GenericMongoDBAdaptorTest {
         // is:   ...CATTGTTGAGTTTCTGAAGAAGAAGGCT...
         //             ^^
         variant = new Variant("3", 37089111, "TGTTGAGTTTCTGAA", "T");
-        CellBaseDataResult = variantAnnotationCalculator
+        cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(37089112), CellBaseDataResult.getResults().get(0).getStart());
-        assertEquals("GTTGAGTTTCTGAA", CellBaseDataResult.getResults().get(0).getReference());
-        assertEquals("", CellBaseDataResult.getResults().get(0).getAlternate());
-        assertNull(CellBaseDataResult.getResults().get(0).getTraitAssociation());
+        assertEquals(Integer.valueOf(37089112), cellBaseDataResult.getResults().get(0).getStart());
+        assertEquals("GTTGAGTTTCTGAA", cellBaseDataResult.getResults().get(0).getReference());
+        assertEquals("", cellBaseDataResult.getResults().get(0).getAlternate());
+        assertNull(cellBaseDataResult.getResults().get(0).getTraitAssociation());
 
         variant = new Variant("3", 37045937, "A", "AAA");
-        CellBaseDataResult = variantAnnotationCalculator
+        cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(37045937), CellBaseDataResult.getResults().get(0).getStart());
-        assertEquals("", CellBaseDataResult.getResults().get(0).getReference());
-        assertEquals("AA", CellBaseDataResult.getResults().get(0).getAlternate());
-        assertNotNull(CellBaseDataResult.getResults().get(0).getTraitAssociation());
-        assertTrue(containsAccession(CellBaseDataResult, "RCV000075667"));
+        assertEquals(Integer.valueOf(37045937), cellBaseDataResult.getResults().get(0).getStart());
+        assertEquals("", cellBaseDataResult.getResults().get(0).getReference());
+        assertEquals("AA", cellBaseDataResult.getResults().get(0).getAlternate());
+        assertNotNull(cellBaseDataResult.getResults().get(0).getTraitAssociation());
+        assertTrue(containsAccession(cellBaseDataResult, "RCV000075667"));
 
         variant = new Variant("13", 32912901, "TAAGA", "T");
-        CellBaseDataResult = variantAnnotationCalculator
+        cellBaseDataResult = variantAnnotationCalculator
                 .getAnnotationByVariant(variant, queryOptions);
-        assertEquals(Integer.valueOf(32912902), CellBaseDataResult.getResults().get(0).getStart());
-        assertEquals("AAGA", CellBaseDataResult.getResults().get(0).getReference());
-        assertEquals("", CellBaseDataResult.getResults().get(0).getAlternate());
-        assertNotNull(CellBaseDataResult.getResults().get(0).getTraitAssociation());
-        assertTrue(containsAccession(CellBaseDataResult, "RCV000044410"));
+        assertEquals(Integer.valueOf(32912902), cellBaseDataResult.getResults().get(0).getStart());
+        assertEquals("AAGA", cellBaseDataResult.getResults().get(0).getReference());
+        assertEquals("", cellBaseDataResult.getResults().get(0).getAlternate());
+        assertNotNull(cellBaseDataResult.getResults().get(0).getTraitAssociation());
+        assertTrue(containsAccession(cellBaseDataResult, "RCV000044410"));
 
 
     }
 
-    private boolean containsAccession(CellBaseDataResult<VariantAnnotation> CellBaseDataResult, String accession) {
+    private boolean containsAccession(CellBaseDataResult<VariantAnnotation> cellBaseDataResult, String accession) {
         boolean found = false;
         int i = 0;
-        while (i < CellBaseDataResult.getNumResults() && !found) {
+        while (i < cellBaseDataResult.getNumResults() && !found) {
             int j = 0;
-            while (j < CellBaseDataResult.getResults().get(i).getTraitAssociation().size() && !found) {
-                found = CellBaseDataResult
+            while (j < cellBaseDataResult.getResults().get(i).getTraitAssociation().size() && !found) {
+                found = cellBaseDataResult
                         .getResults()
                         .get(i)
                         .getTraitAssociation()
