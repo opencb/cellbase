@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.impl.core;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.MongoClient;
 import com.mongodb.QueryBuilder;
 import com.mongodb.client.model.Aggregates;
@@ -28,6 +29,7 @@ import org.opencb.biodata.models.core.GenomeSequenceFeature;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.avro.Cytoband;
+import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
@@ -291,6 +293,122 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         }
 
         return conservationCellBaseDataResults;
+    }
+
+    public List<CellBaseDataResult> getAllScoresByRegionList(List regionList, QueryOptions options) {
+        //TODO not finished yet
+        List<Document> queries = new ArrayList<>();
+        List<String> ids = new ArrayList<>(regionList.size());
+        List<Integer> integerChunkIds;
+
+        List<Region> regions = regionList;
+        for (Region region : regions) {
+            integerChunkIds = new ArrayList<>();
+            // positions below 1 are not allowed
+            if (region.getStart() < 1) {
+                region.setStart(1);
+            }
+            if (region.getEnd() < 1) {
+                region.setEnd(1);
+            }
+
+            /****/
+            QueryBuilder builder;
+            int regionChunkStart = getChunkId(region.getStart(), MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE);
+            int regionChunkEnd = getChunkId(region.getEnd(), MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE);
+            if (regionChunkStart == regionChunkEnd) {
+                builder = QueryBuilder.start("_chunkIds")
+                        .is(getChunkIdPrefix(region.getChromosome(), region.getStart(),
+                                MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE));
+            } else {
+//                for (int chunkId = regionChunkStart; chunkId <= regionChunkEnd; chunkId++) {
+//                    integerChunkIds.add(chunkId);
+//                }
+//    //            QueryBuilder builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(hunkIds);
+//                builder = QueryBuilder.start("chromosome").is(region.getChromosomeInfo()).and("chunkId").in(integerChunkIds);
+                builder = QueryBuilder.start("chromosome").is(region.getChromosome()).and("end")
+                        .greaterThanEquals(region.getStart()).and("start").lessThanEquals(region.getEnd());
+            }
+            /****/
+
+
+            queries.add(new Document(builder.get().toMap()));
+            ids.add(region.toString());
+
+//            logger.debug(builder.get().toString());
+
+        }
+        List<CellBaseDataResult> queryResults = executeQueryList2(ids, queries, options);
+//        List<QueryResult> queryResults = executeQueryList(ids, queries, options);
+
+
+        for (int i = 0; i < regions.size(); i++) {
+            Region region = regions.get(i);
+            CellBaseDataResult queryResult = queryResults.get(i);
+            List<Document> list = (List<Document>) queryResult.getResults();
+
+            Map<String, List<Float>> typeMap = new HashMap();
+
+
+//            int start = region.getStart();
+
+
+            for (int j = 0; j < list.size(); j++) {
+                Document chunk = list.get(j);
+
+                if (!chunk.isEmpty()) {
+//                    BasicDBList valuesChunk = (BasicDBList) chunk.get("values");
+                    ArrayList valuesChunk = chunk.get("values", ArrayList.class);
+
+                    if (valuesChunk != null) {  // TODO: temporary patch to skip empty chunks - remove as soon as conservation is reloaded
+                        String source = chunk.getString("source");
+                        List<Float> valuesList;
+                        if (!typeMap.containsKey(source)) {
+                            valuesList = new ArrayList<>(region.getEnd() - region.getStart() + 1);
+                            for (int val = 0; val < region.getEnd() - region.getStart() + 1; val++) {
+                                valuesList.add(null);
+                            }
+                            typeMap.put(source, valuesList);
+                        } else {
+                            valuesList = typeMap.get(source);
+                        }
+
+//                        valuesChunk = (BasicDBList) chunk.get("values");
+                        valuesChunk = chunk.get("values", ArrayList.class);
+                        int pos = 0;
+                        if (region.getStart() > chunk.getInteger("start")) {
+                            pos = region.getStart() - chunk.getInteger("start");
+                        }
+
+                        for (; pos < valuesChunk.size() && (pos + chunk.getInteger("start") <= region.getEnd()); pos++) {
+                            valuesList.set(pos + chunk.getInteger("start") - region.getStart(), new Float((Double) valuesChunk.get(pos)));
+                        }
+                    } else {
+                        logger.error("values field not present in conservation chunk document. This "
+                                + "should not be happening - every conservation chunk must have a list of values."
+                                + " Please check. Chunk id: " + chunk.get("_chunkIds"));
+                        continue;
+                    }
+
+                }
+
+                BasicDBList resultList = new BasicDBList();
+                for (Map.Entry<String, List<Float>> elem : typeMap.entrySet()) {
+                    for (Float value : elem.getValue()) {
+                        if (value != null) {
+                            resultList.add(new Score(new Double(value), elem.getKey(), null));
+                        }
+                    }
+                }
+                if (!resultList.isEmpty()) {
+                    queryResult.setResults(resultList);
+                } else {
+                    queryResult.setResults(null);
+                }
+            }
+
+        }
+        return queryResults;
     }
 
 //    public CellBaseDataResult<Long> count(Query query) {

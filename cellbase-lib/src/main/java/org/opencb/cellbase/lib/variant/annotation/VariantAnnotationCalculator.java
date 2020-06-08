@@ -1403,8 +1403,8 @@ public class VariantAnnotationCalculator {
                                 ? (new Region(region.getChromosome(), region.getStart(), region.getStart() + 49))
                                 : region).collect(Collectors.toList());
 
-                List<CellBaseDataResult> tmpCellBaseDataResultList = conservationManager
-                    .getAllScoresByRegionList(regionList, queryOptions);
+                List<CellBaseDataResult> tmpCellBaseDataResultList = genomeManager
+                        .getAllScoresByRegionList(regionList, queryOptions);
 
                 // There may be more than one CellBaseDataResult per variant for breakends
                 // Reuse one of the CellBaseDataResult objects returned by the adaptor

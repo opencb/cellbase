@@ -97,6 +97,10 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         return queryResultList;
     }
 
+    public List<CellBaseDataResult> getAllScoresByRegionList(List regionList, QueryOptions options) {
+        return genomeDBAdaptor.getAllScoresByRegionList(regionList, options);
+    }
+
     public CellBaseDataResult<GenomeSequenceFeature> getSequence(Region region, QueryOptions queryOptions) {
         return genomeDBAdaptor.getSequence(region, queryOptions);
     }
