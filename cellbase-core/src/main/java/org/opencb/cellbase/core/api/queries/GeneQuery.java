@@ -35,46 +35,47 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     private List<Region> regions;
 
-    @QueryParameter(id = "transcriptsBiotype", alias = {"transcripts.biotype"})
+    @QueryParameter(id = "transcripts.biotype", alias = {"transcriptsBiotypes"})
     private List<String> transcriptsBiotype;
 
-    @QueryParameter(id = "transcriptsXref", alias = {"transcripts.xrefs.id"})
+    @QueryParameter(id = "transcripts.xrefs.id", alias = {"transcriptsXrefs"})
     private List<String> transcriptsXrefs;
-    @QueryParameter(id = "transcripts.id")
+    @QueryParameter(id = "transcripts.id", alias = {"transcriptsId"})
     private List<String> transcriptsId;
-    @QueryParameter(id = "transcripts.name")
+    @QueryParameter(id = "transcripts.name", alias = {"transcriptsName"})
     private List<String> transcriptsName;
-    @QueryParameter(id = "transcripts.supportLevel", allowedValues = {"1", "2", "3", "4", "5", "NA"})
-    private List<String> transcriptsSupportLevels;
+    @QueryParameter(id = "transcripts.supportLevel", alias = {"transcriptsSupportLevel"},
+    allowedValues = {"1", "2", "3", "4", "5", "NA"})
+    private List<String> transcriptsSupportLevel;
 
-    @QueryParameter(id = "transcripts.annotationFlags")
+    @QueryParameter(id = "transcripts.annotationFlags", alias = {"transcriptsAnnotationFlags"})
     private LogicalList<String> transcriptsAnnotationFlags;
-    @QueryParameter(id = "transcripts.tfbs.id")
+    @QueryParameter(id = "transcripts.tfbs.id", alias = {"transcriptsTfbsId"})
     private LogicalList<String> transcriptsTfbsId;
-    @QueryParameter(id = "transcripts.tfbs.pfmId")
+    @QueryParameter(id = "transcripts.tfbs.pfmId", alias = {"transcriptsTfbsPfmId"})
     private LogicalList<String> transcriptsTfbsPfmId;
-    @QueryParameter(id = "transcripts.tfbs.transcriptionFactors")
+    @QueryParameter(id = "transcripts.tfbs.transcriptionFactors", alias = {"transcriptsTfbsTranscriptionFactors"})
     private LogicalList<String> transcriptsTfbsTranscriptionFactors;
-    @QueryParameter(id = "transcripts.annotation.ontologies.id")
-    private LogicalList<String> annotationOntologiesId;
+    @QueryParameter(id = "transcripts.annotation.ontologies.id", alias = {"transcriptAnnotationOntologiesId"})
+    private LogicalList<String> transcriptAnnotationOntologiesId;
 
-    @QueryParameter(id = "annotation.diseases.id")
+    @QueryParameter(id = "annotation.diseases.id", alias = {"annotationDiseasesId"})
     private LogicalList<String> annotationDiseasesId;
-    @QueryParameter(id = "annotation.diseases.name")
+    @QueryParameter(id = "annotation.diseases.name", alias = {"annotationDiseasesName"})
     private LogicalList<String> annotationDiseasesName;
-    @QueryParameter(id = "annotation.expression.tissue")
+    @QueryParameter(id = "annotation.expression.tissue", alias = {"annotationExpressionTissue"})
     private LogicalList<String> annotationExpressionTissue;
-    @QueryParameter(id = "annotation.expression.value")
+    @QueryParameter(id = "annotation.expression.value", alias = {"annotationExpressionValue"})
     private LogicalList<String> annotationExpressionValue;
-    @QueryParameter(id = "annotation.drugs.name")
+    @QueryParameter(id = "annotation.drugs.name", alias = {"annotationDrugsName"})
     private LogicalList<String> annotationDrugsName;
-    @QueryParameter(id = "annotation.constraints.name",
+    @QueryParameter(id = "annotation.constraints.name", alias = {"annotationConstraintsName"},
             allowedValues = {"exac_oe_lof", "exac_pLI", "oe_lof", "oe_mis", "oe_syn"})
     // this has to be protected to allow validation
     protected LogicalList<String> annotationConstraintsName;
-    @QueryParameter(id = "annotation.constraints.value", dependsOn = "annotation.constraints.name")
+    @QueryParameter(id = "annotation.constraints.value", alias = {"annotationConstraintsValue"}, dependsOn = "annotation.constraints.name")
     protected LogicalList<String> annotationConstraintsValue;
-    @QueryParameter(id = "annotation.targets")
+    @QueryParameter(id = "annotation.targets", alias = {"annotationTargets"})
     protected LogicalList<String> annotationTargets;
     @QueryParameter(id = "mirna")
     private LogicalList<String> mirnas;
@@ -103,7 +104,7 @@ public class GeneQuery extends AbstractQuery {
         sb.append("ids=").append(ids);
         sb.append(", names=").append(names);
         sb.append(", biotypes=").append(biotypes);
-        sb.append(", transcriptsSupportLevels=").append(transcriptsSupportLevels);
+        sb.append(", transcriptsSupportLevel=").append(transcriptsSupportLevel);
         sb.append(", regions=").append(regions);
         sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
         sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
@@ -113,7 +114,7 @@ public class GeneQuery extends AbstractQuery {
         sb.append(", transcriptsTfbsId=").append(transcriptsTfbsId);
         sb.append(", transcriptsTfbsPfmId=").append(transcriptsTfbsPfmId);
         sb.append(", transcriptsTfbsTranscriptionFactors=").append(transcriptsTfbsTranscriptionFactors);
-        sb.append(", annotationOntologiesId=").append(annotationOntologiesId);
+        sb.append(", transcriptAnnotationOntologiesId=").append(transcriptAnnotationOntologiesId);
         sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
         sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
         sb.append(", annotationExpressionTissue=").append(annotationExpressionTissue);
@@ -154,12 +155,12 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public List<String> getTranscriptsSupportLevels() {
-        return transcriptsSupportLevels;
+    public List<String> getTranscriptsSupportLevel() {
+        return transcriptsSupportLevel;
     }
 
-    public GeneQuery setTranscriptsSupportLevels(List<String> transcriptsSupportLevels) {
-        this.transcriptsSupportLevels = transcriptsSupportLevels;
+    public GeneQuery setTranscriptsSupportLevel(List<String> transcriptsSupportLevel) {
+        this.transcriptsSupportLevel = transcriptsSupportLevel;
         return this;
     }
 
@@ -244,12 +245,12 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public LogicalList<String> getAnnotationOntologiesId() {
-        return annotationOntologiesId;
+    public LogicalList<String> getTranscriptAnnotationOntologiesId() {
+        return transcriptAnnotationOntologiesId;
     }
 
-    public GeneQuery setAnnotationOntologiesId(LogicalList<String> annotationOntologiesId) {
-        this.annotationOntologiesId = annotationOntologiesId;
+    public GeneQuery setTranscriptAnnotationOntologiesId(LogicalList<String> transcriptAnnotationOntologiesId) {
+        this.transcriptAnnotationOntologiesId = transcriptAnnotationOntologiesId;
         return this;
     }
 
@@ -354,12 +355,12 @@ public class GeneQuery extends AbstractQuery {
         private List<String> transcriptsXrefs;
         private List<String> transcriptsId;
         private List<String> transcriptsName;
-        private List<String> transcriptsSupportLevels;
+        private List<String> transcriptsSupportLevel;
         private LogicalList<String> transcriptsAnnotationFlags;
         private LogicalList<String> transcriptsTfbsId;
         private LogicalList<String> transcriptsTfbsPfmId;
         private LogicalList<String> transcriptsTfbsTranscriptionFactors;
-        private LogicalList<String> annotationOntologiesId;
+        private LogicalList<String> transcriptAnnotationOntologiesId;
         private LogicalList<String> annotationDiseasesId;
         private LogicalList<String> annotationDiseasesName;
         private LogicalList<String> annotationExpressionTissue;
@@ -414,8 +415,8 @@ public class GeneQuery extends AbstractQuery {
             return this;
         }
 
-        public GeneQueryBuilder withTranscriptsSupportLevels(List<String> transcriptsSupportLevels) {
-            this.transcriptsSupportLevels = transcriptsSupportLevels;
+        public GeneQueryBuilder withTranscriptsSupportLevel(List<String> transcriptsSupportLevel) {
+            this.transcriptsSupportLevel = transcriptsSupportLevel;
             return this;
         }
 
@@ -439,8 +440,9 @@ public class GeneQuery extends AbstractQuery {
             return this;
         }
 
-        public GeneQueryBuilder withAnnotationOntologiesId(LogicalList<String> annotationOntologiesId) {
-            this.annotationOntologiesId = annotationOntologiesId;
+        public GeneQueryBuilder withTranscriptAnnotationOntologiesId(
+                LogicalList<String> transcriptAnnotationOntologiesId) {
+            this.transcriptAnnotationOntologiesId = transcriptAnnotationOntologiesId;
             return this;
         }
 
@@ -539,12 +541,12 @@ public class GeneQuery extends AbstractQuery {
             geneQuery.setTranscriptsXrefs(transcriptsXrefs);
             geneQuery.setTranscriptsId(transcriptsId);
             geneQuery.setTranscriptsName(transcriptsName);
-            geneQuery.setTranscriptsSupportLevels(transcriptsSupportLevels);
+            geneQuery.setTranscriptsSupportLevel(transcriptsSupportLevel);
             geneQuery.setTranscriptsAnnotationFlags(transcriptsAnnotationFlags);
             geneQuery.setTranscriptsTfbsId(transcriptsTfbsId);
             geneQuery.setTranscriptsTfbsPfmId(transcriptsTfbsPfmId);
             geneQuery.setTranscriptsTfbsTranscriptionFactors(transcriptsTfbsTranscriptionFactors);
-            geneQuery.setAnnotationOntologiesId(annotationOntologiesId);
+            geneQuery.setTranscriptAnnotationOntologiesId(transcriptAnnotationOntologiesId);
             geneQuery.setAnnotationDiseasesId(annotationDiseasesId);
             geneQuery.setAnnotationDiseasesName(annotationDiseasesName);
             geneQuery.setAnnotationExpressionTissue(annotationExpressionTissue);
