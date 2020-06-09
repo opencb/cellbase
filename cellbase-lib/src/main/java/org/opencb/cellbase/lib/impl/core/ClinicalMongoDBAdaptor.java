@@ -184,7 +184,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
 
     public Bson parseQuery(ClinicalVariantQuery query) {
         List<Bson> andBsonList = new ArrayList<>();
-        boolean visited = false;
         try {
             for (Map.Entry<String, Object> entry : query.toObjectMap().entrySet()) {
                 String dotNotationName = entry.getKey();
@@ -193,49 +192,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
                     case "region":
                         createRegionQuery(query, value, andBsonList);
                         break;
-                    case "id":
-                        createAndOrQuery(value, "annotation.id", QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "start":
-                        createAndOrQuery(value, "start", QueryParam.Type.INTEGER, andBsonList);
-                        break;
-                    case "end":
-                        createAndOrQuery(value, "end", QueryParam.Type.INTEGER, andBsonList);
-                        break;
-                    case "feature":
-                        createAndOrQuery(value, "_featureXrefs", QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "so":
-                        createAndOrQuery(value, "annotation.consequenceTypes.sequenceOntologyTerms.name",
-                                QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "source":
-                        createAndOrQuery(value, "annotation.traitAssociation.source.name",
-                                QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "accession":
-                        createAndOrQuery(value, "annotation.traitAssociation.id",
-                                QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "consistencyStatus":
-                        createAndOrQuery(value, "annotation.traitAssociation.consistencyStatus",
-                                QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "clinicalSignificance":
-                        createAndOrQuery(value,
-                                "annotation.traitAssociation.variantClassification.clinicalSignificance",
-                                QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "inheritanceMode":
-                        createAndOrQuery(value, "annotation.traitAssociation.heritableTraits.inheritanceMode",
-                                QueryParam.Type.STRING, andBsonList);
-                        break;
-                    case "alleleOrigin":
-                        createAndOrQuery(value, "annotation.traitAssociation.alleleOrigin",
-                                QueryParam.Type.STRING, andBsonList);
-                        break;
                     case "trait":
                         createTraitQuery(String.valueOf(value), andBsonList);
+                        break;
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;

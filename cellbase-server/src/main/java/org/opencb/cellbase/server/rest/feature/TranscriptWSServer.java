@@ -192,8 +192,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
 
     @GET
     @Path("/search")
-    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time.",
-            value = "Retrieves all transcript objects", response = Transcript.class,
+    @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
+            + ParamConstants.DOT_NOTATION_NOTE, value = "Retrieves all transcript objects", response = Transcript.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,

@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.api.queries;
 
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.ParamConstants;
 
 import java.util.List;
 import java.util.Map;
@@ -25,40 +26,28 @@ public class ClinicalVariantQuery extends AbstractQuery {
 
     @QueryParameter(id = "region")
     private List<Region> regions;
-
-    @QueryParameter(id = "id")
+    @QueryParameter(id = "annotation.id", alias = {ParamConstants.VARIANT_IDS_PARAM})
     private String id;
-
-    @QueryParameter(id = "chromosome")
-    private String chromosome;
-    @QueryParameter(id = "start")
-    private String start;
-    @QueryParameter(id = "end")
-    private String end;
-
-    @QueryParameter(id = "source")
+    @QueryParameter(id = "annotation.traitAssociation.source.name", alias = {ParamConstants.SOURCE_PARAM})
     private List<String> sources;
-    @QueryParameter(id = "so")
+    @QueryParameter(id = "annotation.consequenceTypes.sequenceOntologyTerms.name", alias = {ParamConstants.SEQUENCE_ONTOLOGY_PARAM})
     private List<String> so;
-    @QueryParameter(id = "feature")
+    @QueryParameter(id = "_featureXrefs", alias = {ParamConstants.FEATURE_IDS_PARAM})
     private List<String> features;
     @QueryParameter(id = "trait")
     private List<String> traits;
-
-    @QueryParameter(id = "accession")
+    @QueryParameter(id = "annotation.traitAssociation.id", alias = {ParamConstants.VARIANT_ACCESSIONS_PARAM})
     private List<String> accessions;
-    @QueryParameter(id = "id")
-    private List<String> ids;
-
     @QueryParameter(id = "type")
     private List<String> types;
-    @QueryParameter(id = "consistencyStatus")
+    @QueryParameter(id = "annotation.traitAssociation.consistencyStatus", alias = {ParamConstants.CONSISTENCY_STATUS_PARAM})
     private List<String> consistencyStatuses;
-    @QueryParameter(id = "clinicalSignificance")
+    @QueryParameter(id = "annotation.traitAssociation.variantClassification.clinicalSignificance",
+            alias = {ParamConstants.CLINICAL_SIGNFICANCE_PARAM})
     private List<String> clinicalSignificances;
-    @QueryParameter(id = "modeInheritance")
+    @QueryParameter(id = "annotation.traitAssociation.heritableTraits.inheritanceMode", alias = {ParamConstants.MODE_INHERITANCE_PARAM})
     private List<String> modeInheritances;
-    @QueryParameter(id = "alleleOrigin")
+    @QueryParameter(id = "annotation.traitAssociation.alleleOrigin", alias = {ParamConstants.ALLELE_ORIGIN_PARAM})
     private List<String> alleleOrigins;
 
     public ClinicalVariantQuery() {
@@ -68,10 +57,8 @@ public class ClinicalVariantQuery extends AbstractQuery {
         super(params);
     }
 
-
     @Override
     protected void validateQuery() throws QueryException {
-
     }
 
     @Override
@@ -79,15 +66,11 @@ public class ClinicalVariantQuery extends AbstractQuery {
         final StringBuilder sb = new StringBuilder("ClinicalVariantQuery{");
         sb.append("regions=").append(regions);
         sb.append(", id='").append(id).append('\'');
-        sb.append(", chromosome='").append(chromosome).append('\'');
-        sb.append(", start='").append(start).append('\'');
-        sb.append(", end='").append(end).append('\'');
         sb.append(", sources=").append(sources);
         sb.append(", so=").append(so);
         sb.append(", features=").append(features);
         sb.append(", traits=").append(traits);
         sb.append(", accessions=").append(accessions);
-        sb.append(", ids=").append(ids);
         sb.append(", types=").append(types);
         sb.append(", consistencyStatuses=").append(consistencyStatuses);
         sb.append(", clinicalSignificances=").append(clinicalSignificances);
@@ -120,33 +103,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
 
     public ClinicalVariantQuery setId(String id) {
         this.id = id;
-        return this;
-    }
-
-    public String getChromosome() {
-        return chromosome;
-    }
-
-    public ClinicalVariantQuery setChromosome(String chromosome) {
-        this.chromosome = chromosome;
-        return this;
-    }
-
-    public String getStart() {
-        return start;
-    }
-
-    public ClinicalVariantQuery setStart(String start) {
-        this.start = start;
-        return this;
-    }
-
-    public String getEnd() {
-        return end;
-    }
-
-    public ClinicalVariantQuery setEnd(String end) {
-        this.end = end;
         return this;
     }
 
@@ -192,15 +148,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
 
     public ClinicalVariantQuery setAccessions(List<String> accessions) {
         this.accessions = accessions;
-        return this;
-    }
-
-    public List<String> getIds() {
-        return ids;
-    }
-
-    public ClinicalVariantQuery setIds(List<String> ids) {
-        this.ids = ids;
         return this;
     }
 
@@ -261,15 +208,11 @@ public class ClinicalVariantQuery extends AbstractQuery {
         protected List<String> excludes;
         private List<Region> regions;
         private String id;
-        private String chromosome;
-        private String start;
-        private String end;
         private List<String> sources;
         private List<String> so;
         private List<String> features;
         private List<String> traits;
         private List<String> accessions;
-        private List<String> ids;
         private List<String> types;
         private List<String> consistencyStatuses;
         private List<String> clinicalSignificances;
@@ -290,21 +233,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
 
         public ClinicalVariantQueryBuilder withId(String id) {
             this.id = id;
-            return this;
-        }
-
-        public ClinicalVariantQueryBuilder withChromosome(String chromosome) {
-            this.chromosome = chromosome;
-            return this;
-        }
-
-        public ClinicalVariantQueryBuilder withStart(String start) {
-            this.start = start;
-            return this;
-        }
-
-        public ClinicalVariantQueryBuilder withEnd(String end) {
-            this.end = end;
             return this;
         }
 
@@ -330,11 +258,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
 
         public ClinicalVariantQueryBuilder withAccessions(List<String> accessions) {
             this.accessions = accessions;
-            return this;
-        }
-
-        public ClinicalVariantQueryBuilder withIds(List<String> ids) {
-            this.ids = ids;
             return this;
         }
 
@@ -407,15 +330,11 @@ public class ClinicalVariantQuery extends AbstractQuery {
             ClinicalVariantQuery clinicalVariantQuery = new ClinicalVariantQuery();
             clinicalVariantQuery.setRegions(regions);
             clinicalVariantQuery.setId(id);
-            clinicalVariantQuery.setChromosome(chromosome);
-            clinicalVariantQuery.setStart(start);
-            clinicalVariantQuery.setEnd(end);
             clinicalVariantQuery.setSources(sources);
             clinicalVariantQuery.setSo(so);
             clinicalVariantQuery.setFeatures(features);
             clinicalVariantQuery.setTraits(traits);
             clinicalVariantQuery.setAccessions(accessions);
-            clinicalVariantQuery.setIds(ids);
             clinicalVariantQuery.setTypes(types);
             clinicalVariantQuery.setConsistencyStatuses(consistencyStatuses);
             clinicalVariantQuery.setClinicalSignificances(clinicalSignificances);

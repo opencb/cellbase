@@ -82,7 +82,8 @@ public class IdWSServer extends GenericRestWSServer {
             notes = "An independent database query will be issued for each id, meaning that results for each id will be"
             + " returned in independent CellBaseDataResult objects within the QueryResponse object.", response = Xref.class,
             responseContainer = "QueryResponse")
-    public Response getInfo(@PathParam("id") @ApiParam(name = "id", value = ParamConstants.FEATURE_IDS, required = true) String id) {
+    public Response getInfo(@PathParam("id") @ApiParam(name = "id", value = ParamConstants.FEATURE_IDS_DESCRIPTION, required = true)
+                                        String id) {
         try {
 
             List<XrefQuery> queries = new ArrayList<>();
@@ -105,7 +106,7 @@ public class IdWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", value = "Retrieves all the external references related with given ID(s)",
         response = Xref.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = ParamConstants.FEATURE_IDS,
+            @ApiImplicitParam(name = "id", value = ParamConstants.FEATURE_IDS_DESCRIPTION,
                     required = true, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "dbname", value = ParamConstants.XREF_DBNAMES,
                     required = false, dataType = "java.util.List", paramType = "query")

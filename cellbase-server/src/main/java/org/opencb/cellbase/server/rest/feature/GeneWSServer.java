@@ -257,7 +257,7 @@ public class GeneWSServer extends GenericRestWSServer {
     @GET
     @Path("/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
-            + "Parameters can be camel case (e.g. transcriptsBiotype) or dot notation (e.g. transcripts.biotype).",
+            + ParamConstants.DOT_NOTATION_NOTE,
             value = "Retrieves all gene objects", response = Gene.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,

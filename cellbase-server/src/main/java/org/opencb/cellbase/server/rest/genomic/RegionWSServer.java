@@ -381,7 +381,7 @@ public class RegionWSServer extends GenericRestWSServer {
             + "https://github.com/opencb/cellbase/wiki/MongoDB-implementation#clinical for further details.",
             response = Document.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "so", value = ParamConstants.SEQUENCE_ONTOLOGY,
+            @ApiImplicitParam(name = "so", value = ParamConstants.SEQUENCE_ONTOLOGY_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "gene",
                     value = "Comma separated list gene ids, e.g.: BRCA2. Gene ids can be either HGNC symbols or "
