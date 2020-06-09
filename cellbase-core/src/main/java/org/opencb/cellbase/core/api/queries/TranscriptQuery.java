@@ -17,6 +17,7 @@
 package org.opencb.cellbase.core.api.queries;
 
 import org.opencb.biodata.models.core.Region;
+import org.opencb.cellbase.core.ParamConstants;
 
 import java.util.List;
 import java.util.Map;
@@ -26,27 +27,29 @@ public class TranscriptQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     private List<Region> regions;
 
-    @QueryParameter(id = "biotype")
+    @QueryParameter(id = "transcripts.biotype", alias = {"biotype"})
     private List<String> transcriptsBiotype;
-    @QueryParameter(id = "xrefs")
+    @QueryParameter(id = "transcripts.xrefs.id", alias = {"xref", "xrefs"})
     private List<String> transcriptsXrefs;
-    @QueryParameter(id = "id")
+    @QueryParameter(id = "transcripts.id", alias = {"id"})
     private List<String> transcriptsId;
-    @QueryParameter(id = "name")
+    @QueryParameter(id = "transcripts.name", alias = {"name"})
     private List<String> transcriptsName;
-    @QueryParameter(id = "supportLevel", allowedValues = {"1", "2", "3", "4", "5", "NA"})
+    @QueryParameter(id = "transcripts.supportLevel", alias = {"supportLevel"}, allowedValues = {"1", "2", "3", "4", "5", "NA"})
     private List<String> transcriptSupportLevels;
 
-    @QueryParameter(id = "annotationFlags")
+    @QueryParameter(id = "transcripts.annotationFlags", alias = {"annotationFlags"})
     private LogicalList<String> transcriptsAnnotationFlags;
-    @QueryParameter(id = "tfbs.id")
+    @QueryParameter(id = "transcripts.tfbs.id", alias = {ParamConstants.TRANSCRIPT_TFBS_IDS_PARAM, "transcriptsTfbsId", "tfbsId"})
     private LogicalList<String> transcriptsTfbsId;
-    @QueryParameter(id = "tfbs.pfmId")
+    @QueryParameter(id = "transcripts.tfbs.pfmId", alias = {ParamConstants.TRANSCRIPT_TFBS_PFMIDS_PARAM, "transcriptsTfbsPfmId"})
     private LogicalList<String> transcriptsTfbsPfmId;
-    @QueryParameter(id = "tfbs.transcriptionFactors")
+    @QueryParameter(id = "transcripts.tfbs.transcriptionFactors", alias = {ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM,
+            "transcriptsTfbsTranscriptionFactors"})
     private LogicalList<String> transcriptsTfbsTranscriptionFactors;
-    @QueryParameter(id = "annotation.ontologies.id")
-    private LogicalList<String> annotationOntologiesId;
+    @QueryParameter(id = "transcripts.annotation.ontologies.id", alias = {ParamConstants.ONTOLOGY_IDS_PARAM,
+            "transcriptAnnotationOntologiesId"})
+    private LogicalList<String> transcriptsAnnotationOntologiesId;
 
 
     public TranscriptQuery() {
@@ -74,7 +77,7 @@ public class TranscriptQuery extends AbstractQuery {
         sb.append(", transcriptsTfbsId=").append(transcriptsTfbsId);
         sb.append(", transcriptsTfbsPfmId=").append(transcriptsTfbsPfmId);
         sb.append(", transcriptsTfbsTranscriptionFactors=").append(transcriptsTfbsTranscriptionFactors);
-        sb.append(", annotationOntologiesId=").append(annotationOntologiesId);
+        sb.append(", transcriptsAnnotationOntologiesId=").append(transcriptsAnnotationOntologiesId);
         sb.append(", limit=").append(limit);
         sb.append(", skip=").append(skip);
         sb.append(", count=").append(count);
@@ -177,12 +180,12 @@ public class TranscriptQuery extends AbstractQuery {
         return this;
     }
 
-    public LogicalList<String> getAnnotationOntologiesId() {
-        return annotationOntologiesId;
+    public LogicalList<String> getTranscriptsAnnotationOntologiesId() {
+        return transcriptsAnnotationOntologiesId;
     }
 
-    public TranscriptQuery setAnnotationOntologiesId(LogicalList<String> annotationOntologiesId) {
-        this.annotationOntologiesId = annotationOntologiesId;
+    public TranscriptQuery setTranscriptsAnnotationOntologiesId(LogicalList<String> transcriptsAnnotationOntologiesId) {
+        this.transcriptsAnnotationOntologiesId = transcriptsAnnotationOntologiesId;
         return this;
     }
 
@@ -205,7 +208,7 @@ public class TranscriptQuery extends AbstractQuery {
         private LogicalList<String> transcriptsTfbsId;
         private LogicalList<String> transcriptsTfbsPfmId;
         private LogicalList<String> transcriptsTfbsTranscriptionFactors;
-        private LogicalList<String> annotationOntologiesId;
+        private LogicalList<String> transcriptsAnnotationOntologiesId;
 
         private TranscriptQueryBuilder() {
         }
@@ -264,8 +267,8 @@ public class TranscriptQuery extends AbstractQuery {
             return this;
         }
 
-        public TranscriptQueryBuilder withAnnotationOntologiesId(LogicalList<String> annotationOntologiesId) {
-            this.annotationOntologiesId = annotationOntologiesId;
+        public TranscriptQueryBuilder withTranscriptsAnnotationOntologiesId(LogicalList<String> transcriptsAnnotationOntologiesId) {
+            this.transcriptsAnnotationOntologiesId = transcriptsAnnotationOntologiesId;
             return this;
         }
 
@@ -321,7 +324,7 @@ public class TranscriptQuery extends AbstractQuery {
             transcriptQuery.setTranscriptsTfbsId(transcriptsTfbsId);
             transcriptQuery.setTranscriptsTfbsPfmId(transcriptsTfbsPfmId);
             transcriptQuery.setTranscriptsTfbsTranscriptionFactors(transcriptsTfbsTranscriptionFactors);
-            transcriptQuery.setAnnotationOntologiesId(annotationOntologiesId);
+            transcriptQuery.setTranscriptsAnnotationOntologiesId(transcriptsAnnotationOntologiesId);
             transcriptQuery.setLimit(limit);
             transcriptQuery.setSkip(skip);
             transcriptQuery.setCount(count);
