@@ -63,7 +63,8 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-    public static final String ONTOLOGY_IDS = "Comma separated list of ontology ids, e.g. GO:0008343,HP:0001251";
+    public static final String ONTOLOGY_IDS_DESCRIPTION = "Comma separated list of ontology ids, e.g. GO:0008343,HP:0001251";
+    public static final String ONTOLOGY_IDS_PARAM = "ontologyId";
     public static final String ONTOLOGY_NAMES = "Comma separated list of ontology term names, "
             + "e.g. Diabetes mellitus,histone kinase activity";
     public static final String ONTOLOGY_NAMESPACES = "Comma separated list of namespaces, e.g. human_phenotype,biological_process. "
@@ -76,59 +77,73 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-
-    public static final String TRANSCRIPT_IDS = "Comma separated list of transcript IDs, e.g.  ENST00000342992. Other transcript symbols "
-            + "such as HGNC symbols are allowed as well, e.g.: BRCA2-001";
-    public static final String TRANSCRIPT_BIOTYPES = "Comma separated list of transcript gencode biotypes, "
+    public static final String TRANSCRIPT_BIOTYPES_DESCRIPTION = "Comma separated list of transcript gencode biotypes, "
             + "e.g. protein_coding,miRNA,lncRNA. Exact text matches will be returned";
-    public static final String TRANSCRIPT_XREFS = "Comma separated list transcript xrefs ids, "
+    public static final String TRANSCRIPT_BIOTYPES_PARAM = "transcriptBiotype";
+    public static final String TRANSCRIPT_XREFS_DESCRIPTION = "Comma separated list transcript xrefs ids, "
             + "e.g. ENSG00000145113,35912_at,GO:0002020. Exact text matches will be returned";
+    public static final String TRANSCRIPT_XREFS_PARAM = "xref";
     public static final String TRANSCRIPT_XREF = "String indicating one ENSEMBL transcript id e.g.: ENST00000536068. "
             + "Exact text matches will be returned";
-    public static final String TRANSCRIPT_ENSEMBL_IDS = "Comma separated list of ENSEMBL transcript ids, "
+    public static final String TRANSCRIPT_IDS_DESCRIPTION = "Comma separated list of ENSEMBL transcript ids, "
             + "e.g. ENST00000342992,ENST00000380152,ENST00000544455. Exact text matches will be returned";
-    public static final String TRANSCRIPT_NAMES = "Comma separated list of transcript names, e.g. BRCA2-201,TTN-003."
+    public static final String TRANSCRIPT_IDS_PARAM = "transcriptId";
+    public static final String TRANSCRIPT_NAMES_DESCRIPTION = "Comma separated list of transcript names, e.g. BRCA2-201,TTN-003."
             + " Exact text matches will be returned";
-    public static final String TRANSCRIPT_ANNOTATION_FLAGS = "Comma separated list of annotation flags that must be "
+    public static final String TRANSCRIPT_NAMES_PARAM = "transcriptName";
+    public static final String TRANSCRIPT_ANNOTATION_FLAGS_DESCRIPTION = "Comma separated list of annotation flags that must be "
             + "present in the transcripts returned within the gene model, e.g. basic,CCDS. Exact text matches will "
             + "be returned";
-    public static final String TRANSCRIPT_TFBS_IDS = "Comma separated list of TFBS ids, "
+    public static final String TRANSCRIPT_ANNOTATION_FLAGS_PARAM = "transcriptAnnotationFlags";
+    public static final String TRANSCRIPT_TFBS_IDS_DESCRIPTION = "Comma separated list of TFBS ids, "
             + "e.g. ENSM00526048956,ENSM00522505783."
             + " Exact text matches will be returned";
-    public static final String TRANSCRIPT_TFBS_PFMIDS = "Comma separated list of TFBS pfm ids, "
+    public static final String TRANSCRIPT_TFBS_IDS_PARAM = "tfbsId";
+    public static final String TRANSCRIPT_TFBS_PFMIDS_DESCRIPTION = "Comma separated list of TFBS pfm ids, "
             + "e.g. ENSPFM0571,ENSPFM0402."
             + " Exact text matches will be returned";
-    public static final String TRANSCRIPT_TRANSCRIPTION_FACTORS = "Comma separated list of transcription factors, "
+    public static final String TRANSCRIPT_TFBS_PFMIDS_PARAM = "pfmId";
+    public static final String TRANSCRIPT_TRANSCRIPTION_FACTORS_DESCRIPTION = "Comma separated list of transcription factors, "
             + "e.g. MYBL1,MAX"
             + " Exact text matches will be returned";
-    public static final String TRANSCRIPT_SUPPORT_LEVEL = "This highlights the well-supported and poorly-supported "
+    public static final String TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM = "transcriptionFactors";
+    public static final String TRANSCRIPT_SUPPORT_LEVEL_DESCRIPTION = "This highlights the well-supported and poorly-supported "
             + "transcript models. Valid values are 1 (all splice junctions of the transcript are supported) "
             + "to 5 (no single transcript supports the model structure) and NA (not analysed), "
             + "see https://www.ensembl.org/info/genome/genebuild/transcript_quality_tags.html for details.";
+    public static final String TRANSCRIPT_SUPPORT_LEVEL_PARAM = "transcriptSupportLevel";
 
     // ---------------------------------------------
 
-    public static final String ANNOTATION_DISEASES_IDS = "Comma separated list of phenotype ids (OMIM, UMLS), "
+    public static final String ANNOTATION_DISEASES_IDS_DESCRIPTION = "Comma separated list of phenotype ids (OMIM, UMLS), "
             + "e.g. umls:C0030297,OMIM:613390,OMIM:613390. Exact text matches will be returned";
-    public static final String ANNOTATION_DISEASES_NAMES = "Comma separated list of phenotypes, "
+    public static final String ANNOTATION_DISEASES_IDS_PARAM = "diseaseId";
+    public static final String ANNOTATION_DISEASES_NAMES_DESCRIPTION = "Comma separated list of phenotypes, "
             + "e.g. Cryptorchidism,Absent thumb,Stage 5 chronic kidney disease. Exact text matches will be returned";
+    public static final String ANNOTATION_DISEASES_NAMES_PARAM = "diseaseName";
     public static final String ANNOTATION_EXPRESSION_GENE = "Comma separated list of ENSEMBL gene ids for which "
             + "expression values are available, e.g. ENSG00000139618,ENSG00000155657. "
             + "Exact text matches will be returned";
-    public static final String ANNOTATION_EXPRESSION_TISSUE = "Comma separated list of tissues for which "
+    public static final String ANNOTATION_EXPRESSION_TISSUE_DESCRIPTION = "Comma separated list of tissues for which "
             + "expression values are available, e.g. adipose tissue,heart atrium,tongue. "
             + "Exact text matches will be returned";
-    public static final String ANNOTATION_EXPRESSION_VALUE = "Must be used together with annotation.expression.tissue -"
+    public static final String ANNOTATION_EXPRESSION_TISSUE_PARAM = "expressionTissue";
+    public static final String ANNOTATION_EXPRESSION_VALUE_DESCRIPTION = "Must be used together with annotation.expression.tissue -"
             + "value of interest, either UP or DOWN";
-    public static final String ANNOTATION_DRUGS_NAME = "Comma separated list of drug names, "
+    public static final String ANNOTATION_EXPRESSION_VALUE_PARAM = "expressionValue";
+    public static final String ANNOTATION_DRUGS_NAME_DESCRIPTION = "Comma separated list of drug names, "
             + "e.g. BMN673,OLAPARIB,VELIPARIB. Exact text matches will be returned";
+    public static final String ANNOTATION_DRUGS_NAME_PARAM = "drugName";
     public static final String ANNOTATION_DRUGS_GENE = "Comma separated list of gene names for which "
             + "drug data is available, e.g. BRCA2,TTN. Exact text matches will be returned";
 
-    public static final String ANNOTATION_CONSTRAINTS_VALUE = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
-    public static final String ANNOTATION_TARGETS = "e.g. MIRT001919 or hsa-miR-146a-5p";
+    public static final String ANNOTATION_CONSTRAINTS_VALUE_DESCRIPTION = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
+    public static final String ANNOTATION_CONSTRAINTS_VALUE_PARAM = "constraintValue";
+    public static final String ANNOTATION_CONSTRAINTS_NAME_PARAM = "constraintName";
+    public static final String ANNOTATION_TARGETS_DESCRIPTION = "e.g. MIRT001919 or hsa-miR-146a-5p";
+    public static final String ANNOTATION_TARGETS_PARAM = "target";
 
-    public static final String MIRNA = "Id or accession for miRNA, e.g. MI0022666 or hsa-mir-8069-1";
+    public static final String MIRNA_DESCRIPTION = "Id or accession for miRNA, e.g. MI0022666 or hsa-mir-8069-1";
 
 
     // ---------------------------------------------

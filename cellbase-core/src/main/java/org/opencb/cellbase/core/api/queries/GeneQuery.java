@@ -19,6 +19,7 @@ package org.opencb.cellbase.core.api.queries;
 import org.apache.commons.collections.CollectionUtils;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.cellbase.core.BioUtils;
+import org.opencb.cellbase.core.ParamConstants;
 
 import java.util.List;
 import java.util.Map;
@@ -35,49 +36,58 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "region")
     private List<Region> regions;
 
-    @QueryParameter(id = "transcripts.biotype", alias = {"transcriptsBiotype"})
+    @QueryParameter(id = "transcripts.biotype", alias = {ParamConstants.TRANSCRIPT_BIOTYPES_PARAM,
+            "transcriptsBiotype"})
     private List<String> transcriptsBiotype;
 
-    @QueryParameter(id = "transcripts.xrefs.id", alias = {"transcriptsXrefs"})
+    @QueryParameter(id = "transcripts.xrefs.id", alias = {ParamConstants.TRANSCRIPT_XREFS_PARAM, "xrefs", "transcriptsXrefsId",
+            "transcripts.xrefs"})
     private List<String> transcriptsXrefs;
-    @QueryParameter(id = "transcripts.id", alias = {"transcriptsId"})
+    @QueryParameter(id = "transcripts.id", alias = {ParamConstants.TRANSCRIPT_IDS_PARAM, "transcriptsId"})
     private List<String> transcriptsId;
-    @QueryParameter(id = "transcripts.name", alias = {"transcriptsName"})
+    @QueryParameter(id = "transcripts.name", alias = {ParamConstants.TRANSCRIPT_NAMES_PARAM, "transcriptsName"})
     private List<String> transcriptsName;
-    @QueryParameter(id = "transcripts.supportLevel", alias = {"transcriptsSupportLevel"},
+    @QueryParameter(id = "transcripts.supportLevel", alias = {ParamConstants.TRANSCRIPT_SUPPORT_LEVEL_PARAM, "transcriptsSupportLevel"},
     allowedValues = {"1", "2", "3", "4", "5", "NA"})
     private List<String> transcriptsSupportLevel;
 
-    @QueryParameter(id = "transcripts.annotationFlags", alias = {"transcriptsAnnotationFlags"})
+    @QueryParameter(id = "transcripts.annotationFlags", alias = {ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_PARAM,
+            "transcriptsAnnotationFlags"})
     private LogicalList<String> transcriptsAnnotationFlags;
-    @QueryParameter(id = "transcripts.tfbs.id", alias = {"transcriptsTfbsId"})
+    @QueryParameter(id = "transcripts.tfbs.id", alias = {ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_PARAM, "transcriptsTfbsId", "tfbsId"})
     private LogicalList<String> transcriptsTfbsId;
-    @QueryParameter(id = "transcripts.tfbs.pfmId", alias = {"transcriptsTfbsPfmId"})
+    @QueryParameter(id = "transcripts.tfbs.pfmId", alias = {ParamConstants.TRANSCRIPT_TFBS_PFMIDS_PARAM, "transcriptsTfbsPfmId"})
     private LogicalList<String> transcriptsTfbsPfmId;
-    @QueryParameter(id = "transcripts.tfbs.transcriptionFactors", alias = {"transcriptsTfbsTranscriptionFactors"})
+    @QueryParameter(id = "transcripts.tfbs.transcriptionFactors", alias = {ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM,
+            "transcriptsTfbsTranscriptionFactors"})
     private LogicalList<String> transcriptsTfbsTranscriptionFactors;
-    @QueryParameter(id = "transcripts.annotation.ontologies.id", alias = {"transcriptAnnotationOntologiesId"})
+    @QueryParameter(id = "transcripts.annotation.ontologies.id", alias = {ParamConstants.ONTOLOGY_IDS_PARAM,
+            "transcriptAnnotationOntologiesId"})
     private LogicalList<String> transcriptAnnotationOntologiesId;
 
-    @QueryParameter(id = "annotation.diseases.id", alias = {"annotationDiseasesId"})
+    @QueryParameter(id = "annotation.diseases.id", alias = {ParamConstants.ANNOTATION_DISEASES_IDS_PARAM, "annotationDiseasesId"})
     private LogicalList<String> annotationDiseasesId;
-    @QueryParameter(id = "annotation.diseases.name", alias = {"annotationDiseasesName"})
+    @QueryParameter(id = "annotation.diseases.name", alias = {ParamConstants.ANNOTATION_DISEASES_NAMES_PARAM, "annotationDiseasesName"})
     private LogicalList<String> annotationDiseasesName;
-    @QueryParameter(id = "annotation.expression.tissue", alias = {"annotationExpressionTissue"})
+    @QueryParameter(id = "annotation.expression.tissue", alias = {ParamConstants.ANNOTATION_EXPRESSION_TISSUE_PARAM,
+            "annotationExpressionTissue"})
     private LogicalList<String> annotationExpressionTissue;
-    @QueryParameter(id = "annotation.expression.value", alias = {"annotationExpressionValue"})
+    @QueryParameter(id = "annotation.expression.value", alias = {ParamConstants.ANNOTATION_EXPRESSION_VALUE_PARAM,
+            "annotationExpressionValue"})
     private LogicalList<String> annotationExpressionValue;
-    @QueryParameter(id = "annotation.drugs.name", alias = {"annotationDrugsName"})
+    @QueryParameter(id = "annotation.drugs.drugName", alias = {ParamConstants.ANNOTATION_DRUGS_NAME_PARAM, "annotation.drugs.name",
+            "annotationDrugsName"})
     private LogicalList<String> annotationDrugsName;
-    @QueryParameter(id = "annotation.constraints.name", alias = {"annotationConstraintsName"},
-            allowedValues = {"exac_oe_lof", "exac_pLI", "oe_lof", "oe_mis", "oe_syn"},
+    @QueryParameter(id = "annotation.constraints.name", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_NAME_PARAM,
+            "annotationConstraintsName"}, allowedValues = {"exac_oe_lof", "exac_pLI", "oe_lof", "oe_mis", "oe_syn"},
             dependsOn = "annotation.constraints.value")
     // this has to be protected to allow validation
     protected LogicalList<String> annotationConstraintsName;
-    @QueryParameter(id = "annotation.constraints.value", alias = {"annotationConstraintsValue"}, dependsOn = "annotation.constraints.name")
+    @QueryParameter(id = "annotation.constraints.value", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_VALUE_PARAM,
+            "annotationConstraintsValue"}, dependsOn = "annotation.constraints.name")
     // this has to be protected to allow validation
     protected LogicalList<String> annotationConstraintsValue;
-    @QueryParameter(id = "annotation.targets", alias = {"annotationTargets"})
+    @QueryParameter(id = "annotation.targets", alias = {ParamConstants.ANNOTATION_TARGETS_PARAM, "annotationTargets"})
     private LogicalList<String> annotationTargets;
     @QueryParameter(id = "mirna")
     private LogicalList<String> mirnas;

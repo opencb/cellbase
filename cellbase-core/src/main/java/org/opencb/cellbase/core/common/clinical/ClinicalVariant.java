@@ -19,7 +19,6 @@ package org.opencb.cellbase.core.common.clinical;
 /**
  * Created by pol on 20/08/15.
  */
-@Deprecated
 public abstract class ClinicalVariant {
 
     private String chromosome;

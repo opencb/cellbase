@@ -141,7 +141,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getInfo(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_XREFS,
+    public Response getInfo(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
             required = true) String transcripts) {
 
         try {
@@ -173,7 +173,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
-                                    value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String id) {
+                                    value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String id) {
         try {
             List<GeneQuery> queries = new ArrayList<>();
             String[] identifiers =  id.split(",");
@@ -201,28 +201,28 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "id", value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS,
+            @ApiImplicitParam(name = "id", value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "name", value = ParamConstants.TRANSCRIPT_NAMES,
+            @ApiImplicitParam(name = "name", value = ParamConstants.TRANSCRIPT_NAMES_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES,
+            @ApiImplicitParam(name = "biotype", value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "xrefs", value = ParamConstants.TRANSCRIPT_XREFS,
+            @ApiImplicitParam(name = "xrefs", value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "supportLevel",
-                    value = ParamConstants.TRANSCRIPT_SUPPORT_LEVEL,
+                    value = ParamConstants.TRANSCRIPT_SUPPORT_LEVEL_DESCRIPTION,
                     required = false, allowableValues="1,2,3,4,5,NA",
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "tfbs.id", value = ParamConstants.TRANSCRIPT_TFBS_IDS,
+            @ApiImplicitParam(name = "tfbs.id", value = ParamConstants.TRANSCRIPT_TFBS_IDS_DESCRIPTION,
                     dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "tfbs.pfmId", value = ParamConstants.TRANSCRIPT_TFBS_PFMIDS,
+            @ApiImplicitParam(name = "tfbs.pfmId", value = ParamConstants.TRANSCRIPT_TFBS_PFMIDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "tfbs.transcriptionFactors",
-                    value = ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS,
+                    value = ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "annotation.ontologies.id", value = ParamConstants.ONTOLOGY_IDS,
+            @ApiImplicitParam(name = "annotation.ontologies.id", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION,
                     required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = "annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS,
+            @ApiImplicitParam(name = "annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_DESCRIPTION,
                     dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "exclude", value = ParamConstants.EXCLUDE_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -275,7 +275,8 @@ public class TranscriptWSServer extends GenericRestWSServer {
     @Path("/{transcripts}/sequence")
     @ApiOperation(httpMethod = "GET", value = "Retrieve transcript cDNA sequence", response = String.class,
         responseContainer = "QueryResponse")
-    public Response getSequencesByIdList(@PathParam("transcripts") @ApiParam(name = "transcripts", value = ParamConstants.TRANSCRIPT_IDS,
+    public Response getSequencesByIdList(@PathParam("transcripts") @ApiParam(name = "transcripts",
+            value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
             required = true) String id) {
         try {
             List<CellBaseDataResult<String>> queryResults = transcriptManager.getSequence(id);
@@ -296,7 +297,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query")
     })
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
-            value = ParamConstants.TRANSCRIPT_ENSEMBL_IDS, required = true) String transcripts) {
+            value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String transcripts) {
         try {
             List<ProteinQuery> queries = new ArrayList<>();
             String[] identifiers =  transcripts.split(",");

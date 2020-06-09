@@ -21,7 +21,6 @@ import org.opencb.biodata.formats.variant.clinvar.v59jaxb.PublicSetType;
 /**
  * Created by parce on 10/29/14.
  */
-@Deprecated
 public class ClinvarPublicSet extends ClinicalVariant {
 
     private PublicSetType clinvarSet;

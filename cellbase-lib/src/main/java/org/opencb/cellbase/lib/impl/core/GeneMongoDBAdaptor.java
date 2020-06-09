@@ -337,7 +337,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                         break;
                     case "transcripts.id":
                     case "transcripts.name":
-                    case "transcripts.xrefs":
+                    case "transcripts.xrefs.id":
                         createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "transcripts.annotationFlags":
@@ -352,9 +352,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                         break;
                     case "annotation.expression.value":
                         // don't do anything, this value is parsed with the expression tissue
-                        break;
-                    case "annotation.drugs.name":
-                        createAndOrQuery(value, "annotation.drugs.drugName", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "annotation.constraints.name":
                         createConstraintsQuery(geneQuery, andBsonList);

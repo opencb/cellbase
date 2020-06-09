@@ -21,7 +21,6 @@ package org.opencb.cellbase.core.common.clinical;
  * @author Luis Miguel Cruz.
  * @since October 08, 2014
  */
-@Deprecated
 public class Cosmic extends ClinicalVariant {
 
     /**

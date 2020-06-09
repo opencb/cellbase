@@ -75,7 +75,7 @@ public class OntologyWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
-            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS,
+            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "name", value = ParamConstants.ONTOLOGY_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -126,7 +126,8 @@ public class OntologyWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "include", value = ParamConstants.INCLUDE_DESCRIPTION, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_IDS, required = true) String ids) {
+    public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION, required = true)
+                                        String ids) {
         try {
             List<OntologyQuery> queries = new ArrayList<>();
             String[] identifiers = ids.split(",");
@@ -148,7 +149,7 @@ public class OntologyWSServer extends GenericRestWSServer {
     @ApiOperation(httpMethod = "GET", notes = "Gets a unique list of values, e.g. namespace",
             value = "Get a unique list of values for a given field.")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS,
+            @ApiImplicitParam(name = "id", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "name", value = ParamConstants.ONTOLOGY_NAMES,
                     required = false, dataType = "java.util.List", paramType = "query"),
