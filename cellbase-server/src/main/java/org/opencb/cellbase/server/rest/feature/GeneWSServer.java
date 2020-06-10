@@ -159,7 +159,7 @@ public class GeneWSServer extends GenericRestWSServer {
 //    }
 
     @GET
-    @Path("/groupby")
+    @Path("/groupBy")
     @ApiOperation(httpMethod = "GET", value = "Groups gene HGNC symbols by a field(s). ", response = Integer.class,
             responseContainer = "QueryResponse")
     @ApiImplicitParams({
@@ -295,7 +295,7 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM,
                     value = ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = ParamConstants.ONTOLOGY_IDS_PARAM, value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = ParamConstants.ONTOLOGY_PARAM, value = ParamConstants.ONTOLOGY_DESCRIPTION,
                     required = false, dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.ANNOTATION_DISEASES_IDS_PARAM,
                     value = ParamConstants.ANNOTATION_DISEASES_IDS_DESCRIPTION,
@@ -547,10 +547,6 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.lang.Boolean", paramType = "query", defaultValue = "false",
                     allowableValues = "false,true"),
             @ApiImplicitParam(name = "region", value = ParamConstants.REGION_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "reference", value = ParamConstants.REFERENCE,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = "alternate", value = ParamConstants.ALTERNATE,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "consequenceType", value = ParamConstants.CONSEQUENCE_TYPE,
                     required = false, dataType = "java.util.List", paramType = "query"),

@@ -23,6 +23,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.formats.gaf.GafParser;
 import org.opencb.biodata.formats.io.FileFormatException;
+import org.opencb.biodata.formats.obo.OboParser;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
@@ -57,6 +58,7 @@ public class GeneBuilderIndexer {
     private static final String DISEASE_SUFFIX = "_disease";
     private static final String CONSTRAINT_SUFFIX = "_constraint";
     private static final String ONTOLOGY_SUFFIX = "_ontology";
+    private static final String OBO_SUFFIX = "_obo";
     private static final String MIRBASE_SUFFIX = "_mirbase";
     private static final String MIRTARBASE_SUFFIX = "_mirtarbase";
     private RocksDbManager rocksDbManager;

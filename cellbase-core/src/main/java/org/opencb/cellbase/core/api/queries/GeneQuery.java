@@ -61,8 +61,8 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "transcripts.tfbs.transcriptionFactors", alias = {ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM,
             "transcriptsTfbsTranscriptionFactors"})
     private LogicalList<String> transcriptsTfbsTranscriptionFactors;
-    @QueryParameter(id = "transcripts.annotation.ontologies.id", alias = {ParamConstants.ONTOLOGY_IDS_PARAM,
-            "transcriptAnnotationOntologiesId"})
+    @QueryParameter(id = ParamConstants.ONTOLOGY_PARAM, alias = {"transcripts.annotation.ontologies.id",
+            "transcripts.annotation.ontologies.name", "transcriptAnnotationOntologiesId"})
     private LogicalList<String> transcriptAnnotationOntologiesId;
 
     @QueryParameter(id = "annotation.diseases.id", alias = {ParamConstants.ANNOTATION_DISEASES_IDS_PARAM, "annotationDiseasesId"})
