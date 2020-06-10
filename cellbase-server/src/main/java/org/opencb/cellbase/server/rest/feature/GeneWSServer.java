@@ -338,15 +338,44 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, defaultValue = ParamConstants.DEFAULT_SKIP, dataType = "java.util.List",
                     paramType = "query")
     })
-    public Response getAll() {
+    public Response getAll(@QueryParam(ParamConstants.SPLIT_RESULT_PARAM) @ApiParam(name = ParamConstants.SPLIT_RESULT_PARAM,
+            value = ParamConstants.SPLIT_RESULT_DESCRIPTION,
+            required = false, defaultValue = "false", allowableValues = "false,true") boolean splitResultById) {
         try {
-            GeneQuery geneQuery = new GeneQuery(uriParams);
-            logger.info("/search GeneQuery: {} ", geneQuery.toString());
-            CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
-            return createOkResponse(queryResults);
+            if (splitResultById) {
+                List<GeneQuery> geneQueries = new ArrayList<>();
+                // look in IDs and xrefs
+                String[] identifiers = getGeneIdentifiers();
+                for (String identifier : identifiers) {
+                    GeneQuery geneQuery = new GeneQuery(uriParams);
+                    geneQuery.setTranscriptsXrefs(Collections.singletonList(identifier));
+                    geneQueries.add(geneQuery);
+                    logger.info("/search geneQuery: {}", geneQuery.toString());
+                }
+                List<CellBaseDataResult<Gene>> queryResults = geneManager.info(geneQueries);
+                return createOkResponse(queryResults);
+            } else {
+                GeneQuery geneQuery = new GeneQuery(uriParams);
+                logger.info("/search GeneQuery: {} ", geneQuery.toString());
+                CellBaseDataResult<Gene> queryResults = geneManager.search(geneQuery);
+                return createOkResponse(queryResults);
+            }
+
         } catch (Exception e) {
             return createErrorResponse(e);
         }
+    }
+
+    private String[] getGeneIdentifiers() {
+        String id = uriParams.get("id");
+        String xrefs = uriParams.get(ParamConstants.TRANSCRIPT_XREFS_PARAM);
+        if (StringUtils.isNoneEmpty(id)) {
+            return id.split(",");
+        } else if (StringUtils.isNoneEmpty(xrefs)) {
+            return xrefs.split(",");
+        }
+        // nothing found
+        return null;
     }
 
 //    @GET

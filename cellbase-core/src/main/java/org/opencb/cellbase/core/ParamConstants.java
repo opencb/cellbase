@@ -28,6 +28,10 @@ public class ParamConstants {
 
     public static final String COUNT_DESCRIPTION = "Get the total number of results matching the query. ";
 
+    public static final String SPLIT_RESULT_DESCRIPTION = "If TRUE, each id provided will be a separate result, even if no records are "
+            + "found. If FALSE, one merged result will be returned that includes all records.";
+    public static final String SPLIT_RESULT_PARAM = "splitResultById";
+
     public static final String INCLUDE_DESCRIPTION = "Fields included in the response, whole JSON path must be provided";
     public static final String EXCLUDE_DESCRIPTION = "Fields excluded in the response, whole JSON path must be provided";
     public static final String LIMIT_DESCRIPTION = "Number of results to be returned";
