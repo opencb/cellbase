@@ -23,7 +23,6 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.opencb.biodata.formats.gaf.GafParser;
 import org.opencb.biodata.formats.io.FileFormatException;
-import org.opencb.biodata.formats.obo.OboParser;
 import org.opencb.biodata.formats.sequence.fasta.Fasta;
 import org.opencb.biodata.formats.sequence.fasta.io.FastaReader;
 import org.opencb.biodata.models.core.*;
@@ -486,9 +485,10 @@ public class GeneBuilderIndexer {
         Map<String, List<FeatureOntologyTermAnnotation>> annotations = new HashMap<>();
         if (goaFile != null && Files.exists(goaFile) && Files.size(goaFile) > 0) {
             logger.info("Loading GO annotation from '{}'", goaFile);
-            BufferedReader br = FileUtils.newBufferedReader(goaFile);
+//            BufferedReader br = FileUtils.newBufferedReader(goaFile);
             GafParser parser = new GafParser();
-            annotations = parser.parseGaf(br);
+            Path oboFile = goaFile.getParent().getParent().resolve("ontology/go-basic.obo");
+            annotations = parser.parseGaf(goaFile, oboFile);
         }
 
         for (Map.Entry<String, List<FeatureOntologyTermAnnotation>> entry : annotations.entrySet()) {
