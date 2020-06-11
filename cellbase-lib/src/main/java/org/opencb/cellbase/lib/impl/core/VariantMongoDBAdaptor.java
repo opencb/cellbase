@@ -183,9 +183,8 @@ public class VariantMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCor
 
     public Iterator<Variant> iterator(Query query, QueryOptions inputOptions) {
         Bson bson = parseQuery(query);
-        // FIXME
-//        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
-        return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, inputOptions));
+        QueryOptions options = addPrivateExcludeOptions(new QueryOptions(inputOptions));
+        return new VariantMongoIterator(mongoDBCollection.nativeQuery().find(bson, options));
     }
 
     public Iterator nativeIterator(Query query, QueryOptions options) {

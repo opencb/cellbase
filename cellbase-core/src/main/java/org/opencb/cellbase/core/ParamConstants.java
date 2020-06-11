@@ -190,7 +190,7 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
-    public static final String RS_IDS = "Comma separated list of rs ids, e.g.: rs6025, rs666"
+    public static final String RS_IDS = "Comma separated list of ids, e.g.: 22:35490160:G:A"
             + " Exact text matches will be returned";
 
     // ---------------------------------------------

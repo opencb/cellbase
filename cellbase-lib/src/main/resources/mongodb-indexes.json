@@ -73,7 +73,6 @@
 
 {"collection": "variation", "fields": {"_chunkIds": 1}, "options": {"background": true}}
 {"collection": "variation", "fields": {"chromosome": 1, "start": 1, "end":1}, "options": {"background": true}}
-{"collection": "variation", "fields": {"chromosome": 1, "sv.ciStartLeft": 1, "sv.ciStartRight": 1, "sv.ciEndLeft": 1, "sv.ciEndRight": 1, "type": 1, "sv.type": 1}, "options": {"name" : "imprecise", "sparse": true}}
 {"collection": "variation", "fields": {"id": 1}, "options": {"background": true}}
 {"collection": "variation", "fields": {"annotation.consequenceTypes.geneName": 1}, "options": {"background": true, "sparse": true}}
 {"collection": "variation", "fields": {"annotation.consequenceTypes.ensemblGeneId": 1}, "options": {"background": true, "sparse": true}}
