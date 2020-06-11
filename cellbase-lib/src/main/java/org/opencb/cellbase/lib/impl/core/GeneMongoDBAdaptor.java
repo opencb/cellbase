@@ -35,9 +35,7 @@ import org.opencb.commons.datastore.mongodb.MongoDBIterator;
 import org.opencb.commons.datastore.mongodb.MongoDBQueryUtils;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by imedina on 25/11/15.
@@ -47,6 +45,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 //    private static final String TRANSCRIPTS = "transcripts";
 //    private static final String GENE = "gene";
 //    private static final String ANNOTATION_FLAGS = "annotationFlags";
+    private static final Set<String> CONSTRAINT_NAMES = new HashSet();
 
     public GeneMongoDBAdaptor(String species, String assembly, MongoDataStore mongoDataStore) {
         super(species, assembly, mongoDataStore);
@@ -353,17 +352,17 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                     case "annotation.expression.value":
                         // don't do anything, this value is parsed with the expression tissue
                         break;
-                    case "annotation.constraints.name":
+                    case "constraints":
                         createConstraintsQuery(geneQuery, andBsonList);
-                        break;
-                    case "annotation.constraints.value":
-                        // don't do anything, this value is parsed with the constraints name
                         break;
                     case "annotation.targets":
                         createTargetQuery(value, andBsonList);
                         break;
                     case "ontology":
                         createOntologyQuery(value, andBsonList);
+                        break;
+                    case "disease":
+                        createDiseaseQuery(value, andBsonList);
                         break;
                     case "mirna":
                         createMirnaQuery(value, andBsonList);
@@ -401,6 +400,16 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         }
     }
 
+    // check in both the id and accession field.
+    private void createDiseaseQuery(Object queryValues, List<Bson> andBsonList) {
+        if (queryValues != null) {
+            List<Bson> orBsonList = new ArrayList<>();
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.id"));
+            orBsonList.add(getLogicalListFilter(queryValues, "annotation.diseases.name"));
+            andBsonList.add(Filters.or(orBsonList));
+        }
+    }
+
     // check in both the id and name field.
     private void createOntologyQuery(Object queryValues, List<Bson> andBsonList) {
         if (queryValues != null) {
@@ -429,20 +438,49 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         return MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, QueryParam.Type.STRING, operator);
     }
 
+
+    static {
+        CONSTRAINT_NAMES.add("exac_oe_lof");
+        CONSTRAINT_NAMES.add("exac_pLI");
+        CONSTRAINT_NAMES.add("oe_lof");
+        CONSTRAINT_NAMES.add("oe_mis");
+        CONSTRAINT_NAMES.add("oe_syn");
+    }
+
+
+
     private void createConstraintsQuery(GeneQuery geneQuery, List<Bson> andBsonList) {
-        if (geneQuery != null && geneQuery.getAnnotationConstraintsName() != null
-                && geneQuery.getAnnotationConstraintsValue().get(0) != null) {
-            String name = geneQuery.getAnnotationConstraintsName().get(0);
-            String value = geneQuery.getAnnotationConstraintsValue().get(0);
+        if (geneQuery != null && geneQuery.getAnnotationConstraints() != null) {
+            LogicalList<String> paramValues = geneQuery.getAnnotationConstraints();
+            // copied from mongoqueryutils. matches all valid operators
+            String legalOperators = "(<=?|>=?|!=|!?=?~|==?)";
+            // get the constraint name and the numerical value, look behind and look ahead
+            String delimiter = "((?<=" + legalOperators + ")|(?=" + legalOperators + "))";
 
-            // parse constraint value. value will contain an operator, e.g. > or <=
-            Query query = new Query("value", value);
-            Bson valueFilter = MongoDBQueryUtils.createAutoFilter("value",
-                    "value", query, QueryParam.Type.DECIMAL,
-                    MongoDBQueryUtils.LogicalOperator.OR);
+            // exac_oe_lof<=1.0,oe_lof<0.85585
+            for (String paramValue : paramValues) {
+                String[] expressions = paramValue.split(",");
+                // oe_lof<0.85585
+                for (String expression : expressions) {
+                    final String[] expressionParts = expression.split(delimiter);
+                    logger.error("expression" + expressionParts.length);
+                    if (expressionParts.length >= 3) {
+                        String constraintName = expressionParts[0];
+                        String operator = expressionParts[1];
+                        String numericalValue = expressionParts[2];
+                        if (expressionParts.length == 4) {
+                            numericalValue += expressionParts[3];
+                        }
+                        Query query = new Query("value", operator + numericalValue);
+                        Bson valueFilter = MongoDBQueryUtils.createAutoFilter("value",
+                                "value", query, QueryParam.Type.DECIMAL,
+                                MongoDBQueryUtils.LogicalOperator.OR);
 
-            andBsonList.add(Filters.elemMatch("annotation.constraints",
-                    Filters.and(Filters.eq("name", name), valueFilter)));
+                        andBsonList.add(Filters.elemMatch("annotation.constraints",
+                                Filters.and(Filters.eq("name", constraintName), valueFilter)));
+                    }
+                }
+            }
         }
     }
 

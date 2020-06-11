@@ -41,6 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.util.*;
 
 /**
@@ -194,10 +195,10 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response groupBy(@DefaultValue("") @QueryParam("fields") @ApiParam(name = "fields", value = "Comma separated list of "
-            + "field(s) to group by, e.g.: biotype.", required = true) String fields) {
+    public Response groupBy(@DefaultValue("") @QueryParam("field") @ApiParam(name = "field", value = "Comma separated list of "
+            + "field(s) to group by, e.g.: biotype.", required = true) String field) {
         try {
-            copyToFacet("fields", fields);
+            copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.groupBy(geneQuery);
             return createOkResponse(queryResults);
@@ -242,10 +243,10 @@ public class GeneWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = "annotation.drugs.gene", value = ParamConstants.ANNOTATION_DRUGS_GENE,
                     required = false, dataType = "java.util.List", paramType = "query")
     })
-    public Response getAggregationStats(@DefaultValue("") @QueryParam("fields")
-            @ApiParam(name = "fields", value = ParamConstants.GROUP_BY_FIELDS, required = true) String fields) {
+    public Response getAggregationStats(@DefaultValue("") @QueryParam("field")
+            @ApiParam(name = "field", value = ParamConstants.GROUP_BY_FIELDS, required = true) String field) {
         try {
-            copyToFacet("fields", fields);
+            copyToFacet("field", field);
             GeneQuery geneQuery = new GeneQuery(uriParams);
             CellBaseDataResult<Gene> queryResults = geneManager.aggregationStats(geneQuery);
             return createOkResponse(queryResults);
@@ -271,11 +272,11 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = "biotype",  value = ParamConstants.GENE_BIOTYPES,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_BIOTYPES_PARAM,
-                    value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_XREFS_PARAM,
                     value = ParamConstants.TRANSCRIPT_XREFS_DESCRIPTION,
+                    required = false, dataType = "java.util.List", paramType = "query"),
+            @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_BIOTYPES_PARAM,
+                    value = ParamConstants.TRANSCRIPT_BIOTYPES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_IDS_PARAM, value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
@@ -297,11 +298,8 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.ONTOLOGY_PARAM, value = ParamConstants.ONTOLOGY_DESCRIPTION,
                     required = false, dataType = "string", paramType = "query"),
-            @ApiImplicitParam(name = ParamConstants.ANNOTATION_DISEASES_IDS_PARAM,
-                    value = ParamConstants.ANNOTATION_DISEASES_IDS_DESCRIPTION,
-                    required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = ParamConstants.ANNOTATION_DISEASES_NAMES_PARAM,
-                    value = ParamConstants.ANNOTATION_DISEASES_NAMES_DESCRIPTION,
+            @ApiImplicitParam(name = ParamConstants.ANNOTATION_DISEASES_PARAM,
+                    value = ParamConstants.ANNOTATION_DISEASES_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.ANNOTATION_EXPRESSION_TISSUE_PARAM,
                     value = ParamConstants.ANNOTATION_EXPRESSION_TISSUE_DESCRIPTION,
@@ -311,11 +309,7 @@ public class GeneWSServer extends GenericRestWSServer {
                     required = false, dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.ANNOTATION_DRUGS_NAME_PARAM, value = ParamConstants.ANNOTATION_DRUGS_NAME_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = ParamConstants.ANNOTATION_CONSTRAINTS_NAME_PARAM,
-                    required = false, allowableValues="exac_oe_lof,exac_pLI,oe_lof,oe_mis,oe_syn",
-                    dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = ParamConstants.ANNOTATION_CONSTRAINTS_VALUE_PARAM,
-                    value = ParamConstants.ANNOTATION_CONSTRAINTS_VALUE_DESCRIPTION,
+            @ApiImplicitParam(name = ParamConstants.ANNOTATION_CONSTRAINTS_PARAM, value = ParamConstants.ANNOTATION_CONSTRAINTS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
             @ApiImplicitParam(name = ParamConstants.ANNOTATION_TARGETS_PARAM,
                     value = ParamConstants.ANNOTATION_TARGETS_DESCRIPTION,
@@ -343,9 +337,16 @@ public class GeneWSServer extends GenericRestWSServer {
             required = false, defaultValue = "false", allowableValues = "false,true") boolean splitResultById) {
         try {
             if (splitResultById) {
+                // if we are splitting, can only have ONE of the three identifier fields populated
+                if (!validateGeneIdentifiers()) {
+                    return createErrorResponse(new InvalidParameterException(
+                            "When 'splitResultById' is TRUE, you can only have ONE identifier field populated: id, name or xref"));
+                }
+
                 List<GeneQuery> geneQueries = new ArrayList<>();
-                // look in IDs and xrefs
+                // look in IDs, names and xrefs
                 String[] identifiers = getGeneIdentifiers();
+                logger.info("/search identifiers: {} ", identifiers);
                 for (String identifier : identifiers) {
                     GeneQuery geneQuery = new GeneQuery(uriParams);
                     geneQuery.setTranscriptsXrefs(Collections.singletonList(identifier));
@@ -366,13 +367,42 @@ public class GeneWSServer extends GenericRestWSServer {
         }
     }
 
+    /**
+     * Only ONE of the identifier fields can be provided. Otherwise we don't know which ID to split on. ONE of these can be
+     * not null:
+     *  id
+     *  name
+     *  xref
+     *
+     * @return TRUE if valid, only ONE param has a valud, false if invalid, more than one field is populated.
+     */
+    private boolean validateGeneIdentifiers() {
+        String id = uriParams.get("id");
+        String name = uriParams.get("name");
+        String xref = uriParams.get(ParamConstants.TRANSCRIPT_XREFS_PARAM);
+        if (StringUtils.isNotEmpty(id)) {
+            return StringUtils.isEmpty(name) && StringUtils.isEmpty(xref);
+        }
+        if (StringUtils.isNotEmpty(name)) {
+            return StringUtils.isEmpty(id) && StringUtils.isEmpty(xref);
+        }
+        if (StringUtils.isNotEmpty(xref)) {
+            return StringUtils.isEmpty(id) && StringUtils.isEmpty(name);
+        }
+        // nothing was not null, that's illegal too
+        return false;
+    }
+
     private String[] getGeneIdentifiers() {
         String id = uriParams.get("id");
-        String xrefs = uriParams.get(ParamConstants.TRANSCRIPT_XREFS_PARAM);
-        if (StringUtils.isNoneEmpty(id)) {
+        String name = uriParams.get("name");
+        String xref = uriParams.get(ParamConstants.TRANSCRIPT_XREFS_PARAM);
+        if (StringUtils.isNotEmpty(id)) {
             return id.split(",");
-        } else if (StringUtils.isNoneEmpty(xrefs)) {
-            return xrefs.split(",");
+        } else if (StringUtils.isNotEmpty(name)) {
+            return name.split(",");
+        } else if (StringUtils.isNotEmpty(xref)) {
+            return xref.split(",");
         }
         // nothing found
         return null;

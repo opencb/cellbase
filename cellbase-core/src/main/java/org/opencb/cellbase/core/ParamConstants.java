@@ -47,18 +47,19 @@ public class ParamConstants {
     public static final String DATA_MODEL_DESCRIPTION = "Get JSON specification of the data model";
 
     public static final String REGION_DESCRIPTION = "Comma separated list of genomic regions to be queried, "
-            + "e.g. 1:6635137-6635325";
+            + "e.g. 1:6635137-6635325. Use the chromosome name only to filter by the entire chromosome, e.g. 1";
 
     public static final String CHROMOSOMES = "Comma separated list of chromosomes to be queried, e.g.: 1,X,MT";
 
-    public static final String GROUP_BY_FIELDS = "Comma separated list of field(s) to group by, e.g. biotype.";
+    public static final String GROUP_BY_FIELDS = "Comma separated list of field(s) to group by, "
+            + "e.g. biotype, transcriptsBiotype, transcripts.biotype";
 
     // ---------------------------------------------
 
     public static final String GENE_IDS = "Comma separated list of gene ids, e.g. ENSG00000268020,BRCA2"
             + " Exact text matches will be returned";
     public static final String GENE_ENSEMBL_IDS = "Comma separated list of ENSEMBL gene ids, "
-            + "e.g. ENST00000380152,ENSG00000155657. Exact text matches will be returned";
+            + "e.g. ENSG00000132170,ENSG00000155657. Exact text matches will be returned";
     public static final String GENE_XREF_IDS = "Comma separated list gene/transcript xrefs ids, e.g. "
             + " ENSG00000145113,35912_at,GO:0002020.  Exact text matches will be returned";
     public static final String GENE_NAMES = "Comma separated list of gene HGNC names, e.g.: BRCA2,TTN,MUC4."
@@ -125,6 +126,10 @@ public class ParamConstants {
 
     // ---------------------------------------------
 
+    public static final String ANNOTATION_DISEASES_DESCRIPTION = "Comma separated list of disease IDs or names, "
+            + "e.g. umls:C0030297,OMIM:613390,OMIM:613390,Cryptorchidism,Absent thumb,Stage 5 chronic kidney disease. "
+            + "Exact text matches will be returned";
+    public static final String ANNOTATION_DISEASES_PARAM = "diseaseId";
     public static final String ANNOTATION_DISEASES_IDS_DESCRIPTION = "Comma separated list of phenotype ids (OMIM, UMLS), "
             + "e.g. umls:C0030297,OMIM:613390,OMIM:613390. Exact text matches will be returned";
     public static final String ANNOTATION_DISEASES_IDS_PARAM = "diseaseId";
@@ -147,11 +152,14 @@ public class ParamConstants {
     public static final String ANNOTATION_DRUGS_GENE = "Comma separated list of gene names for which "
             + "drug data is available, e.g. BRCA2,TTN. Exact text matches will be returned";
 
-    public static final String ANNOTATION_CONSTRAINTS_VALUE_DESCRIPTION = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
-    public static final String ANNOTATION_CONSTRAINTS_VALUE_PARAM = "constraintValue";
-    public static final String ANNOTATION_CONSTRAINTS_NAME_PARAM = "constraintName";
+    public static final String ANNOTATION_CONSTRAINTS_PARAM = "constraint";
+    public static final String ANNOTATION_CONSTRAINTS_DESCRIPTION = "Name of constraint and desired value, "
+            + "e.g. exac_oe_lof<=1.0,exac_pLI>0. Allowed values for names are exac_oe_lof, exac_pLI, oe_lof, oe_mis, oe_syn";
+//    public static final String ANNOTATION_CONSTRAINTS_VALUE_DESCRIPTION = "Value for gnomAD constraints, e.g. >0.1 or <=1.0";
+//    public static final String ANNOTATION_CONSTRAINTS_VALUE_PARAM = "constraintValue";
+//    public static final String ANNOTATION_CONSTRAINTS_NAME_PARAM = "constraintName";
     public static final String ANNOTATION_TARGETS_DESCRIPTION = "e.g. MIRT001919 or hsa-miR-146a-5p";
-    public static final String ANNOTATION_TARGETS_PARAM = "miRNATarget";
+    public static final String ANNOTATION_TARGETS_PARAM = "miRnaTarget";
 
     public static final String MIRNA_DESCRIPTION = "Id or accession for miRNA, e.g. MI0022666 or hsa-mir-8069-1";
 

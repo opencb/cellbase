@@ -64,11 +64,8 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = ParamConstants.ONTOLOGY_PARAM, alias = {"transcripts.annotation.ontologies.id",
             "transcripts.annotation.ontologies.name", "transcriptAnnotationOntologiesId"})
     private LogicalList<String> transcriptAnnotationOntologiesId;
-
-    @QueryParameter(id = "annotation.diseases.id", alias = {ParamConstants.ANNOTATION_DISEASES_IDS_PARAM, "annotationDiseasesId"})
-    private LogicalList<String> annotationDiseasesId;
-    @QueryParameter(id = "annotation.diseases.name", alias = {ParamConstants.ANNOTATION_DISEASES_NAMES_PARAM, "annotationDiseasesName"})
-    private LogicalList<String> annotationDiseasesName;
+    @QueryParameter(id = ParamConstants.ANNOTATION_DISEASES_PARAM, alias = {"annotation.diseases.id", "annotation.diseases.name"})
+    private LogicalList<String> annotationDiseases;
     @QueryParameter(id = "annotation.expression.tissue", alias = {ParamConstants.ANNOTATION_EXPRESSION_TISSUE_PARAM,
             "annotationExpressionTissue"})
     private LogicalList<String> annotationExpressionTissue;
@@ -78,15 +75,8 @@ public class GeneQuery extends AbstractQuery {
     @QueryParameter(id = "annotation.drugs.drugName", alias = {ParamConstants.ANNOTATION_DRUGS_NAME_PARAM, "annotation.drugs.name",
             "annotationDrugsName"})
     private LogicalList<String> annotationDrugsName;
-    @QueryParameter(id = "annotation.constraints.name", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_NAME_PARAM,
-            "annotationConstraintsName"}, allowedValues = {"exac_oe_lof", "exac_pLI", "oe_lof", "oe_mis", "oe_syn"},
-            dependsOn = "annotation.constraints.value")
-    // this has to be protected to allow validation
-    protected LogicalList<String> annotationConstraintsName;
-    @QueryParameter(id = "annotation.constraints.value", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_VALUE_PARAM,
-            "annotationConstraintsValue"}, dependsOn = "annotation.constraints.name")
-    // this has to be protected to allow validation
-    protected LogicalList<String> annotationConstraintsValue;
+    @QueryParameter(id = "constraints", alias = {ParamConstants.ANNOTATION_CONSTRAINTS_PARAM})
+    private LogicalList<String> annotationConstraints;
     @QueryParameter(id = "annotation.targets", alias = {ParamConstants.ANNOTATION_TARGETS_PARAM, "annotationTargets"})
     private LogicalList<String> annotationTargets;
     @QueryParameter(id = "mirna")
@@ -116,24 +106,22 @@ public class GeneQuery extends AbstractQuery {
         sb.append("ids=").append(ids);
         sb.append(", names=").append(names);
         sb.append(", biotypes=").append(biotypes);
-        sb.append(", transcriptsSupportLevel=").append(transcriptsSupportLevel);
         sb.append(", regions=").append(regions);
         sb.append(", transcriptsBiotype=").append(transcriptsBiotype);
         sb.append(", transcriptsXrefs=").append(transcriptsXrefs);
         sb.append(", transcriptsId=").append(transcriptsId);
         sb.append(", transcriptsName=").append(transcriptsName);
+        sb.append(", transcriptsSupportLevel=").append(transcriptsSupportLevel);
         sb.append(", transcriptsAnnotationFlags=").append(transcriptsAnnotationFlags);
         sb.append(", transcriptsTfbsId=").append(transcriptsTfbsId);
         sb.append(", transcriptsTfbsPfmId=").append(transcriptsTfbsPfmId);
         sb.append(", transcriptsTfbsTranscriptionFactors=").append(transcriptsTfbsTranscriptionFactors);
         sb.append(", transcriptAnnotationOntologiesId=").append(transcriptAnnotationOntologiesId);
-        sb.append(", annotationDiseasesId=").append(annotationDiseasesId);
-        sb.append(", annotationDiseasesName=").append(annotationDiseasesName);
+        sb.append(", annotationDiseases=").append(annotationDiseases);
         sb.append(", annotationExpressionTissue=").append(annotationExpressionTissue);
         sb.append(", annotationExpressionValue=").append(annotationExpressionValue);
         sb.append(", annotationDrugsName=").append(annotationDrugsName);
-        sb.append(", annotationConstraintsName=").append(annotationConstraintsName);
-        sb.append(", annotationConstraintsValue=").append(annotationConstraintsValue);
+        sb.append(", annotationConstraints=").append(annotationConstraints);
         sb.append(", annotationTargets=").append(annotationTargets);
         sb.append(", mirnas=").append(mirnas);
         sb.append('}');
@@ -164,15 +152,6 @@ public class GeneQuery extends AbstractQuery {
 
     public GeneQuery setBiotypes(List<String> biotypes) {
         this.biotypes = biotypes;
-        return this;
-    }
-
-    public List<String> getTranscriptsSupportLevel() {
-        return transcriptsSupportLevel;
-    }
-
-    public GeneQuery setTranscriptsSupportLevel(List<String> transcriptsSupportLevel) {
-        this.transcriptsSupportLevel = transcriptsSupportLevel;
         return this;
     }
 
@@ -221,6 +200,15 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
+    public List<String> getTranscriptsSupportLevel() {
+        return transcriptsSupportLevel;
+    }
+
+    public GeneQuery setTranscriptsSupportLevel(List<String> transcriptsSupportLevel) {
+        this.transcriptsSupportLevel = transcriptsSupportLevel;
+        return this;
+    }
+
     public LogicalList<String> getTranscriptsAnnotationFlags() {
         return transcriptsAnnotationFlags;
     }
@@ -266,21 +254,12 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public LogicalList<String> getAnnotationDiseasesId() {
-        return annotationDiseasesId;
+    public LogicalList<String> getAnnotationDiseases() {
+        return annotationDiseases;
     }
 
-    public GeneQuery setAnnotationDiseasesId(LogicalList<String> annotationDiseasesId) {
-        this.annotationDiseasesId = annotationDiseasesId;
-        return this;
-    }
-
-    public LogicalList<String> getAnnotationDiseasesName() {
-        return annotationDiseasesName;
-    }
-
-    public GeneQuery setAnnotationDiseasesName(LogicalList<String> annotationDiseasesName) {
-        this.annotationDiseasesName = annotationDiseasesName;
+    public GeneQuery setAnnotationDiseases(LogicalList<String> annotationDiseases) {
+        this.annotationDiseases = annotationDiseases;
         return this;
     }
 
@@ -311,21 +290,12 @@ public class GeneQuery extends AbstractQuery {
         return this;
     }
 
-    public LogicalList<String> getAnnotationConstraintsName() {
-        return annotationConstraintsName;
+    public LogicalList<String> getAnnotationConstraints() {
+        return annotationConstraints;
     }
 
-    public GeneQuery setAnnotationConstraintsName(LogicalList<String> annotationConstraintsName) {
-        this.annotationConstraintsName = annotationConstraintsName;
-        return this;
-    }
-
-    public LogicalList<String> getAnnotationConstraintsValue() {
-        return annotationConstraintsValue;
-    }
-
-    public GeneQuery setAnnotationConstraintsValue(LogicalList<String> annotationConstraintsValue) {
-        this.annotationConstraintsValue = annotationConstraintsValue;
+    public GeneQuery setAnnotationConstraints(LogicalList<String> annotationConstraints) {
+        this.annotationConstraints = annotationConstraints;
         return this;
     }
 
@@ -348,9 +318,6 @@ public class GeneQuery extends AbstractQuery {
     }
 
     public static final class GeneQueryBuilder {
-        protected LogicalList<String> annotationConstraintsName;
-        protected LogicalList<String> annotationConstraintsValue;
-        protected LogicalList<String> annotationTargets;
         protected Integer limit;
         protected Integer skip;
         protected Boolean count = false;
@@ -373,11 +340,12 @@ public class GeneQuery extends AbstractQuery {
         private LogicalList<String> transcriptsTfbsPfmId;
         private LogicalList<String> transcriptsTfbsTranscriptionFactors;
         private LogicalList<String> transcriptAnnotationOntologiesId;
-        private LogicalList<String> annotationDiseasesId;
-        private LogicalList<String> annotationDiseasesName;
+        private LogicalList<String> annotationDiseases;
         private LogicalList<String> annotationExpressionTissue;
         private LogicalList<String> annotationExpressionValue;
         private LogicalList<String> annotationDrugsName;
+        private LogicalList<String> annotationConstraints;
+        private LogicalList<String> annotationTargets;
         private LogicalList<String> mirnas;
 
         private GeneQueryBuilder() {
@@ -452,19 +420,13 @@ public class GeneQuery extends AbstractQuery {
             return this;
         }
 
-        public GeneQueryBuilder withTranscriptAnnotationOntologiesId(
-                LogicalList<String> transcriptAnnotationOntologiesId) {
+        public GeneQueryBuilder withTranscriptAnnotationOntologiesId(LogicalList<String> transcriptAnnotationOntologiesId) {
             this.transcriptAnnotationOntologiesId = transcriptAnnotationOntologiesId;
             return this;
         }
 
-        public GeneQueryBuilder withAnnotationDiseasesId(LogicalList<String> annotationDiseasesId) {
-            this.annotationDiseasesId = annotationDiseasesId;
-            return this;
-        }
-
-        public GeneQueryBuilder withAnnotationDiseasesName(LogicalList<String> annotationDiseasesName) {
-            this.annotationDiseasesName = annotationDiseasesName;
+        public GeneQueryBuilder withAnnotationDiseases(LogicalList<String> annotationDiseases) {
+            this.annotationDiseases = annotationDiseases;
             return this;
         }
 
@@ -483,13 +445,8 @@ public class GeneQuery extends AbstractQuery {
             return this;
         }
 
-        public GeneQueryBuilder withAnnotationConstraintsName(LogicalList<String> annotationConstraintsName) {
-            this.annotationConstraintsName = annotationConstraintsName;
-            return this;
-        }
-
-        public GeneQueryBuilder withAnnotationConstraintsValue(LogicalList<String> annotationConstraintsValue) {
-            this.annotationConstraintsValue = annotationConstraintsValue;
+        public GeneQueryBuilder withAnnotationConstraints(LogicalList<String> annotationConstraints) {
+            this.annotationConstraints = annotationConstraints;
             return this;
         }
 
@@ -559,13 +516,11 @@ public class GeneQuery extends AbstractQuery {
             geneQuery.setTranscriptsTfbsPfmId(transcriptsTfbsPfmId);
             geneQuery.setTranscriptsTfbsTranscriptionFactors(transcriptsTfbsTranscriptionFactors);
             geneQuery.setTranscriptAnnotationOntologiesId(transcriptAnnotationOntologiesId);
-            geneQuery.setAnnotationDiseasesId(annotationDiseasesId);
-            geneQuery.setAnnotationDiseasesName(annotationDiseasesName);
+            geneQuery.setAnnotationDiseases(annotationDiseases);
             geneQuery.setAnnotationExpressionTissue(annotationExpressionTissue);
             geneQuery.setAnnotationExpressionValue(annotationExpressionValue);
             geneQuery.setAnnotationDrugsName(annotationDrugsName);
-            geneQuery.setAnnotationConstraintsName(annotationConstraintsName);
-            geneQuery.setAnnotationConstraintsValue(annotationConstraintsValue);
+            geneQuery.setAnnotationConstraints(annotationConstraints);
             geneQuery.setAnnotationTargets(annotationTargets);
             geneQuery.setMirnas(mirnas);
             geneQuery.setLimit(limit);

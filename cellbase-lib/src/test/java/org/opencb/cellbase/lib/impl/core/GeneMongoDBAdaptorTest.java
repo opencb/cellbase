@@ -19,6 +19,7 @@ package org.opencb.cellbase.lib.impl.core;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opencb.biodata.models.core.Constraint;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.avro.Expression;
 import org.opencb.biodata.models.variant.avro.ExpressionCall;
@@ -145,6 +146,46 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         cellBaseDataResult = geneDBAdaptor.query(geneQuery);
         assertEquals(1, cellBaseDataResult.getNumResults());
 
+    }
+//
+//   constraints":[{"source":"gnomAD","method":"pLoF","name":"oe_mis","value":0.81001},
+//   {"source":"gnomAD","method":"pLoF","name":"oe_syn","value":0.91766},
+//   {"source":"gnomAD","method":"pLoF","name":"oe_lof","value":0.85584}]}},
+    // exac_pLI 0.17633
+    // exac_oe_lof 0.45091
+    @Test
+    public void testConstraints() throws Exception {
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("constraints", "oe_lof<=0.85585");
+        GeneQuery geneQuery = new GeneQuery(paramMap);
+        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(1, cellBaseDataResult.getNumResults());
+        List<Constraint> constraints = cellBaseDataResult.getResults().get(0).getAnnotation().getConstraints();
+        assertEquals(5, constraints.size());
+
+        paramMap = new HashMap<>();
+        paramMap.put("constraints", "oe_mis>0.8");
+        geneQuery = new GeneQuery(paramMap);
+        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(1, cellBaseDataResult.getNumResults());
+
+        paramMap = new HashMap<>();
+        paramMap.put("constraints", "oe_syn=0.91766");
+        geneQuery = new GeneQuery(paramMap);
+        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(1, cellBaseDataResult.getNumResults());
+
+        paramMap = new HashMap<>();
+        paramMap.put("constraints", " exac_pLI<0.17633");
+        geneQuery = new GeneQuery(paramMap);
+        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(0, cellBaseDataResult.getNumResults());
+
+        paramMap = new HashMap<>();
+        paramMap.put("constraints", "exac_oe_lof>=0.45091");
+        geneQuery = new GeneQuery(paramMap);
+        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
+        assertEquals(1, cellBaseDataResult.getNumResults());
     }
 
     @Test
