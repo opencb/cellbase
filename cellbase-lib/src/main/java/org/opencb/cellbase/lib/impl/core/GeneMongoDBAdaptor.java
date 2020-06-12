@@ -438,7 +438,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         return MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, QueryParam.Type.STRING, operator);
     }
 
-
     static {
         CONSTRAINT_NAMES.add("exac_oe_lof");
         CONSTRAINT_NAMES.add("exac_pLI");
@@ -446,8 +445,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         CONSTRAINT_NAMES.add("oe_mis");
         CONSTRAINT_NAMES.add("oe_syn");
     }
-
-
 
     private void createConstraintsQuery(GeneQuery geneQuery, List<Bson> andBsonList) {
         if (geneQuery != null && geneQuery.getAnnotationConstraints() != null) {

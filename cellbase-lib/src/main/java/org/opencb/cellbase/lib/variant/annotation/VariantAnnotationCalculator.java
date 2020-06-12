@@ -1503,15 +1503,13 @@ public class VariantAnnotationCalculator {
         }
 
         @Override
-        // FIXME
         public List<CellBaseDataResult<Variant>> call() throws Exception {
             long startTime = System.currentTimeMillis();
-//            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList,
-//                    batchGeneList,
-//                    queryOptions);
+            List<CellBaseDataResult<Variant>> clinicalCellBaseDataResultList = clinicalManager.getByVariant(variantList,
+                    batchGeneList,
+                    queryOptions);
             logger.debug("Clinical query performance is {}ms for {} variants", System.currentTimeMillis() - startTime, variantList.size());
-//            return clinicalCellBaseDataResultList;
-            return null;
+            return clinicalCellBaseDataResultList;
         }
 
         public void processResults(Future<List<CellBaseDataResult<Variant>>> clinicalFuture,

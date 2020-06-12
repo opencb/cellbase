@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.*;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
@@ -104,5 +105,10 @@ public class ClinicalManager extends AbstractManager implements AggregationApi<C
                 .map((value) -> value.name()).collect(Collectors.toList());
         return new CellBaseDataResult<String>("variant_types", 0, Collections.emptyList(),
                 variantTypes.size(), variantTypes, variantTypes.size());
+    }
+
+    public List<CellBaseDataResult<Variant>> getByVariant(List<Variant> variants, List<Gene> geneList,
+                                                          QueryOptions queryOptions) {
+        return clinicalDBAdaptor.getByVariant(variants, geneList, queryOptions);
     }
 }
