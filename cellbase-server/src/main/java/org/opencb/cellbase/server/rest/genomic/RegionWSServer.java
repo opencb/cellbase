@@ -363,17 +363,9 @@ public class RegionWSServer extends GenericRestWSServer {
                                         @ApiParam(name = "strand", value = ParamConstants.STRAND,
                                             allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
-//            parseQueryParams();
             GenomeQuery query = new GenomeQuery(uriParams);
             List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(query);
             return createOkResponse(queryResults);
-//            if (regions.contains(",")) {
-//                List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(queryOptions, regions);
-//                return createOkResponse(queryResults);
-//            } else {
-//                CellBaseDataResult<GenomeSequenceFeature> queryResults = genomeManager.getByRegion(query, queryOptions, regions, strand);
-//                return createOkResponse(queryResults);
-//            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }

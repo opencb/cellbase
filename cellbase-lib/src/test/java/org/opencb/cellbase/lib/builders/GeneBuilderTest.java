@@ -116,8 +116,11 @@ public class GeneBuilderTest {
 
         Transcript transcript = getTranscript(gene, "ENST00000488147");
         assertEquals(15, transcript.getXrefs().size());
-        assertEquals("id", transcript.getProteinId());
-        assertEquals(15, transcript.getAnnotation().getOntologies().size());
+
+        gene = getGene("ENSG00000261832", genes);
+
+        transcript = getTranscript(gene, "ENST00000635887");
+        assertEquals("ENSP00000490709", transcript.getProteinId());
     }
 
     private Xref getXref(Transcript transcript, String xrefId) {
