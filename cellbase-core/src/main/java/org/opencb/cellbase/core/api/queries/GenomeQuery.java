@@ -16,6 +16,8 @@
 
 package org.opencb.cellbase.core.api.queries;
 
+import org.opencb.biodata.models.core.Region;
+
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +26,9 @@ public class GenomeQuery extends AbstractQuery {
     @QueryParameter(id = "name")
     private List<String> names;
 
+    @QueryParameter(id = "region")
+    private List<Region> regions;
+
     public GenomeQuery() {
     }
 
@@ -31,28 +36,17 @@ public class GenomeQuery extends AbstractQuery {
         super(params);
     }
 
-    private GenomeQuery(Builder builder) {
-        setIncludes(builder.includes);
-        setExcludes(builder.excludes);
-        setLimit(builder.limit);
-        setSkip(builder.skip);
-        setCount(builder.count);
-        setSort(builder.sort);
-        setOrder(builder.order);
-        setFacet(builder.facet);
-        setNames(builder.names);
-    }
 
     @Override
     protected void validateQuery() {
         // nothing to validate
     }
 
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("GenomeQuery{");
         sb.append("names=").append(names);
+        sb.append(", regions=").append(regions);
         sb.append(", limit=").append(limit);
         sb.append(", skip=").append(skip);
         sb.append(", count=").append(count);
@@ -74,68 +68,97 @@ public class GenomeQuery extends AbstractQuery {
         return this;
     }
 
+    public List<Region> getRegions() {
+        return regions;
+    }
 
-    public static final class Builder {
-        private List<String> includes;
-        private List<String> excludes;
-        private Integer limit;
-        private Integer skip;
-        private Boolean count;
-        private String sort;
-        private Order order;
-        private String facet;
+    public GenomeQuery setRegions(List<Region> regions) {
+        this.regions = regions;
+        return this;
+    }
+
+    public static final class GenomeQueryBuilder {
+        protected Integer limit;
+        protected Integer skip;
+        protected Boolean count = false;
+        protected String sort;
+        protected Order order;
+        protected String facet;
+        protected List<String> includes;
+        protected List<String> excludes;
         private List<String> names;
+        private List<Region> regions;
 
-        public Builder() {
+        private GenomeQueryBuilder() {
         }
 
-        public Builder withIncludes(List<String> val) {
-            includes = val;
+        public static GenomeQueryBuilder aGenomeQuery() {
+            return new GenomeQueryBuilder();
+        }
+
+        public GenomeQueryBuilder withNames(List<String> names) {
+            this.names = names;
             return this;
         }
 
-        public Builder withExcludes(List<String> val) {
-            excludes = val;
+        public GenomeQueryBuilder withRegions(List<Region> regions) {
+            this.regions = regions;
             return this;
         }
 
-        public Builder withLimit(Integer val) {
-            limit = val;
+        public GenomeQueryBuilder withLimit(Integer limit) {
+            this.limit = limit;
             return this;
         }
 
-        public Builder withSkip(Integer val) {
-            skip = val;
+        public GenomeQueryBuilder withSkip(Integer skip) {
+            this.skip = skip;
             return this;
         }
 
-        public Builder withCount(Boolean val) {
-            count = val;
+        public GenomeQueryBuilder withCount(Boolean count) {
+            this.count = count;
             return this;
         }
 
-        public Builder withSort(String val) {
-            sort = val;
+        public GenomeQueryBuilder withSort(String sort) {
+            this.sort = sort;
             return this;
         }
 
-        public Builder withOrder(Order val) {
-            order = val;
+        public GenomeQueryBuilder withOrder(Order order) {
+            this.order = order;
             return this;
         }
 
-        public Builder withFacet(String val) {
-            facet = val;
+        public GenomeQueryBuilder withFacet(String facet) {
+            this.facet = facet;
             return this;
         }
 
-        public Builder withNames(List<String> val) {
-            names = val;
+        public GenomeQueryBuilder withIncludes(List<String> includes) {
+            this.includes = includes;
+            return this;
+        }
+
+        public GenomeQueryBuilder withExcludes(List<String> excludes) {
+            this.excludes = excludes;
             return this;
         }
 
         public GenomeQuery build() {
-            return new GenomeQuery(this);
+            GenomeQuery genomeQuery = new GenomeQuery();
+            genomeQuery.setNames(names);
+            genomeQuery.setRegions(regions);
+            genomeQuery.setLimit(limit);
+            genomeQuery.setSkip(skip);
+            genomeQuery.setCount(count);
+            genomeQuery.setSort(sort);
+            genomeQuery.setOrder(order);
+            genomeQuery.setFacet(facet);
+            genomeQuery.setIncludes(includes);
+            genomeQuery.setExcludes(excludes);
+            return genomeQuery;
         }
     }
 }

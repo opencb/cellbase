@@ -91,7 +91,8 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
                                                                               @Deprecated Boolean phased,
                                                                               Boolean imprecise,
                                                                               Integer svExtraPadding,
-                                                                              Integer cnvExtraPadding)
+                                                                              Integer cnvExtraPadding,
+                                                                              boolean checkAminoAcidChange)
             throws ExecutionException, InterruptedException, CellbaseException, QueryException, IllegalAccessException {
         List<Variant> variantList = parseVariants(variants);
         logger.debug("queryOptions: " + queryOptions);
@@ -123,6 +124,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         if (cnvExtraPadding != null) {
             queryOptions.put("cnvExtraPadding", cnvExtraPadding);
         }
+        queryOptions.put("checkAminoAcidChange", checkAminoAcidChange);
         VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
                 cellbaseManagerFactory);
         List<CellBaseDataResult<VariantAnnotation>> queryResults =
@@ -204,6 +206,7 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
         return true;
     }
 
+    @Deprecated
     public List<CellBaseDataResult> getByRegion(Query query, QueryOptions queryOptions, String regions) {
         query.put(VariantDBAdaptor.QueryParams.REGION.key(), regions);
         logger.debug("query = " + query.toJson());

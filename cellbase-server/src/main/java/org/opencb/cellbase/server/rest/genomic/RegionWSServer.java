@@ -19,6 +19,7 @@ package org.opencb.cellbase.server.rest.genomic;
 import io.swagger.annotations.*;
 import org.bson.Document;
 import org.opencb.biodata.models.core.*;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.Repeat;
 import org.opencb.cellbase.core.ParamConstants;
 import org.opencb.cellbase.core.api.queries.*;
@@ -315,11 +316,18 @@ public class RegionWSServer extends GenericRestWSServer {
     public Response getVariationByRegion(@PathParam("regions") @ApiParam(name = "regions", value = ParamConstants.REGION_DESCRIPTION,
                                                  required = true) String regions) {
         try {
-            parseQueryParams();
+            List<VariantQuery> queries = new ArrayList<>();
             if (!variantManager.validateRegionInput(regions)) {
                 return createErrorResponse("getVariationByRegion", "Regions must be smaller than 10Mb");
             }
-            List<CellBaseDataResult> queryResults = variantManager.getByRegion(query, queryOptions, regions);
+            List<Region> regionList = Region.parseRegions(regions);
+            for (Region region : regionList) {
+                VariantQuery query = new VariantQuery(uriParams);
+                query.setRegions(Collections.singletonList(region));
+                queries.add(query);
+                logger.info("REST variantQuery: {}", query.toString());
+            }
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -356,13 +364,16 @@ public class RegionWSServer extends GenericRestWSServer {
                                             allowableValues = "1,-1", defaultValue = "1", required = true) String strand) {
         try {
 //            parseQueryParams();
-            if (regions.contains(",")) {
-                List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(queryOptions, regions);
-                return createOkResponse(queryResults);
-            } else {
-                CellBaseDataResult<GenomeSequenceFeature> queryResults = genomeManager.getByRegion(query, queryOptions, regions, strand);
-                return createOkResponse(queryResults);
-            }
+            GenomeQuery query = new GenomeQuery(uriParams);
+            List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(query);
+            return createOkResponse(queryResults);
+//            if (regions.contains(",")) {
+//                List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = genomeManager.getByRegions(queryOptions, regions);
+//                return createOkResponse(queryResults);
+//            } else {
+//                CellBaseDataResult<GenomeSequenceFeature> queryResults = genomeManager.getByRegion(query, queryOptions, regions, strand);
+//                return createOkResponse(queryResults);
+//            }
         } catch (Exception e) {
             return createErrorResponse(e);
         }

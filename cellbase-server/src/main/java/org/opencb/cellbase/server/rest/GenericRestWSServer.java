@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-import com.google.common.base.Splitter;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +37,6 @@ import org.opencb.cellbase.server.exception.VersionException;
 import org.opencb.commons.datastore.core.Event;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.Query;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +62,7 @@ public class GenericRestWSServer implements IWSServer {
     protected String species;
 
     protected Query query;
-    protected QueryOptions queryOptions;
+//    protected QueryOptions queryOptions;
 
     protected Map<String, String> uriParams;
     protected UriInfo uriInfo;
@@ -215,60 +213,60 @@ public class GenericRestWSServer implements IWSServer {
         return sb.toString();
     }
 
-    @Deprecated
-    public void parseQueryParams() {
-        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+//    @Deprecated
+//    public void parseQueryParams() {
+//        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+//
+//        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
+//
+//        // Add all the others QueryParams from the URL
+//        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+//
+//            String key = entry.getKey();
+//            String value = entry.getValue().get(0);
+//
+//            if (!queryOptions.containsKey(key)) {
+//                if ("count".equalsIgnoreCase(key)) {
+//                    queryOptions.put("count", Boolean.parseBoolean(value));
+//                } else {
+//                    query.put(key, value);
+//                }
+//            }
+//        }
+//    }
 
-        queryOptions.put("metadata", multivaluedMap.get("metadata") == null || multivaluedMap.get("metadata").get(0).equals("true"));
+//    @Deprecated
+//    public void parseIncludesAndExcludes(String exclude, String include, String sort) {
+//        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
+//        if (exclude != null && !exclude.isEmpty()) {
+//            // We add the user's 'exclude' fields to the default values _id and _chunks
+//            if (queryOptions.containsKey(QueryOptions.EXCLUDE)) {
+//                queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
+//            }
+//        }
+//        if (include != null && !include.isEmpty()) {
+//            queryOptions.put(QueryOptions.INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
+//        } else {
+//            queryOptions.put(QueryOptions.INCLUDE, (multivaluedMap.get(QueryOptions.INCLUDE) != null)
+//                    ? Splitter.on(",").splitToList(multivaluedMap.get(QueryOptions.INCLUDE).get(0))
+//                    : null);
+//        }
+//        if (sort != null && !sort.isEmpty()) {
+//            queryOptions.put(QueryOptions.SORT, sort);
+//        }
+//    }
 
-        // Add all the others QueryParams from the URL
-        for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
-
-            String key = entry.getKey();
-            String value = entry.getValue().get(0);
-
-            if (!queryOptions.containsKey(key)) {
-                if ("count".equalsIgnoreCase(key)) {
-                    queryOptions.put("count", Boolean.parseBoolean(value));
-                } else {
-                    query.put(key, value);
-                }
-            }
-        }
-    }
-
-    @Deprecated
-    public void parseIncludesAndExcludes(String exclude, String include, String sort) {
-        MultivaluedMap<String, String> multivaluedMap = uriInfo.getQueryParameters();
-        if (exclude != null && !exclude.isEmpty()) {
-            // We add the user's 'exclude' fields to the default values _id and _chunks
-            if (queryOptions.containsKey(QueryOptions.EXCLUDE)) {
-                queryOptions.getAsStringList(QueryOptions.EXCLUDE).addAll(Splitter.on(",").splitToList(exclude));
-            }
-        }
-        if (include != null && !include.isEmpty()) {
-            queryOptions.put(QueryOptions.INCLUDE, new LinkedList<>(Splitter.on(",").splitToList(include)));
-        } else {
-            queryOptions.put(QueryOptions.INCLUDE, (multivaluedMap.get(QueryOptions.INCLUDE) != null)
-                    ? Splitter.on(",").splitToList(multivaluedMap.get(QueryOptions.INCLUDE).get(0))
-                    : null);
-        }
-        if (sort != null && !sort.isEmpty()) {
-            queryOptions.put(QueryOptions.SORT, sort);
-        }
-    }
-
-    @Deprecated
-    public void parseLimitAndSkip(int limit, int skip) {
-        return;
-    }
-
+//    @Deprecated
+//    public void parseLimitAndSkip(int limit, int skip) {
+//        return;
+//    }
+//
     protected void logQuery(String status) {
         try {
             logger.info("{}\t{}\t{}\t{}\t{}",
                     uriInfo.getAbsolutePath().toString(),
                     jsonObjectWriter.writeValueAsString(query),
-                    jsonObjectWriter.writeValueAsString(queryOptions),
+//                    jsonObjectWriter.writeValueAsString(queryOptions),
                     new Long(System.currentTimeMillis() - startTime).intValue(),
                     status);
         } catch (JsonProcessingException e) {

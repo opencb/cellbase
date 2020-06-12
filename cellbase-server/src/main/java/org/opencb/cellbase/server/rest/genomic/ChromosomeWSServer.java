@@ -148,7 +148,8 @@ public class ChromosomeWSServer extends GenericRestWSServer {
     public Response getChromosomes(@PathParam("chromosomeName") @ApiParam(name = "chromosomeName", value = ParamConstants.CHROMOSOMES,
                                                 required = true) String chromosomeName) {
         try {
-            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(queryOptions, chromosomeName);
+            GenomeQuery query = new GenomeQuery(uriParams);
+            List<CellBaseDataResult> queryResults = genomeManager.getChromosomes(query.toQueryOptions(), chromosomeName);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

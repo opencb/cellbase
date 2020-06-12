@@ -67,6 +67,25 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         return queryResults;
     }
 
+    /**
+     * For a single query, return the sequence for each region provided. Each region will be its own CellBaseDataResult.
+     *
+     * @param query The genome query. Should have regions populated
+     * @return sequence for each region
+     */
+    public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(GenomeQuery query) {
+        List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = new ArrayList<>();
+        for (Region region : query.getRegions()) {
+            queryResults.add(genomeDBAdaptor.getSequence(region, query.toQueryOptions()));
+        }
+
+        for (int i = 0; i < query.getRegions().size(); i++) {
+            queryResults.get(i).setId(query.getRegions().get(i).toString());
+        }
+        return queryResults;
+    }
+
+    @Deprecated
     public List<CellBaseDataResult<GenomeSequenceFeature>> getByRegions(QueryOptions queryOptions, String regions) {
         List<Region> regionList = Region.parseRegions(regions);
         List<CellBaseDataResult<GenomeSequenceFeature>> queryResults = new ArrayList<>();
@@ -80,6 +99,7 @@ public class GenomeManager extends AbstractManager implements AggregationApi<Gen
         return queryResults;
     }
 
+    @Deprecated
     public CellBaseDataResult<GenomeSequenceFeature> getByRegion(Query query, QueryOptions queryOptions, String regions, String strand) {
         query.put(GenomeDBAdaptor.QueryParams.REGION.key(), regions);
         query.put("strand", strand);
