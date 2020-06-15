@@ -68,7 +68,7 @@ public class ClinicalWSServer extends GenericRestWSServer {
     @Path("/variant/search")
     @ApiOperation(httpMethod = "GET", notes = "No more than 1000 objects are allowed to be returned at a time. "
             + ParamConstants.DOT_NOTATION_NOTE,
-            value = "Retrieves all clinical variants", response = ClinicalVariant.class, responseContainer = "QueryResponse")
+            value = "Retrieves all clinical variants", response = Variant.class, responseContainer = "QueryResponse")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "count", value = ParamConstants.COUNT_DESCRIPTION,
                     required = false, dataType = "boolean", paramType = "query", defaultValue = "false",

@@ -52,8 +52,7 @@ import java.util.function.Consumer;
 /**
  * Created by fjlopez on 06/12/16.
  */
-public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
-        implements CellBaseCoreDBAdaptor<ClinicalVariantQuery, ClinicalVariant> {
+public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDBAdaptor<ClinicalVariantQuery, ClinicalVariant> {
 
     private static final String PRIVATE_TRAIT_FIELD = "_traits";
     private static final String PRIVATE_CLINICAL_FIELDS = "_featureXrefs,_traits";
@@ -120,10 +119,6 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
         logger.debug("query: {}", bson.toBsonDocument(Document.class, MongoClient.getDefaultCodecRegistry()).toJson());
         logger.debug("queryOptions: {}", options.toJson());
         return new CellBaseDataResult<>(mongoDBCollection.find(bson, null, Variant.class, parsedOptions));
-    }
-
-    public CellBaseDataResult nativeGet(AbstractQuery query) {
-        return new CellBaseDataResult<>(mongoDBCollection.find(new BsonDocument(), null));
     }
 
     public CellBaseDataResult nativeGet(Query query, QueryOptions options) {
