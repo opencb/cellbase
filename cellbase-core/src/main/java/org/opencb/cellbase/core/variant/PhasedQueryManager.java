@@ -64,8 +64,11 @@ public abstract class PhasedQueryManager {
             // TODO: phase depends on the sample. Phased queries constrained to just one sample. The code below is
             // TODO: arbitrarily selecting the first one
             StudyEntry studyEntry = studyEntryList.get(0);
+            System.out.println("attributeName " + attributeName);
             int attributePosition = studyEntry.getSampleDataKeyPosition(attributeName);
+            System.out.println("attributePosition " + attributePosition);
             if (attributePosition != -1) {
+                System.out.println("PARSING!! ");
                 List<SampleEntry> samplesData = studyEntry.getSamples();
                 if (samplesData != null && !samplesData.isEmpty()) {
                     SampleEntry firstEntry = samplesData.get(0);
@@ -74,8 +77,13 @@ public abstract class PhasedQueryManager {
                             && !firstSampleData.isEmpty()
                             && attributePosition < firstSampleData.size()
                             && !isMissing(firstSampleData.get(attributePosition))) {
+                        System.out.println("attributePosition " + attributePosition);
                         return firstSampleData.get(attributePosition);
+                    } else {
+                        System.out.println("NOT PARSING!! BBB");
                     }
+                } else {
+                    System.out.println("NOT PARSING!! ");
                 }
             }
         }

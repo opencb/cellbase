@@ -195,6 +195,9 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
                     case "trait":
                         createTraitQuery(String.valueOf(value), andBsonList);
                         break;
+                    case "id":
+                        createIdQuery(query, andBsonList);
+
                     default:
                         createAndOrQuery(value, dotNotationName, QueryParam.Type.STRING, andBsonList);
                         break;
@@ -265,6 +268,16 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor
         if (StringUtils.isNotBlank(keywordString)) {
             keywordString = keywordString.toLowerCase();
             createOrQuery(Arrays.asList(keywordString.split(SEPARATOR)), PRIVATE_TRAIT_FIELD, andBsonList);
+        }
+    }
+
+    // checking accessions OR IDs
+    private void createIdQuery(ClinicalVariantQuery query, List<Bson> andBsonList) {
+        if (query != null) {
+            List<Bson> orBsonList = new ArrayList<>();
+            orBsonList.add(Filters.eq("annotation.id", query.getId()));
+            orBsonList.add(Filters.eq("annotation.traitAssociation.id", query.getId()));
+            andBsonList.add(Filters.or(orBsonList));
         }
     }
 

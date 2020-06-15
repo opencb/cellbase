@@ -26,7 +26,7 @@ public class ClinicalVariantQuery extends AbstractQuery {
 
     @QueryParameter(id = "region")
     private List<Region> regions;
-    @QueryParameter(id = "annotation.id", alias = {ParamConstants.VARIANT_IDS_PARAM})
+    @QueryParameter(id = ParamConstants.VARIANT_IDS_PARAM, alias = {"annotation.id", "annotation.traitAssociation.id", "accession"})
     private String id;
     @QueryParameter(id = "annotation.traitAssociation.source.name", alias = {ParamConstants.SOURCE_PARAM})
     private List<String> sources;
@@ -36,8 +36,8 @@ public class ClinicalVariantQuery extends AbstractQuery {
     private List<String> features;
     @QueryParameter(id = "trait")
     private List<String> traits;
-    @QueryParameter(id = "annotation.traitAssociation.id", alias = {ParamConstants.VARIANT_ACCESSIONS_PARAM})
-    private List<String> accessions;
+//    @QueryParameter(id = "annotation.traitAssociation.id", alias = {ParamConstants.VARIANT_ACCESSIONS_PARAM})
+//    private List<String> accessions;
     @QueryParameter(id = "type")
     private List<String> types;
     @QueryParameter(id = "annotation.traitAssociation.consistencyStatus", alias = {ParamConstants.CONSISTENCY_STATUS_PARAM})
@@ -70,7 +70,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
         sb.append(", so=").append(so);
         sb.append(", features=").append(features);
         sb.append(", traits=").append(traits);
-        sb.append(", accessions=").append(accessions);
         sb.append(", types=").append(types);
         sb.append(", consistencyStatuses=").append(consistencyStatuses);
         sb.append(", clinicalSignificances=").append(clinicalSignificances);
@@ -142,15 +141,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
         return this;
     }
 
-    public List<String> getAccessions() {
-        return accessions;
-    }
-
-    public ClinicalVariantQuery setAccessions(List<String> accessions) {
-        this.accessions = accessions;
-        return this;
-    }
-
     public List<String> getTypes() {
         return types;
     }
@@ -212,7 +202,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
         private List<String> so;
         private List<String> features;
         private List<String> traits;
-        private List<String> accessions;
         private List<String> types;
         private List<String> consistencyStatuses;
         private List<String> clinicalSignificances;
@@ -253,11 +242,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
 
         public ClinicalVariantQueryBuilder withTraits(List<String> traits) {
             this.traits = traits;
-            return this;
-        }
-
-        public ClinicalVariantQueryBuilder withAccessions(List<String> accessions) {
-            this.accessions = accessions;
             return this;
         }
 
@@ -334,7 +318,6 @@ public class ClinicalVariantQuery extends AbstractQuery {
             clinicalVariantQuery.setSo(so);
             clinicalVariantQuery.setFeatures(features);
             clinicalVariantQuery.setTraits(traits);
-            clinicalVariantQuery.setAccessions(accessions);
             clinicalVariantQuery.setTypes(types);
             clinicalVariantQuery.setConsistencyStatuses(consistencyStatuses);
             clinicalVariantQuery.setClinicalSignificances(clinicalSignificances);

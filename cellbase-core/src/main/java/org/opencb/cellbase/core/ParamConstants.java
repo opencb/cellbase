@@ -129,7 +129,7 @@ public class ParamConstants {
     public static final String ANNOTATION_DISEASES_DESCRIPTION = "Comma separated list of disease IDs or names, "
             + "e.g. umls:C0030297,OMIM:613390,OMIM:613390,Cryptorchidism,Absent thumb,Stage 5 chronic kidney disease. "
             + "Exact text matches will be returned";
-    public static final String ANNOTATION_DISEASES_PARAM = "diseaseId";
+    public static final String ANNOTATION_DISEASES_PARAM = "disease";
     public static final String ANNOTATION_DISEASES_IDS_DESCRIPTION = "Comma separated list of phenotype ids (OMIM, UMLS), "
             + "e.g. umls:C0030297,OMIM:613390,OMIM:613390. Exact text matches will be returned";
     public static final String ANNOTATION_DISEASES_IDS_PARAM = "diseaseId";
@@ -198,10 +198,10 @@ public class ParamConstants {
     public static final String SOURCE_DESCRIPTION = "Comma separated list of database sources of the documents to be returned."
             + " Possible values are clinvar or cosmic";
     public static final String SOURCE_PARAM = "source";
-    public static final String SEQUENCE_ONTOLOGY_DESCRIPTION = "Comma separated list of sequence ontology term names, "
-            + "e.g. missense_variant. Exact text matches will be returned. A list of searchable SO term names can be"
+    public static final String SEQUENCE_ONTOLOGY_DESCRIPTION = "Comma separated list of consequence types, "
+            + "e.g. missense_variant. Exact text matches will be returned. A list of searchable consequence types can be"
             + " accessed at https://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest/v4/hsapiens/feature/variation/consequence_types";
-    public static final String SEQUENCE_ONTOLOGY_PARAM = "so";
+    public static final String SEQUENCE_ONTOLOGY_PARAM = "consequenceType";
     public static final String FEATURE_IDS_DESCRIPTION = "Comma separated list of feature ids, which can be either ENSEMBL gene "
             + "ids, HGNC gene symbols, transcript symbols or ENSEMBL transcript ids, e.g.: BRCA2,ENST00000409047. "
             + "Exact text matches will be returned.";
