@@ -115,6 +115,7 @@ public class ConservationBuilder extends CellBaseBuilder {
     }
 
 
+    @Deprecated
     private void gerpParser(Path gerpFolderPath) throws IOException, InterruptedException {
         logger.info("Uncompressing {}", gerpFolderPath.resolve(EtlCommons.GERP_FILE));
         List<String> tarArgs = Arrays.asList("-xvzf", gerpFolderPath.resolve(EtlCommons.GERP_FILE).toString(),

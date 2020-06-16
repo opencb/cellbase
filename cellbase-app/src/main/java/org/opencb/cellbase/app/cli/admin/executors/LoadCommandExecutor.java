@@ -277,7 +277,7 @@ public class LoadCommandExecutor extends CommandExecutor {
             logger.info("Loading file '{}'", entry.toString());
             loadRunner.load(input.resolve(entry.getFileName()), "conservation");
         }
-        loadIfExists(input.resolve("gerpVersion.json"), METADATA);
+//        loadIfExists(input.resolve("gerpVersion.json"), METADATA);
         loadIfExists(input.resolve("phastConsVersion.json"), METADATA);
         loadIfExists(input.resolve("phyloPVersion.json"), METADATA);
     }
