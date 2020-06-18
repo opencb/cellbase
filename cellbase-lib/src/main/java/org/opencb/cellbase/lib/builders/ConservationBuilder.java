@@ -16,17 +16,19 @@
 
 package org.opencb.cellbase.lib.builders;
 
+import org.broad.igv.bbfile.BigWigIterator;
+import org.broad.igv.bbfile.WigItem;
 import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.tools.feature.BigWigManager;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
+import org.opencb.cellbase.lib.EtlCommons;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,8 +77,13 @@ public class ConservationBuilder extends CellBaseBuilder {
         if (gerpFolderPath.toFile().exists()) {
             logger.debug("Parsing GERP data ...");
             gerpParser(gerpFolderPath);
+        } else {
+            logger.debug("GERP data not found: " + gerpFolderPath.toString());
         }
 
+        if (conservedRegionPath != null) {
+            return;
+        }
 
         /*
          * UCSC phastCons and phylop are stored in the same format. They are processed together.
@@ -114,61 +121,114 @@ public class ConservationBuilder extends CellBaseBuilder {
         }
     }
 
-
-    @Deprecated
     private void gerpParser(Path gerpFolderPath) throws IOException, InterruptedException {
-        logger.info("Uncompressing {}", gerpFolderPath.resolve(EtlCommons.GERP_FILE));
-        List<String> tarArgs = Arrays.asList("-xvzf", gerpFolderPath.resolve(EtlCommons.GERP_FILE).toString(),
-                "--overwrite", "-C", gerpFolderPath.toString());
-        EtlCommons.runCommandLineProcess(null, "tar", tarArgs, null);
+        logger.info("parsing {}", gerpFolderPath.resolve(EtlCommons.GERP_FILE));
 
-        DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
-        boolean filesFound = false;
-        for (Path path : pathDirectoryStream) {
-            filesFound = true;
-            logger.info("Processing file '{}'", path.getFileName().toString());
-            String[] chromosome = path.getFileName().toString().replaceFirst("chr", "").split("\\.");
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
-            String line;
+        String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
+                "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT", };
+        BigWigManager bigWigManager = new BigWigManager(gerpFolderPath.resolve(EtlCommons.GERP_FILE));
+
+        // one file per chromosome
+        for (String chromosome : chromosomes) {
+
             int start = 1;
             int end = 1999;
-            int counter = 1;
-            String[] fields;
-            List<Float> val = new ArrayList<>(chunkSize);
-            while ((line = bufferedReader.readLine()) != null) {
-                fields = line.split("\t");
-                val.add(Float.valueOf(fields[1]));
-                counter++;
-                if (counter == chunkSize) {
-//                    ConservationScoreRegion conservationScoreRegion = new ConservationScoreRegion(chromosome[0], start, end, "gerp", val);
-                    GenomicScoreRegion<Float> conservationScoreRegion =
-                            new GenomicScoreRegion<>(chromosome[0], start, end, "gerp", val);
-                    fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome[0]));
+            List<GenomicScoreRegion> conservationScoreRegions = new ArrayList();
 
-                    start = end + 1;
-                    end += chunkSize;
+            // keep querying and increasing coordinate values until iterator can't find anything.
+            while (true) {
+                // new region to search
+                Region region = new Region(chromosome, start, end);
 
-                    counter = 0;
-                    val.clear();
+                // scores for this chromosome go here
+                List<Float> conservationScores = new ArrayList<>(chunkSize);
+
+                // run query
+                BigWigIterator iterator = bigWigManager.iterator(region);
+                if (iterator == null) {
+                    // no more data
+                    break;
                 }
+
+                // save value for each position
+                while (iterator.hasNext()) {
+                    WigItem wigItem = iterator.next();
+                    conservationScores.add(wigItem.getWigValue());
+                }
+
+                // make object for all 2000 values
+                GenomicScoreRegion<Float> conservationScoreRegion
+                        = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
+                fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+
+                // save later
+//                conservationScoreRegions.add(conservationScoreRegion);
+
+                // reset values for next query
+                start = end + 1;
+                end += chunkSize;
+                conservationScores.clear();
             }
+            // save all chromosomes in a file.
 
-            // we need to serialize the last chunk that might be incomplete
-//            ConservationScoreRegion conservationScoreRegion =
-//                    new ConservationScoreRegion(chromosome[0], start, start + val.size() - 1, "gerp", val);
-            GenomicScoreRegion<Float> conservationScoreRegion =
-                    new GenomicScoreRegion<>(chromosome[0], start, start + val.size() - 1, "gerp", val);
-            fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome[0]));
-
-            bufferedReader.close();
-        }
-
-        if (!filesFound) {
-            logger.warn("No GERP++ files were found. Please check that the original file {} is there, that it was"
-                    + " properly decompressed and that the *.rates files are present",
-                    gerpFolderPath.resolve(EtlCommons.GERP_FILE));
         }
     }
+
+//    @Deprecated
+//    private void gerpParser(Path gerpFolderPath) throws IOException, InterruptedException {
+//        logger.info("Uncompressing {}", gerpFolderPath.resolve(EtlCommons.GERP_FILE));
+//        List<String> tarArgs = Arrays.asList("-xvzf", gerpFolderPath.resolve(EtlCommons.GERP_FILE).toString(),
+//                "--overwrite", "-C", gerpFolderPath.toString());
+//        EtlCommons.runCommandLineProcess(null, "tar", tarArgs, null);
+//
+//        DirectoryStream<Path> pathDirectoryStream = Files.newDirectoryStream(gerpFolderPath, "*.rates");
+//        boolean filesFound = false;
+//        for (Path path : pathDirectoryStream) {
+//            filesFound = true;
+//            logger.info("Processing file '{}'", path.getFileName().toString());
+//            String[] chromosome = path.getFileName().toString().replaceFirst("chr", "").split("\\.");
+//            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(String.valueOf(path))));
+//            String line;
+//            int start = 1;
+//            int end = 1999;
+//            int counter = 1;
+//            String[] fields;
+//            List<Float> val = new ArrayList<>(chunkSize);
+//            while ((line = bufferedReader.readLine()) != null) {
+//                fields = line.split("\t");
+//                val.add(Float.valueOf(fields[1]));
+//                counter++;
+//                if (counter == chunkSize) {
+////                    ConservationScoreRegion conservationScoreRegion = new ConservationScoreRegion(chromosome[0], start, end, "gerp",
+// val);
+//                    GenomicScoreRegion<Float> conservationScoreRegion =
+//                            new GenomicScoreRegion<>(chromosome[0], start, end, "gerp", val);
+//                    fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome[0]));
+//
+//                    start = end + 1;
+//                    end += chunkSize;
+//
+//                    counter = 0;
+//                    val.clear();
+//                }
+//            }
+//
+//            // we need to serialize the last chunk that might be incomplete
+////            ConservationScoreRegion conservationScoreRegion =
+////                    new ConservationScoreRegion(chromosome[0], start, start + val.size() - 1, "gerp", val);
+//            GenomicScoreRegion<Float> conservationScoreRegion =
+//                    new GenomicScoreRegion<>(chromosome[0], start, start + val.size() - 1, "gerp", val);
+//            fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome[0]));
+//
+//            bufferedReader.close();
+//        }
+//
+//        if (!filesFound) {
+//            logger.warn("No GERP++ files were found. Please check that the original file {} is there, that it was"
+//                    + " properly decompressed and that the *.rates files are present",
+//                    gerpFolderPath.resolve(EtlCommons.GERP_FILE));
+//        }
+//    }
 
     private void processWigFixFile(Path inGzPath, String conservationSource) throws IOException {
         BufferedReader bufferedReader = FileUtils.newBufferedReader(inGzPath);
@@ -214,16 +274,16 @@ public class ConservationBuilder extends CellBaseBuilder {
                 int startChunk = start / CHUNK_SIZE;
 //                end++;
                 int endChunk = (start + values.size()) / CHUNK_SIZE; // This is the endChunk if current read score is
-                                                                     // appended to the array (otherwise it would be
-                                                                     // start + values.size() - 1). If this endChunk is
-                                                                     // different from the startChunk means that current
-                                                                     // conserved region must be dumped and current
-                                                                     // score must be associated to next chunk. Main
-                                                                     // difference to what there was before is that if
-                                                                     // the fixedStep starts on the last position of a
-                                                                     // chunk e.g. 1999, the chunk must be created with
-                                                                     // just that score - the chunk was left empty with
-                                                                     // the old code
+                // appended to the array (otherwise it would be
+                // start + values.size() - 1). If this endChunk is
+                // different from the startChunk means that current
+                // conserved region must be dumped and current
+                // score must be associated to next chunk. Main
+                // difference to what there was before is that if
+                // the fixedStep starts on the last position of a
+                // chunk e.g. 1999, the chunk must be created with
+                // just that score - the chunk was left empty with
+                // the old code
                 if (startChunk != endChunk) {
 //                    conservedRegion = new ConservationScoreRegion(chromosome, start, end - 1, conservationSource, values);
                     conservedRegion = new GenomicScoreRegion<>(chromosome, start, start + values.size() - 1,
