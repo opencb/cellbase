@@ -42,6 +42,7 @@ public class CellBaseManagerFactory {
     private Map<String, TfbsManager> tfManagers;
     private MetaManager metaManager;
     private Map<String, OntologyManager> ontologyManagers;
+    private FileManager fileManager;
     private Logger logger;
     // this webservice has no species, do not validate
     private static final String DONT_CHECK_SPECIES = "do not validate species";
@@ -284,6 +285,13 @@ public class CellBaseManagerFactory {
             metaManager = new MetaManager(configuration);
         }
         return metaManager;
+    }
+
+    public FileManager getFileManager() {
+        if (fileManager == null) {
+            fileManager = new FileManager(configuration);
+        }
+        return fileManager;
     }
 
     public OntologyManager getOntologyManager(String species) throws CellbaseException {

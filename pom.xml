@@ -34,6 +34,7 @@
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <jacoco.version>0.8.5</jacoco.version>
         <jetty.version>9.4.17.v20190418</jetty.version>
+        <bigwig.version>1.0</bigwig.version>
 
         <CELLBASE.WAR.NAME>cellbase</CELLBASE.WAR.NAME>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
@@ -83,6 +84,11 @@
                 <enabled>true</enabled>
                 <updatePolicy>daily</updatePolicy>
             </snapshots>
+        </repository>
+        <!-- needed for bigwig -->
+        <repository>
+            <id>opencb-ext-libs</id>
+            <url>http://bioinfo.hpc.cam.ac.uk/downloads/ext-libs/</url>
         </repository>
     </repositories>
 
@@ -174,6 +180,11 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>BigWig</groupId>
+                <artifactId>BigWig</artifactId>
+                <version>${bigwig.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
