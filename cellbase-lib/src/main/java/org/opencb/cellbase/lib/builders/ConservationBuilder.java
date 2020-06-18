@@ -81,10 +81,6 @@ public class ConservationBuilder extends CellBaseBuilder {
             logger.debug("GERP data not found: " + gerpFolderPath.toString());
         }
 
-        if (conservedRegionPath != null) {
-            return;
-        }
-
         /*
          * UCSC phastCons and phylop are stored in the same format. They are processed together.
          */
@@ -160,9 +156,6 @@ public class ConservationBuilder extends CellBaseBuilder {
                 GenomicScoreRegion<Float> conservationScoreRegion
                         = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
                 fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
-
-                // save later
-//                conservationScoreRegions.add(conservationScoreRegion);
 
                 // reset values for next query
                 start = end + 1;
