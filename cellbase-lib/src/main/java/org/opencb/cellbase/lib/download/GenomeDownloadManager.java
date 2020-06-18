@@ -107,6 +107,7 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
         List<DownloadFile> downloadFiles = new ArrayList<>();
         if (speciesConfiguration.getScientificName().equals("Homo sapiens")) {
             Files.createDirectories(conservationFolder);
+            Files.createDirectories(conservationFolder.resolve("gerp"));
             Files.createDirectories(conservationFolder.resolve("phastCons"));
             Files.createDirectories(conservationFolder.resolve("phylop"));
 
@@ -130,6 +131,12 @@ public class GenomeDownloadManager extends AbstractDownloadManager {
                             .resolve("chr" + chromosome + ".phyloP100way.wigFix.gz").toString()));
                     phyloPUrls.add(phyloPUrl);
                 }
+                String gerpUrl = configuration.getDownload().getGerp().getHost();
+                downloadFiles.add(downloadFile(gerpUrl, conservationFolder.resolve(EtlCommons.GERP_SUBDIRECTORY)
+                        .resolve(EtlCommons.GERP_FILE).toString()));
+
+                saveVersionData(EtlCommons.CONSERVATION_DATA, GERP_NAME, null, getTimeStamp(), Collections.singletonList(gerpUrl),
+                        conservationFolder.resolve("gerpVersion.json"));
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHASTCONS_NAME, null, getTimeStamp(), phastconsUrls,
                         conservationFolder.resolve("phastConsVersion.json"));
                 saveVersionData(EtlCommons.CONSERVATION_DATA, PHYLOP_NAME, null, getTimeStamp(), phyloPUrls,
