@@ -39,12 +39,15 @@ chown -R 1001:1001 /opt/tomcat/
 # Copy cellbase build to Tomcat server
 RUN cp /opt/cellbase/*.war /opt/tomcat/webapps/cellbase.war
 
+# copy to /conf directory, just like v5
+RUN mv /opt/cellbase/configuration.json /opt/cellbase/conf && ln -s /opt/cellbase/conf/configuration.json /opt/cellbase/configuration.json
+
 ENV CELLBASE_HOME /opt/cellbase/
 
 USER 1001:1001
 
-HEALTHCHECK --interval=20m --timeout=3s \
-    CMD  wget -q http://localhost:8080/cellbase/webservices/rest/v4/meta/about || killall java
+#HEALTHCHECK --interval=20m --timeout=3s \
+#    CMD  wget -q http://localhost:8080/cellbase/webservices/rest/v4/meta/about || killall java
 
 EXPOSE 8080
 EXPOSE 8443
