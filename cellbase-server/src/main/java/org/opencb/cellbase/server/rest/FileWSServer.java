@@ -36,7 +36,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.List;
 
-@Path("/{apiVersion}/File")
+@Path("/{apiVersion}/file")
 @Produces("application/json")
 @Api(value = "File", description = "File RESTful Web Services API")
 public class FileWSServer extends GenericRestWSServer {
