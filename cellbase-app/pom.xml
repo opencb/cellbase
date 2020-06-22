@@ -136,6 +136,7 @@
                                 <echo>Copying to ${build.dir}</echo>
                                 <exec executable="cp">
                                     <arg value="-r"/>
+                                    <arg value="${project.basedir}/app/cloud"/>
                                     <arg value="${project.basedir}/app/bin"/>
                                     <arg value="${project.basedir}/app/example"/>
                                     <arg value="${project.basedir}/app/mongodb-scripts"/>
