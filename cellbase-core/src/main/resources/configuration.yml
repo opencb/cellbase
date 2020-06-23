@@ -75,7 +75,7 @@ download:
  conservation:
   host: ftp://hgdownload.cse.ucsc.edu/goldenPath/
  gerp:
-  host: http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz
+  host: ftp://ftp.ensembl.org/pub/current_compara/conservation_scores/103_mammals.gerp_conservation_score/
  clinvar:
   host: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2020-02.xml.gz
  clinvarSummary:
