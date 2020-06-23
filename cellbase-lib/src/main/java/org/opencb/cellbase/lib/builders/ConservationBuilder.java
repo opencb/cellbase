@@ -152,6 +152,11 @@ public class ConservationBuilder extends CellBaseBuilder {
                     conservationScores.add(wigItem.getWigValue());
                 }
 
+                // last region, end is incorrect, recalculate
+                if (conservationScores.size() < chunkSize) {
+                    end = conservationScores.size();
+                }
+
                 // make object for all 2000 values
                 GenomicScoreRegion<Float> conservationScoreRegion
                         = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
@@ -160,10 +165,8 @@ public class ConservationBuilder extends CellBaseBuilder {
                 // reset values for next query
                 start = end + 1;
                 end += chunkSize;
-                conservationScores.clear();
+//                conservationScores.clear();
             }
-            // save all chromosomes in a file.
-
         }
     }
 
