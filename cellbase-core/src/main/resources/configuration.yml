@@ -75,7 +75,7 @@ download:
  conservation:
   host: ftp://hgdownload.cse.ucsc.edu/goldenPath/
  gerp:
-  host: ftp://ftp.ensembl.org/pub/current_compara/conservation_scores/103_mammals.gerp_conservation_score/
+  host: ftp://ftp.ensembl.org/pub/current_compara/conservation_scores/103_mammals.gerp_conservation_score/gerp_conservation_scores.homo_sapiens.GRCh38.bw
  clinvar:
   host: ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarFullRelease_2020-02.xml.gz
  clinvarSummary:
