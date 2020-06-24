@@ -248,7 +248,7 @@ public class ClinicalMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
                 "annotation.traitAssociation.alleleOrigin", andBsonList);
 
         createTraitQuery(query.getString(ClinicalDBAdaptor.QueryParams.TRAIT.key()), andBsonList);
-
+        createOrQuery(query, ClinicalDBAdaptor.QueryParams.HGVS.key(), "annotation.hgvs", andBsonList);
         if (andBsonList.size() > 0) {
             return Filters.and(andBsonList);
         } else {
