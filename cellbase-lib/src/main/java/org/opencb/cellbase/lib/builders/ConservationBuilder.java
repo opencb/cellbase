@@ -129,7 +129,6 @@ public class ConservationBuilder extends CellBaseBuilder {
 
             int start = 1;
             int end = 1999;
-            List<GenomicScoreRegion> conservationScoreRegions = new ArrayList();
 
             // keep querying and increasing coordinate values until iterator can't find anything.
             while (true) {
@@ -141,7 +140,7 @@ public class ConservationBuilder extends CellBaseBuilder {
 
                 // run query
                 BigWigIterator iterator = bigWigManager.iterator(region);
-                if (iterator == null) {
+                if (iterator == null || !iterator.hasNext()) {
                     // no more data
                     break;
                 }
@@ -154,7 +153,7 @@ public class ConservationBuilder extends CellBaseBuilder {
 
                 // last region, end is incorrect, recalculate
                 if (conservationScores.size() < chunkSize) {
-                    end = conservationScores.size();
+                    end = start + conservationScores.size();
                 }
 
                 // make object for all 2000 values
