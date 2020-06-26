@@ -23,6 +23,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.tools.feature.BigWigManager;
 import org.opencb.cellbase.core.serializer.CellBaseFileSerializer;
 import org.opencb.cellbase.lib.EtlCommons;
+import org.opencb.cellbase.lib.MongoDBCollectionConfiguration;
 import org.opencb.commons.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +36,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class ConservationBuilder extends CellBaseBuilder {
-
-    private static final int CHUNK_SIZE = 2000;
 
     private Logger logger;
     private Path conservedRegionPath;
@@ -51,7 +50,7 @@ public class ConservationBuilder extends CellBaseBuilder {
     // ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/phyloP46way/primates/
 
     public ConservationBuilder(Path conservedRegionPath, CellBaseFileSerializer serializer) {
-        this(conservedRegionPath, CHUNK_SIZE, serializer);
+        this(conservedRegionPath, MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE, serializer);
     }
 
     public ConservationBuilder(Path conservedRegionPath, int chunkSize, CellBaseFileSerializer serializer) {
@@ -121,7 +120,8 @@ public class ConservationBuilder extends CellBaseBuilder {
         logger.info("parsing {}", gerpFolderPath.resolve(EtlCommons.GERP_FILE));
 
         String[] chromosomes = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14",
-                "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT", };
+                "15", "16", "17", "18", "19", "20", "21", "22", "X", "Y", "MT"};
+
         BigWigManager bigWigManager = new BigWigManager(gerpFolderPath.resolve(EtlCommons.GERP_FILE));
 
         // one file per chromosome
@@ -129,6 +129,7 @@ public class ConservationBuilder extends CellBaseBuilder {
 
             int start = 1;
             int end = 1999;
+            int currentBase = 1;
 
             // keep querying and increasing coordinate values until iterator can't find anything.
             while (true) {
@@ -148,23 +149,45 @@ public class ConservationBuilder extends CellBaseBuilder {
                 // save value for each position
                 while (iterator.hasNext()) {
                     WigItem wigItem = iterator.next();
-                    conservationScores.add(wigItem.getWigValue());
+                    int startBase = wigItem.getStartBase();
+                    int endBase = wigItem.getEndBase();
+
+                    // missing entries at the beginning. fill.
+                    while (currentBase < startBase) {
+                        conservationScores.add((float) 0);
+                        currentBase++;
+                    }
+                    // ** startBase == currentBase now **
+
+                    // get score for this item
+                    Float score = wigItem.getWigValue();
+
+                    // for the whole range of startBase to endBase, enter value
+                    while (currentBase <= endBase) {
+                        conservationScores.add(score);
+                        currentBase++;
+                    }
                 }
 
-                // last region, end is incorrect, recalculate
+                // LAST region of chromosome
                 if (conservationScores.size() < chunkSize) {
                     end = start + conservationScores.size();
+
+                    GenomicScoreRegion<Float> conservationScoreRegion
+                            = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
+                    fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+                    // end of chromosome
+                    break;
+                } else {
+                    // make object for all 2000 values
+                    GenomicScoreRegion<Float> conservationScoreRegion
+                            = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
+                    fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
+
+                    // reset values for next query
+                    start = end + 1;
+                    end += chunkSize;
                 }
-
-                // make object for all 2000 values
-                GenomicScoreRegion<Float> conservationScoreRegion
-                        = new GenomicScoreRegion(chromosome, start, end, "gerp", conservationScores);
-                fileSerializer.serialize(conservationScoreRegion, getOutputFileName(chromosome));
-
-                // reset values for next query
-                start = end + 1;
-                end += chunkSize;
-//                conservationScores.clear();
             }
         }
     }
@@ -266,9 +289,10 @@ public class ConservationBuilder extends CellBaseBuilder {
 
                 values = new ArrayList<>(2000);
             } else {
-                int startChunk = start / CHUNK_SIZE;
+                int startChunk = start / MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
 //                end++;
-                int endChunk = (start + values.size()) / CHUNK_SIZE; // This is the endChunk if current read score is
+                int endChunk = (start + values.size()) / MongoDBCollectionConfiguration.CONSERVATION_CHUNK_SIZE;
+                // This is the endChunk if current read score is
                 // appended to the array (otherwise it would be
                 // start + values.size() - 1). If this endChunk is
                 // different from the startChunk means that current
