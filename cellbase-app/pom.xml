@@ -137,6 +137,8 @@
                                 <exec executable="cp">
                                     <arg value="-r"/>
                                     <arg value="${project.basedir}/app/cloud"/>
+                                    <arg value="${project.basedir}/app/cloud/docker/server.xml"/>
+                                    <arg value="${project.basedir}/app/cloud/docker/catalina.sh"/>
                                     <arg value="${project.basedir}/app/bin"/>
                                     <arg value="${project.basedir}/app/example"/>
                                     <arg value="${project.basedir}/app/mongodb-scripts"/>

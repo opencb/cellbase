@@ -33,8 +33,13 @@ mv /opt/apache-tomcat-${TOMCAT_VERSION} /opt/tomcat && \
 rm /tmp/tomcat.tgz && \
 rm -rf /opt/tomcat/webapps/examples && \
 rm -rf /opt/tomcat/webapps/docs && \
-rm -rf /opt/tomcat/webapps/ROOT && \
-chown -R 1001:1001 /opt/tomcat/
+rm -rf /opt/tomcat/webapps/ROOT
+
+# we have custom config, use our server.xml instead of default
+COPY server.xml /opt/tomcat/conf/
+COPY catalina.sh /opt/tomcat/bin/
+
+RUN chown -R 1001:1001 /opt/tomcat/
 
 # Copy cellbase build to Tomcat server
 RUN cp /opt/cellbase/*.war /opt/tomcat/webapps/cellbase.war
