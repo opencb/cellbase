@@ -72,7 +72,37 @@ public class VariantWSServer extends GenericRestWSServer {
         return createModelResponse(Variant.class);
     }
 
-//    @GET
+    @GET
+    @Path("/{variants}/hgvs")
+    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = List.class,
+            responseContainer = "QueryResponse")
+    public Response getHgvs(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
+            required = true) String id) {
+        try {
+            List<CellBaseDataResult<String>> queryResults = variantManager.getHgvsByVariant(id);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+    }
+
+    @GET
+    @Path("/{variants}/normalization")
+    @ApiOperation(httpMethod = "GET", value = ParamConstants.DATA_MODEL_DESCRIPTION, response = Map.class,
+            responseContainer = "QueryResponse")
+    public Response getNormalization(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
+            required = true) String id) {
+
+        try {
+            CellBaseDataResult<Variant> queryResults = variantManager.getNormalizationByVariant(id);
+            return createOkResponse(queryResults);
+        } catch (Exception e) {
+            return createErrorResponse(e);
+        }
+
+    }
+
+    //    @GET
 //    @Path("/{phenotype}/phenotype")
 //    @ApiOperation(httpMethod = "GET",
 //            value = "Not implemented yet",

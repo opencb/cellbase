@@ -16,6 +16,7 @@
 
 package org.opencb.cellbase.lib.managers;
 
+import org.opencb.biodata.models.core.Gene;
 import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantBuilder;
@@ -34,6 +35,7 @@ import org.opencb.cellbase.core.variant.AnnotationBasedPhasedQueryManager;
 import org.opencb.cellbase.lib.impl.core.VariantMongoDBAdaptor;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationCalculator;
 import org.opencb.cellbase.lib.variant.annotation.VariantAnnotationUtils;
+import org.opencb.cellbase.lib.variant.annotation.hgvs.HgvsCalculator;
 import org.opencb.commons.datastore.core.Query;
 import org.opencb.commons.datastore.core.QueryOptions;
 
@@ -52,15 +54,17 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
             + ":[(alt)|(left_ins_seq)...(right_ins_seq)]";
     private VariantMongoDBAdaptor variantDBAdaptor;
     private CellBaseManagerFactory cellbaseManagerFactory;
+    private GenomeManager genomeManager;
 
-    public VariantManager(String species, String assembly, CellBaseConfiguration configuration) {
+    public VariantManager(String species, String assembly, CellBaseConfiguration configuration) throws CellbaseException {
         super(species, assembly, configuration);
         this.init();
     }
 
-    private void init() {
+    private void init() throws CellbaseException {
         variantDBAdaptor = dbAdaptorFactory.getVariationDBAdaptor(species, assembly);
         cellbaseManagerFactory = new CellBaseManagerFactory(configuration);
+        genomeManager = cellbaseManagerFactory.getGenomeManager(species, assembly);
     }
 
     @Override
@@ -79,8 +83,43 @@ public class VariantManager extends AbstractManager implements AggregationApi<Va
 //        return queryResults;
 //    }
 
-    public CellBaseDataResult search(Query query, QueryOptions queryOptions) {
+    public CellBaseDataResult get(Query query, QueryOptions queryOptions) {
         return variantDBAdaptor.nativeGet(query, queryOptions);
+    }
+
+    public List<CellBaseDataResult<String>> getHgvsByVariant(String variants)
+            throws CellbaseException, QueryException, IllegalAccessException {
+        List<Variant> variantList = parseVariants(variants);
+        HgvsCalculator hgvsCalculator = new HgvsCalculator(genomeManager);
+        List<CellBaseDataResult<String>> results = new ArrayList<>();
+        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
+                cellbaseManagerFactory);
+        logger.error("variantList " + variantList.toString());
+        List<Gene> batchGeneList = variantAnnotationCalculator.getBatchGeneList(variantList);
+        logger.error("batchList " + batchGeneList.toString());
+        for (Variant variant : variantList) {
+            List<Gene> variantGeneList = variantAnnotationCalculator.getAffectedGenes(batchGeneList, variant);
+            logger.error("variantGeneList " + variantGeneList.toString());
+            List<String> hgvsStrings = hgvsCalculator.run(variant, variantGeneList, false);
+            logger.error("hgvsStrings " + hgvsStrings.toString());
+            results.add(new CellBaseDataResult<>(variant.getId(), 0, new ArrayList<>(), hgvsStrings.size(), hgvsStrings, -1));
+        }
+        return results;
+    }
+
+    /**
+     * Normalises a list of variants.
+     *
+     * @param variants list of variant strings
+     * @return list of normalised variants
+     * @throws CellbaseException if the species is incorrect
+     */
+    public CellBaseDataResult<Variant> getNormalizationByVariant(String variants) throws CellbaseException {
+        List<Variant> variantList = parseVariants(variants);
+        VariantAnnotationCalculator variantAnnotationCalculator = new VariantAnnotationCalculator(species, assembly,
+                cellbaseManagerFactory);
+        List<Variant> normalisedVariants = variantAnnotationCalculator.normalizer(variantList);
+        return new CellBaseDataResult<>(variants, 0, new ArrayList<>(), normalisedVariants.size(), normalisedVariants, -1);
     }
 
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariant(QueryOptions queryOptions,

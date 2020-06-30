@@ -144,6 +144,10 @@ public class VariantAnnotationCalculator {
         return getAnnotationByVariantList(Collections.singletonList(variant), queryOptions).get(0);
     }
 
+    public List<Variant> normalizer(List<Variant> variants) {
+        return normalizer.apply(variants);
+    }
+
     public List<CellBaseDataResult<VariantAnnotation>> getAnnotationByVariantList(List<Variant> variantList,
                                                                            QueryOptions queryOptions)
             throws InterruptedException, ExecutionException, QueryException, IllegalAccessException {
@@ -503,7 +507,7 @@ public class VariantAnnotationCalculator {
         return variantAnnotationList;
     }
 
-    private List<Gene> getBatchGeneList(List<Variant> variantList) throws QueryException, IllegalAccessException {
+    public List<Gene> getBatchGeneList(List<Variant> variantList) throws QueryException, IllegalAccessException {
         List<Region> regionList = variantListToRegionList(variantList);
         // Add +-5Kb for gene search
         for (Region region : regionList) {
@@ -1007,7 +1011,7 @@ public class VariantAnnotationCalculator {
         return includeGeneFields;
     }
 
-    private List<Gene> getAffectedGenes(List<Gene> batchGeneList, Variant variant) {
+    public List<Gene> getAffectedGenes(List<Gene> batchGeneList, Variant variant) {
         List<Gene> geneList = new ArrayList<>(batchGeneList.size());
         for (Gene gene : batchGeneList) {
             for (Region region : variantToRegionList(variant)) {
