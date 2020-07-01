@@ -37,7 +37,8 @@ rm -rf /opt/tomcat/webapps/ROOT
 
 # we have custom config, use our server.xml instead of default
 COPY server.xml /opt/tomcat/conf/
-COPY catalina.sh /opt/tomcat/bin/
+# don't use. Jacobo sets the memory in the init script.
+# COPY catalina.sh /opt/tomcat/bin/
 
 RUN chown -R 1001:1001 /opt/tomcat/
 
