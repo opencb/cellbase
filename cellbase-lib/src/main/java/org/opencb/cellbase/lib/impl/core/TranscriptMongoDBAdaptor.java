@@ -214,6 +214,9 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
                             visited = true;
                         }
                         break;
+                    case "ontology":
+                        createOntologyQuery(value, andBsonList);
+                        break;
                     case "supportLevel":
                         andBsonList.add(Filters.regex("transcripts.supportLevel", "^" + value));
                         break;
@@ -232,6 +235,8 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
             return new Document();
         }
     }
+
+
 
     // add regions and IDs to the query, joined with OR
     private void createRegionQuery(List<Region> regions, List<String> ids, List<Bson> andBsonList) {

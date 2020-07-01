@@ -410,15 +410,7 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         }
     }
 
-    // check in both the id and name field.
-    private void createOntologyQuery(Object queryValues, List<Bson> andBsonList) {
-        if (queryValues != null) {
-            List<Bson> orBsonList = new ArrayList<>();
-            orBsonList.add(getLogicalListFilter(queryValues, "transcripts.annotation.ontologies.id"));
-            orBsonList.add(getLogicalListFilter(queryValues, "transcripts.annotation.ontologies.name"));
-            andBsonList.add(Filters.or(orBsonList));
-        }
-    }
+
 
     // check in both the id and sourceId field.
     private void createTargetQuery(Object queryValues, List<Bson> andBsonList) {
@@ -430,13 +422,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         }
     }
 
-    private Bson getLogicalListFilter(Object queryValues, String mongoDbField) {
-        MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
-                ? MongoDBQueryUtils.LogicalOperator.AND
-                : MongoDBQueryUtils.LogicalOperator.OR;
-        Query query = new Query(mongoDbField, queryValues);
-        return MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, QueryParam.Type.STRING, operator);
-    }
 
     static {
         CONSTRAINT_NAMES.add("exac_oe_lof");

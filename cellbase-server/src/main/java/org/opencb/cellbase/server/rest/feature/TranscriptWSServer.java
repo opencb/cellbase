@@ -221,7 +221,7 @@ public class TranscriptWSServer extends GenericRestWSServer {
             @ApiImplicitParam(name = ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_PARAM,
                     value = ParamConstants.TRANSCRIPT_TRANSCRIPTION_FACTORS_DESCRIPTION,
                     required = false, dataType = "java.util.List", paramType = "query"),
-            @ApiImplicitParam(name = ParamConstants.ONTOLOGY_IDS_PARAM, value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION,
+            @ApiImplicitParam(name = ParamConstants.ONTOLOGY_PARAM, value = ParamConstants.ONTOLOGY_DESCRIPTION,
                     required = false, dataType = "string", paramType = "query"),
             @ApiImplicitParam(name = "annotationFlags", value = ParamConstants.TRANSCRIPT_ANNOTATION_FLAGS_DESCRIPTION,
                     dataType = "string", paramType = "query"),

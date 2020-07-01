@@ -308,6 +308,25 @@ public class MongoDBAdaptor {
         }
     }
 
+    // check in both the id and name field.
+    protected void createOntologyQuery(Object queryValues, List<Bson> andBsonList) {
+        if (queryValues != null) {
+            List<Bson> orBsonList = new ArrayList<>();
+            orBsonList.add(getLogicalListFilter(queryValues, "transcripts.annotation.ontologies.id"));
+            orBsonList.add(getLogicalListFilter(queryValues, "transcripts.annotation.ontologies.name"));
+            andBsonList.add(Filters.or(orBsonList));
+        }
+    }
+
+    protected Bson getLogicalListFilter(Object queryValues, String mongoDbField) {
+        MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
+                ? MongoDBQueryUtils.LogicalOperator.AND
+                : MongoDBQueryUtils.LogicalOperator.OR;
+        Query query = new Query(mongoDbField, queryValues);
+        return MongoDBQueryUtils.createAutoFilter(mongoDbField, mongoDbField, query, QueryParam.Type.STRING, operator);
+    }
+
+
     protected <T> void createAndOrQuery(Object queryValues, String mongoDbField, QueryParam.Type type, List<Bson> andBsonList) {
         if (queryValues instanceof LogicalList) {
             MongoDBQueryUtils.LogicalOperator operator = ((LogicalList) queryValues).isAnd()
