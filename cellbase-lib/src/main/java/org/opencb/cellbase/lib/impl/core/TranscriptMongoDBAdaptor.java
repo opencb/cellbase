@@ -28,6 +28,7 @@ import org.opencb.biodata.models.core.Region;
 import org.opencb.biodata.models.core.Transcript;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.TranscriptQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.Query;
@@ -76,6 +77,20 @@ public class TranscriptMongoDBAdaptor extends MongoDBAdaptor implements CellBase
         GenericDocumentComplexConverter<Transcript> converter = new GenericDocumentComplexConverter<>(Transcript.class);
         MongoDBIterator<Transcript> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
+    }
+
+    @Override
+    public List<CellBaseDataResult<Transcript>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+        List<CellBaseDataResult<Transcript>> results = new ArrayList<>();
+        for (String id : ids) {
+            Bson projection = getProjection(queryOptions);
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("id", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson bson = Filters.or(orBsonList);
+            results.add(new CellBaseDataResult<Transcript>(mongoDBCollection.find(bson, projection, Transcript.class, new QueryOptions())));
+        }
+        return results;
     }
 
     @Deprecated

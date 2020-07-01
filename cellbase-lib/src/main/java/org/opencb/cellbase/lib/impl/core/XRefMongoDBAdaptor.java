@@ -24,6 +24,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Xref;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.XrefQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -155,6 +156,20 @@ public class XRefMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
         GenericDocumentComplexConverter<Xref> converter = new GenericDocumentComplexConverter<>(Xref.class);
         MongoDBIterator<Xref> iterator = mongoDBCollection.iterator(pipeline, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
+    }
+
+    @Override
+    public List<CellBaseDataResult<Xref>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+        List<CellBaseDataResult<Xref>> results = new ArrayList<>();
+        for (String id : ids) {
+            Bson projection = getProjection(queryOptions);
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("id", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson bson = Filters.or(orBsonList);
+            results.add(new CellBaseDataResult<Xref>(mongoDBCollection.find(bson, projection, Xref.class, new QueryOptions())));
+        }
+        return results;
     }
 
     public List<Bson> unwind(XrefQuery query) {

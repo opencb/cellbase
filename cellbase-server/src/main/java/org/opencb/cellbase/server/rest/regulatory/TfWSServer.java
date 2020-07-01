@@ -106,7 +106,7 @@ public class TfWSServer extends RegulatoryWSServer {
                 queries.add(query);
                 logger.info("REST RegulationQuery: {}", query.toString());
             }
-            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
+            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

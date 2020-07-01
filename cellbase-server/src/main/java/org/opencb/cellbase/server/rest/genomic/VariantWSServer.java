@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -306,18 +306,9 @@ public class VariantWSServer extends GenericRestWSServer {
     public Response getInfo(@PathParam("variants") @ApiParam(name = "variants", value = ParamConstants.RS_IDS,
             required = true) String id) {
         try {
-//            parseQueryParams();
-//            List<CellBaseDataResult> queryResults = variantManager.info(query, queryOptions, id);
-//            return createOkResponse(queryResults);
-            List<VariantQuery> queries = new ArrayList<>();
-            String[] identifiers = id.split(",");
-            for (String identifier : identifiers) {
-                VariantQuery query = new VariantQuery(uriParams);
-                query.setId(identifier);
-                queries.add(query);
-                logger.info("REST VariantQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(queries);
+            VariantQuery query = new VariantQuery(uriParams);
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(Arrays.asList(id.split(",")),
+                    query.toCellBaseQueryOptions());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

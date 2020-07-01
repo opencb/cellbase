@@ -186,7 +186,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 queries.add(query);
                 logger.info("REST GeneQuery: {}", query.toString());
             }
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(queries);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -232,7 +232,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 queries.add(query);
                 logger.info("REST TranscriptQuery: {}", query.toString());
             }
-            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
+            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -271,7 +271,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 queries.add(query);
                 logger.info("REST RepeatsQuery: {}", query.toString());
             }
-            List<CellBaseDataResult<Repeat>> queryResults = repeatsManager.info(queries);
+            List<CellBaseDataResult<Repeat>> queryResults = repeatsManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -327,7 +327,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 queries.add(query);
                 logger.info("REST variantQuery: {}", query.toString());
             }
-            List<CellBaseDataResult<Variant>> queryResults = variantManager.info(queries);
+            List<CellBaseDataResult<Variant>> queryResults = variantManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -466,7 +466,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 logger.info("REST RegulationQuery: {}", query.toString());
                 queries.add(query);
             }
-            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
+            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -502,7 +502,7 @@ public class RegionWSServer extends GenericRestWSServer {
                 query.setFeatureTypes(Collections.singletonList("TF_binding_site"));
                 logger.info("REST RegulationQuery: {}", query.toString());
             }
-            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.info(queries);
+            List<CellBaseDataResult<RegulatoryFeature>> queryResults = regulatoryManager.search(queries);
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

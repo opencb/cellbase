@@ -35,10 +35,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Path("/{apiVersion}/{species}/feature/ontology")
 @Produces(MediaType.APPLICATION_JSON)
@@ -129,15 +126,9 @@ public class OntologyWSServer extends GenericRestWSServer {
     public Response getInfo(@PathParam("ids") @ApiParam(name = "ids", value = ParamConstants.ONTOLOGY_IDS_DESCRIPTION, required = true)
                                         String ids) {
         try {
-            List<OntologyQuery> queries = new ArrayList<>();
-            String[] identifiers = ids.split(",");
-            for (String identifier : identifiers) {
-                OntologyQuery query = new OntologyQuery(uriParams);
-                query.setIds(Collections.singletonList(identifier));
-                queries.add(query);
-                logger.info("REST OntologyQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(queries);
+            OntologyQuery query = new OntologyQuery(uriParams);
+            List<CellBaseDataResult<OntologyTerm>> queryResults = ontologyManager.info(Arrays.asList(ids.split(",")),
+                    query.toCellBaseQueryOptions());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

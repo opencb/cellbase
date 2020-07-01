@@ -381,7 +381,6 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         queryOptions.put(QueryOptions.LIMIT, limit);
         queryOptions.put(QueryOptions.COUNT, count);
         if (CollectionUtils.isNotEmpty(includes)) {
-//            queryOptions.getAsStringList(QueryOptions.INCLUDE).addAll(Splitter.on(",").splitToList(includes.get(0)));
             queryOptions.put(QueryOptions.INCLUDE, StringUtils.join(this.includes, ","));
         }
         if (CollectionUtils.isNotEmpty(excludes)) {
@@ -393,6 +392,27 @@ public abstract class AbstractQuery extends CellBaseQueryOptions {
         }
         if (StringUtils.isNotEmpty(facet)) {
             queryOptions.put(QueryOptions.FACET, facet);
+        }
+        return queryOptions;
+    }
+
+    public CellBaseQueryOptions toCellBaseQueryOptions() {
+        CellBaseQueryOptions queryOptions = new CellBaseQueryOptions();
+        queryOptions.setSkip(skip);
+        queryOptions.setLimit(limit);
+        queryOptions.setCount(count);
+        if (CollectionUtils.isNotEmpty(includes)) {
+            queryOptions.setIncludes(includes);
+        }
+        if (CollectionUtils.isNotEmpty(excludes)) {
+            queryOptions.setExcludes(excludes);
+        }
+        if (StringUtils.isNotEmpty(sort)) {
+            queryOptions.setSort(sort);
+            queryOptions.setOrder(order);
+        }
+        if (StringUtils.isNotEmpty(facet)) {
+            queryOptions.setFacet(facet);
         }
         return queryOptions;
     }

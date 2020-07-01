@@ -24,6 +24,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.Gene;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.GeneQuery;
 import org.opencb.cellbase.core.api.queries.LogicalList;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -107,6 +108,20 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 //        }
 //        return results;
 //    }
+
+    @Override
+    public List<CellBaseDataResult<Gene>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+        List<CellBaseDataResult<Gene>> results = new ArrayList<>();
+        for (String id : ids) {
+            Bson projection = getProjection(queryOptions);
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("id", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson bson = Filters.or(orBsonList);
+            results.add(new CellBaseDataResult<Gene>(mongoDBCollection.find(bson, projection, Gene.class, new QueryOptions())));
+        }
+        return results;
+    }
 
     @Override
     public CellBaseIterator<Gene> iterator(GeneQuery query) {
@@ -319,6 +334,9 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
 //        }
 //    }
 
+
+
+
     public Bson parseQuery(GeneQuery geneQuery) {
         List<Bson> andBsonList = new ArrayList<>();
         boolean visited = false;
@@ -333,11 +351,6 @@ public class GeneMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCoreDB
                             createIdRegionQuery(geneQuery.getRegions(), geneQuery.getIds(), andBsonList);
                             visited = true;
                         }
-                        break;
-                    case "transcripts.id":
-                    case "transcripts.name":
-                    case "transcripts.xrefs.id":
-                        createAndOrQuery(value, "transcripts.xrefs.id", QueryParam.Type.STRING, andBsonList);
                         break;
                     case "transcripts.annotationFlags":
                         // TODO use unwind to filter out unwanted transcripts

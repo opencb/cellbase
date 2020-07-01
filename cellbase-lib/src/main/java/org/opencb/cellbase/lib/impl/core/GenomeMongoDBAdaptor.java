@@ -24,15 +24,13 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opencb.biodata.models.core.Chromosome;
-import org.opencb.biodata.models.core.GenomeSequenceFeature;
-import org.opencb.biodata.models.core.GenomicScoreRegion;
-import org.opencb.biodata.models.core.Region;
+import org.opencb.biodata.models.core.*;
 import org.opencb.biodata.models.variant.avro.Cytoband;
 import org.opencb.biodata.models.variant.avro.Score;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.core.GenomeDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.GenomeQuery;
 import org.opencb.cellbase.core.common.DNASequenceUtils;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
@@ -536,6 +534,20 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
     public CellBaseDataResult<String> distinct(GenomeQuery query) {
         Bson bsonDocument = parseQuery(query);
         return new CellBaseDataResult<>(genomeInfoMongoDBCollection.distinct(query.getFacet(), bsonDocument));
+    }
+
+    @Override
+    public List<CellBaseDataResult<Chromosome>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+        List<CellBaseDataResult<Chromosome>> results = new ArrayList<>();
+        for (String id : ids) {
+            Bson projection = getProjection(queryOptions);
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("id", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson bson = Filters.or(orBsonList);
+            results.add(new CellBaseDataResult<Chromosome>(mongoDBCollection.find(bson, projection, Chromosome.class, new QueryOptions())));
+        }
+        return results;
     }
 
     public Bson parseQuery(GenomeQuery geneQuery) {

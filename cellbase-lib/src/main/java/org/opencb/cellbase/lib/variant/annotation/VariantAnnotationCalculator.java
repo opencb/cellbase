@@ -1647,7 +1647,7 @@ public class VariantAnnotationCalculator {
                     query.setRegions(Collections.singletonList(region));
                     queries.add(query);
                 }
-                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsManager.info(queries);
+                List<CellBaseDataResult<Repeat>> tmpCellBaseDataResultList = repeatsManager.search(queries);
 
                 // There may be more than one CellBaseDataResult per variant for non SNV variants since there will be
                 // two breakpoints

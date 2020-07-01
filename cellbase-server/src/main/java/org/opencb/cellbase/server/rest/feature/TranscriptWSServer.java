@@ -40,7 +40,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -145,17 +144,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
             required = true) String transcripts) {
 
         try {
-//            parseQueryParams();
-//            List<CellBaseDataResult> queryResults = transcriptManager.info(query, queryOptions, id);
-            List<TranscriptQuery> queries = new ArrayList<>();
-            String[] identifiers =  transcripts.split(",");
-            for (String identifier : identifiers) {
-                TranscriptQuery query = new TranscriptQuery(uriParams);
-                query.setTranscriptsXrefs(Arrays.asList(identifier));
-                queries.add(query);
-                logger.info("REST TranscriptQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(queries);
+            TranscriptQuery query = new TranscriptQuery(uriParams);
+            List<CellBaseDataResult<Transcript>> queryResults = transcriptManager.info(Arrays.asList(transcripts.split(",")),
+                    query.toCellBaseQueryOptions());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -175,15 +166,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getGeneById(@PathParam("transcripts") @ApiParam(name = "transcripts",
                                     value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String id) {
         try {
-            List<GeneQuery> queries = new ArrayList<>();
-            String[] identifiers =  id.split(",");
-            for (String identifier : identifiers) {
-                GeneQuery query = new GeneQuery(uriParams);
-                query.setTranscriptsXrefs(Arrays.asList(identifier));
-                queries.add(query);
-                logger.info("REST GeneQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(queries);
+            GeneQuery query = new GeneQuery(uriParams);
+            List<CellBaseDataResult<Gene>> queryResults = geneManager.info(Arrays.asList(id.split(",")),
+                    query.toCellBaseQueryOptions());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);
@@ -300,15 +285,9 @@ public class TranscriptWSServer extends GenericRestWSServer {
     public Response getProtein(@PathParam("transcripts") @ApiParam(name = "transcripts",
             value = ParamConstants.TRANSCRIPT_IDS_DESCRIPTION, required = true) String transcripts) {
         try {
-            List<ProteinQuery> queries = new ArrayList<>();
-            String[] identifiers =  transcripts.split(",");
-            for (String identifier : identifiers) {
-                ProteinQuery query = new ProteinQuery(uriParams);
-                query.setXrefs(Arrays.asList(identifier));
-                queries.add(query);
-                logger.info("REST proteinQuery: {}", query.toString());
-            }
-            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(queries);
+            ProteinQuery query = new ProteinQuery(uriParams);
+            List<CellBaseDataResult<Entry>> queryResults = proteinManager.info(Arrays.asList(transcripts.split(",")),
+                    query.toCellBaseQueryOptions());
             return createOkResponse(queryResults);
         } catch (Exception e) {
             return createErrorResponse(e);

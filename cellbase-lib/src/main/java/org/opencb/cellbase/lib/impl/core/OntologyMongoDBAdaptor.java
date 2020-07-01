@@ -23,6 +23,7 @@ import org.bson.conversions.Bson;
 import org.opencb.biodata.models.core.OntologyTerm;
 import org.opencb.cellbase.core.api.core.CellBaseCoreDBAdaptor;
 import org.opencb.cellbase.core.api.queries.CellBaseIterator;
+import org.opencb.cellbase.core.api.queries.CellBaseQueryOptions;
 import org.opencb.cellbase.core.api.queries.OntologyQuery;
 import org.opencb.cellbase.core.result.CellBaseDataResult;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -51,6 +52,21 @@ public class OntologyMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCo
         GenericDocumentComplexConverter<OntologyTerm> converter = new GenericDocumentComplexConverter<>(OntologyTerm.class);
         MongoDBIterator<OntologyTerm> iterator = mongoDBCollection.iterator(null, bson, projection, converter, queryOptions);
         return new CellBaseIterator<>(iterator);
+    }
+
+    @Override
+    public List<CellBaseDataResult<OntologyTerm>> info(List<String> ids, CellBaseQueryOptions queryOptions) {
+        List<CellBaseDataResult<OntologyTerm>> results = new ArrayList<>();
+        for (String id : ids) {
+            Bson projection = getProjection(queryOptions);
+            List<Bson> orBsonList = new ArrayList<>(ids.size());
+            orBsonList.add(Filters.eq("id", id));
+            orBsonList.add(Filters.eq("name", id));
+            Bson bson = Filters.or(orBsonList);
+            results.add(new CellBaseDataResult<OntologyTerm>(mongoDBCollection.find(bson, projection,
+                    OntologyTerm.class, new QueryOptions())));
+        }
+        return results;
     }
 
     @Override
