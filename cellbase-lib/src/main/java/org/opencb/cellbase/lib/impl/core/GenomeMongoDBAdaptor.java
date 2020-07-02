@@ -97,10 +97,10 @@ public class GenomeMongoDBAdaptor extends MongoDBAdaptor implements CellBaseCore
         // May not have info for specified chromosome, e.g. 17_KI270729v1_random
         if (chromosomeInfo != null && chromosomeInfo.getResults() != null && !chromosomeInfo.getResults().isEmpty()) {
             Chromosome chromosome = chromosomeInfo.getResults().get(0);
-            logger.error("chromosome " + chromosome.toString());
             List<Cytoband> results = chromosome.getCytobands();
             for (Cytoband cytoband : results) {
                 if (cytoband.getEnd() >= region.getStart() && cytoband.getStart() <= region.getEnd()) {
+                    cytoband.setChromosome(chromosome.getName());
                     cytobandList.add(cytoband);
                 }
             }

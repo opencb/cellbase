@@ -121,32 +121,7 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(true, found);
     }
 
-    @Test
-    public void testTranscriptIdName() throws Exception {
-        Map<String, String> paramMap = new HashMap<>();
 
-        // DDX11L1 is the gene name, so this shouldn't return anything if it wasn't looking in xrefs
-        paramMap.put("transcripts.id", "DDX11L1");
-        GeneQuery geneQuery = new GeneQuery(paramMap);
-        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
-        assertEquals(1, cellBaseDataResult.getNumResults());
-
-        // DDX11L1 is the gene name, so this shouldn't return anything if it wasn't looking in xrefs
-        paramMap = new HashMap<>();
-        paramMap.put("transcripts.name", "DDX11L1");
-        geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
-        assertEquals(1, cellBaseDataResult.getNumResults());
-
-        paramMap = new HashMap<>();
-        paramMap.put("transcripts.id", "DDX11L1");
-        paramMap.put("transcripts.name", "DDX11L1");
-        paramMap.put("transcripts.xrefs", "DDX11L1");
-        geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
-        assertEquals(1, cellBaseDataResult.getNumResults());
-
-    }
 //
 //   constraints":[{"source":"gnomAD","method":"pLoF","name":"oe_mis","value":0.81001},
 //   {"source":"gnomAD","method":"pLoF","name":"oe_syn","value":0.91766},
@@ -188,35 +163,5 @@ public class GeneMongoDBAdaptorTest extends GenericMongoDBAdaptorTest {
         assertEquals(1, cellBaseDataResult.getNumResults());
     }
 
-    @Test
-    public void testCamelCase() throws Exception {
-        Map<String, String> paramMap = new HashMap<>();
 
-        // DDX11L1 is the gene name, so this shouldn't return anything if it wasn't looking in xrefs
-        paramMap.put("transcriptsId", "DDX11L1");
-        GeneQuery geneQuery = new GeneQuery(paramMap);
-        CellBaseDataResult<Gene> cellBaseDataResult = geneDBAdaptor.query(geneQuery);
-        assertEquals(1, cellBaseDataResult.getNumResults());
-
-        // DDX11L1 is the gene name, so this shouldn't return anything if it wasn't looking in xrefs
-        paramMap = new HashMap<>();
-        paramMap.put("transcriptsName", "DDX11L1");
-        geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
-        assertEquals(1, cellBaseDataResult.getNumResults());
-
-        paramMap = new HashMap<>();
-        paramMap.put("transcriptsId", "DDX11L1");
-        paramMap.put("transcriptsName", "DDX11L1");
-        paramMap.put("transcriptsXrefs", "DDX11L1");
-        geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
-        assertEquals(1, cellBaseDataResult.getNumResults());
-
-        paramMap = new HashMap<>();
-        paramMap.put("transcriptsBiotype", "miRNA");
-        geneQuery = new GeneQuery(paramMap);
-        cellBaseDataResult = geneDBAdaptor.query(geneQuery);
-        assertEquals(3, cellBaseDataResult.getNumResults());
-    }
 }
